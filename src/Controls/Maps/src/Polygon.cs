@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Maps
 {
@@ -30,6 +32,16 @@ namespace Microsoft.Maui.Controls.Maps
 		/// Gets a list of locations on the map which forms the outline of this polygon on the map.
 		/// </summary>
 		public IList<Location> Geopath { get; }
+
+		/// <summary>
+		/// Occurs when the user clicks/taps on the polygon element
+		/// </summary>
+		public event EventHandler? PolygonClicked;
+
+		void IMapElement.Clicked()
+		{
+			PolygonClicked?.Invoke(this, EventArgs.Empty);
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Polygon"/> class.

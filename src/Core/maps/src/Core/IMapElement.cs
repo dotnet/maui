@@ -20,5 +20,10 @@
 		/// Higher values are drawn on top of lower values.
 		/// </summary>
 		int ZIndex { get; }
+
+		/// <summary>
+		/// Method called by the handler when user clicks on the element.
+		/// </summary>
+		void Clicked();
 	}
 }
