@@ -1,0 +1,50 @@
+{"title":"Volcano Vacation in Maui
+","description":"Explore the volcanic landscapes,
+ lush rainforests, and pristine beaches of Maui. Witness
+ breathtaking sunrise views, enjoy diverse climate zones, and
+ experience marine life adventures.","rationale":"
+Maui's diverse geography offers stunning natural
+ beauty and unique experiences.","destinationName":"
+Maui","days":[{"title":"
+Explore Haleakalā National Park","subtitle":"
+Witness the sunrise at Haleakalā National Park.
+","destination":"Haleakalā National Park
+","activities":[{"type":"Sight
+seeing","title":"Sunrise Viewing
+","description":"Witness the breathtaking sunrise over Hale
+akalā's volcanic crater."},{"type":"
+HotelAndLodging","title":"
+Stay at Hotel 1","description":"
+Enjoy a restful stay at a nearby hotel.
+"},{
+"type":"FoodAndDining","title":"Breakfast at Cafe 1","description":"
+Start your day with a delicious breakfast at a local
+ cafe."}]},{"title":"Road to
+ Hana Adventure","subtitle":"Explore the
+ scenic Road to Hana.","destination":"Road
+ to Hana","activities":[{"type":"
+Sightseeing","title":"Scenic Drive
+","description":"Enjoy the stunning views and
+ waterfalls along the Road to Hana."},{"type":"
+FoodAndDining","title":"Lunch
+ at Restaurant 1","description":"S
+avor local cuisine at a restaurant along the way.
+"},{"type":"HotelAndL
+odging","title":"Stay at Camp
+ground 1","description":"Spend the
+ night in a cozy campground."}]},{"title":"
+Relaxation and Exploration","subtitle":"
+Unwind and explore Maui's natural beauty.
+"
+,"destination":"Maui","activities":[{
+"type":"FoodAndDining","title":"Dinner at Restaurant 2","description":"
+Enjoy a relaxing dinner at a local restaurant.
+"},{"type":"HotelAndLod
+ging","title":"Stay at Hotel 
+2","description":"Conclude your trip
+ with a restful stay at a comfortable hotel.
+"},{
+"type":"FoodAndDining","title":"Dessert at Cafe 2","description":"
+End your day with a sweet treat at a local
+ cafe.
+"}]}]}

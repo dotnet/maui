@@ -1,67 +1,66 @@
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-[Issue(IssueTracker.Github, 3001, "[macOS] Navigating back from a complex page is highly inefficient", PlatformAffected.macOS)]
-public class Issue3001 : TestContentPage
-{
-const string ButtonId = "ClearButton";
-const string ReadyId = "ReadyLabel";
 
-int _counter = 0;
-int _level = 0;
-// Reduced from 5 to 4 levels: 4^4 = 256 labels instead of 4^5 = 1024
-// Still deep enough to exercise nested disposal, but avoids catalyst timeout
-const int maxLevel = 4;
+	[Issue(IssueTracker.Github, 3001, "[macOS] Navigating back from a complex page is highly inefficient", PlatformAffected.macOS)]
+	public class Issue3001 : TestContentPage
+	{
+		const string ButtonId = "ClearButton";
+		const string ReadyId = "ReadyLabel";
 
-public View BuildLevel()
-{
-if (_level == maxLevel)
-{
-_counter++;
-return new Label { Text = _counter.ToString(), FontSize = 10 };
-}
+		int _counter = 0;
+		int _level = 0;
+		const int maxLevel = 5;
 
-_level++;
-var g1 = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
+		public View BuildLevel()
+		{
+			if (_level == maxLevel)
+			{
+				_counter++;
+				return new Label { Text = _counter.ToString(), FontSize = 10 };
+			}
 
-var g2 = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
-g1.Children.Add(g2);
+			_level++;
+			var g1 = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
 
-var g = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
-g2.Children.Add(g);
+			var g2 = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
+			g1.Children.Add(g2);
 
-g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
-g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
-g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
-g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+			var g = new Grid { RowSpacing = 0, ColumnSpacing = 0 };
+			g2.Children.Add(g);
 
-g.Add(BuildLevel(), 0, 0);
-g.Add(BuildLevel(), 0, 1);
-g.Add(BuildLevel(), 1, 0);
-g.Add(BuildLevel(), 1, 1);
+			g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+			g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+			g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+			g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-_level--;
+			g.Add(BuildLevel(), 0, 0);
+			g.Add(BuildLevel(), 0, 1);
+			g.Add(BuildLevel(), 1, 0);
+			g.Add(BuildLevel(), 1, 1);
 
-return g1;
-}
+			_level--;
 
-protected override void Init()
-{
-var sp = new StackLayout();
-sp.Children.Add(new Button
-{
-Text = "Start",
-AutomationId = ButtonId,
-Command = new Command(() =>
-{
-Content = new Label
-{
-Text = "Ready",
-AutomationId = ReadyId
-};
-})
-});
-sp.Children.Add(BuildLevel());
-Content = sp;
-}
-}
+			return g1;
+		}
+
+		protected override void Init()
+		{
+			var sp = new StackLayout();
+			sp.Children.Add(new Button
+			{
+				Text = "Start",
+				AutomationId = ButtonId,
+				Command = new Command(() =>
+				{
+					Content = new Label
+					{
+						Text = "Ready",
+						AutomationId = ReadyId
+					};
+				})
+			});
+			sp.Children.Add(BuildLevel());
+			Content = sp;
+		}
+	}
 }

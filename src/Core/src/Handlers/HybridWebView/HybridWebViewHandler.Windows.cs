@@ -5,7 +5,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -98,10 +97,7 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
-			// The JS transport URL-encodes messages so embedded NUL characters survive WebView2's
-			// null-terminated string marshalling (TryGetWebMessageAsString returns an LPWSTR). Decode
-			// the payload before dispatching it.
-			MessageReceived(Uri.UnescapeDataString(args.TryGetWebMessageAsString()));
+			MessageReceived(args.TryGetWebMessageAsString());
 		}
 
 		internal static void MapFlowDirection(IHybridWebViewHandler handler, IHybridWebView hybridWebView)
@@ -171,12 +167,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = WebUtils.ResolveRelativePath(AppOriginUri, uri);
-				if (relativePath is null)
-				{
-					logger?.LogDebug("Request for {Url} resolved to an invalid path.", url);
-					return (Stream: null, ContentType: null, StatusCode: 404, Reason: "Not Found");
-				}
+				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 				// 1.a. Try the special "_framework/hybridwebview.js" path
 				if (relativePath == HybridWebViewDotJsPath)
@@ -247,8 +238,8 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				var assetPath = FileSystemUtils.Combine(VirtualView.HybridRoot!, relativePath!);
-				using var contentStream = assetPath is not null ? await GetAssetStreamAsync(assetPath) : null;
+				var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
+				using var contentStream = await GetAssetStreamAsync(assetPath);
 
 				if (contentStream is not null)
 				{

@@ -294,10 +294,7 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					Application.Current?
-						.FindMauiContext()?
-						.CreateLogger<Element>()?
-						.LogWarning($"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The ParentOverride on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 
 				return null;
@@ -351,10 +348,7 @@ namespace Microsoft.Maui.Controls
 				_realParent = null;
 				if (logWarningIfParentHasBeenCollected)
 				{
-					Application.Current?
-										.FindMauiContext()?
-										.CreateLogger<Element>()?
-										.LogWarning($"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"The RealParent on {this} has been Garbage Collected. This should never happen. Please log a bug: https://github.com/dotnet/maui");
 				}
 			}
 
@@ -415,16 +409,14 @@ namespace Microsoft.Maui.Controls
 
 				if (value != null && (element is Layout || element is IControlTemplated))
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
+					MauiLogger<Element>.Log(LogLevel.Warning, $"{this} is already a child of {element}. Remove {this} from {element} before adding to {value}.");
 				}
 			}
 
 			RealParent = value;
 			if (RealParent != null)
 			{
-				var resources = GetParentResourcesForParentSet();
-				if (resources != null)
-					OnParentResourcesChanged(resources);
+				OnParentResourcesChanged(RealParent.GetMergedResources());
 				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 			}
 
@@ -446,27 +438,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnPropertyChanged(nameof(Parent));
-		}
-
-		IEnumerable<KeyValuePair<string, object>> GetParentResourcesForParentSet()
-		{
-			// Existing resource-change listeners observe the full parent snapshot during parent set.
-			// Preserve that payload; the filtered path below is only for this element's own DynamicResources.
-			if (_changeHandlers?.Count > 0)
-				return RealParent.GetMergedResources();
-
-			if (_dynamicResources == null || _dynamicResources.Count == 0)
-				return null;
-
-			HashSet<string> dynamicResourceKeys = null;
-			foreach (var dynamicResource in _dynamicResources)
-			{
-				var dynamicResourceKey = dynamicResource.Value.Item1;
-				if (!string.IsNullOrEmpty(dynamicResourceKey))
-					(dynamicResourceKeys ??= new HashSet<string>(StringComparer.Ordinal)).Add(dynamicResourceKey);
-			}
-
-			return RealParent.GetMergedResourcesForKeys(dynamicResourceKeys);
 		}
 
 		internal bool IsTemplateRoot { get; set; }

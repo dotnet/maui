@@ -30,12 +30,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.TextChanged += OnTextChanged;
 			platformView.LostFocus += OnLostFocus;
-			platformView.SizeChanged += OnPlatformViewSizeChanged;
+			platformView.Loaded += OnPlatformLoaded;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
 		{
-			platformView.SizeChanged -= OnPlatformViewSizeChanged;
+			platformView.Loaded -= OnPlatformLoaded;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.LostFocus -= OnLostFocus;
 
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 		void OnLostFocus(object? sender, RoutedEventArgs e) =>
 			VirtualView?.Completed();
 
-		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>
+		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 
 		private void OnSelectionChanged(object sender, RoutedEventArgs e)

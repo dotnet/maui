@@ -22,9 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			for (int i = 0; i < 10; i++)
 			{
-				App.WaitForElement(ButtonId, timeout: TimeSpan.FromSeconds(45));
+				App.WaitForElement(ButtonId);
 				App.Tap(ButtonId);
-				App.WaitForElement(Button2Id, timeout: TimeSpan.FromSeconds(45));
+				App.WaitForElement(Button2Id);
 				App.Tap(Button2Id);
 			}
 		}

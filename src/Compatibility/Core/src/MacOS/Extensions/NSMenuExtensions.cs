@@ -95,15 +95,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.macOS.Extensions
 			if (accelerator == null)
 				return;
 
-			bool hasModifierMask = accelerator.Modifiers?.Any() ?? false;
+			bool hasModifierMask = accelerator.Modifiers?.Count() > 1;
 
 			if (hasModifierMask)
 			{
 				nsMenuItem.KeyEquivalentModifierMask = 0;
 
-				foreach (var modifier in accelerator.Modifiers)
+				for (int i = 0; i < accelerator.Modifiers.Count(); i++)
 				{
-					var modifierMask = modifier.ToLower();
+					var modifierMask = accelerator.Modifiers.ElementAt(i).ToLower();
 					switch (modifierMask)
 					{
 						case "ctrl":

@@ -68,11 +68,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Binding is Binding { Source: var source, DataType: Type dataType })
 			{
-				// Skip the type-mismatch check when an explicit concrete Source is provided (e.g. Source={x:Reference}).
-  				// In a DataTemplate, x:DataType describes the item context - not the type of the referenced element.
-   				// RelativeBindingSource is excluded: a mismatch against its source type must still be reported.
-				bool skipTypeMismatchCheck = (source is not null && source is not RelativeBindingSource)
-					|| !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
+				// Do not check type mismatch if this is a binding with Source and compilation of bindings with Source is disabled
+				bool skipTypeMismatchCheck = source is not null && !RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled;
 				if (!skipTypeMismatchCheck)
 				{
 					if (sourceObject != null && !dataType.IsAssignableFrom(sourceObject.GetType()))
@@ -296,16 +293,6 @@ namespace Microsoft.Maui.Controls
 					return pi;
 			}
 
-			//try to find an indexer taking an enum that matches the content
-			foreach (var pi in sourceType.DeclaredProperties)
-			{
-				if (pi.Name != indexerName)
-					continue;
-				var paramType = pi.CanRead ? pi.GetMethod.GetParameters()[0].ParameterType : null;
-				if (paramType != null && paramType.IsEnum && Enum.IsDefined(paramType, content))
-					return pi;
-			}
-
 			//try to fallback to an object indexer
 			foreach (var pi in sourceType.DeclaredProperties)
 			{
@@ -400,16 +387,7 @@ namespace Microsoft.Maui.Controls
 					{
 						try
 						{
-							object arg;
-							if (parameter.ParameterType.IsEnum)
-							{
-								// Handle enum types - parse the string to enum
-								arg = Enum.Parse(parameter.ParameterType, part.Content);
-							}
-							else
-							{
-								arg = Convert.ChangeType(part.Content, parameter.ParameterType, CultureInfo.InvariantCulture);
-							}
+							object arg = Convert.ChangeType(part.Content, parameter.ParameterType, CultureInfo.InvariantCulture);
 							part.Arguments = new[] { arg };
 						}
 						catch (FormatException)
@@ -420,10 +398,6 @@ namespace Microsoft.Maui.Controls
 						}
 						catch (OverflowException)
 						{
-						}
-						catch (ArgumentException)
-						{
-							// Enum.Parse throws ArgumentException for invalid enum values
 						}
 					}
 				}

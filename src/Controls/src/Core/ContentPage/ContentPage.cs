@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -28,7 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="HideSoftInputOnTapped"/>.</summary>
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
-			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), BooleanBoxes.FalseBox);
+			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
 		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
 		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
@@ -39,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		public bool HideSoftInputOnTapped
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
-			set { SetValue(HideSoftInputOnTappedProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(HideSoftInputOnTappedProperty, value); }
 		}
 
 		/// <summary>
@@ -170,9 +169,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
-
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

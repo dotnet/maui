@@ -8,13 +8,8 @@
               <Label Text="Editor Control"
                      FontSize="20"
                      Margin="0,0,0,50"
-                     HorizontalOptions="Center"
-                     AutomationId="EditorControlTitleLabel">
-                     <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnLabelTapped"/>
-                     </Label.GestureRecognizers>
-              </Label>
-<!-- Note: FontAutoScaling states cannot currently be reliably covered in CI environments, as system font scaling settings are not consistently supported or controllable in automated runs. -->
+                     HorizontalOptions="Center"/>
+
               <local:UITestEditor x:Name="EditorControl"
                                   IsCursorVisible="False"
                                   Text="{Binding Text}"
@@ -29,8 +24,6 @@
                                   IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
                                   IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
                                   Shadow="{Binding EditorShadow}"
-                                  BackgroundColor="{Binding BackgroundColor}"
-                                  Opacity="{Binding Opacity}"
                                   MaxLength="{Binding MaxLength}"
                                   SelectionLength="{Binding SelectionLength}"
                                   CursorPosition="{Binding CursorPosition, Mode=TwoWay}"
@@ -40,7 +33,6 @@
                                   IsEnabled="{Binding IsEnabled}"
                                   FlowDirection="{Binding FlowDirection}"
                                   HeightRequest="{Binding HeightRequest}"
-                                  WidthRequest="{Binding WidthRequest}"
                                   FontAttributes="{Binding FontAttributes}"
                                   TextTransform="{Binding TextTransform}"
                                   AutoSize="{Binding AutoSizeOption}"
@@ -55,7 +47,7 @@
               <Button Text="Options"
                       FontSize="11"
                       Clicked="NavigateToOptionsPage_Clicked"
-                      AutomationId="Options"
+                      AutomationId="OptionsButton"
                       Margin="0,10,0,0"/>
 
               <Grid ColumnSpacing="10"
@@ -82,12 +74,11 @@
                                         Text="{Binding SelectionLength}"
                                         AutomationId="SelectionLengthEntry"
                                         IsCursorVisible="False"
-                                        TextChanged="SelectionLengthEntry_TextChanged"
+                                        TextChanged="SelectionLength_Clicked"
                                         Grid.Row="1"
                                         Grid.Column="0"/>
                      <local:UITestEntry x:Name="CursorPositionEntry"
                                         Text="{Binding CursorPosition}"
-                                        TextChanged="CursorPositionEntry_TextChanged"
                                         AutomationId="CursorPositionEntry"
                                         IsCursorVisible="False"
                                         Grid.Row="1"
@@ -119,4 +110,3 @@
                      FontSize="11"/>
        </VerticalStackLayout>
 </ContentPage>
-

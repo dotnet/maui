@@ -40,20 +40,19 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
-			bool baseHandled = base.OnTouchEvent(ev);
+			if (base.OnTouchEvent(ev))
+				return true;
 
-			bool pointerHandled = false;
 			if (_pointerGestureHandler != null && ev?.Action is
-				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Move or MotionEventActions.Cancel)
+				MotionEventActions.Up or MotionEventActions.Down or MotionEventActions.Cancel)
 			{
 				_pointerGestureHandler.OnTouch(ev);
-				pointerHandled = _pointerGestureHandler.HasAnyPointerGestures();
 			}
 
 			if (_listener != null && ev?.Action == MotionEventActions.Up)
 				_listener.EndScrolling();
 
-			return baseHandled || pointerHandled;
+			return false;
 		}
 
 		protected override void Dispose(bool disposing)

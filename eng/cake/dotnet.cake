@@ -11,7 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 string officialBuildId = Argument("officialbuildid", "");
 
-string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
+string DefaultDotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net11.0");
 
 string testFilter = Argument("test-filter", EnvironmentVariable("TEST_FILTER"));
 
@@ -209,7 +209,6 @@ Task("uitests-apphost")
         {
             Information("Building for CoreCLR");
             properties.Add("UseMonoRuntime", "false");
-            properties.Add("TargetFramework", $"{DefaultDotnetVersion}-android");
         }
 
         if (USE_NATIVE_AOT)
@@ -273,7 +272,6 @@ Task("dotnet-test")
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
             "**/Compatibility.Core.UnitTests.csproj",
-            "**/MauiBlazorWebView.UnitTests.csproj",
         };
 
         var success = true;

@@ -6,7 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue33356 : _IssuesUITest
 {
-	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 	public Issue33356(TestDevice device)
 		: base(device)
 	{
@@ -24,26 +23,12 @@ public class Issue33356 : _IssuesUITest
 		searchHandler.SendKeys("A");
 		App.TapFirstSearchResult(this, searchHandler, "SearchResultName");
 		App.WaitForElement("Issue33356CatNameLabel");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
-		}
+		App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
 		App.WaitForElement("Issue33356CatsCollectionView");
 		App.WaitForElement("Abyssinian");
 		App.Tap("Abyssinian");
 		App.WaitForElement("Issue33356CatNameLabel");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
-		}
+		App.TapBackArrow(Device == TestDevice.Android ? "" : "Cats");
 		App.WaitForElement("Issue33356CatsCollectionView");
 	}
 }

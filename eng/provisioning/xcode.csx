@@ -5,9 +5,9 @@ using static Xamarin.Provisioning.ProvisioningScript;
 using System;
 using System.Linq;
 
-var desiredXcode = Environment.GetEnvironmentVariable("REQUIRED_XCODE");
+var desiredXcode = Environment.GetEnvironmentVariable("XCODE");
 if (string.IsNullOrEmpty(desiredXcode)) {
-    Console.WriteLine("The environment variable 'REQUIRED_XCODE' must be exported and the value must be a valid value from the 'XreItem' enumeration.");
+    Console.WriteLine("The environment variable 'XCODE' must be exported and the value must be a valid value from the 'XreItem' enumeration.");
     return;
 }
 

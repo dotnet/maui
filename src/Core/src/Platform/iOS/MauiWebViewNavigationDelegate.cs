@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Platform
 			_lastEvent = navEvent;
 
 			var request = navigationAction.Request;
-			var lastUrl = request.Url.ToString();
+			var lastUrl = request.Url?.ToString() ?? string.Empty;
 
 			bool cancel = virtualView.Navigating(navEvent, lastUrl);
 			platformView.UpdateCanGoBackForward(virtualView);

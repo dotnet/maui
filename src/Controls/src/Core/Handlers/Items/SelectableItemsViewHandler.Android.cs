@@ -15,13 +15,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			=> handler.PlatformView.UpdateSelection(itemsView);
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
-		{
-			// CollectionView (the only SelectableItemsView today) uses ReorderableItemsViewAdapter at runtime.
-			// The cast is intentional; invariant generics prevent casting through the SelectableItemsViewAdapter base.
-			var adapter = handler.PlatformView.GetAdapter() as ReorderableItemsViewAdapter<ReorderableItemsView, IGroupableItemsViewSource>;
-			adapter?.UpdateSelectionMode();
-
-			handler.PlatformView.UpdateSelection(itemsView);
-		}
+			=> handler.PlatformView.UpdateSelection(itemsView);
 	}
 }

@@ -154,12 +154,7 @@ public static class DatePickerExtensions
 
 	public static void UpdateTextAlignment(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
 	{
-		var alignment = nativeDatePicker.EffectiveUserInterfaceLayoutDirection ==
-				UIUserInterfaceLayoutDirection.RightToLeft
-				? UITextAlignment.Right
-				: UITextAlignment.Left;
-
-		nativeDatePicker.TextAlignment = alignment;
+		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
 
 	internal static void UpdateIsOpen(this MauiDatePicker platformDatePicker, IDatePicker datePicker)

@@ -35,14 +35,7 @@ public class Issue33688 : _IssuesUITest
 #if ANDROID || WINDOWS
 		App.TapBackArrow();
 #elif IOS || MACCATALYST
-		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			App.TapBackArrow();
-		}
-		else
-		{
-			App.TapBackArrow("Main");
-		}
+		App.TapBackArrow("Main");
 #endif
 
 		// Wait for navigation back and verify BackButtonBehavior was triggered

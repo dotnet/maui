@@ -87,7 +87,8 @@
 
               <!-- RadioButton -->
               <HorizontalStackLayout Grid.Row="3"
-                                     Grid.Column="0">
+                                     Grid.Column="0"
+                                     Grid.ColumnSpan="2">
                      <Label Text="RadioButton: "
                             VerticalOptions="Center"/>
                      <StackLayout>

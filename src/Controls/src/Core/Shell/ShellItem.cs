@@ -136,17 +136,7 @@ namespace Microsoft.Maui.Controls
 					defaultShowTabs = false;
 #endif
 
-				// Get the ShellContent for the current tab
-				var shellContent = CurrentItem?.CurrentItem;
-				Element currentPage = displayedPage;
-
-				// If TabBarIsVisible is set on ShellContent, then pass the ShellContent
-				if (shellContent is not null && shellContent.IsSet(Shell.TabBarIsVisibleProperty))
-				{
-					currentPage = shellContent;
-				}
-
-				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, currentPage);
+				return shell.GetEffectiveValue<bool>(Shell.TabBarIsVisibleProperty, () => defaultShowTabs, null, displayedPage);
 			}
 		}
 

@@ -32,11 +32,6 @@ namespace Microsoft.Maui.Handlers
 			ContainerView ??= new WrapperView(PlatformView.Bounds);
 			ContainerView.AddSubview(PlatformView);
 
-			// Re-apply transforms from the cross-platform view model so the wrapper
-			// becomes the transform owner when shadows require a container.
-			ContainerView.UpdateTransformation(VirtualView);
-			PlatformView.ResetLayerTransform();
-
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.InsertSubview(ContainerView, idx);
 			else
@@ -45,28 +40,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void RemoveContainer()
 		{
-			if (PlatformView == null || ContainerView == null)
+			if (PlatformView == null || ContainerView == null || PlatformView.Superview != ContainerView)
 			{
 				CleanupContainerView(ContainerView);
 				ContainerView = null;
-				return;
-			}
-
-			if (PlatformView.Superview != ContainerView)
-			{
-				CleanupContainerView(ContainerView);
-				ContainerView = null;
-
-				// Ensure the platform view keeps the current model transform even when
-				// the wrapper was no longer the direct parent.
-				PlatformView.UpdateTransformation(VirtualView);
 				return;
 			}
 
 			var oldParent = (UIView?)ContainerView.Superview;
 
 			var oldIndex = oldParent?.IndexOfSubview(ContainerView);
-
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
@@ -74,8 +57,6 @@ namespace Microsoft.Maui.Handlers
 				oldParent?.InsertSubview(PlatformView, idx);
 			else
 				oldParent?.AddSubview(PlatformView);
-
-			PlatformView.UpdateTransformation(VirtualView);
 
 			void CleanupContainerView(UIView? containerView)
 			{

@@ -169,36 +169,27 @@ namespace Microsoft.Maui.Controls
 				Shell.TitleViewProperty,
 				Shell.GetTitleView(_shell));
 
-			var title = GetCurrentTitle();
+			if (TitleView != null)
+			{
+				Title = String.Empty;
+				return;
+			}
 
-			// Mirror the current page's title into Shell.Title so that bindings inside a custom
-			// TitleView (e.g. {Binding Title, Source={x:Reference shell}}) can resolve to it.
-			// Use SetValueFromRenderer (FromHandler specificity) so the value is recognized as
-			// renderer-generated and does not leak into the native window title (see Window.cs),
-			// and only when the user hasn't explicitly set Shell.Title themselves.
-			if (!_shell.IsTitleSetByUser())
-				_shell.SetValueFromRenderer(Page.TitleProperty, title);
-
-			// The native nav-bar title must be empty when a custom TitleView is present,
-			// otherwise it should reflect the current page title.
-			Title = TitleView != null ? String.Empty : title;
-		}
-
-		string GetCurrentTitle()
-		{
 			Page? currentPage = _shell.GetCurrentShellPage();
 			if (currentPage?.IsSet(Page.TitleProperty) == true)
 			{
-				return currentPage.Title ?? String.Empty;
+				Title = currentPage.Title ?? String.Empty;
 			}
 			// We only want to use the ShellContent as a title if no pages have been
 			// Pushed onto the stack
 			else if (_shell.Navigation?.NavigationStack?.Count <= 1)
 			{
-				return _shell.CurrentContent?.Title ?? String.Empty;
+				Title = _shell.CurrentContent?.Title ?? String.Empty;
 			}
-
-			return String.Empty;
+			else
+			{
+				Title = String.Empty;
+			}
 		}
 	}
 }

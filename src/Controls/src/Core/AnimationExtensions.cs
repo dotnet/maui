@@ -28,7 +28,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Dispatching;
@@ -65,7 +64,7 @@ namespace Microsoft.Maui.Controls
 
 		public static int Add(this IAnimationManager animationManager, Action<double> step)
 		{
-			var id = Interlocked.Increment(ref s_currentTweener);
+			var id = s_currentTweener++;
 			var animation = new Animation
 			{
 				Name = $"{id}",
@@ -85,7 +84,7 @@ namespace Microsoft.Maui.Controls
 
 		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
-			var id = Interlocked.Increment(ref s_currentTweener);
+			var id = s_currentTweener++;
 			Animation animation = null;
 			animation = new TweenerAnimation(step)
 			{

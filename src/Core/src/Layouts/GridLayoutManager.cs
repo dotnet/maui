@@ -453,7 +453,6 @@ namespace Microsoft.Maui.Layouts
 						{
 							height += _rows[n].Size;
 						}
-						height += _rowSpacing * (cell.RowSpan > 0 ? cell.RowSpan - 1 : 0);
 					}
 
 					if (double.IsInfinity(cell.MeasureWidth))
@@ -466,7 +465,6 @@ namespace Microsoft.Maui.Layouts
 						{
 							width += _columns[n].Size;
 						}
-						width += _columnSpacing * (cell.ColumnSpan > 0 ? cell.ColumnSpan - 1 : 0);
 					}
 
 					if (width == 0 || height == 0)

@@ -187,7 +187,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (formsElement == null)
 				return;
 
-			formsElement.IsItemSelected = isSelected;
+			VisualStateManager.GoToState(formsElement, isSelected
+				? VisualStateManager.CommonStates.Selected
+				: VisualStateManager.CommonStates.Normal);
 		}
 
 		void OnViewMeasureInvalidated(object sender, EventArgs e)

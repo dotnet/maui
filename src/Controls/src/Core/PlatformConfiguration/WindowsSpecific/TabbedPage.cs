@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
@@ -14,7 +13,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		/// <summary>Bindable property for attached property <c>HeaderIconsEnabled</c>.</summary>
 		public static readonly BindableProperty HeaderIconsEnabledProperty =
-			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), BooleanBoxes.TrueBox);
+			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), true);
 
 		/// <summary>Bindable property for attached property <c>HeaderIconsSize</c>.</summary>
 		public static readonly BindableProperty HeaderIconsSizeProperty =
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to enable header icons.</param>
 		public static void SetHeaderIconsEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(HeaderIconsEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(HeaderIconsEnabledProperty, value);
 		}
 
 		/// <summary>Gets whether tab header icons are displayed on Windows.</summary>

@@ -100,10 +100,5 @@ namespace Maui.Controls.Sample
 		{
 			_viewModel.ThumbImageSource = "coffee.png";
 		}
-
-		private void ThumbImageResetButton_Clicked(object sender, EventArgs e)
-		{
-			_viewModel.ThumbImageSource = null;
-		}
 	}
 }

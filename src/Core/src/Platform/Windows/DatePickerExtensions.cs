@@ -50,58 +50,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			if (datePicker?.MaximumDate is not null)
-			{
-				platformDatePicker.MaxDate = datePicker.MaximumDate.Value;
-			}
-			else
-			{
-				// DateTime.MaxValue cannot be safely converted to DateTimeOffset in negative UTC timezones
-				// (e.g. UTC-8) because the implicit conversion adds the local offset, causing an overflow.
-				// Mirror the MinDate pattern by jumping 100 years forward instead.
-				platformDatePicker.MaxDate = DateTime.Now.AddYears(100);
-			}
+			platformDatePicker.MaxDate = datePicker?.MaximumDate ?? DateTime.MaxValue;
 		}
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			// Store the character spacing value to apply it when ready
-			var characterSpacing = datePicker.CharacterSpacing;
-
-			// Apply immediately if loaded, otherwise wait for load
-			if (platformDatePicker.IsLoaded)
-			{
-				ApplyCharacterSpacingToTextBlocks(platformDatePicker, characterSpacing);
-			}
-			else
-			{
-				// Clean up any existing handler to prevent memory leaks
-				platformDatePicker.Loaded -= OnDatePickerLoaded;
-				
-				void OnDatePickerLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-				{
-					if (sender is CalendarDatePicker picker)
-					{
-						// Clean up handler immediately
-						picker.Loaded -= OnDatePickerLoaded;
-						ApplyCharacterSpacingToTextBlocks(picker, characterSpacing);
-					}
-				}
-				
-				platformDatePicker.Loaded += OnDatePickerLoaded;
-			}
+			platformDatePicker.CharacterSpacing = datePicker.CharacterSpacing.ToEm();
 		}
 
-		static void ApplyCharacterSpacingToTextBlocks(CalendarDatePicker platformDatePicker, double characterSpacing)
-		{
-			var characterSpacingEm = characterSpacing.ToEm();
-			var dateTextBlock = platformDatePicker.GetDescendantByName<TextBlock>("DateText");
-			if (dateTextBlock is not null)
-			{
-				dateTextBlock.CharacterSpacing = characterSpacingEm;
-			}
-		}
-		
 		public static void UpdateFont(this CalendarDatePicker platformDatePicker, IDatePicker datePicker, IFontManager fontManager) =>
 			platformDatePicker.UpdateFont(datePicker.Font, fontManager);
 

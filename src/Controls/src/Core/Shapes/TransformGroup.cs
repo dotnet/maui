@@ -1,5 +1,4 @@
 #nullable disable
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 
@@ -11,11 +10,10 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
-		readonly Dictionary<INotifyPropertyChanged, int> _subscribedTransforms = new();
-
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
-			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null, propertyChanged: OnChildrenChanged);
+			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
+				propertyChanged: OnTransformGroupChanged);
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TransformGroup"/> class.
@@ -34,123 +32,36 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (TransformCollection)GetValue(ChildrenProperty); }
 		}
 
-		static void OnChildrenChanged(BindableObject bindable, object oldValue, object newValue)
+		static void OnTransformGroupChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var transformGroup = (TransformGroup)bindable;
-			transformGroup.UpdateChildren(
-			 oldValue as TransformCollection,
-			 newValue as TransformCollection);
-		}
-
-		void UpdateChildren(TransformCollection oldCollection, TransformCollection newCollection)
-		{
-			DetachCollection(oldCollection);
-			AttachCollection(newCollection);
-
-			UpdateTransformMatrix();
-		}
-
-		void AttachCollection(TransformCollection collection)
-		{
-			if (collection is null)
+			if (oldValue != null)
 			{
-				return;
+				(oldValue as TransformCollection).CollectionChanged -= (bindable as TransformGroup).OnChildrenCollectionChanged;
 			}
 
-			collection.CollectionChanged += OnChildrenCollectionChanged;
-
-			foreach (var transform in collection)
+			if (newValue != null)
 			{
-				SubscribeToTransformPropertyChanged(transform);
-			}
-		}
-
-		void DetachCollection(TransformCollection collection)
-		{
-			if (collection is null)
-			{
-				return;
+				(newValue as TransformCollection).CollectionChanged += (bindable as TransformGroup).OnChildrenCollectionChanged;
 			}
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
-
-			ClearAllTransformSubscriptions();
+			(bindable as TransformGroup).UpdateTransformMatrix();
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
 		{
-			if (args.Action == NotifyCollectionChangedAction.Reset)
-			{
-				ClearAllTransformSubscriptions();
-
-				if (sender is TransformCollection collection)
+			if (args.NewItems != null)
+				foreach (INotifyPropertyChanged item in args.NewItems)
 				{
-					foreach (INotifyPropertyChanged item in collection)
-					{
-						SubscribeToTransformPropertyChanged(item);
-					}
-				}
-			}
-			else
-			{
-				if (args.OldItems is not null)
-				{
-					foreach (INotifyPropertyChanged item in args.OldItems)
-					{
-						UnsubscribeFromTransformPropertyChanged(item);
-					}
+					item.PropertyChanged += OnTransformPropertyChanged;
 				}
 
-				if (args.NewItems is not null)
+			if (args.OldItems != null)
+				foreach (INotifyPropertyChanged item in args.OldItems)
 				{
-					foreach (INotifyPropertyChanged item in args.NewItems)
-					{
-						SubscribeToTransformPropertyChanged(item);
-					}
+					item.PropertyChanged -= OnTransformPropertyChanged;
 				}
-			}
 
 			UpdateTransformMatrix();
-		}
-
-		void SubscribeToTransformPropertyChanged(INotifyPropertyChanged item)
-		{
-			if (_subscribedTransforms.TryGetValue(item, out int count))
-			{
-				_subscribedTransforms[item] = count + 1;
-				return;
-			}
-
-			item.PropertyChanged += OnTransformPropertyChanged;
-			_subscribedTransforms[item] = 1;
-		}
-
-		void UnsubscribeFromTransformPropertyChanged(INotifyPropertyChanged item)
-		{
-			if (!_subscribedTransforms.TryGetValue(item, out int count))
-			{
-				return;
-			}
-
-			if (count > 1)
-			{
-				_subscribedTransforms[item] = count - 1;
-				return;
-			}
-
-			item.PropertyChanged -= OnTransformPropertyChanged;
-			_subscribedTransforms.Remove(item);
-		}
-
-		// Unsubscribes all tracked transforms from PropertyChanged and clears the dictionary.
-		void ClearAllTransformSubscriptions()
-		{
-			foreach (var item in _subscribedTransforms)
-			{
-				item.Key.PropertyChanged -= OnTransformPropertyChanged;
-			}
-
-			_subscribedTransforms.Clear();
 		}
 
 		void OnTransformPropertyChanged(object sender, PropertyChangedEventArgs args)

@@ -41,19 +41,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static IconSource? ToIconSource(this IImageSource source, IMauiContext mauiContext)
-			=> source.ToIconSource(mauiContext, preserveWebColors: false);
-
-		internal static IconSource? ToIconSource(this IImageSource source, IMauiContext mauiContext, bool preserveWebColors)
 		{
 			IconSource? image = null;
 
 			if (source is IFileImageSource fis)
 			{
-				image = new BitmapIconSource { UriSource = new Uri("ms-appx:///" + fis.File), ShowAsMonochrome = !preserveWebColors };
+				image = new BitmapIconSource { UriSource = new Uri("ms-appx:///" + fis.File) };
 			}
 			else if (source is IUriImageSource uri)
 			{
-				image = new BitmapIconSource { UriSource = uri?.Uri, ShowAsMonochrome = !preserveWebColors };
+				image = new BitmapIconSource { UriSource = uri?.Uri };
 			}
 			else if (source is IFontImageSource fontImageSource)
 			{

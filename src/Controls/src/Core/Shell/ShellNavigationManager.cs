@@ -221,12 +221,14 @@ namespace Microsoft.Maui.Controls
 				_shell.PropertyChanged += WaitForWindowToSet;
 				var shellContent = _shell?.CurrentItem?.CurrentItem?.CurrentItem;
 
-				shellContent?.ChildAdded += WaitForWindowToSet;
+				if (shellContent != null)
+					shellContent.ChildAdded += WaitForWindowToSet;
 
 				_waitingForWindow = new ActionDisposable(() =>
 				{
 					_shell.PropertyChanged -= WaitForWindowToSet;
-					shellContent?.ChildAdded -= WaitForWindowToSet;
+					if (shellContent != null)
+						shellContent.ChildAdded -= WaitForWindowToSet;
 				});
 
 				void WaitForWindowToSet(object sender, EventArgs e)
@@ -305,55 +307,20 @@ namespace Microsoft.Maui.Controls
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new ShellRouteParameters(query, prefix);
 
-			// For non-destination items (isLastItem=false), skip entirely when there are no
-			// matching prefix params. This prevents stale QueryAttributesProperty stored from
-			// a prior cycle from propagating to pages that are not the navigation target.
-			if (!isLastItem && filteredQuery.Count == 0)
-			{
-				return;
-			}
 
 			if (baseShellItem is ShellContent)
 			{
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 
 				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
-				if (isPopping && mergedData.Count > 0)
+				if (isPopping)
 				{
 					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
-
-				// Skip applying query attributes if the merged data is empty and we're popping back
-				// This respects when user calls query.Clear() - they don't want attributes applied on back navigation
-				if (mergedData.Count > 0 || !isPopping)
-				{
-					baseShellItem.ApplyQueryAttributes(mergedData);
-				}
+				baseShellItem.ApplyQueryAttributes(mergedData);
 			}
 			else if (isLastItem)
-			{
-				var mergedData = MergeData(element, query, isPopping);
-				// Skip setting query attributes if the merged data is empty and we're popping back
-				if (mergedData.Count > 0 || !isPopping)
-				{
-					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
-				}
-			}
-			else if (element is Page)
-			{
-				// Intermediate page (not the last item, not wrapped in ShellContent).
-				// Apply prefix-filtered query parameters directly via the attached property,
-				// which triggers OnQueryAttributesPropertyChanged to handle IQueryAttributable,
-				// BindingContext propagation, and [QueryProperty] attributes.
-				if (filteredQuery.Count == 0 && !element.IsSet(ShellContent.QueryAttributesProperty))
-					return;
-
-				var mergedData = MergeData(element, filteredQuery, isPopping);
-				if (mergedData.Count > 0 || !isPopping)
-				{
-					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
-				}
-			}
+				element.SetValue(ShellContent.QueryAttributesProperty, MergeData(element, query, isPopping));
 
 			ShellRouteParameters MergeData(Element shellElement, ShellRouteParameters data, bool isPopping)
 			{
@@ -392,7 +359,7 @@ namespace Microsoft.Maui.Controls
 			if (AccumulateNavigatedEvents)
 				return true;
 
-			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack, isNavigateThroughTab: true);
+			var proposedState = GetNavigationState(shellItem, shellSection, shellContent, stack, shellSection.Navigation.ModalStack);
 			var navArgs = ProposeNavigation(source, proposedState, canCancel, isAnimated);
 
 			if (navArgs.DeferralCount > 0)
@@ -556,7 +523,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack, bool isNavigateThroughTab = false)
+		public static ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack, IReadOnlyList<Page> modalStack)
 		{
 			List<string> routeStack = new List<string>();
 
@@ -607,29 +574,6 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-
-#if IOS || MACCATALYST
-			// This fix addresses #25599 (Navigating event showing same Current and Target when
-			// re-tapping a tab on iOS). It only applies when called from the Navigating event
-			// context (ProposeNavigationOutsideGotoAsync), not when updating Shell.CurrentState.
-			// Applying it in UpdateCurrentState would cause Shell.CurrentState to be stale
-			// after a GoToAsync deep-navigation (#34662).
-			if (isNavigateThroughTab && Shell.Current?.CurrentState?.Location is not null)
-			{
-				var currentRoute = Shell.Current?.CurrentState?.Location?.ToString();
-				if (!string.IsNullOrEmpty(currentRoute))
-				{
-					var currentPaths = new List<string>(currentRoute.Split('/'));
-					// Indices 0 and 1 of both routeStack and currentPaths are dummy/empty values
-					// The first meaningful route segment is at index 2.
-					if (currentPaths.Count == routeStack.Count && currentPaths.Count > 3 && currentPaths[2] == routeStack[2])
-					{
-						// Current route is same as the new route, so remove the last elements of the routeStack
-						routeStack.RemoveRange(3, routeStack.Count - 3);
-					}
-				}
-			}
-#endif
 
 			if (routeStack.Count > 0)
 				routeStack.Insert(0, "/");

@@ -167,11 +167,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						if (ChildFragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
-
-						if (removeFragment is ShellContentFragment shellFragment)
-						{
-							shellFragment.DisposePage();
-						}
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
@@ -406,27 +401,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void RemoveAllPushedPages(ShellSection shellSection, bool keepCurrent)
 		{
-			FragmentTransaction t = null;
+			if (shellSection.Stack.Count <= 1 || (keepCurrent && shellSection.Stack.Count == 2))
+				return;
+
+			var t = ChildFragmentManager.BeginTransactionEx();
 
 			foreach (var kvp in _fragmentMap.ToList())
 			{
 				if (kvp.Key.Parent != shellSection)
-				{
 					continue;
-				}
 
 				_fragmentMap.Remove(kvp.Key);
 
 				if (keepCurrent && kvp.Value.Fragment == _currentFragment)
-				{
 					continue;
-				}
 
-				t ??= ChildFragmentManager.BeginTransactionEx();
 				t.RemoveEx(kvp.Value.Fragment);
 			}
 
-			t?.CommitAllowingStateLossEx();
+			t.CommitAllowingStateLossEx();
 		}
 
 		void RemoveFragment(Fragment fragment)

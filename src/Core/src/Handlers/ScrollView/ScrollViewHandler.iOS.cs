@@ -48,21 +48,8 @@ namespace Microsoft.Maui.Handlers
 
 			base.DisconnectHandler(platformView);
 
-			if (PendingScrollToRequest is not null)
-			{
-				VirtualView?.ScrollFinished();
-				PendingScrollToRequest = null;
-			}
+			PendingScrollToRequest = null;
 			_eventProxy.Disconnect(platformView);
-		}
-
-		internal void ProcessPendingScrollRequest()
-		{
-			if (PendingScrollToRequest is { } pending)
-			{
-				MapRequestScrollTo(this, VirtualView, pending);
-				PendingScrollToRequest = null;
-			}
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -84,11 +71,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
 		{
 			handler.PlatformView?.UpdateIsEnabled(scrollView);
-
-			// Also funnel through the base handler's IsEnabled mapping so UserInteractionEnabled
-			// stays correctly derived from both IsEnabled and InputTransparent, not just
-			// ScrollEnabled (which is all the ScrollView-specific overload above sets).
-			ViewHandler.MapIsEnabled(handler, scrollView);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
@@ -109,12 +91,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			platformView.UpdateIsEnabled(scrollView);
-			
-			// Notify MauiScrollView of orientation change to handle RTL layout
-			if (platformView is MauiScrollView mauiScrollView)
-			{
-				mauiScrollView.OnOrientationChanged();
-			}
 			platformView.InvalidateMeasure(scrollView);
 		}
 
@@ -136,15 +112,9 @@ namespace Microsoft.Maui.Handlers
 				var availableScrollWidth = Math.Max(uiScrollView.ContentSize.Width - uiScrollView.Frame.Width, 0);
 				var minScrollHorizontal = Math.Clamp(request.HorizontalOffset, 0, availableScrollWidth);
 				var minScrollVertical = Math.Clamp(request.VerticalOffset, 0, availableScrollHeight);
-				
-				bool alreadyAtTarget = uiScrollView.ContentOffset.Y == minScrollVertical && uiScrollView.ContentOffset.X == minScrollHorizontal;
+				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
 
-				if (!alreadyAtTarget)
-				{
-    				uiScrollView.SetContentOffset(new CGPoint(minScrollHorizontal, minScrollVertical), !request.Instant);
-				}
-
-				if (request.Instant || alreadyAtTarget)
+				if (request.Instant)
 				{
 					scrollView.ScrollFinished();
 				}

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
@@ -55,49 +55,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (index.Section > -1 && index.Item > -1)
 			{
 				// Ensure the selected index is updated after the collection view's items generation is completed
-				if (!CollectionView.IsLoaded())
+				CollectionView.PerformBatchUpdates(null, _ =>
 				{
-					CollectionView.PerformBatchUpdates(null, _ =>
+					// Ensure ItemsSource hasn't been disposed
+					if (ItemsSource is EmptySource)
 					{
-						ValidateAndSelectItem(selectedItem, originalSource);
-					});
-				}
-				else
-				{
-					ValidateAndSelectItem(selectedItem, originalSource);
-				}
-			}
-		}
+						return;
+					}
 
-		void ValidateAndSelectItem(object selectedItem, object originalSource)
-		{
-			// Ensure ItemsSource hasn't been disposed
-			if (ItemsSource is EmptySource)
-			{
-				return;
-			}
+					// Exit if the ItemsSource reference no longer matches the one captured at invocation.
+					if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
+					{
+						return;
+					}
 
-			// Exit if the ItemsSource reference no longer matches the one captured at invocation.
-			if (!ReferenceEquals(ItemsView.ItemsSource, originalSource))
-			{
-				return;
-			}
+					// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
+					var updatedIndex = GetIndexForItem(selectedItem);
+					if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
+					{
+						return;
+					}
 
-			// Recalculate the index for the selectedItem now that the collection may have changed.(Adding, deleting etc..)
-			var updatedIndex = GetIndexForItem(selectedItem);
-			if (updatedIndex.Section < 0 || updatedIndex.Item < 0)
-			{
-				return;
-			}
+					// Retrieve the current item at that index and verify it still equals the intended selection.
+					var liveItem = GetItemAtIndex(updatedIndex);
+					if (!Equals(liveItem, selectedItem))
+					{
+						return;
+					}
 
-			// Retrieve the current item at that index and verify it still equals the intended selection.
-			var liveItem = GetItemAtIndex(updatedIndex);
-			if (!Equals(liveItem, selectedItem))
-			{
-				return;
+					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+				});
 			}
-
-			CollectionView.SelectItem(updatedIndex, true, UICollectionViewScrollPosition.None);
 		}
 
 		// Called by Forms to clear the native selection
@@ -185,7 +173,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateSelectionMode()
 		{
 			var mode = ItemsView.SelectionMode;
-			var isEnabled = ItemsView.IsEnabled;
 
 			switch (mode)
 			{
@@ -195,13 +182,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
-					CollectionView.AllowsSelection = isEnabled;
+					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = false;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
-					CollectionView.AllowsSelection = isEnabled;
-					CollectionView.AllowsMultipleSelection = isEnabled;
+					CollectionView.AllowsSelection = true;
+					CollectionView.AllowsMultipleSelection = true;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}

@@ -81,23 +81,14 @@
                                 Command="{Binding CleanTasksCommand}"
                                 SemanticProperties.Description="Clean tasks" />
                         </Grid>
-                        <CollectionView ItemsSource="{Binding Tasks}"
-                                        Grid.Row="5"
-                                        x:Name="TasksCollectionView"
-                                        SelectionMode="Single"
-                                        SelectedItem="{Binding SelectedTask}"
-                                        SelectionChangedCommand="{Binding NavigateToTaskCommand}"
-                                        SelectionChangedCommandParameter="{Binding SelectedTask}">
-                            <CollectionView.ItemsLayout>
-                                <LinearItemsLayout Orientation="Vertical"
-                                                   ItemSpacing="15"/>
-                            </CollectionView.ItemsLayout>
-                            <CollectionView.ItemTemplate>
+                        <VerticalStackLayout Grid.Row="5" Spacing="15"
+                            BindableLayout.ItemsSource="{Binding Tasks}">
+                            <BindableLayout.ItemTemplate>
                                 <DataTemplate>
-                                    <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:MainPageModel}"/>
+                                    <controls:TaskView TaskCompletedCommand="{Binding TaskCompletedCommand, Source={RelativeSource AncestorType={x:Type pageModels:MainPageModel}}, x:DataType=pageModels:MainPageModel}" />
                                 </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
                     </Grid>
                 </ScrollView>
             </pullToRefresh:SfPullToRefresh.PullableContent>

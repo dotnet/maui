@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.StyleSheets;
 using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
+[assembly: InternalsVisibleTo("Core.Benchmarks")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Components.WebView.Maui")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
@@ -57,6 +58,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
 [assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
+
+[assembly: InternalsVisibleTo("Core.Benchmarks")]
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 

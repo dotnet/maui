@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Fact]
 		public void Connection_Profiles() =>
-			Assert.True(Connectivity.ConnectionProfiles.Any());
+			Assert.True(Connectivity.ConnectionProfiles.Count() > 0);
 
 		[Fact]
 		public void Distict_Connection_Profiles()

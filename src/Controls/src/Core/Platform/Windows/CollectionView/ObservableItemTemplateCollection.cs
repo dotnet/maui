@@ -114,11 +114,7 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int n = 0; n < count; n++)
 			{
 				var newItem = (ItemTemplateContext)args.NewItems[n];
-				if (newItem is not GroupFooterItemTemplateContext)
-				{
-					_itemsSource.Insert(startIndex, newItem.Item);
-					startIndex++;
-				}
+				_itemsSource.Insert(startIndex, newItem.Item);
 			}
 		}
 
@@ -136,10 +132,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
-				if ((ItemTemplateContext)args.OldItems[n - startIndex] is not GroupFooterItemTemplateContext)
-				{
-					_itemsSource.RemoveAt(n);
-				}
+				_itemsSource.RemoveAt(n);
 			}
 		}
 

@@ -33,8 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.ItemsView.EmptyViewTemplateProperty.PropertyName] = MapEmptyViewTemplate,
 			[Controls.ItemsView.FlowDirectionProperty.PropertyName] = MapFlowDirection,
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
-			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
-			[nameof(IView.IsEnabled)] = MapIsEnabled
+			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode
 		};
 
 		UICollectionViewLayout _layout;
@@ -122,15 +121,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller?.UpdateVisibility();
 		}
 
-		internal static void MapIsEnabled(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
-		{
-			(handler.Controller as SelectableItemsViewController2<ReorderableItemsView>)?.UpdateSelectionMode();
-
-			// Funnel through the base handler's IsEnabled mapping so UserInteractionEnabled
-			// stays correctly derived from both IsEnabled and InputTransparent.
-			ViewHandler.MapIsEnabled(handler, itemsView);
-		}
-
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
 			if (handler.ItemsView is StructuredItemsView structuredItemsView && structuredItemsView.ItemsLayout is ItemsLayout itemsLayout)
@@ -156,8 +146,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return;
 				}
 
-				var scrollDirection = Controller.GetScrollDirection();
-				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, scrollDirection);
+				var position = Items.ScrollToPositionExtensions.ToCollectionViewScrollPosition(args.ScrollToPosition, UICollectionViewScrollDirection.Vertical);
 
 				Controller.CollectionView.ScrollToItem(indexPath,
 					position, args.IsAnimated);
@@ -169,19 +158,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					if (args.GroupIndex == -1)
 					{
-						// When IsGrouped is set and no explicit group index is provided,
-						// convert the flat index to the correct section/item index path.
-						if (ItemsView is GroupableItemsView groupable && groupable.IsGrouped)
-						{
-							var itemsSource = Controller.ItemsSource;
-							if (itemsSource is not null)
-							{
-								return ConvertFlatIndexToGroupedIndexPath(args.Index, itemsSource);
-							}
-
-							return null;
-						}
-
 						return NSIndexPath.Create(0, args.Index);
 					}
 
@@ -189,28 +165,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				return Controller.GetIndexForItem(args.Item);
-			}
-
-			static NSIndexPath ConvertFlatIndexToGroupedIndexPath(int flatIndex, Items.IItemsViewSource itemsSource)
-			{
-				if (flatIndex < 0)
-				{
-					return null;
-				}
-
-				int remaining = flatIndex;
-				int groupCount = itemsSource.GroupCount;
-				for (int section = 0; section < groupCount; section++)
-				{
-					int itemCount = itemsSource.ItemCountInGroup(section);
-					if (remaining < itemCount)
-					{
-						return NSIndexPath.Create(section, remaining);
-					}
-					remaining -= itemCount;
-				}
-
-				return null;
 			}
 		}
 
@@ -242,65 +196,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var scrollDirection = Controller.GetScrollDirection();
 
 			// If contentSize is zero in the relevant dimension (height for vertical, width for horizontal),
-			// it means none of the content has been realized yet.
+			// it means none of the content has been realized yet; we need to return the expansive size
+			// the collection view wants by default to get it to start measuring its content
 			if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height == 0) ||
 				(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width == 0))
 			{
-				var collectionView = Controller.CollectionView;
-
-				// When the CollectionView has not yet been added to a window (pre-mount measurement),
-				// UICollectionViewCompositionalLayout hasn't run a layout pass and therefore
-				// CollectionViewContentSize is still zero. Force a layout pass with the given constraints
-				// so the layout can compute actual content size from its items.
-				if (collectionView.Window == null)
-				{
-					// Local helper to clamp layout constraints to finite, non-negative nfloat values.
-					nfloat ClampConstraint(double constraint, nfloat fallback)
-					{
-						// Treat NaN, infinity, and negative values as invalid and fall back.
-						if (double.IsNaN(constraint) || double.IsInfinity(constraint) || constraint < 0)
-							return fallback;
-
-						var value = (nfloat)constraint;
-
-						// Guard against overflow to infinity/NaN or negative after casting.
-						var valueAsDouble = (double)value;
-						if (double.IsNaN(valueAsDouble) || double.IsInfinity(valueAsDouble) || value < 0)
-							return fallback;
-
-						return value;
-					}
-
-					var previousFrame = collectionView.Frame;
-					try
-					{
-						// Give the CollectionView a finite available size so the layout calculates correctly
-						var frameWidth = ClampConstraint(widthConstraint, UIView.UILayoutFittingExpandedSize.Width);
-						var frameHeight = ClampConstraint(heightConstraint, UIView.UILayoutFittingExpandedSize.Height);
-
-						collectionView.Frame = new CoreGraphics.CGRect(0, 0, frameWidth, frameHeight);
-						collectionView.SetNeedsLayout();
-						collectionView.LayoutIfNeeded();
-
-						// Re-read the content size now that the layout has run
-						contentSize = Controller.GetSize();
-					}
-					finally
-					{
-						// Always restore the original frame
-						collectionView.Frame = previousFrame;
-					}
-
-					// If the forced layout produced a valid size, return it directly
-					if ((scrollDirection == UICollectionViewScrollDirection.Vertical && contentSize.Height > 0) ||
-						(scrollDirection == UICollectionViewScrollDirection.Horizontal && contentSize.Width > 0))
-					{
-						return contentSize;
-					}
-				}
-
-				// Fallback: return the expansive size the collection view wants by default
-				// to get it to start measuring its content
 				var desiredSize = base.GetDesiredSize(widthConstraint, heightConstraint);
 				if (scrollDirection == UICollectionViewScrollDirection.Vertical)
 				{
@@ -309,14 +209,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				else
 				{
 					contentSize.Width = desiredSize.Width;
-
-					// For horizontal layouts, items use FractionalHeight(1f), meaning their height equals
-					// the CollectionView's current frame height. When no items are loaded (Width == 0),
-					// contentSize.Height reflects the container's frame height rather than actual content.
-					// This creates a circular sizing issue in Auto-height containers: the frame grows based
-					// on the incorrect content height and stays locked in even after items load.
-					// Reset to 0 so that MinimumHeight / HeightRequest can determine the correct size.
-					contentSize.Height = 0;
 				}
 			}
 

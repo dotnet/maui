@@ -81,13 +81,6 @@ namespace Microsoft.Maui.Platform
 		public void SetBackground(SolidPaint solidPaint)
 		{
 			_invalidatePath = true;
-
-			// Clear the gradient shader once at transition time, not on every OnDraw
-			if (_background is not null)
-			{
-				Paint?.SetShader(null);
-			}
-
 			_backgroundColor = null;
 			_background = null;
 

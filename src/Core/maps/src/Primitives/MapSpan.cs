@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.Devices.Sensors;
 
 namespace Microsoft.Maui.Maps
@@ -6,6 +7,7 @@ namespace Microsoft.Maui.Maps
 	/// <summary>
 	/// Represents a rectangular region on the map, defined by a center point and span.
 	/// </summary>
+	[TypeConverter(typeof(MapSpanTypeConverter))]
 	public sealed class MapSpan
 	{
 		const double EarthCircumferenceKm = GeographyUtils.EarthRadiusKm * 2 * Math.PI;

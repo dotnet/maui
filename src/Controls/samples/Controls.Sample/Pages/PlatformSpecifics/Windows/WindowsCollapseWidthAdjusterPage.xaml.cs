@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnChangeButtonClicked(object sender, EventArgs e)
+		void OnChangeButtonClicked(object? sender, EventArgs e)
 		{
 			double width;
 			if (double.TryParse(entry.Text, out width))

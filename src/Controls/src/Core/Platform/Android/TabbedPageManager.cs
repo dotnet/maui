@@ -124,31 +124,17 @@ public class TabbedPageManager
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
 			Element.Disappearing -= OnTabbedPageDisappearing;
-
 			RemoveTabs();
-			
 			_viewPager.LayoutChange -= OnLayoutChanged;
 			_viewPager.Adapter = null;
-
-			if (_currentBarBackground is GradientBrush currentGradientBrush)
-			{
-				if (ReferenceEquals(currentGradientBrush.Parent, Element))
-				{
-					currentGradientBrush.Parent = null;
-				}
-				currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-			}
-			_currentBarBackground = null;
 		}
 
 		Element = tabbedPage;
-		
 		if (Element is not null)
 		{
 			_viewPager.LayoutChange += OnLayoutChanged;
 			Element.Appearing += OnTabbedPageAppearing;
 			Element.Disappearing += OnTabbedPageDisappearing;
-
 			_viewPager.Adapter = new MultiPageFragmentStateAdapter<Page>(tabbedPage, FragmentManager, _context) { CountOverride = tabbedPage.Children.Count };
 
 			if (IsBottomTabPlacement)
@@ -232,40 +218,6 @@ public class TabbedPageManager
 
 	protected virtual void OnTabbedPageDisappearing(object sender, EventArgs e)
 	{
-		// Element.Navigation.NavigationStack is resolved through the
-		// NavigationProxy, which already walks the parent chain to find
-		// the nearest NavigationPage ancestor.
-		var navStack = Element?.Navigation?.NavigationStack;
-		if (navStack is not null && navStack.Count > 0)
-		{
-			// If the TabbedPage is no longer the top page in the nav stack,
-			// a page was pushed over it — remove tabs.
-			if (navStack[navStack.Count - 1] != Element)
-			{
-				RemoveTabs();
-				return;
-			}
-
-			// TabbedPage is still the top page in the nav stack, so this
-			// Disappearing was triggered by a modal overlay or app lifecycle.
-			// Keep tabs visible.
-			return;
-		}
-
-		// No NavigationPage ancestor — original behavior applies.
-		// This branch covers two cases (see PR #32878):
-		// 1. A modal page is pushed over a root TabbedPage — ModalStack contains
-		//    the modal, so we keep tabs alive and restore them on modal dismiss.
-		// 2. The TabbedPage itself was pushed as a modal — ModalStack includes the
-		//    TabbedPage, so tabs also stay. Disappearing only fires when something
-		//    is later shown over it, and the guard still holds.
-		// Do NOT simplify this check; removing it re-introduces the regression
-		// where tabs are destroyed on modal overlay.
-		if (Element?.Navigation?.ModalStack?.Count > 0)
-		{
-			return;
-		}
-
 		RemoveTabs();
 	}
 
@@ -305,7 +257,7 @@ public class TabbedPageManager
 			if (_tabplacementId == id)
 				return;
 
-			SetContentBottomMargin(RuntimeFeature.IsMaterial3Enabled ? _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.m3_bottom_nav_min_height) : _context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
+			SetContentBottomMargin(_context.Context.Resources.GetDimensionPixelSize(Resource.Dimension.design_bottom_navigation_height));
 		}
 		else
 		{
@@ -642,14 +594,6 @@ public class TabbedPageManager
 		{
 			newGradientBrush.Parent = Element;
 			newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
-			if (_bottomNavigationView is not null && _bottomNavigationView.Elevation > 0)
-			{
-				_bottomNavigationView.Elevation = 0;
-			}
-		}
-		else if (_currentBarBackground is SolidColorBrush && _bottomNavigationView is not null && _bottomNavigationView.Elevation == 0)
-		{
-			_bottomNavigationView.Elevation = _bottomNavigationView.Context.Resources.GetDimension(Resource.Dimension.design_bottom_navigation_elevation);
 		}
 
 		RefreshBarBackground();

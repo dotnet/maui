@@ -61,27 +61,13 @@ namespace Microsoft.Maui.Graphics.Platform
 		public Color StrokeColor
 		{
 			get => _strokeColor;
-			set
-			{
-				if (_strokeColor != value)
-				{
-					_strokeColor = value;
-					UpdateShadowState();
-				}
-			}
+			set => _strokeColor = value;
 		}
 
 		public Color FillColor
 		{
 			get => _fillColor;
-			set
-			{
-				if (_fillColor != value)
-				{
-					_fillColor = value;
-					UpdateShadowState();
-				}
-			}
+			set => _fillColor = value;
 		}
 
 		public Color FontColor
@@ -89,12 +75,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			get => _fontColor;
 			set
 			{
-				if (_fontColor != value)
-				{
-					_fontColor = value;
-					FontPaint.Color = _fontColor is not null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
-					UpdateShadowState();
-				}
+				_fontColor = value;
+				FontPaint.Color = value != null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
 			}
 		}
 
@@ -358,15 +340,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void SetShadow(float blur, float sx, float sy, global::Android.Graphics.Color color)
 		{
+			FillPaint.SetShadowLayer(blur, sx, sy, color);
+			StrokePaint.SetShadowLayer(blur, sx, sy, color);
+			FontPaint.SetShadowLayer(blur, sx, sy, color);
+
 			_shadowed = true;
 			_shadowBlur = blur;
 			_shadowX = sx;
 			_shadowY = sy;
 			_shadowColor = color;
-
-			ApplyShadow(FillPaint, FillColor.Alpha);
-			ApplyShadow(StrokePaint, StrokeColor.Alpha);
-			ApplyShadow(FontPaint, FontColor.Alpha);
 		}
 
 		public global::Android.Graphics.Paint GetShadowPaint(float sx, float sy)
@@ -425,28 +407,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			Alpha = 1;
 			_scaleX = 1;
 			_scaleY = 1;
-		}
-
-		void ApplyShadow(global::Android.Graphics.Paint paint, float alpha)
-		{
-			if (alpha > 0)
-			{
-				paint.SetShadowLayer(_shadowBlur, _shadowX, _shadowY, _shadowColor);
-			}
-			else
-			{
-				paint.ClearShadowLayer();
-			}
-		}
-
-		void UpdateShadowState()
-		{
-			if (_shadowed)
-			{
-				ApplyShadow(FillPaint, FillColor.Alpha);
-				ApplyShadow(StrokePaint, StrokeColor.Alpha);
-				ApplyShadow(FontPaint, FontColor.Alpha);
-			}
 		}
 	}
 }

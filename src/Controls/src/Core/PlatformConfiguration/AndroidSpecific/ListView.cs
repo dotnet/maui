@@ -2,7 +2,6 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using System;
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.ListView;
 
 	/// <summary>The list view instance that Microsoft.Maui.Controls created on the Android platform.</summary>
@@ -28,7 +27,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetIsFastScrollEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsFastScrollEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsFastScrollEnabledProperty, value);
 		}
 
 		/// <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>

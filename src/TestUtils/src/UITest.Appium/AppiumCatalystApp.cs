@@ -59,20 +59,10 @@ namespace UITest.Appium
 			var options = new AppiumOptions();
 			SetGeneralAppiumOptions(config, options);
 
-			var appPath = config.GetProperty<string>("AppPath");
 			var appId = config.GetProperty<string>("AppId");
-
-			// Always set bundleId for app lifecycle management (queryAppState, etc.)
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
 				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
-			}
-
-			// Also set app path if available — mac2 driver needs this to
-			// launch unregistered apps that aren't in LaunchServices
-			if (!string.IsNullOrEmpty(appPath))
-			{
-				options.App = appPath;
 			}
 
 			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");

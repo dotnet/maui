@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		private void NavigateToIssue(string issue)
 		{
-			App.WaitForGoToTestButtonWithRecovery(issue);
+			App.WaitForElement("GoToTestButton", issue);
 			App.EnterText("SearchBar", issue);
 			App.WaitForElement("GoToTestButton");
 			App.Tap("GoToTestButton");

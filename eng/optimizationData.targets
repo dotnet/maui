@@ -1,0 +1,52 @@
+<Project>
+  <!-- 
+    This file sets up optimization data (MIBC profiles) for use with ReadyToRun compilation.
+    Based on dotnet/runtime's approach:
+    https://github.com/dotnet/runtime/blob/main/eng/restore/optimizationData.targets
+  -->
+
+  <ItemGroup>
+    <MIBCPackageDef Include="optimization.android-x64.MIBC.Runtime"
+                    Version="$(optimizationandroidx64MIBCRuntimePackageVersion)"
+                    TargetPlatform="android" />
+
+    <!-- Restore all MIBC packages (distinct by identity) -->
+    <PackageDownload Include="@(MIBCPackageDef->Distinct())" Version="[%(Version)]" />
+  </ItemGroup>
+
+  <!-- IBC data packages don't follow NuGet conventions.  -->
+  <Target Name="GetMIBCData"
+          AfterTargets="Restore"
+          BeforeTargets="_GetPackageFiles"
+          Condition="'@(MIBCPackageDef)' != ''">
+
+    <ItemGroup>
+      <MIBCPackageDef>
+        <PackagePath>$(NuGetPackageRoot)%(MIBCPackageDef.Identity)/%(MIBCPackageDef.Version)</PackagePath>
+      </MIBCPackageDef>
+      <_optimizationMibcFile Include="%(MIBCPackageDef.PackagePath)/**/*.mibc" SubdirectoryName="%(MIBCPackageDef.TargetPlatform)" />
+      <_optimizationMibcDestinationFile Include="@(_optimizationMibcFile->'$(_MibcOptimizationDataDir)%(SubdirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
+      <ExcessFilesCurrentlyPresent Include="$(_MibcOptimizationDataDir)/**" 
+                                   Exclude="@(_optimizationMibcDestinationFile)"/>
+    </ItemGroup>
+
+    <Error Condition="'@(_optimizationMibcFile)' == ''" Text="Failed to restore Mibc optimization data" />
+
+    <!-- Clean mibc restore directory so that no extra mibc files are present. Improves incremental build resiliency -->
+    <Delete Files="@(ExcessFilesCurrentlyPresent)" />
+
+    <!-- Copy the correct mibc files into place -->
+    <Copy SourceFiles="@(_optimizationMibcFile)"
+          DestinationFiles="@(_optimizationMibcDestinationFile)"
+          SkipUnchangedFiles="true"
+          UseHardlinksIfPossible="true" />
+
+    <!-- Add mibc files to pack after they've been copied -->
+    <ItemGroup>
+      <_MibcFilesToPack Include="$(_MibcOptimizationDataDir)**\*.mibc" />
+      <None Include="@(_MibcFilesToPack)" Visible="false" Pack="true" PackagePath="buildTransitive/netstandard2.0/mibc/" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

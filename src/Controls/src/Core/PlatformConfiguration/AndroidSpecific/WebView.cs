@@ -2,7 +2,6 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.WebView;
 
 	/// <summary>Enumerates web view behaviors when handling mixed content.</summary>
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to enable zoom controls; otherwise, <see langword="false"/>.</param>
 		public static void SetEnableZoomControls(FormsElement element, bool value)
 		{
-			element.SetValue(EnableZoomControlsProperty, BooleanBoxes.Box(value));
+			element.SetValue(EnableZoomControlsProperty, value);
 		}
 
 		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
@@ -107,7 +106,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true"/> to display zoom controls; otherwise, <see langword="false"/>.</param>
 		public static void SetDisplayZoomControls(FormsElement element, bool value)
 		{
-			element.SetValue(DisplayZoomControlsProperty, BooleanBoxes.Box(value));
+			element.SetValue(DisplayZoomControlsProperty, value);
 		}
 
 		/// <param name="config">The platform configuration for the element on which to perform the operation.</param>
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value">The boolean value indicating whether JavaScript should be enabled.</param>
 		public static void SetJavaScriptEnabled(FormsElement element, bool value)
 		{
-			element.SetValue(JavaScriptEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(JavaScriptEnabledProperty, value);
 		}
 
 		/// <summary>

@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
-		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), BooleanBoxes.TrueBox);
+		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
 		/// <summary>Bindable property for <see cref="IsPresented"/>.</summary>
-		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), BooleanBoxes.FalseBox,
+		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
 		/// <summary>Bindable property for <see cref="FlyoutLayoutBehavior"/>.</summary>
@@ -76,15 +76,6 @@ namespace Microsoft.Maui.Controls
 				{
 					previousDetail.SendNavigatedFrom(
 						new NavigatedFromEventArgs(destinationPage: value, NavigationType.Replace));
-
-					if (previousDetail.IsLoaded)
-					{
-						previousDetail.OnUnloaded(previousDetail.DisconnectHandlers);
-					}
-					else
-					{
-						previousDetail.DisconnectHandlers();
-					}
 				}
 
 				_detail.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
@@ -95,14 +86,14 @@ namespace Microsoft.Maui.Controls
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
-			set { SetValue(IsGestureEnabledProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsGestureEnabledProperty, value); }
 		}
 
 		/// <summary>Gets or sets a value that indicates whether the flyout is presented. This is a bindable property.</summary>
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
-			set { SetValue(IsPresentedProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsPresentedProperty, value); }
 		}
 
 		/// <summary>Gets or sets the flyout page that is used to present a menu or navigation options.</summary>
@@ -282,20 +273,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
-				page.SetValue(IsPresentedProperty, BooleanBoxes.TrueBox);
+				page.SetValue(IsPresentedProperty, true);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
 					fpc.CanChangeIsPresented = false;
 			}
 		}
 
 		static void OnIsPresentedPropertyChanged(BindableObject sender, object oldValue, object newValue)
-		{
-			var flyoutPage = (FlyoutPage)sender;
-			flyoutPage.IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
-			// Refresh the predictive back callback when the flyout opens or closes so the
-			// back-to-home animation is suppressed only while the flyout is actually open.
-			(flyoutPage.Window as Window)?.NotifyNavigationStateChanged();
-		}
+			=> ((FlyoutPage)sender).IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
@@ -366,12 +351,6 @@ namespace Microsoft.Maui.Controls
 		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(FlyoutBehavior));
-
-#if ANDROID || WINDOWS
-			// Trigger toolbar re-evaluation on orientation change. iOS handles this natively
-			// via PhoneFlyoutPageRenderer.ViewWillTransitionToSize().
-			OnPropertyChanged(nameof(FlyoutLayoutBehavior));
-#endif
 		}
 
 		IView IFlyoutView.Flyout => this.Flyout;
@@ -408,7 +387,6 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
-
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);

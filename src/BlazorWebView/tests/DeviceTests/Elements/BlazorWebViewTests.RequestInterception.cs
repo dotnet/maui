@@ -93,14 +93,13 @@ public partial class BlazorWebViewTests
 			}
 		});
 
+	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
-	[Theory]
 	[InlineData("app://echoservice/")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
-	[Theory(Skip = "Flaky due to external service dependency (echo.free.beeceptor.com). See https://github.com/dotnet/maui/issues/33927")]
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
 	public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase) =>
@@ -288,14 +287,13 @@ public partial class BlazorWebViewTests
 			Assert.Equal(ExpectedHeaderValue, actualHeaderValue);
 		});
 
+	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
-	[Theory]
 	[InlineData("app://echoservice/")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
-	[Theory(Skip = "Flaky due to external service dependency (echo.free.beeceptor.com). See https://github.com/dotnet/maui/issues/33927")]
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
 	public Task RequestsCanBeInterceptedAndCancelledForDifferentHosts(string uriBase) =>
@@ -332,14 +330,13 @@ public partial class BlazorWebViewTests
 			Assert.True(result);
 		});
 
+	[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
-	[Theory]
 	[InlineData("app://echoservice/")]
 #endif
 #endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
-	[Theory(Skip = "Flaky due to external service dependency (echo.free.beeceptor.com). See https://github.com/dotnet/maui/issues/33927")]
 	[InlineData("https://echo.free.beeceptor.com/sample-request")]
 #endif
 	public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase) =>

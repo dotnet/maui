@@ -32,7 +32,6 @@ parameters:
   expiryInHours: 1
   base64Encode: false
   skipInternalFeeds: true
-  skipCertificates: false
 
 steps:
 
@@ -102,11 +101,37 @@ steps:
       xcrun xcode-select --print-path
       echo
       echo selecting latest xcode...
-      # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-      if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-        XCODE_VERSION=$(REQUIRED_XCODE)
+      # XCODE variable is in major.minor format (e.g., 26.1)
+      XCODE_MAJOR_MINOR=$(XCODE)
+      echo "XCODE variable (major.minor): ${XCODE_MAJOR_MINOR}"
+
+      # Parse major and minor versions
+      MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+      MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+      PREV_MINOR=$((MINOR - 1))
+
+      # First, check for a non-symlinked Xcode_major.minor.app (e.g., Xcode_26.2.app)
+      GENERIC_PATH="/Applications/Xcode_${MAJOR}.${MINOR}.app"
+      if [[ -d "$GENERIC_PATH" && ! -L "$GENERIC_PATH" ]]; then
+        echo "Found non-symlinked Xcode at ${GENERIC_PATH}"
+        XCODE_VERSION="${MAJOR}.${MINOR}"
+        XCODE_PATH="$GENERIC_PATH"
       else
-        XCODE_VERSION=$(XCODE)
+        # Try to find a matching Xcode_{major}.{minor}.*.app (e.g., Xcode_26.2.0.app)
+        MATCHED_PATHS=(/Applications/Xcode_${MAJOR}.${MINOR}.*.app)
+        if [[ -d "${MATCHED_PATHS[0]}" ]]; then
+          # If multiple, pick the highest version
+          HIGHEST_PATH=$(ls -1d /Applications/Xcode_${MAJOR}.${MINOR}.*.app 2>/dev/null | sort -V | tail -n 1)
+          if [[ -n "$HIGHEST_PATH" && -d "$HIGHEST_PATH" ]]; then
+            echo "Found Xcode with patch version at $HIGHEST_PATH"
+            XCODE_VERSION=$(basename "$HIGHEST_PATH" | sed 's/^Xcode_//;s/.app$//')
+            XCODE_PATH="$HIGHEST_PATH"
+          else
+            XCODE_VERSION=$(XCODE)
+          fi
+        else
+          XCODE_VERSION=$(XCODE)
+        fi
       fi
 
       # Check if the specified Xcode version exists, if not try fallbacks
@@ -143,19 +168,9 @@ steps:
       done
 
       if [[ -z "$XCODE_PATH" ]]; then
-        echo "WARNING: No exact match for requested Xcode version ${ORIGINAL_VERSION}"
+        echo "ERROR: No suitable Xcode version found for requested version ${ORIGINAL_VERSION}"
         echo "Tried: ${VERSIONS_TO_TRY[*]}"
-        echo "Falling back to latest available Xcode on this agent..."
-        # Find the latest Xcode by sorting version numbers
-        LATEST_XCODE=$(ls -1d /Applications/Xcode_*.app 2>/dev/null | sed 's|/Applications/Xcode_||;s|\.app||' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
-        if [[ -n "$LATEST_XCODE" ]]; then
-          XCODE_VERSION="$LATEST_XCODE"
-          XCODE_PATH="/Applications/Xcode_${LATEST_XCODE}.app"
-          echo "Using latest available Xcode: ${XCODE_VERSION} at ${XCODE_PATH}"
-        else
-          echo "ERROR: No Xcode installations found in /Applications"
-          exit 1
-        fi
+        exit 1
       fi
 
       sudo xcode-select -s "$XCODE_PATH"
@@ -171,15 +186,14 @@ steps:
   - ${{ if ne(parameters.skipSimulatorSetup, 'true') }}:
     - script: |
         echo installing simulator runtimes...
-        # Use REQUIRED_XCODE for devdiv team project or if CollectionUri contains xamarin, XCODE for others (e.g., maui-pr)
-        if [[ "$(System.TeamProject)" == "devdiv" || "$(System.CollectionUri)" == *"xamarin"* ]]; then
-          XCODE_VERSION=$(REQUIRED_XCODE)
-        else
-          XCODE_VERSION=$(XCODE)
-        fi
+        # XCODE variable is in major.minor format (e.g., 26.1)
+        XCODE_MAJOR_MINOR=$(XCODE)
+        MAJOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f1)
+        MINOR=$(echo "$XCODE_MAJOR_MINOR" | cut -d'.' -f2)
+
         # if we're using Xcode 26.0[.?], then explicitly install the iOS 26.0 simulator (the iOS 26.0.1 simulator doesn't work for us)
         # also install the universal simulator version, so that this bot can run x64 apps in the simulator.
-        if [[ "${XCODE_VERSION}" =~ ^26[.]0.*$ ]]; then
+        if [[ "${MAJOR}" == "26" && "${MINOR}" == "0" ]]; then
           DOWNLOAD_ARGS="-downloadPlatform iOS -architectureVariant universal -buildVersion 26.0"
         else
           DOWNLOAD_ARGS="-downloadPlatform iOS"
@@ -214,6 +228,17 @@ steps:
         echo "Found $RUNTIME_COUNT simulator runtime(s)"
       displayName: Install Simulator Runtimes
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      timeoutInMinutes: 30
+
+    # Also install iOS 18.5 simulator for integration tests that require it
+    - script: |
+        echo "Installing iOS 18.5 simulator runtime for integration tests..."
+        sudo xcodebuild -downloadPlatform iOS -buildVersion 18.5 || {
+          echo "Warning: Failed to install iOS 18.5 simulator. Tests requiring this version may fail."
+        }
+      displayName: Install iOS 18.5 Simulator (for integration tests)
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
       timeoutInMinutes: 30
 
 # Provision Additional Software
@@ -331,9 +356,3 @@ steps:
     condition: succeeded()
     env:
       AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
-
-# Cache Gradle downloads to avoid transient network failures during Android binding builds
-- ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
-  - template: /eng/pipelines/common/cache-gradle.yml@self
-    parameters:
-      checkoutDirectory: ${{ parameters.checkoutDirectory }}

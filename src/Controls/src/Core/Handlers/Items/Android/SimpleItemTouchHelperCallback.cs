@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemViewType = viewHolder.ItemViewType;
 			if (itemViewType == ItemViewType.Header || itemViewType == ItemViewType.Footer
 				|| itemViewType == ItemViewType.GroupHeader || itemViewType == ItemViewType.GroupFooter)
- 			{ 
+			{
 				return MakeMovementFlags(0, 0);
 			}
 
@@ -28,10 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool OnMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
 		{
-			var sourceItemViewType = viewHolder.ItemViewType;
-
-			if (sourceItemViewType == ItemViewType.Header || sourceItemViewType == ItemViewType.Footer
-				|| sourceItemViewType == ItemViewType.GroupHeader || sourceItemViewType == ItemViewType.GroupFooter)
+			if (viewHolder.ItemViewType != target.ItemViewType)
 			{
 				return false;
 			}

@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.SearchBar;
 
 	/// <summary>Provides control over the spellchecker on search bars.</summary>
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to enable spell checking.</param>
 		public static void SetIsSpellCheckEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsSpellCheckEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsSpellCheckEnabledProperty, value);
 		}
 
 		/// <summary>Gets whether spell checking is enabled for the search bar on Windows.</summary>

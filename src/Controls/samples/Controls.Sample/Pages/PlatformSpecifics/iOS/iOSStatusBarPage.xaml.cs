@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnPrefersStatusBarHiddenButtonClicked(object sender, EventArgs e)
+		void OnPrefersStatusBarHiddenButtonClicked(object? sender, EventArgs e)
 		{
 			switch (On<iOS>().PrefersStatusBarHidden())
 			{
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnPreferredStatusBarUpdateAnimationButtonClicked(object sender, EventArgs e)
+		void OnPreferredStatusBarUpdateAnimationButtonClicked(object? sender, EventArgs e)
 		{
 			switch (On<iOS>().PreferredStatusBarUpdateAnimation())
 			{

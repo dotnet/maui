@@ -317,10 +317,6 @@ namespace Microsoft.Maui.Platform
 			NavigationView = null;
 			SetNavHost(null);
 			_fragmentNavigator = null;
-			_currentPage = null;
-			NavigationStack = [];
-			_fragmentContainerView = null;
-			_fragmentManager = null;
 		}
 
 		public virtual void Connect(IView navigationView)

@@ -19,8 +19,7 @@ namespace Microsoft.Maui.Controls
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
-		Brush? _currentBarBackground;
-		private int? _defaultStartInset;
+		Brush _currentBarBackground;
 
 		NavigationRootManager? NavigationRootManager =>
 			Handler?.MauiContext?.GetNavigationRootManager();
@@ -33,17 +32,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_platformTitleView != null)
 					_platformTitleView.Child = null;
-
-				if (_currentBarBackground is GradientBrush currentGradientBrush)
-				{
-					if (ReferenceEquals(currentGradientBrush.Parent, this))
-					{
-						currentGradientBrush.Parent = null;
-					}
-
-					currentGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-				}
-				_currentBarBackground = null;
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
@@ -112,20 +100,6 @@ namespace Microsoft.Maui.Controls
 			{
 				_platformTitleView.RemoveFromParent();
 				PlatformView.AddView(_platformTitleView);
-
-				// Removes the default left margin
-				if (_platformTitleView.Parent is AToolbar parent)
-				{
-					if (titleView is Layout layout && (layout.IsSet(View.MarginProperty) || layout.IsSet(View.HorizontalOptionsProperty)))
-					{
-						_defaultStartInset ??= parent.ContentInsetStart;
-						parent.SetContentInsetsAbsolute(0, 0);
-					}
-					else if (_defaultStartInset.HasValue)
-					{
-						parent.SetContentInsetsAbsolute(_defaultStartInset.Value, 0);
-					}
-				}
 			}
 
 			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;

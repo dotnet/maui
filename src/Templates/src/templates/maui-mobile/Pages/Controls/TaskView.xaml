@@ -10,7 +10,10 @@
     StrokeShape="RoundRectangle 20"
     Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
     x:DataType="models:ProjectTask">
-
+    
+     <effectsView:SfEffectsView
+        TouchDownEffects="Highlight"
+        HighlightBackground="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}">
         <shimmer:SfShimmer
             BackgroundColor="Transparent"
             VerticalOptions="Fill"
@@ -41,6 +44,12 @@
                             HorizontalOptions="Start"
                             VerticalOptions="Center"
                             LineBreakMode="WordWrap"/>
+
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}"
+                                CommandParameter="{Binding .}"/>
+                        </Grid.GestureRecognizers>
                     </Grid>
 
                     <CheckBox Grid.Column="0"
@@ -54,4 +63,5 @@
                 </Grid>
             </shimmer:SfShimmer.Content>
         </shimmer:SfShimmer>
+    </effectsView:SfEffectsView>
 </Border>

@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Platform
 {
 	public class StackNavigationManager
 	{
-		static readonly SuppressNavigationTransitionInfo s_suppressTransition = new();
-
 		IView? _currentPage;
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
@@ -122,9 +120,7 @@ namespace Microsoft.Maui.Platform
 		protected virtual NavigationTransitionInfo? GetNavigationTransition(NavigationRequest args)
 		{
 			if (!args.Animated)
-			{
-				return s_suppressTransition;
-			}
+				return null;
 
 			// GoBack just plays the animation in reverse so we always just return the same animation
 			return new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };

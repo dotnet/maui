@@ -524,78 +524,47 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				n = GetParent(n);
 			}
 
-			bool xDataTypeIsOnBindingNode = n == node;
-
-			if (IsRelativeSourceWithoutAncestorType(node, context, module))
+			if (dataTypeNode is null)
 			{
+				context.LoggingHelper.LogWarningOrError(BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
 				return false;
 			}
 
-			TypeReference tSourceRef = null;
-			// True when tSourceRef is inferred from a RelativeSource AncestorType rather than an
-			// explicit x:DataType declared on the binding node itself. AncestorType only identifies
-			// the *nearest ancestor of that type (or a subtype)* that will be resolved at runtime -
-			// it does not guarantee the actual runtime instance is exactly that type. A derived type
-			// (e.g. a custom base page/view) commonly declares the bound property, so failing to find
-			// the property on the literal AncestorType is not necessarily a real binding error.
-			bool tSourceRefIsAncestorTypeInferred = false;
-			if (HasRelativeOrReferenceSource(node) && xDataTypeIsInOuterScope)
+			if (xDataTypeIsInOuterScope)
 			{
-				if (!TryGetRelativeSourceAncestorTypeReference(node, context, module, out tSourceRef))
-				{
-					return false;
-				}
-
-				tSourceRefIsAncestorTypeInferred = true;
+				context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				// continue compilation
 			}
 
-			if (tSourceRef is null)
+			if (   dataTypeNode is ElementNode enode
+				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
+				&& enode.XmlType.Name == nameof(Xaml.NullExtension))
 			{
-				if (dataTypeNode is null)
-				{
-					context.LoggingHelper.LogWarningOrError(BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-
-					return false;
-				}
-
-				if (xDataTypeIsInOuterScope)
-				{
-					context.LoggingHelper.LogWarningOrError(BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-					// continue compilation
-				}
-
-				if (   dataTypeNode is ElementNode enode
-					&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
-					&& enode.XmlType.Name == nameof(Xaml.NullExtension))
-				{
-					context.LoggingHelper.LogWarningOrError(BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-					return false;
-				}
-
-				if ((dataTypeNode as ValueNode)?.Value is not string dataType)
-					throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-
-				XmlType dtXType = null;
-				try
-				{
-					dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
-						?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-				}
-				catch (XamlParseException)
-				{
-					var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
-					throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
-				}
-
-				tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
-				if (tSourceRef == null)
-					return false;
+				context.LoggingHelper.LogWarningOrError(BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				return false;
 			}
 
+			if ((dataTypeNode as ValueNode)?.Value is not string dataType)
+				throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+
+			XmlType dtXType = null;
+			try
+			{
+				dtXType = TypeArgumentsParser.ParseSingle(dataType, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
+				throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
+			}
+
+			var tSourceRef = dtXType.GetTypeReference(context.Cache, module, (IXmlLineInfo)node);
 			if (tSourceRef == null)
 				return false; //throw
 
-			if (!TryParsePath(context, path, tSourceRef, node as IXmlLineInfo, module, out var properties, suppressPropertyNotFoundError: tSourceRefIsAncestorTypeInferred))
+			if (!TryParsePath(context, path, tSourceRef, node as IXmlLineInfo, module, out var properties))
 			{
 				return false;
 			}
@@ -671,131 +640,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					&& propertyName.LocalName == nameof(BindableObject.BindingContext);
 			}
 
-			// Returns true when the binding's Source property is a RelativeSource or x:Reference.
-			// When Source is a RelativeSource or x:Reference, x:DataType inherited from an
-			// ancestor DataTemplate describes template items — not the actual binding source type.
-			// This matches the behaviour in KnownMarkups.ProvideValueForBindingExtension (SourceGen)
-			// and the runtime BindingExtension.ProvideValue (which already sets DataType=null for
-			// all non-RelativeBindingSource sources, including x:Reference resolved objects).
-			static bool HasRelativeOrReferenceSource(ElementNode bindingNode)
-			{
-				if (!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
-					&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
-				{
-					return false;
-				}
-
-				return sourceNode is ElementNode sourceElementNode
-					&& sourceElementNode.XmlType.Name is "RelativeSourceExtension"
-						or "RelativeSource"
-						or "ReferenceExtension"
-						or "Reference";
-			}
-
-			static bool IsRelativeSourceWithoutAncestorType(ElementNode bindingNode, ILContext context, ModuleDefinition module)
-			{
-				if (!TryGetRelativeSourceNode(bindingNode, out var relativeSourceNode))
-				{
-					return false;
-				}
-
-				return !TryGetRelativeSourceAncestorTypeReference(bindingNode, context, module, out _);
-			}
-
-			static bool TryGetRelativeSourceAncestorTypeReference(ElementNode bindingNode, ILContext context, ModuleDefinition module, out TypeReference ancestorType)
-			{
-				ancestorType = null;
-
-				if (!TryGetRelativeSourceNode(bindingNode, out var relativeSourceNode))
-				{
-					return false;
-				}
-
-				if (!relativeSourceNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out INode ancestorTypeNode)
-					&& !relativeSourceNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode)
-					&& !relativeSourceNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode))
-				{
-					return false;
-				}
-
-				if (ancestorTypeNode is ElementNode ancestorTypeElement)
-				{
-					if (context.TypeExtensions.TryGetValue(ancestorTypeElement, out var mappedType))
-					{
-						ancestorType = module.ImportReference(mappedType);
-						return true;
-					}
-
-					if (!TryGetTypeNameFromTypeExtensionNode(ancestorTypeElement, out var typeName))
-					{
-						return false;
-					}
-
-					return TryResolveTypeFromName(typeName, ancestorTypeElement, context, module, out ancestorType);
-				}
-
-				if (ancestorTypeNode is ValueNode { Value: string directTypeName })
-				{
-					return TryResolveTypeFromName(directTypeName, bindingNode, context, module, out ancestorType);
-				}
-
-				return false;
-			}
-
-			static bool TryGetRelativeSourceNode(ElementNode bindingNode, out ElementNode relativeSourceNode)
-			{
-				relativeSourceNode = null;
-
-				if ((!bindingNode.Properties.TryGetValue(new XmlName("", "Source"), out INode sourceNode)
-						&& !bindingNode.Properties.TryGetValue(new XmlName(null, "Source"), out sourceNode))
-					|| sourceNode is not ElementNode sourceElementNode)
-				{
-					return false;
-				}
-
-				if (sourceElementNode.XmlType.Name is not "RelativeSourceExtension" and not "RelativeSource")
-				{
-					return false;
-				}
-
-				relativeSourceNode = sourceElementNode;
-				return true;
-			}
-
-			static bool TryGetTypeNameFromTypeExtensionNode(ElementNode typeNode, out string typeName)
-			{
-				typeName = null;
-
-				if (!typeNode.Properties.TryGetValue(new XmlName("", "TypeName"), out INode typeNameNode)
-					&& !typeNode.Properties.TryGetValue(new XmlName(null, "TypeName"), out typeNameNode)
-					&& !typeNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode)
-					&& typeNode.CollectionItems.Count == 1)
-				{
-					typeNameNode = typeNode.CollectionItems[0];
-				}
-
-				typeName = (typeNameNode as ValueNode)?.Value as string;
-				return !string.IsNullOrEmpty(typeName);
-			}
-
-			static bool TryResolveTypeFromName(string typeName, ElementNode namespaceNode, ILContext context, ModuleDefinition module, out TypeReference typeReference)
-			{
-				typeReference = null;
-
-				XmlType xmlType;
-				try
-				{
-					xmlType = TypeArgumentsParser.ParseSingle(typeName, namespaceNode.NamespaceResolver, namespaceNode as IXmlLineInfo);
-				}
-				catch (XamlParseException)
-				{
-					return false;
-				}
-
-				typeReference = xmlType?.GetTypeReference(context.Cache, module, namespaceNode as IXmlLineInfo);
-				return typeReference is not null;
-			}
-
 			bool DoesNotInheritDataType(ElementNode node)
 			{
 				return GetParent(node) is ElementNode parentNode
@@ -807,7 +651,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties, bool suppressPropertyNotFoundError = false)
+		static bool TryParsePath(ILContext context, string path, TypeReference tSourceRef, IXmlLineInfo lineInfo, ModuleDefinition module, out IList<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> pathProperties)
 		{
 			pathProperties = null;
 
@@ -826,7 +670,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var lbIndex = p.IndexOf('[');
 				if (lbIndex != -1)
 				{
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
 					var rbIndex = p.LastIndexOf(']');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
 					if (rbIndex == -1)
 						throw new BuildException(BindingIndexerNotClosed, lineInfo, null);
 
@@ -847,17 +693,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var property = previousPartTypeRef.GetProperty(context.Cache, pd => pd.Name == p && pd.GetMethod != null && pd.GetMethod.IsPublic && !pd.GetMethod.IsStatic, out var propDeclTypeRef);
 					if (property is null)
 					{
-						// When the source type was inferred from RelativeSource AncestorType (rather
-						// than an explicit x:DataType), a missing property doesn't necessarily mean the
-						// binding is invalid - the actual runtime ancestor may be a subtype that declares
-						// the property. Silently fall back to a regular (reflection-based) Binding instead
-						// of failing the build, matching the pre-existing behavior for RelativeSource
-						// bindings without an explicit x:DataType and the SourceGen inflator's equivalent
-						// fallback in KnownMarkups.ProvideValueForBindingExtension.
-						if (!suppressPropertyNotFoundError)
-						{
-							context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
-						}
+						context.LoggingHelper.LogWarningOrError(BindingPropertyNotFound, context.XamlFilePath, lineInfo.LineNumber, lineInfo.LinePosition, 0, 0, p, previousPartTypeRef);
 						return false;
 					}
 
@@ -886,21 +722,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 																	&& pd.GetMethod != null
 																	&& TypeRefComparer.Default.Equals(pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef), module.ImportReference(context.Cache, ("mscorlib", "System", "Object")))
 																	&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
-					// Try to find an indexer with an enum parameter type
-					indexer ??= previousPartTypeRef.GetProperty(context.Cache,
-																	pd => pd.Name == indexerName
-																	&& pd.GetMethod != null
-																	&& pd.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(previousPartTypeRef).ResolveCached(context.Cache)?.IsEnum == true
-																	&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));
 					if (indexer != null) //the case when we index on an array, not a list
 					{
 						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
-						var indexTypeDef = indexType.ResolveCached(context.Cache);
-						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) 
-							&& !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)
-							&& indexTypeDef?.IsEnum != true)
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
 							throw new BuildException(BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
 						previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
 					}
@@ -918,7 +745,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return true;
 		}
 
-		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module, XamlCache cache = null)
+		static IEnumerable<Instruction> DigProperties(IEnumerable<(PropertyDefinition property, TypeReference propDeclTypeRef, string indexArg)> properties, Dictionary<TypeReference, VariableDefinition> locs, Func<Instruction> fallback, IXmlLineInfo lineInfo, ModuleDefinition module)
 		{
 			var first = true;
 
@@ -956,39 +783,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out index))
 							yield return Create(Ldc_I4, index);
 						else
-						{
-							// Try to handle enum types
-							var indexTypeDef = cache != null ? indexType.ResolveCached(cache) : indexType.Resolve();
-							if (indexTypeDef?.IsEnum == true)
-							{
-								// Find the enum field with the matching name
-								var enumField = indexTypeDef.Fields.FirstOrDefault(f => f.IsStatic && f.Name == indexArg);
-								if (enumField != null)
-								{
-									// Emit the appropriate IL instruction based on the enum's underlying type.
-									// long/ulong enums require Ldc_I8; all narrower types fit in Ldc_I4.
-									var underlyingType = indexTypeDef.GetEnumUnderlyingType();
-									if (underlyingType.FullName == "System.Int64" || underlyingType.FullName == "System.UInt64")
-									{
-										var longValue = underlyingType.FullName == "System.UInt64"
-											? unchecked((long)Convert.ToUInt64(enumField.Constant))
-											: Convert.ToInt64(enumField.Constant);
-										yield return Create(Ldc_I8, longValue);
-									}
-									else
-									{
-										var enumValue = underlyingType.FullName == "System.UInt32"
-											? unchecked((int)Convert.ToUInt32(enumField.Constant))
-											: Convert.ToInt32(enumField.Constant);
-										yield return Create(Ldc_I4, enumValue);
-									}
-								}
-								else
-									throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
-							}
-							else
-								throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
-						}
+							throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
 					}
 				}
 
@@ -1067,7 +862,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						pop = Create(Pop);
 
 					return pop;
-				}, node as IXmlLineInfo, module, context.Cache));
+				}, node as IXmlLineInfo, module));
 
 				foreach (var loc in locs.Values)
 					getter.Body.Variables.Add(loc);
@@ -1157,7 +952,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					pop = Create(Pop);
 
 				return pop;
-			}, node as IXmlLineInfo, module, context.Cache));
+			}, node as IXmlLineInfo, module));
 
 			foreach (var loc in locs.Values)
 				setter.Body.Variables.Add(loc);
@@ -1283,7 +1078,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					il.Emit(Ldarg_0);
 				var lastGetterTypeRef = properties[i - 1].property?.PropertyType;
 				var locs = new Dictionary<TypeReference, VariableDefinition>();
-				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module, context.Cache));
+				il.Append(DigProperties(properties.Take(i), locs, null, node as IXmlLineInfo, module));
 				foreach (var loc in locs.Values)
 					partGetter.Body.Variables.Add(loc);
 				if (lastGetterTypeRef != null && lastGetterTypeRef.IsValueType)
@@ -1446,9 +1241,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			IL_0008:  ldarg.0 
 			//
 			//			IL_0009:  ldftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
-			//OR, if the handler is virtual (non-static)
-			//			IL_000x:  dup          ; copy target already on stack
-			//			IL_000y:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+			//OR, if the handler is virtual
+			//			IL_000x:  ldarg.0 
+			//			IL_0009:  ldvirtftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//
 			//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
 			//			IL_0014:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Button::add_Clicked(class [mscorlib]System.EventHandler)
@@ -1506,17 +1301,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					throw new InvalidProgramException();
 			}
 
-			if (methodDef.IsVirtual && !methodDef.IsStatic)
+			if (methodDef.IsVirtual)
 			{
-				// ldvirtftn needs the object whose vtable drives virtual dispatch.
-				// In a DataTemplate context, Ldarg_0 is the anonymous nested class, not the root
-				// XAML element — using it causes iOS/Mac Full AOT to crash on virtual handlers.
-				// The delegate target (already on the stack) IS the correct vtable object, so
-				// dup it: stack goes [parent, target] → [parent, target, target], ldvirtftn pops one, leaving
-				// [parent, target, ftn] for the delegate ctor.
-				// Static methods (including C# 11+ interface static-abstract members) are never
-				// virtual-dispatched; fall through to ldftn below.
-				yield return Create(Dup);
+				yield return Create(Ldarg_0);
 				yield return Create(Ldvirtftn, handlerRef);
 			}
 			else

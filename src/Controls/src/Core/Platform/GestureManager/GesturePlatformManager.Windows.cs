@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				catch (Exception dropExc)
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending event");
+					MauiLogger<DropGestureRecognizer>.Log(LogLevel.Warning, dropExc, "Error sending event");
 				}
 			});
 		}
@@ -452,8 +452,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (SwipeGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)recognizer).SendSwipe(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y);
-				e.Handled = true;
+				((ISwipeGestureController)recognizer).SendSwipe(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y);
 			}
 		}
 
@@ -472,8 +471,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
-				e.Handled = true;
+				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -499,7 +497,6 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
-					e.Handled = true;
 				}
 
 				_wasPinchGestureStartedSent = true;
@@ -557,7 +554,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SwipeComplete(true);
 
-			if (!_isPanning && !_isPinching && !_isSwiping)
+			if (!_isPanning)
 			{
 				_fingers.Remove(e.Pointer.PointerId);
 			}
@@ -681,7 +678,7 @@ namespace Microsoft.Maui.Controls.Platform
 			catch (Exception ex)
 			{
 				// Log the exception for diagnostics
-				Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>()?.LogError(ex, "An error occurred while validating pointer event relevance.");
+				MauiLogger<GesturePlatformManager>.Log(LogLevel.Error, ex, "An error occurred while validating pointer event relevance.");
 				return false;
 			}
 		}
@@ -1032,17 +1029,17 @@ namespace Microsoft.Maui.Controls.Platform
 				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 				if (hasPinchGesture)
 				{
-					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasPanGesture)
 				{
-					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				if (hasSwipeGesture)
 				{
-					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+					logger?.Log(LogLevel.Warning, "SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
 				}
 
 				return;

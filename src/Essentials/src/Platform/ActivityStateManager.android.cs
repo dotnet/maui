@@ -73,11 +73,6 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public void Init(Application application)
 		{
-			if (lifecycleListener is not null)
-			{
-				return;
-			}
-
 			lifecycleListener = new ActivityLifecycleContextListener(OnActivityStateChanged);
 			application.RegisterActivityLifecycleCallbacks(lifecycleListener);
 		}

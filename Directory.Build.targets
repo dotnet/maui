@@ -2,13 +2,6 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <PropertyGroup>
-    <!-- Don't ship .NET Standard packages by default, EXCEPT when a project explicitly opts in via
-         <IsPackable>true</IsPackable> (e.g. the workload manifest and SDK packs, which are netstandard-only
-         but must ship). The '$(IsPackable)' == '' guard preserves that explicit opt-in. -->
-    <IsPackable Condition="$(TargetFramework.Contains('netstandard')) and '$(IsPackable)' == ''">false</IsPackable>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Upgrade xunit's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
     <!-- <PackageReference Include="NETStandard.Library"
@@ -33,7 +26,8 @@
   <PropertyGroup>
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
-    <NoWarn>$(NoWarn);NETSDK1206;NU1702</NoWarn>
+    <!-- Ignoring trimming error AD0001 https://github.com/dotnet/runtime/issues/123503-->
+    <NoWarn>$(NoWarn);NETSDK1206;NU1702;IL6001;AD0001</NoWarn>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB4011;MSB3277;NETSDK1206;NU1702</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
@@ -47,8 +41,8 @@
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
-    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>17.0</TargetPlatformMinVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>

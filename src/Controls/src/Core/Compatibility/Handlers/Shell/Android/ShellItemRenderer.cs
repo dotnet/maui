@@ -8,13 +8,11 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -143,23 +141,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			// Apply background color from appearance, fallback to default if unavailable
-			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
-			{
-				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
-			}
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);
 		}
 
 		protected virtual bool ChangeSection(ShellSection shellSection)
 		{
-			var result = ((IShellItemController)ShellItem).ProposeSection(shellSection);
-			if (result)
-			{
-				((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
-			}
-			return result;
+			// Update shell appearance based on the new shell section when switching between tabs
+			((IShellController)ShellContext.Shell).AppearanceChanged(shellSection, false);
+			return ((IShellItemController)ShellItem).ProposeSection(shellSection);
 		}
 
 		protected virtual Drawable CreateItemBackgroundDrawable()
@@ -194,10 +184,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				using (var innerLayout = new LinearLayout(Context))
 				{
 					innerLayout.SetClipToOutline(true);
-					innerLayout.SetBackground(
-						RuntimeFeature.IsMaterial3Enabled
-							? BottomNavigationViewUtils.CreateItemBackgroundDrawable(Context)
-							: CreateItemBackgroundDrawable());
+					innerLayout.SetBackground(CreateItemBackgroundDrawable());
 					innerLayout.SetPadding(0, (int)Context.ToPixels(6), 0, (int)Context.ToPixels(6));
 					innerLayout.Orientation = Orientation.Horizontal;
 					using (var param = new LP(LP.MatchParent, LP.WrapContent))
@@ -237,9 +224,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							image.SetImageDrawable(result?.Value);
 							if (result?.Value is not null)
 							{
-								var color = RuntimeFeature.IsMaterial3Enabled
-									? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurfaceVariant))
-									: Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
+								var color = Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
 								result.Value.SetTint(color);
 							}
 						});
@@ -251,10 +236,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						text.Typeface = services.GetRequiredService<IFontManager>()
 							.GetTypeface(Font.OfSize("sans-serif-medium", 0.0));
 
-						text.SetTextColor(
-							RuntimeFeature.IsMaterial3Enabled
-								? new AColor(Context.GetThemeAttrColor(Resource.Attribute.colorOnSurface))
-								: AColor.Black);
+						text.SetTextColor(AColor.Black);
 						text.Text = shellContent.Title;
 						lp = new LinearLayout.LayoutParams(0, LP.WrapContent)
 						{
@@ -474,7 +456,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			if (DisplayedPage is null && !_menuSetup)
+			if (DisplayedPage is null)
 				return;
 
 			if (ShellItemController.ShowTabs)
@@ -536,23 +518,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (DisplayedPage is null)
 				return;
 
-			var showTabs = ShellItemController.ShowTabs;
-			var wasGone = _bottomView.Visibility == ViewStates.Gone;
-
-			_bottomView.Visibility = showTabs ? ViewStates.Visible : ViewStates.Gone;
-
-			// After a Gone → Visible TabBar transition Android does not automatically re-dispatch
-			// window insets to child views, leaving the displayed page with stale bottom padding
-			// that creates empty space above the TabBar. Re-request insets after the layout pass
-			// so safe-area padding is recalculated against the updated content bounds.
-			if (wasGone && showTabs && DisplayedPage.Handler is IPlatformViewHandler { PlatformView: { } platformView })
-			{
-				platformView.Post(() =>
-				{
-					if (platformView.IsAttachedToWindow)
-						ViewCompat.RequestApplyInsets(platformView);
-				});
-			}
+			_bottomView.Visibility = ShellItemController.ShowTabs ? ViewStates.Visible : ViewStates.Gone;
 
 			if (_shellAppearance is not null && !_appearanceSet)
 			{

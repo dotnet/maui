@@ -249,10 +249,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(10)]
 		public void SetIconColor_Red_Purple_Default_Visual()
 		{
-			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-			{
-				Assert.Ignore("Ignored due to a bug issue in iOS 26"); // Issue Link: https://github.com/dotnet/maui/issues/33966
-			}
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
@@ -279,11 +275,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Test, Order(11)]
 		public void TitleIcon_Add_Visual()
 		{
-			if (!(App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp)))
-			{
-				App.WaitForElement("PopToRootPageButton");
-				App.Tap("PopToRootPageButton");
-			}
+			App.WaitForElement("PopToRootPageButton");
+			App.Tap("PopToRootPageButton");
 
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
@@ -327,7 +320,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("PushPageButton");
 			App.Tap("PushPageButton");
 			// Screenshot: Combined bar background, text color and icon color on pushed page
-			VerifyScreenshot();
+			VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 		}
 
 		[Test, Order(14)]

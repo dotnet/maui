@@ -16,11 +16,6 @@ namespace Microsoft.Maui.Platform
 			{
 				platformCheckBox.CheckBoxTintColor = solid.Color;
 			}
-			else if (check.Foreground is null)
-			{
-				// Color was cleared; reset to null so the view inherits the default tint color
-				platformCheckBox.CheckBoxTintColor = null;
-			}
 		}
 	}
 }

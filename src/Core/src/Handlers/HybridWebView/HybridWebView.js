@@ -6,9 +6,6 @@
  * directly. To make changes, modify the TypeScript file and then recompile it.
  */
 (() => {
-    // Must stay in sync with HybridWebViewHandler.InvokeDotNetPath / SendMessagePath.
-    const InvokeDotNetEndpoint = '__hwvInvokeDotNet';
-    const SendMessageEndpoint = '__hwvSendMessage';
     // Cached function to send messages to the host application.
     let sendMessageFunction = null;
     /*
@@ -23,10 +20,8 @@
         // Determine the mechanism to receive messages from the host application.
         if (window.chrome && window.chrome.webview && window.chrome.webview.addEventListener) {
             // Windows WebView2
-            // The .NET side URL-encodes messages (see MauiHybridWebView.SendRawMessage) so embedded
-            // NUL characters survive WebView2's null-terminated string marshalling. Decode here.
             window.chrome.webview.addEventListener('message', (arg) => {
-                dispatchHybridWebViewMessage(decodeURIComponent(arg.data));
+                dispatchHybridWebViewMessage(arg.data);
             });
         }
         else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
@@ -40,52 +35,22 @@
         }
         else {
             // Android WebView
-            // Native -> JS messages are delivered via WebView.postWebMessage. The resulting
-            // MessageEvent has source === null (no sending window) -- that's the invariant we
-            // can rely on across WebView versions. Drop any 'message' event whose source is
-            // a Window (e.g. a nested iframe calling window.parent.postMessage), which would
-            // otherwise be mistaken for a native message. NOTE: we intentionally do not check
-            // arg.origin here because Android WebView delivers postWebMessage events with an
-            // empty-string origin, not window.location.origin.
             window.addEventListener('message', (arg) => {
-                if (arg.source !== null) {
-                    console.warn(`HybridWebView: ignored 'message' event from unexpected sender (origin: '${arg.origin}').`);
-                    return;
-                }
                 dispatchHybridWebViewMessage(arg.data);
             });
         }
         // Determine the function to use to send messages to the host application.
         if (window.chrome && window.chrome.webview) {
             // Windows WebView2
-            // URL-encode so embedded NUL characters survive WebView2's null-terminated string
-            // marshalling (TryGetWebMessageAsString returns an LPWSTR); the .NET side decodes it
-            // in HybridWebViewHandler.OnWebMessageReceived.
-            sendMessageFunction = msg => window.chrome.webview.postMessage(encodeURIComponent(msg));
+            sendMessageFunction = msg => window.chrome.webview.postMessage(msg);
         }
         else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             sendMessageFunction = msg => window.webkit.messageHandlers.webwindowinterop.postMessage(msg);
         }
-        else {
-            // Android WebView. Sends are chained through a single promise to preserve
-            // FIFO ordering that callers had with the previous synchronous bridge.
-            let sendQueue;
-            sendMessageFunction = msg => {
-                const url = `${window.location.origin}/${SendMessageEndpoint}`;
-                const doSend = () => fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                        'X-Maui-Invoke-Token': 'HybridWebView',
-                        'X-Maui-Request-Body': msg
-                    },
-                    body: msg
-                }).catch(err => {
-                    console.error('HybridWebView: failed to send message to .NET host.', err);
-                });
-                sendQueue = sendQueue ? sendQueue.then(doSend) : doSend();
-            };
+        else if (window.hybridWebViewHost) {
+            // Android WebView
+            sendMessageFunction = msg => window.hybridWebViewHost.sendMessage(msg);
         }
     }
     /*
@@ -150,10 +115,7 @@
      * @param message The message to send to the .NET host application.
      */
     function sendRawMessage(message) {
-        // URL-encode the payload so it survives transports that restrict the byte set
-        // (the Android fetch X-Maui-Request-Body header rejects CR/LF/NUL). Decoded
-        // on the .NET side in HybridWebViewHandler.MessageReceived.
-        sendMessageToDotNet('__RawMessage', encodeURIComponent(message));
+        sendMessageToDotNet('__RawMessage', message);
     }
     /*
      * Invoke a .NET method on the InvokeJavaScriptTarget instance.
@@ -182,7 +144,7 @@
         }
         const message = JSON.stringify(body);
         // send the request to .NET
-        const requestUrl = `${window.location.origin}/${InvokeDotNetEndpoint}`;
+        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet`;
         const rawResponse = await fetch(requestUrl, {
             method: 'POST',
             headers: {

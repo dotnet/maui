@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 			await Navigation.PushAsync(new SemanticsPage());
 		}
 
-		private void SetSemanticFocusButton_Clicked(object sender, System.EventArgs e)
+		private void SetSemanticFocusButton_Clicked(object? sender, System.EventArgs e)
 		{
 			semanticFocusLabel.SetSemanticFocus();
 		}

@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		async void OnFailAccessClicked(object sender, EventArgs e)
+		async void OnFailAccessClicked(object? sender, EventArgs e)
 		{
 			try
 			{
@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		async void OnAccessClicked(object sender, EventArgs e)
+		async void OnAccessClicked(object? sender, EventArgs e)
 		{
 			try
 			{
@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void OnLaterClicked(object sender, EventArgs e)
+		void OnLaterClicked(object? sender, EventArgs e)
 		{
 			var now = DateTime.Now;
 			laterLabel.Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(3), () =>
@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Pages
 
 		IDispatcherTimer? _timer;
 
-		void OnTimerClicked(object sender, EventArgs e)
+		void OnTimerClicked(object? sender, EventArgs e)
 		{
 			if (_timer != null)
 			{
@@ -90,7 +90,7 @@ namespace Maui.Controls.Sample.Pages
 		bool keepRunning;
 
 		[Obsolete]
-		void OnObsoleteClicked(object sender, EventArgs e)
+		void OnObsoleteClicked(object? sender, EventArgs e)
 		{
 			if (keepRunning)
 			{

@@ -222,21 +222,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellPageContainer = null;
 		}
 
-		internal void DisposePage()
-		{
-			if (_destroyed)
-			{
-				return;
-			}
-			Destroy();
-
-			if (_page is not null)
-			{
-				_page.DisconnectHandlers();
-				_page = null;
-			}
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)

@@ -26,9 +26,8 @@ public class Issue18896 : _IssuesUITest
 #else
 		App.ScrollUp(ListView);
 #endif
-		// ListView with HasUnevenRows may have variable height row rendering that requires
-		// additional time for images to load and scrollbar to disappear.
-		// Use retryTimeout to adaptively wait for the UI to stabilize.
-		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(3));
+		// Load images and hide scrollbar.
+		// The test passes if you are able to see the image, name, and location of each monkey.
+		VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 	}
 }

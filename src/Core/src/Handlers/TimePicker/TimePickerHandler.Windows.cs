@@ -1,5 +1,4 @@
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
@@ -10,12 +9,12 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(TimePicker platformView)
 		{
-			platformView.SelectedTimeChanged += OnSelectedTimeChanged;
+			platformView.TimeChanged += OnControlTimeChanged;
 		}
 
 		protected override void DisconnectHandler(TimePicker platformView)
 		{
-			platformView.SelectedTimeChanged -= OnSelectedTimeChanged;
+			platformView.TimeChanged -= OnControlTimeChanged;
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -55,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsOpen(timePicker);
 		}
 
-		void OnSelectedTimeChanged(TimePicker sender, TimePickerSelectedValueChangedEventArgs e)
+		void OnControlTimeChanged(object? sender, TimePickerValueChangedEventArgs e)
 		{
 			if (VirtualView is not null)
 			{

@@ -1,12 +1,10 @@
 trigger:
-  batch: true
   branches:
     include:
     - main
     - release/*
     - net*.0
     - inflight/*
-    - darc-*
   tags:
     include:
     - '*'
@@ -104,7 +102,7 @@ parameters:
 - name: targetFrameworkVersions
   type: object
   default:
-  - tfm: net10.0
+  - tfm: net11.0
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:

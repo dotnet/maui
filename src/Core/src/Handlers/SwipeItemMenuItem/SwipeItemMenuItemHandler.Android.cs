@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
-using Android.Util;
 using Android.Widget;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
@@ -72,12 +71,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			// Set visibility before UpdateIsVisibleSwipeItem so LayoutSwipeItems
-			// reads the correct visibility when recalculating item positions.
-			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
-
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
+
+			handler.PlatformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
 		protected override AView CreatePlatformElement()
@@ -105,21 +102,8 @@ namespace Microsoft.Maui.Handlers
 
 			int contentHeight = mauiSwipeView.MeasuredHeight;
 			int contentWidth = (int)handler.MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
-			int maxIconSize = Math.Min(contentHeight, contentWidth) / 2;
 
-			if (imageSourcePart.Source is IFontImageSource fontImageSource)
-			{
-				var fontManager = handler.GetRequiredService<IFontManager>();
-				var fontSize = fontManager.GetFontSize(fontImageSource.Font);
-				var requestedIconSize = (int)TypedValue.ApplyDimension(
-					fontSize.Unit,
-					fontSize.Value,
-					handler.MauiContext.Context.Resources?.DisplayMetrics);
-
-				return Math.Min(requestedIconSize, maxIconSize);
-			}
-
-			return maxIconSize;
+			return Math.Min(contentHeight, contentWidth) / 2;
 		}
 
 		void UpdateSize()

@@ -403,10 +403,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			{
 				return;
 			}
-
-			// Mark as disposing to prevent further message sending
-			_webviewManager?.MarkAsDisposing();
-
 			_isDisposed = true;
 
 			// Perform async cleanup.

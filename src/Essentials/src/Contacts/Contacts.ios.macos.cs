@@ -22,35 +22,25 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			var source = new TaskCompletionSource<Contact>();
 
-			var contactDelegate = new ContactPickerDelegate(phoneContact =>
-			{
-				try
-				{
-					source?.TrySetResult(ConvertContact(phoneContact));
-				}
-				catch (Exception ex)
-				{
-					source?.TrySetException(ex);
-				}
-			});
-
 			var picker = new CNContactPickerViewController
 			{
-				Delegate = contactDelegate
+				Delegate = new ContactPickerDelegate(phoneContact =>
+				{
+					try
+					{
+						source?.TrySetResult(ConvertContact(phoneContact));
+					}
+					catch (Exception ex)
+					{
+						source?.TrySetException(ex);
+					}
+				})
 			};
 
-			if (picker.PresentationController is not null)
+			if (picker.PresentationController != null)
 			{
-				// Only complete with null (swipe-to-dismiss) if the delegate hasn't already
-				// handled an explicit selection or cancellation via its completion callback.
 				picker.PresentationController.Delegate =
-					new UIPresentationControllerDelegate(() =>
-					{
-						if (!contactDelegate.IsResultDelivered)
-						{
-							source?.TrySetResult(null);
-						}
-					});
+					new UIPresentationControllerDelegate(() => source?.TrySetResult(null));
 			}
 
 			vc.PresentViewController(picker, true, null);
@@ -131,25 +121,25 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			}
 
 			public Action<CNContact> DidSelectContactHandler { get; }
-
-			// Set to true when an explicit selection or cancellation is made, so that
-			// UIPresentationControllerDelegate.DidDismiss does not complete the TCS with null.
-			public bool IsResultDelivered { get; private set; }
-
+#pragma warning disable CA1416 // picker.DismissModalViewController(bool) has UnsupportedOSPlatform("ios6.0")]. (Deprecated but still works)
+#pragma warning disable CA1422 // Validate platform compatibility
 			public override void ContactPickerDidCancel(CNContactPickerViewController picker)
 			{
-				IsResultDelivered = true;
-				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(default));
+				DidSelectContactHandler?.Invoke(default);
+				picker.DismissModalViewController(true);
 			}
 
 			public override void DidSelectContact(CNContactPickerViewController picker, CNContact contact)
 			{
-				IsResultDelivered = true;
-				picker.DismissViewController(true, () => DidSelectContactHandler?.Invoke(contact));
+				DidSelectContactHandler?.Invoke(contact);
+				picker.DismissModalViewController(true);
 			}
 
 			public override void DidSelectContactProperty(CNContactPickerViewController picker, CNContactProperty contactProperty) =>
-				picker.DismissViewController(true, null);
+				picker.DismissModalViewController(true);
+
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416
 		}
 #endif
 	}

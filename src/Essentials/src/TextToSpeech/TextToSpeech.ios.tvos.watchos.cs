@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Media
 					speechUtterance.Volume = options.Volume.Value;
 
 				if (options.Rate.HasValue)
-					speechUtterance.Rate = NormalizeRate(options.Rate.Value);
+					speechUtterance.Rate = options.Rate.Value;
 			}
 
 			return speechUtterance;
@@ -80,12 +80,6 @@ namespace Microsoft.Maui.Media
 					tcsUtterance?.TrySetResult(true);
 			}
 		}
-
-		static float NormalizeRate(float rate) =>
-			NormalizeRate(rate,
-				AVSpeechUtterance.MinimumSpeechRate,
-				AVSpeechUtterance.MaximumSpeechRate,
-				AVSpeechUtterance.DefaultSpeechRate);
 #pragma warning restore CA1416
 	}
 }

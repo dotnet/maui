@@ -96,31 +96,13 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 		}
 
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			// Cancel the task if it still exists
-			// (it won't exist if OnActivityResult already processed it)
-			if (GetIntermediateTask(guid, true) is IntermediateTask task)
-			{
-				if (task.RequestCode == PlatformUtils.requestCodeFilePicker ||
-					task.RequestCode == PlatformUtils.requestCodeMediaPicker ||
-					task.RequestCode == PlatformUtils.requestCodeMediaCapture ||
-					task.RequestCode == PlatformUtils.requestCodePickContact)
-				{
-					task.TaskCompletionSource.TrySetCanceled();
-				}
-			}
-		}
-
 		public static Task<Intent> StartAsync(Intent intent, int requestCode, Action<Intent>? onCreate = null, Action<Intent>? onResult = null)
 		{
 			// make sure we have the activity
 			var activity = ActivityStateManager.Default.GetCurrentActivity(true)!;
 
 			// create a new task
-			var data = new IntermediateTask(requestCode, onCreate, onResult);
+			var data = new IntermediateTask(onCreate, onResult);
 			pendingTasks[data.Id] = data;
 
 			// create the intermediate intent, and add the real intent to it
@@ -152,10 +134,9 @@ namespace Microsoft.Maui.ApplicationModel
 
 		class IntermediateTask
 		{
-			public IntermediateTask(int requestCode, Action<Intent>? onCreate, Action<Intent>? onResult)
+			public IntermediateTask(Action<Intent>? onCreate, Action<Intent>? onResult)
 			{
 				Id = Guid.NewGuid().ToString();
-				RequestCode = requestCode;
 				TaskCompletionSource = new TaskCompletionSource<Intent>();
 
 				OnCreate = onCreate;
@@ -163,8 +144,6 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 
 			public string Id { get; }
-			
-			public int RequestCode { get; }
 
 			public TaskCompletionSource<Intent> TaskCompletionSource { get; }
 

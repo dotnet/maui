@@ -19,7 +19,6 @@ public class Bugzilla38731 : _IssuesUITest
 	const string btn1 = "btn1";
 	const string btn2 = "btn2";
 	const string btn3 = "btn3";
-	bool iOS26OrHigher => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp);
 
 	public Bugzilla38731(TestDevice testDevice) : base(testDevice)
 	{
@@ -41,32 +40,11 @@ public class Bugzilla38731 : _IssuesUITest
 		App.Tap(btn3);
 
 		App.WaitForElementTillPageNavigationSettled("FinalPage");
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(PageThree);
-		}
+		App.TapBackArrow(PageThree);
 		App.WaitForElementTillPageNavigationSettled(btn3);
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(PageTwo);
-		}
+		App.TapBackArrow(PageTwo);
 		App.WaitForElementTillPageNavigationSettled(btn2);
-		if (iOS26OrHigher)
-		{
-			App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
-		}
-		else
-		{
-			App.TapBackArrow(PageOne);
-		}
+		App.TapBackArrow(PageOne);
 		App.WaitForElementTillPageNavigationSettled(btn1);
 	}
 }

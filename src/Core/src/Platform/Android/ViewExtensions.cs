@@ -26,12 +26,8 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			var wrapperView = platformView.Parent as WrapperView;
-			var transformView = wrapperView ?? platformView;
-
-			var pivotX = (float)(view.AnchorX * transformView.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * transformView.ToPixels(view.Frame.Height));
-
+			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -43,62 +39,21 @@ namespace Microsoft.Maui.Platform
 				visibility = (int)view.Visibility.ToPlatformVisibility();
 			}
 
-			if (wrapperView is not null)
-			{
-				// Apply transform properties to the wrapper
-				wrapperView.TranslationX = wrapperView.ToPixels(view.TranslationX);
-				wrapperView.TranslationY = wrapperView.ToPixels(view.TranslationY);
-				wrapperView.ScaleX = (float)(view.Scale * view.ScaleX);
-				wrapperView.ScaleY = (float)(view.Scale * view.ScaleY);
-				wrapperView.Rotation = (float)view.Rotation;
-				wrapperView.RotationX = (float)view.RotationX;
-				wrapperView.RotationY = (float)view.RotationY;
-				wrapperView.PivotX = pivotX;
-				wrapperView.PivotY = pivotY;
-
-				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: 0,
-					translationY: 0,
-					scaleX: 1,
-					scaleY: 1,
-					rotation: 0,
-					rotationX: 0,
-					rotationY: 0,
-					pivotX: 0,
-					pivotY: 0);
-			}
-			else
-			{
-				// NOTE: use named arguments for clarity
-				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: platformView.ToPixels(view.TranslationX),
-					translationY: platformView.ToPixels(view.TranslationY),
-					scaleX: (float)(view.Scale * view.ScaleX),
-					scaleY: (float)(view.Scale * view.ScaleY),
-					rotation: (float)view.Rotation,
-					rotationX: (float)view.RotationX,
-					rotationY: (float)view.RotationY,
-					pivotX: pivotX,
-					pivotY: pivotY);
-			}
-		}
-
-		static void SetPlatformViewPropertiesWithTransform(View platformView, IView view, int visibility, float translationX,
-			float translationY, float scaleX, float scaleY, float rotation, float rotationX, float rotationY, float pivotX, float pivotY)
-		{
-			PlatformInterop.Set(
-				platformView,
+			// NOTE: use named arguments for clarity
+			PlatformInterop.Set(platformView,
 				visibility: visibility,
 				layoutDirection: (int)GetLayoutDirection(view),
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
 				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
 				alpha: (float)view.Opacity,
-				translationX: translationX,
-				translationY: translationY,
-				scaleX: scaleX,
-				scaleY: scaleY,
-				rotation: rotation,
-				rotationX: rotationX,
-				rotationY: rotationY,
+				translationX: platformView.ToPixels(view.TranslationX),
+				translationY: platformView.ToPixels(view.TranslationY),
+				scaleX: (float)(view.Scale * view.ScaleX),
+				scaleY: (float)(view.Scale * view.ScaleY),
+				rotation: (float)view.Rotation,
+				rotationX: (float)view.RotationX,
+				rotationY: (float)view.RotationY,
 				pivotX: pivotX,
 				pivotY: pivotY
 			);
@@ -345,7 +300,7 @@ namespace Microsoft.Maui.Platform
 						platformView.Background = drawable;
 				}
 			}
-			else if (platformView is LayoutViewGroup or ContentViewGroup)
+			else if (platformView is LayoutViewGroup)
 			{
 				platformView.Background = null;
 			}
@@ -353,16 +308,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
 
-		internal static void UpdateOpacity(this AView platformView, double opacity)
-		{
-			platformView.Alpha = (float)opacity;
-
-			if (platformView is WrapperView wrapperView && wrapperView.Shadow != null && wrapperView.IsLoaded())
-			{
-				// Post invalidation to ensure shadow redraws correctly after opacity changes.
-				wrapperView.ScheduleInvalidate();
-			}
-		}
+		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
@@ -378,7 +324,7 @@ namespace Microsoft.Maui.Platform
 			platformView.LayoutDirection = GetLayoutDirection(view);
 		}
 
-		internal static ALayoutDirection GetLayoutDirection(IView view)
+		static ALayoutDirection GetLayoutDirection(IView view)
 		{
 			return view.FlowDirection switch
 			{
@@ -649,23 +595,9 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				// Store local reference to allow cancellation inside the Post callback
-				var localDisposable = disposable;
+				disposable?.Dispose();
 				disposable = null;
-				view.Post(() =>
-				{
-					if (view.IsAttachedToWindow && localDisposable is not null)
-					{
-						action();
-						localDisposable.Dispose();
-					}
-					else if (localDisposable is not null)
-					{
-						// View was detached before Post ran (e.g., ViewPager2 detach/re-attach cycle).
-						// Restore disposable so the next ViewAttachedToWindow can retry.
-						disposable = localDisposable;
-					}
-				});
+				action();
 			};
 
 			view.ViewAttachedToWindow += routedEventHandler;
@@ -904,27 +836,6 @@ namespace Microsoft.Maui.Platform
 				default:
 					return false;
 			}
-		}
-
-		/// <summary>
-		/// Resets the transform of a view's layer to identity.
-		/// This is used when a WrapperView is created to prevent transform compounding
-		/// between the WrapperView and its child.
-		/// </summary>
-		internal static void ResetTransform(this AView? platformView)
-		{
-			if (platformView is null)
-				return;
-
-			platformView.TranslationX = 0;
-			platformView.TranslationY = 0;
-			platformView.ScaleX = 1;
-			platformView.ScaleY = 1;
-			platformView.Rotation = 0;
-			platformView.RotationX = 0;
-			platformView.RotationY = 0;
-			platformView.PivotX = platformView.Width / 2f;
-			platformView.PivotY = platformView.Height / 2f;
 		}
 	}
 }

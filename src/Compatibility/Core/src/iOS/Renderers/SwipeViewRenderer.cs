@@ -425,7 +425,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		bool IsValidSwipeItems(SwipeItems swipeItems)
 		{
-			return swipeItems != null && swipeItems.Any(s => s.IsVisible);
+			return swipeItems != null && swipeItems.Where(s => s.IsVisible).Count() > 0;
 		}
 
 		void UpdateSwipeItems()
@@ -1557,7 +1557,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (!swipeItems.Any(s => s.IsVisible))
+			if (swipeItems.Where(s => s.IsVisible).Count() == 0)
 				return;
 
 			var swipeThreshold = GetSwipeThreshold();
