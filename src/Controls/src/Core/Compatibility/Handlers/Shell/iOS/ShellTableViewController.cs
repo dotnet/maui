@@ -109,7 +109,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			public AccessibilityNeutralTableView()
 			{
 				this.SetAccessibilityContainerType(UIAccessibilityContainerType.None);
-				ScrollsToTop = false;
 			}
 		}
 

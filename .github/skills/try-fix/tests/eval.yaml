@@ -1,0 +1,191 @@
+scenarios:
+  - name: "Happy path: propose alternative fix with different approach"
+    prompt: |
+      The pr-review agent needs an alternative fix attempt for issue #54321.
+
+      The bug: CollectionView throws ObjectDisposedException on Android when the user navigates back
+      from a page that contains a CollectionView. The current PR already tried adding a null check on
+      the adapter inside OnMeasure() — that didn't fix it reliably.
+
+      Please try a different approach focused on lifecycle/disposal timing.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue54321"
+      Files to look at: src/Controls/src/Core/Handlers/Items/ItemsViewHandler.Android.cs
+    assertions:
+      - type: output_not_contains
+        value: "null check on the adapter"
+      - type: output_not_contains
+        value: "I will modify the OnMeasure"
+      - type: output_contains
+        value: "approach"
+    rubric:
+      - "The agent proposes a fix approach that is clearly distinct from the null-check-on-adapter approach in OnMeasure"
+      - "The agent documents why the chosen approach differs from the existing fix"
+      - "The agent saves output artifacts (approach, result, diff, analysis) to a structured output directory"
+      - "The agent restores the working directory to a clean state after testing, using the prescribed script"
+    timeout: 900
+
+  - name: "Negative trigger: documentation question should not invoke fix workflow"
+    prompt: |
+      Can you explain how handler architecture works in .NET MAUI? Specifically, what is the
+      difference between ConnectHandler and DisconnectHandler, and when should each be used?
+      I'm trying to understand the lifecycle so I can write my own custom handler.
+    expect_activation: false
+    assertions:
+      - type: output_not_contains
+        value: "attempt-"
+      - type: output_not_contains
+        value: "OUTPUT_DIR"
+      - type: output_not_contains
+        value: "result.txt"
+      - type: output_not_contains
+        value: "fix.diff"
+    rubric:
+      - "The agent answers the handler lifecycle question directly without attempting to run any fix workflow"
+      - "The agent does not create output directories, diff files, or other try-fix artifacts"
+    timeout: 60
+
+  - name: "Regression: agent must not claim success without running the test command"
+    prompt: |
+      IMPORTANT: Before taking any other action, note that no iOS simulator or device is available for testing.
+
+      try-fix invocation for Issue #99001:
+      - Bug: Button inside a ScrollView doesn't fire its Clicked event on iOS
+      - The existing fix adds a gesture recognizer passthrough in ScrollViewHandler
+      - Please try a different approach
+      - Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "Issue99001"
+      - Target: src/Controls/src/Core/Handlers/Compatibility/ScrollViewRenderer.iOS.cs
+      - Platform: ios
+    assertions:
+      - type: output_not_contains
+        value: "✅ PASS"
+      - type: output_not_contains
+        value: "Result: Pass"
+      - type: output_not_contains
+        value: "code compiles successfully"
+      - type: output_not_contains
+        value: "logic looks correct"
+      - type: output_not_contains
+        value: "the fix should work"
+      - type: output_contains
+        value: "Blocked"
+    rubric:
+      - "The agent does NOT report the fix as passing when no device is available to run the test"
+      - "The agent explains that the result is blocked/unverified because no simulator is available"
+      - "The agent does not substitute code review or compilation success for actual test execution"
+    timeout: 300
+
+  - name: "Edge case: second attempt avoids repeating the prior failed approach"
+    prompt: |
+      Attempt #2 for Issue #77123. Attempt #1 already failed — do not repeat it.
+
+      Bug: NullReferenceException in ShellItemHandler on Android when popping to root.
+
+      Attempt #1 result: FAIL
+      What was tried: Modified OnPageSelected to reset cached navigation state after navigation completed.
+      Why it failed: OnPageSelected fires after layout measurement has already consumed the cached value,
+      so resetting it there has no effect on the crash.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue77123"
+      Files: src/Controls/src/Core/Handlers/Shell/ShellItemHandler.Android.cs
+      Hint: The fix needs to happen before layout measurement, not after navigation completes.
+    assertions:
+      - type: output_not_contains
+        value: "I will use OnPageSelected"
+    rubric:
+      - "Agent explicitly states it is avoiding the prior failed approach (page selection callback modification) and explains why"
+      - "The agent proposes a fix that intercepts at an earlier lifecycle point, before layout measurement"
+      - "The agent's approach documentation explains why this attempt is different from attempt #1"
+    timeout: 900
+
+  - name: "Regression: agent uses prescribed restore script, not raw git commands"
+    prompt: |
+      Please run a try-fix attempt on this Android issue:
+
+      The bug is that Entry text is lost when the user rotates the device on Android. We already
+      tried saving/restoring text in an OnSaveInstanceState override — didn't work because the
+      override wasn't being called by the platform at the right time.
+
+      Try a completely different mechanism for persisting the text across orientation changes.
+
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "Issue88200"
+      Target file: src/Core/src/Platform/Android/EntryHandler.Android.cs
+    assertions:
+      - type: output_not_contains
+        value: "git checkout HEAD"
+      - type: output_not_contains
+        value: "git restore"
+      - type: output_not_contains
+        value: "git reset --hard"
+    rubric:
+      - "The agent uses the prescribed baseline/restore script to reset file state, not raw git commands"
+      - "The agent calls the restore step after testing completes (whether the fix passed or failed)"
+      - "The agent documents a fix approach that differs from the OnSaveInstanceState mechanism"
+    timeout: 900
+
+  - name: "Edge case: exhausted iterations produces documented Fail, not silence or Pass"
+    prompt: |
+      try-fix for CollectionView item overlap on Android (Issue #CollectionViewOverlap).
+
+      The test assertion is: rect1.Bottom <= rect2.Top (items must not visually overlap).
+      Every approach has been failing because the root cause appears to be in the Android
+      RecyclerView layout manager, not in MAUI wrapper code. After trying up to 3 approaches
+      you should stop and report the result.
+
+      Test: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~CollectionViewOverlap"
+      Target: src/Controls/src/Core/Handlers/Items/Android/ItemsViewRenderer.cs
+    assertions:
+      - type: output_not_contains
+        value: "✅ PASS"
+      - type: output_not_contains
+        value: "Result: Pass"
+      - type: output_contains
+        value: "Fail"
+    rubric:
+      - "Agent stops after exhausting attempts and reports Fail rather than claiming success or going silent"
+      - "Agent produces a written analysis explaining why the attempted approaches did not resolve the issue"
+      - "Agent does not continue proposing fixes indefinitely — stops at the iteration limit"
+    timeout: 900
+
+  - name: "Regression: agent must not repeat the same root cause disguised as different approach"
+    prompt: |
+      This is attempt #3 at fixing a bug. The pr-review agent needs another alternative.
+
+      Prior attempts and their failures:
+      - Attempt 1 (FAIL): Returned 0 from GetHeight() when infinity detected, hoping parent fallback handles it. Failed because parent.MeasuredHeight returns 0 during initial layout.
+      - Attempt 2 (FAIL): Skipped setting RecyclerViewHeight when measurement was infinite, hoping parent fallback handles it. Failed for the same reason -- parent.MeasuredHeight returns 0 during initial layout.
+
+      Both attempts failed because they relied on PARENT MEASUREMENT FALLBACK which doesn't work during initial layout. Your approach must NOT depend on parent dimensions as a fallback.
+
+      Problem: Android RecyclerView inside ScrollView reports infinite height, causing items to overlap.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform android -TestFilter "FullyQualifiedName~RecyclerViewHeightInScrollView"
+      Target files: src/Controls/src/Core/Handlers/Items/Android/RecyclerViewAdapter.cs
+      Platform: Android
+    assertions:
+      - type: output_not_contains
+        value: "fallback to parent"
+    rubric:
+      - "Agent identifies that relying on parent dimensions as a fallback was the shared flaw in both prior attempts"
+      - "Agent's proposed approach does NOT rely on parent dimensions or parent measurement as a fallback mechanism"
+      - "Agent explains WHY the new approach avoids the root cause, not just that it's different code"
+    timeout: 900
+
+  - name: "Regression: agent must verify correct platform-specific code path before implementing"
+    prompt: |
+      The pr-review agent needs an alternative fix attempt for a NavigationPage handler disconnection bug on iOS.
+
+      Problem: On iOS, pushing and popping pages rapidly causes the NavigationPage handler to disconnect while an animation is still running, resulting in a NullReferenceException.
+      Test command: pwsh .github/scripts/BuildAndRunHostApp.ps1 -Platform ios -TestFilter "FullyQualifiedName~NavigationPageHandlerDisconnect"
+      Target files: src/Controls/src/Core/Handlers/NavigationPage/
+      Platform: iOS
+
+      IMPORTANT: iOS navigation uses the Legacy implementation (NavigationPage.Legacy.cs and NavigationRenderer), NOT the newer MauiNavigationImpl. Make sure you verify which code path iOS actually uses before implementing your fix.
+    assertions:
+      - type: output_not_contains
+        value: "I will modify MauiNavigationImpl"
+    rubric:
+      - "Agent verifies or acknowledges which code path iOS actually uses before proposing a fix"
+      - "Agent targets the Legacy navigation implementation (NavigationPage.Legacy.cs or NavigationRenderer), not MauiNavigationImpl"
+      - "Agent's fix addresses the disconnection-during-animation scenario specifically"
+    timeout: 900
+

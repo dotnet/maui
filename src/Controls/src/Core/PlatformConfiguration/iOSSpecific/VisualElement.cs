@@ -3,7 +3,6 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
-	using Microsoft.Maui.Controls.Internals;
 	using Microsoft.Maui.Graphics;
 	using FormsElement = Maui.Controls.VisualElement;
 
@@ -70,7 +69,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>IsShadowEnabled</c>.</summary>
 		public static readonly BindableProperty IsShadowEnabledProperty =
 			BindableProperty.Create("IsShadowEnabled", typeof(bool),
-			typeof(VisualElement), BooleanBoxes.FalseBox, propertyChanged: OnIsShadowEnabledChanged);
+			typeof(VisualElement), false, propertyChanged: OnIsShadowEnabledChanged);
 
 		static void OnIsShadowEnabledChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -110,7 +109,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to enable the shadow. Otherwise, <see langword="false" />.</param>
 		public static void SetIsShadowEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsShadowEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsShadowEnabledProperty, value);
 		}
 
 		/// <summary>
@@ -330,7 +329,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>Bindable property for attached property <c>IsLegacyColorModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
-				typeof(FormsElement), BooleanBoxes.TrueBox);
+				typeof(FormsElement), true);
 
 		/// <summary>
 		/// Returns whether or not the legacy color mode is enabled.
@@ -349,7 +348,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
 		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsLegacyColorModeEnabledProperty, value);
 		}
 
 		/// <summary>
@@ -371,14 +370,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
 			return config;
 		}
 
 		#endregion
 
 		/// <summary>Bindable property for <see cref="CanBecomeFirstResponder"/>.</summary>
-		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox);
+		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), false);
 
 		/// <summary>
 		/// Gets whether this element can become the first responder to touch events, rather than the page containing the element.
@@ -397,7 +396,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true" /> to set this element as the first responder. Otherwise, <see langword="false" />.</param>
 		public static void SetCanBecomeFirstResponder(BindableObject element, bool value)
 		{
-			element.SetValue(CanBecomeFirstResponderProperty, BooleanBoxes.Box(value));
+			element.SetValue(CanBecomeFirstResponderProperty, value);
 		}
 
 		/// <summary>

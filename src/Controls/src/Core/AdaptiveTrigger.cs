@@ -8,9 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public sealed class AdaptiveTrigger : StateTriggerBase
 	{
-		// Weak reference so the trigger does not prevent the VisualElement from being
-		// garbage-collected if SendDetached() is somehow missed.
-		WeakReference<VisualElement>? _visualElement;
+		VisualElement? _visualElement;
 		Window? _window;
 
 		/// <summary>
@@ -71,10 +69,9 @@ namespace Microsoft.Maui.Controls
 		{
 			DetachEvents();
 
-			var element = VisualState?.VisualStateGroup?.VisualElement;
-			_visualElement = element is not null ? new WeakReference<VisualElement>(element) : null;
+			_visualElement = VisualState?.VisualStateGroup?.VisualElement;
 
-			_window = element?.Window;
+			_window = _visualElement?.Window;
 			if (_window is not null)
 			{
 				_window.SizeChanged += OnWindowSizeChanged;

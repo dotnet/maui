@@ -26,7 +26,7 @@ public class Issue17664 : ContentPage
 			HorizontalOptions = LayoutOptions.Center
 		};
 
-		_collectionView = new CollectionView2
+		_collectionView = new CollectionView
 		{
 			IsGrouped = true,
 			GroupHeaderTemplate = new DataTemplate(() =>
@@ -105,7 +105,7 @@ public class Issue17664 : ContentPage
 		var targetGroup = _groupedItems.FirstOrDefault(group => group.Name == "Category C");
 		var targetItem = targetGroup.FirstOrDefault(item => item == "Category C item #2");
 
-		_collectionView.ScrollTo(targetItem, targetGroup, ScrollToPosition.End, animate: false);
+		_collectionView.ScrollTo(targetItem, targetGroup, ScrollToPosition.End);
 	}
 }
 

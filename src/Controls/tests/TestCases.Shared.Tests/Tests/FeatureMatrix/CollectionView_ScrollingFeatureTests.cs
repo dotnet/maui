@@ -1573,6 +1573,7 @@ public class CollectionView_ScrollingFeatureTests : _GalleryUITest
 		App.Tap("ScrollTo");
 		App.WaitForElement("ScrollToRequestedLabel");
 		Assert.That(App.WaitForElement("ScrollToRequestedLabel").GetText(), Is.EqualTo("Fired"));
+		VerifyScreenshot();
 	}
 
 	// ScrollTo By Index Tests

@@ -190,7 +190,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
-			_isInsetListenerSet = MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
 			RequestLayout();
 		}

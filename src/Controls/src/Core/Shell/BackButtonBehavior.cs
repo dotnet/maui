@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,11 +25,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="TextOverride"/>.</summary>
 		public static readonly BindableProperty TextOverrideProperty =
@@ -87,7 +86,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsVisibleProperty, value); }
 		}
 
 		/// <summary>

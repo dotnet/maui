@@ -33,8 +33,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
-			[nameof(ISearchBar.CursorPosition)] = MapCursorPosition,
-			[nameof(ISearchBar.SelectionLength)] = MapSelectionLength,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor,
 			[nameof(ISearchBar.SearchIconColor)] = MapSearchIconColor,
 			[nameof(ISearchBar.Keyboard)] = MapKeyboard,

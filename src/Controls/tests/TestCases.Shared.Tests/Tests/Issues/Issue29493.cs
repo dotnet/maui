@@ -1,5 +1,4 @@
-﻿#if WINDOWS // Exising issue in Android, iOS and MacCatalyst : https://github.com/dotnet/maui/issues/14497
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,4 +21,3 @@ public class Issue29493 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

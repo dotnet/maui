@@ -24,16 +24,4 @@ public abstract class BaseTemplateTests : BaseBuildTest
 			actual.Contains(expected, StringComparison.Ordinal),
 			$"Expected string '{actual}' to not contain '{expected}'.");
 	}
-
-	protected void AssertIncludesRootGitIgnore(string projectDir)
-	{
-		var gitIgnorePath = Path.Combine(projectDir, ".gitignore");
-
-		Assert.True(File.Exists(gitIgnorePath),
-			$"Expected '{gitIgnorePath}' to exist.");
-
-		var gitIgnoreContents = File.ReadAllText(gitIgnorePath);
-		AssertContains("bin/", gitIgnoreContents);
-		AssertContains("obj/", gitIgnoreContents);
-	}
 }

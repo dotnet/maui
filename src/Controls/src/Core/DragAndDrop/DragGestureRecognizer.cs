@@ -1,7 +1,6 @@
 using System;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	public class DragGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="CanDrag"/>.</summary>
-		public static readonly BindableProperty CanDragProperty = BindableProperty.Create(nameof(CanDrag), typeof(bool), typeof(DragGestureRecognizer), BooleanBoxes.TrueBox);
+		public static readonly BindableProperty CanDragProperty = BindableProperty.Create(nameof(CanDrag), typeof(bool), typeof(DragGestureRecognizer), true);
 
 		/// <summary>Bindable property for <see cref="DropCompletedCommand"/>.</summary>
 		public static readonly BindableProperty DropCompletedCommandProperty = BindableProperty.Create(nameof(DropCompletedCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
@@ -53,7 +52,7 @@ namespace Microsoft.Maui.Controls
 		public bool CanDrag
 		{
 			get { return (bool)GetValue(CanDragProperty); }
-			set { SetValue(CanDragProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(CanDragProperty, value); }
 		}
 
 		/// <summary>

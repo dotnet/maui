@@ -2,7 +2,6 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Primitives = Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui.Controls
 {
@@ -154,9 +153,7 @@ namespace Microsoft.Maui.Controls
 			var imageElement = (VisualElement)bindable;
 			if (newSource != null)
 				newSource.Parent = imageElement;
-
-			if (SourceCouldChangeMeasuredSize(imageElement))
-				imageElement?.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			imageElement?.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public static void ImageSourceSourceChanged(object sender, EventArgs e)
@@ -164,18 +161,9 @@ namespace Microsoft.Maui.Controls
 			if (sender is IImageElement imageController)
 				imageController.RaiseImageSourcePropertyChanged();
 
-			if (sender is VisualElement imageElement && SourceCouldChangeMeasuredSize(imageElement))
-				imageElement.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			((VisualElement)sender).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
-		static bool SourceCouldChangeMeasuredSize(VisualElement imageElement)
-		{
-			var view = (IView)imageElement;
-			return !Primitives.Dimension.IsExplicitSet(view.Width) ||
-				!Primitives.Dimension.IsExplicitSet(view.Height) ||
-				view.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill ||
-				view.VerticalLayoutAlignment != Primitives.LayoutAlignment.Fill;
-		}
 
 		internal static bool GetLoadAsAnimation(BindableObject bindable)
 		{

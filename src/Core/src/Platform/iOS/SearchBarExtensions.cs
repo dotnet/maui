@@ -99,24 +99,6 @@ namespace Microsoft.Maui.Platform
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
-		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
-		{
-			if (OperatingSystem.IsMacCatalyst())
-			{
-				var clearButton = uiSearchBar.GetClearButton();
-
-				if (clearButton != null)
-				{
-					var shouldHide = !hasText;
-
-					if (clearButton.Hidden != shouldHide)
-					{
-						clearButton.Hidden = shouldHide;
-					}
-				}
-			}
-		}
-
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
@@ -402,83 +384,5 @@ namespace Microsoft.Maui.Platform
 		{
 			uiSearchBar.ReturnKeyType = searchBar.ReturnType.ToPlatform();
 		}
-
-		internal static void UpdateCursorPosition(this UITextField textField, ISearchBar searchBar)
-		{
-			var selectedTextRange = textField.SelectedTextRange;
-			if (selectedTextRange is null)
-			{
-				return;
-			}
-
-			if (textField.GetOffsetFromPosition(textField.BeginningOfDocument, selectedTextRange.Start) != searchBar.CursorPosition)
-			{
-				UpdateCursorSelection(textField, searchBar);
-			}
-		}
-
-		internal static void UpdateSelectionLength(this UITextField textField, ISearchBar searchBar)
-		{
-			var selectedTextRange = textField.SelectedTextRange;
-			if (selectedTextRange is null)
-			{
-				return;
-			}
-
-			if (textField.GetOffsetFromPosition(selectedTextRange.Start, selectedTextRange.End) != searchBar.SelectionLength)
-			{
-				UpdateCursorSelection(textField, searchBar);
-			}
-		}
-
-		// Updates the UITextField.SelectedTextRange based on ISearchBar.CursorPosition and ISearchBar.SelectionLength.
-		static void UpdateCursorSelection(this UITextField textField, ISearchBar searchBar)
-		{
-			if (searchBar.IsReadOnly)
-			{
-				return;
-			}
-
-			// Capture current values to avoid reading stale values after async dispatch
-			int cursorPosition = searchBar.CursorPosition;
-			int selectionLength = searchBar.SelectionLength;
-
-			void UpdateSelection()
-			{
-				if (textField is not null && textField.Handle != IntPtr.Zero)
-				{
-					UITextPosition start = GetSelectionStart(textField, cursorPosition, out int startOffset);
-					UITextPosition end = GetSelectionEnd(textField, start, startOffset, selectionLength);
-					textField.SelectedTextRange = textField.GetTextRange(start, end);
-				}
-			}
-
-			if (searchBar.IsFocused)
-			{
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(UpdateSelection);
-			}
-			else
-			{
-				UpdateSelection();
-			}
-		}
-
-		static UITextPosition GetSelectionStart(this UITextField textField, int cursorPosition, out int startOffset)
-		{
-			int textLength = textField.Text?.Length ?? 0;
-
-			startOffset = Math.Max(0, Math.Min(textLength, cursorPosition));
-			return textField.GetPosition(textField.BeginningOfDocument, startOffset) ?? textField.BeginningOfDocument;
-		}
-
-		static UITextPosition GetSelectionEnd(UITextField textField, UITextPosition start, int startOffset, int selectionLength)
-		{
-			int textLength = textField.Text?.Length ?? 0;
-			int endOffset = Math.Max(startOffset, Math.Min(textLength, startOffset + selectionLength));
-			var end = textField.GetPosition(start, endOffset - startOffset);
-			return end ?? start;
-		}
-		internal static UIButton? GetClearButton(this UISearchBar searchBar) =>
-			searchBar.GetSearchTextField()?.ValueForKey(new NSString("clearButton")) as UIButton;
 	}
 }

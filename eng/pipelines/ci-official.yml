@@ -29,10 +29,6 @@ schedules:
     - main
     - net*.0
     - inflight/current
-    exclude:
-    # net10.0 is no longer an active development branch; .NET 10 work happens
-    # in main and release/10.0.1xx-* so there is no need for a nightly build.
-    - net10.0
   always: true
 
 variables:

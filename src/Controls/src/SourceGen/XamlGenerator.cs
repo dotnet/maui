@@ -88,13 +88,41 @@ public class XamlGenerator : IIncrementalGenerator
 			})
 			.WithTrackingName(TrackingNames.CompilationWithCodeBehindProvider);
 
-		//this xmlnsDefinitionProvider is computed AFTER feeding the codebehind into the compilation, and allows correct assemblySymbol comparisons
-		var xmlnsDefinitionsProviderForIC = compilationWithCodeBehindProvider
+		// x:Code pipeline: extract x:Code blocks from XAML and emit as partial class
+		var xamlSourceProviderForXCode = xamlProjectItemProviderForCB
+			.Combine(xmlnsDefinitionsProvider)
+			.Select(ComputeXCodeSource)
+			.WithTrackingName(TrackingNames.XamlSourceProviderForXCode);
+
+		// Feed x:Code into compilation (after CB, before IC)
+		var compilationWithXCodeProvider = xamlSourceProviderForXCode
+			.Collect()
+			.Combine(compilationWithCodeBehindProvider)
+			.Select(static (t, ct) =>
+			{
+				var compilation = t.Right;
+				var options = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+				foreach (var item in t.Left)
+				{
+					ct.ThrowIfCancellationRequested();
+
+					if (item is { } xcode && !string.IsNullOrEmpty(xcode.Source))
+					{
+						var tree = CSharpSyntaxTree.ParseText(xcode.Source, options: options, cancellationToken: ct);
+						compilation = compilation.AddSyntaxTrees(tree);
+					}
+				}
+				return compilation;
+			})
+			.WithTrackingName(TrackingNames.CompilationWithXCodeProvider);
+
+		//this xmlnsDefinitionProvider is computed AFTER feeding the codebehind and x:Code into the compilation, and allows correct assemblySymbol comparisons
+		var xmlnsDefinitionsProviderForIC = compilationWithXCodeProvider
 			.Select(GetAssemblyAttributes)
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
 
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProviderForIC, compilationWithCodeBehindProvider.Select(GetTypeCache), compilationWithCodeBehindProvider)
+			.Combine(xmlnsDefinitionsProviderForIC, compilationWithXCodeProvider.Select(GetTypeCache), compilationWithXCodeProvider)
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
 		// Register the XAML pipeline for CodeBehind
@@ -134,6 +162,19 @@ public class XamlGenerator : IIncrementalGenerator
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? LocationCreate(xamlItem.ProjectItem.RelativePath, lineInfo, string.Empty) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, errorMessage));
 			}
+		});
+
+		// Register the x:Code pipeline
+		initContext.RegisterSourceOutput(xamlSourceProviderForXCode, static (sourceProductionContext, provider) =>
+		{
+			if (provider is not { } xcode)
+				return;
+
+			foreach (var diag in xcode.Diagnostics)
+				sourceProductionContext.ReportDiagnostic(diag);
+
+			if (!string.IsNullOrEmpty(xcode.Source))
+				sourceProductionContext.AddSource(GetHintName(xcode.ProjectItem, "xcode"), xcode.Source);
 		});
 
 		// Register the XAML pipeline for InitializeComponent

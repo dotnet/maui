@@ -1,0 +1,277 @@
+scenarios:
+  - name: "Happy path - evaluate PR tests and produce structured report"
+    prompt: |
+      Evaluate the tests added in PR #34324. Check their quality, coverage, and whether the test type is appropriate.
+    assertions:
+      - type: "output_contains"
+        value: "PR Test Evaluation Report"
+      - type: "output_contains"
+        value: "Fix Coverage"
+      - type: "output_matches"
+        pattern: "(✅|⚠️|❌)"
+      - type: "output_contains"
+        value: "Test Type Appropriateness"
+      - type: "output_contains"
+        value: "Recommendations"
+    rubric:
+      - "The agent runs the Gather-TestContext.ps1 script to gather automated context before evaluating"
+      - "The report covers all major criteria: Fix Coverage, Edge Cases, Test Type, Convention Compliance, Flakiness Risk"
+      - "Each criterion has a verdict (pass/concern/fail) with a specific explanation, not just generic text"
+      - "The Overall Verdict section summarizes the most important finding in 1-2 sentences"
+    timeout: 180
+
+  - name: "Negative trigger - general code review should not produce test evaluation report"
+    prompt: |
+      Do a code review of the changes in the latest commit on this branch. Look for code quality issues, style, and potential bugs.
+    assertions:
+      - type: "output_not_contains"
+        value: "PR Test Evaluation Report"
+      - type: "output_not_contains"
+        value: "Gather-TestContext.ps1"
+      - type: "output_not_contains"
+        value: "Fix Coverage —"
+    rubric:
+      - "The agent performs a general code review without invoking the evaluate-pr-tests skill workflow"
+      - "The agent does not produce the 9-criteria evaluation structure from evaluate-pr-tests"
+    timeout: 120
+
+  - name: "Anti-pattern detection - Thread.Sleep and obsolete APIs"
+    prompt: |
+      Evaluate the tests in this PR. The added test file contains the following code:
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Layout)]
+      public void VerifyLabelPadding()
+      {
+          App.WaitForElement("MyLabel");
+          App.Tap("TriggerButton");
+          Thread.Sleep(2000);
+          VerifyScreenshot();
+      }
+      ```
+
+      The HostApp page uses `Application.MainPage` to navigate and the test class doesn't call `WaitForElement` before every `App.Tap`. Evaluate whether these tests are adequate.
+    assertions:
+      - type: "output_contains"
+        value: "Thread.Sleep"
+      - type: "output_not_contains"
+        value: "Thread.Sleep is fine"
+      - type: "output_matches"
+        pattern: "(retryTimeout|WaitForElement)"
+      - type: "output_matches"
+        pattern: "(Application\\.MainPage|obsolete)"
+    rubric:
+      - "The agent explicitly flags Thread.Sleep as an anti-pattern and recommends retryTimeout on VerifyScreenshot instead"
+      - "The agent flags Application.MainPage as an obsolete API and recommends the modern equivalent"
+      - "The flakiness risk section marks this test as medium or high risk with specific reasons"
+      - "The convention compliance section lists all violations found in the code snippet"
+    timeout: 120
+
+  - name: "Test type downgrade recommendation - UI test for pure property logic"
+    prompt: |
+      Evaluate the tests for this PR. The fix changes a property setter in `Entry.cs` (cross-platform code) so that setting `IsReadOnly = true` also disables text input programmatically. The only test added is a full UI test:
+
+      ```csharp
+      public class Issue99999 : _IssuesUITest
+      {
+          public override string Issue => "IsReadOnly disables input";
+          public Issue99999(TestDevice device) : base(device) { }
+
+          [Test]
+          [Category(UITestCategories.Entry)]
+          public void IsReadOnlyDisablesInput()
+          {
+              App.WaitForElement("TestEntry");
+              App.Tap("SetReadOnlyButton");
+              var text = App.FindElement("TestEntry").GetText();
+              Assert.That(text, Is.EqualTo(""));
+          }
+      }
+      ```
+
+      Is this the right test type?
+    assertions:
+      - type: "output_matches"
+        pattern: "(unit test|Unit [Tt]est|UnitTest)"
+      - type: "output_contains"
+        value: "Test Type Appropriateness"
+      - type: "output_not_contains"
+        value: "UI test is appropriate here"
+    rubric:
+      - "The agent identifies that a unit test or device test would be lighter and sufficient for testing a property setter"
+      - "The agent explains WHY a lighter test type is appropriate (property logic doesn't require Appium/visual UI)"
+      - "The recommendation is actionable, not just 'consider a unit test' — it explains what project to use or what the unit test would look like"
+    timeout: 120
+
+  - name: "Weak assertion detection - meaningless test assertions"
+    prompt: |
+      The PR adds these tests. Are the assertions adequate to catch regressions?
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.CollectionView)]
+      public void SelectionClearsOnNull()
+      {
+          App.WaitForElement("MyCollectionView");
+          App.Tap("ClearSelectionButton");
+          App.WaitForElement("MyCollectionView");
+          Assert.That(true);  // just checking no crash
+      }
+      ```
+
+      And in a second test:
+
+      ```csharp
+      [Test]
+      public void CollectionViewLoads()
+      {
+          App.WaitForElement("MyCollectionView");
+          var elem = App.FindElement("StatusLabel");
+          Assert.That(elem, Is.Not.Null);
+      }
+      ```
+    assertions:
+      - type: "output_matches"
+        pattern: "(meaningless|proves nothing|Assert\\.That\\(true\\)|vague|insufficient)"
+      - type: "output_contains"
+        value: "Assertion Quality"
+      - type: "output_matches"
+        pattern: "(❌|⚠️)"
+    rubric:
+      - "The agent correctly identifies Assert.That(true) as a meaningless assertion that proves nothing about the fix"
+      - "The agent identifies that checking Is.Not.Null on a UI element is too vague to catch actual regressions"
+      - "The agent provides concrete examples of what specific assertions SHOULD look like to catch the regression"
+      - "The overall verdict reflects that the assertions are insufficient, not just a minor concern"
+    timeout: 120
+
+  - name: "Edge case gaps analysis - fix with multiple branches untested"
+    prompt: |
+      The PR fixes a bug in CollectionView where SelectedItems returns null instead of an empty list when no items are selected. The fix adds a null-check:
+
+      ```csharp
+      public IList<object> SelectedItems
+      {
+          get => _selectedItems ?? (_selectedItems = new List<object>());
+      }
+      ```
+
+      The only test added verifies that after tapping an item and then clearing selection, the label shows "Count: 0". Evaluate whether this test covers the fix adequately.
+    assertions:
+      - type: "output_contains"
+        value: "Edge Cases"
+      - type: "output_matches"
+        pattern: "(null|initial state|never selected|without selecting)"
+    rubric:
+      - "The agent identifies the missing edge case: testing SelectedItems when no item was EVER selected (initial state), not just after clearing"
+      - "The agent traces the test's actions through the fix code and notes the test only covers one branch of the null-check"
+      - "The agent's gap analysis is derived from reading the fix code, not just generic advice"
+    timeout: 120
+
+  - name: "Near-miss recall - informal test quality check"
+    prompt: |
+      Look at the test files in PR #34324 and tell me if they seem reasonable.
+    assertions:
+      - type: "output_contains"
+        value: "PR Test Evaluation Report"
+      - type: "output_contains"
+        value: "Fix Coverage"
+    rubric:
+      - "The agent invokes the evaluate-pr-tests structured workflow even for informal phrasing"
+      - "The agent produces the structured 9-criteria report, not just a casual opinion"
+    timeout: 180
+
+  - name: "No tests added - PR only has fix files"
+    prompt: |
+      Evaluate the tests in this PR. The only files changed are:
+      - src/Controls/src/Core/CollectionView.cs
+      - src/Controls/src/Core/Handlers/CollectionViewHandler.cs
+      No test files were added.
+    assertions:
+      - type: "output_contains"
+        value: "Fix Coverage"
+      - type: "output_matches"
+        pattern: "❌"
+      - type: "output_not_contains"
+        value: "Tests are adequate"
+    rubric:
+      - "The agent flags the absence of tests as a Fix Coverage failure"
+      - "The overall verdict reflects that no tests were added"
+    timeout: 120
+
+  - name: "Fix-test alignment - test exercises wrong control"
+    prompt: |
+      The PR fixes a crash in Shell navigation when popping to the root. The fix changes:
+      - src/Controls/src/Core/Shell/Shell.cs
+      - src/Controls/src/Core/Shell/ShellNavigationManager.cs
+
+      The only test added is:
+
+      ```csharp
+      [Issue(IssueTracker.Github, 99998, "Shell navigation crash on PopToRoot", PlatformAffected.All)]
+      public class Issue99998 : ContentPage
+      {
+          public Issue99998()
+          {
+              Content = new VerticalStackLayout
+              {
+                  Children =
+                  {
+                      new Label { Text = "Hello", AutomationId = "WelcomeLabel" }
+                  }
+              };
+          }
+      }
+      ```
+
+      And the NUnit test just does:
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Shell)]
+      public void ShellPageLoads()
+      {
+          App.WaitForElement("WelcomeLabel");
+          Assert.That(App.FindElement("WelcomeLabel").GetText(), Is.EqualTo("Hello"));
+      }
+      ```
+
+      Evaluate the test quality.
+    assertions:
+      - type: "output_contains"
+        value: "Fix-Test Alignment"
+      - type: "output_matches"
+        pattern: "(wrong control|Label|doesn't exercise|navigation|PopToRoot|misalign)"
+      - type: "output_matches"
+        pattern: "(⚠️|❌)"
+    rubric:
+      - "The agent identifies that the test only exercises a Label on a ContentPage, not Shell navigation or PopToRoot"
+      - "The Fix-Test Alignment criterion flags that the test doesn't trace back to the changed Shell code paths"
+      - "The agent recommends a test that actually triggers Shell navigation (e.g., pushing and popping pages)"
+    timeout: 120
+
+  - name: "Fluent chain wait pattern should not trigger missing-wait warning"
+    prompt: |
+      Evaluate this test code for convention compliance. Does it correctly use WaitForElement before interactions?
+
+      ```csharp
+      [Test]
+      [Category(UITestCategories.Button)]
+      public void ButtonUpdatesLabel()
+      {
+          App.WaitForElement("TestButton").Tap();
+          App.WaitForElement("ResultLabel");
+          var text = App.FindElement("ResultLabel").GetText();
+          Assert.That(text, Is.EqualTo("Clicked"));
+      }
+      ```
+    assertions:
+      - type: "output_not_contains"
+        value: "missing WaitForElement"
+      - type: "output_not_contains"
+        value: "App.Tap without prior WaitForElement"
+      - type: "output_matches"
+        pattern: "(Convention Compliance|fluent|✅)"
+    rubric:
+      - "The agent does NOT flag the fluent App.WaitForElement().Tap() chain as a missing-wait violation"
+      - "The convention compliance check passes or has no wait-related warnings for this code"
+    timeout: 120

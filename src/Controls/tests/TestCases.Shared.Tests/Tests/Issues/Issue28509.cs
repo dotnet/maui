@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_ANDROID
+// https://github.com/dotnet/maui/issues/28676
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -53,3 +55,4 @@ public class Issue28509 : _IssuesUITest
 		App.WaitForElement("Footer Changed");
 	}
 }
+#endif

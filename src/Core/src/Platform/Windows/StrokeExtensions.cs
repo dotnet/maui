@@ -30,6 +30,9 @@
 		{
 			var strokeDashPattern = border.StrokeDashPattern;
 
+			if (strokeDashPattern == null)
+				return;
+
 			platformView.BorderPath?.UpdateStrokeDashPattern(strokeDashPattern);
 		}
 

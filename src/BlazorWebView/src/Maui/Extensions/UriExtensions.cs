@@ -1,27 +1,20 @@
 ﻿using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Components.WebView.Maui;
-
-internal static class UriExtensions
+namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
-	internal static bool IsBaseOfPage(this Uri baseUri, string? uriString)
+	internal static class UriExtensions
 	{
-		if (string.IsNullOrWhiteSpace(uriString))
+		internal static bool IsBaseOfPage(this Uri baseUri, string? uriString)
 		{
-			return false;
-		}
+			if (Path.HasExtension(uriString))
+			{
+				// If the path ends in a file extension, it's not referring to a page.
+				return false;
+			}
 
-		if (!Uri.TryCreate(uriString, UriKind.Absolute, out var uri))
-		{
-			return false;
+			var uri = new Uri(uriString!);
+			return baseUri.IsBaseOf(uri);
 		}
-
-		if (Path.HasExtension(uri.GetComponents(UriComponents.Path, UriFormat.Unescaped)))
-		{
-			return false;
-		}
-
-		return baseUri.IsBaseOf(uri);
 	}
 }

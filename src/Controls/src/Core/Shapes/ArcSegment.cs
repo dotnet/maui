@@ -1,5 +1,4 @@
 #nullable disable
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
 
@@ -53,7 +52,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <summary>Bindable property for <see cref="IsLargeArc"/>.</summary>
 		public static readonly BindableProperty IsLargeArcProperty =
-			BindableProperty.Create(nameof(IsLargeArc), typeof(bool), typeof(ArcSegment), BooleanBoxes.FalseBox);
+			BindableProperty.Create(nameof(IsLargeArc), typeof(bool), typeof(ArcSegment), false);
 
 		/// <summary>
 		/// Gets or sets the endpoint of the arc. This is a bindable property.
@@ -97,7 +96,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		/// </summary>
 		public bool IsLargeArc
 		{
-			set { SetValue(IsLargeArcProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsLargeArcProperty, value); }
 			get { return (bool)GetValue(IsLargeArcProperty); }
 		}
 	}

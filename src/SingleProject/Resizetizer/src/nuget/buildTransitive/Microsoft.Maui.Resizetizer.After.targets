@@ -279,7 +279,7 @@
             Targets="GetMauiItems"
             Projects="%(_ResizetizeCollectItemsProject.Identity)"
             BuildInParallel="true"
-            Properties="TargetFramework=%(_ResizetizeCollectItemsProject.NearestTargetFramework);%(_ResizetizeCollectItemsProject.AdditionalProperties)"
+            Properties="TargetFramework=%(_ResizetizeCollectItemsProject.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output

@@ -51,35 +51,12 @@ public class PlatformDrawableStyle {
         return Color.alpha(this.solidColor) == 255;
     } 
 
-    // Returns true when this paint contributes no visible pixels — used by canDrawShadow
-    // to treat a fully-transparent border as equivalent to no border for shadow silhouette.
-    public boolean getIsFullyTransparent() {
-        if (this.paintType == PlatformPaintType.NONE) {
-            return true;
-        }
-
-        if (this.gradientColors != null) {
-            for (int i = 0; i < this.gradientColors.length; i++) {
-                if (Color.alpha(this.gradientColors[i]) != 0) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return Color.alpha(this.solidColor) == 0;
-    }
-
     public int getPaintType() {
         return this.paintType;
     }
 
     private Shader getShader(int width, int height) {
         if (this.paintType == PlatformPaintType.NONE || this.paintType == PlatformPaintType.SOLID) {
-            return null;
-        }
-
-        if (width == 0 && height == 0) {
             return null;
         }
 

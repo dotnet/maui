@@ -10,11 +10,10 @@ namespace Microsoft.Maui.Platform
 	{
 		const int DefaultIndicatorSize = 6;
 		const double IndicatorSizeTolerance = 0.001;
-		const string SquareSymbol = "squareshape.fill";
-		const string CircleSymbol = "circlebadge.fill";
+
 		WeakReference<IIndicatorView>? _indicatorView;
 		bool _updatingPosition;
-		double _lastAppliedIndicatorSize = DefaultIndicatorSize;
+		double _lastAppliedIndicatorSize = -1;
 
 		public MauiPageControl()
 		{
@@ -57,15 +56,16 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIndicatorSize();
-			if (_indicatorView?.TryGetTarget(out var indicatorView) == true && (indicatorView as ITemplatedIndicatorView)?.IndicatorsLayoutOverride == null)
-			{
-				UpdateIndicatorShape();
-			}
+
+			if (!IsSquare)
+				return;
+
+			UpdateSquareShape();
 		}
 
 		public void UpdateIndicatorSize()
 		{
-			if (IndicatorSize == 0 || IndicatorSize == _lastAppliedIndicatorSize)
+			if (IndicatorSize == 0 || IndicatorSize == DefaultIndicatorSize)
 				return;
 
 			if (Math.Abs(IndicatorSize - _lastAppliedIndicatorSize) < IndicatorSizeTolerance)
@@ -107,9 +107,9 @@ namespace Microsoft.Maui.Platform
 			UpdatePosition();
 		}
 
-		void UpdateIndicatorShape()
+		void UpdateSquareShape()
 		{
-			if (!(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
+			if (!(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
 			{
 				UpdateCornerRadius();
 				return;
@@ -118,33 +118,19 @@ namespace Microsoft.Maui.Platform
 			var uiPageControlContentView = Subviews[0];
 			if (uiPageControlContentView.Subviews.Length > 0)
 			{
-				foreach (var uiPageControlIndicatorContentView in uiPageControlContentView.Subviews)
+				var uiPageControlIndicatorContentView = uiPageControlContentView.Subviews[0];
+
+				foreach (var view in uiPageControlIndicatorContentView.Subviews)
 				{
-					SetIndicatorShape(uiPageControlIndicatorContentView, IsSquare);
+					if (view is UIImageView imageview)
+					{
+						if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+							imageview.Image = UIImage.GetSystemImage("squareshape.fill");
+						var frame = imageview.Frame;
+						//the square shape is not the same size as the circle so we might need to correct the frame
+						imageview.Frame = new CGRect(frame.X - 6, frame.Y, frame.Width, frame.Height);
+					}
 				}
-			}
-		}
-
-		// Recursively find UIImageView and set its image
-		static void SetIndicatorShape(UIView view, bool isSquare)
-		{
-			if (view is UIImageView imageView)
-			{
-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
-				{
-					imageView.Image = UIImage.GetSystemImage(isSquare ? SquareSymbol : CircleSymbol);
-					return;
-				}
-			}
-
-			if (view.Subviews is null || view.Subviews.Length == 0)
-			{
-				return;
-			}
-
-			foreach (var child in view.Subviews)
-			{
-				SetIndicatorShape(child, isSquare);
 			}
 		}
 
@@ -164,7 +150,7 @@ namespace Microsoft.Maui.Platform
 			indicatorView.Position = (int)CurrentPage;
 			//if we are iOS13 or lower and we are using a Square shape
 			//we need to update the CornerRadius of the new shape.
-			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
+			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
 				LayoutSubviews();
 
 		}

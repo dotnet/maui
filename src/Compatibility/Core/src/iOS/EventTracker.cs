@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 
 				var childGestures = GetChildGestures(sender, weakEventTracker, weakRecognizer, eventTracker, view);
 
-				if (childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfTapsRequired).Any() == true)
+				if (childGestures?.GetChildGesturesFor<TapGestureRecognizer>(x => x.NumberOfTapsRequired == (int)sender.NumberOfTapsRequired).Count() > 0)
 					return;
 
 				if (weakRecognizer.Target is TapGestureRecognizer tapGestureRecognizer && view != null)

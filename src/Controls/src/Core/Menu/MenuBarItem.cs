@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(MenuBarItem), BooleanBoxes.TrueBox);
+			typeof(MenuBarItem), true);
 
 		static readonly BindableProperty PriorityProperty = BindableProperty.Create(nameof(Priority), typeof(int), typeof(ToolbarItem), 0);
 		public MenuBarItem()
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsEnabledProperty, value); }
 		}
 
 		public string Text

@@ -19,13 +19,6 @@ namespace Microsoft.Maui.Controls
 
 		Paint IShadow.Paint => Brush;
 
-		internal readonly MergedStyle _mergedStyle;
-
-		public Shadow()
-		{
-			_mergedStyle = new MergedStyle(GetType(), this);
-		}
-
 		public float Radius
 		{
 			get { return (float)GetValue(RadiusProperty); }

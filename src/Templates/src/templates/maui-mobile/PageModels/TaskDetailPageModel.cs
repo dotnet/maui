@@ -10,35 +10,32 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 {
 	public const string ProjectQueryKey = "project";
 	private ProjectTask? _task;
+	private bool _canDelete;
 	private readonly ProjectRepository _projectRepository;
 	private readonly TaskRepository _taskRepository;
 	private readonly ModalErrorHandler _errorHandler;
 
 	[ObservableProperty]
-	public partial string Title { get; set; } = string.Empty;
+	private string _title = string.Empty;
 
 	[ObservableProperty]
-	public partial bool IsCompleted { get; set; }
+	private bool _isCompleted;
 
 	[ObservableProperty]
-	public partial List<Project> Projects { get; set; } = [];
+	private List<Project> _projects = [];
 
 	[ObservableProperty]
-	public partial Project? Project { get; set; }
+	private Project? _project;
 
 	[ObservableProperty]
-	public partial int SelectedProjectIndex { get; set; } = -1;
+	private int _selectedProjectIndex = -1;
 
 
 	[ObservableProperty]
-	public partial bool IsExistingProject { get; set; }
+	private bool _isExistingProject;
 
 	[ObservableProperty]
-	public partial bool IsProjectPickerExpanded { get; set; }
-
-	[ObservableProperty]
-	[NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
-	public partial bool CanDelete { get; set; }
+	private bool _isProjectPickerExpanded;
 
 	public TaskDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, ModalErrorHandler errorHandler)
 	{
@@ -111,6 +108,16 @@ public partial class TaskDetailPageModel : ObservableObject, IQueryAttributable
 			{
 				ProjectID = Project?.ID ?? 0
 			};
+		}
+	}
+
+	public bool CanDelete
+	{
+		get => _canDelete;
+		set
+		{
+			_canDelete = value;
+			DeleteCommand.NotifyCanExecuteChanged();
 		}
 	}
 

@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Maui.Primitives;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -68,17 +67,9 @@ namespace Microsoft.Maui.Handlers
 
 				Handler?.UpdateValue(nameof(IImage.IsAnimationPlaying));
 
-				if (Handler?.VirtualView is IImage image &&
-					image.Source is IStreamImageSource &&
-					SourceCouldChangeMeasuredSize(image))
+				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
 					imageView.InvalidateMeasure(image);
 			}
 		}
-
-		static bool SourceCouldChangeMeasuredSize(IImage image) =>
-			!Dimension.IsExplicitSet(image.Width) ||
-			!Dimension.IsExplicitSet(image.Height) ||
-			image.HorizontalLayoutAlignment != LayoutAlignment.Fill ||
-			image.VerticalLayoutAlignment != LayoutAlignment.Fill;
 	}
 }

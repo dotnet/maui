@@ -1,4 +1,3 @@
-#if !ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,4 +31,3 @@ public class Issue32243 : _IssuesUITest
 			"CollectionView should disconnect handlers from views belonging to the old DataTemplate after navigating back.");
 	}
 }
-#endif

@@ -519,12 +519,28 @@ namespace Microsoft.Maui.Handlers
 
 		bool LoadFile(string url)
 		{
-			if (PlatformView is null)
+			try
 			{
-				return false;
+				var file = Path.GetFileNameWithoutExtension(url);
+				var ext = Path.GetExtension(url);
+
+				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
+
+				if (nsUrl == null)
+				{
+					return false;
+				}
+
+				PlatformView?.LoadFileUrl(nsUrl, nsUrl);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				MauiContext?.CreateLogger<WebViewHandler>()?.LogWarning("Could not load {url} as local file", url);
 			}
 
-			return PlatformView.LoadFile(url, MauiContext?.CreateLogger<WebViewHandler>());
+			return false;
 		}
 
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg)

@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics;
 
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -17,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
-		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ActivityIndicator), BooleanBoxes.FalseBox);
+		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create(nameof(IsRunning), typeof(bool), typeof(ActivityIndicator), default(bool));
 
 		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
@@ -49,7 +48,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRunning
 		{
 			get { return (bool)GetValue(IsRunningProperty); }
-			set { SetValue(IsRunningProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsRunningProperty, value); }
 		}
 
 		/// <inheritdoc/>

@@ -25,37 +25,8 @@ If the prompt does not include a **problem to fix** and a **test command to veri
 3. **Alternative-focused** - Always propose something DIFFERENT from existing fixes (review PR changes first)
 4. **Empirical** - Actually implement and test, don't just theorize
 5. **Context-driven** - Work with what's provided and git history; don't search external sources
-6. **Script-only restoration** - The ONLY permitted cleanup command is
-   `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore`. Never use
-   `git checkout`, `git clean`, `git restore`, `git reset`, or `git stash` to
-   revert or clean changes, including after artifacts have been captured.
-7. **Baseline-file boundary** - After Step 2, modify ONLY files listed in
-   `.github/.baseline-state.json` under `RevertedFiles`. The restore script
-   tracks only those original fix files; editing any other tracked file makes
-   restoration incomplete. If the state file is absent, or its `NewFiles`
-   array is non-empty, report `Blocked` before editing: added production files
-   are not safely restorable. If the approach requires another tracked file,
-   report `Blocked` instead of editing it.
-8. **Preserve pre-existing untracked paths** - Never modify or delete an
-   untracked file or directory that existed before the attempt. Evaluators may
-   inject the loaded skill as an untracked directory such as `try-fix/`; leave
-   it exactly as found even when `git status --short` lists it. It is
-   harness-owned input, not attempt-created drift. The restore script is the
-   only cleanup step; do not use `rm`, `Remove-Item`, or another filesystem
-   command to make the worktree appear clean.
-9. **Wait for command completion** - If a shell tool reports that a command is
-   still running and returns a `shellId`, call `read_bash` with that exact
-   `shellId` and wait for the completed result. Never proceed, report, or end
-   the session while baseline, test, artifact, self-review, or restore work is
-   still running.
-10. **Contain attempt artifacts** - Create every log, snapshot, state marker, and
-   scratch file under `$OUTPUT_DIR`. Never persist `$OUTPUT_DIR` or other shell
-   state in `.github/`, the repository root, or another workspace path. Shell
-   variables do not persist between tool calls, so redeclare the same literal
-   `$OUTPUT_DIR` at the start of each later shell command instead of writing a
-   repository marker file.
 
-**Every invocation runs all 11 Workflow steps below.** Step 6 (Expert Self-Review) is performed inline against `.github/agents/maui-expert-reviewer.md` — do NOT spawn the `@maui-expert-reviewer` sub-agent. Step 7.5 refreshes the self-review if the test loop modified code so the recorded findings reflect the final diff. Step 8 enforces this via a file-existence gate on `reviewer-findings.json`. Before returning the final report, verify that Step 9 ran with the exact script-only restore command above; if it did not, run it before responding.
+**Every invocation:** Review existing fixes → Think of DIFFERENT approach → Implement and test → Report results
 
 ## ⚠️ CRITICAL: Sequential Execution Only
 
@@ -82,7 +53,7 @@ All inputs are provided by the invoker (CI, agent, or user).
 |-------|----------|-------------|
 | Problem | Yes | Description of the bug/issue to fix |
 | Test command | Yes | **Repository-specific script** to build and test. Use `BuildAndRunHostApp.ps1` for UI tests, `Run-DeviceTests.ps1` for device tests, or `dotnet test` for unit tests. The correct command is determined by the test type detected in the PR. **ALWAYS use the appropriate script - NEVER manually build/compile.** |
-| Target files | Yes | Files to investigate; any file absent from the baseline state's `RevertedFiles` is read-only |
+| Target files | Yes | Files to investigate for the fix |
 | Platform | Yes | Target platform (`android`, `ios`, `windows`, `maccatalyst`) |
 | Hints | Optional | Suggested approaches, prior attempts, or areas to focus on |
 | Baseline | Optional | Git ref or instructions for establishing broken state (default: current state) |
@@ -98,7 +69,6 @@ Results reported back to the invoker:
 | `result` | `Pass`, `Fail`, or `Blocked` |
 | `analysis` | Why it worked, or why it failed and what was learned |
 | `diff` | The actual code changes made (for review) |
-| `findings_count` | Number of self-review findings recorded (0 = clean self-review) |
 
 ## Output Structure (MANDATORY)
 
@@ -120,29 +90,16 @@ New-Item -ItemType Directory -Path $OUTPUT_DIR -Force | Out-Null
 Write-Host "Output directory: $OUTPUT_DIR"
 ```
 
-Keep this path from the command output and redeclare it in each subsequent
-shell invocation, for example:
-
-```powershell
-$OUTPUT_DIR = "CustomAgentLogsTmp/PRState/<ISSUE_OR_PR_NUMBER>/PRAgent/try-fix/attempt-1"
-```
-
-Do not create `.github/.try-fix-output-dir`, `.try-fix-output-dir`, or any
-equivalent repository marker. The only attempt artifacts belong under
-`$OUTPUT_DIR`.
-
 **Required files to create in `$OUTPUT_DIR`:**
 
 | File | When to Create | Content |
 |------|----------------|---------|
 | `baseline.log` | After Step 2 (Baseline) | Output from EstablishBrokenBaseline.ps1 proving baseline was established |
 | `approach.md` | After Step 4 (Design) | What fix you're attempting and why it's different from existing fixes |
-| `reviewer-findings.json` | After Step 6 (Self-Review), refreshed by Step 7.5 | JSON array of self-review findings — `[]` when clean. **MUST reflect the final diff.** |
-| `reviewer-findings.diff` | After Step 6 (Self-Review), refreshed by Step 7.5 | Snapshot of `git diff` at the time the self-review was written. Step 7.5 compares this to the post-test-loop diff to detect drift. |
-| `result.txt` | After Step 7 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
-| `fix.diff` | After Step 7 (Test) | Output of `git diff` showing your changes |
-| `test-output.log` | After Step 7 (Test) | Full output from test command |
-| `analysis.md` | After Step 8 (Capture) | Why it worked/failed, insights learned, and a one-line self-review summary |
+| `result.txt` | After Step 6 (Test) | Single word: `Pass`, `Fail`, or `Blocked` |
+| `fix.diff` | After Step 6 (Test) | Output of `git diff` showing your changes |
+| `test-output.log` | After Step 6 (Test) | Full output from test command |
+| `analysis.md` | After Step 6 (Test) | Why it worked/failed, insights learned |
 
 **Example approach.md:**
 ```markdown
@@ -168,11 +125,10 @@ The skill is complete when:
 - [ ] ONE fix approach designed and implemented
 - [ ] Fix tested with provided test command (iterated up to 3 times if errors/failures)
 - [ ] Either: Tests PASS ✅, or exhausted attempts and documented why approach won't work ❌
-- [ ] **Expert self-review performed inline (Step 6) and `reviewer-findings.json` written** — `[]` if clean. **Refreshed by Step 7.5 if the test loop modified code, so the saved findings reflect the final diff.**
 - [ ] Analysis provided (success explanation or failure reasoning with evidence)
-- [ ] Artifacts saved to output directory (verified by Step 8 file-existence gate)
-- [ ] Baseline target files restored with no attempt-created changes; pre-existing untracked harness inputs remain untouched
-- [ ] Results reported to invoker (including `findings_count`)
+- [ ] Artifacts saved to output directory
+- [ ] Baseline restored (working directory clean)
+- [ ] Results reported to invoker
 
 🚨 **CRITICAL: What counts as "Pass" vs "Fail"**
 
@@ -251,21 +207,10 @@ Manual git commands bypass all of this and WILL cause infinite loops in CI.
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 *>&1 | Tee-Object -FilePath "$OUTPUT_DIR/baseline.log"
 ```
 
-If this command continues in the background, wait for its matching `shellId`
-with `read_bash` until it completes. The baseline is not established merely
-because the initial shell invocation returned.
-
 **Verify baseline was established:**
 ```powershell
 Select-String -Path "$OUTPUT_DIR/baseline.log" -Pattern "Baseline established"
 ```
-
-Read `.github/.baseline-state.json` after this command. Its `RevertedFiles`
-array is the complete modification allow-list for the attempt. Target files
-outside that array may be inspected but MUST NOT be edited. If the state file
-was not created, or `NewFiles` contains any path, report `Blocked` immediately
-and proceed to Step 9 without modifying tracked files; the restore script does
-not safely restore added production files.
 
 **If the script fails with "No fix files detected":** Report as `Blocked` — do NOT switch branches.
 
@@ -308,9 +253,7 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 [Description of what you're changing and why]
 
-**Prior approach avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
-
-**Mechanism-level difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoids that failure, not merely the code location]
+**Different from existing fix:** [How this differs from PR's current approach]
 "@ | Set-Content "$OUTPUT_DIR/approach.md"
 ```
 
@@ -318,86 +261,7 @@ Based on your analysis and any provided hints, design a single fix approach:
 
 Implement your fix. Use `git status --short` and `git diff` to track changes.
 
-### Step 6: Expert Self-Review (MANDATORY — runs BEFORE testing)
-
-🚨 **You perform this self-review yourself. Do NOT spawn the `@maui-expert-reviewer` sub-agent.** Step 8's file-existence gate enforces that `reviewer-findings.json` is written every attempt.
-
-This step runs BEFORE testing so you can catch design flaws before spending time on build+test cycles.
-
-**Procedure:**
-
-1. **Read the rules.** View these specific sections of `.github/agents/maui-expert-reviewer.md`:
-   - **`## Overarching Principles`** (8 numbered principles, near the top of the file) — apply to every fix
-   - **`## Dimension Routing`** + **`### Always-Active Dimensions`** — pick the dimensions that match your changed files
-   - For each routed dimension, jump to its CHECK list under `## Review Dimensions` (e.g., `### 1. Layout Measure-Arrange Correctness`)
-
-   You only need the dimensions that match the files you actually touched plus the always-active ones — typically 3–6 sections, not all 30.
-
-2. **Identify your changed files:**
-   ```powershell
-   git diff --name-only HEAD
-   ```
-
-   If you have NO code changes (e.g., Blocked because no device available before any fix was applied), still proceed to step 4 and write `'[]'` — the artifact gate is the enforcement mechanism.
-
-3. **Walk your diff against the rules:**
-   - For each Overarching Principle → does your diff violate it?
-   - For each routed dimension → walk every CHECK rule against the relevant hunks
-   - Always-Active dimensions (Logic and Correctness, Regression Prevention, Complexity Reduction) → apply regardless of file paths
-   - Be honest. If unsure, flag it.
-
-4. **Write findings to `$OUTPUT_DIR/reviewer-findings.json`.** Always write the file, even when there are zero findings. Use the same JSON format as the `@maui-expert-reviewer` agent (matches the GitHub Pull Request Review API):
-
-   ```powershell
-   # No findings — clean self-review (or no diff to review):
-   '[]' | Set-Content "$OUTPUT_DIR/reviewer-findings.json"
-
-   # With findings — JSON array of {path, line, body}:
-   @'
-   [
-     {
-       "path": "src/Core/src/Handlers/ScrollView/ScrollViewHandler.iOS.cs",
-       "line": 42,
-       "body": "**[major] Layout Measure-Arrange** — Content measured with unconstrained height but arranged with bounded height. Concrete scenario: ScrollView inside a Grid with Star row height."
-     }
-   ]
-   '@ | Set-Content "$OUTPUT_DIR/reviewer-findings.json"
-   ```
-
-   Each entry has exactly 3 fields:
-   - **`path`** (string) — file relative to repo root, must be a file present in your diff
-   - **`line`** (integer ≥ 1) — line number on the changed (right) side of the diff. The line MUST appear in your diff — picking an unchanged line is wrong. Use `1` only as a fallback for file-level concerns where no single line captures the issue (e.g., missing import, structural concern).
-   - **`body`** (string) — format `**[severity] Dimension** — description`. Severity is one of `critical`/`major`/`moderate`/`minor`.
-
-5. **Validate the JSON parses and capture the count:**
-   ```powershell
-   try {
-       $findings = @(Get-Content "$OUTPUT_DIR/reviewer-findings.json" -Raw | ConvertFrom-Json)
-       $findingsCount = $findings.Count
-       Write-Host "✅ reviewer-findings.json: $findingsCount findings"
-   } catch {
-       Write-Host "❌ reviewer-findings.json is invalid JSON: $_"
-       throw
-   }
-
-   # Snapshot the diff that was reviewed — Step 7.5 uses this to detect whether the test loop mutated code.
-   # Use Set-Content -Value with Out-String so the file is created even when the diff is empty
-   # (a bare `git diff | Set-Content` does NOT create the file when the pipe is empty).
-   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
-   ```
-
-   **Remember `$findingsCount`** — you will report it as `findings_count` in Step 10 and summarize it in `analysis.md` (Step 8).
-
-6. **Fix critical/major findings BEFORE testing:**
-   - If there are any `[critical]` or `[major]` findings → apply fixes for them in a single batch and rewrite `reviewer-findings.json` to reflect the new diff.
-   - All `[moderate]` and `[minor]` findings → note in `analysis.md` (Step 8); do NOT iterate.
-   - Only ONE correction round. Then proceed to Step 7 (Test).
-
-**Threshold guidance.** Only record findings with a concrete failing scenario. Stylistic preferences and bikeshedding (see the **`## What NOT to Flag`** table in `maui-expert-reviewer.md`) are not findings. An empty `[]` is the correct output for a clean fix — do not invent findings to fill the file.
-
-> **Why before testing?** Self-review catches design flaws (wrong null check, missing platform guard, thread safety issue) before you spend 5-15 minutes on a build+test cycle. It also runs when context is lightest — before test output floods the context window.
-
-### Step 7: Test and Iterate (MANDATORY)
+### Step 6: Test and Iterate (MANDATORY)
 
 🚨 **CRITICAL: ALWAYS use the provided test command script - NEVER manually build/compile.**
 
@@ -422,7 +286,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <proje
 
 1. **Run the test command** - It will build, deploy, and test automatically
 2. **Check the result:**
-   - ✅ **Tests PASS** → Move to Step 7.5 (Refresh self-review if needed)
+   - ✅ **Tests PASS** → Move to Step 7 (Capture Artifacts)
    - ❌ **Compile errors** → Fix compilation issues (see below), go to step 1
    - ❌ **Tests FAIL (runtime)** → Analyze failure, fix code, go to step 1
 3. **Maximum 3 iterations** - If still failing after 3 attempts, analyze if approach is fundamentally flawed
@@ -435,63 +299,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project <proje
 
 See [references/compile-errors.md](references/compile-errors.md) for error patterns and iteration examples.
 
-### Step 7.5: Refresh Self-Review If Code Changed (MANDATORY)
-
-🚨 **The test loop in Step 7 may modify code (compile-error fixes, runtime-error fixes). When that happens, the `reviewer-findings.json` written in Step 6 describes a stale diff — not the diff that will be captured in Step 8 and shipped to the reviewer.** This step re-runs the self-review against the *final* diff so the recorded findings always correspond to the actual fix.
-
-**Procedure:**
-
-1. **Detect drift.** Compare the current working-tree diff against the diff Step 6 reviewed.
-
-   ```powershell
-   # Force both sides to a single string. `git diff` assigned to a variable is a string[]
-   # (one element per line); `-ne` between an array and a scalar is element-wise filtering,
-   # not equality. Both must be normalized to the same shape before comparison.
-   #
-   # Also: `Get-Content -Raw` on a 0-byte file returns $null, not "". The Step 6 snapshot
-   # creates a 0-byte file when the diff is empty (the documented Blocked-with-no-diff path),
-   # so coalesce $null to "" via `?? ''` to avoid a false-positive "" -ne $null drift detection.
-   $currentDiff  = (git diff | Out-String)
-   $reviewedDiff = if (Test-Path "$OUTPUT_DIR/reviewer-findings.diff") {
-       (Get-Content "$OUTPUT_DIR/reviewer-findings.diff" -Raw) ?? ''
-   } else { '' }
-
-   $diffChanged = ($currentDiff -ne $reviewedDiff)
-   if (-not $diffChanged) {
-       Write-Host "✅ Diff unchanged since Step 6 — self-review still current. Skip sub-steps 2 and 3."
-   } else {
-       Write-Host "🔁 Code changed during Step 7 — refreshing self-review against final diff..."
-   }
-   ```
-
-2. **If `$diffChanged` is `$true`, re-do the Step 6 self-review against the new diff.** This is YOU walking the rules again — it is *not* something the script does. Repeat the same procedure from Step 6:
-
-   1. **Re-list changed files:** `git diff --name-only HEAD`
-   2. **Re-walk the rules** in `.github/agents/maui-expert-reviewer.md` — every Overarching Principle, the always-active dimensions, and any routed dimensions whose file paths now match.
-   3. **Rewrite `$OUTPUT_DIR/reviewer-findings.json`** with the new findings (or `'[]'` if clean). The file MUST be overwritten — appending or leaving the old content is a bug. Use the same JSON schema documented in Step 6.
-
-3. **Re-snapshot and re-validate.** Only after rewriting the JSON in sub-step 2, run:
-
-   ```powershell
-   # Re-snapshot the diff (matches Step 6's snapshot logic — works for empty diffs too).
-   Set-Content -Path "$OUTPUT_DIR/reviewer-findings.diff" -Value (git diff | Out-String) -NoNewline
-
-   # Re-validate the JSON parses and capture the new count.
-   try {
-       $findings = @(Get-Content "$OUTPUT_DIR/reviewer-findings.json" -Raw | ConvertFrom-Json)
-       $findingsCount = $findings.Count
-       Write-Host "✅ reviewer-findings.json refreshed: $findingsCount findings"
-   } catch {
-       Write-Host "❌ reviewer-findings.json is invalid JSON: $_"
-       throw
-   }
-   ```
-
-   > **Why no programmatic "did you actually rewrite the JSON" check?** A SHA256 hash sentinel rejects the legitimate byte-identical case (e.g., `[]` → `[]` after a small compile fix that introduces no new violations), and that case is common. The procedural enforcement is sub-step 2's explicit numbered list above, plus the example-invocation chain that walks the dimensions explicitly. If sub-step 2 is skipped, the JSON validates but ships a stale review — accept that risk in exchange for not blocking valid clean fixes.
-
-**Severity handling is the same as Step 6.** If the refresh surfaces new `[critical]` or `[major]` findings, you may apply ONE more fix batch and re-run the test loop, then re-refresh. Do not loop indefinitely — if a fix introduces critical findings on the third pass, mark the attempt `Blocked` and explain in `analysis.md`.
-
-### Step 8: Capture Artifacts (MANDATORY)
+### Step 7: Capture Artifacts (MANDATORY)
 
 **Before reverting, save ALL required files to `$OUTPUT_DIR`:**
 
@@ -499,18 +307,13 @@ See [references/compile-errors.md](references/compile-errors.md) for error patte
 # 1. Save result (MUST be exactly "Pass", "Fail", or "Blocked")
 "Pass" | Set-Content "$OUTPUT_DIR/result.txt"  # or "Fail"
 
-# 2. Save the diff (use Set-Content -Value with Out-String so the file is created
-#    even when the diff is empty — a bare `git diff | Set-Content` does not create
-#    the file when the pipe is empty, which would fail the artifact gate.)
-Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewline
+# 2. Save the diff
+git diff | Set-Content "$OUTPUT_DIR/fix.diff"
 
-# 3. Save test output (should already exist from Step 7)
+# 3. Save test output (should already exist from Step 6)
 # Copy-Item "path/to/test-output.log" "$OUTPUT_DIR/test-output.log"
 
-# 4. reviewer-findings.json should already exist from Step 6 (and may have been refreshed by Step 7.5)
-# 4b. reviewer-findings.diff snapshot (used by Step 7.5 to detect drift)
-
-# 5. Save analysis (include a one-line summary of self-review findings)
+# 4. Save analysis
 @"
 ## Analysis
 
@@ -520,69 +323,31 @@ Set-Content -Path "$OUTPUT_DIR/fix.diff" -Value (git diff | Out-String) -NoNewli
 
 **Why it worked/failed:** [Root cause analysis]
 
-**Self-review:** [N findings: brief summary of each, or "clean — no findings"]
-
 **Insights:** [What was learned that could help future attempts]
 "@ | Set-Content "$OUTPUT_DIR/analysis.md"
 ```
 
-**Verify all required files exist (this is the enforcement gate for Steps 6 and 7 — primarily `reviewer-findings.json` from Step 6, refreshed by Step 7.5 if needed):**
-
-🚨 **The artifact check below MUST be wrapped so that Step 9 (Restore) ALWAYS runs even if the check fails.** A failed gate that skips restore would leave the worktree dirty and corrupt the next sequential try-fix attempt.
-
+**Verify all required files exist:**
 ```powershell
-# Run the file-existence check, but DEFER any throw until after Step 9 has restored the worktree.
-$missing = @()
-@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log", "reviewer-findings.json", "reviewer-findings.diff") | ForEach-Object {
-    if (Test-Path "$OUTPUT_DIR/$_") {
-        Write-Host "✅ $_"
-    } else {
-        Write-Host "❌ MISSING: $_"
-        $missing += $_
-    }
-}
-
-# Record the gate result for use after Step 9 — DO NOT throw here.
-if ($missing.Count -gt 0) {
-    $gateFailureMessage = "Required artifacts missing: $($missing -join ', '). If 'reviewer-findings.json' is missing, Step 6 (Expert Self-Review) was not performed (or Step 7.5 did not refresh it after the test loop) — it is mandatory and must contain at least '[]' that reflects the final diff."
-    Write-Host "⚠️  ARTIFACT GATE FAILED — proceeding to Step 9 restore before reporting failure."
-    Write-Host $gateFailureMessage
-    "Blocked" | Set-Content "$OUTPUT_DIR/result.txt" -Force
-} else {
-    $gateFailureMessage = $null
+@("baseline.log", "approach.md", "result.txt", "fix.diff", "analysis.md", "test-output.log") | ForEach-Object {
+    if (Test-Path "$OUTPUT_DIR/$_") { Write-Host "✅ $_" } 
+    else { Write-Host "❌ MISSING: $_" }
 }
 ```
 
-**If `$gateFailureMessage` was set:** Step 9 still runs (do NOT skip it). After Step 9 restores the target files, surface the failure in Step 10's report — set `result.txt` to `Blocked` (already done above) and explain in `analysis.md` which artifact was missing. The next sequential attempt then starts from the same restored baseline state, including any pre-existing untracked harness inputs.
-
 **Analysis quality matters.** Bad: "Didn't work". Good: "Fix attempted to reset state in OnPageSelected, but this fires after layout measurement. The cached value was already used."
 
-### Step 9: Restore Working Directory (MANDATORY — runs even if Step 8 gate failed)
+### Step 8: Restore Working Directory (MANDATORY)
 
-**ALWAYS restore, even if fix failed or Step 8 detected missing artifacts.** Skipping restore corrupts the next sequential try-fix attempt.
+**ALWAYS restore, even if fix failed.**
 
 ```bash
 pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore
 ```
 
-If restore continues in the background, wait for its matching `shellId` with
-`read_bash` until it completes. When Step 2 created `.github/.baseline-state.json`,
-do not report the attempt or end the session until restore confirms
-`Restored True`. If Step 2 already reported `Blocked` before changing any files
-and verified that baseline state was never created because all fix files were
-new or no fix files were detected, the expected completion is
-`No baseline state found` with `Restored False`; accept that result only for
-those verified no-state paths and only when no attempt edits were made.
-
 🚨 Use `EstablishBrokenBaseline.ps1 -Restore` — not `git checkout`, `git restore`, or `git reset` (see Step 2 for why).
 
-After restoration, leave every pre-existing untracked path unchanged. In
-particular, an evaluator-loaded `try-fix/` directory may remain visible in
-`git status --short`; do not delete it. Judge restoration by `Restored True`
-and by the absence of attempt-created changes to the allowed target files, not
-by forcing all untracked harness inputs out of the workspace.
-
-### Step 10: Report Results
+### Step 9: Report Results
 
 Provide structured output to the invoker:
 
@@ -591,16 +356,10 @@ Provide structured output to the invoker:
 
 **Approach:** [Brief description of what was tried]
 
-**Prior Approach Avoided:** [Name every relevant existing/prior approach, their shared failure mechanism, and why they failed, or N/A]
-
-**Mechanism-Level Difference:** [Explain the full cause-to-effect chain showing why the new mechanism avoided that failure]
-
 **Files Changed:**
 - `path/to/file.cs` (+X/-Y lines)
 
 **Result:** ✅ PASS / ❌ FAIL
-
-**Self-Review:** N findings (X critical, Y major, Z moderate/minor) — see `reviewer-findings.json`
 
 **Analysis:**
 [Why it worked, or why it failed and what was learned]
@@ -612,13 +371,6 @@ Provide structured output to the invoker:
 **Reasoning:** [Why this specific approach succeeded or failed]
 ```
 
-The two approach-comparison fields must be self-contained prose, not labels or
-fragments. When prior attempts share a root cause, explicitly name that shared
-failure mechanism. Then connect the new mechanism to the failure with a causal
-explanation (for example, “because X now happens after Y, Z is available
-directly, so the failing fallback is never consulted”). Do not rely on the
-contents of `approach.md` or `analysis.md` being visible to the invoker.
-
 **Determining Status:** Set `Done` when you've completed testing this approach (whether it passed or failed). Set `NeedsRetry` only if you hit a transient error (network timeout, flaky test) and want to retry the same approach.
 
 ## Error Handling
@@ -629,7 +381,7 @@ contents of `approach.md` or `analysis.md` being visible to the invoker.
 | Test command fails to run | Report build/setup error with details |
 | Test times out | Report timeout, include partial output |
 | Can't determine fix approach | Report "no viable approach identified" with reasoning |
-| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/9) |
+| Git state unrecoverable | Run `pwsh .github/scripts/EstablishBrokenBaseline.ps1 -Restore` (see Step 2/8) |
 
 ---
 
@@ -650,3 +402,5 @@ contents of `approach.md` or `analysis.md` being visible to the invoker.
 ---
 
 See [references/example-invocation.md](references/example-invocation.md) for a complete example with sample inputs.
+
+

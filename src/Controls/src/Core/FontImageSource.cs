@@ -1,5 +1,4 @@
 #nullable disable
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -58,13 +57,13 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty =
-			BindableProperty.Create(nameof(FontAutoScalingEnabled), typeof(bool), typeof(FontImageSource), BooleanBoxes.FalseBox,
+			BindableProperty.Create(nameof(FontAutoScalingEnabled), typeof(bool), typeof(FontImageSource), false,
 				propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 	}
 }

@@ -31,5 +31,6 @@
         <AdditionalProperties>CodesignRequireProvisioningProfile=false</AdditionalProperties>
     </ProjectToBuild>
     <ProjectToBuild Include="$(RepoRoot)src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj" BuildInParallel="false" />
+    <ProjectToBuild Include="$(RepoRoot)src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj" BuildInParallel="false" />
   </ItemGroup>
 </Project>

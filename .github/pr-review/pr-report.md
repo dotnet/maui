@@ -12,26 +12,18 @@
 
 - Phases 1-2 (Pre-Flight, Try-Fix) must be complete before starting
 - Gate result is available from the prompt (ran separately before this skill)
-- **Read `pre-flight/content.md`** to get the code-review summary (verdict, confidence, error/warning counts)
-- Optionally read `pre-flight/code-review.md` for full findings if needed for the recommendation
 
 ---
 
 ## Steps
 
-1. **Determine recommendation** (rows evaluated in order — first match wins):
+1. **Determine recommendation:**
 
-   | Priority | Condition | Recommendation |
-   |----------|-----------|----------------|
-   | 1 | Code review verdict is `NEEDS_CHANGES` (any ❌ errors) | `⚠️ REQUEST CHANGES` — code review found errors |
-   | 2 | Gate failed (tests fail with fix) | `⚠️ REQUEST CHANGES` — fix doesn't work |
-   | 3 | Alternative fix found via Try-Fix that is simpler/better | `⚠️ REQUEST CHANGES` — suggest alternative |
-   | 4 | Code review verdict is `NEEDS_DISCUSSION` | `⚠️ REQUEST CHANGES` — include code review concerns |
-   | 5 | PR's fix selected AND Gate passed AND code review LGTM or SKIPPED | `✅ APPROVE` |
-
-   **🚨 Hard gate:** If the code review (from Pre-Flight) has verdict `NEEDS_CHANGES`, the final recommendation MUST be `REQUEST CHANGES` regardless of Gate or Try-Fix results. Code-review ❌ Errors cannot be overridden by passing tests alone.
-
-   **Code review SKIPPED:** If the code-review sub-agent failed or timed out (verdict = `SKIPPED`), the hard gate does NOT apply. Proceed as if code review was not available — base the recommendation on Gate and Try-Fix results only. Note in the report that code review was unavailable.
+   | Condition | Recommendation |
+   |-----------|----------------|
+   | PR's fix selected and Gate passed | `✅ APPROVE` |
+   | Alternative fix found via Try-Fix | `⚠️ REQUEST CHANGES` — suggest alternative |
+   | Gate failed | `⚠️ REQUEST CHANGES` — fix doesn't work |
 
 2. **Write output files** — Save recommendation to `content.md`
 
@@ -55,13 +47,9 @@ Write `content.md`:
 | Phase | Status | Notes |
 |---|---|---|
 | Pre-Flight | ✅ COMPLETE | {notes} |
-| Code Review | {verdict} ({confidence}) | {error_count} errors, {warning_count} warnings |
 | Gate | ✅ PASSED | {platform} |
 | Try-Fix | ✅ COMPLETE | {N} attempts, {M} passing |
 | Report | ✅ COMPLETE | |
-
-### Code Review Impact on Try-Fix
-{Brief description of how code-review findings influenced try-fix exploration. Did any model specifically address a code review ❌ Error? Did failure-mode probes reveal issues that guided fix approaches?}
 
 ### Summary
 {Brief summary of the review}
@@ -70,7 +58,7 @@ Write `content.md`:
 {Root cause analysis}
 
 ### Fix Quality
-{Assessment of the fix — informed by both gate results and code review findings}
+{Assessment of the fix}
 ```
 
 ---

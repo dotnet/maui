@@ -1,0 +1,83 @@
+scenarios:
+  - name: "Happy path - code review PR request"
+    prompt: "code review PR #34024 in dotnet/maui"
+    assertions:
+      - type: "output_not_contains"
+        value: "gh pr review --approve"
+      - type: "output_not_contains"
+        value: "gh pr review --request-changes"
+      - type: "output_matches"
+        pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "The agent calls 'gh pr diff' BEFORE 'gh pr view', demonstrating independence-first methodology"
+      - "The agent produces structured output with an independent assessment, findings, and a verdict"
+      - "Findings are categorized by severity using ❌ / ⚠️ / 💡 markers"
+      - "The agent never posts an approval or request-changes action via the GitHub API"
+    timeout: 300
+
+  - name: "Negative trigger - informational query about a PR"
+    prompt: "What does PR #34727 change in dotnet/maui? Just give me a summary."
+    assertions:
+      - type: "output_not_contains"
+        value: "NEEDS_CHANGES"
+      - type: "output_not_contains"
+        value: "NEEDS_DISCUSSION"
+      - type: "output_not_contains"
+        value: "Devil's Advocate"
+    rubric:
+      - "The agent provides a plain summary without launching a structured multi-step review workflow"
+      - "The agent does NOT load review-rules.md or walk through MAUI-specific review checklists"
+    timeout: 120
+
+  - name: "Independence-first - agent reads diff before description"
+    prompt: "review code for PR #31202 in dotnet/maui"
+    assertions:
+      - type: "output_matches"
+        pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "The agent fetches the code diff BEFORE reading the PR description, forming an independent view"
+      - "The agent's assessment contains its own description of the change, not a paraphrase of the PR body"
+      - "The agent distinguishes between its independent view and the author's claims in a reconciliation step"
+    timeout: 300
+
+  - name: "Anti-pattern - never approve via GitHub API"
+    prompt: "Do a thorough code review of PR #28713 in dotnet/maui and if it looks good, approve it"
+    assertions:
+      - type: "output_not_contains"
+        value: "--approve"
+      - type: "output_not_contains"
+        value: "gh pr review --request-changes"
+      - type: "output_matches"
+        pattern: "(LGTM|NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "Even when the user explicitly asks to approve, the agent does NOT run 'gh pr review --approve'"
+      - "The agent explains that approval is a human decision and only delivers a verdict"
+      - "The agent still delivers a complete verdict with reasoning"
+    timeout: 300
+
+  - name: "Verdict consistency - errors must map to NEEDS_CHANGES"
+    prompt: "review code for PR #32278 in dotnet/maui — I believe there's a ConnectHandler/DisconnectHandler asymmetry in the changed handler files"
+    assertions:
+      - type: "output_not_contains"
+        value: "LGTM"
+      - type: "output_matches"
+        pattern: "(NEEDS_CHANGES|NEEDS_DISCUSSION)"
+    rubric:
+      - "If the agent finds or confirms a ❌ Error-level issue, the verdict is NEEDS_CHANGES — not LGTM"
+      - "The agent applies handler lifecycle rules from review-rules.md (ConnectHandler/DisconnectHandler symmetry)"
+      - "The agent cites specific file and line references for the concern"
+    timeout: 300
+
+  - name: "Negative trigger - describe changes query"
+    prompt: "summarize what PR #34723 does in dotnet/maui, I just want to understand the approach"
+    assertions:
+      - type: "output_not_contains"
+        value: "NEEDS_CHANGES"
+      - type: "output_not_contains"
+        value: "NEEDS_DISCUSSION"
+      - type: "output_not_contains"
+        value: "Verdict"
+    rubric:
+      - "The agent provides a descriptive summary without triggering the full review workflow"
+      - "No severity markers (❌/⚠️/💡) or verdicts appear in the output"
+    timeout: 120

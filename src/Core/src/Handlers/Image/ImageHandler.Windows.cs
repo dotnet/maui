@@ -10,8 +10,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, WImage>
 	{
-		private Graphics.Size _cachedImageSize;
-
 		/// <inheritdoc/>
 		protected override WImage CreatePlatformView() => new WImage();
 
@@ -71,13 +69,7 @@ namespace Microsoft.Maui.Handlers
 			// unconstrained here and rely on layout constraints.
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
-				// Read the live decoded size first: WinUI sets PixelWidth/PixelHeight synchronously
-				// once decoding completes, before firing ImageOpened. Reading live here closes the
-				// race window where the cache is still Zero but the bitmap is already decoded (#32393).
-				// Fall back to cache only when the live size is not yet available.
 				var imageSize = GetImageSize();
-				if (imageSize.Width <= 0 || imageSize.Height <= 0)
-					imageSize = _cachedImageSize;
 				double w = possibleSize.Width;
 				double h = possibleSize.Height;
 
@@ -213,12 +205,9 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			// Reset platform caps and the size cache so we don't keep stale values between sources.
-			// Clearing the cache here ensures a failed subsequent load (where OnImageOpened never fires)
-			// does not cap GetDesiredSize to the previous image's dimensions.
+			// Reset platform caps so we don't keep stale values between sources
 			if (handler is ImageHandler ih && ih.PlatformView is not null)
 			{
-				ih._cachedImageSize = Graphics.Size.Zero;
 				ih.PlatformView.MaxWidth = double.PositiveInfinity;
 				ih.PlatformView.MaxHeight = double.PositiveInfinity;
 			}
@@ -232,13 +221,6 @@ namespace Microsoft.Maui.Handlers
 			// handler hasn't been disconnected
 			if (this.IsConnected())
 			{
-				// Only cache when decode produced positive dimensions.
-				// A blank BitmapImage (e.g. during source transitions) fires ImageOpened
-				// with PixelWidth=0; ignoring it preserves the last-known-good size.
-				var sz = GetImageSize();
-				if (sz.Width > 0 && sz.Height > 0)
-					_cachedImageSize = sz;
-
 				UpdateValue(nameof(IImage.IsAnimationPlaying));
 				// Apply platform constraints when the decoded size is available
 				UpdatePlatformMaxConstraints();
@@ -256,12 +238,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (VirtualView.Aspect == Aspect.AspectFit)
 			{
-				// Use live decoded size when available; fall back to cache during source
-				// transitions so MaxWidth/MaxHeight are not reset to ∞ while a new image
-				// is still decoding (blank BitmapImage reports PixelWidth=0).
 				var sz = GetImageSize();
-				if (sz.Width <= 0 || sz.Height <= 0)
-					sz = _cachedImageSize;
 
 				// Width: cap to intrinsic only if horizontal alignment isn't Fill
 				if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill && sz.Width > 0)
@@ -285,7 +262,7 @@ namespace Microsoft.Maui.Handlers
 
 		private Graphics.Size GetImageSize()
 		{
-			if (PlatformView?.Source is BitmapSource bitmap)
+			if (PlatformView.Source is BitmapSource bitmap)
 			{
 				// BitmapSource may not have PixelWidth/PixelHeight set until image is loaded
 				if (bitmap.PixelWidth > 0 && bitmap.PixelHeight > 0)

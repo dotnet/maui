@@ -39,7 +39,6 @@ public class Issue32586 : ContentPage
 		{
 			Text = "Top Marker",
 			FontSize = 12,
-			HeightRequest = 50,
 			HorizontalOptions = LayoutOptions.Center,
 			AutomationId = "TopMarker"
 		};

@@ -169,10 +169,5 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_size = size;
 		}
-
-		internal override void ClearMeasureCache()
-		{
-			_size = null;
-		}
 	}
 }

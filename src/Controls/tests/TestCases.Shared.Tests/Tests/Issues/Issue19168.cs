@@ -21,7 +21,6 @@ public class Issue19168 : _IssuesUITest
 		App.TapCoordinates(600, 200);
 		App.WaitForElement("Button");
 #elif ANDROID
-		App.WaitForElement("Baboon");
 		App.TapCoordinates(0, 100);
 #elif WINDOWS
 		App.TapCoordinates(60, 600);

@@ -73,7 +73,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private Cookie GetTestCookie()
 		{
-			return new Cookie("TestCookie", $"{_guid}", "/", "example.com");
+			return new Cookie("TestCookie", $"{_guid}", "/", "dotnet.microsoft.com");
 		}
 
 		private WebView GetWebView()
@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample.Issues
 
 			SetCookieContainer(anotherWebView);
 			anotherWebView.Navigated += WebViewOnNavigated;
-			anotherWebView.Source = "https://example.com";
+			anotherWebView.Source = "https://dotnet.microsoft.com";
 			return anotherWebView;
 		}
 

@@ -547,20 +547,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF aPath)
 		{
 			var platformPath = aPath.AsAndroidPath();
-
-			if (_shader != null)
-			{
-				// Mirror iOS ReplacePathWithStrokedPath: convert stroke geometry into a fill path
-				using var strokedOutline = new Path();
-				CurrentState.StrokePaintWithAlpha.GetFillPath(platformPath, strokedOutline);
-				// FillPaintWithAlpha already has the gradient shader from SetFillPaint
-				_canvas.DrawPath(strokedOutline, CurrentState.FillPaintWithAlpha);
-			}
-			else
-			{
-				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-			}
-
+			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 			platformPath.Dispose();
 		}
 

@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\Microsoft.Maui.sln",
     "projects": [
+      "src\\AI\\src\\Essentials.AI\\Essentials.AI.csproj",
       "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\BlazorWebView\\src\\WindowsForms\\Microsoft.AspNetCore.Components.WebView.WindowsForms.csproj",
       "src\\BlazorWebView\\src\\Wpf\\Microsoft.AspNetCore.Components.WebView.Wpf.csproj",

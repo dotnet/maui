@@ -47,12 +47,6 @@ NEVER say "verification passed" when tests PASS without the fix.
 
 ## Workflow
 
-### Interpretation-Only Requests
-
-If the caller asks how to read or report verification output, explain the result
-contract below without running the script. Do not turn a question about result
-semantics into a verification run.
-
 ### Step 1: Determine Mode
 - Check if fix files exist in the PR (non-test code changes detected by the script from the git diff)
 - If **fix files present** → Full Verification mode (`-RequireFullVerification`)
@@ -66,38 +60,14 @@ pwsh .github/skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1 
   [-RequireFullVerification]  # Only if fix files exist
 ```
 
-Run the prescribed script once and let it own every fix-file transition and
-cleanup step. Do not manually mutate the worktree before or after it with
-`git checkout`, `git clean`, `git restore`, `git reset`, `git stash`,
-`git apply --reverse`/`git apply -R`, or an equivalent file-reversion command.
-If the script leaves an unexpected tracked or untracked change, report the
-verification as Blocked with the observed status instead of cleaning it up.
-
 ### Step 3: Interpret Results
 ⚠️ Remember: test outcomes are INVERTED from normal!
-- If the command continues in the background and returns a shell/session ID,
-  call the matching result-read tool with that exact ID. If it is still
-  running, keep waiting on the same ID until it completes. Never report,
-  summarize partial output, or end the turn before observing the completed
-  result and its `VERIFICATION PASSED`, `VERIFICATION FAILED`, or error/timeout
-  outcome.
 - Script outputs `VERIFICATION PASSED` → Tests catch the bug ✅
 - Script outputs `VERIFICATION FAILED` → Tests don't catch the bug ❌
 - Script outputs error/timeout → Report as Blocked
 
 ### Step 4: Report
-- Always report the script's exact terminal marker and explain the observed
-  phase results:
-  - `VERIFICATION PASSED` in failure-only mode means the test failed without
-    the fix, proving that it catches the bug.
-  - `VERIFICATION PASSED` in full mode means the test failed without the fix
-    and passed with the fix.
-  - `VERIFICATION FAILED` because the test passed without the fix means the
-    test does not catch the bug.
-  - `VERIFICATION FAILED` because the test failed with the fix means the fix
-    did not resolve the tested behavior, or the test failed for another reason.
-  - An error, timeout, or unexpected worktree change is `Blocked`; report the
-    observed evidence without converting it into a pass or cleaning it up.
+- Report the result to the invoking orchestrator
 
 ## Mode 1: Verify Failure Only (Test Creation)
 
@@ -256,9 +226,6 @@ CustomAgentLogsTmp/
 # Explicit fix files  
 -FixFiles @("src/Core/src/File.cs")
 
-# Explicit base branch (ordinary PR metadata remains authoritative)
+# Explicit base branch
 -BaseBranch "main"
-
-# Full commit SHA (frozen-fixture mode uses the local immutable diff)
--BaseBranch "$(git rev-parse HEAD^)"
 ```

@@ -1,14 +1,13 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.ScrollView;
 
 	/// <summary>The scroll view instance that Microsoft.Maui.Controls created on the iOS platform.</summary>
 	public static class ScrollView
 	{
 		/// <summary>Bindable property for <see cref="ShouldDelayContentTouches"/>.</summary>
-		public static readonly BindableProperty ShouldDelayContentTouchesProperty = BindableProperty.Create(nameof(ShouldDelayContentTouches), typeof(bool), typeof(ScrollView), BooleanBoxes.TrueBox);
+		public static readonly BindableProperty ShouldDelayContentTouchesProperty = BindableProperty.Create(nameof(ShouldDelayContentTouches), typeof(bool), typeof(ScrollView), true);
 
 		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
 		/// <param name="element">The platform specific element on which to perform the operation.</param>
@@ -23,7 +22,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to delay; <see langword="false"/> for immediate touch response.</param>
 		public static void SetShouldDelayContentTouches(BindableObject element, bool value)
 		{
-			element.SetValue(ShouldDelayContentTouchesProperty, BooleanBoxes.Box(value));
+			element.SetValue(ShouldDelayContentTouchesProperty, value);
 		}
 
 		/// <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>

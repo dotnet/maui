@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty =
-			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), BooleanBoxes.FalseBox,
+			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
 				{
 					if (bindable is not CheckBox checkBox)
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get => (bool)GetValue(IsCheckedProperty);
-			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value));
+			set => SetValue(IsCheckedProperty, value);
 		}
 
 		protected internal override void ChangeVisualState()
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls
 		bool ICheckBox.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
 		}
 
 		ICommand ICommandElement.Command => Command;

@@ -49,7 +49,7 @@ public class Issue29544 : ContentPage
 			Text = "Previous Position: none"
 		};
 
-		_carouselView = new CarouselView2
+		_carouselView = new CarouselView
 		{
 			AutomationId = "CarouselView",
 			Loop = false,

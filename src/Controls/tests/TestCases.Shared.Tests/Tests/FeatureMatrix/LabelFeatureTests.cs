@@ -698,7 +698,6 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/37117
 	[Test, Order(37)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndMaxlines()
@@ -717,7 +716,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(MainLabel);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
 	[Test, Order(59)]
 	[Category(UITestCategories.Label)]
@@ -738,7 +736,6 @@ public class LabelFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/37117
 	[Test, Order(38)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeNoWrap()
@@ -787,7 +784,6 @@ public class LabelFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 #endif
 
 	[Test, Order(45)]

@@ -20,9 +20,7 @@ concurrency:
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-    # Guard: only run in dotnet/maui — prevents the scheduled run from firing
-    # in forks and pinging fork owners with duplicate queue issues.
-    if: github.repository_owner == 'dotnet' && github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     permissions:
       contents: read
       issues: write
@@ -88,7 +86,7 @@ jobs:
   # Dry-run on PRs: validate the script works without creating issues
   validate:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'dotnet' && github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
       pull-requests: read

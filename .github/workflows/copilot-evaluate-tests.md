@@ -1,20 +1,5 @@
 ---
 description: Evaluates test quality, coverage, and appropriateness on PRs that add or modify tests
-
-# ###############################################################
-# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
-# Run agentic jobs in an isolated `copilot-pat-pool` environment.
-#
-# When org-level billing is available, this will be removed.
-# See `shared/pat_pool.README.md` for more information.
-# ###############################################################
-imports:
-  - uses: shared/pat_pool.md
-    with:
-      environment: copilot-pat-pool
-
-environment: copilot-pat-pool
-
 on:
   # pull_request_target is intentionally disabled — we don't want auto-runs on PR create/update.
   # pull_request_target:
@@ -29,14 +14,13 @@ on:
     inputs:
       pr_number:
         description: 'PR number to evaluate'
-        required: false
+        required: true
         type: number
       suppress_output:
         description: 'Dry-run — evaluate but do not post output on the PR'
         required: false
         type: boolean
         default: false
-  roles: [admin, maintain, write]
   bots:
     - "copilot-swe-agent[bot]"
 
@@ -53,11 +37,9 @@ permissions:
   issues: read
   pull-requests: read
 
-model: gpt-5.6-sol
 engine:
   id: copilot
-  env:
-    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
+  model: claude-sonnet-4.6
 
 safe-outputs:
   add-comment:
@@ -80,7 +62,7 @@ network: defaults
 
 concurrency:
   group: "evaluate-pr-tests-${{ github.event.issue.number || inputs.pr_number || github.run_id }}"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 timeout-minutes: 20
 
@@ -122,6 +104,23 @@ steps:
       fi
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
+
+  # For slash_command triggers, the gh-aw platform's checkout_pr_branch.cjs runs
+  # AFTER all user steps and overlays the PR branch onto the workspace. This means
+  # fork PRs can supply their own .github/skills/ and .github/instructions/.
+  # We cannot restore trusted infra here because the platform checkout runs later.
+  # Mitigation: agent is sandboxed (no credentials), max 1 comment via safe-outputs,
+  # and the agent prompt includes a pre-flight check that catches missing SKILL.md.
+  # See: .github/instructions/gh-aw-workflows.instructions.md "The issue_comment + Fork Problem"
+
+  # For workflow_dispatch, the platform skips checkout entirely — this step is the
+  # only thing that gets the PR code onto disk and restores trusted infra from main.
+  - name: Checkout PR and restore agent infrastructure
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+    run: pwsh .github/scripts/Checkout-GhAwPr.ps1
 ---
 
 # Evaluate PR Tests
@@ -133,7 +132,7 @@ Invoke the **evaluate-pr-tests** skill: read and follow `.github/skills/evaluate
 - **Repository**: ${{ github.repository }}
 - **PR Number**: ${{ github.event.issue.number || inputs.pr_number }}
 
-The PR is available via MCP tools. Use `gh pr view` and `gh pr diff` to access PR data.
+The PR branch has been checked out for you. All files from the PR are available locally.
 
 ## Pre-flight check
 

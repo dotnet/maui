@@ -1,6 +1,5 @@
 #nullable disable
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -48,9 +47,6 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					_shell?.RemoveLogicalChild(_content);
 
-				// Remove resource listener from previous content
-				if (_content is IElementDefinition contentDef)
-					contentDef.RemoveResourcesChangedListener(OnResourcesChanged);
 				_content.Cleanup();
 				_content.BindingContext = null;
 				_content.Parent = null;
@@ -83,9 +79,7 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					_shell.AddLogicalChild(_content);
 
-				// Listen for resource changes to re-apply visual state when DynamicResources change at runtime
-				if (_content is IElementDefinition contentDef)
-					contentDef.AddResourcesChangedListener(OnResourcesChanged);
+
 				var platformView = _content.ToPlatform(_shell.Handler.MauiContext);
 
 				Content = platformView;
@@ -122,6 +116,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				base.MeasureOverride(availableSize);
 				var request = view.Measure(availableSize.Width, availableSize.Height);
+				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 				return request.ToPlatform();
 			}
 
@@ -137,10 +132,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (finalSize.Width > 0 && _content is IView view)
 			{
 				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-				// Clip to the final arranged size so any layout that expands to fill available
-				// width (e.g. Grid with star columns, FlexLayout, custom panels) is not
-				// clipped to its minimum measured width.
-				Clip = new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) };
 			}
 
 			return finalSize;
@@ -148,15 +139,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateVisualState()
 		{
-			if (_content?.BindingContext is BaseShellItem baseShellItem)
+			if (_content?.BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
 			{
-				VisualStateManager.GoToState(_content, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
+				if (baseShellItem.IsChecked)
+					VisualStateManager.GoToState(_content, "Selected");
+				else
+					VisualStateManager.GoToState(_content, "Normal");
 			}
-		}
-
-		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
-		{
-			UpdateVisualState();
 		}
 
 		static void IsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

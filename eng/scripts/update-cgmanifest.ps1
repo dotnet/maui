@@ -57,7 +57,7 @@ $packageVersionMappings = @{
     # Additional packages specified by the user
     'Syncfusion.Maui.Toolkit' = 'SyncfusionMauiToolkitPackageVersion'
     'Microsoft.Data.Sqlite.Core' = 'MicrosoftDataSqliteCorePackageVersion'
-    'SQLitePCLRaw.bundle_e_sqlite3' = 'SQLitePCLRawBundleESqlite3PackageVersion'
+    'SQLitePCLRaw.bundle_green' = 'SQLitePCLRawBundleGreenPackageVersion'
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
 }
 
