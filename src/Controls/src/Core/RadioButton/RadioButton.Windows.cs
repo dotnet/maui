@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Internals;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Windows.Foundation;
 
 namespace Microsoft.Maui.Controls
@@ -22,15 +21,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			RadioButtonHandler.MapContent(handler, radioButton);
-
-			if ((radioButton.TextTransform is TextTransform.Lowercase or TextTransform.Uppercase) && !string.IsNullOrEmpty(radioButton.Content?.ToString()))
-			{
-				if (handler.PlatformView is Microsoft.UI.Xaml.Controls.RadioButton platformRadioButton)
-				{
-					var transformedText = TextTransformUtilities.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
-					platformRadioButton.Content = transformedText;
-				}
-			}
 		}
 	}
 }

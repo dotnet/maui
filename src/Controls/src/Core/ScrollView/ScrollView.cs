@@ -566,9 +566,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
-		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
-
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{

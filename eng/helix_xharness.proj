@@ -31,7 +31,6 @@
         <!-- These categories run as individual work items; skipped from the "Other" work item -->
         <ControlsTestCategoriesToSkipForRestOfTests>CollectionView;Shell;HybridWebView</ControlsTestCategoriesToSkipForRestOfTests>
     </PropertyGroup>
-
     <ItemGroup Condition="'$(TargetOS)' == 'ios'">
         <ControlsTestCategoriesToRunIndividually Include="$(ControlsTestCategoriesToSkipForRestOfTests)" />
     </ItemGroup>
@@ -120,7 +119,6 @@
             <WindowsPackageId>Microsoft.Maui.MauiBlazorWebView.DeviceTests</WindowsPackageId>
             <WindowsProjectPath>src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj</WindowsProjectPath>
         </MAUIScenario>
-
     </ItemGroup>
 
     <!-- Process each test scenario individually using direct path construction -->
@@ -177,7 +175,7 @@
             </XHarnessAppBundleToTest>
         </ItemGroup>
 
-        <!-- MacCatalyst: Use the original MAUIScenario approach -->
+        <!-- MacCatalyst and Android: Use the original MAUIScenario approach (no category splitting) -->
         <ItemGroup Condition="'$(TargetOS)' == 'maccatalyst'">
             <XHarnessAppBundleToTest Include="$([System.IO.Directory]::GetDirectories('%(_MAUIScenarioSearch.PayloadDirectory)/Release/$(TargetFrameworkToTest)-maccatalyst/', '*.app', System.IO.SearchOption.AllDirectories))">
                 <TestTarget>maccatalyst</TestTarget>

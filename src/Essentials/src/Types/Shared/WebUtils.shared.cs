@@ -8,8 +8,6 @@ namespace Microsoft.Maui
 	static class WebUtils
 	{
 #if !NETSTANDARD
-		static readonly char[] s_queryOrFragmentDelimiters = new[] { '?', '#' };
-
 		internal static string RemovePossibleQueryString(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
@@ -17,26 +15,10 @@ namespace Microsoft.Maui
 				return string.Empty;
 			}
 
-			var indexOfQueryString = url.IndexOfAny(s_queryOrFragmentDelimiters);
+			var indexOfQueryString = url.IndexOf('?', StringComparison.Ordinal);
 			return (indexOfQueryString == -1)
 				? url
 				: url.Substring(0, indexOfQueryString);
-		}
-
-		/// <summary>
-		/// Resolves a request URI against an app origin to produce a validated relative path.
-		/// </summary>
-		internal static string? ResolveRelativePath(Uri appOriginUri, Uri requestUri)
-		{
-			if (!appOriginUri.IsBaseOf(requestUri))
-				return null;
-
-			var relativePath = appOriginUri.MakeRelativeUri(requestUri).ToString();
-
-			if (!Storage.FileSystemUtils.IsValidRelativePath(relativePath))
-				return null;
-
-			return relativePath ?? string.Empty;
 		}
 #endif
 

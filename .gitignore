@@ -391,10 +391,3 @@ temp
 
 # Gradle build reports
 src/Core/AndroidNative/build/reports/
-
-
-# ci-scan reconciler JSON reports. Written to the working directory by
-# Invoke-CiScanReconcile.ps1 — both by its default -OutputPath and by the
-# explicit path the workflow passes, so a local run leaves them untracked
-# in the repo root one `git add -A` away from being committed.
-ci-scan-reconcile-*.json

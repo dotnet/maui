@@ -1,7 +1,6 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.NavigationPage;
 
 	/// <summary>Provides access to the bread crumb bar for navigation pages on the Tizen platform.</summary>
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		#region HasBreadCrumbsBar
 		/// <summary>Bindable property for attached property <c>HasBreadCrumbsBar</c>.</summary>
 		public static readonly BindableProperty HasBreadCrumbsBarProperty
-			= BindableProperty.CreateAttached("HasBreadCrumbsBar", typeof(bool), typeof(FormsElement), BooleanBoxes.FalseBox);
+			= BindableProperty.CreateAttached("HasBreadCrumbsBar", typeof(bool), typeof(FormsElement), false);
 
 		/// <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
 		/// <param name="element">The navigation page on the Tizen platform whose font weight icon to get.</param>
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <param name="value"><see langword="true"/> to show a bread crumb bar; otherwise, <see langword="false"/>.</param>
 		public static void SetHasBreadCrumbsBar(BindableObject element, bool value)
 		{
-			element.SetValue(HasBreadCrumbsBarProperty, BooleanBoxes.Box(value));
+			element.SetValue(HasBreadCrumbsBarProperty, value);
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>

@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using PassKit;
@@ -182,8 +181,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 			}
 
-			CollectionView.ScrollsToTop = true;
-
 			RegisterViewTypes();
 
 			EnsureLayoutInitialized();
@@ -214,49 +211,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var collectionView = CollectionView;
 			var visibleCells = collectionView.VisibleCells;
-			List<NSIndexPath> invalidatedIndexPaths = null;
+			List<TemplatedCell2> invalidatedCells = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					var indexPath = collectionView.IndexPathForCell(cell);
-					if (indexPath is not null && Items.IndexPathHelpers.IsIndexPathValid(ItemsSource, indexPath))
-					{
-						invalidatedIndexPaths ??= [];
-						invalidatedIndexPaths.Add(indexPath);
-					}
+					invalidatedCells ??= [];
+					invalidatedCells.Add(cell);
 				}
 			}
 
-			if (invalidatedIndexPaths is not null)
+			if (invalidatedCells is not null)
 			{
-				var indexPathsArray = invalidatedIndexPaths.ToArray();
-
-				// Workaround for layout issue observed on iPadOS 18+ with UICollectionViewCompositionalLayout
-				// where self-sizing cells can cause scroll position jumps during invalidation
-				if (ShouldApplyCellReConfiguration())
-				{
-					// Wrap in PerformWithoutAnimation to prevent ReconfigureItems from animating
-					// the scroll position adjustment that would otherwise occur during the layout pass.
-					UIView.PerformWithoutAnimation(() =>
-					{
-						// Use ReconfigureItems (iOS 15+) which is designed for size changes
-						// without full cell recreation - more efficient than ReloadItems
-						collectionView.ReconfigureItems(indexPathsArray);
-					});
-				}
-
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(indexPathsArray);
+				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
-		}
-
-		static bool ShouldApplyCellReConfiguration()
-		{
-			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
 		private void MovedToWindow(object sender, EventArgs e)
@@ -324,15 +296,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
 
-			// iOS/MacCatalyst: UIKit does not reset ContentOffset during ReloadData.
-			// ResetScrollTracking must run before the assignment so the UIKit-triggered
-			// scrollViewDidScroll callback computes delta from zero, not the stale previous offset.
-			if (CollectionView.ContentOffset != CoreGraphics.CGPoint.Empty)
-			{
-				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
-				CollectionView.ContentOffset = CoreGraphics.CGPoint.Empty;
-			}
-
 			(ItemsView as IView)?.InvalidateMeasure();
 		}
 
@@ -341,30 +304,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (ItemsView.Handler.PlatformView is UIView itemsView)
 			{
 				itemsView.UpdateFlowDirection(ItemsView);
-				foreach (var child in ItemsView.LogicalChildrenInternal)
+				if (ItemsView.ItemTemplate is not null)
 				{
-					// Skip the empty view element — its flow direction is handled
-					// separately in AlignEmptyView to avoid double application
-					if (child == _emptyViewFormsElement)
+					foreach (var child in ItemsView.LogicalChildrenInternal)
 					{
-						continue;
-					}
-
-					if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
-					{
-						view.UpdateFlowDirection(ve);
+						if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
+						{
+							view.UpdateFlowDirection(ve);
+						}
 					}
 				}
-
-				// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
-				if (ItemsView.ItemTemplate is null && CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
+				else
 				{
-					foreach (var cell in visibleCells.OfType<DefaultCell2>())
+					// If we don't have an ItemTemplate, then we need to update the default cell's flow direction
+					if (CollectionView?.VisibleCells is UICollectionViewCell[] visibleCells)
 					{
-						cell.Label.UpdateFlowDirection(ItemsView);
+						foreach (var cell in visibleCells.OfType<DefaultCell2>())
+						{
+							cell.Label.UpdateFlowDirection(ItemsView);
+						}
 					}
 				}
-
+	
 				CollectionView.UpdateFlowDirection(ItemsView);
 			}
 
@@ -573,28 +534,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			if (_emptyViewFormsElement is not null)
+			bool isRtl;
+
+			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
+				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
+			else
+				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
+
+			if (isRtl)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
-				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
+				if (_emptyUIView.Transform.A == -1)
 				{
-					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
+					return;
+				}
+
+				FlipEmptyView();
+			}
+			else
+			{
+				if (_emptyUIView.Transform.A == -1)
+				{
+					FlipEmptyView();
 				}
 			}
-			else if (_emptyUIView is UILabel label)
-			{
-				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
-				label.TextAlignment = UITextAlignment.Center;
-				label.SemanticContentAttribute = ItemsView.FlowDirection switch
-				{
-					FlowDirection.RightToLeft => UISemanticContentAttribute.ForceRightToLeft,
-					FlowDirection.LeftToRight => UISemanticContentAttribute.ForceLeftToRight,
-					_ => CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
-						? UISemanticContentAttribute.ForceRightToLeft
-						: UISemanticContentAttribute.ForceLeftToRight
-				};
-			}
+		}
+
+		void FlipEmptyView()
+		{
+			// Flip the empty view 180 degrees around the X axis 
+			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
 		}
 
 		void ShowEmptyView()
@@ -605,25 +573,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-
-			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
-			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
-			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
-			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
-			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
-			// Adding to the superview avoids this flip zone entirely.
-			var targetView = CollectionView.Superview;
-			if (targetView is not null)
-			{
-				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
-			}
-			else
-			{
-				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
-				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
-				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
-				CollectionView.AddSubview(_emptyUIView);
-			}
+			CollectionView.AddSubview(_emptyUIView);
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{

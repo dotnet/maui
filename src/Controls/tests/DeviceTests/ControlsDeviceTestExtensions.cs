@@ -48,10 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 						handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
 						handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
 						handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
-#if ANDROID || IOS || MACCATALYST
-						// Add Maps handlers for device tests
-						handlers.AddMauiMaps();
-#endif
 #if WINDOWS
 						handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
 #endif

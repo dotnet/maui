@@ -22,8 +22,6 @@ public partial class FlyoutControlMainPage : FlyoutPage
 		BindingContext = _viewModel;
 		NavigationPage.SetHasNavigationBar(this, false);
 		_originalFlyoutPage = this.Flyout;
-		AttachFlyoutNavigationEvents(this.Flyout);
-
 	}
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
@@ -31,8 +29,6 @@ public partial class FlyoutControlMainPage : FlyoutPage
 		NavigatedToLabel.Text = "NavigatedTo: ";
 		NavigatingFromLabel.Text = "NavigatingFrom: ";
 		NavigatedFromLabel.Text = "NavigatedFrom: ";
-		_viewModel.IsPresentedChangedText = "Not Raised";
-		_viewModel.BackButtonPressedText = "Not Raised";
 		await Navigation.PushAsync(new FlyoutOptionsPage(_viewModel));
 	}
 
@@ -69,14 +65,6 @@ public partial class FlyoutControlMainPage : FlyoutPage
 		}
 #endif
 	}
-
-	private void AttachFlyoutNavigationEvents(Page flyoutPage)
-	{
-		flyoutPage.NavigatedTo += OnPageNavigatedTo;
-		flyoutPage.NavigatingFrom += OnPageNavigatingFrom;
-		flyoutPage.NavigatedFrom += OnPageNavigatedFrom;
-	}
-
 
 
 	private void OnPageNavigatedTo(object sender, NavigatedToEventArgs e)
@@ -147,7 +135,7 @@ public partial class FlyoutControlMainPage : FlyoutPage
 
 	private void OnSetFlyout1Clicked(object sender, EventArgs e)
 	{
-		var flyout1 = new ContentPage
+		this.Flyout = new ContentPage
 		{
 			Title = "Flyout 1",
 			Content = new VerticalStackLayout
@@ -168,15 +156,11 @@ public partial class FlyoutControlMainPage : FlyoutPage
 			}
 			}
 		};
-		AttachFlyoutNavigationEvents(flyout1);
-		this.Flyout = flyout1;
-
-
 	}
 
 	private void OnSetFlyout2Clicked(object sender, EventArgs e)
 	{
-		var flyout2 = new ContentPage
+		this.Flyout = new ContentPage
 		{
 			Title = "Flyout 2",
 			Content = new VerticalStackLayout
@@ -197,17 +181,12 @@ public partial class FlyoutControlMainPage : FlyoutPage
 			}
 			}
 		};
-		AttachFlyoutNavigationEvents(flyout2);
-
-		this.Flyout = flyout2;
 	}
 
 	private void RestoreOriginalFlyoutPage()
 	{
 		if (_originalFlyoutPage != null)
-		{
 			this.Flyout = _originalFlyoutPage;
-		}
 	}
 	private async void OnSetDetail1Clicked(object sender, EventArgs e)
 	{
@@ -272,24 +251,5 @@ public partial class FlyoutControlMainPage : FlyoutPage
 	void OnOpenFlyoutClicked(object sender, EventArgs e)
 	{
 		this.IsPresented = true;
-	}
-
-	private void OnIsPresentedChanged(object sender, EventArgs e)
-	{
-		if (BindingContext is FlyoutPageViewModel vm)
-		{
-			vm.IsPresentedChangedText = "Raised";
-		}
-	}
-
-	private void OnBackButtonPressed(object sender, BackButtonPressedEventArgs e)
-
-	{
-		if (BindingContext is FlyoutPageViewModel vm)
-		{
-			vm.BackButtonPressedText = "Raised";
-			e.Handled = vm.ShouldHandleBackButton;
-			vm.BackButtonHandled = e.Handled.ToString();
-		}
 	}
 }

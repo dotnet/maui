@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	internal class ObservableItemsSource : IItemsViewSource, IObservableItemsViewSource
 	{
 		readonly IEnumerable _itemsSource;
-		readonly bool _disposeItemsSource;
 		readonly BindableObject _container;
 		readonly ICollectionChangedNotifier _notifier;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
@@ -17,10 +16,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		~ObservableItemsSource() => _proxy.Unsubscribe();
 
-		public ObservableItemsSource(IEnumerable itemSource, BindableObject container, ICollectionChangedNotifier notifier, bool disposeItemsSource = false)
+		public ObservableItemsSource(IEnumerable itemSource, BindableObject container, ICollectionChangedNotifier notifier)
 		{
 			_itemsSource = itemSource;
-			_disposeItemsSource = disposeItemsSource;
 			_container = container;
 			_notifier = notifier;
 			_collectionChanged = CollectionChanged;
@@ -85,14 +83,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (disposing)
 			{
 				_proxy.Unsubscribe();
-
-				if (_disposeItemsSource)
-				{
-					if (_itemsSource is MarshalingObservableCollection marshalingObservableCollection)
-						marshalingObservableCollection.Dispose();
-					else if (_itemsSource is IDisposable disposableCollection)
-						disposableCollection.Dispose();
-				}
 			}
 		}
 

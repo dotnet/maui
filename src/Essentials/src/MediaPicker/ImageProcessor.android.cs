@@ -51,8 +51,8 @@ internal static partial class ImageProcessor
 				return new MemoryStream(bytes);
 			}
 
-			// Apply EXIF orientation correction with the actual orientation value
-			Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap, orientation);
+			// Apply EXIF orientation correction using SetRotate(0) to preserve original EXIF behavior
+			Bitmap? rotatedBitmap = ApplyExifOrientation(originalBitmap);
 			if (rotatedBitmap is null)
 			{
 				return new MemoryStream(bytes);
@@ -113,92 +113,47 @@ internal static partial class ImageProcessor
 	/// </summary>
 	private static int GetExifOrientation(byte[] imageBytes)
 	{
-		var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
 		try
 		{
+			// Create a temporary file to read EXIF data
+			var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
 			using (var fileStream = File.Create(tempFileName))
 			{
 				fileStream.Write(imageBytes, 0, imageBytes.Length);
 			}
 
-			using var exif = new ExifInterface(tempFileName);
-			return exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+			var exif = new ExifInterface(tempFileName);
+			int orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+			
+			// Clean up temp file
+			try
+			{
+				File.Delete(tempFileName);
+			}
+			catch
+			{
+				// Ignore cleanup failures
+			}
+
+			return orientation;
 		}
 		catch
 		{
 			return 1; // Default to normal orientation
 		}
-		finally
-		{
-			try { File.Delete(tempFileName); } catch { }
-		}
 	}
 
 	/// <summary>
-	/// Apply EXIF orientation correction by rotating the bitmap according to EXIF orientation value
+	/// Apply EXIF orientation correction by preserving original EXIF behavior
 	/// </summary>
-	private static Bitmap? ApplyExifOrientation(Bitmap bitmap, int orientation = 1)
+	private static Bitmap? ApplyExifOrientation(Bitmap bitmap)
 	{
 		try
 		{
-			// Convert EXIF orientation to rotation angle and flip
-			// EXIF Orientation values:
-			// 1 = normal
-			// 2 = flip horizontal
-			// 3 = rotate 180°
-			// 4 = flip vertical
-			// 5 = rotate 90° CW + flip horizontal
-			// 6 = rotate 90° CW
-			// 7 = rotate 90° CCW + flip horizontal
-			// 8 = rotate 90° CCW
-			
-			bool flipHorizontal = false;
-			bool flipVertical = false;
-			int rotationAngle = orientation switch
-			{
-				2 => 0,     // flip horizontal only
-				3 => 180,
-				4 => 0,     // flip vertical only
-				5 => 90,    // rotate 90° CW + flip horizontal
-				6 => 90,
-				7 => 270,   // rotate 270° CW + flip horizontal
-				8 => 270,
-				_ => 0      // 1 and other values mean no rotation needed
-			};
-			
-			// Determine if we need to flip
-			flipHorizontal = orientation is 2 or 5 or 7;
-			flipVertical = orientation is 4;
-
-			// If no rotation and no flip needed, return original bitmap
-			if (rotationAngle == 0 && !flipHorizontal && !flipVertical)
-			{
-				return bitmap;
-			}
-
-			// Apply rotation and/or flip using a transformation matrix
-			using (var matrix = new Matrix())
-			{
-				float centerX = bitmap.Width / 2f;
-				float centerY = bitmap.Height / 2f;
-
-				// Apply rotation around center first, then flip.
-				// For orientations 5 & 7 the EXIF spec requires rotate-then-flip;
-				// reversing the order produces an incorrect result.
-				if (rotationAngle != 0)
-					matrix.PostRotate(rotationAngle, centerX, centerY);
-
-				if (flipHorizontal)
-					matrix.PostScale(-1, 1, centerX, centerY);
-
-				if (flipVertical)
-					matrix.PostScale(1, -1, centerX, centerY);
-				
-				// Create transformed bitmap
-				var transformedBitmap = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
-				
-				return transformedBitmap;
-			}
+			// Use SetRotate(0) to preserve original EXIF orientation behavior
+			var matrix = new Matrix();
+			matrix.SetRotate(0);
+			return Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
 		}
 		catch (Exception ex)
 		{
@@ -228,58 +183,61 @@ internal static partial class ImageProcessor
 
 			// Create temporary file to extract EXIF data
 			var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+			using (var fileStream = File.Create(tempFileName))
+			{
+				fileStream.Write(bytes, 0, bytes.Length);
+			}
+
+			// Extract all EXIF attributes
+			var exif = new ExifInterface(tempFileName);
+			var metadataList = new List<string>();
+
+			// Extract common EXIF tags
+			var tags = new string[]
+			{
+				ExifInterface.TagArtist,
+				ExifInterface.TagCopyright,
+				ExifInterface.TagDatetime,
+				ExifInterface.TagImageDescription,
+				ExifInterface.TagMake,
+				ExifInterface.TagModel,
+				ExifInterface.TagOrientation,
+				ExifInterface.TagSoftware,
+				ExifInterface.TagGpsLatitude,
+				ExifInterface.TagGpsLongitude,
+				ExifInterface.TagGpsAltitude,
+				ExifInterface.TagExposureTime,
+				ExifInterface.TagFNumber,
+				ExifInterface.TagIso,
+				ExifInterface.TagWhiteBalance,
+				ExifInterface.TagFlash,
+				ExifInterface.TagFocalLength
+			};
+
+			foreach (var tag in tags)
+			{
+				var value = exif.GetAttribute(tag);
+				if (!string.IsNullOrEmpty(value))
+				{
+					metadataList.Add($"{tag}={value}");
+				}
+			}
+
+			// Serialize metadata to simple string format
+			var metadataString = string.Join("\n", metadataList);
+			var metadataBytes = System.Text.Encoding.UTF8.GetBytes(metadataString);
+
+			// Clean up temp file
 			try
 			{
-				using (var fileStream = File.Create(tempFileName))
-				{
-					fileStream.Write(bytes, 0, bytes.Length);
-				}
-
-				// Extract all EXIF attributes
-				using var exif = new ExifInterface(tempFileName);
-				var metadataList = new List<string>();
-
-				// Extract common EXIF tags
-				var tags = new string[]
-				{
-					ExifInterface.TagArtist,
-					ExifInterface.TagCopyright,
-					ExifInterface.TagDatetime,
-					ExifInterface.TagImageDescription,
-					ExifInterface.TagMake,
-					ExifInterface.TagModel,
-					ExifInterface.TagOrientation,
-					ExifInterface.TagSoftware,
-					ExifInterface.TagGpsLatitude,
-					ExifInterface.TagGpsLongitude,
-					ExifInterface.TagGpsAltitude,
-					ExifInterface.TagExposureTime,
-					ExifInterface.TagFNumber,
-					ExifInterface.TagIso,
-					ExifInterface.TagWhiteBalance,
-					ExifInterface.TagFlash,
-					ExifInterface.TagFocalLength
-				};
-
-				foreach (var tag in tags)
-				{
-					var value = exif.GetAttribute(tag);
-					if (!string.IsNullOrEmpty(value))
-					{
-						metadataList.Add($"{tag}={value}");
-					}
-				}
-
-				// Serialize metadata to simple string format
-				var metadataString = string.Join("\n", metadataList);
-				var metadataBytes = System.Text.Encoding.UTF8.GetBytes(metadataString);
-
-				return metadataBytes;
+				File.Delete(tempFileName);
 			}
-			finally
+			catch
 			{
-				try { File.Delete(tempFileName); } catch { }
+				// Ignore cleanup failures
 			}
+
+			return metadataBytes;
 		}
 		catch
 		{
@@ -325,36 +283,40 @@ internal static partial class ImageProcessor
 
 			// Create temporary file to apply EXIF data
 			var tempFileName = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
+			using (var fileStream = File.Create(tempFileName))
+			{
+				fileStream.Write(bytes, 0, bytes.Length);
+			}
+
+			// Apply EXIF data
+			var exif = new ExifInterface(tempFileName);
+			foreach (var kvp in metadataDict)
+			{
+				try
+				{
+					exif.SetAttribute(kvp.Key, kvp.Value);
+				}
+				catch
+				{
+					// Skip attributes that can't be set
+				}
+			}
+			exif.SaveAttributes();
+
+			// Read back the file with applied metadata
+			var resultBytes = File.ReadAllBytes(tempFileName);
+
+			// Clean up temp file
 			try
 			{
-				using (var fileStream = File.Create(tempFileName))
-				{
-					fileStream.Write(bytes, 0, bytes.Length);
-				}
-
-				// Apply EXIF data
-				using var exif = new ExifInterface(tempFileName);
-				foreach (var kvp in metadataDict)
-				{
-					try
-					{
-						exif.SetAttribute(kvp.Key, kvp.Value);
-					}
-					catch
-					{
-						// Skip attributes that can't be set
-					}
-				}
-				exif.SaveAttributes();
-
-				// Read back the file with applied metadata
-				var resultBytes = File.ReadAllBytes(tempFileName);
-				return new MemoryStream(resultBytes);
+				File.Delete(tempFileName);
 			}
-			finally
+			catch
 			{
-				try { File.Delete(tempFileName); } catch { }
+				// Ignore cleanup failures
 			}
+
+			return new MemoryStream(resultBytes);
 		}
 		catch
 		{

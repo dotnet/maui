@@ -46,9 +46,6 @@ namespace Microsoft.Maui.Controls
 			{
 				handler.UpdateValue(nameof(ILabel.TextColor));
 				handler.UpdateValue(nameof(ILabel.Font));
-				handler.UpdateValue(nameof(ILabel.LineHeight));
-				handler.UpdateValue(nameof(ILabel.TextDecorations));
-				handler.UpdateValue(nameof(ILabel.CharacterSpacing));
 			}
 		}
 

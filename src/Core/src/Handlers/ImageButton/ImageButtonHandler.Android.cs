@@ -9,11 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			// TODO: net11 - Remove MaterialShapeableImageView and always use MauiShapeableImageView
-			// once MauiShapeableImageView has public API changes that support Material3.
-			ShapeableImageView platformView = RuntimeFeature.IsMaterial3Enabled
-				? new MaterialShapeableImageView(Context)
-				: new MauiShapeableImageView(Context);
+			var platformView = new MauiShapeableImageView(Context);
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
@@ -66,11 +62,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
 			handler.UpdateValue(nameof(IImageButton.Padding));
-
-			if (handler.VirtualView.Shadow is not null)
-			{
-				handler.UpdateValue(nameof(IImageButton.Shadow));
-			}
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)

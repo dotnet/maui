@@ -201,8 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 			static UIViewController GetTopUIViewController(UIWindow platformWindow)
 			{
 				var topUIViewController = platformWindow.RootViewController;
-				while (topUIViewController?.PresentedViewController is not null &&
-					   !topUIViewController.PresentedViewController.IsBeingDismissed)
+				while (topUIViewController?.PresentedViewController is not null)
 				{
 					topUIViewController = topUIViewController.PresentedViewController;
 				}

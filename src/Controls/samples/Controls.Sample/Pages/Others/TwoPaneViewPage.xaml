@@ -16,8 +16,9 @@
                               WideModeConfiguration="{Binding Source={x:Reference WideModeConfiguration}, Path=SelectedItem}"
                               PanePriority="{Binding Source={x:Reference PanePriority}, Path=SelectedItem, Mode=TwoWay}"
             >
-            <foldable:TwoPaneView.Pane1>
-                <Frame BorderColor="Red" BackgroundColor="#dddddd">
+            <foldable:TwoPaneView.Pane1
+                BackgroundColor="#dddddd">
+                <Frame BorderColor="Red">
                     <StackLayout BackgroundColor="Blue"
                                  Orientation="Vertical"
                                  VerticalOptions="StartAndExpand"

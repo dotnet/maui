@@ -29,8 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform,
-				label.CharacterSpacing);
+				label.TextTransform);
 
 		public static void UpdateInlines(
 			this TextBlock textBlock,
@@ -41,20 +40,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
-			=> UpdateInlines(textBlock, fontManager, formattedString, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
-
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static void UpdateInlines(
-			this TextBlock textBlock,
-			IFontManager fontManager,
-			FormattedString formattedString,
-			double defaultLineHeight,
-			TextAlignment defaultHorizontalAlignment,
-			Font? defaultFont,
-			Color? defaultColor,
-			TextTransform defaultTextTransform,
-			double defaultCharacterSpacing)
 		{
 			var textBlockInlines = textBlock.Inlines;
 			textBlockInlines.Clear();
@@ -68,8 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 				defaultHorizontalAlignment,
 				defaultFont,
 				defaultColor,
-				defaultTextTransform,
-				defaultCharacterSpacing).ToArray();
+				defaultTextTransform).ToArray();
 
 			var lineHeights = new List<double>(runs.Length);
 			foreach (var (run, _, _) in runs)
@@ -112,19 +96,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
-			=> ToRunAndColorsTuples(formattedString, fontManager, defaultLineHeight, defaultHorizontalAlignment, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
-
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
-			this FormattedString formattedString,
-			IFontManager fontManager,
-			double defaultLineHeight,
-			TextAlignment defaultHorizontalAlignment,
-			Font? defaultFont,
-			Color? defaultColor,
-			TextTransform defaultTextTransform,
-			double defaultCharacterSpacing)
 		{
 			var runs = new List<Tuple<Run, Color, Color>>();
 
@@ -133,7 +104,7 @@ namespace Microsoft.Maui.Controls.Platform
 				for (var i = 0; i < formattedString.Spans.Count; i++)
 				{
 					var span = formattedString.Spans[i];
-					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing);
+					var run = span.ToRunAndColorsTuple(fontManager, defaultFont, defaultColor, defaultTextTransform);
 					runs.Add(run);
 				}
 			}
@@ -147,17 +118,6 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
-			=> ToRunAndColorsTuple(span, fontManager, defaultFont, defaultColor, defaultTextTransform, defaultCharacterSpacing: 0d);
-
-		// Private overload that supports CharacterSpacing inheritance
-		// TODO: Make this method public in .NET 11
-		static Tuple<Run, Color, Color> ToRunAndColorsTuple(
-			this Span span,
-			IFontManager fontManager,
-			Font? defaultFont,
-			Color? defaultColor,
-			TextTransform defaultTextTransform,
-			double defaultCharacterSpacing)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -177,12 +137,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (span.IsSet(Span.TextDecorationsProperty))
 				run.TextDecorations = (global::Windows.UI.Text.TextDecorations)span.TextDecorations;
 
-			// CharacterSpacing with inheritance and validation
-			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
-				? span.CharacterSpacing 
-				: defaultCharacterSpacing;
-			characterSpacing = Math.Max(0, characterSpacing);
-			run.CharacterSpacing = characterSpacing.ToEm();
+			run.CharacterSpacing = span.CharacterSpacing.ToEm();
 
 			return Tuple.Create(run, span.TextColor, span.BackgroundColor);
 		}

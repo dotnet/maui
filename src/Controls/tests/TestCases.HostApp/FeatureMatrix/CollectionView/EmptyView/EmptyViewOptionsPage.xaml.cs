@@ -41,6 +41,7 @@ namespace Maui.Controls.Sample
 				grid.Children.Add(new Label
 				{
 					Text = "No Items Available(Grid View)",
+					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center,
 					TextColor = Colors.Blue
 				});
@@ -59,6 +60,7 @@ namespace Maui.Controls.Sample
 					Content = new Label
 					{
 						Text = "Custom Empty View (Sized)",
+						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center,
 					}
 				};
@@ -138,6 +140,7 @@ namespace Maui.Controls.Sample
 					grid.Children.Add(new Label
 					{
 						Text = "No Template Items Available(Grid View)",
+						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center,
 						TextColor = Colors.Blue
 					});
@@ -160,6 +163,7 @@ namespace Maui.Controls.Sample
 						Content = new Label
 						{
 							Text = "Custom EmptyViewTemplate (Sized)",
+							HorizontalOptions = LayoutOptions.Center,
 							VerticalOptions = LayoutOptions.Center,
 						}
 					};
@@ -260,18 +264,6 @@ namespace Maui.Controls.Sample
 			else if (ItemsLayoutHorizontalGrid.IsChecked)
 			{
 				_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
-			}
-		}
-
-		private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
-		{
-			if (FlowDirectionLeftToRight.IsChecked)
-			{
-				_viewModel.FlowDirection = FlowDirection.LeftToRight;
-			}
-			else if (FlowDirectionRightToLeft.IsChecked)
-			{
-				_viewModel.FlowDirection = FlowDirection.RightToLeft;
 			}
 		}
 	}

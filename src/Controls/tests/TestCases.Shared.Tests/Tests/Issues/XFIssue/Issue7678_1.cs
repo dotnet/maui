@@ -19,9 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				Assert.Ignore("Ignored the test on iOS 26 for now because it fails only in the iOS 26 CI");
 			}
-			App.WaitForElement("carouselView", timeout: TimeSpan.FromSeconds(45));
+			App.WaitForElement("carouselView", timeout: TimeSpan.FromSeconds(2));
 			// In source level, the data populate with some delay, so we need to timeout for the element to be present.
-			App.WaitForElementTillPageNavigationSettled("1", timeout: TimeSpan.FromSeconds(45));
+			App.WaitForElementTillPageNavigationSettled("1", timeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }

@@ -2,7 +2,6 @@
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.WebView;
 
 	/// <summary>Controls whether JavaScript alerts are enabled for a web view.</summary>
@@ -24,7 +23,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <param name="value"><see langword="true"/> to enable JavaScript alerts.</param>
 		public static void SetIsJavaScriptAlertEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsJavaScriptAlertEnabledProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsJavaScriptAlertEnabledProperty, value);
 		}
 
 		/// <summary>Returns a Boolean value that tells whether the web view allows JavaScript alerts.</summary>

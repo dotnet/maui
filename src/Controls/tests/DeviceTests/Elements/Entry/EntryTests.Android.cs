@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -34,8 +33,13 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetPlatformSelectionLength(EntryHandler entryHandler)
 		{
 			var editText = GetPlatformControl(entryHandler);
-			return editText?.GetSelectedTextLength() ?? -1;
+
+			if (editText != null)
+				return editText.SelectionEnd - editText.SelectionStart;
+
+			return -1;
 		}
+
 		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
@@ -161,33 +165,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformRotation);
 		}
 
-		[Fact]
-		[Description("The SelectionLength property should handle right-to-left text selection correctly and not return negative values")]
-		public async Task SelectionLengthRightToLeft()
-		{
-			var entry = new Entry()
-			{
-				Text = "Hello World"
-			};
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformControl = GetPlatformControl(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				platformControl.SetSelection(5, 0);
-				int platformSelectionLength = GetPlatformSelectionLength(handler);
-				Assert.True(platformSelectionLength >= 0,
-					$"Platform selection length should never be negative, but got: {platformSelectionLength}");
-				Assert.Equal(5, platformSelectionLength);
-
-				// The virtual view should also show positive selection length
-				Assert.True(entry.SelectionLength >= 0,
-					$"Virtual view selection length should never be negative, but got: {entry.SelectionLength}");
-				Assert.Equal(5, entry.SelectionLength);
-			});
-		}
-
 		//src/Compatibility/Core/tests/Android/TranslationTests.cs
 		[Fact]
 		[Description("The Translation property of a Entry should match with native Translation")]
@@ -205,80 +182,6 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				AssertTranslationMatches(nativeView, entry.TranslationX, entry.TranslationY);
-			});
-		}
-
-		[Fact]
-		[Category(TestCategory.Entry)]
-		public async Task KeyboardPasswordDoesNotForcePasswordVisibilityWhenIsPasswordFalse()
-		{
-			var entry = new Entry
-			{
-				Keyboard = Keyboard.Password,
-				IsPassword = false,
-				Text = "Password"
-			};
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformEntry = GetPlatformControl(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.NumberVariationPassword));
-			});
-		}
-
-		[Fact]
-		[Category(TestCategory.Entry)]
-		public async Task KeyboardPasswordRespectsIsPasswordToggle()
-		{
-			var entry = new Entry
-			{
-				Keyboard = Keyboard.Password,
-				IsPassword = false,
-				Text = "Password"
-			};
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformEntry = GetPlatformControl(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
-
-				entry.IsPassword = true;
-				handler.UpdateValue(nameof(IEntry.IsPassword));
-
-				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
-
-				entry.IsPassword = false;
-				handler.UpdateValue(nameof(IEntry.IsPassword));
-
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.NumberVariationPassword));
-			});
-		}
-
-		[Fact]
-		[Category(TestCategory.Entry)]
-		public async Task KeyboardUrlPreservesUrlInputTypeWhenIsPasswordFalse()
-		{
-			var entry = new Entry
-			{
-				Keyboard = Keyboard.Url,
-				IsPassword = false,
-				Text = "https://dot.net"
-			};
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformEntry = GetPlatformControl(handler);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.ClassText));
-				Assert.True(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationUri));
-				Assert.False(platformEntry.InputType.HasFlag(global::Android.Text.InputTypes.TextVariationPassword));
 			});
 		}
 	}

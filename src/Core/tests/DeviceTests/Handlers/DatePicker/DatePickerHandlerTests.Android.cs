@@ -23,7 +23,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			var values = await GetValueAsync(datePicker, (handler) =>
 			{
-				EnsureDialogCreated(datePicker, handler);
 				return new
 				{
 					ViewValue = datePicker.MinimumDate,
@@ -51,7 +50,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			var values = await GetValueAsync(datePicker, (handler) =>
 			{
-				EnsureDialogCreated(datePicker, handler);
 				return new
 				{
 					ViewValue = datePicker.MaximumDate,
@@ -127,22 +125,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var mauiDatePicker = GetNativeDatePicker(datePickerHandler);
 			return mauiDatePicker.LetterSpacing;
-		}
-
-
-		/// <summary>
-		/// The DatePickerDialog is lazily created after PR #33687 — setting MinimumDate or
-		/// MaximumDate calls DestroyDialog() which nulls the dialog reference. The dialog is
-		/// only recreated when ShowPickerDialog() runs. This helper opens and immediately
-		/// closes the picker to force dialog creation so that min/max values can be read
-		/// from the native DatePicker widget.
-		/// </summary>
-		void EnsureDialogCreated(DatePickerStub datePicker, DatePickerHandler handler)
-		{
-			datePicker.IsOpen = true;
-			handler.UpdateValue(nameof(IDatePicker.IsOpen));
-			datePicker.IsOpen = false;
-			handler.UpdateValue(nameof(IDatePicker.IsOpen));
 		}
 	}
 }

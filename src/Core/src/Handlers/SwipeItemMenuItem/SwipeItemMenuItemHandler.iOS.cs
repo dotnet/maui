@@ -88,11 +88,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			// Update the native view's Hidden state BEFORE calling UpdateIsVisibleSwipeItem,
-			// so LayoutSwipeItems can use the correct Hidden state when repositioning items.
-			handler.PlatformView.UpdateVisibility(view.Visibility);
-
 			swipeView?.UpdateIsVisibleSwipeItem(view);
+
+			handler.PlatformView.UpdateVisibility(view.Visibility);
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
@@ -120,15 +118,10 @@ namespace Microsoft.Maui.Handlers
 					try
 					{
 						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+						var tintColor = item.GetTextColor();
 
-						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
-							button.TintColor = fontImageSource.Color.ToPlatform();
-						else
-						{
-							var tintColor = item.GetTextColor();
-							if (tintColor != null)
-								button.TintColor = tintColor.ToPlatform();
-						}
+						if (tintColor != null)
+							button.TintColor = tintColor.ToPlatform();
 					}
 					catch (Exception)
 					{

@@ -295,7 +295,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (element != null)
 			{
-				element.IsItemSelected = Selected;
+				VisualStateManager.GoToState(element, Selected
+					? VisualStateManager.CommonStates.Selected
+					: VisualStateManager.CommonStates.Normal);
 			}
 		}
 	}

@@ -16,6 +16,10 @@ public class Issue16020 : _IssuesUITest
     [Category(UITestCategories.CarouselView)]
     public void CarouselViewiOSCrashPreventionTest()
     {
+        if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp)) // Issue Link: https://github.com/dotnet/maui/issues/33770
+        {
+            Assert.Ignore("Ignored due to CarouselView scroll item issue in iOS 26.");
+        }
         // Wait for the page to load completely
         App.WaitForElement("My Recipes");
         App.Tap("My Recipes");

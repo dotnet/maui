@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Platform
 			editText.UpdateIsSpellCheckEnabled(editor as ITextInput);
 		}
 
-		internal static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
+		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
 			var keyboard = textInput.Keyboard;
 
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Platform
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
 		}
 
-		internal static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
+		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
 			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
 			if (!textInput.IsSpellCheckEnabled)
@@ -286,23 +286,7 @@ namespace Microsoft.Maui.Platform
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
-				if (editText.IsFocused)
-				{
-					editText.Post(() =>
-					{
-						if (editText.IsAlive())
-						{
-							var length = editText.Length();
-							var clampedStart = Math.Min(start, length);
-							var clampedEnd = Math.Min(end, length);
-							editText.SetSelection(clampedStart, clampedEnd);
-						}
-					});
-				}
-				else
-				{
-					editText.SetSelection(start, end);
-				}
+				editText.SetSelection(start, end);
 			}
 		}
 
@@ -328,24 +312,10 @@ namespace Microsoft.Maui.Platform
 
 		static int GetSelectionEnd(EditText editText, ITextInput entry, int start)
 		{
+			int end = start;
 			int selectionLength = entry.SelectionLength;
-			int end = Math.Max(start, Math.Min(editText.Length(), start + selectionLength));
-			int newSelectionLength = Math.Max(0, end - start);
-
-			// When the native EditText has a right-to-left selection (anchor > extent) that
-			// exactly matches our start position and requested length, preserve the native
-			// selection end to maintain the selection direction. We verify the native state
-			// matches to avoid using stale values (e.g., during initial focus when
-			// SelectionEnd is 0 and SelectionStart hasn't been updated yet).
-			if (selectionLength > 0 &&
-				start > editText.SelectionEnd &&
-				editText.SelectionStart == start &&
-				(start - editText.SelectionEnd) == selectionLength)
-			{
-				end = editText.SelectionEnd;
-				newSelectionLength = selectionLength;
-			}
-
+			end = System.Math.Max(start, System.Math.Min(editText.Length(), start + selectionLength));
+			int newSelectionLength = System.Math.Max(0, end - start);
 			// Updating this property results in UpdateSelectionLength being called again messing things up
 			if (newSelectionLength != selectionLength)
 				entry.SelectionLength = newSelectionLength;
@@ -354,7 +324,8 @@ namespace Microsoft.Maui.Platform
 
 		public static int GetSelectedTextLength(this EditText editText)
 		{
-			return Math.Abs(editText.SelectionEnd - editText.SelectionStart);
+			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
+			return Math.Max(0, selectedLength);
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
@@ -375,24 +346,12 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			if (textInput is IEntry entry)
+			if (textInput is IEntry entry && entry.IsPassword)
 			{
-				if (entry.IsPassword)
-				{
-					if (editText.InputType.HasFlag(InputTypes.ClassText))
-						editText.InputType |= InputTypes.TextVariationPassword;
-
-					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
-						editText.InputType |= InputTypes.NumberVariationPassword;
-				}
-				else
-				{
-					if (editText.InputType.HasFlag(InputTypes.ClassText))
-						editText.InputType &= ~InputTypes.TextVariationPassword;
-
-					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
-						editText.InputType &= ~InputTypes.NumberVariationPassword;
-				}
+				if (editText.InputType.HasFlag(InputTypes.ClassText))
+					editText.InputType |= InputTypes.TextVariationPassword;
+				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
 
 			if (textInput is IEditor)
@@ -521,23 +480,6 @@ namespace Microsoft.Maui.Platform
 
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
-		}
-
-		/// <summary>
-		/// Ensures <see cref="ImeFlags.NoFullscreen"/> is set on the EditText's ImeOptions,
-		/// preventing the IME from entering full-screen extract mode in landscape orientation.
-		/// </summary>
-		/// <remarks>
-		/// Call this helper after any assignment to <c>editText.ImeOptions</c> inside the
-		/// SearchBar platform code (MauiSearchView and SearchViewExtensions), or the
-		/// NoFullscreen flag will be lost and the landscape IME regression (#14708) will
-		/// silently re-appear. ImeOptions is typed as <see cref="ImeAction"/> in the Android
-		/// binding, but it holds combined ImeAction + ImeFlags bits; NoFullscreen is an
-		/// ImeFlags value (0x02000000).
-		/// </remarks>
-		internal static void EnsureNoFullscreenFlag(this EditText editText)
-		{
-			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
 		}
 	}
 }

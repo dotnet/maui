@@ -23,11 +23,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			// Verify ApplyQueryAttributes triggers on InnerPage when navigating via PushAsync
-			var result = App.WaitForElement("InnerPageTestLabel").GetText();
-			Assert.That(result, Is.EqualTo("Issue13537InnerPage QueryAttribute is triggered"));
+			App.WaitForElement("InnerPageTestLabel");
 			App.Tap("PopAsyncButton");
-			App.WaitForElement("HomePageTestLabel");
+			var result = App.WaitForElement("HomePageTestLabel").GetText();
+			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
 #if TEST_FAILS_ON_CATALYST
@@ -38,15 +37,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("HomePageTestLabel");
 			App.Tap("PushAsyncButton");
-			// Verify ApplyQueryAttributes triggers on InnerPage when navigating via PushAsync
-			var result = App.WaitForElement("InnerPageTestLabel").GetText();
-			Assert.That(result, Is.EqualTo("Issue13537InnerPage QueryAttribute is triggered"));
+			App.WaitForElement("InnerPageTestLabel");
 #if IOS
 			App.Back();
 #else
 			App.TapBackArrow(backButtonIdentifier);
 #endif
-			App.WaitForElement("HomePageTestLabel");
+			var result = App.WaitForElement("HomePageTestLabel").GetText();
+			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 #endif
 

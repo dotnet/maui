@@ -163,20 +163,43 @@ namespace Microsoft.Maui.Controls
 
 			if (oldValue is SwipeItems oldItems)
 			{
+				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
+				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
 				swipeView.RemoveLogicalChild(oldItems);
 			}
 
 			if (newValue is SwipeItems newItems)
 			{
-				// AddLogicalChild reassigns newItems.Parent to this SwipeView. When SwipeItems is
-				// cached/shared across multiple SwipeView instances, subsequent assignments
-				// reparent it away from the previous owner, so previous SwipeViews are not held
-				// alive through this collection. SwipeItems itself self-subscribes to its own
-				// CollectionChanged / PropertyChanged events and uses Parent (this SwipeView) to
-				// notify the handler — we intentionally do NOT add closure-based subscriptions
-				// here, since those captured `swipeView` and prevented GC when SwipeItems was
-				// shared across SwipeViews (issue #35481).
+				newItems.CollectionChanged += SwipeItemsCollectionChanged;
+				newItems.PropertyChanged += SwipeItemsPropertyChanged;
 				swipeView.AddLogicalChild(newItems);
+			}
+
+			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (sender is SwipeItems swipeItems)
+					SendChange(swipeItems);
+			}
+
+			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+			{
+				if (sender is SwipeItems swipeItems)
+					SendChange(swipeItems);
+			}
+
+			void SendChange(SwipeItems swipeItems)
+			{
+				if (swipeItems == swipeView.LeftItems)
+					swipeView?.Handler?.UpdateValue(nameof(LeftItems));
+
+				if (swipeItems == swipeView.RightItems)
+					swipeView?.Handler?.UpdateValue(nameof(RightItems));
+
+				if (swipeItems == swipeView.TopItems)
+					swipeView?.Handler?.UpdateValue(nameof(TopItems));
+
+				if (swipeItems == swipeView.BottomItems)
+					swipeView?.Handler?.UpdateValue(nameof(BottomItems));
 			}
 		}
 
@@ -235,7 +258,6 @@ namespace Microsoft.Maui.Controls
 		double _previousScrollX;
 		double _previousScrollY;
 		View? _scrollParent;
-		Element? _templateParent;
 		SwipeDirection? _swipeDirection;
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
@@ -272,24 +294,13 @@ namespace Microsoft.Maui.Controls
 		protected override void OnChildAdded(Element child)
 		{
 			base.OnChildAdded(child);
-
-			// Skip SwipeItems children: they are logical children for visual-tree purposes only;
-			// subscribing to their PropertyChanged would create a strong reference from a
-			// potentially cached/long-lived SwipeItems back to this SwipeView.
-			if (child is not SwipeItems)
-			{
-				child.PropertyChanged += OnPropertyChanged;
-			}
+			child.PropertyChanged += OnPropertyChanged;
 		}
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
-
-			if (child is not SwipeItems)
-			{
-				child.PropertyChanged -= OnPropertyChanged;
-			}
+			child.PropertyChanged -= OnPropertyChanged;
 		}
 
 		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -302,83 +313,60 @@ namespace Microsoft.Maui.Controls
 
 		private protected override void OnParentChangedCore()
 		{
+			if (_scrollParent != null)
+			{
+				if (_scrollParent is ScrollView scrollView)
+				{
+					scrollView.Scrolled -= OnParentScrolled;
+				}
+
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (_scrollParent is ListView listView)
+				{
+					listView.Scrolled -= OnParentScrolled;
+					return;
+				}
+#pragma warning restore CS0618 // Type or member is obsolete
+
+				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+				{
+					collectionView.Scrolled -= OnParentScrolled;
+				}
+
+				_scrollParent = null;
+			}
+
 			base.OnParentChangedCore();
 
-			if (_templateParent != null)
+			if (_scrollParent == null)
 			{
-				_templateParent.ParentChanged -= OnTemplateParentChanged;
-				_templateParent = null;
-			}
-			UnsubscribeFromParentScrolledEvents();
+				_scrollParent = this.FindParentOfType<ScrollView>();
 
-			// Try direct discovery first (works when the visual tree is already connected)
-			if (SubscribeToNearestScrollParent(this))
-				return;
-
-			// Deferred discovery for DataTemplate scenarios where the tree isn't fully connected yet
-			_templateParent = this.FindParentWith(x => x.Parent == null, false);
-			if (_templateParent != null)
-				_templateParent.ParentChanged += OnTemplateParentChanged;
-		}
-
-		void UnsubscribeFromParentScrolledEvents()
-		{
-			if (_scrollParent is ScrollView scrollView)
-			{
-				scrollView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning disable CS0618 // Type or member is obsolete
-			else if (_scrollParent is ListView listView)
-			{
-				listView.Scrolled -= OnParentScrolled;
-			}
-#pragma warning restore CS0618 // Type or member is obsolete
-			else if (_scrollParent is CollectionView collectionView)
-			{
-				collectionView.Scrolled -= OnParentScrolled;
-			}
-			_scrollParent = null;
-		}
-
-		void OnTemplateParentChanged(object? sender, EventArgs e)
-		{
-			UnsubscribeFromParentScrolledEvents();
-
-			if (_templateParent?.Parent != null)
-			{
-				SubscribeToNearestScrollParent(_templateParent);
-			}
-		}
-
-		bool SubscribeToNearestScrollParent(Element startElement)
-		{
-			_scrollParent = startElement.FindParentOfType<ScrollView>();
-
-			if (_scrollParent is ScrollView scrollView)
-			{
-				scrollView.Scrolled += OnParentScrolled;
-				return true;
-			}
+				if (_scrollParent is ScrollView scrollView)
+				{
+					scrollView.Scrolled += OnParentScrolled;
+					return;
+				}
 
 #pragma warning disable CS0618 // Type or member is obsolete
-			_scrollParent = startElement.FindParentOfType<ListView>();
-
-			if (_scrollParent is ListView listView)
-			{
-				listView.Scrolled += OnParentScrolled;
-				return true;
-			}
+				_scrollParent = this.FindParentOfType<ListView>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-			_scrollParent = startElement.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (_scrollParent is ListView listView)
+				{
+					listView.Scrolled += OnParentScrolled;
+					return;
+				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
-			if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
-			{
-				collectionView.Scrolled += OnParentScrolled;
-				return true;
+				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
+
+				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
+				{
+					collectionView.Scrolled += OnParentScrolled;
+				}
 			}
-
-			return false;
 		}
 
 		void UpdateMargin()
@@ -392,8 +380,8 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
 		{
-			var horizontalDelta = Math.Abs(e.ScrollX - _previousScrollX);
-			var verticalDelta = Math.Abs(e.ScrollY - _previousScrollY);
+			var horizontalDelta = e.ScrollX - _previousScrollX;
+			var verticalDelta = e.ScrollY - _previousScrollY;
 
 			if (horizontalDelta > SwipeMinimumDelta || verticalDelta > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
@@ -404,7 +392,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnParentScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
-			if (Math.Abs(e.HorizontalDelta) > SwipeMinimumDelta || Math.Abs(e.VerticalDelta) > SwipeMinimumDelta)
+			if (e.HorizontalDelta > SwipeMinimumDelta || e.VerticalDelta > SwipeMinimumDelta)
 				((ISwipeView)this).RequestClose(new SwipeViewCloseRequest(true));
 		}
 

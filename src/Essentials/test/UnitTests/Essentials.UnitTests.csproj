@@ -4,6 +4,7 @@
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <IsPackable>false</IsPackable>
     <AssemblyName>Microsoft.Maui.Essentials.UnitTests</AssemblyName>
+    <DebugType>portable</DebugType>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 

@@ -116,22 +116,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						if (cachedSize != CGSize.Empty)
 						{
 							_measuredSize = cachedSize.ToSize();
-							// For MeasureFirstItem, non-first cells reuse the cached first-item size.
-							// Mirroring CV1 (Items/TemplatedCell.cs): when ConstrainedSize is set, CV1
-							// calls NO virtualView.Measure() from PreferredLayoutAttributesFittingAttributes.
-							// We do the same — only call Measure when the layout constraints actually change
-							// (fresh cell: _cachedConstraints==default, or rotation/resize: new width/height).
-							// Checking the full Size (both width and height) handles both orientations:
-							//   - Vertical list:   constraints=(w, ∞) — width change drives the check.
-							//   - Horizontal list: constraints=(∞, h) — height change drives the check.
-							// Recycled cells at the same constraints skip Measure entirely, eliminating
-							// the per-scroll MeasureOverride invocation that PR #29496 introduced.
-							// The Measure return value is intentionally discarded; _measuredSize comes
-							// from the cache, not from this call.
-							if (_cachedConstraints != constraints)
-							{
-								virtualView.Measure(constraints.Width, constraints.Height);
-							}
+							// Even when we have a cached measurement, we still need to call Measure
+							// to update the virtual view's internal state and bookkeeping
+							virtualView.Measure(constraints.Width, _measuredSize.Height);
 						}
 						else
 						{
@@ -210,12 +197,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// We now have to apply the new bounds size to the virtual view
 				// which will automatically set the frame on the platform view too.
 				var frame = new Rect(Point.Zero, boundsSize);
-
-				// Inject per-cell safe area insets into the MauiView for CrossPlatformArrange
-				// to apply as internal padding. UICollectionView bypasses MAUI's arrange chain,
-				// so cells cannot use the standard safe area flow (#33604, #34635).
-				MauiView.ApplyCellSafeAreaOverride(this, virtualView, PlatformView);
-
 				virtualView.Arrange(frame);
 			}
 		}
@@ -280,7 +261,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
-
+				
 				if (this.Selected)
 				{
 					UpdateVisualStates();
@@ -382,7 +363,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (PlatformHandler?.VirtualView is VisualElement element)
 			{
-				element.IsItemSelected = Selected;
+				VisualStateManager.GoToState(element, Selected
+					? VisualStateManager.CommonStates.Selected
+					: VisualStateManager.CommonStates.Normal);
 			}
 		}
 

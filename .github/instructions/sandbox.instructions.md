@@ -170,7 +170,7 @@ Work with the Sandbox app for manual testing, PR validation, issue reproduction,
 
 ## Distinction: Code Review vs. Functional Testing
 
-**Code Review** (pr-review skill):
+**Code Review** (pr agent):
 - Analyzes code quality, patterns, best practices
 - Reviews test coverage and correctness
 - Checks for potential bugs or issues in the code itself

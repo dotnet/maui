@@ -147,14 +147,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.SetOrientation(scrollView.Orientation);
 		}
 
-		internal static void MapFlowDirection(IScrollViewHandler handler, IScrollView scrollView)
-		{
-			if (handler.PlatformView is MauiScrollView mauiScrollView && scrollView is IView view)
-			{
-				mauiScrollView.UpdateFlowDirection(view);
-			}
-		}
-
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
 		{
 			if (args is not ScrollToRequest request)
@@ -166,16 +158,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (context == null)
 			{
-				return;
-			}
-
-			if (!handler.PlatformView.IsLaidOut || handler.PlatformView.IsLayoutRequested)
-			{
-				handler.PlatformView.Post(() =>
-				{
-					if (handler.IsConnected())
-						MapRequestScrollTo(handler, scrollView, args);
-				});
 				return;
 			}
 
@@ -233,8 +215,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (currentPaddingLayer is not null)
 			{
-				UpdateClipForShadow(currentPaddingLayer, handler.PlatformView, scrollView.PresentedContent);
-
 				// Only update if content has changed or is missing
 				if (currentPaddingLayer.ChildCount == 0 || currentPaddingLayer.GetChildAt(0) != nativeContent)
 				{
@@ -261,19 +241,9 @@ namespace Microsoft.Maui.Handlers
 				Tag = InsetPanelTag
 			};
 
-			UpdateClipForShadow(paddingShim, handler.PlatformView, scrollView.PresentedContent);
-
 			handler.PlatformView.RemoveAllViews();
 			paddingShim.AddView(nativeContent);
 			handler.PlatformView.SetContent(paddingShim);
-		}
-
-		static void UpdateClipForShadow(ContentViewGroup paddingShim, MauiScrollView scrollView, IView? content)
-		{
-			bool hasShadow = content?.Shadow is not null;
-			paddingShim.SetClipChildren(!hasShadow);
-			paddingShim.SetClipToPadding(!hasShadow);
-			scrollView.SetClipChildren(!hasShadow);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)

@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
@@ -26,6 +25,37 @@ namespace Maui.Controls.Sample
 			BindingContext = _viewModel;
 		}
 
+		private void OnFlowDirectionCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (e.Value)
+			{
+				_viewModel.FlowDirection = FlowDirection.RightToLeft;
+			}
+			else
+			{
+				_viewModel.FlowDirection = FlowDirection.LeftToRight;
+			}
+		}
+
+		private void OnColorRadioButtonChanged(object sender, EventArgs e)
+		{
+			if (sender is RadioButton radioButton && radioButton.IsChecked)
+			{
+				switch (radioButton.Value.ToString())
+				{
+					case "Red":
+						_viewModel.Color = Colors.Red;
+						break;
+					case "Blue":
+						_viewModel.Color = Colors.Blue;
+						break;
+					default:
+						_viewModel.Color = Colors.Transparent;
+						break;
+				}
+			}
+		}
+
 		private void OnCornerRadiusEntryChanged(object sender, TextChangedEventArgs e)
 		{
 			if (string.IsNullOrWhiteSpace(e.NewTextValue))
@@ -33,62 +63,30 @@ namespace Maui.Controls.Sample
 
 			var parts = e.NewTextValue.Split(',');
 
-			if (parts.Length == 1)
+			if (parts.Length != 4)
+				return;
+
+			if (float.TryParse(parts[0].Trim(), out float topLeft) &&
+				float.TryParse(parts[1].Trim(), out float topRight) &&
+				float.TryParse(parts[2].Trim(), out float bottomLeft) &&
+				float.TryParse(parts[3].Trim(), out float bottomRight))
 			{
-				if (double.TryParse(parts[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double uniform))
-					_viewModel.CornerRadius = new CornerRadius(uniform);
-			}
-			else if (parts.Length == 4)
-			{
-				if (double.TryParse(parts[0].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double topLeft) &&
-					double.TryParse(parts[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double topRight) &&
-					double.TryParse(parts[2].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double bottomLeft) &&
-					double.TryParse(parts[3].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double bottomRight))
-				{
-					_viewModel.CornerRadius = new CornerRadius(topLeft, topRight, bottomLeft, bottomRight);
-				}
+				_viewModel.CornerRadius = new CornerRadius(topLeft, topRight, bottomLeft, bottomRight);
 			}
 		}
 
 		private void OnResetChangesClicked(object sender, EventArgs e)
 		{
-			_viewModel.Reset();
+			BindingContext = _viewModel = new BoxViewViewModel();
 		}
 
 		private void OnOpacityChanged(object sender, TextChangedEventArgs e)
 		{
-			if (string.IsNullOrWhiteSpace(e.NewTextValue))
+			if (double.TryParse(e.NewTextValue, out double value))
 			{
-				_viewModel.Opacity = 1.0;
-				return;
+				if (value >= 0 && value <= 1)
+					_viewModel.Opacity = value;
 			}
-
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0 && value <= 1)
-				_viewModel.Opacity = value;
-		}
-
-		private void OnWidthChanged(object sender, TextChangedEventArgs e)
-		{
-			if (string.IsNullOrWhiteSpace(e.NewTextValue))
-			{
-				_viewModel.Width = 200;
-				return;
-			}
-
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0)
-				_viewModel.Width = value;
-		}
-
-		private void OnHeightChanged(object sender, TextChangedEventArgs e)
-		{
-			if (string.IsNullOrWhiteSpace(e.NewTextValue))
-			{
-				_viewModel.Height = 100;
-				return;
-			}
-
-			if (double.TryParse(e.NewTextValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double value) && value >= 0)
-				_viewModel.Height = value;
 		}
 	}
 }

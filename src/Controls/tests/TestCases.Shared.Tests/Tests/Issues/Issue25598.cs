@@ -20,16 +20,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("RemoveItemButton");
 
 			for (int i = 0; i < 3; i++)
-			{
-				App.WaitForElement("RemoveItemButton");
 				App.Click("RemoveItemButton");
-			}
 
 			for (int i = 0; i < 3; i++)
-			{
-				App.WaitForElement("AddItemButton");
 				App.Click("AddItemButton");
-			}
 
 			VerifyScreenshot();
 		}

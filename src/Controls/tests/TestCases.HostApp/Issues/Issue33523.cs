@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 33523, "OnBackButtonPressed not firing for Shell Navigation Bar button in .NET 10 SR2", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS)]
+	[Issue(IssueTracker.Github, 33523, "OnBackButtonPressed not firing for Shell Navigation Bar button in .NET 10 SR2", PlatformAffected.Android)]
 	public class Issue33523 : Shell
 	{
 		public Issue33523()

@@ -2,13 +2,8 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.None, 0, "Shell Flyout Content",
 	PlatformAffected.All)]
-public class ShellFlyoutContent : ShellFlyoutContentBase
-{
-}
 
-// Base class with shared Init logic. No [Issue] attribute here so subclasses
-// can each declare their own without triggering AmbiguousMatchException.
-public abstract class ShellFlyoutContentBase : TestShell
+public class ShellFlyoutContent : TestShell
 {
 	protected override void Init()
 	{

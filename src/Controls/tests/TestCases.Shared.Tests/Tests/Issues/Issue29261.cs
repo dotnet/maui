@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_CATALYST
+// On Catalyst, Swipe actions not supported in Appium.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,16 +19,11 @@ public class Issue29261 : _IssuesUITest
 	public void VerifyCarouselViewBounceTest()
 	{
 		App.WaitForElement("carouselview");
-
-		// Use button to navigate to the last position
-		App.Tap("goToLastButton");
-		App.WaitForTextToBePresentInElement("positionLabel", "CarouselView Position - 2");
-
-		// Swipe once more past the end — should bounce back to position 2
-		App.ScrollRight("carouselview", ScrollStrategy.Gesture, 0.9, 500);
-		App.ScrollRight("carouselview", ScrollStrategy.Gesture, 0.9, 500);
+		App.SwipeRightToLeft("carouselview");
+		App.SwipeRightToLeft("carouselview");
+		App.SwipeRightToLeft("carouselview");
 		var text = App.FindElement("positionLabel").GetText();
 		Assert.That(text, Is.EqualTo("CarouselView Position - 2"));
-
 	}
 }
+#endif

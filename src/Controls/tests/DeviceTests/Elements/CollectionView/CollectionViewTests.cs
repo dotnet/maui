@@ -104,7 +104,6 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
-#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
@@ -167,7 +166,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
-#endif
 
 		[Fact(
 #if IOS || MACCATALYST || WINDOWS

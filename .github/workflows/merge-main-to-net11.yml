@@ -7,7 +7,7 @@
 #   - ResetToTargetPaths: auto-resets version files to target branch versions
 #   - QuietComments: reduces GitHub notification noise
 #   - Skips PRs when only Maestro bot commits exist
-#   - Keeps each generated PR immutable while CI runs; later commits flow in the next PR
+#   - Updates existing open PR instead of creating new ones
 
 name: Merge main to net11.0
 
@@ -25,46 +25,8 @@ permissions:
   contents: write
   pull-requests: write
 
-concurrency:
-  group: merge-main-to-net11
-  cancel-in-progress: false
-
 jobs:
-  CheckForOpenMergePullRequest:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-    steps:
-      - name: Check for an open main to net11.0 merge PR
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          pr_number="$(gh pr list \
-            --repo "$REPOSITORY" \
-            --state open \
-            --app 'github-actions' \
-            --head 'merge/main-to-net11.0' \
-            --base 'net11.0' \
-            --limit 100 \
-            --json number,isCrossRepository \
-            --jq '[.[] | select(.isCrossRepository == false)][0].number // empty')"
-
-          if [[ -n "$pr_number" ]]; then
-            echo "Merge PR #$pr_number is still open; leaving its branch unchanged while CI runs."
-            echo "should_run=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "No open main to net11.0 merge PR exists."
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-          fi
-
   Merge:
-    needs: CheckForOpenMergePullRequest
-    if: needs.CheckForOpenMergePullRequest.outputs.should_run == 'true'
     uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@main
     with:
       configuration_file_path: 'github-merge-flow-net11.jsonc'

@@ -1,5 +1,4 @@
 #nullable disable
-using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
@@ -14,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="IsGrouped"/>.</summary>
 		public static readonly BindableProperty IsGroupedProperty =
-			BindableProperty.Create(nameof(IsGrouped), typeof(bool), typeof(GroupableItemsView), BooleanBoxes.FalseBox);
+			BindableProperty.Create(nameof(IsGrouped), typeof(bool), typeof(GroupableItemsView), false);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether items should be displayed in groups.
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsGrouped
 		{
 			get => (bool)GetValue(IsGroupedProperty);
-			set => SetValue(IsGroupedProperty, BooleanBoxes.Box(value));
+			set => SetValue(IsGroupedProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="GroupHeaderTemplate"/>.</summary>

@@ -12,18 +12,20 @@ namespace VisualTestUtils.MagickNet
     {
         private ErrorMetric _errorMetric;
 
-        public MagickNetVisualDiffGenerator(ErrorMetric error = ErrorMetric.RootMeanSquared)
+        public MagickNetVisualDiffGenerator(ErrorMetric error = ErrorMetric.Fuzz)
         {
             _errorMetric = error;
         }
 
         public ImageSnapshot GenerateDiff(ImageSnapshot baselineImage, ImageSnapshot actualImage)
         {
-            using var magickBaselineImage = new MagickImage(baselineImage.Data);
-            using var magickActualImage = new MagickImage(actualImage.Data);
+            var magickBaselineImage = new MagickImage(baselineImage.Data);
+            var magickActualImage = new MagickImage(actualImage.Data);
 
-            using var magickDiffImage = (MagickImage)magickBaselineImage.Compare(magickActualImage, _errorMetric, Channels.Red, out _);
+            MagickImage magickDiffImage = new MagickImage();
             magickDiffImage.Format = MagickFormat.Png;
+
+            double percentageDifference = magickBaselineImage.Compare(magickActualImage, _errorMetric, magickDiffImage, Channels.Red);
 
             return new ImageSnapshot(magickDiffImage.ToByteArray(), ImageSnapshotFormat.PNG);
         }

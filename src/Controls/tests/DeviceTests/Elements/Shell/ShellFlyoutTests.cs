@@ -172,9 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate footer position
 				#if IOS
-				// With safeAreaBottom subtracted from content height (PR #33335), the footer's Y position
-				// equals exactly the sum of what's above it (safeAreaTop + headerHeight + contentHeight).
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
+				AssertionExtensions.CloseEnough(footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, headerFrame.Height + contentFrame.Height + GetSafeArea(handler.ToPlatform()).Top); 
 				#else
 				// On android the we pad the top of the header frame by the safe area because how layout works
 				// so that is already included in the headerFrame Height
@@ -255,14 +253,11 @@ namespace Microsoft.Maui.DeviceTests
                                 // validate footer position
                                 var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
                                 AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-                                // With safeAreaBottom subtracted from content height (PR #33335), footerFrame.Y equals
-                                // expectedFooterY directly — no safeAreaBottom adjustment needed here.
-                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.6, message: "Footer Y");
+                                AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y + GetSafeArea(handler.ToPlatform()).Bottom, epsilon: 0.6, message: "Footer Y");
                                 AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
                                 //All three views should measure to the height of the flyout
-                                // The flyout height = content area + footer height + safeAreaBottom below the footer.
-                                AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height + GetSafeArea(handler.ToPlatform()).Bottom, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+                                AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
                         });
                 }
 #endif
@@ -328,20 +323,14 @@ namespace Microsoft.Maui.DeviceTests
                                 }
                                 else
                                 {
-                                        // After scrolling, the header height may include the safe area margin
-                                        // depending on the content type and how InvalidateMeasure is triggered.
-                                        var safeAreaTop = GetSafeArea(handler.ToPlatform()).Top;
-                                        Assert.True(
-                                                scrolledBox.Height >= headerRequestedHeight - 0.3 &&
-                                                scrolledBox.Height <= headerRequestedHeight + safeAreaTop + 0.3,
-                                                $"Header Height: expected between {headerRequestedHeight} and {headerRequestedHeight + safeAreaTop}, actual: {scrolledBox.Height}");
+                                        AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
 
                                         if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
                                         {
-                                                // scrolledBox.Y is negative because the header is scrolled up
-                                                var diff = scrolledBox.Y + scrolledBox.Height;
+                                                // scrolledBoy.Y is negative because the header is scrolled up
+                                                var diff = scrolledBox.Y + headerRequestedHeight;
                                                 var epsilon = 0.3;
-                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is not enough to cover height ({scrolledBox.Height}). Epsilon: {epsilon}");
+                                                Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
                                         }
                                         else
                                         {

@@ -185,16 +185,4 @@ public partial class GroupingOptionsPage : ContentPage
 			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
 		}
 	}
-
-	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (FlowDirectionLeftToRight.IsChecked)
-		{
-			_viewModel.FlowDirection = FlowDirection.LeftToRight;
-		}
-		else if (FlowDirectionRightToLeft.IsChecked)
-		{
-			_viewModel.FlowDirection = FlowDirection.RightToLeft;
-		}
-	}
 }

@@ -38,11 +38,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				// do not canonicalize "-0"; user will likely enter a period after "-0"
-				// Only block when the string starts with "-0" and parses to exactly zero
-				// (e.g. "-0", "-0.0"), so that valid values like "0.5" or "-0.5" still convert.
-				if (stringValue.StartsWith("-0") && DecimalTypes.Contains(convertTo)
-				 && double.TryParse(stringValue, System.Globalization.NumberStyles.Any, CultureInfo.CurrentCulture, out var parsedNegZero)
-				 && parsedNegZero == 0.0)
+				if (stringValue == "-0" && DecimalTypes.Contains(convertTo))
 				{
 					value = original;
 					return false;

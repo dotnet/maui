@@ -29,10 +29,6 @@ schedules:
     - main
     - net*.0
     - inflight/current
-    exclude:
-    # net10.0 is no longer an active development branch; .NET 10 work happens
-    # in main and release/10.0.1xx-* so there is no need for a nightly build.
-    - net10.0
   always: true
 
 variables:
@@ -69,8 +65,6 @@ extends:
   ${{ else }}:
     template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    settings:
-      networkIsolationPolicy: Permissive, CFSClean, CFSClean2
     pool: ${{ parameters.WindowsPool }}
     sdl:
       binskim:
@@ -108,7 +102,6 @@ extends:
             onlyAndroidPlatformDefaultApis: true
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
-            skipSimulatorSetup: true
             skipProvisioning: true
             skipXcode: false
             base64Encode: true
