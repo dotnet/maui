@@ -9,7 +9,6 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Google.Android.Material.Dialog;
 using Microsoft.Maui.Controls.Internals;
 using static Android.Views.ViewGroup;
 using AButton = Android.Widget.Button;
@@ -345,15 +344,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (activity is AppCompatActivity)
 					{
-						if (RuntimeFeature.IsMaterial3Enabled)
-						{
-							_appcompatBuilder = new MaterialAlertDialogBuilder(MauiMaterialContextThemeWrapper.Create(activity));
-						}
-						else
-						{
-							_appcompatBuilder = new AppCompatAlertDialog.Builder(activity);
-						}
-
+						_appcompatBuilder = new AppCompatAlertDialog.Builder(activity);
 						_useAppCompat = true;
 					}
 					else

@@ -1,7 +1,6 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.Slider;
 
 	/// <summary>Platform-specific functionality for sliders the iOS platform.</summary>
@@ -23,7 +22,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> to update on tap; otherwise, <see langword="false"/>.</param>
 		public static void SetUpdateOnTap(BindableObject element, bool value)
 		{
-			element.SetValue(UpdateOnTapProperty, BooleanBoxes.Box(value));
+			element.SetValue(UpdateOnTapProperty, value);
 		}
 
 		/// <summary>Gets whether the slider value updates when the user taps on the track on iOS.</summary>

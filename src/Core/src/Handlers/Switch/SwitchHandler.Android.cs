@@ -1,4 +1,3 @@
-using System;
 using Android.Graphics.Drawables;
 using Android.Nfc.CardEmulators;
 using Android.Widget;
@@ -9,7 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, ASwitch>
 	{
-		CheckedChangeListener? _changeListener;
+		CheckedChangeListener ChangeListener { get; } = new CheckedChangeListener();
+
 		protected override ASwitch CreatePlatformView()
 		{
 			return new ASwitch(Context);
@@ -17,16 +17,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(ASwitch platformView)
 		{
-			_changeListener = new CheckedChangeListener(this);
-			platformView.SetOnCheckedChangeListener(_changeListener);
+			ChangeListener.Handler = this;
+			platformView.SetOnCheckedChangeListener(ChangeListener);
 
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(ASwitch platformView)
 		{
+			ChangeListener.Handler = null;
 			platformView.SetOnCheckedChangeListener(null);
-			_changeListener = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -73,21 +73,13 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.IsOn = isOn;
 		}
 
-		sealed class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener
+		class CheckedChangeListener : Java.Lang.Object, CompoundButton.IOnCheckedChangeListener
 		{
-			readonly WeakReference<SwitchHandler> _handler;
-
-			public CheckedChangeListener(SwitchHandler handler)
-			{
-				_handler = new WeakReference<SwitchHandler>(handler);
-			}
+			public SwitchHandler? Handler { get; set; }
 
 			void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton? buttonView, bool isToggled)
 			{
-				if (_handler.TryGetTarget(out var handler))
-				{
-					handler.OnCheckedChanged(isToggled);
-				}
+				Handler?.OnCheckedChanged(isToggled);
 			}
 		}
 	}

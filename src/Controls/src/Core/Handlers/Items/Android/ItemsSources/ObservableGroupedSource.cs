@@ -144,13 +144,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public IItemsViewSource GetGroupItemsViewSource(int groupIndex)
 		{
-			// The uint cast is being used as an optimization to handle both negative numbers and out-of-bounds indices in a single comparison
-			if ((uint) groupIndex >= (uint) _groups.Count)
-			{
-				System.Diagnostics.Debug.WriteLine($"Invalid Group index: {groupIndex}, Group count: {_groups.Count}");
-				return null;
-			}
-
 			return _groups[groupIndex];
 		}
 
@@ -233,9 +226,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
-				var group = _groupSource[n];
-
-				if (group is IEnumerable list && group is not string) // Exclude string: it implements IEnumerable<char> but is a scalar value, not a group
+				if (_groupSource[n] is IEnumerable list)
 				{
 					var source = ItemsSourceFactory.Create(list, _groupableItemsView, this);
 					source.HasFooter = _hasGroupFooters;
@@ -296,25 +287,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var count = 0;
-
-			foreach (var item in args.NewItems)
-			{
-				// Count only real groups (IEnumerable but not string); flat scalar items like strings
-				// must not trigger a section insertion — they would cause _groups[groupIndex] to be
-				// out-of-range after UpdateGroupTracking skips non-group items.
-				// string implements IEnumerable<char> but is a scalar value, not a group.
-				if (item is IEnumerable and not string)
-				{
-					count++;
-				}
-			}
-
-			if (count == 0)
-			{
-				return;
-			}
-
 			var groupIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var groupCount = args.NewItems.Count;
 
@@ -335,24 +307,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Remove(NotifyCollectionChangedEventArgs args)
 		{
-			var count = 0;
-
-			foreach (var item in args.OldItems)
-			{
-				// Count only real groups (IEnumerable but not string); flat scalar items like strings
-				// must not trigger a section removal — they would cause _groups[groupIndex] to be
-				// out-of-range after UpdateGroupTracking skips non-group items.
-				if (item is IEnumerable and not string)
-				{
-					count++;
-				}
-			}
-
-			if (count == 0)
-			{
-				return;
-			}
-
 			var groupIndex = args.OldStartingIndex;
 
 			if (groupIndex < 0)

@@ -24,8 +24,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IStepper.IsEnabled)] = MapIsEnabled,
 #elif WINDOWS
 			[nameof(IStepper.Background)] = MapBackground,
-#elif __IOS__ || MACCATALYST
-			[nameof(IStepper.FlowDirection)] = MapFlowDirection,
 #endif
 		};
 

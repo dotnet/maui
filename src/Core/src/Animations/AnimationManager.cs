@@ -84,12 +84,8 @@ namespace Microsoft.Maui.Animations
 			var milliseconds = TimeSpan.FromMilliseconds(now - _lastUpdate).TotalMilliseconds;
 			_lastUpdate = now;
 
-			Animation[] animations = [.._animations];
-
-			foreach (var animation in animations)
-			{
-				OnAnimationTick(animation);
-			}
+			var animations = new List<Animation>(_animations);
+			animations.ForEach(OnAnimationTick);
 
 			if (_animations.Count == 0)
 				End();
@@ -133,14 +129,8 @@ namespace Microsoft.Maui.Animations
 
 		void ForceFinishAnimations()
 		{
-			Animation[] animations = [.._animations];
-
-			foreach (var animation in animations)
-			{
-				ForceFinish(animation);
-			}
-
-
+			var animations = new List<Animation>(_animations);
+			animations.ForEach(ForceFinish);
 			End();
 
 			void ForceFinish(Animation animation)

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Foundation;
 using Microsoft.Extensions.Logging;
 using UIKit;
 
 namespace Microsoft.Maui
 {
 	/// <inheritdoc/>
-	public class FontManager : IFontManager, IDisposable
+	public class FontManager : IFontManager
 	{
 		// UIFontWeight[Constant] is internal in Xamarin.iOS but the convertion from
 		// the public (int-based) enum is not helpful in this case.
@@ -29,7 +28,6 @@ namespace Microsoft.Maui
 		readonly IFontRegistrar _fontRegistrar;
 		readonly IServiceProvider? _serviceProvider;
 
-		NSObject? _contentSizeCategoryObserver;
 		UIFont? _defaultFont;
 
 		/// <summary>
@@ -42,11 +40,6 @@ namespace Microsoft.Maui
 		{
 			_fontRegistrar = fontRegistrar;
 			_serviceProvider = serviceProvider;
-
-			// When the preferred content size category changes (Dynamic Type),
-			// clear the font cache so subsequent requests create new fonts
-			// with the current content size category scaling.
-			_contentSizeCategoryObserver = UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) => _fonts.Clear());
 		}
 
 		/// <inheritdoc/>
@@ -188,12 +181,6 @@ namespace Microsoft.Maui
 
 				return uiFont;
 			}
-		}
-
-		public void Dispose()
-		{
-			_contentSizeCategoryObserver?.Dispose();
-			_contentSizeCategoryObserver = null;
 		}
 
 		string? CleanseFontName(string fontName)

@@ -20,9 +20,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISwitch.IsOn)] = MapIsOn,
 			[nameof(ISwitch.ThumbColor)] = MapThumbColor,
 			[nameof(ISwitch.TrackColor)] = MapTrackColor,
-#if WINDOWS
-			[nameof(IView.MinimumWidth)] = MapSwitchMinimumWidth,
-#endif
 		};
 
 		public static CommandMapper<ISwitch, ISwitchHandler> CommandMapper = new(ViewCommandMapper)

@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -25,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler ReorderCompleted;
 
 		/// <summary>Bindable property for <see cref="CanMixGroups"/>.</summary>
-		public static readonly BindableProperty CanMixGroupsProperty = BindableProperty.Create(nameof(CanMixGroups), typeof(bool), typeof(ReorderableItemsView), BooleanBoxes.FalseBox);
+		public static readonly BindableProperty CanMixGroupsProperty = BindableProperty.Create(nameof(CanMixGroups), typeof(bool), typeof(ReorderableItemsView), false);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether items from different groups can be mixed together during reordering.
@@ -39,11 +38,11 @@ namespace Microsoft.Maui.Controls
 		public bool CanMixGroups
 		{
 			get { return (bool)GetValue(CanMixGroupsProperty); }
-			set { SetValue(CanMixGroupsProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(CanMixGroupsProperty, value); }
 		}
 
 		/// <summary>Bindable property for <see cref="CanReorderItems"/>.</summary>
-		public static readonly BindableProperty CanReorderItemsProperty = BindableProperty.Create(nameof(CanReorderItems), typeof(bool), typeof(ReorderableItemsView), BooleanBoxes.FalseBox);
+		public static readonly BindableProperty CanReorderItemsProperty = BindableProperty.Create(nameof(CanReorderItems), typeof(bool), typeof(ReorderableItemsView), false);
 
 		/// <summary>
 		/// Gets or sets a value indicating whether items in the collection can be reordered by the user.
@@ -57,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public bool CanReorderItems
 		{
 			get { return (bool)GetValue(CanReorderItemsProperty); }
-			set { SetValue(CanReorderItemsProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(CanReorderItemsProperty, value); }
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

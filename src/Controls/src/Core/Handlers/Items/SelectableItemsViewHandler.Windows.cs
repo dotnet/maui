@@ -96,11 +96,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 								{
 									if (item is ItemTemplateContext itemPair)
 									{
-										return object.Equals(itemPair.Item, ItemsView.SelectedItem);
+										return itemPair.Item == ItemsView.SelectedItem;
 									}
 									else
 									{
-										return object.Equals(item, ItemsView.SelectedItem);
+										return item == ItemsView.SelectedItem;
 									}
 								});
 						}
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var formsItemContentControl in formsItemContentControls)
 			{
-				bool isSelected = object.Equals(ItemsView.SelectedItem, formsItemContentControl.FormsDataContext) || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
 				formsItemContentControl.UpdateIsSelected(isSelected);
 			}
 		}

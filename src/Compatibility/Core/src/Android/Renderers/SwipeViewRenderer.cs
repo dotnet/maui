@@ -421,7 +421,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		bool IsValidSwipeItems(SwipeItems swipeItems)
 		{
-			return swipeItems != null && swipeItems.Any(s => s.IsVisible);
+			return swipeItems != null && swipeItems.Where(s => s.IsVisible).Count() > 0;
 		}
 
 		bool ProcessSwipingInteractions(MotionEvent e)

@@ -30,7 +30,7 @@
       x:Name="TestCarouselView"
       Grid.Row="1"
       ItemTemplate="{StaticResource SampleItemTemplate}"
-      Loop="False"
+      Loop="True"
       HeightRequest="250"
       HorizontalOptions="Center"/>
 

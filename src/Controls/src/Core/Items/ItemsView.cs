@@ -223,9 +223,6 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(int index, int groupIndex = -1,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
-			if (DismissScroll())
-				return;
-
 			OnScrollToRequested(new ScrollToRequestEventArgs(index, groupIndex, position, animate));
 		}
 
@@ -239,9 +236,6 @@ namespace Microsoft.Maui.Controls
 		public void ScrollTo(object item, object group = null,
 			ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
 		{
-			if (DismissScroll())
-				return;
-
 			OnScrollToRequested(new ScrollToRequestEventArgs(item, group, position, animate));
 		}
 
@@ -317,11 +311,6 @@ namespace Microsoft.Maui.Controls
 		{
 			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource?.GetType());
 			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
-		}
-
-		private bool DismissScroll()
-		{
-			return Handler is null || ItemsSource is null;
 		}
 	}
 }

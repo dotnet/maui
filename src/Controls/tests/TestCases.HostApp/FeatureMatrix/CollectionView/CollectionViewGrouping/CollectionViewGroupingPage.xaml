@@ -12,7 +12,6 @@
 
     <local:CollectionView2
         x:Name="collectionView"
-        FlowDirection="{Binding FlowDirection}"
         ItemsSource="{Binding ItemsSource}"
         Header="{Binding Header}"
         Footer="{Binding Footer}"

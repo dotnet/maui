@@ -1,6 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue: https://github.com/dotnet/maui/issues/26798
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,4 +21,3 @@ public class Issue21708 : _IssuesUITest
 		Assert.That(App.FindElement("Label").GetText(), Is.EqualTo("0"));
 	}
 }
-#endif

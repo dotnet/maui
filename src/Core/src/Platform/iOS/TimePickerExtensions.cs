@@ -55,35 +55,30 @@ public static class TimePickerExtensions
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		// Determine which culture to use for consistent formatting
-		CultureInfo formattingCulture;
-		if (format != null)
-		{
-			if (format.Contains('t', StringComparison.Ordinal) || format.Contains('h', StringComparison.Ordinal))
-			{
-				formattingCulture = new CultureInfo("en-US");
-			}	
-			else if (format.Contains('H', StringComparison.Ordinal))
-			{
-				formattingCulture = new CultureInfo("de-DE");
-			}
-			else
-			{
-				formattingCulture = cultureInfo;
-			}
-				
-		}
-		else
-		{
-			formattingCulture = cultureInfo;
-		}
+		mauiTimePicker.Text = time?.ToFormattedString(format, cultureInfo);
 
-		// Apply the same culture to both the text display and the picker
-		mauiTimePicker.Text = time?.ToFormattedString(format ?? string.Empty, formattingCulture);
-
-		if (picker != null && format != null)
+		if (format is not null)
 		{
-			picker.Locale = new NSLocale(formattingCulture.TwoLetterISOLanguageName);
+			if (format.Contains('H', StringComparison.Ordinal))
+			{
+				var ci = new CultureInfo("de-DE");
+				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+
+				if (picker is not null)
+				{
+					picker.Locale = locale;
+				}
+			}
+			else if (format.Contains('h', StringComparison.Ordinal))
+			{
+				var ci = new CultureInfo("en-US");
+				NSLocale locale = new NSLocale(ci.TwoLetterISOLanguageName);
+
+				if (picker is not null)
+				{
+					picker.Locale = locale;
+				}
+			}
 		}
 
 		mauiTimePicker.UpdateCharacterSpacing(timePicker);
@@ -91,9 +86,7 @@ public static class TimePickerExtensions
 
 	public static void UpdateTextAlignment(this MauiTimePicker textField, ITimePicker timePicker)
 	{
-		UISemanticContentAttribute updateValue = textField.SemanticContentAttribute;
-
-		textField.TextAlignment = (updateValue == UISemanticContentAttribute.ForceRightToLeft) ? UITextAlignment.Right : UITextAlignment.Left;
+		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
 
 	internal static void UpdateIsOpen(this UIDatePicker picker, ITimePicker timePicker)

@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Devices;
 using static Microsoft.Maui.Controls.VisualElement;
 
 namespace Microsoft.Maui.Controls
@@ -62,7 +61,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), specificity: SetterSpecificity.FromHandler);
+			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromHandler);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -237,7 +236,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
+			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
@@ -315,12 +314,6 @@ namespace Microsoft.Maui.Controls
 		{
 			OnItemSelected(obj);
 			SetValue(SelectedItemPropertyKey, obj, specificity: SetterSpecificity.FromHandler);
-			if (!(DeviceInfo.Platform == DevicePlatform.WinUI))
-			{
-				// For WinUI the query is confirmed in the QuerySubmitted event, 
-				// so we don't want to call OnQueryConfirmed here as it would cause the command to execute twice
-				OnQueryConfirmed();
-			}
 		}
 
 		void ISearchHandlerController.QueryConfirmed()
@@ -357,7 +350,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderEnabled"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderEnabledProperty =
-			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox);
+			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), false);
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderHelpText"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderHelpTextProperty =
@@ -392,7 +385,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsSearchEnabled"/>.</summary>
 		public static readonly BindableProperty IsSearchEnabledProperty =
-			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.TrueBox, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), true, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
@@ -435,7 +428,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ShowsResults"/>.</summary>
 		public static readonly BindableProperty ShowsResultsProperty =
-			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox, BindingMode.OneTime);
+			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), false, BindingMode.OneTime);
 
 		private ListProxy _listProxy;
 
@@ -484,7 +477,7 @@ namespace Microsoft.Maui.Controls
 		public bool ClearPlaceholderEnabled
 		{
 			get { return (bool)GetValue(ClearPlaceholderEnabledProperty); }
-			set { SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(ClearPlaceholderEnabledProperty, value); }
 		}
 
 		/// <summary>Gets or sets the accessibility help text for the clear placeholder icon. This is a bindable property.</summary>
@@ -534,7 +527,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsSearchEnabled
 		{
 			get { return (bool)GetValue(IsSearchEnabledProperty); }
-			set { SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsSearchEnabledProperty, value); }
 		}
 
 		/// <summary>Gets or sets the collection of items to display as search suggestions. This is a bindable property.</summary>
@@ -593,12 +586,12 @@ namespace Microsoft.Maui.Controls
 		public bool ShowsResults
 		{
 			get { return (bool)GetValue(ShowsResultsProperty); }
-			set { SetValue(ShowsResultsProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(ShowsResultsProperty, value); }
 		}
 
-		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
+		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, value); }
 
-		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
+		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, value); }
 
 		protected virtual void OnClearPlaceholderClicked()
 		{

@@ -8,25 +8,22 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		public static UIImage ScaleImage(this UIImage target, float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			if (maxWidth <= 0 || maxHeight <= 0)
+			float originalWidth = (float)target.Size.Width;
+			float originalHeight = (float)target.Size.Height;
+
+			float scale = originalWidth / maxWidth;
+
+			float targetWidth = originalWidth / scale;
+			float targetHeight = originalHeight / scale;
+
+			if (targetHeight > maxHeight)
 			{
-				return target;
+				scale = targetHeight / maxHeight;
+				targetHeight = targetHeight / scale;
+				targetWidth = targetWidth / scale;
 			}
 
-			if (target.Size.Width > maxWidth || target.Size.Height > maxHeight)
-			{
-				float factorX = maxWidth / (float)target.Size.Width;
-				float factorY = maxHeight / (float)target.Size.Height;
-
-				float factor = Math.Min(factorX, factorY);
-
-				float targetWidth = factor * (float)target.Size.Width;
-				float targetHeight = factor * (float)target.Size.Height;
-
-				return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
-			}
-
-			return target;
+			return ScaleImage(target, new CGSize(targetWidth, targetHeight), disposeOriginal);
 		}
 
 		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)

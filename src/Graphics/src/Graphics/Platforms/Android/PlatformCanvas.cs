@@ -547,20 +547,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		protected override void PlatformDrawPath(PathF aPath)
 		{
 			var platformPath = aPath.AsAndroidPath();
-
-			if (_shader != null)
-			{
-				// Mirror iOS ReplacePathWithStrokedPath: convert stroke geometry into a fill path
-				using var strokedOutline = new Path();
-				CurrentState.StrokePaintWithAlpha.GetFillPath(platformPath, strokedOutline);
-				// FillPaintWithAlpha already has the gradient shader from SetFillPaint
-				_canvas.DrawPath(strokedOutline, CurrentState.FillPaintWithAlpha);
-			}
-			else
-			{
-				_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
-			}
-
+			_canvas.DrawPath(platformPath, CurrentState.StrokePaintWithAlpha);
 			platformPath.Dispose();
 		}
 
@@ -615,7 +602,18 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
-			StaticLayout layout = TextLayoutUtils.CreateLayout(value, CurrentState.FontPaint, 512, Layout.Alignment.AlignNormal);
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
+			var layout = new StaticLayout(
+				value,
+				CurrentState.FontPaint,
+				512,
+				Layout.Alignment.AlignNormal,
+				1f,
+				0f,
+				false);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}

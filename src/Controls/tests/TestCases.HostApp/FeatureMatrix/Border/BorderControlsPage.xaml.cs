@@ -2,10 +2,12 @@ namespace Maui.Controls.Sample;
 
 public class BorderControlPage : NavigationPage
 {
+	private BorderViewModel _viewModel;
+
 	public BorderControlPage()
 	{
-		var viewModel = new BorderViewModel();
-		PushAsync(new BorderControlMainPage(viewModel));
+		_viewModel = new BorderViewModel();
+		PushAsync(new BorderControlMainPage(_viewModel));
 	}
 }
 
@@ -22,7 +24,7 @@ public partial class BorderControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		_viewModel.Reset();
+		BindingContext = _viewModel = new BorderViewModel();
 		await Navigation.PushAsync(new OptionsPage(_viewModel));
 	}
 }

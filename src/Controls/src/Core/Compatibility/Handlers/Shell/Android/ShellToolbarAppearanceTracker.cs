@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			shellToolbar.BarTextColor = title ?? ShellRenderer.DefaultTitleColor;
 			shellToolbar.BarBackground = new SolidColorBrush(background ?? ShellRenderer.DefaultBackgroundColor);
 			shellToolbar.IconColor = foreground ?? ShellRenderer.DefaultForegroundColor;
+			toolbarTracker.TintColor = foreground ?? ShellRenderer.DefaultForegroundColor;
 		}
 
 		#region IDisposable

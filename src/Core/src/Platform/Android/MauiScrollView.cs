@@ -10,7 +10,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.Widget;
-using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Microsoft.Maui.Platform
 {
@@ -26,24 +25,12 @@ namespace Microsoft.Maui.Platform
 		ScrollBarVisibility _horizontalScrollVisibility;
 		bool _didSafeAreaEdgeConfigurationChange = true;
 		bool _isInsetListenerSet;
-		Java.Lang.IRunnable? _setAppBarLiftTargetRunnable;
-		ALayoutDirection _prevLayoutDirection = ALayoutDirection.Ltr;
-		bool _checkedForRtlScroll;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
 
 		internal bool ShouldSkipOnTouch;
 		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
-
-		// Stores the parent touch listener so horizontal ScrollView taps can be forwarded to it directly.
-		internal IOnTouchListener? _touchListener;
-
-		public override void SetOnTouchListener(IOnTouchListener? touchListener)
-		{
-			_touchListener = touchListener;
-			base.SetOnTouchListener(touchListener);
-		}
 
 		public MauiScrollView(Context context) : base(context)
 		{
@@ -75,82 +62,16 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnAttachedToWindow();
 			_isInsetListenerSet = MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(this, _context);
-
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				// Pin the MAUI navigation AppBarLayout's lift-on-scroll target to this NestedScrollView.
-				// Otherwise AppBarLayout auto-detects the outer FragmentContainerView as the scrolling target,
-				// and its ViewTreeObserver-driven shouldLift() check evaluates canScrollVertically() on the
-				// container (which is always 0), causing the lifted state to flip on every layout pass
-				// triggered by sibling views (e.g. CheckBox/Switch state animations) and producing a
-				// visible scrolledContainerColor flicker.
-				// Use Post() to defer until layout is complete — when this ScrollView is inside
-				// a CarouselView, adjacent off-screen pages also attach and we need to verify
-				// the view is actually on-screen before claiming the lift target.
-				PostTrySetAppBarLiftTargetIfOnScreen();
-			}
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
-			// Clean up AppBar listener while the ViewTreeObserver is still valid.
-			if (RuntimeFeature.IsMaterial3Enabled)
-			{
-				ClearAppBarLiftTargetAndPendingPost();
-			}
-
 			base.OnDetachedFromWindow();
 			if (_isInsetListenerSet)
 				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(this, _context);
 
 			_isInsetListenerSet = false;
 			_didSafeAreaEdgeConfigurationChange = true;
-		}
-
-		protected override void OnVisibilityChanged(View changedView, ViewStates visibility)
-		{
-			base.OnVisibilityChanged(changedView, visibility);
-
-			if (changedView != this)
-			{
-				return;
-			}
-
-			if (!RuntimeFeature.IsMaterial3Enabled)
-			{
-				return;
-			}
-
-			if (visibility == ViewStates.Visible)
-			{
-				PostTrySetAppBarLiftTargetIfOnScreen();
-			}
-			else
-			{
-				ClearAppBarLiftTargetAndPendingPost();
-			}
-		}
-
-		void PostTrySetAppBarLiftTargetIfOnScreen()
-		{
-			var runnable = GetOrCreateSetAppBarLiftTargetRunnable();
-			RemoveCallbacks(runnable);
-			Post(runnable);
-		}
-
-		void ClearAppBarLiftTargetAndPendingPost()
-		{
-			if (_setAppBarLiftTargetRunnable is not null)
-			{
-				RemoveCallbacks(_setAppBarLiftTargetRunnable);
-			}
-
-			this.ClearAppBarLiftTarget();
-		}
-
-		Java.Lang.IRunnable GetOrCreateSetAppBarLiftTargetRunnable()
-		{
-			return _setAppBarLiftTargetRunnable ??= new Java.Lang.Runnable(() => this.TrySetAppBarLiftTargetIfOnScreen());
 		}
 
 		#region IHandleWindowInsets Implementation
@@ -207,7 +128,7 @@ namespace Microsoft.Maui.Platform
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
 			_hScrollView.ScrollbarFadingEnabled = _horizontalScrollVisibility != ScrollBarVisibility.Always;
-			PlatformInterop.RequestLayoutIfNeeded(_hScrollView);
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
@@ -235,12 +156,6 @@ namespace Microsoft.Maui.Platform
 		{
 			bool orientationChanged = _scrollOrientation != orientation;
 			_scrollOrientation = orientation;
-
-			// Reset RTL tracking when orientation changes
-			if (orientationChanged)
-			{
-				_checkedForRtlScroll = false;
-			}
 
 			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
 			{
@@ -286,28 +201,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void UpdateFlowDirection(IView view)
-		{
-			var layoutDirection = ViewExtensions.GetLayoutDirection(view);
-
-			// Handle FlowDirection specifically for horizontal scroll view
-			if (_hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
-			{
-				if (_prevLayoutDirection != layoutDirection)
-				{
-					_prevLayoutDirection = layoutDirection;
-					_hScrollView.LayoutDirection = layoutDirection;
-					_checkedForRtlScroll = false; // Reset to allow re-evaluation
-				}
-			}
-			else
-			{
-				// Fallback to default mechanism for other cases (vertical scroll or no horizontal scroll)
-				// Use the common ViewExtensions logic for standard FlowDirection handling
-				this.LayoutDirection = layoutDirection;
-			}
-		}
-
 		public override bool OnInterceptTouchEvent(MotionEvent? ev)
 		{
 			// See also MauiHorizontalScrollView notes in OnInterceptTouchEvent
@@ -337,7 +230,6 @@ namespace Microsoft.Maui.Platform
 				ShouldSkipOnTouch = false;
 				return false;
 			}
-
 
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
@@ -406,21 +298,6 @@ namespace Microsoft.Maui.Platform
 				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
 
-			// Handle RTL initial positioning
-			if (!_checkedForRtlScroll && _hScrollView != null && _scrollOrientation == ScrollOrientation.Horizontal)
-			{
-				if (_hScrollView.LayoutDirection == ALayoutDirection.Rtl)
-				{
-					Post(() =>
-					{
-						// Scroll to the right end for RTL
-						_hScrollView?.ScrollTo(_hScrollView?.GetChildAt(0)?.Width ?? 0, 0);
-					});
-				}
-			}
-
-			_checkedForRtlScroll = true;
-
 			if (_didSafeAreaEdgeConfigurationChange && _isInsetListenerSet)
 			{
 				ViewCompat.RequestApplyInsets(this);
@@ -441,7 +318,6 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		internal void MarkSafeAreaEdgeConfigurationChanged()
 		{
-			_isInsetListenerSet = MauiWindowInsetListenerExtensions.RefreshMauiWindowInsetListener(this, _context);
 			_didSafeAreaEdgeConfigurationChange = true;
 			RequestLayout();
 		}
@@ -525,7 +401,6 @@ namespace Microsoft.Maui.Platform
 		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
-			_checkedForRtlScroll = true;
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
 	}
@@ -604,12 +479,6 @@ namespace Microsoft.Maui.Platform
 
 			if (!_parentScrollView.Enabled)
 				return false;
-
-			// OnTouchEvent is only called when no child has claimed the touch event, which mirrors
-			// exactly when a vertical ScrollView's touch listener fires. We invoke the parent's
-			// stored touch listener here so TapGestureRecognizers on a horizontal/both ScrollView
-			// fire correctly.
-			_parentScrollView._touchListener?.OnTouch(_parentScrollView, ev);
 
 			// If the touch is caught by the horizontal scrollview, forward it to the parent 
 			_parentScrollView.ShouldSkipOnTouch = true;

@@ -6,7 +6,6 @@ using Microsoft.Maui.Controls.StyleSheets;
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using static Microsoft.Maui.ApplicationModel.Permissions;
-	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.VisualElement;
 
 	/// <summary>
@@ -104,7 +103,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <param name="value">The new focus participation value.</param>
 		public static void SetFocusAllowed(BindableObject element, bool value)
 		{
-			element.SetValue(IsFocusAllowedProperty, BooleanBoxes.Box(value));
+			element.SetValue(IsFocusAllowedProperty, value);
 		}
 
 		/// <summary>

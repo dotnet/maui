@@ -1,5 +1,4 @@
 trigger:
-  batch: true
   branches:
     include:
     - main

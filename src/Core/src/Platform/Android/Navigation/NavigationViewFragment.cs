@@ -89,7 +89,6 @@ namespace Microsoft.Maui.Platform
 		{
 			_currentView = null;
 			_fragmentContainerView = null;
-			_navigationManager = null;
 
 			base.OnDestroy();
 		}

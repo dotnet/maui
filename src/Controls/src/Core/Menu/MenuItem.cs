@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Bindable property for <see cref="IsDestructive"/>.</summary>
-		public static readonly BindableProperty IsDestructiveProperty = BindableProperty.Create(nameof(IsDestructive), typeof(bool), typeof(MenuItem), BooleanBoxes.FalseBox);
+		public static readonly BindableProperty IsDestructiveProperty = BindableProperty.Create(nameof(IsDestructive), typeof(bool), typeof(MenuItem), false);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource),
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
-			nameof(IsEnabled), typeof(bool), typeof(MenuItem), BooleanBoxes.TrueBox,
+			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true,
 			propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsDestructive
 		{
 			get => (bool)GetValue(IsDestructiveProperty);
-			set => SetValue(IsDestructiveProperty, BooleanBoxes.Box(value));
+			set => SetValue(IsDestructiveProperty, value);
 		}
 
 		/// <summary>The text of the menu item. This is a bindable property.</summary>
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get => (bool)GetValue(IsEnabledProperty);
-			set => SetValue(IsEnabledProperty, BooleanBoxes.Box(value));
+			set => SetValue(IsEnabledProperty, value);
 		}
 
 		public event EventHandler Clicked;
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is not MenuItem menuItem)
 			{
-				return BooleanBoxes.FalseBox;
+				return false;
 			}
 
 			menuItem._isEnabledExplicit = (bool)value;
@@ -130,23 +130,23 @@ namespace Microsoft.Maui.Controls
 			if (!menuItem._isEnabledExplicit)
 			{
 				// No need to check GetCanExecute or the Parent's state
-				return BooleanBoxes.FalseBox;
+				return false;
 			}
 
 			var canExecute = CommandElement.GetCanExecute(menuItem, CommandProperty);
 			if (!canExecute)
 			{
-				return BooleanBoxes.FalseBox;
+				return false;
 			}
 
 			// IsEnabled is not explicitly set to false, and the command can be
 			// executed. The only thing left to verify is Parent.IsEnabled
 			if (menuItem.Parent is MenuItem parentMenuItem && !parentMenuItem.IsEnabled)
 			{
-				return BooleanBoxes.FalseBox;
+				return false;
 			}
 
-			return BooleanBoxes.TrueBox;
+			return true;
 		}
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;

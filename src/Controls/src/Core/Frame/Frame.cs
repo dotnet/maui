@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -15,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
 		/// <summary>Bindable property for <see cref="HasShadow"/>.</summary>
-		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create(nameof(HasShadow), typeof(bool), typeof(Frame), BooleanBoxes.TrueBox);
+		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create(nameof(HasShadow), typeof(bool), typeof(Frame), true);
 
 		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,
@@ -39,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		public bool HasShadow
 		{
 			get { return (bool)GetValue(HasShadowProperty); }
-			set { SetValue(HasShadowProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(HasShadowProperty, value); }
 		}
 
 		/// <summary>Gets or sets the border color for the frame. This is a bindable property.</summary>

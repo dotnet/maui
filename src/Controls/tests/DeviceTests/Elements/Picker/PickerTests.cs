@@ -33,9 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal("1", await GetPlatformControlText(handler.PlatformView));
 			await InvokeOnMainThreadAsync(() => items.Remove("1"));
-			// When the selected item is removed, selection should be cleared
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
+			Assert.Equal("2", await GetPlatformControlText(handler.PlatformView));
 		}
 
 		[Fact]

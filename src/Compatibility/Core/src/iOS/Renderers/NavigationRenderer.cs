@@ -762,11 +762,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void SetStatusBarStyle()
 		{
-			if (NavPage is null)
-			{
-				return;
-			}
-
 			var barTextColor = NavPage.BarTextColor;
 			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
 

@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Primitives.Dimension;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
@@ -10,21 +9,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiLabel CreatePlatformView() => new MauiLabel();
 
-		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			if (VirtualView is not null && IsExplicitSet(VirtualView.Width))
-			{
-				widthConstraint = Math.Min(widthConstraint, VirtualView.Width);
-				PlatformView.PreferredMaxLayoutWidth = (nfloat)VirtualView.Width;
-			}
-			else
-			{
-				PlatformView.PreferredMaxLayoutWidth = 0;
-			}
-
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
@@ -33,15 +17,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			// Gradient sublayers cover UILabel text, so route them to WrapperView; solid colors stay on PlatformView for correct Clip masking.
-			if (label.Background is GradientPaint)
-			{
-				handler.ToPlatform()?.UpdateBackground(label);
-			}
-			else
-			{
-				handler.PlatformView?.UpdateBackground(label);
-			}
+			handler.ToPlatform().UpdateBackground(label);
 		}
 
 		public static void MapText(ILabelHandler handler, ILabel label)

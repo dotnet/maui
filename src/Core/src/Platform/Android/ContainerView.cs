@@ -20,9 +20,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public ContainerView(IMauiContext context)
-			: base(context.Context ?? throw new InvalidOperationException(
-				"Unable to create a ContainerView: the Android Context is no longer available. " +
-				"This can occur when the Activity has been collected during a lifecycle transition."))
+			: base(context.Context)
 		{
 			_context = context;
 		}

@@ -15,31 +15,31 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 	private readonly SeedDataService _seedDataService;
 
 	[ObservableProperty]
-	public partial List<CategoryChartData> TodoCategoryData { get; set; } = [];
+	private List<CategoryChartData> _todoCategoryData = [];
 
 	[ObservableProperty]
-	public partial List<Brush> TodoCategoryColors { get; set; } = [];
+	private List<Brush> _todoCategoryColors = [];
 
 	[ObservableProperty]
-	public partial List<ProjectTask> Tasks { get; set; } = [];
+	private List<ProjectTask> _tasks = [];
 
 	[ObservableProperty]
-	public partial List<Project> Projects { get; set; } = [];
+	private List<Project> _projects = [];
 
 	[ObservableProperty]
-	public partial bool IsBusy { get; set; }
+	bool _isBusy;
 
 	[ObservableProperty]
-	public partial bool IsRefreshing { get; set; }
+	bool _isRefreshing;
 
 	[ObservableProperty]
-	public partial string Today { get; set; } = DateTime.Now.ToString("dddd, MMM d");
+	private string _today = DateTime.Now.ToString("dddd, MMM d");
 
 	[ObservableProperty]
-	public partial Project? SelectedProject { get; set; }
+	private Project? selectedProject;
 
 	[ObservableProperty]
-	public partial ProjectTask? SelectedTask { get; set; }
+	private ProjectTask? selectedTask;
 
 	public bool HasCompletedTasks
 		=> Tasks?.Any(t => t.IsCompleted) ?? false;
@@ -156,7 +156,7 @@ public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
 
 	[RelayCommand]
 	private Task? NavigateToProject(Project project)
-		=> project is null ? Task.CompletedTask : Shell.Current.GoToAsync($"project?id={project.ID}");
+		=> project is null ? null : Shell.Current.GoToAsync($"project?id={project.ID}");
 
 	[RelayCommand]
 	private Task NavigateToTask(ProjectTask task)

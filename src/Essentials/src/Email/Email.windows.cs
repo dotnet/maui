@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.ApplicationModel.Communication
 {
@@ -31,7 +30,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			{
 				foreach (var attachment in message.Attachments)
 				{
-					var path = FileSystemUtils.NormalizePath(attachment.FullPath);
+					var path = NormalizePath(attachment.FullPath);
 
 					platformEmailMessage.Attachments.Add(path);
 				}
@@ -39,6 +38,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 			await EmailHelper.ShowComposeNewEmailAsync(platformEmailMessage);
 		}
+
+		static string NormalizePath(string path)
+			=> path.Replace('/', Path.DirectorySeparatorChar);
 
 		void Sync(List<string> recipients, IList<PlatformEmailRecipient> nativeRecipients)
 		{

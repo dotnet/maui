@@ -1,12 +1,10 @@
 trigger:
-  batch: true
   branches:
     include:
     - main
     - release/*
     - net*.0
     - inflight/*
-    - darc-*
   tags:
     include:
     - '*'

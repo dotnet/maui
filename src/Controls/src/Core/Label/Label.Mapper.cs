@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapLineHeight(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (label.HasFormattedTextSpans)
+			if (!IsPlainText(label))
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapTextDecorations(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (label.HasFormattedTextSpans)
+			if (!IsPlainText(label))
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapCharacterSpacing(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
-			if (label.HasFormattedTextSpans)
+			if (!IsPlainText(label))
 				return;
 
 			baseMethod?.Invoke(handler, label);
@@ -144,14 +144,8 @@ namespace Microsoft.Maui.Controls
 			if (label.HasFormattedTextSpans)
 			{
 				// if there is formatted text,
-				// then we re-apply the whole formatted text.
-				// During connection, MapText already set the correct AttributedText
-				// with font info embedded. We must not call baseMethod here as
-				// setting UILabel.Font replaces the AttributedText on iOS.
-				if (!handler.IsConnectingHandler())
-				{
-					handler.UpdateValue(nameof(FormattedText));
-				}
+				// then we re-apply the whole formatted text
+				handler.UpdateValue(nameof(FormattedText));
 			}
 			else if (label.TextType == TextType.Text || !IsDefaultFont(label))
 			{

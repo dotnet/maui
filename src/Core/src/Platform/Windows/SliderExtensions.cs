@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -20,9 +19,7 @@ namespace Microsoft.Maui.Platform
 
 			// Setting the Slider SmallChange property to 0 would throw an System.ArgumentException.
 			if (difference != 0)
-			{
 				stepping = Math.Min((difference) / 1000, 1);
-			}
 
 			nativeSlider.StepFrequency = stepping;
 		}
@@ -42,14 +39,19 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
 		{
 			if (nativeSlider.Value != slider.Value)
-			{
 				nativeSlider.Value = slider.Value;
-			}
 		}
 
 		public static void UpdateMinimumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateColor(platformSlider, MinimumTrackColorResourceKeys, slider.MinimumTrackColor?.ToPlatform());
+			var brush = slider.MinimumTrackColor?.ToPlatform();
+
+			if (brush is null)
+				platformSlider.Resources.RemoveKeys(MinimumTrackColorResourceKeys);
+			else
+				platformSlider.Resources.SetValueForAllKey(MinimumTrackColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] MinimumTrackColorResourceKeys =
@@ -62,7 +64,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumTrackColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateColor(platformSlider, MaximumTrackColorResourceKeys, slider.MaximumTrackColor?.ToPlatform());
+			var brush = slider.MaximumTrackColor?.ToPlatform();
+
+			if (brush == null)
+				platformSlider.Resources.RemoveKeys(MaximumTrackColorResourceKeys);
+			else
+				platformSlider.Resources.SetValueForAllKey(MaximumTrackColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] MaximumTrackColorResourceKeys =
@@ -75,7 +84,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateThumbColor(this Slider platformSlider, ISlider slider)
 		{
-			UpdateColor(platformSlider, ThumbColorResourceKeys, slider.ThumbColor?.ToPlatform());
+			var brush = slider.ThumbColor?.ToPlatform();
+
+			if (brush is null)
+				platformSlider.Resources.RemoveKeys(ThumbColorResourceKeys);
+			else
+				platformSlider.Resources.SetValueForAllKey(ThumbColorResourceKeys, brush);
+
+			platformSlider.RefreshThemeResources();
 		}
 
 		static readonly string[] ThumbColorResourceKeys =
@@ -128,43 +144,13 @@ namespace Microsoft.Maui.Platform
 						}
 
 						if (nativeSlider.Parent is FrameworkElement frameworkElement)
-						{
 							frameworkElement.InvalidateMeasure();
-						}
 					}
+					;
 				}
 
 				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}
-		}
-
-		static readonly string[] BackgroundColorResourceKeys =
-		{
-			"SliderContainerBackground",
-			"SliderContainerBackgroundPointerOver",
-			"SliderContainerBackgroundPressed",
-			"SliderContainerBackgroundDisabled",
-		};
-
-		internal static void UpdateBackgroundColor(this MauiSlider platformSlider, ISlider slider)
-		{
-			UpdateColor(platformSlider, BackgroundColorResourceKeys, slider.Background?.ToPlatform());
-		}
-
-		static void UpdateColor(Slider platformSlider, string[] keys, Brush? brush)
-		{
-			ResourceDictionary resource = platformSlider.Resources;
-
-			if (brush is null)
-			{
-				resource.RemoveKeys(keys);
-			}
-			else
-			{
-				resource.SetValueForAllKey(keys, brush);
-			}
-
-			platformSlider.RefreshThemeResources();
 		}
 	}
 }

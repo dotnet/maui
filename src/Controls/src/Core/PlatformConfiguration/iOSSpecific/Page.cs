@@ -1,6 +1,5 @@
 #nullable disable
 using System.ComponentModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
@@ -150,7 +149,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[System.Obsolete("Use SafeAreaEdges attached property instead for per-edge safe area control.")]
 		public static void SetUseSafeArea(BindableObject element, bool value)
 		{
-			element.SetValue(UseSafeAreaProperty, BooleanBoxes.Box(value));
+			element.SetValue(UseSafeAreaProperty, value);
 		}
 
 		/// <summary>
@@ -419,7 +418,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		/// <summary>Bindable property for <see cref="PrefersHomeIndicatorAutoHidden"/>.</summary>
 		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
-			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
+			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 
 		/// <summary>
 		/// Gets a value that indicates whether the visual indicator should hide upon returning to the home screen.
@@ -438,7 +437,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="value"><see langword="true"/> if hide the home indicator; otherwise, <see langword="false"/>.</param>
 		public static void SetPrefersHomeIndicatorAutoHidden(BindableObject element, bool value)
 		{
-			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, BooleanBoxes.Box(value));
+			element.SetValue(PrefersHomeIndicatorAutoHiddenProperty, value);
 		}
 
 		/// <summary>

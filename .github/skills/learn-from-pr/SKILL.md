@@ -16,6 +16,7 @@ Extracts lessons learned from a completed PR to improve repository documentation
 | Input | Required | Source |
 |-------|----------|--------|
 | PR number or Issue number | Yes | User provides (e.g., "PR #33352" or "issue 33352") |
+| Session markdown | Optional | `CustomAgentLogsTmp/PRState/issue-XXXXX.md` or `pr-XXXXX.md` |
 
 ## Outputs
 
@@ -60,10 +61,19 @@ The skill is complete when you have:
 # Required: Get PR info
 gh pr view XXXXX --json title,body,files
 gh pr diff XXXXX
+
+# Check for session markdown
+ls CustomAgentLogsTmp/PRState/issue-XXXXX.md CustomAgentLogsTmp/PRState/pr-XXXXX.md 2>/dev/null
 ```
 
-**Analyze the PR to extract learning:**
+**If session markdown exists, extract:**
+- Fix Candidates table (what was tried)
+- Files each attempt targeted
+- Why attempts failed
 
+**Analyzing without session markdown:**
+
+When no session file exists, you can still learn from:
 1. **PR discussion** - Comments reveal what was tried
 2. **Commit history** - Multiple commits may show iteration
 3. **Code complexity** - Non-obvious fixes suggest learning opportunities
@@ -78,6 +88,8 @@ Focus on: "What would have helped an agent find this fix faster?"
 ```bash
 # Where did final fix go?
 gh pr view XXXXX --json files --jq '.files[].path' | grep -v test
+
+# If session markdown exists, compare to attempted files
 ```
 
 | Scenario | Implication |
@@ -197,6 +209,7 @@ Present your analysis covering:
 | Situation | Action |
 |-----------|--------|
 | PR not found | Ask user to verify PR number |
+| No session markdown | Analyze PR diff only, note limited context |
 | No agent involvement evident | Ask user if they still want analysis |
 | Can't determine failure mode | State "insufficient data" and what's missing |
 

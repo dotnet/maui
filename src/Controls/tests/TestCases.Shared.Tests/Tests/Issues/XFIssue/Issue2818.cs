@@ -1,5 +1,6 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // Orientation not supported in Catalyst and Windows
+// On iOS FlyoutPage RTL is not working as expected, Issue: https://github.com/dotnet/maui/issues/26726
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -35,7 +36,7 @@ public class Issue2818 : _IssuesUITest
 	}
 
 	[Test]
-	public async Task RootViewSizeDoesntChangeAfterBackground()
+	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");
 		App.SetOrientationLandscape();
@@ -51,21 +52,8 @@ public class Issue2818 : _IssuesUITest
 		App.WaitForNoElement("RootLayout");
 		App.ForegroundApp();
 		var newWindowSize = App.WaitForElement("RootLayout");
-
-		// Poll until the width stabilizes. After foregrounding, some platforms (esp. Android/iOS)
-		// may momentarily report an intermediate layout size while the window / flyout re-applies
-		// RTL + orientation constraints. This loop prevents test flakiness by waiting for the
-		// final (restored) size instead of asserting too early. A small tolerance accounts for
-		// sub-pixel rounding differences that can leave the restored size off by ~1px.
-		const double tolerance = 1.0;
-		int retries = 50;
-		while (Math.Abs(newWindowSize.GetRect().Width - windowSize.GetRect().Width) > tolerance && retries-- > 0)
-		{
-			await Task.Delay(100);
-		}
-
-		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width).Within(tolerance));
-		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height).Within(tolerance));
+		Assert.That(newWindowSize.GetRect().Width, Is.EqualTo(windowSize.GetRect().Width));
+		Assert.That(newWindowSize.GetRect().Height, Is.EqualTo(windowSize.GetRect().Height));
 	}
 
 	[TearDown]

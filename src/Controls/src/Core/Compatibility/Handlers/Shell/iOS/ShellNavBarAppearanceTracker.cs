@@ -122,14 +122,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// Set ForegroundColor
 				var foreground = appearance.ForegroundColor;
 
-				if (foreground is not null)
-				{
+				if (foreground != null)
 					navBar.TintColor = foreground.ToPlatform();
-				}
-				else if (_defaultTint is not null) // Reset to default if user set ForegroundColor to null
-				{
-					navBar.TintColor = _defaultTint;
-				}
 
 				// Set BackgroundColor
 				var background = appearance.BackgroundColor;

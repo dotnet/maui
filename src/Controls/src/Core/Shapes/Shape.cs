@@ -9,12 +9,11 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// Base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Line"/>, <see cref="Polygon"/>, <see cref="Polyline"/>, and <see cref="Rectangle"/>.
 	/// </summary>
-	public abstract partial class Shape : View, IShapeView, IShape, IVersionedShape
+	public abstract partial class Shape : View, IShapeView, IShape
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
 		EventHandler? _fillChanged, _strokeChanged;
-		int _version;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Shape"/> class.
@@ -27,20 +26,6 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			_fillProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
-		}
-		
-		int IVersionedShape.Version => _version;
-
-		protected override void OnPropertyChanged(string? propertyName = null)
-		{
-			unchecked
-			{
-				// Increase the version before propagating the property changed notification
-				// so that any code responding to the notification can get the latest version.
-				++_version;
-			}
-
-			base.OnPropertyChanged(propertyName);
 		}
 
 		public abstract PathF GetPath();
@@ -326,34 +311,14 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			if (Aspect == Stretch.None)
 			{
-				float translateX = 0;
-				float translateY = 0;
+				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
+				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
 
-				// Check if path needs to be shifted right to fit within view bounds (left edge)
-				if (viewBounds.Left > pathBounds.Left)
+				if (requireAdjustX || requireAdjustY)
 				{
-					translateX = (float)(viewBounds.Left - pathBounds.Left);
-				}
-				// Check if path needs to be shifted left to fit within view bounds (right edge)
-				else if (pathBounds.Right > viewBounds.Right)
-				{
-					translateX = (float)(viewBounds.Right - pathBounds.Right);
-				}
-
-				// Check if path needs to be shifted down to fit within view bounds (top edge)
-				if (viewBounds.Top > pathBounds.Top)
-				{
-					translateY = (float)(viewBounds.Top - pathBounds.Top);
-				}
-				// Check if path needs to be shifted up to fit within view bounds (bottom edge)
-				else if (pathBounds.Bottom > viewBounds.Bottom)
-				{
-					translateY = (float)(viewBounds.Bottom - pathBounds.Bottom);
-				}
-
-				if (translateX != 0 || translateY != 0)
-				{
-					transform = Matrix3x2.CreateTranslation(translateX, translateY);
+					transform = Matrix3x2.CreateTranslation(
+						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
+						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
 				}
 				else
 				{
@@ -433,7 +398,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
 			RectF pathBounds;
 
-			if (result.Width != 0 && result.Height != 0 && result.Width > Margin.HorizontalThickness && result.Height > Margin.VerticalThickness)
+			if (result.Width != 0 && result.Height != 0)
 			{
 				return result;
 			}
@@ -448,7 +413,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 			else
 			{
-				pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			    pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			}
 
 			SizeF boundsByFlattening = pathBounds.Size;
@@ -507,12 +472,6 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
-			if (this is Line or Path or Polyline)
-			{
-				result.Height += Margin.VerticalThickness;
-				result.Width += Margin.HorizontalThickness;
-			}
-
 			return result;
 		}
 

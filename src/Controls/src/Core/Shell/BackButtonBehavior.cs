@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,11 +25,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), BooleanBoxes.TrueBox, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="TextOverride"/>.</summary>
 		public static readonly BindableProperty TextOverrideProperty =
@@ -63,22 +62,13 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IconOverrideProperty, value); }
 		}
 
-		// Tracks the value explicitly set by the user (default matches IsEnabledProperty default of true).
-		bool _userDefinedIsEnabled = true;
-		// Tracks the enabled state derived from the command's CanExecute result.
-		bool _commandEnabled = true;
-
 		/// <summary>
 		/// Gets or sets a value indicating whether the back button is enabled. This is a bindable property.
 		/// </summary>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set
-			{
-				_userDefinedIsEnabled = value;
-				SetValue(IsEnabledProperty, _userDefinedIsEnabled && _commandEnabled);
-			}
+			set { SetValue(IsEnabledProperty, value); }
 		}
 
 		/// <summary>
@@ -87,7 +77,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsVisibleProperty, value); }
 		}
 
 		/// <summary>
@@ -99,14 +89,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextOverrideProperty, value); }
 		}
 
-		bool IsEnabledCore
-		{
-			set
-			{
-				_commandEnabled = value;
-				SetValue(IsEnabledProperty, _userDefinedIsEnabled && value);
-			}
-		}
+		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
 
 		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
 		{

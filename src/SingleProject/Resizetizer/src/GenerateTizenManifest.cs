@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Resizetizer
 						&& d.Attribute(DpiName)?.Value == image.Key.Resolution
 						&& d.Attribute("orientation")?.Value == image.Key.Orientation
 						&& d.Attribute("indicator-display")?.Value == "false");
-					if (!splashElements.Any())
+					if (splashElements.Count() == 0)
 					{
 						var splashscreenElement = new XElement(xmlns + SplashScreenName);
 						splashscreenElement.SetAttributeValue("src", image.Value);

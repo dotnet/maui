@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.Webkit;
+using Java.Interop;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
 
@@ -7,6 +8,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, AWebView>
 	{
+		// This name matches the name of the API used in HybridWebView.js and must remain in sync
+		private const string HybridWebViewHostJsName = "hybridWebViewHost";
+
+		private HybridWebViewJavaScriptInterface? _javaScriptInterface;
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiHybridWebView(this, Context!)
@@ -26,8 +32,8 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Settings.JavaScriptEnabled = true;
 
-			// JS -> .NET messages flow through the SendMessagePath HTTP endpoint in
-			// MauiHybridWebViewClient (gated by HasExpectedHeaders), not AddJavascriptInterface.
+			_javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
+			platformView.AddJavascriptInterface(_javaScriptInterface, HybridWebViewHostJsName);
 
 			// Invoke the WebViewInitializing event to allow custom configuration of the web view
 			var initializingArgs = new WebViewInitializationStartedEventArgs(platformView.Settings);
@@ -38,6 +44,24 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.WebViewInitializationCompleted(initializedArgs);
 
 			return platformView;
+		}
+
+		private sealed class HybridWebViewJavaScriptInterface : HybridJavaScriptInterface
+		{
+			private readonly WeakReference<HybridWebViewHandler> _hybridWebViewHandler;
+
+			public HybridWebViewJavaScriptInterface(HybridWebViewHandler hybridWebViewHandler)
+			{
+				_hybridWebViewHandler = new(hybridWebViewHandler);
+			}
+
+			private HybridWebViewHandler? Handler => _hybridWebViewHandler is not null && _hybridWebViewHandler.TryGetTarget(out var h) ? h : null;
+
+			[JavascriptInterface]
+			public override void SendMessage(string message)
+			{
+				Handler?.MessageReceived(message);
+			}
 		}
 
 		protected override void ConnectHandler(AWebView platformView)

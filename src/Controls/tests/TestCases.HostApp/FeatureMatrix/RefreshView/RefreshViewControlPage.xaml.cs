@@ -50,7 +50,7 @@ public partial class RefreshViewControlMainPage : ContentPage
 		// Set binding immediately
 		boxView.SetBinding(BoxView.ColorProperty, "BoxViewColor");
 
-		var refreshView = new RefreshView
+		var RefreshView = new RefreshView
 		{
 			AutomationId = "RefreshView",
 			Content = new ScrollView
@@ -59,24 +59,22 @@ public partial class RefreshViewControlMainPage : ContentPage
 			}
 		};
 
-		refreshView.Refreshing += OnRefreshViewRefreshing;
+		RefreshView.SetBinding(RefreshView.CommandProperty, "Command");
+		RefreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
+		RefreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
+		RefreshView.SetBinding(RefreshView.IsEnabledProperty, "IsEnabled");
+		RefreshView.SetBinding(RefreshView.IsVisibleProperty, "IsVisible");
+		RefreshView.SetBinding(RefreshView.IsRefreshingProperty, "IsRefreshing");
+		RefreshView.SetBinding(RefreshView.RefreshColorProperty, "RefreshColor");
+		RefreshView.SetBinding(RefreshView.ShadowProperty, "Shadow");
 
-		refreshView.SetBinding(RefreshView.CommandProperty, "Command");
-		refreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
-		refreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
-		refreshView.SetBinding(RefreshView.IsEnabledProperty, "IsEnabled");
-		refreshView.SetBinding(RefreshView.IsVisibleProperty, "IsVisible");
-		refreshView.SetBinding(RefreshView.IsRefreshingProperty, "IsRefreshing");
-		refreshView.SetBinding(RefreshView.RefreshColorProperty, "RefreshColor");
-		refreshView.SetBinding(RefreshView.ShadowProperty, "Shadow");
-
-		RefreshViewContainer.Children.Add(refreshView);
+		RefreshViewContainer.Children.Add(RefreshView);
 	}
 
 	private void SetCollectionViewContent()
 	{
 		RefreshViewContainer.Children.Clear();
-		var refreshView = new RefreshView
+		var RefreshView = new RefreshView
 		{
 			AutomationId = "RefreshView",
 			Content = new CollectionView
@@ -101,19 +99,16 @@ public partial class RefreshViewControlMainPage : ContentPage
 			}
 		};
 
-		refreshView.Refreshing += OnRefreshViewRefreshing;
+		RefreshView.SetBinding(RefreshView.CommandProperty, "Command");
+		RefreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
+		RefreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
+		RefreshView.SetBinding(RefreshView.IsEnabledProperty, "IsEnabled");
+		RefreshView.SetBinding(RefreshView.IsVisibleProperty, "IsVisible");
+		RefreshView.SetBinding(RefreshView.IsRefreshingProperty, "IsRefreshing");
+		RefreshView.SetBinding(RefreshView.RefreshColorProperty, "RefreshColor");
+		RefreshView.SetBinding(RefreshView.ShadowProperty, "Shadow");
 
-
-		refreshView.SetBinding(RefreshView.CommandProperty, "Command");
-		refreshView.SetBinding(RefreshView.CommandParameterProperty, "CommandParameter");
-		refreshView.SetBinding(RefreshView.FlowDirectionProperty, "FlowDirection");
-		refreshView.SetBinding(RefreshView.IsEnabledProperty, "IsEnabled");
-		refreshView.SetBinding(RefreshView.IsVisibleProperty, "IsVisible");
-		refreshView.SetBinding(RefreshView.IsRefreshingProperty, "IsRefreshing");
-		refreshView.SetBinding(RefreshView.RefreshColorProperty, "RefreshColor");
-		refreshView.SetBinding(RefreshView.ShadowProperty, "Shadow");
-
-		RefreshViewContainer.Children.Add(refreshView);
+		RefreshViewContainer.Children.Add(RefreshView);
 	}
 
 	private void OnScrollViewContentClicked(object sender, EventArgs e)
@@ -125,12 +120,4 @@ public partial class RefreshViewControlMainPage : ContentPage
 	{
 		SetCollectionViewContent();
 	}
-
-	private void OnRefreshViewRefreshing(object sender, EventArgs e)
-{
-    if (BindingContext is RefreshViewViewModel vm)
-    {
-        vm.RefreshEventStatusText = "Raised";
-    }
-}
 }

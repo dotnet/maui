@@ -301,7 +301,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
-				return $"(sbyte){SymbolDisplay.FormatPrimitive(sbyteValue, true, false)}";
+				return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
 			else
 				reportDiagnostic();
 		}
@@ -310,7 +310,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
-				return $"(byte){SymbolDisplay.FormatPrimitive(byteValue, true, false)}";
+				return SymbolDisplay.FormatPrimitive(byteValue, true, false);
 			else
 				reportDiagnostic();
 		}
@@ -319,7 +319,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
-				return $"(short){SymbolDisplay.FormatPrimitive(shortValue, true, false)}";
+				return SymbolDisplay.FormatPrimitive(shortValue, true, false);
 			else
 				reportDiagnostic();
 		}
@@ -327,8 +327,8 @@ static class NodeSGExtensions
 		{
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
-			if (ushort.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
-				return $"(ushort){SymbolDisplay.FormatPrimitive(ushortValue, true, false)}";
+			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
+				return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
 			else
 				reportDiagnostic();
 		}
@@ -483,7 +483,7 @@ static class NodeSGExtensions
 				if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
 					return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor}) as {targetType.ToFQDisplayString()}";
 				else
-					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})!";
+					return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.ValueAccessor})";
 			}
 			else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
 				return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";

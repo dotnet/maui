@@ -50,8 +50,6 @@ namespace Microsoft.Maui.Platform
 				platformPicker.UpdatePickerTitle(picker);
 			}
 
-			platformPicker.UpdateCharacterSpacing(picker);
-
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
 

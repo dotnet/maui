@@ -25,8 +25,7 @@ namespace Microsoft.Maui.Controls
 
 			var page = (Page)InternalChildren.Last();
 			var previousPage = CurrentPage;
-			var destinationPage = (Page)InternalChildren[InternalChildren.Count - 2];
-			SendNavigating(NavigationType.Pop, previousPage, destinationPage);
+			SendNavigating(NavigationType.Pop, previousPage);
 			var removedPage = await RemoveAsyncInner(page, animated, fast);
 			SendNavigated(previousPage, NavigationType.Pop);
 			return removedPage;
@@ -154,7 +153,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var previousPage = CurrentPage;
-			SendNavigating(NavigationType.PopToRoot, previousPage, RootPage);
+			SendNavigating(NavigationType.PopToRoot, previousPage);
 			FireDisappearing(CurrentPage);
 			FireAppearing((Page)InternalChildren[0]);
 
@@ -188,8 +187,8 @@ namespace Microsoft.Maui.Controls
 
 			var previousPage = CurrentPage;
 			var navigationType = DetermineNavigationType();
-
-			SendNavigating(navigationType, previousPage, page);
+			
+			SendNavigating(navigationType, previousPage);
 			FireDisappearing(CurrentPage);
 			FireAppearing(page);
 
@@ -204,8 +203,8 @@ namespace Microsoft.Maui.Controls
 
 				if (args.Task != null)
 					await args.Task;
-			}
-
+			} 
+			
 			SendNavigated(previousPage, navigationType);
 			Pushed?.Invoke(this, args);
 		}

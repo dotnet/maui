@@ -20,8 +20,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		SearchHandler _searchHandler;
 		bool _disposed;
-		bool _hasCustomBackground;
-		LinearLayout _linearLayout;
 		AView _control;
 		InputTypes _inputType;
 
@@ -36,7 +34,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_searchHandler.ShowSoftInputRequested += OnShowSoftInputRequested;
 			_searchHandler.HideSoftInputRequested += OnHideSoftInputRequested;
 			_editText = (_control as ViewGroup).GetChildrenOfType<EditText>().FirstOrDefault();
-			_linearLayout = (_control as ViewGroup)?.GetFirstChildOfType<LinearLayout>();
 			_editText.FocusChange += EditTextFocusChange;
 			UpdateSearchBarColors();
 			UpdateFont();
@@ -151,28 +148,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateBackgroundColor()
 		{
-			if (_linearLayout is null)
-			{
+			if (_searchHandler.BackgroundColor == null)
 				return;
-			}
 
-			var backgroundColor = _searchHandler.BackgroundColor;
-
-			if (!_hasCustomBackground && backgroundColor is null)
-			{
-				return;
-			}
-
-			if (backgroundColor is null)
-			{
-				_linearLayout.Background = null;
-				_hasCustomBackground = false;
-			}
-			else
-			{
-				_hasCustomBackground = true;
-				_linearLayout.SetBackgroundColor(backgroundColor.ToPlatform());
-			}
+			var linearLayout = (_control as ViewGroup).GetChildrenOfType<LinearLayout>().FirstOrDefault();
+			linearLayout.SetBackgroundColor(_searchHandler.BackgroundColor.ToPlatform());
 		}
 
 		void UpdateCancelButtonColor()
@@ -269,9 +249,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_searchHandler != null)
 				{
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
-				}
-				if (_editText != null)
-				{
 					_editText.FocusChange -= EditTextFocusChange;
 					_searchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 					_searchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;

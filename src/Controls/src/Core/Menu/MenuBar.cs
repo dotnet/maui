@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,12 +10,12 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(MenuBar), BooleanBoxes.TrueBox);
+			typeof(MenuBar), true);
 
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
+			set { SetValue(IsEnabledProperty, value); }
 		}
 
 		readonly ObservableCollection<IMenuBarItem> _menus = new ObservableCollection<IMenuBarItem>();

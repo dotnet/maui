@@ -67,10 +67,7 @@
       </StackLayout>
       <!-- Thumb Image Source -->
       <Label Text="Thumb Image:" />
-      <StackLayout Orientation="Horizontal" Spacing="5">
-        <Button Text="Add Image" Clicked="ThumbImageSourceButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="ThumbImageSourceButton"/>
-        <Button Text="Reset" Clicked="ThumbImageResetButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="ThumbImageResetButton"/>
-      </StackLayout>
+      <Button Text="Add Image" Clicked="ThumbImageSourceButton_Clicked" WidthRequest="100" HorizontalOptions="Start" AutomationId="ThumbImageSourceButton"/>
     </StackLayout>
   </Grid>
 </ContentPage>

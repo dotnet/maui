@@ -11,8 +11,6 @@ using Android.Text.Style;
 using Android.Views;
 using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.View;
-using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
@@ -401,56 +399,6 @@ namespace Microsoft.Maui.Controls.Platform
 						textView.SetTextColor(tintColor.MultiplyAlpha(0.302f).ToPlatform());
 				}
 			}
-
-			SetSemanticProperties(item, toolbar.FindViewById(menuitem.ItemId));
-		}
-
-		static void SetSemanticProperties(ToolbarItem menuItem, AView? view)
-		{
-			if (view == null)
-				return;
-
-			var semantics = SemanticProperties.UpdateSemantics(menuItem, null);
-			var desc = semantics?.Description;
-			var hint = semantics?.Hint;
-
-			// Only apply delegate if we have meaningful accessibility information
-			if (!string.IsNullOrWhiteSpace(desc) || !string.IsNullOrWhiteSpace(hint))
-			{
-				view.ImportantForAccessibility = ImportantForAccessibility.Yes;
-				ViewCompat.SetAccessibilityDelegate(view, new AccessibilityDelegateCompatImpl(desc, hint));
-			}
-			else
-			{
-				// Remove any previously set delegate if no accessibility info is present
-				ViewCompat.SetAccessibilityDelegate(view, null);
-			}
-		}
-
-		class AccessibilityDelegateCompatImpl : AccessibilityDelegateCompat
-		{
-			private readonly string? _desc;
-			private readonly string? _hint;
-
-			public AccessibilityDelegateCompatImpl(string? desc, string? hint)
-			{
-				_desc = desc;
-				_hint = hint;
-			}
-
-			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfoCompat? info)
-			{
-				base.OnInitializeAccessibilityNodeInfo(host, info);
-
-				if (host == null || info == null)
-					return;
-
-				if (!string.IsNullOrWhiteSpace(_desc))
-					info.ContentDescription = _desc;
-
-				if (!string.IsNullOrWhiteSpace(_hint))
-					info.HintText = _hint;
-			}
 		}
 
 		internal static void UpdateMenuItemIcon(this IMauiContext mauiContext, IMenuItem menuItem, ToolbarItem toolBarItem, Color? tintColor)
@@ -485,9 +433,6 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 
 						menuItem.SetIcon(iconDrawable);
-
-						// Setting the title, so that tooltip text is displayed in native color
-						menuItem.SetTitle(toolBarItem?.Text ?? string.Empty);
 					}
 				}
 				else
