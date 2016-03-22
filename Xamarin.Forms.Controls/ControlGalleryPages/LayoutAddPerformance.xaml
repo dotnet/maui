@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.LayoutAddPerformance">
+  <ScrollView>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+      <Label x:Name="timingLabel" BackgroundColor="Gray" />
+      <StackLayout Grid.Row="1" x:Name="layout">
+      </StackLayout>
+    </Grid>
+  </ScrollView>
+</ContentPage>

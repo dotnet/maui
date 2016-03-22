@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:CustomViewCell="clr-namespace:App2;assembly=Xamarin.Forms.Controls"
+             x:Class="App2.Page1">
+  <ListView x:Name="itemListView" RowHeight="75" HeightRequest="700" SeparatorColor="#061018" BackgroundColor="Blue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+    <ListView.ItemTemplate>
+      <DataTemplate>
+        <CustomViewCell:SampleViewCell />
+      </DataTemplate>
+    </ListView.ItemTemplate>
+  </ListView>
+</ContentPage>

@@ -1,0 +1,89 @@
+﻿using System;
+
+using Xamarin.Forms.CustomAttributes;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
+#if UITEST
+using Xamarin.UITest;
+using NUnit.Framework;
+using Xamarin.UITest.iOS;
+#endif
+
+namespace Xamarin.Forms.Controls
+{
+	[Preserve (AllMembers = true)]
+	[Issue (IssueTracker.Bugzilla, 34561, "[A] Navigation.PushAsync crashes when used in Context Actions (legacy)", PlatformAffected.Android)]
+	public class Bugzilla34561 : TestContentPage
+	{
+		protected override void Init ()
+		{
+			var listView = new ListView () {
+				ItemsSource = new List<string> { "item" },
+				ItemTemplate = new DataTemplate (typeof(ContextActionTemplate))
+			};
+
+			Content = listView;
+		}
+
+		[Preserve (AllMembers = true)]
+		public class NextPage : TestContentPage
+		{
+			protected override void Init ()
+			{
+				Content = new Label {
+					AutomationId = "NextPageLabel",
+					Text = "See if I'm here"
+				};
+			}
+		}
+
+		[Preserve (AllMembers = true)]
+		public class ContextActionTemplate : ViewCell
+		{
+			public ContextActionTemplate ()
+			{
+				MenuItem newMenuItem = new MenuItem { Text = "Click" };
+				newMenuItem.Clicked += NewMenuItem_Clicked;
+				ContextActions.Add (newMenuItem);
+
+				View = new StackLayout {
+					Children = {
+						new Label { 
+							Text = "Click and hold", 
+							AutomationId = "ListViewItem",
+							VerticalOptions = LayoutOptions.Center,
+							HorizontalOptions = LayoutOptions.Center
+						}
+					}
+				};
+			}
+
+			void NewMenuItem_Clicked (object sender, EventArgs e)
+			{
+				ParentView.Navigation.PushAsync (new NextPage (), false);
+			}
+		}
+
+#if UITEST
+		[Test]
+		public void Bugzilla34561Test ()
+		{
+			RunningApp.WaitForElement (q => q.Marked ("ListViewItem"));
+
+			if(RunningApp is iOSApp) {
+				var listItem = RunningApp.Query (q => q.Marked ("ListViewItem"))[0].Rect;
+				RunningApp.DragCoordinates(listItem.CenterX, listItem.CenterY, 0, listItem.CenterY);
+			} else {
+				RunningApp.TouchAndHold (q => q.Marked ("ListViewItem"));
+			}
+
+			RunningApp.WaitForElement (q => q.Marked ("Click"));
+			RunningApp.Tap (q => q.Marked ("Click"));
+			RunningApp.WaitForElement (q => q.Marked ("NextPageLabel"));
+			RunningApp.Screenshot ("I see the next page");
+		}
+#endif
+	}
+}

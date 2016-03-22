@@ -1,0 +1,92 @@
+﻿using System.Collections;
+
+namespace Xamarin.Forms
+{
+	public abstract class ItemsView<TVisual> : View, IItemsView<TVisual> where TVisual : BindableObject
+	{
+		/*
+		public static readonly BindableProperty InfiniteScrollingProperty =
+			BindableProperty.Create<ItemsView, bool> (lv => lv.InfiniteScrolling, false);
+
+		public bool InfiniteScrolling
+		{
+			get { return (bool) GetValue (InfiniteScrollingProperty); }
+			set { SetValue (InfiniteScrollingProperty, value); }
+		}*/
+
+		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create("ItemsSource", typeof(IEnumerable), typeof(ItemsView<TVisual>), null, propertyChanged: OnItemsSourceChanged);
+
+		public static readonly BindableProperty ItemTemplateProperty = BindableProperty.Create("ItemTemplate", typeof(DataTemplate), typeof(ItemsView<TVisual>), null, validateValue: ValidateItemTemplate);
+
+		internal ItemsView()
+		{
+			TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
+		}
+
+		public IEnumerable ItemsSource
+		{
+			get { return (IEnumerable)GetValue(ItemsSourceProperty); }
+			set { SetValue(ItemsSourceProperty, value); }
+		}
+
+		public DataTemplate ItemTemplate
+		{
+			get { return (DataTemplate)GetValue(ItemTemplateProperty); }
+			set { SetValue(ItemTemplateProperty, value); }
+		}
+
+		/*public void UpdateNonNotifyingList()
+		{
+			this.templatedItems.ForceUpdate();
+		}*/
+
+		internal ListProxy ListProxy
+		{
+			get { return TemplatedItems.ListProxy; }
+		}
+
+		internal TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
+
+		TVisual IItemsView<TVisual>.CreateDefault(object item)
+		{
+			return CreateDefault(item);
+		}
+
+		void IItemsView<TVisual>.SetupContent(TVisual content, int index)
+		{
+			SetupContent(content, index);
+		}
+
+		void IItemsView<TVisual>.UnhookContent(TVisual content)
+		{
+			UnhookContent(content);
+		}
+
+		protected abstract TVisual CreateDefault(object item);
+
+		protected virtual void SetupContent(TVisual content, int index)
+		{
+		}
+
+		protected virtual void UnhookContent(TVisual content)
+		{
+		}
+
+		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var element = newValue as Element;
+			if (element == null)
+				return;
+			element.Parent = (Element)bindable;
+		}
+
+		static bool ValidateItemTemplate(BindableObject b, object v)
+		{
+			var lv = b as ListView;
+			if (lv == null)
+				return true;
+
+			return !(lv.CachingStrategy == ListViewCachingStrategy.RetainElement && lv.ItemTemplate is DataTemplateSelector);
+		}
+	}
+}

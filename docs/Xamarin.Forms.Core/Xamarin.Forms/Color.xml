@@ -1,0 +1,1221 @@
+<Type Name="Color" FullName="Xamarin.Forms.Color">
+  <TypeSignature Language="C#" Value="public struct Color" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit Color extends System.ValueType" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Diagnostics.DebuggerDisplay("R={R}, G={G}, B={B}, A={A}, Hue={Hue}, Saturation={Saturation}, Luminosity={Luminosity}")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.ColorTypeConverter))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Class that represents a color and exposes it as RGBA and HSL values.</summary>
+    <remarks>
+      <para>This type is immutable. Colors can be expressed in the RGB or HSL modes. While the <see cref="C:Xamarin.Forms.Color" /> constructor takes R, G, B, and A values, the <see cref="T:Xamarin.Forms.Color" /> class also calculates and makes available HSL data for the color.</para>
+      <example>
+        <para>In XAML, application developers can specify any property that is of type <see cref="T:Xamarin.Forms.Color" />, for example, <see cref="P:Xamarin.Forms.Label.TextColor" /> either as a XAML attribute or as a nested tag. The following code example shows how to specify the text color for a label by using an attribute:</para>
+        <code lang="XAML"><![CDATA[
+<Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" TextColor="Green">
+    <Label.Text>Hello, World!</Label.Text>
+</Label>]]></code>
+        <para>The example below shows how to specify the text color for a label by using a nested tag:</para>
+        <code lang="XAML"><![CDATA[
+<Label VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
+    <Label.Text>Hello, World!</Label.Text>
+    <Label.TextColor>Color.Blue</Label.TextColor>
+</Label>]]></code>
+      </example>
+      <para>Application developers can specify colors in XAML either as a hexadecimal number or as a valid color name.</para>
+      <para>When specifying a color with a hexadecimal number, app developers can use 3, 4, or 6 digits. If the developer specifies 3 digits, they are interpreted as RGB doublet data for a fully opaque color. For example, "#123" specifies the color that is represented by "#FF112233". If the developer provides a 4-digit hexadecimal number, then the data are interpreted as above, except that the first digit specifies the alpha channel. For example, "#1234" specifies the color that is represented by "#11223344". Finally, if the developer provides a 6 digit hexadecimal number, the data are interpreted as a fully opaque color with those RGB values. For example, "#112233" specifies the color that is represented by "#FF112233".</para>
+      <para>When specifying a color with a string, app developers can use color name in isolation, or prefix it with "Color.". For example, both <c>Purple</c> and <c>Color.Purple</c> are valid ways to specify the color purple. The following table describes the valid color names that can be used to specify colors in XAML.
+<list type="table"><listheader><term>Color</term><description>Short Name</description><description>RGB Value</description></listheader><item><term>Color.Transparent</term><description>Transparent</description><description>0, 0, 0 (With the alpha channel set to 0.)</description></item><item><term>Color.Aqua</term><description>Aqua</description><description>0, 255, 255</description></item><item><term>Color.Black</term><description>Black</description><description>0, 0, 0</description></item><item><term>Color.Blue</term><description>Blue</description><description>0, 0, 255</description></item><item><term>Color.Fuchsia</term><description>Fuchsia</description><description>255, 0, 255</description></item><item><term>Color.Gray</term><description>Gray</description><description>128, 128, 128</description></item><item><term>Color.Green</term><description>Green</description><description>0, 128, 0</description></item><item><term>Color.Lime</term><description>Lime</description><description>0, 255, 0</description></item><item><term>Color.Maroon</term><description>Maroon</description><description>128, 0, 0</description></item><item><term>Color.Navy</term><description>Navy</description><description>0, 0, 128</description></item><item><term>Color.Olive</term><description>Olive</description><description>128, 128, 0</description></item><item><term>Color.Purple</term><description>Purple</description><description>128, 0, 128</description></item><item><term>Color.Pink</term><description>Pink</description><description>255, 102, 255</description></item><item><term>Color.Red</term><description>Red</description><description>255, 0, 0</description></item><item><term>Color.Silver</term><description>Silver</description><description>192, 192, 192</description></item><item><term>Color.Teal</term><description>Teal</description><description>0, 128, 128</description></item><item><term>Color.White</term><description>White</description><description>255, 255, 255</description></item><item><term>Color.Yellow</term><description>Yellow</description><description>255, 255, 0</description></item></list></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Color (double value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 value) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="value" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="value">The luminosity of the gray-scale color.</param>
+        <summary>Initialize a new gray color.</summary>
+        <remarks>This is equivalent to new Color (value, value, value). The value is clamped to [0-1]. App developers should use the <see cref="M:Xamarin.Forms.Color.FromRgb" /> equivalent methods, instead.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Color (double r, double g, double b);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 r, float64 g, float64 b) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="r" Type="System.Double" />
+        <Parameter Name="g" Type="System.Double" />
+        <Parameter Name="b" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <summary>Initializes a new RGB color.</summary>
+        <remarks>This is equivalent to new Color (r, g, b, 1). Values are clamped to [0-1]. Prefer the <see cref="M:Xamarin.Forms.Color.FromRgb" /> equivalent methods.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Color (double r, double g, double b, double a);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 r, float64 g, float64 b, float64 a) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="r" Type="System.Double" />
+        <Parameter Name="g" Type="System.Double" />
+        <Parameter Name="b" Type="System.Double" />
+        <Parameter Name="a" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <param name="a">The alpha component of the color.</param>
+        <summary>Initializes a new RGB color with an alpha channel.</summary>
+        <remarks>Values are clamped to [0-1].</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="A">
+      <MemberSignature Language="C#" Value="public double A { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 A" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the alpha component of the color.</summary>
+        <value>The Alpha component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Accent">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color Accent { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Forms.Color Accent" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the accent or tint color from the application.</summary>
+        <value>A Color.</value>
+        <remarks>The accent color is platform and device dependent.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AddLuminosity">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color AddLuminosity (double delta);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Xamarin.Forms.Color AddLuminosity(float64 delta) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="delta" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="delta">The delta (positive or negative) to add to the luminosity channel.</param>
+        <summary>Returns a new Color with a modified luminosity channel.</summary>
+        <returns>A new color with a possibly modified luminosity channel.</returns>
+        <remarks>The <paramref name="delta" /> parameter is added to the current luminosity, and the resulting luminosity is then clamped to the inclusive range [0,1].</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Aqua">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Aqua;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Aqua" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Aqua, the color that is represented by the RGB value #00ffff.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="B">
+      <MemberSignature Language="C#" Value="public double B { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 B" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the blue component of the color.</summary>
+        <value>The Blue component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Black">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Black;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Black" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Black, the color that is represented by the RGB value #000000.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Blue">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Blue;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Blue" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Blue, the color that is represented by the RGB value #0000ff.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color Default { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Forms.Color Default" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Returns the default color.</summary>
+        <value>The default color.</value>
+        <remarks>The Default color is used to unset any Color, and revert to the default one.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">The <see cref="T:System.Object" /> value to compare to this <see cref="T:Xamarin.Forms.Color" /> structure.</param>
+        <summary>Determine if the provided <see cref="T:System.Object" /> is equivalent to the current Color.</summary>
+        <returns>
+          <see langword="true" /> if the provided object is an equivalent Color. Otherwies, <see langword="false" />.</returns>
+        <remarks>Overriden.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHex">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromHex (string hex);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromHex(string hex) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hex" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="hex">A string that contains the hexadecimal (A)RGB color representation.</param>
+        <summary>Returns a new RGB Color instance with the requested Red, Green, and Blue channels. The Alpha channel is set if <paramref name="hex" /> contains one.</summary>
+        <returns>A color.</returns>
+        <remarks>
+          <para>When specifying a color with a hexadecimal number, app developers can use 3, 4, 6, or 8 digits. If the developer specifies 3 digits, they are interpreted as RGB doublet data for a fully opaque color. For example, "#123" specifies the color that is represented by "#FF112233". If the developer provides a 4-digit hexadecimal number, then the data are interpreted as above, except that the first digit specifies the alpha channel. For example, "#1234" specifies the color that is represented by "#11223344". If the developer provides a 6 digit hexadecimal number, the data are interpreted as a fully opaque color with those RGB values. For example, "#112233" specifies the color that is represented by "#FF112233". Finally, the developer can explicitly provide an 8-digit number that completely specifies the Alpha, Red, Green, and Blue channels, in that order.</para>
+          <para>Note that, in the paragraph above, the fully expanded color description is of the format, AARRGGBB. That is: the first pair of hexadecimal digits specifies the Alpha channel; the second pair specifies the Red channel; the third pair specifies the Green channel; and the final pair specifies the Blue channel.</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromHsla">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromHsla (double h, double s, double l, double a = 1);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromHsla(float64 h, float64 s, float64 l, float64 a) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="h" Type="System.Double" />
+        <Parameter Name="s" Type="System.Double" />
+        <Parameter Name="l" Type="System.Double" />
+        <Parameter Name="a" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="h">The Hue component of the color.</param>
+        <param name="s">The Saturation component of the color.</param>
+        <param name="l">The Luminosity component of the color.</param>
+        <param name="a">The alpha value of the color.</param>
+        <summary>Returns a new HSL Color with an alpha channel</summary>
+        <returns>An HSL color</returns>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromRgb">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromRgb (double r, double g, double b);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromRgb(float64 r, float64 g, float64 b) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="r" Type="System.Double" />
+        <Parameter Name="g" Type="System.Double" />
+        <Parameter Name="b" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <summary>Returns a new rgb color instance.</summary>
+        <returns>An RGB color</returns>
+        <remarks>Component values are clamped to [0,1]. The <see cref="M:Xamarin.Forms.Color.FromRgb" /> method is striclty equivalent to <c>new Color (r, g, b)</c>, and is present for API consistency.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromRgb">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromRgb (int r, int g, int b);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromRgb(int32 r, int32 g, int32 b) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="r" Type="System.Int32" />
+        <Parameter Name="g" Type="System.Int32" />
+        <Parameter Name="b" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <summary>Returns a new rgb color instance.</summary>
+        <returns>A new RGB color.</returns>
+        <remarks>Component values are clamped to [0,255].</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromRgba">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromRgba (double r, double g, double b, double a);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromRgba(float64 r, float64 g, float64 b, float64 a) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="r" Type="System.Double" />
+        <Parameter Name="g" Type="System.Double" />
+        <Parameter Name="b" Type="System.Double" />
+        <Parameter Name="a" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <param name="a">The alpha component of the color.</param>
+        <summary>Returns a new RGBA color instance.</summary>
+        <returns>A new RGBA color.</returns>
+        <remarks>Component values are clamped to [0,1]. The <see cref="M:Xamarin.Forms.Color.FromRgba" /> method is striclty equivalent to <c>new Color (r, g, b, a)</c>, and is present for API consistency.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromRgba">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromRgba (int r, int g, int b, int a);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromRgba(int32 r, int32 g, int32 b, int32 a) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="r" Type="System.Int32" />
+        <Parameter Name="g" Type="System.Int32" />
+        <Parameter Name="b" Type="System.Int32" />
+        <Parameter Name="a" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="r">The red component of the color.</param>
+        <param name="g">The green component of the color.</param>
+        <param name="b">The blue component of the color.</param>
+        <param name="a">The alpha component of the color.</param>
+        <summary>Returns a new RGBA color instance.</summary>
+        <returns>A new RGBA color.</returns>
+        <remarks>Component values are clamped to [0,255].</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromUint">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Color FromUint (uint argb);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.Color FromUint(unsigned int32 argb) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="argb" Type="System.UInt32" />
+      </Parameters>
+      <Docs>
+        <param name="argb">A uint that represents the ARGB value of the color.</param>
+        <summary>Returns a new Color with the requested RGBA value.</summary>
+        <returns>An RGBA color.</returns>
+        <remarks>
+          <para>The <paramref name="argb" /> parameter must represent an unsigned integer that can be represented by hexadecimal string that matches the format "AARRGGBB".</para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Fuchsia">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Fuchsia;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Fuchsia" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Fucshia, the color that is represented by the RGB value #ff00ff.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Fuschia">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Fuschia;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Fuschia" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete("Fuschia is obsolete as of version 1.3, please use the correct spelling of Fuchsia")</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Fucshia, the color that is represented by the RGB value #ff00ff. Deprecated. See Remarks.</summary>
+        <remarks>Use the <see cref="F:Xamarin.Forms.Color.Fucshia" /> color, instead.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="G">
+      <MemberSignature Language="C#" Value="public double G { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 G" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Green component of the color.</summary>
+        <value>The Green component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns the Hashcode for this <see cref="T:System.Object" />.</summary>
+        <returns>A signed 32-bit hash code.</returns>
+        <remarks>Overriden.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Gray">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Gray;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Gray" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gray, the color that is represented by the RGB value #808080.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Green">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Green;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Green" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Green, the color that is represented by the RGB value #008000.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Hue">
+      <MemberSignature Language="C#" Value="public double Hue { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Hue" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Hue of the color.</summary>
+        <value>The Hue component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Lime">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Lime;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Lime" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Lime, the color that is represented by the RGB value #00ff00.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Luminosity">
+      <MemberSignature Language="C#" Value="public double Luminosity { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Luminosity" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Luminosity fo the color.</summary>
+        <value>The Luminosity component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Maroon">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Maroon;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Maroon" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Maroon, the color that is represented by the RGB value #800000.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MultiplyAlpha">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color MultiplyAlpha (double alpha);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Xamarin.Forms.Color MultiplyAlpha(float64 alpha) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="alpha" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="alpha">The alpha multiplicator.</param>
+        <summary>Returns a new color with the alpha channel multiplied by alpha, clamped to the inclusive range [0-1].</summary>
+        <returns>A new RGBA color with a possibly new value for its alpha channel. See Remarks.</returns>
+        <remarks>The resulting color has its alpha channel clamped toto the inclusive range [0-1], preventing invalid colors.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Navy">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Navy;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Navy" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Navy, the color that is represented by the RGB value #000080.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Olive">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Olive;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Olive" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Olive, the color that is represented by the RGB value #808000.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool op_Equality (Xamarin.Forms.Color color1, Xamarin.Forms.Color color2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Forms.Color color1, valuetype Xamarin.Forms.Color color2) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color1" Type="Xamarin.Forms.Color" />
+        <Parameter Name="color2" Type="Xamarin.Forms.Color" />
+      </Parameters>
+      <Docs>
+        <param name="color1">To be added.</param>
+        <param name="color2">To be added.</param>
+        <summary>Returns <see langword="true" /> if <paramref name="color1" /> represents the same color as <paramref name="color1" />.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool op_Inequality (Xamarin.Forms.Color color1, Xamarin.Forms.Color color2);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Forms.Color color1, valuetype Xamarin.Forms.Color color2) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="color1" Type="Xamarin.Forms.Color" />
+        <Parameter Name="color2" Type="Xamarin.Forms.Color" />
+      </Parameters>
+      <Docs>
+        <param name="color1">To be added.</param>
+        <param name="color2">To be added.</param>
+        <summary>Returns <see langword="true" /> if <paramref name="color1" /> does not represent the same color as <paramref name="color1" />.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Pink">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Pink;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Pink" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Pink, the color that is represented by the RGB value #ff66ff.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Purple">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Purple;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Purple" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Purple, the color that is represented by the RGB value #800080.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="R">
+      <MemberSignature Language="C#" Value="public double R { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 R" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Red component of the color.</summary>
+        <value>The Red component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Red">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Red;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Red" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Red, the color that is represented by the RGB value #ff0000.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Saturation">
+      <MemberSignature Language="C#" Value="public double Saturation { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Saturation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Saturation of the color</summary>
+        <value>The Saturation component of the color as a double that is in the inclusive range [0-1].</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Silver">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Silver;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Silver" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Silver, the color that is represented by the RGB value #c0c0c0.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Teal">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Teal;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Teal" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Teal, the color that is represented by the RGB value #008080.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Returns a string representation of the Color.</summary>
+        <returns>A string.</returns>
+        <remarks>Overriden. </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Transparent">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Transparent;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Transparent" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The transparent color, represented by the RGB value #00000000.</summary>
+        <remarks>The Alpha channel of the <see cref="F:Xamarin.Forms.Color.Transparent" /> color is set to <c>0</c>.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="White">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color White;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color White" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>White, the color that is represented by the RGB value #ffffff.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithHue">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color WithHue (double hue);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Xamarin.Forms.Color WithHue(float64 hue) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="hue" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="hue">The modified Hue.</param>
+        <summary>Returns a color with modified Hue, but keeping the same Saturation and Luminosity.</summary>
+        <returns>A color.</returns>
+        <remarks>The Hue is clamped to the inclusive range [0,1]. This method is useful for creating color palettes.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithLuminosity">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color WithLuminosity (double luminosity);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Xamarin.Forms.Color WithLuminosity(float64 luminosity) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="luminosity" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="luminosity">The modified luminosity.</param>
+        <summary>Returns a color with modified Luminosity.</summary>
+        <returns>A new HSL color.</returns>
+        <remarks>The new Luminosity is clamped to [0,1]. This method is useful for creating color palettes.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WithSaturation">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color WithSaturation (double saturation);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance valuetype Xamarin.Forms.Color WithSaturation(float64 saturation) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="saturation" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="saturation">The modified Saturation.</param>
+        <summary>Returns a new color with modified Saturation.</summary>
+        <returns>A new HSLcolor.</returns>
+        <remarks>The Saturation is clamped to [0,1]. This method is useful for creating color palettes.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Yellow">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.Color Yellow;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly valuetype Xamarin.Forms.Color Yellow" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Yellow, the color that is represented by the RGB value #ffff00..</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

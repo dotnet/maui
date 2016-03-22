@@ -1,0 +1,259 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0E16E70A-D6DD-4323-AD5D-363ABFF42D6A}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xamarin.Forms.Platform.Android</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Platform.Android</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
+    <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Turkey\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Android" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Xamarin.Android.Support.v7.CardView">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.CardView.23.1.1.1\lib\MonoAndroid403\Xamarin.Android.Support.v7.CardView.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v4">
+      <HintPath>..\packages\Xamarin.Android.Support.v4.23.1.1.1\lib\MonoAndroid403\Xamarin.Android.Support.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.AppCompat">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.AppCompat.23.1.1.1\lib\MonoAndroid403\Xamarin.Android.Support.v7.AppCompat.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Design">
+      <HintPath>..\packages\Xamarin.Android.Support.Design.23.1.1.1\lib\MonoAndroid403\Xamarin.Android.Support.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.GooglePlayServices.AppIndexing, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.GooglePlayServices.AppIndexing.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.AppIndexing.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.GooglePlayServices.Base, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Base.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.Base.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.GooglePlayServices.Basement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.Basement.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.RecyclerView, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.RecyclerView.23.1.1.1\lib\MonoAndroid403\Xamarin.Android.Support.v7.RecyclerView.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AndroidApplicationLifecycleState.cs" />
+    <Compile Include="AndroidTitleBarVisibility.cs" />
+    <Compile Include="AppCompat\FormsViewPager.cs" />
+    <Compile Include="AppCompat\FragmentContainer.cs" />
+    <Compile Include="AppCompat\FrameRenderer.cs" />
+    <Compile Include="AppCompat\IManageFragments.cs" />
+    <Compile Include="AppCompat\Platform.cs" />
+    <Compile Include="AppCompat\Resource.cs" />
+    <Compile Include="CellAdapter.cs" />
+    <Compile Include="Cells\EntryCellEditText.cs" />
+    <Compile Include="Cells\EntryCellView.cs" />
+    <Compile Include="Cells\ImageCellRenderer.cs" />
+    <Compile Include="Cells\SwitchCellView.cs" />
+    <Compile Include="Deserializer.cs" />
+    <Compile Include="AppCompat\FormsAppCompatActivity.cs" />
+    <Compile Include="ElementChangedEventArgs.cs" />
+    <Compile Include="ExportCellAttribute.cs" />
+    <Compile Include="ExportImageSourceHandlerAttribute.cs" />
+    <Compile Include="ExportRendererAttribute.cs" />
+    <Compile Include="FormsApplicationActivity.cs" />
+    <Compile Include="AndroidActivity.cs" />
+    <Compile Include="AndroidTicker.cs" />
+    <Compile Include="Cells\BaseCellView.cs" />
+    <Compile Include="Cells\CellFactory.cs" />
+    <Compile Include="Cells\CellRenderer.cs" />
+    <Compile Include="Cells\EntryCellRenderer.cs" />
+    <Compile Include="Cells\SwitchCellRenderer.cs" />
+    <Compile Include="Cells\TextCellRenderer.cs" />
+    <Compile Include="Cells\ViewCellRenderer.cs" />
+    <Compile Include="ColorExtensions.cs" />
+    <Compile Include="ContextExtensions.cs" />
+    <Compile Include="GetDesiredSizeDelegate.cs" />
+    <Compile Include="IDeviceInfoProvider.cs" />
+    <Compile Include="InnerGestureListener.cs" />
+    <Compile Include="InnerScaleListener.cs" />
+    <Compile Include="IPlatformLayout.cs" />
+    <Compile Include="AppCompat\ButtonRenderer.cs" />
+    <Compile Include="AppCompat\MasterDetailPageRenderer.cs" />
+    <Compile Include="AppCompat\NavigationPageRenderer.cs" />
+    <Compile Include="AppCompat\SwitchRenderer.cs" />
+    <Compile Include="AppCompat\TabbedPageRenderer.cs" />
+    <Compile Include="MeasureSpecFactory.cs" />
+    <Compile Include="NativeViewWrapper.cs" />
+    <Compile Include="NativeViewWrapperRenderer.cs" />
+    <Compile Include="OnLayoutDelegate.cs" />
+    <Compile Include="OnMeasureDelegate.cs" />
+    <Compile Include="PanGestureHandler.cs" />
+    <Compile Include="PinchGestureHandler.cs" />
+    <Compile Include="PlatformEffect.cs" />
+    <Compile Include="LayoutExtensions.cs" />
+    <Compile Include="Renderers\AHorizontalScrollView.cs" />
+    <Compile Include="Renderers\ButtonDrawable.cs" />
+    <Compile Include="Renderers\CarouselViewExtensions.cs" />
+    <Compile Include="Renderers\CarouselViewRenderer.cs" />
+    <Compile Include="Renderers\AlignmentExtensions.cs" />
+    <Compile Include="IStartActivityForResult.cs" />
+    <Compile Include="Renderers\ConditionalFocusLayout.cs" />
+    <Compile Include="Renderers\DescendantFocusToggler.cs" />
+    <Compile Include="Renderers\EditorEditText.cs" />
+    <Compile Include="Renderers\EntryEditText.cs" />
+    <Compile Include="Renderers\FileImageSourceHandler.cs" />
+    <Compile Include="Renderers\FormattedStringExtensions.cs" />
+    <Compile Include="Renderers\FormsImageView.cs" />
+    <Compile Include="Renderers\FormsTextView.cs" />
+    <Compile Include="Renderers\FormsWebChromeClient.cs" />
+    <Compile Include="Renderers\GenericAnimatorListener.cs" />
+    <Compile Include="Renderers\IDescendantFocusToggler.cs" />
+    <Compile Include="Renderers\IImageSourceHandler.cs" />
+    <Compile Include="Renderers\ImageExtensions.cs" />
+    <Compile Include="Renderers\ImageLoaderSourceHandler.cs" />
+    <Compile Include="Renderers\IntVector.cs" />
+    <Compile Include="Renderers\ItemViewAdapter.cs" />
+    <Compile Include="Renderers\IToolbarButton.cs" />
+    <Compile Include="Renderers\KeyboardExtensions.cs" />
+    <Compile Include="AppCompat\PickerRenderer.cs" />
+    <Compile Include="AppCompat\ViewRenderer.cs" />
+    <Compile Include="Renderers\MasterDetailContainer.cs" />
+    <Compile Include="Renderers\MeasureSpecification.cs" />
+    <Compile Include="Renderers\MeasureSpecificationType.cs" />
+    <Compile Include="Renderers\PageContainer.cs" />
+    <Compile Include="Renderers\PhysicalLayoutManager.cs" />
+    <Compile Include="Renderers\ScrollViewContainer.cs" />
+    <Compile Include="Renderers\StreamImagesourceHandler.cs" />
+    <Compile Include="Renderers\ToolbarButton.cs" />
+    <Compile Include="Renderers\ToolbarImageButton.cs" />
+    <Compile Include="Renderers\ViewGroupExtensions.cs" />
+    <Compile Include="TapGestureHandler.cs" />
+    <Compile Include="ViewInitializedEventArgs.cs" />
+    <Compile Include="VisualElementChangedEventArgs.cs" />
+    <Compile Include="RendererPool.cs" />
+    <Compile Include="ViewPool.cs" />
+    <Compile Include="GenericMenuClickListener.cs" />
+    <Compile Include="IVisualElementRenderer.cs" />
+    <Compile Include="ViewRenderer.cs" />
+    <Compile Include="Platform.cs" />
+    <Compile Include="PlatformRenderer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Forms.cs" />
+    <Compile Include="RendererFactory.cs" />
+    <Compile Include="Renderers\ActionSheetRenderer.cs" />
+    <Compile Include="Renderers\ActivityIndicatorRenderer.cs" />
+    <Compile Include="Renderers\BoxRenderer.cs" />
+    <Compile Include="Renderers\ButtonRenderer.cs" />
+    <Compile Include="Renderers\CarouselPageRenderer.cs" />
+    <Compile Include="Renderers\DatePickerRenderer.cs" />
+    <Compile Include="Renderers\EditorRenderer.cs" />
+    <Compile Include="Renderers\EntryRenderer.cs" />
+    <Compile Include="Renderers\FontExtensions.cs" />
+    <Compile Include="Renderers\FrameRenderer.cs" />
+    <Compile Include="Renderers\ImageRenderer.cs" />
+    <Compile Include="Renderers\LabelRenderer.cs" />
+    <Compile Include="Renderers\ListViewAdapter.cs" />
+    <Compile Include="Renderers\ListViewRenderer.cs" />
+    <Compile Include="Renderers\MasterDetailRenderer.cs" />
+    <Compile Include="Renderers\NavigationMenuRenderer.cs" />
+    <Compile Include="Renderers\NavigationRenderer.cs" />
+    <Compile Include="Renderers\ObjectJavaBox.cs" />
+    <Compile Include="Renderers\CarouselPageAdapter.cs" />
+    <Compile Include="Renderers\PageRenderer.cs" />
+    <Compile Include="Renderers\ProgressBarRenderer.cs" />
+    <Compile Include="Renderers\ScrollViewRenderer.cs" />
+    <Compile Include="Renderers\SearchBarRenderer.cs" />
+    <Compile Include="Renderers\SliderRenderer.cs" />
+    <Compile Include="Renderers\StepperRenderer.cs" />
+    <Compile Include="Renderers\SwitchRenderer.cs" />
+    <Compile Include="Renderers\TabbedRenderer.cs" />
+    <Compile Include="Renderers\TableViewModelRenderer.cs" />
+    <Compile Include="Renderers\TableViewRenderer.cs" />
+    <Compile Include="Renderers\TimePickerRenderer.cs" />
+    <Compile Include="Renderers\ToolbarRenderer.cs" />
+    <Compile Include="Renderers\WebViewRenderer.cs" />
+    <Compile Include="ResourceManager.cs" />
+    <Compile Include="ViewExtensions.cs" />
+    <Compile Include="VisualElementExtensions.cs" />
+    <Compile Include="VisualElementPackager.cs" />
+    <Compile Include="VisualElementRenderer.cs" />
+    <Compile Include="VisualElementRendererFlags.cs" />
+    <Compile Include="VisualElementTracker.cs" />
+    <Compile Include="Renderers\PickerRenderer.cs" />
+    <Compile Include="KeyboardManager.cs" />
+    <Compile Include="ResourcesProvider.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Renderers\OpenGLViewRenderer.cs" />
+    <Compile Include="AppCompat\CarouselPageRenderer.cs" />
+    <Compile Include="AppCompat\FormsFragmentPagerAdapter.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Platform.Android.FormsViewGroup\Xamarin.Forms.Platform.Android.FormsViewGroup.csproj">
+      <Project>{3b72465b-acae-43ae-9327-10f372fe5f80}</Project>
+      <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+</Project>

@@ -1,0 +1,294 @@
+<Type Name="Picker" FullName="Xamarin.Forms.Picker">
+  <TypeSignature Language="C#" Value="public class Picker : Xamarin.Forms.View" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Picker extends Xamarin.Forms.View" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._PickerRenderer))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>A <see cref="T:Xamarin.Forms.View" /> control for picking an element in a list.</summary>
+    <remarks>
+      <para>The visual representation of a Picker is similar to a <see cref="T:Xamarin.Forms.Entry" />, but a picker control appears in place of a keyboard.</para>
+      <para>The following example shows the creation of a Picker.</para>
+      <example>
+        <code lang="C#"><![CDATA[using System;
+using System.Collections.Generic;
+using Xamarin.Forms;
+
+namespace FormsGallery
+{
+    class PickerDemoPage : ContentPage
+    {
+        // Dictionary to get Color from color name.
+        Dictionary<string, Color> nameToColor = new Dictionary<string, Color>
+        {
+            { "Aqua", Color.Aqua }, { "Black", Color.Black },
+            { "Blue", Color.Blue }, { "Fuschia", Color.Fuschia },
+            { "Gray", Color.Gray }, { "Green", Color.Green },
+            { "Lime", Color.Lime }, { "Maroon", Color.Maroon },
+            { "Navy", Color.Navy }, { "Olive", Color.Olive },
+            { "Purple", Color.Purple }, { "Red", Color.Red },
+            { "Silver", Color.Silver }, { "Teal", Color.Teal },
+            { "White", Color.White }, { "Yellow", Color.Yellow }
+        };
+
+        public PickerDemoPage()
+        {
+            Label header = new Label
+            {
+                Text = "Picker",
+                FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label)),
+                HorizontalOptions = LayoutOptions.Center
+            };
+
+            Picker picker = new Picker
+            {
+                Title = "Color",
+                VerticalOptions = LayoutOptions.CenterAndExpand
+            };
+
+            foreach (string colorName in nameToColor.Keys)
+            {
+                picker.Items.Add(colorName);
+            }
+
+            // Create BoxView for displaying picked Color
+            BoxView boxView = new BoxView
+            {
+                WidthRequest = 150,
+                HeightRequest = 150,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.CenterAndExpand
+            };
+
+            picker.SelectedIndexChanged += (sender, args) =>
+                {
+                    if (picker.SelectedIndex == -1)
+                    {
+                        boxView.Color = Color.Default;
+                    }
+                    else
+                    {
+                        string colorName = picker.Items[picker.SelectedIndex];
+                        boxView.Color = nameToColor[colorName];
+                    }
+                };
+
+            // Accomodate iPhone status bar.
+            this.Padding = new Thickness(10, Device.OnPlatform(20, 0, 0), 10, 5);
+
+            // Build the page.
+            this.Content = new StackLayout
+            {
+                Children =
+                {
+                    header,
+                    picker,
+                    boxView
+                }
+            };
+
+        }
+    }
+}
+]]></code>
+      </example>
+      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.Picker" /> class:</para>
+      <list type="table">
+        <listheader>
+          <term>Property</term>
+          <description>Value</description>
+        </listheader>
+        <item>
+          <term>Items</term>
+          <description>
+            <para>A local file specification that identifies an image.</para>
+          </description>
+        </item>
+        <item>
+          <term>SelectedIndex</term>
+          <description>
+            <para>An integer, from 0 to 1 less than the count of items that are listed in <c>Items</c>. Currently, this element must be specified in a tag that appears lexically below <c>Items</c>.</para>
+          </description>
+        </item>
+        <item>
+          <term>Title</term>
+          <description>
+            <para>Text that represents the title of the picker.</para>
+          </description>
+        </item>
+      </list>
+      <para>
+        <img href="Picker.TripleScreenShot.png" />
+      </para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Picker ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Initializes a new instance of the Picker class.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Items">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;string&gt; Items { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;string&gt; Items" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the list of choices.</summary>
+        <value>An IList&lt;string&gt; representing the Picker choices.</value>
+        <remarks>This property is read-only, but exposes the IList&lt;&gt; interface, so items can be added using Add().</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectedIndex">
+      <MemberSignature Language="C#" Value="public int SelectedIndex { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance int32 SelectedIndex" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the index of the slected item of the picker. This is a bindable property.</summary>
+        <value>An 0-based index representing the selected item in the list. Default is -1.</value>
+        <remarks>A value of -1 represents no item selected.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectedIndexChanged">
+      <MemberSignature Language="C#" Value="public event EventHandler SelectedIndexChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler SelectedIndexChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Raised when the value of the SelectIndex property has changed.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SelectedIndexProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty SelectedIndexProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty SelectedIndexProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the SelectedIndex bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Title">
+      <MemberSignature Language="C#" Value="public string Title { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Title" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the title for the Picker. This is a bindable property.</summary>
+        <value>A string.</value>
+        <remarks>Depending on the platform, the Title is shown as a placeholder, headline, or not showed at all.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TitleProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty TitleProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty TitleProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the Title bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

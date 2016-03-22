@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Xamarin.Forms.Controls.Issues.Issue3086">
+<ListView x:Name="TestListView"
+		  IsGroupingEnabled = "true"
+		  HasUnevenRows="true">
+	<ListView.GroupHeaderTemplate >
+		<DataTemplate>
+			<ViewCell Height="30">
+				<ContentView>
+					<Label Text="{Binding GroupName}" BackgroundColor="Green"/>
+				</ContentView>
+			</ViewCell>
+		</DataTemplate>
+	</ListView.GroupHeaderTemplate >
+
+	<ListView.ItemTemplate>
+		<DataTemplate>
+			<ViewCell>
+				<ContentView>
+					<Label Text="{Binding}"/>
+				</ContentView>
+			</ViewCell>
+		</DataTemplate>
+	</ListView.ItemTemplate>
+</ListView>
+</ContentPage>

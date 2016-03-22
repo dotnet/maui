@@ -1,0 +1,165 @@
+using System;
+using System.ComponentModel;
+using System.Linq;
+using Android.App;
+using Android.Views;
+using Android.Widget;
+using ADatePicker = Android.Widget.DatePicker;
+using ATimePicker = Android.Widget.TimePicker;
+using Object = Java.Lang.Object;
+
+namespace Xamarin.Forms.Platform.Android
+{
+	public class PickerRenderer : ViewRenderer<Picker, EditText>
+	{
+		AlertDialog _dialog;
+
+		bool _isDisposed;
+
+		public PickerRenderer()
+		{
+			AutoPackage = false;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && !_isDisposed)
+			{
+				_isDisposed = true;
+				((ObservableList<string>)Element.Items).CollectionChanged -= RowsCollectionChanged;
+			}
+
+			base.Dispose(disposing);
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
+		{
+			if (e.OldElement != null)
+				((ObservableList<string>)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
+
+			if (e.NewElement != null)
+			{
+				((ObservableList<string>)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
+				if (Control == null)
+				{
+					var textField = new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
+					textField.SetOnClickListener(PickerListener.Instance);
+					SetNativeControl(textField);
+				}
+				UpdatePicker();
+			}
+
+			base.OnElementChanged(e);
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+
+			if (e.PropertyName == Picker.TitleProperty.PropertyName)
+				UpdatePicker();
+			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
+				UpdatePicker();
+		}
+
+		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+		{
+			base.OnFocusChangeRequested(sender, e);
+
+			if (e.Focus)
+				OnClick();
+			else if (_dialog != null)
+			{
+				_dialog.Hide();
+				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+				Control.ClearFocus();
+				_dialog = null;
+			}
+		}
+
+		void OnClick()
+		{
+			Picker model = Element;
+
+			var picker = new NumberPicker(Context);
+			if (model.Items != null && model.Items.Any())
+			{
+				picker.MaxValue = model.Items.Count - 1;
+				picker.MinValue = 0;
+				picker.SetDisplayedValues(model.Items.ToArray());
+				picker.WrapSelectorWheel = false;
+				picker.DescendantFocusability = DescendantFocusability.BlockDescendants;
+				picker.Value = model.SelectedIndex;
+			}
+
+			var layout = new LinearLayout(Context) { Orientation = Orientation.Vertical };
+			layout.AddView(picker);
+
+			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+
+			var builder = new AlertDialog.Builder(Context);
+			builder.SetView(layout);
+			builder.SetTitle(model.Title ?? "");
+			builder.SetNegativeButton(global::Android.Resource.String.Cancel, (s, a) =>
+			{
+				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+				// It is possible for the Content of the Page to be changed when Focus is changed.
+				// In this case, we'll lose our Control.
+				Control?.ClearFocus();
+				_dialog = null;
+			});
+			builder.SetPositiveButton(global::Android.Resource.String.Ok, (s, a) =>
+			{
+				((IElementController)Element).SetValueFromRenderer(Picker.SelectedIndexProperty, picker.Value);
+				// It is possible for the Content of the Page to be changed on SelectedIndexChanged. 
+				// In this case, the Element & Control will no longer exist.
+				if (Element != null)
+				{
+					if (model.Items.Count > 0 && Element.SelectedIndex >= 0)
+						Control.Text = model.Items[Element.SelectedIndex];
+					((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+					// It is also possible for the Content of the Page to be changed when Focus is changed.
+					// In this case, we'll lose our Control.
+					Control?.ClearFocus();
+				}
+				_dialog = null;
+			});
+
+			(_dialog = builder.Create()).Show();
+		}
+
+		void RowsCollectionChanged(object sender, EventArgs e)
+		{
+			UpdatePicker();
+		}
+
+		void UpdatePicker()
+		{
+			Control.Hint = Element.Title;
+
+			string oldText = Control.Text;
+
+			if (Element.SelectedIndex == -1 || Element.Items == null)
+				Control.Text = null;
+			else
+				Control.Text = Element.Items[Element.SelectedIndex];
+
+			if (oldText != Control.Text)
+				((IVisualElementController)Element).NativeSizeChanged();
+		}
+
+		class PickerListener : Object, IOnClickListener
+		{
+			public static readonly PickerListener Instance = new PickerListener();
+
+			public void OnClick(global::Android.Views.View v)
+			{
+				var renderer = v.Tag as PickerRenderer;
+				if (renderer == null)
+					return;
+
+				renderer.OnClick();
+			}
+		}
+	}
+}

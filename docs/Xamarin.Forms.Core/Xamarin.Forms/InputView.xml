@@ -1,0 +1,69 @@
+<Type Name="InputView" FullName="Xamarin.Forms.InputView">
+  <TypeSignature Language="C#" Value="public class InputView : Xamarin.Forms.View" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit InputView extends Xamarin.Forms.View" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The base class of a view which can take keyboard input.</summary>
+    <remarks>The constructor of this class is internal. Forms does not provide any renderer for InputView base class.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Keyboard">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Keyboard Keyboard { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Keyboard Keyboard" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Keyboard</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the Keyboard for the InputView. This is a bindable property.</summary>
+        <value>The <see cref="T:Xamarin.Forms.Keyboard" /> to use for the InputView.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KeyboardProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty KeyboardProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty KeyboardProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the Keyboard bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

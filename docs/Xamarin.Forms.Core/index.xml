@@ -1,0 +1,1079 @@
+<Overview>
+  <Assemblies>
+    <Assembly Name="Xamarin.Forms.Core" Version="2.0.0.0">
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Diagnostics.Debuggable(System.Diagnostics.DebuggableAttribute+DebuggingModes.Default | System.Diagnostics.DebuggableAttribute+DebuggingModes.DisableOptimizations | System.Diagnostics.DebuggableAttribute+DebuggingModes.EnableEditAndContinue | System.Diagnostics.DebuggableAttribute+DebuggingModes.IgnoreSymbolStoreSequencePoints)</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCompany("Xamarin Inc.")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2015")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyDescription("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyFileVersion("2.0.0.0")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Forms")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTitle("Xamarin.Forms.Core")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.iOS")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.iOS.Classic")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.Android")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.UAP")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Tablet")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Phone")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WP8")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("iOSUnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Controls")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.Design")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.Android.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.WP8.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Xaml")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps.iOS")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps.iOS.Classic")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps.Android")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.iOS.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.Android.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.iOS.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Android.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Loader")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.UITest.Validator")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Build.Tasks")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
+        </Attribute>
+      </Attributes>
+    </Assembly>
+  </Assemblies>
+  <Remarks>To be added.</Remarks>
+  <Copyright>To be added.</Copyright>
+  <Types>
+    <Namespace Name="Xamarin.Forms">
+      <Type Name="AbsoluteLayout" Kind="Class" />
+      <Type Name="AbsoluteLayout+IAbsoluteList`1" DisplayName="AbsoluteLayout+IAbsoluteList&lt;T&gt;" Kind="Interface" />
+      <Type Name="AbsoluteLayoutFlags" Kind="Enumeration" />
+      <Type Name="ActivityIndicator" Kind="Class" />
+      <Type Name="Animation" Kind="Class" />
+      <Type Name="AnimationExtensions" Kind="Class" />
+      <Type Name="Application" Kind="Class" />
+      <Type Name="Aspect" Kind="Enumeration" />
+      <Type Name="BackButtonPressedEventArgs" Kind="Class" />
+      <Type Name="BaseMenuItem" Kind="Class" />
+      <Type Name="Behavior" Kind="Class" />
+      <Type Name="Behavior`1" DisplayName="Behavior&lt;T&gt;" Kind="Class" />
+      <Type Name="BindableObject" Kind="Class" />
+      <Type Name="BindableObjectExtensions" Kind="Class" />
+      <Type Name="BindableProperty" Kind="Class" />
+      <Type Name="BindableProperty+BindingPropertyChangedDelegate" Kind="Delegate" />
+      <Type Name="BindableProperty+BindingPropertyChangedDelegate`1" DisplayName="BindableProperty+BindingPropertyChangedDelegate&lt;TPropertyType&gt;" Kind="Delegate" />
+      <Type Name="BindableProperty+BindingPropertyChangingDelegate" Kind="Delegate" />
+      <Type Name="BindableProperty+BindingPropertyChangingDelegate`1" DisplayName="BindableProperty+BindingPropertyChangingDelegate&lt;TPropertyType&gt;" Kind="Delegate" />
+      <Type Name="BindableProperty+CoerceValueDelegate" Kind="Delegate" />
+      <Type Name="BindableProperty+CoerceValueDelegate`1" DisplayName="BindableProperty+CoerceValueDelegate&lt;TPropertyType&gt;" Kind="Delegate" />
+      <Type Name="BindableProperty+CreateDefaultValueDelegate" Kind="Delegate" />
+      <Type Name="BindableProperty+CreateDefaultValueDelegate`2" DisplayName="BindableProperty+CreateDefaultValueDelegate&lt;TDeclarer,TPropertyType&gt;" Kind="Delegate" />
+      <Type Name="BindableProperty+ValidateValueDelegate" Kind="Delegate" />
+      <Type Name="BindableProperty+ValidateValueDelegate`1" DisplayName="BindableProperty+ValidateValueDelegate&lt;TPropertyType&gt;" Kind="Delegate" />
+      <Type Name="BindablePropertyConverter" Kind="Class" />
+      <Type Name="BindablePropertyKey" Kind="Class" />
+      <Type Name="Binding" Kind="Class" />
+      <Type Name="BindingBase" Kind="Class" />
+      <Type Name="BindingCondition" Kind="Class" />
+      <Type Name="BindingMode" Kind="Enumeration" />
+      <Type Name="BindingTypeConverter" Kind="Class" />
+      <Type Name="BoundsConstraint" Kind="Class" />
+      <Type Name="BoundsTypeConverter" Kind="Class" />
+      <Type Name="BoxView" Kind="Class" />
+      <Type Name="Button" Kind="Class" />
+      <Type Name="CarouselPage" Kind="Class" />
+      <Type Name="CarouselView" Kind="Class" />
+      <Type Name="Cell" Kind="Class" />
+      <Type Name="CollectionSynchronizationCallback" Kind="Delegate" />
+      <Type Name="Color" Kind="Structure" />
+      <Type Name="ColorTypeConverter" Kind="Class" />
+      <Type Name="ColumnDefinition" Kind="Class" />
+      <Type Name="ColumnDefinitionCollection" Kind="Class" />
+      <Type Name="Command" Kind="Class" />
+      <Type Name="Command`1" DisplayName="Command&lt;T&gt;" Kind="Class" />
+      <Type Name="Condition" Kind="Class" />
+      <Type Name="Constraint" Kind="Class" />
+      <Type Name="ConstraintExpression" Kind="Class" />
+      <Type Name="ConstraintType" Kind="Enumeration" />
+      <Type Name="ConstraintTypeConverter" Kind="Class" />
+      <Type Name="ContentPage" Kind="Class" />
+      <Type Name="ContentPresenter" Kind="Class" />
+      <Type Name="ContentPropertyAttribute" Kind="Class" />
+      <Type Name="ContentView" Kind="Class" />
+      <Type Name="ControlTemplate" Kind="Class" />
+      <Type Name="DataTemplate" Kind="Class" />
+      <Type Name="DataTemplateSelector" Kind="Class" />
+      <Type Name="DataTrigger" Kind="Class" />
+      <Type Name="DateChangedEventArgs" Kind="Class" />
+      <Type Name="DatePicker" Kind="Class" />
+      <Type Name="DefinitionCollection`1" DisplayName="DefinitionCollection&lt;T&gt;" Kind="Class" />
+      <Type Name="DependencyAttribute" Kind="Class" />
+      <Type Name="DependencyFetchTarget" Kind="Enumeration" />
+      <Type Name="DependencyService" Kind="Class" />
+      <Type Name="Device" Kind="Class" />
+      <Type Name="Device+Styles" Kind="Class" />
+      <Type Name="Easing" Kind="Class" />
+      <Type Name="Editor" Kind="Class" />
+      <Type Name="Effect" Kind="Class" />
+      <Type Name="Element" Kind="Class" />
+      <Type Name="ElementEventArgs" Kind="Class" />
+      <Type Name="ElementTemplate" Kind="Class" />
+      <Type Name="Entry" Kind="Class" />
+      <Type Name="EntryCell" Kind="Class" />
+      <Type Name="EventTrigger" Kind="Class" />
+      <Type Name="ExportEffectAttribute" Kind="Class" />
+      <Type Name="FileImageSource" Kind="Class" />
+      <Type Name="FileImageSourceConverter" Kind="Class" />
+      <Type Name="FocusEventArgs" Kind="Class" />
+      <Type Name="Font" Kind="Structure" />
+      <Type Name="FontAttributes" Kind="Enumeration" />
+      <Type Name="FontSizeConverter" Kind="Class" />
+      <Type Name="FontTypeConverter" Kind="Class" />
+      <Type Name="FormattedString" Kind="Class" />
+      <Type Name="Frame" Kind="Class" />
+      <Type Name="GestureRecognizer" Kind="Class" />
+      <Type Name="GestureState" Kind="Enumeration" />
+      <Type Name="GestureStatus" Kind="Enumeration" />
+      <Type Name="Grid" Kind="Class" />
+      <Type Name="Grid+IGridList`1" DisplayName="Grid+IGridList&lt;T&gt;" Kind="Interface" />
+      <Type Name="GridLength" Kind="Structure" />
+      <Type Name="GridLengthTypeConverter" Kind="Class" />
+      <Type Name="GridUnitType" Kind="Enumeration" />
+      <Type Name="HandlerAttribute" Kind="Class" />
+      <Type Name="HtmlWebViewSource" Kind="Class" />
+      <Type Name="IAnimatable" Kind="Interface" />
+      <Type Name="ICarouselViewController" Kind="Interface" />
+      <Type Name="IApplicationController" Kind="Interface" />
+      <Type Name="IDefinition" Kind="Interface" />
+      <Type Name="IEffectControlProvider" Kind="Interface" />
+      <Type Name="IElementController" Kind="Interface" />
+      <Type Name="IExtendedTypeConverter" Kind="Interface" />
+      <Type Name="IGestureRecognizer" Kind="Interface" />
+      <Type Name="IItemViewController" Kind="Interface" />
+      <Type Name="ILayout" Kind="Interface" />
+      <Type Name="ILayoutController" Kind="Interface" />
+      <Type Name="Image" Kind="Class" />
+      <Type Name="ImageCell" Kind="Class" />
+      <Type Name="ImageSource" Kind="Class" />
+      <Type Name="ImageSourceConverter" Kind="Class" />
+      <Type Name="INativeElementView" Kind="Interface" />
+      <Type Name="INavigation" Kind="Interface" />
+      <Type Name="InputView" Kind="Class" />
+      <Type Name="IOpenGLViewController" Kind="Interface" />
+      <Type Name="IPageContainer`1" DisplayName="IPageContainer&lt;T&gt;" Kind="Interface" />
+      <Type Name="IPlatform" Kind="Interface" />
+      <Type Name="IPlatformEngine" Kind="Interface" />
+      <Type Name="IRegisterable" Kind="Interface" />
+      <Type Name="IScrollViewController" Kind="Interface" />
+      <Type Name="ItemsView" Kind="Class" />
+      <Type Name="ItemsView`1" DisplayName="ItemsView&lt;TVisual&gt;" Kind="Class" />
+      <Type Name="ItemTappedEventArgs" Kind="Class" />
+      <Type Name="ItemVisibilityEventArgs" Kind="Class" />
+      <Type Name="IValueConverter" Kind="Interface" />
+      <Type Name="IViewContainer`1" DisplayName="IViewContainer&lt;T&gt;" Kind="Interface" />
+      <Type Name="IViewController" Kind="Interface" />
+      <Type Name="IVisualElementController" Kind="Interface" />
+      <Type Name="Keyboard" Kind="Class" />
+      <Type Name="KeyboardFlags" Kind="Enumeration" />
+      <Type Name="KeyboardTypeConverter" Kind="Class" />
+      <Type Name="Label" Kind="Class" />
+      <Type Name="Layout" Kind="Class" />
+      <Type Name="Layout`1" DisplayName="Layout&lt;T&gt;" Kind="Class" />
+      <Type Name="LayoutAlignment" Kind="Enumeration" />
+      <Type Name="LayoutOptions" Kind="Structure" />
+      <Type Name="LayoutOptionsConverter" Kind="Class" />
+      <Type Name="LineBreakMode" Kind="Enumeration" />
+      <Type Name="ListView" Kind="Class" />
+      <Type Name="ListViewCachingStrategy" Kind="Enumeration" />
+      <Type Name="MasterBehavior" Kind="Enumeration" />
+      <Type Name="MasterDetailPage" Kind="Class" />
+      <Type Name="MeasureFlags" Kind="Enumeration" />
+      <Type Name="MenuItem" Kind="Class" />
+      <Type Name="MessagingCenter" Kind="Class" />
+      <Type Name="ModalEventArgs" Kind="Class" />
+      <Type Name="ModalPoppedEventArgs" Kind="Class" />
+      <Type Name="ModalPoppingEventArgs" Kind="Class" />
+      <Type Name="ModalPushedEventArgs" Kind="Class" />
+      <Type Name="ModalPushingEventArgs" Kind="Class" />
+      <Type Name="MultiPage`1" DisplayName="MultiPage&lt;T&gt;" Kind="Class" />
+      <Type Name="MultiTrigger" Kind="Class" />
+      <Type Name="NamedSize" Kind="Enumeration" />
+      <Type Name="NameScopeExtensions" Kind="Class" />
+      <Type Name="NavigationEventArgs" Kind="Class" />
+      <Type Name="NavigationMenu" Kind="Class" />
+      <Type Name="NavigationPage" Kind="Class" />
+      <Type Name="OnIdiom`1" DisplayName="OnIdiom&lt;T&gt;" Kind="Class" />
+      <Type Name="OnPlatform`1" DisplayName="OnPlatform&lt;T&gt;" Kind="Class" />
+      <Type Name="OpenGLView" Kind="Class" />
+      <Type Name="Page" Kind="Class" />
+      <Type Name="PanGestureRecognizer" Kind="Class" />
+      <Type Name="PanUpdatedEventArgs" Kind="Class" />
+      <Type Name="Picker" Kind="Class" />
+      <Type Name="PinchGestureRecognizer" Kind="Class" />
+      <Type Name="PinchGestureUpdatedEventArgs" Kind="Class" />
+      <Type Name="PlatformEffect`2" DisplayName="PlatformEffect&lt;TContainer,TControl&gt;" Kind="Class" />
+      <Type Name="Point" Kind="Structure" />
+      <Type Name="PointTypeConverter" Kind="Class" />
+      <Type Name="ProgressBar" Kind="Class" />
+      <Type Name="PropertyChangingEventArgs" Kind="Class" />
+      <Type Name="PropertyChangingEventHandler" Kind="Delegate" />
+      <Type Name="PropertyCondition" Kind="Class" />
+      <Type Name="Rectangle" Kind="Structure" />
+      <Type Name="RectangleTypeConverter" Kind="Class" />
+      <Type Name="RelativeLayout" Kind="Class" />
+      <Type Name="RelativeLayout+IRelativeList`1" DisplayName="RelativeLayout+IRelativeList&lt;T&gt;" Kind="Interface" />
+      <Type Name="RenderWithAttribute" Kind="Class" />
+      <Type Name="ResolutionGroupNameAttribute" Kind="Class" />
+      <Type Name="ResourceDictionary" Kind="Class" />
+      <Type Name="RoutingEffect" Kind="Class" />
+      <Type Name="RowDefinition" Kind="Class" />
+      <Type Name="RowDefinitionCollection" Kind="Class" />
+      <Type Name="ScrolledEventArgs" Kind="Class" />
+      <Type Name="ScrollOrientation" Kind="Enumeration" />
+      <Type Name="ScrollToMode" Kind="Enumeration" />
+      <Type Name="ScrollToPosition" Kind="Enumeration" />
+      <Type Name="ScrollToRequestedEventArgs" Kind="Class" />
+      <Type Name="ScrollView" Kind="Class" />
+      <Type Name="SearchBar" Kind="Class" />
+      <Type Name="SelectedItemChangedEventArgs" Kind="Class" />
+      <Type Name="SelectedPositionChangedEventArgs" Kind="Class" />
+      <Type Name="SeparatorVisibility" Kind="Enumeration" />
+      <Type Name="Setter" Kind="Class" />
+      <Type Name="SettersExtensions" Kind="Class" />
+      <Type Name="Size" Kind="Structure" />
+      <Type Name="SizeRequest" Kind="Structure" />
+      <Type Name="Slider" Kind="Class" />
+      <Type Name="Span" Kind="Class" />
+      <Type Name="StackLayout" Kind="Class" />
+      <Type Name="StackOrientation" Kind="Enumeration" />
+      <Type Name="Stepper" Kind="Class" />
+      <Type Name="StreamImageSource" Kind="Class" />
+      <Type Name="Style" Kind="Class" />
+      <Type Name="Switch" Kind="Class" />
+      <Type Name="SwitchCell" Kind="Class" />
+      <Type Name="TabbedPage" Kind="Class" />
+      <Type Name="TableIntent" Kind="Enumeration" />
+      <Type Name="TableRoot" Kind="Class" />
+      <Type Name="TableSection" Kind="Class" />
+      <Type Name="TableSectionBase" Kind="Class" />
+      <Type Name="TableSectionBase`1" DisplayName="TableSectionBase&lt;T&gt;" Kind="Class" />
+      <Type Name="TableView" Kind="Class" />
+      <Type Name="TapGestureRecognizer" Kind="Class" />
+      <Type Name="TappedEventArgs" Kind="Class" />
+      <Type Name="TargetIdiom" Kind="Enumeration" />
+      <Type Name="TargetPlatform" Kind="Enumeration" />
+      <Type Name="TemplateBinding" Kind="Class" />
+      <Type Name="TemplatedPage" Kind="Class" />
+      <Type Name="TemplatedView" Kind="Class" />
+      <Type Name="TemplateExtensions" Kind="Class" />
+      <Type Name="TextAlignment" Kind="Enumeration" />
+      <Type Name="TextCell" Kind="Class" />
+      <Type Name="TextChangedEventArgs" Kind="Class" />
+      <Type Name="Thickness" Kind="Structure" />
+      <Type Name="ThicknessTypeConverter" Kind="Class" />
+      <Type Name="TimePicker" Kind="Class" />
+      <Type Name="ToggledEventArgs" Kind="Class" />
+      <Type Name="ToolbarItem" Kind="Class" />
+      <Type Name="ToolbarItemOrder" Kind="Enumeration" />
+      <Type Name="Trigger" Kind="Class" />
+      <Type Name="TriggerAction" Kind="Class" />
+      <Type Name="TriggerAction`1" DisplayName="TriggerAction&lt;T&gt;" Kind="Class" />
+      <Type Name="TriggerBase" Kind="Class" />
+      <Type Name="TypeConverter" Kind="Class" />
+      <Type Name="TypeConverterAttribute" Kind="Class" />
+      <Type Name="TypeTypeConverter" Kind="Class" />
+      <Type Name="UnsolvableConstraintsException" Kind="Class" />
+      <Type Name="UriImageSource" Kind="Class" />
+      <Type Name="UriTypeConverter" Kind="Class" />
+      <Type Name="UrlWebViewSource" Kind="Class" />
+      <Type Name="ValueChangedEventArgs" Kind="Class" />
+      <Type Name="Vec2" Kind="Structure" />
+      <Type Name="View" Kind="Class" />
+      <Type Name="ViewCell" Kind="Class" />
+      <Type Name="ViewExtensions" Kind="Class" />
+      <Type Name="ViewState" Kind="Enumeration" />
+      <Type Name="VisualElement" Kind="Class" />
+      <Type Name="WebNavigatedEventArgs" Kind="Class" />
+      <Type Name="WebNavigatingEventArgs" Kind="Class" />
+      <Type Name="WebNavigationEvent" Kind="Enumeration" />
+      <Type Name="WebNavigationEventArgs" Kind="Class" />
+      <Type Name="WebNavigationResult" Kind="Enumeration" />
+      <Type Name="WebView" Kind="Class" />
+      <Type Name="WebViewSource" Kind="Class" />
+      <Type Name="WebViewSourceTypeConverter" Kind="Class" />
+    </Namespace>
+    <Namespace Name="Xamarin.Forms.Internals">
+      <Type Name="DynamicResource" Kind="Class" />
+      <Type Name="IDataTemplate" Kind="Interface" />
+      <Type Name="IDynamicResourceHandler" Kind="Interface" />
+      <Type Name="INameScope" Kind="Interface" />
+      <Type Name="NameScope" Kind="Class" />
+    </Namespace>
+    <Namespace Name="Xamarin.Forms.Xaml">
+      <Type Name="IMarkupExtension" Kind="Interface" />
+      <Type Name="IMarkupExtension`1" DisplayName="IMarkupExtension&lt;T&gt;" Kind="Interface" />
+      <Type Name="IProvideValueTarget" Kind="Interface" />
+      <Type Name="IRootObjectProvider" Kind="Interface" />
+      <Type Name="IValueProvider" Kind="Interface" />
+      <Type Name="IXamlTypeResolver" Kind="Interface" />
+      <Type Name="IXmlLineInfoProvider" Kind="Interface" />
+      <Type Name="XamlParseException" Kind="Class" />
+      <Type Name="XmlLineInfo" Kind="Class" />
+    </Namespace>
+  </Types>
+  <Title>Xamarin.Forms.Core</Title>
+  <ExtensionMethods>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="AbortAnimation">
+        <MemberSignature Language="C#" Value="public static bool AbortAnimation (this Xamarin.Forms.IAnimatable self, string handle);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool AbortAnimation(class Xamarin.Forms.IAnimatable self, string handle) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="handle" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="handle">To be added.</param>
+          <summary>Stops the animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AbortAnimation(Xamarin.Forms.IAnimatable,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="Animate">
+        <MemberSignature Language="C#" Value="public static void Animate (this Xamarin.Forms.IAnimatable self, string name, Action&lt;double&gt; callback, double start, double end, uint rate = 16, uint length = 250, Xamarin.Forms.Easing easing = null, Action&lt;double,bool&gt; finished = null, Func&lt;bool&gt; repeat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Animate(class Xamarin.Forms.IAnimatable self, string name, class System.Action`1&lt;float64&gt; callback, float64 start, float64 end, unsigned int32 rate, unsigned int32 length, class Xamarin.Forms.Easing easing, class System.Action`2&lt;float64, bool&gt; finished, class System.Func`1&lt;bool&gt; repeat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+          <Parameter Name="callback" Type="System.Action&lt;System.Double&gt;" />
+          <Parameter Name="start" Type="System.Double" />
+          <Parameter Name="end" Type="System.Double" />
+          <Parameter Name="rate" Type="System.UInt32" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+          <Parameter Name="finished" Type="System.Action&lt;System.Double,System.Boolean&gt;" />
+          <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="name">To be added.</param>
+          <param name="callback">To be added.</param>
+          <param name="start">To be added.</param>
+          <param name="end">To be added.</param>
+          <param name="rate">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <param name="finished">To be added.</param>
+          <param name="repeat">To be added.</param>
+          <summary>Sets the specified parameters and starts the animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,System.Action{System.Double},System.Double,System.Double,System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="Animate">
+        <MemberSignature Language="C#" Value="public static void Animate (this Xamarin.Forms.IAnimatable self, string name, Action&lt;double&gt; callback, uint rate = 16, uint length = 250, Xamarin.Forms.Easing easing = null, Action&lt;double,bool&gt; finished = null, Func&lt;bool&gt; repeat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Animate(class Xamarin.Forms.IAnimatable self, string name, class System.Action`1&lt;float64&gt; callback, unsigned int32 rate, unsigned int32 length, class Xamarin.Forms.Easing easing, class System.Action`2&lt;float64, bool&gt; finished, class System.Func`1&lt;bool&gt; repeat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+          <Parameter Name="callback" Type="System.Action&lt;System.Double&gt;" />
+          <Parameter Name="rate" Type="System.UInt32" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+          <Parameter Name="finished" Type="System.Action&lt;System.Double,System.Boolean&gt;" />
+          <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="name">To be added.</param>
+          <param name="callback">To be added.</param>
+          <param name="rate">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <param name="finished">To be added.</param>
+          <param name="repeat">To be added.</param>
+          <summary>Sets the specified parameters and starts the animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,System.Action{System.Double},System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="Animate">
+        <MemberSignature Language="C#" Value="public static void Animate (this Xamarin.Forms.IAnimatable self, string name, Xamarin.Forms.Animation animation, uint rate = 16, uint length = 250, Xamarin.Forms.Easing easing = null, Action&lt;double,bool&gt; finished = null, Func&lt;bool&gt; repeat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Animate(class Xamarin.Forms.IAnimatable self, string name, class Xamarin.Forms.Animation animation, unsigned int32 rate, unsigned int32 length, class Xamarin.Forms.Easing easing, class System.Action`2&lt;float64, bool&gt; finished, class System.Func`1&lt;bool&gt; repeat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+          <Parameter Name="animation" Type="Xamarin.Forms.Animation" />
+          <Parameter Name="rate" Type="System.UInt32" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+          <Parameter Name="finished" Type="System.Action&lt;System.Double,System.Boolean&gt;" />
+          <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="name">To be added.</param>
+          <param name="animation">To be added.</param>
+          <param name="rate">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <param name="finished">To be added.</param>
+          <param name="repeat">To be added.</param>
+          <summary>Sets the specified parameters and starts the animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,Xamarin.Forms.Animation,System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="Animate&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static void Animate&lt;T&gt; (this Xamarin.Forms.IAnimatable self, string name, Func&lt;double,T&gt; transform, Action&lt;T&gt; callback, uint rate = 16, uint length = 250, Xamarin.Forms.Easing easing = null, Action&lt;T,bool&gt; finished = null, Func&lt;bool&gt; repeat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Animate&lt;T&gt;(class Xamarin.Forms.IAnimatable self, string name, class System.Func`2&lt;float64, !!T&gt; transform, class System.Action`1&lt;!!T&gt; callback, unsigned int32 rate, unsigned int32 length, class Xamarin.Forms.Easing easing, class System.Action`2&lt;!!T, bool&gt; finished, class System.Func`1&lt;bool&gt; repeat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+          <Parameter Name="transform" Type="System.Func&lt;System.Double,T&gt;" />
+          <Parameter Name="callback" Type="System.Action&lt;T&gt;" />
+          <Parameter Name="rate" Type="System.UInt32" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+          <Parameter Name="finished" Type="System.Action&lt;T,System.Boolean&gt;" />
+          <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="self">To be added.</param>
+          <param name="name">To be added.</param>
+          <param name="transform">To be added.</param>
+          <param name="callback">To be added.</param>
+          <param name="rate">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <param name="finished">To be added.</param>
+          <param name="repeat">To be added.</param>
+          <summary>Sets the specified parameters and starts the animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate``1(Xamarin.Forms.IAnimatable,System.String,System.Func{System.Double,``0},System.Action{``0},System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{``0,System.Boolean},System.Func{System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="AnimateKinetic">
+        <MemberSignature Language="C#" Value="public static void AnimateKinetic (this Xamarin.Forms.IAnimatable self, string name, Func&lt;double,double,bool&gt; callback, double velocity, double drag, Action finished = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void AnimateKinetic(class Xamarin.Forms.IAnimatable self, string name, class System.Func`3&lt;float64, float64, bool&gt; callback, float64 velocity, float64 drag, class System.Action finished) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+          <Parameter Name="callback" Type="System.Func&lt;System.Double,System.Double,System.Boolean&gt;" />
+          <Parameter Name="velocity" Type="System.Double" />
+          <Parameter Name="drag" Type="System.Double" />
+          <Parameter Name="finished" Type="System.Action" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="name">To be added.</param>
+          <param name="callback">To be added.</param>
+          <param name="velocity">To be added.</param>
+          <param name="drag">To be added.</param>
+          <param name="finished">To be added.</param>
+          <summary>Sets the specified parameters and starts the kinetic animation.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AnimateKinetic(Xamarin.Forms.IAnimatable,System.String,System.Func{System.Double,System.Double,System.Boolean},System.Double,System.Double,System.Action)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IAnimatable" />
+      </Targets>
+      <Member MemberName="AnimationIsRunning">
+        <MemberSignature Language="C#" Value="public static bool AnimationIsRunning (this Xamarin.Forms.IAnimatable self, string handle);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool AnimationIsRunning(class Xamarin.Forms.IAnimatable self, string handle) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.IAnimatable" RefType="this" />
+          <Parameter Name="handle" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="handle">To be added.</param>
+          <summary>Returns a Boolean value that indicates whether or not the animation that is specified by <paramref name="handle" /> is running.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AnimationIsRunning(Xamarin.Forms.IAnimatable,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="SetBinding">
+        <MemberSignature Language="C#" Value="public static void SetBinding (this Xamarin.Forms.BindableObject self, Xamarin.Forms.BindableProperty targetProperty, string path, Xamarin.Forms.BindingMode mode = Xamarin.Forms.BindingMode.Default, Xamarin.Forms.IValueConverter converter = null, string stringFormat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetBinding(class Xamarin.Forms.BindableObject self, class Xamarin.Forms.BindableProperty targetProperty, string path, valuetype Xamarin.Forms.BindingMode mode, class Xamarin.Forms.IValueConverter converter, string stringFormat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.BindableObject" RefType="this" />
+          <Parameter Name="targetProperty" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="path" Type="System.String" />
+          <Parameter Name="mode" Type="Xamarin.Forms.BindingMode" />
+          <Parameter Name="converter" Type="Xamarin.Forms.IValueConverter" />
+          <Parameter Name="stringFormat" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="self">The <see cref="T:Xamarin.Forms.BindableObject" />.</param>
+          <param name="targetProperty">The BindableProperty on which to set a bindinge.</param>
+          <param name="path">A <see cref="T:System.String" /> indicating the property path to bind to.</param>
+          <param name="mode">The <see cref="T:Xamarin.Forms.BindingMode" /> for the binding. This parameter is optional. Default is <see cref="E:Xamarin.Forms.BindingMode.Default" />.</param>
+          <param name="converter">An <see cref="T:Xamarin.Forms.IValueConverter" /> for the binding. This parameter is optional. Default is <see langword="null" />.</param>
+          <param name="stringFormat">A string used as stringFormat for the binding. This parameter is optional. Default is <see langword="null" />.</param>
+          <summary>Creates and applies a binding to a property.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.BindableObjectExtensions" Member="M:Xamarin.Forms.BindableObjectExtensions.SetBinding(Xamarin.Forms.BindableObject,Xamarin.Forms.BindableProperty,System.String,Xamarin.Forms.BindingMode,Xamarin.Forms.IValueConverter,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="SetBinding&lt;TSource&gt;">
+        <MemberSignature Language="C#" Value="public static void SetBinding&lt;TSource&gt; (this Xamarin.Forms.BindableObject self, Xamarin.Forms.BindableProperty targetProperty, System.Linq.Expressions.Expression&lt;Func&lt;TSource,object&gt;&gt; sourceProperty, Xamarin.Forms.BindingMode mode = Xamarin.Forms.BindingMode.Default, Xamarin.Forms.IValueConverter converter = null, string stringFormat = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetBinding&lt;TSource&gt;(class Xamarin.Forms.BindableObject self, class Xamarin.Forms.BindableProperty targetProperty, class System.Linq.Expressions.Expression`1&lt;class System.Func`2&lt;!!TSource, object&gt;&gt; sourceProperty, valuetype Xamarin.Forms.BindingMode mode, class Xamarin.Forms.IValueConverter converter, string stringFormat) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TSource" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.BindableObject" RefType="this" />
+          <Parameter Name="targetProperty" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="sourceProperty" Type="System.Linq.Expressions.Expression&lt;System.Func&lt;TSource,System.Object&gt;&gt;" />
+          <Parameter Name="mode" Type="Xamarin.Forms.BindingMode" />
+          <Parameter Name="converter" Type="Xamarin.Forms.IValueConverter" />
+          <Parameter Name="stringFormat" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TSource">The source type.</typeparam>
+          <param name="self">The BindableObject.</param>
+          <param name="targetProperty">The BindableProperty to bind to</param>
+          <param name="sourceProperty">An expression used to retrieve the source path.</param>
+          <param name="mode">The BindingMode for the binding. This parameter is optional. Default is <see cref="E:Xamarin.Forms.BindingMode.Default" />.</param>
+          <param name="converter">An IValueConverter for the binding. This parameter is optional. Default is <see langword="null" />.</param>
+          <param name="stringFormat">A string used as stringFormat for the binding. This parameter is optional. Default is <see langword="null" />.</param>
+          <summary>Creates and applies a binding from an expression.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.BindableObjectExtensions" Member="M:Xamarin.Forms.BindableObjectExtensions.SetBinding``1(Xamarin.Forms.BindableObject,Xamarin.Forms.BindableProperty,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},Xamarin.Forms.BindingMode,Xamarin.Forms.IValueConverter,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.Element" />
+      </Targets>
+      <Member MemberName="FindByName&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static T FindByName&lt;T&gt; (this Xamarin.Forms.Element element, string name);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!T FindByName&lt;T&gt;(class Xamarin.Forms.Element element, string name) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>T</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="element" Type="Xamarin.Forms.Element" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="element">To be added.</param>
+          <param name="name">To be added.</param>
+          <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="T" /> in the scope that includes <paramref name="element" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.NameScopeExtensions" Member="M:Xamarin.Forms.NameScopeExtensions.FindByName``1(Xamarin.Forms.Element,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IList`1" />
+      </Targets>
+      <Member MemberName="Add">
+        <MemberSignature Language="C#" Value="public static void Add (this System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt; setters, Xamarin.Forms.BindableProperty property, object value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Add(class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Setter&gt; setters, class Xamarin.Forms.BindableProperty property, object value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="setters" Type="System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt;" RefType="this" />
+          <Parameter Name="property" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="value" Type="System.Object" />
+        </Parameters>
+        <Docs>
+          <param name="setters">To be added.</param>
+          <param name="property">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>Add a Setter with a value to the IList&lt;Setter&gt;</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.Add(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,System.Object)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IList`1" />
+      </Targets>
+      <Member MemberName="AddBinding">
+        <MemberSignature Language="C#" Value="public static void AddBinding (this System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt; setters, Xamarin.Forms.BindableProperty property, Xamarin.Forms.Binding binding);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void AddBinding(class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Setter&gt; setters, class Xamarin.Forms.BindableProperty property, class Xamarin.Forms.Binding binding) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="setters" Type="System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt;" RefType="this" />
+          <Parameter Name="property" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="binding" Type="Xamarin.Forms.Binding" />
+        </Parameters>
+        <Docs>
+          <param name="setters">To be added.</param>
+          <param name="property">To be added.</param>
+          <param name="binding">To be added.</param>
+          <summary>Add a Setter with a Binding to the IList&lt;Setter&gt;</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.AddBinding(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,Xamarin.Forms.Binding)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IList`1" />
+      </Targets>
+      <Member MemberName="AddDynamicResource">
+        <MemberSignature Language="C#" Value="public static void AddDynamicResource (this System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt; setters, Xamarin.Forms.BindableProperty property, string key);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void AddDynamicResource(class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Setter&gt; setters, class Xamarin.Forms.BindableProperty property, string key) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="setters" Type="System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt;" RefType="this" />
+          <Parameter Name="property" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="key" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="setters">To be added.</param>
+          <param name="property">To be added.</param>
+          <param name="key">To be added.</param>
+          <summary>Add a Setter with a DynamicResource to the IList&lt;Setter&gt;</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.AddDynamicResource(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.DataTemplate" />
+      </Targets>
+      <Member MemberName="SetBinding">
+        <MemberSignature Language="C#" Value="public static void SetBinding (this Xamarin.Forms.DataTemplate self, Xamarin.Forms.BindableProperty targetProperty, string path);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetBinding(class Xamarin.Forms.DataTemplate self, class Xamarin.Forms.BindableProperty targetProperty, string path) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.DataTemplate" RefType="this" />
+          <Parameter Name="targetProperty" Type="Xamarin.Forms.BindableProperty" />
+          <Parameter Name="path" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="targetProperty">To be added.</param>
+          <param name="path">To be added.</param>
+          <summary>Binds the <paramref name="self" /> object's <paramref name="targetProperty" /> to a new <see cref="T:Xamarin.Forms.Binding" /> instance that was created with <paramref name="path" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.TemplateExtensions" Member="M:Xamarin.Forms.TemplateExtensions.SetBinding(Xamarin.Forms.DataTemplate,Xamarin.Forms.BindableProperty,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="FadeTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; FadeTo (this Xamarin.Forms.VisualElement view, double opacity, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; FadeTo(class Xamarin.Forms.VisualElement view, float64 opacity, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="opacity" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="opacity">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name="length" />, and <paramref name="easing" /> parameters.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.FadeTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="LayoutTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; LayoutTo (this Xamarin.Forms.VisualElement view, Xamarin.Forms.Rectangle bounds, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; LayoutTo(class Xamarin.Forms.VisualElement view, valuetype Xamarin.Forms.Rectangle bounds, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="bounds" Type="Xamarin.Forms.Rectangle" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="bounds">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that eases the bounds of the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by the <paramref name="view" /> to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.LayoutTo(Xamarin.Forms.VisualElement,Xamarin.Forms.Rectangle,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="RelRotateTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; RelRotateTo (this Xamarin.Forms.VisualElement view, double drotation, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; RelRotateTo(class Xamarin.Forms.VisualElement view, float64 drotation, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="drotation" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="drotation">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Rotates the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RelRotateTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="RelScaleTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; RelScaleTo (this Xamarin.Forms.VisualElement view, double dscale, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; RelScaleTo(class Xamarin.Forms.VisualElement view, float64 dscale, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="dscale" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="dscale">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current scale to <paramref name="dscale" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RelScaleTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="RotateTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; RotateTo (this Xamarin.Forms.VisualElement view, double rotation, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; RotateTo(class Xamarin.Forms.VisualElement view, float64 rotation, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="rotation" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="rotation">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that performs the rotation that is described by the <paramref name="rotation" />, <paramref name="length" />, and <paramref name="easing" /> parameters..</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="RotateXTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; RotateXTo (this Xamarin.Forms.VisualElement view, double rotation, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; RotateXTo(class Xamarin.Forms.VisualElement view, float64 rotation, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="rotation" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="rotation">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that skews the Y axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateXTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="RotateYTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; RotateYTo (this Xamarin.Forms.VisualElement view, double rotation, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; RotateYTo(class Xamarin.Forms.VisualElement view, float64 rotation, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="rotation" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="rotation">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that skews the X axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateYTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="ScaleTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; ScaleTo (this Xamarin.Forms.VisualElement view, double scale, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; ScaleTo(class Xamarin.Forms.VisualElement view, float64 scale, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="scale" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">To be added.</param>
+          <param name="scale">To be added.</param>
+          <param name="length">To be added.</param>
+          <param name="easing">To be added.</param>
+          <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.ScaleTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.VisualElement" />
+      </Targets>
+      <Member MemberName="TranslateTo">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;bool&gt; TranslateTo (this Xamarin.Forms.VisualElement view, double x, double y, uint length = 250, Xamarin.Forms.Easing easing = null);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;bool&gt; TranslateTo(class Xamarin.Forms.VisualElement view, float64 x, float64 y, unsigned int32 length, class Xamarin.Forms.Easing easing) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task&lt;System.Boolean&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="view" Type="Xamarin.Forms.VisualElement" RefType="this" />
+          <Parameter Name="x" Type="System.Double" />
+          <Parameter Name="y" Type="System.Double" />
+          <Parameter Name="length" Type="System.UInt32" />
+          <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
+        </Parameters>
+        <Docs>
+          <param name="view">The view to tanslate.</param>
+          <param name="x">The x component of the final translation vector.</param>
+          <param name="y">The y component of the final translation vector.</param>
+          <param name="length">The duration of the animation in milliseconds.</param>
+          <param name="easing">The easing of the animation.</param>
+          <summary>Animates an elements TranslationX and TranslationY properties from their current values to the new values.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.TranslateTo(Xamarin.Forms.VisualElement,System.Double,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
+      </Member>
+    </ExtensionMethod>
+  </ExtensionMethods>
+</Overview>

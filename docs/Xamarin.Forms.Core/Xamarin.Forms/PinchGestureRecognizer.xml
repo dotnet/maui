@@ -1,0 +1,49 @@
+<Type Name="PinchGestureRecognizer" FullName="Xamarin.Forms.PinchGestureRecognizer">
+  <TypeSignature Language="C#" Value="public sealed class PinchGestureRecognizer : Xamarin.Forms.GestureRecognizer" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit PinchGestureRecognizer extends Xamarin.Forms.GestureRecognizer" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.GestureRecognizer</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Recognizer for pinch gestures.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public PinchGestureRecognizer ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Constructs a new pinch gesture recognizer.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PinchUpdated">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.PinchGestureUpdatedEventArgs&gt; PinchUpdated;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.PinchGestureUpdatedEventArgs&gt; PinchUpdated" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.PinchGestureUpdatedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is raised when a pinch gesture updates.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,0 +1,319 @@
+<Type Name="DatePicker" FullName="Xamarin.Forms.DatePicker">
+  <TypeSignature Language="C#" Value="public class DatePicker : Xamarin.Forms.View" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit DatePicker extends Xamarin.Forms.View" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._DatePickerRenderer))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>A <see cref="T:Xamarin.Forms.View" /> that allows date picking.</summary>
+    <remarks>
+      <para>The visual representation of a DatePicker is very similar to the one of <see cref="T:Xamarin.Forms.Entry" />, except that a special control for picking a date appears in place of a keyboard.</para>
+      <para>
+        <img href="DatePicker.TripleScreenShot.png" />
+      </para>
+      <para>The following example shows a basic use:</para>
+      <example>
+        <code lang="C#"><![CDATA[
+DatePicker datePicker = new DatePicker
+    {
+        Format = "D",
+        VerticalOptions = LayoutOptions.CenterAndExpand
+    };
+
+]]></code>
+      </example>
+      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.DatePicker" /> class:</para>
+      <list type="table">
+        <listheader>
+          <term>Property</term>
+          <description>Value</description>
+        </listheader>
+        <item>
+          <term>Format</term>
+          <description>
+            <para>A string that specifies the display format in the control of the chosen date.</para>
+          </description>
+        </item>
+        <item>
+          <term>Date</term>
+          <description>
+            <para>An <c>x:FactoryMethod</c> call to the <see cref="M:System.DateTime.Parse" /> method, or a markup extension call to a method that produces a <see cref="T:System.DateTime" /> object. See below.</para>
+          </description>
+        </item>
+        <item>
+          <term>MinimumDate</term>
+          <description>
+            <para>An <c>x:FactoryMethod</c> call to the <see cref="M:System.DateTime.Parse" /> method, or a markup extension call to a method that produces a <see cref="T:System.DateTime" /> object. See below.</para>
+          </description>
+        </item>
+        <item>
+          <term>MaximumDate</term>
+          <description>
+            <para>An <c>x:FactoryMethod</c> call to the <see cref="M:System.DateTime.Parse" /> method, or a markup extension call to a method that produces a <see cref="T:System.DateTime" /> object. See below.</para>
+          </description>
+        </item>
+      </list>
+      <example>
+        <para>The example below creates a working <see cref="T:Xamarin.Forms.DatePicker" /> that displays the current date and allows the user to select a date between the specified ranges. The value for the <see cref="P:Xamarin.Forms.DatePicker.Date" /> property is specified with the <c>x:Static</c> markup extension, and the <see cref="P:Xamarin.Forms.DatePicker.MinimumDate" /> and <see cref="P:Xamarin.Forms.DatePicker.MaximumDate" /> properties are specified by calling the <see cref="M:System.DateTime.Parse" /> method with the <c>x:FactoryMethod</c> and <x>x:Arguments</x> tags. <block type="note">The example below requires a namespace declaration in the root <c>ContentPage</c> or <c>ContentView</c> tags. In particular, <c>xmlns:sys="clr-namespace:System;assembly=mscorlib"</c> must appear in the attribute list for the root element, so that the XAML parser can resolve the name, <c>sys:DateTime</c>.</block></para>
+        <code lang="XAML"><![CDATA[<StackLayout>
+      <DatePicker VerticalOptions="CenterAndExpand" Date="{x:Static sys:DateTime.Now}">
+         <DatePicker.Format>yyyy-MM-dd</DatePicker.Format>
+         <DatePicker.MinimumDate>
+            <sys:DateTime x:FactoryMethod="Parse">
+               <x:Arguments>
+                  <x:String>Jan 1 2000</x:String>
+               </x:Arguments>
+            </sys:DateTime>
+         </DatePicker.MinimumDate>
+         <DatePicker.MaximumDate>
+            <sys:DateTime x:FactoryMethod="Parse">
+               <x:Arguments>
+                  <x:String>Dec 31 2050</x:String>
+               </x:Arguments>
+            </sys:DateTime>
+         </DatePicker.MaximumDate>
+      </DatePicker>
+   </StackLayout>]]></code>
+      </example>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public DatePicker ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Initializes a new instance of the DatePicker class.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Date">
+      <MemberSignature Language="C#" Value="public DateTime Date { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTime Date" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the displayed date. This is a bindable property.</summary>
+        <value>The <see cref="T:System.DateTime" /> displayed in the DatePicker.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DateProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty DateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty DateProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the Date bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DateSelected">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.DateChangedEventArgs&gt; DateSelected;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.DateChangedEventArgs&gt; DateSelected" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.DateChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>An event fired when the Date property changes.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Format">
+      <MemberSignature Language="C#" Value="public string Format { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Format" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The format of the date to display to the user. This is a dependency property.</summary>
+        <value>A valid date format.</value>
+        <remarks>Format string is the same is passed to DateTime.ToString (string format).</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FormatProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FormatProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FormatProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the Format dependency property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MaximumDate">
+      <MemberSignature Language="C#" Value="public DateTime MaximumDate { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTime MaximumDate" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The highest date selectable for this DatePicker. This is a bindable property.</summary>
+        <value>The maximum <see cref="T:System.DateTime" /> selectable for the DateEntry. Default December 31, 2100.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MaximumDateProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty MaximumDateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty MaximumDateProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the MaximumDate bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MinimumDate">
+      <MemberSignature Language="C#" Value="public DateTime MinimumDate { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTime MinimumDate" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The lowest date selectable for this DatePicker. This is a bindable property.</summary>
+        <value>The minimum <see cref="T:System.DateTime" /> selectable for the DateEntry. Default January 1, 1900.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MinimumDateProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty MinimumDateProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty MinimumDateProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the MinimumDate bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

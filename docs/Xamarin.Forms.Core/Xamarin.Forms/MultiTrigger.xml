@@ -1,0 +1,109 @@
+<Type Name="MultiTrigger" FullName="Xamarin.Forms.MultiTrigger">
+  <TypeSignature Language="C#" Value="public sealed class MultiTrigger : Xamarin.Forms.TriggerBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit MultiTrigger extends Xamarin.Forms.TriggerBase" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.TriggerBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.ContentProperty("Setters")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Class that represents a list of property and binding conditions, and a list of setters that are applied when all of the conditions in the list are met.</summary>
+    <remarks>
+      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.MultiTrigger" /> class:</para>
+      <list type="table">
+        <listheader>
+          <term>Property</term>
+          <description>Value</description>
+        </listheader>
+        <item>
+          <term>Conditions</term>
+          <description>
+            <para>A list of <c>PropertyCondition</c> and/or <c>BindingCondition</c> markup instances that specify the conditions that all must be met before all of the setters that are listed in <c>Setters</c> are applied.</para>
+          </description>
+        </item>
+        <item>
+          <term>Setters</term>
+          <description>
+            <para>A list of setters that are applied when all of the property conditions are met. Each <c>Setter</c> tag or tag pair in the list has a <c>Property</c> and <c>Value</c> that represents the assignments to perform when the condition is met.</para>
+          </description>
+        </item>
+      </list>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MultiTrigger (Type targetType);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class System.Type targetType) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="targetType" Type="System.Type">
+          <Attributes>
+            <Attribute>
+              <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.TypeTypeConverter))</AttributeName>
+            </Attribute>
+          </Attributes>
+        </Parameter>
+      </Parameters>
+      <Docs>
+        <param name="targetType">To be added.</param>
+        <summary>Initializes a new <see cref="T:Xamarin.Forms.MultiTrigger" /> instance.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Conditions">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Xamarin.Forms.Condition&gt; Conditions { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Condition&gt; Conditions" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.Condition&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the list of conditions that must be satisfied in ordeer for the setters in the <see cref="P:Xamarin.Forms.MultiTrigger.Setters" /> list to be invoked.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Setters">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt; Setters { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Setter&gt; Setters" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.Setter&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the list of <see cref="T:Xamarin.Forms.Setter" /> objects that will be applied when the list of conditions in the <see cref="P:Xamarin.Forms.MultiTrigger.Conditions" /> property are all met.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

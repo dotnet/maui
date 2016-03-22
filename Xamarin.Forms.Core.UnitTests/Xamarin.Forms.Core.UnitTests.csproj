@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{00259593-A283-47A5-ACB7-9C3819B16364}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xamarin.Forms.Core.UnitTests</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Core.UnitTests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Turkey\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TURKEY</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnimatableKeyTests.cs" />
+    <Compile Include="BaseTestFixture.cs" />
+    <Compile Include="AbsoluteLayoutTests.cs" />
+    <Compile Include="BindableObjectExtensionTests.cs" />
+    <Compile Include="BindableObjectUnitTests.cs" />
+    <Compile Include="BindablePropertyUnitTests.cs" />
+    <Compile Include="BindingBaseUnitTests.cs" />
+    <Compile Include="BindingExpressionTests.cs" />
+    <Compile Include="BindingTests.cs" />
+    <Compile Include="BindingTypeConverterTests.cs" />
+    <Compile Include="BindingUnitTests.cs" />
+    <Compile Include="ButtonUnitTest.cs" />
+    <Compile Include="CarouselPageTests.cs" />
+    <Compile Include="CellTests.cs" />
+    <Compile Include="ColorUnitTests.cs" />
+    <Compile Include="CommandSourceTests.cs" />
+    <Compile Include="CommandTests.cs" />
+    <Compile Include="ContentFormUnitTests.cs" />
+    <Compile Include="ContraintTypeConverterTests.cs" />
+    <Compile Include="ControlTemplateTests.cs" />
+    <Compile Include="DataTemplateSelectorTests.cs" />
+    <Compile Include="DatePickerUnitTest.cs" />
+    <Compile Include="DependencyServiceTests.cs" />
+    <Compile Include="DistanceTests.cs" />
+    <Compile Include="DynamicBindingContextTests.cs" />
+    <Compile Include="EasingTests.cs" />
+    <Compile Include="EffectTests.cs" />
+    <Compile Include="ElementTests.cs" />
+    <Compile Include="EntryCellTests.cs" />
+    <Compile Include="EntryUnitTests.cs" />
+    <Compile Include="FluentTests.cs" />
+    <Compile Include="FontUnitTests.cs" />
+    <Compile Include="FormattedStringTests.cs" />
+    <Compile Include="FrameUnitTests.cs" />
+    <Compile Include="GeocoderUnitTests.cs" />
+    <Compile Include="GroupViewUnitTests.cs" />
+    <Compile Include="ImageTests.cs" />
+    <Compile Include="KeyboardTests.cs" />
+    <Compile Include="LabelTests.cs" />
+    <Compile Include="ListProxyTests.cs" />
+    <Compile Include="ListViewTests.cs" />
+    <Compile Include="MapSpanTests.cs" />
+    <Compile Include="MapTests.cs" />
+    <Compile Include="MarginTests.cs" />
+    <Compile Include="MasterDetailFormUnitTests.cs" />
+    <Compile Include="MenuItemTests.cs" />
+    <Compile Include="MessagingCenterTests.cs" />
+    <Compile Include="MockViewModel.cs" />
+    <Compile Include="MotionTests.cs" />
+    <Compile Include="MultiPageTests.cs" />
+    <Compile Include="NavigationMenuUnitTests.cs" />
+    <Compile Include="NavigationModelTests.cs" />
+    <Compile Include="NavigationProxyTests.cs" />
+    <Compile Include="NavigationUnitTest.cs" />
+    <Compile Include="NotifyCollectionChangedEventArgsExtensionsTests.cs" />
+    <Compile Include="ObservableWrapperTests.cs" />
+    <Compile Include="OpenGLViewUnitTests.cs" />
+    <Compile Include="PageTests.cs" />
+    <Compile Include="PanGestureRecognizerUnitTests.cs" />
+    <Compile Include="PinTests.cs" />
+    <Compile Include="PointTests.cs" />
+    <Compile Include="PositionTests.cs" />
+    <Compile Include="ProgressBarTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RectangleUnitTests.cs" />
+    <Compile Include="RegistrarUnitTests.cs" />
+    <Compile Include="RelativeLayoutTests.cs" />
+    <Compile Include="ScrollViewUnitTests.cs" />
+    <Compile Include="SearchBarUnitTests.cs" />
+    <Compile Include="SizeTests.cs" />
+    <Compile Include="SliderUnitTests.cs" />
+    <Compile Include="StackLayoutUnitTests.cs" />
+    <Compile Include="StepperUnitTests.cs" />
+    <Compile Include="SwitchCellTests.cs" />
+    <Compile Include="SwitchUnitTests.cs" />
+    <Compile Include="TabbedFormUnitTests.cs" />
+    <Compile Include="TableModelTests.cs" />
+    <Compile Include="TableRootUnitTests.cs" />
+    <Compile Include="TableSectionTests.cs" />
+    <Compile Include="TableViewUnitTests.cs" />
+    <Compile Include="TapGestureRecognizerTests.cs" />
+    <Compile Include="TemplatedItemsListTests.cs" />
+    <Compile Include="TextCellTests.cs" />
+    <Compile Include="ThicknessTests.cs" />
+    <Compile Include="TimePickerUnitTest.cs" />
+    <Compile Include="ToolbarItemTests.cs" />
+    <Compile Include="ToolbarTrackerTests.cs" />
+    <Compile Include="ToolbarUnitTests.cs" />
+    <Compile Include="TypeUnitTests.cs" />
+    <Compile Include="ViewCellTests.cs" />
+    <Compile Include="ViewUnitTests.cs" />
+    <Compile Include="WebViewUnitTests.cs" />
+    <Compile Include="ImageSourceTests.cs" />
+    <Compile Include="DataTemplateTests.cs" />
+    <Compile Include="LayoutOptionsUnitTests.cs" />
+    <Compile Include="ContentViewUnitTest.cs" />
+    <Compile Include="MockPlatformServices.cs" />
+    <Compile Include="GridTests.cs" />
+    <Compile Include="UnitPlatform.cs" />
+    <Compile Include="GridLengthTypeConverterTests.cs" />
+    <Compile Include="BoxViewUnitTests.cs" />
+    <Compile Include="NotifiedPropertiesTests.cs" />
+    <Compile Include="PickerTests.cs" />
+    <Compile Include="EditorTests.cs" />
+    <Compile Include="UriImageSourceTests.cs" />
+    <Compile Include="ResourceDictionaryTests.cs" />
+    <Compile Include="BehaviorTest.cs" />
+    <Compile Include="EventTriggerTest.cs" />
+    <Compile Include="DynamicResourceTests.cs" />
+    <Compile Include="StyleTests.cs" />
+    <Compile Include="DataTriggerTests.cs" />
+    <Compile Include="MultiTriggerTests.cs" />
+    <Compile Include="TriggerTests.cs" />
+    <Compile Include="PinchGestureRecognizerTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+      <Project>{7D13BAC2-C6A4-416A-B07E-C169B199E52B}</Project>
+      <Name>Xamarin.Forms.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">
+      <Project>{67f9d3a8-f71e-4428-913f-c37ae82cdb24}</Project>
+      <Name>Xamarin.Forms.Platform</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Images\crimson.jpg">
+      <LogicalName>Images/crimson.jpg</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

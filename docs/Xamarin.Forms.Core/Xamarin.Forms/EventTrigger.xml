@@ -1,0 +1,142 @@
+<Type Name="EventTrigger" FullName="Xamarin.Forms.EventTrigger">
+  <TypeSignature Language="C#" Value="public sealed class EventTrigger : Xamarin.Forms.TriggerBase" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit EventTrigger extends Xamarin.Forms.TriggerBase" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>0.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.TriggerBase</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.ContentProperty("Actions")</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>Class that represents a triggering event and a list of <see cref="T:Xamarin.Forms.TriggerAction" /> objects that will be invoked when the event is raised.</summary>
+    <remarks>
+      <para>XAML for Xamarin.Forms supports the following property for the <see cref="T:Xamarin.Forms.EventTrigger" /> class:</para>
+      <list type="table">
+        <listheader>
+          <term>Property</term>
+          <description>Value</description>
+        </listheader>
+        <item>
+          <term>Event</term>
+          <description>
+            <para>The name of the event to which to respond.</para>
+          </description>
+        </item>
+        <item>
+          <term>Object name</term>
+          <description>
+            <para>The qualified name of a <see cref="T:Xamarin.Forms.TriggerAction`1" /> implementation that has been defined by the application developer. This object is instantiated and its <see cref="M:Xamarin.Forms.TriggerAction`1.Invoke" /> method is called when the triggering event is raised. Attributes on this tag set corresponding proptery values on the <see cref="T:Xamarin.Forms.TriggerAction`1" /> implementation</para> before the <see cref="M:Xamarin.Forms.TriggerAction`1.Invoke" /> method is called.</description>
+        </item>
+      </list>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EventTrigger ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.EventTrigger" /> instance.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Actions">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Xamarin.Forms.TriggerAction&gt; Actions { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.TriggerAction&gt; Actions" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.TriggerAction&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the list of <see cref="T:Xamarin.Forms.TriggerAction" /> objects that will be invoked when the event that is identified by the <see cref="P:Xamarin.Forms.EventTrigger.Event" /> property is raised.</summary>
+        <value>
+        </value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Event">
+      <MemberSignature Language="C#" Value="public string Event { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Event" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the name of the event that will cause the actions that are contained in the <see cref="P:Xamarin.Forms.EventTrigger.Actions" /> to be invoked.</summary>
+        <value>
+        </value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnAttached">
+      <MemberSignature Language="C#" Value="protected override void OnAttached ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void OnAttached() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Internal.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OnDetaching">
+      <MemberSignature Language="C#" Value="protected override void OnDetaching ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void OnDetaching() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>0.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Internal.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

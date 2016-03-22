@@ -1,0 +1,670 @@
+using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
+
+namespace Xamarin.Forms.Core.UnitTests
+{
+	[TestFixture]
+	public class StyleTests : BaseTestFixture
+	{
+		[Test]
+		public void ApplyUnapplyStyle ()
+		{
+			var style = new Style (typeof(VisualElement)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "foo" },
+					new Setter { Property = VisualElement.BackgroundColorProperty, Value = Color.Pink },
+				}
+			};
+
+			var label = new Label {
+				Style = style
+			};
+			Assert.AreEqual ("foo", label.Text);
+			Assert.AreEqual (Color.Pink, label.BackgroundColor);
+
+			label.Style = null;
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label.Text);
+			Assert.AreEqual (VisualElement.BackgroundColorProperty.DefaultValue, label.BackgroundColor);
+		}
+
+		[Test]
+		public void BindingAndDynamicResourcesInStyle ()
+		{
+			var style = new Style (typeof(VisualElement)) {
+				Setters = {
+					new Setter { Property = VisualElement.IsEnabledProperty, Value = false }
+				}
+			};
+			style.Setters.AddBinding (Label.TextProperty, new Binding ("foo"));
+			style.Setters.AddDynamicResource (VisualElement.BackgroundColorProperty, "qux");
+
+			var label = new Label {
+				Style = style
+			};
+
+			label.BindingContext = new {foo = "FOO"};
+			Assert.AreEqual ("FOO", label.Text);
+
+			label.Resources = new ResourceDictionary {
+				{"qux", Color.Pink}
+			};
+			Assert.AreEqual (Color.Pink, label.BackgroundColor);
+
+			label.Style = null;
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label.Text);
+			Assert.AreEqual (VisualElement.BackgroundColorProperty.DefaultValue, label.BackgroundColor);
+		}
+
+		[Test]
+		public void StyleCanBeAppliedMultipleTimes ()
+		{
+			var style = new Style (typeof(VisualElement)) {
+				Setters = {
+					new Setter{ Property = VisualElement.IsEnabledProperty, Value = false }
+				}
+			};
+			style.Setters.AddBinding (Label.TextProperty, new Binding ("foo"));
+			style.Setters.AddDynamicResource (VisualElement.BackgroundColorProperty, "qux");
+
+			var label0 = new Label {
+				Style = style
+			};
+			var label1 = new Label {
+				Style = style
+			};
+
+			label0.BindingContext = label1.BindingContext = new {foo = "FOO"};
+			label0.Resources = label1.Resources = new ResourceDictionary {
+				{"qux", Color.Pink}
+			};
+
+			Assert.AreEqual ("FOO", label0.Text);
+			Assert.AreEqual ("FOO", label1.Text);
+
+			Assert.AreEqual (Color.Pink, label0.BackgroundColor);
+			Assert.AreEqual (Color.Pink, label1.BackgroundColor);
+
+			label0.Style = label1.Style = null;
+
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label0.Text);
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label1.Text);
+			Assert.AreEqual (VisualElement.BackgroundColorProperty.DefaultValue, label0.BackgroundColor);
+			Assert.AreEqual (VisualElement.BackgroundColorProperty.DefaultValue, label1.BackgroundColor);
+		}
+
+		[Test]
+		public void BaseStyleIsAppliedUnapplied ()
+		{
+			var baseStyle = new Style (typeof(VisualElement)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "baseStyle" },
+				}
+			};
+			var style = new Style(typeof(Label)) {
+				BasedOn = baseStyle,
+			};
+
+			var label = new Label {
+				Style = style
+			};
+			Assert.AreEqual ("baseStyle", label.Text);
+
+			label.Style = null;
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label.Text);
+		}
+
+		[Test]
+		public void StyleOverrideBaseStyle ()
+		{
+			var baseStyle = new Style(typeof(VisualElement)) {
+				Setters = {
+					new Setter{Property= Label.TextProperty,Value= "baseStyle" },
+				}
+			};
+			var style = new Style(typeof(VisualElement)) {
+				BasedOn = baseStyle,
+				Setters = {
+					new Setter{Property= Label.TextProperty,Value= "style" },
+				}
+			};
+
+			var label = new Label {
+				Style = style
+			};
+			Assert.AreEqual ("style", label.Text);
+
+			label.Style = null;
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label.Text);
+		}
+
+		[Test]
+		public void AddImplicitStyleToResourceDictionary ()
+		{
+			var rd = new ResourceDictionary { 
+				new Style (typeof(Label)) { Setters = {
+						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+					}
+				},
+				{ "foo", "FOO" }, 
+				{"labelStyle", new Style (typeof(Label)) { Setters = {
+							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+						}
+					}
+				}
+			};
+
+			Assert.AreEqual (3, rd.Count);
+			Assert.Contains ("Xamarin.Forms.Label", (System.Collections.ICollection)rd.Keys);
+		}
+
+		[Test]
+		public void ImplicitStylesAreAppliedOnSettingRD ()
+		{
+			var rd = new ResourceDictionary { 
+				new Style (typeof(Label)) { Setters = {
+						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+					}
+				},
+				{ "foo", "FOO" }, 
+				{"labelStyle", new Style (typeof(Label)) { Setters = {
+							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+						}
+					}
+				}
+			};
+
+			var label = new Label ();
+			var layout = new StackLayout { Children = { label } };
+
+			Assert.AreEqual (label.TextColor, Label.TextColorProperty.DefaultValue);
+			layout.Resources = rd;
+			Assert.AreEqual (label.TextColor, Color.Pink);
+		}
+
+		[Test]
+		public void ImplicitStylesAreAppliedOnSettingParrent ()
+		{
+			var rd = new ResourceDictionary { 
+				new Style (typeof(Label)) { Setters = {
+						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+					}
+				},
+				{ "foo", "FOO" }, 
+				{"labelStyle", new Style (typeof(Label)) { Setters = {
+							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+						}
+					}
+				}
+			};
+
+			var label = new Label ();
+			var layout = new StackLayout ();
+			layout.Resources = rd;
+
+			Assert.AreEqual (label.TextColor, Label.TextColorProperty.DefaultValue);
+			layout.Children.Add (label);
+			Assert.AreEqual (label.TextColor, Color.Pink);
+		}
+
+		[Test]
+		public void ImplicitStylesOverridenByStyle ()
+		{
+			var rd = new ResourceDictionary { 
+				new Style (typeof(Label)) { Setters = {
+						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+					}
+				},
+				{ "foo", "FOO" }, 
+				{"labelStyle", new Style (typeof(Label)) { Setters = {
+							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+						}
+					}
+				}
+			};
+
+			var label = new Label ();
+			label.SetDynamicResource (VisualElement.StyleProperty, "labelStyle");
+			var layout = new StackLayout { Children = { label }, Resources = rd };
+
+			Assert.AreEqual (label.TextColor, Color.Purple);
+		}
+
+		[Test]
+		public void UnsettingStyleReApplyImplicit ()
+		{
+			var rd = new ResourceDictionary { 
+				new Style (typeof(Label)) { Setters = {
+						new Setter { Property = Label.TextColorProperty, Value = Color.Pink },
+					}
+				},
+				{ "foo", "FOO" }, 
+				{"labelStyle", new Style (typeof(Label)) { Setters = {
+							new Setter { Property = Label.TextColorProperty, Value = Color.Purple }
+						}
+					}
+				}
+			};
+
+			var label = new Label ();
+			label.SetDynamicResource (VisualElement.StyleProperty, "labelStyle");
+			var layout = new StackLayout { Children = { label }, Resources = rd };
+
+			Assert.AreEqual (label.TextColor, Color.Purple);
+			label.Style = null;
+			Assert.AreEqual (label.TextColor, Color.Pink);
+		}
+
+		[Test]
+		public void DynamicStyle ()
+		{
+			var baseStyle0 = new Style(typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextProperty, Value = "foo"},
+					new Setter {Property = Label.TextColorProperty, Value = Color.Pink}
+				}
+			};
+			var baseStyle1 = new Style(typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextProperty, Value = "bar"},
+					new Setter {Property = Label.TextColorProperty, Value = Color.Purple}
+				}
+			};
+			var style = new Style (typeof(Label)) {
+				BaseResourceKey = "basestyle",
+				Setters = {
+					new Setter { Property = Label.BackgroundColorProperty, Value = Color.Red },
+					new Setter { Property = Label.TextColorProperty, Value = Color.Red },
+				}
+			};
+
+			var label0 = new Label {
+				Style = style
+			};
+
+			Assert.AreEqual (Color.Red, label0.BackgroundColor);
+			Assert.AreEqual (Color.Red, label0.TextColor);
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label0.Text);
+
+			var layout0 = new StackLayout {
+				Resources = new ResourceDictionary {
+					{"basestyle", baseStyle0}
+				},
+				Children = {
+					label0
+				}
+			};
+
+			Assert.AreEqual (Color.Red, label0.BackgroundColor);
+			Assert.AreEqual (Color.Red, label0.TextColor);
+			Assert.AreEqual ("foo", label0.Text);
+
+			var label1 = new Label {
+				Style = style
+			};
+
+			Assert.AreEqual (Color.Red, label1.BackgroundColor);
+			Assert.AreEqual (Color.Red, label1.TextColor);
+			Assert.AreEqual (Label.TextProperty.DefaultValue, label1.Text);
+
+			var layout1 = new StackLayout {
+				Children = {
+					label1
+				}
+			};
+			layout1.Resources = new ResourceDictionary {
+				{"basestyle", baseStyle1}
+			};
+
+			Assert.AreEqual (Color.Red, label1.BackgroundColor);
+			Assert.AreEqual (Color.Red, label1.TextColor);
+			Assert.AreEqual ("bar", label1.Text);
+		}
+
+		[Test]
+		public void TestTriggersAndBehaviors ()
+		{
+			var behavior = new MockBehavior<Entry> ();
+			var style = new Style (typeof(Entry)) { 
+				Setters = {
+					new Setter {Property = Entry.TextProperty, Value = "foo"},
+				},
+				Triggers = {
+					new Trigger (typeof (VisualElement)) {Property = Entry.IsPasswordProperty, Value=true, Setters = {
+							new Setter {Property = VisualElement.ScaleProperty, Value = 2d},
+						}}
+				},
+				Behaviors = {
+					behavior,
+				}
+			};
+
+			var entry = new Entry { Style = style };
+			Assert.AreEqual ("foo", entry.Text);
+			Assert.AreEqual (1d, entry.Scale);
+
+			entry.IsPassword = true;
+			Assert.AreEqual (2d, entry.Scale);
+
+			Assert.True (behavior.attached);
+
+			entry.Style = null;
+
+			Assert.AreEqual (Entry.TextProperty.DefaultValue, entry.Text);
+			Assert.True (entry.IsPassword);
+			Assert.AreEqual (1d, entry.Scale);
+			Assert.True (behavior.detached);
+		}
+
+		[Test]
+		//Issue #2124
+		public void SetValueOverridesStyle ()
+		{
+			var style = new Style (typeof(Label)) {
+				Setters = {
+					new Setter {Property = Label.TextColorProperty, Value=Color.Black},
+				}
+			};
+
+			var label = new Label { TextColor = Color.White, Style = style };
+			Assert.AreEqual (Color.White, label.TextColor);
+		}
+
+		[Test]
+		//https://bugzilla.xamarin.com/show_bug.cgi?id=28556
+		public void TriggersAppliedAfterSetters ()
+		{
+			var style = new Style (typeof(Entry)) {
+				Setters = {
+					new Setter { Property = Entry.TextColorProperty, Value = Color.Yellow }
+				},
+				Triggers = {
+					new Trigger (typeof(Entry)) {
+						Property = VisualElement.IsEnabledProperty,
+						Value = false,
+						Setters = {
+							new Setter { Property = Entry.TextColorProperty, Value = Color.Red }
+						},
+					}
+				},
+			};
+
+			var entry = new Entry { IsEnabled = false, Style = style };
+			Assert.AreEqual (Color.Red, entry.TextColor);
+			entry.IsEnabled = true;
+			Assert.AreEqual (Color.Yellow, entry.TextColor);
+		}
+
+		[Test]
+		//https://bugzilla.xamarin.com/show_bug.cgi?id=31207
+		public async void StyleDontHoldStrongReferences ()
+		{
+			var style = new Style (typeof(Label));
+			var label = new Label ();
+			var tracker = new WeakReference (label);
+			label.Style = style;
+			label = null;
+
+			await Task.Delay (10);
+			GC.Collect ();
+
+			Assert.False (tracker.IsAlive);
+			Assert.NotNull (style);
+		}
+
+		class MyLabel : Label
+		{ 
+		}
+
+		class MyButton : Button
+		{
+		}
+
+		[Test]
+		public void ImplicitStylesNotAppliedToDerivedTypesByDefault ()
+		{
+			var style = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "Foo" }
+				}
+			};
+			var view = new ContentView {
+				Resources = new ResourceDictionary { style },
+				Content = new MyLabel (),
+			};
+
+			Assert.AreEqual (Label.TextProperty.DefaultValue, ((MyLabel)view.Content).Text);
+		}
+
+		[Test]
+		public void ImplicitStylesAreAppliedToDerivedIfSpecified ()
+		{
+			var style = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "Foo" }
+				},
+				ApplyToDerivedTypes = true
+			};
+			var view = new ContentView {
+				Resources = new ResourceDictionary { style },
+				Content = new MyLabel (),
+			};
+
+			Assert.AreEqual ("Foo", ((MyLabel)view.Content).Text);
+		}
+
+		[Test]
+		public void ClassStylesAreApplied ()
+		{ 
+			var classstyle = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "Foo" }
+				},
+				Class = "fooClass",
+			};
+			var style = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Color.Red }
+				},
+			};
+			var view = new ContentView {
+				Resources = new ResourceDictionary { classstyle },
+				Content = new Label { 
+					StyleClass = "fooClass",
+					Style = style
+				}
+			};
+			Assert.AreEqual ("Foo", ((Label)view.Content).Text);
+			Assert.AreEqual (Color.Red, ((Label)view.Content).TextColor);
+		}
+
+		[Test]
+		public void ImplicitStylesNotAppliedByDefaultIfAStyleExists ()
+		{ 
+			var implicitstyle = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "Foo" }
+				},
+			};
+			var style = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Color.Red }
+				},
+			};
+			var view = new ContentView {
+				Resources = new ResourceDictionary { implicitstyle },
+				Content = new Label { 
+					Style = style
+				}
+			};
+			Assert.AreEqual (Label.TextProperty.DefaultValue, ((Label)view.Content).Text);
+			Assert.AreEqual (Color.Red, ((Label)view.Content).TextColor);
+		}
+
+		[Test]
+		public void ImplicitStylesAppliedIfStyleCanCascade ()
+		{ 
+			var implicitstyle = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "Foo" }
+				},
+			};
+			var style = new Style (typeof (Label)) {
+				Setters = {
+					new Setter { Property = Label.TextColorProperty, Value = Color.Red },
+				},
+				CanCascade = true
+			};
+			var view = new ContentView {
+				Resources = new ResourceDictionary { implicitstyle },
+				Content = new Label { 
+					Style = style
+				}
+			};
+			Assert.AreEqual ("Foo", ((Label)view.Content).Text);
+			Assert.AreEqual (Color.Red, ((Label)view.Content).TextColor);
+		}
+
+		[Test]
+		public void MultipleStylesCanShareTheSameClassName ()
+		{
+			var buttonStyle = new Style (typeof(Button)) {
+				Setters = {
+					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = true,
+			};
+			var labelStyle = new Style (typeof(Label)) {
+				Setters = {
+					new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = false,
+			};
+
+
+			var button = new Button {
+				StyleClass = "pink",
+			};
+			var myButton = new MyButton {
+				StyleClass = "pink",
+			};
+
+			var label = new Label {
+				StyleClass = "pink"
+			};
+			var myLabel = new MyLabel {
+				StyleClass = "pink"
+			};
+
+
+			new StackLayout {
+				Resources = new ResourceDictionary {buttonStyle, labelStyle},
+				Children = {
+					button,
+					label,
+					myLabel,
+					myButton,
+				}
+			};
+
+			Assert.AreEqual (Color.Pink, button.TextColor);
+			Assert.AreEqual (Color.Default, button.BackgroundColor);
+
+			Assert.AreEqual (Color.Pink, myButton.TextColor);
+			Assert.AreEqual (Color.Default, myButton.BackgroundColor);
+
+			Assert.AreEqual (Color.Pink, label.BackgroundColor);
+			Assert.AreEqual (Color.Default, label.TextColor);
+
+			Assert.AreEqual (Color.Default, myLabel.BackgroundColor);
+			Assert.AreEqual (Color.Default, myLabel.TextColor);
+		}
+
+		[Test]
+		public void StyleClassAreCorrecltyMerged ()
+		{
+			var buttonStyle = new Style (typeof(Button)) {
+				Setters = {
+					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = true,
+			};
+			var labelStyle = new Style (typeof(Label)) {
+				Setters = {
+					new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = false,
+			};
+
+			var button = new Button {
+				StyleClass = "pink",
+			};
+			var label = new Label {
+				StyleClass = "pink"
+			};
+
+			var cv = new ContentView {
+				Resources = new ResourceDictionary {buttonStyle},
+				Content = new StackLayout {
+					Resources = new ResourceDictionary {labelStyle},
+					Children = {
+						button,
+						label,
+					}
+				}
+			};
+
+			Assert.AreEqual (Color.Pink, button.TextColor);
+			Assert.AreEqual (Color.Default, button.BackgroundColor);
+
+			Assert.AreEqual (Color.Pink, label.BackgroundColor);
+			Assert.AreEqual (Color.Default, label.TextColor);
+		}
+
+		[Test]
+		public void StyleClassAreCorrecltyMergedForAlreadyParentedPArents ()
+		{
+			var buttonStyle = new Style (typeof (Button)) {
+				Setters = {
+						new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+					},
+				Class = "pink",
+				ApplyToDerivedTypes = true,
+			};
+			var labelStyle = new Style (typeof (Label)) {
+				Setters = {
+						new Setter { Property = Button.BackgroundColorProperty, Value = Color.Pink },
+					},
+				Class = "pink",
+				ApplyToDerivedTypes = false,
+			};
+
+			var button = new Button {
+				StyleClass = "pink",
+			};
+			var label = new Label {
+				StyleClass = "pink"
+			};
+
+			var cv = new ContentView {
+				Resources = new ResourceDictionary { buttonStyle },
+				Content = new StackLayout {
+					Resources = new ResourceDictionary { labelStyle },
+				}
+			};
+
+			(cv.Content as StackLayout).Children.Add (button);
+			(cv.Content as StackLayout).Children.Add (label);
+
+			Assert.AreEqual (Color.Pink, button.TextColor);
+			Assert.AreEqual (Color.Default, button.BackgroundColor);
+
+			Assert.AreEqual (Color.Pink, label.BackgroundColor);
+			Assert.AreEqual (Color.Default, label.TextColor);
+		}
+	}
+}

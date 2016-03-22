@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+			 x:Class="Xamarin.Forms.Xaml.UnitTests.FactoryMethods">
+	<StackLayout>
+		<local:MockView x:Name="v0">
+			<local:MockView.Content>
+				<local:MockFactory/>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v1">
+			<local:MockView.Content>
+					<local:MockFactory>
+						<x:Arguments>
+							<x:String>foo</x:String>
+							<x:String>bar</x:String>
+						</x:Arguments>
+					</local:MockFactory>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v2">
+			<local:MockView.Content>
+				<local:MockFactory>
+					<x:Arguments>
+						<x:Int32>42</x:Int32>
+					</x:Arguments>
+				</local:MockFactory>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v3">
+			<local:MockView.Content>
+				<local:MockFactory x:FactoryMethod="ParameterlessFactory">
+				</local:MockFactory>
+				</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v4">
+			<local:MockView.Content>
+				<local:MockFactory x:FactoryMethod="Factory">
+					<x:Arguments>
+						<x:String>foo</x:String>
+						<x:Int32>42</x:Int32>
+					</x:Arguments>
+				</local:MockFactory>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v5">
+			<local:MockView.Content>
+				<local:MockFactory x:FactoryMethod="Factory">
+					<x:Arguments>
+						<x:Int32>42</x:Int32>
+						<x:String>foo</x:String>
+					</x:Arguments>
+				</local:MockFactory>
+			</local:MockView.Content>
+		</local:MockView>
+	</StackLayout>
+</ContentPage>

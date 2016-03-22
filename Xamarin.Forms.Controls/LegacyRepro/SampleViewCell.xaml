@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"           
+             x:Class="App2.SampleViewCell">
+    <ViewCell.View>
+        <Grid x:Name="OuterGrid" HeightRequest="75" HorizontalOptions="FillAndExpand" VerticalOptions="Start" BackgroundColor="Red"  Padding="20,0,30,0">
+            <!--<Grid.Resources>
+                <ResourceDictionary>
+                    <FormsLib:StringToColorConverter x:Key="StringToColorConverter" />
+                </ResourceDictionary>
+            </Grid.Resources>-->
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="Checklist_tapped" />
+            </Grid.GestureRecognizers>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="completedimg" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="0" Grid.Column="0" IsVisible="true"/>
+
+            <Label Text="{Binding CallOut}" TextColor="Yellow"  FontSize="17" FontFamily="Roboto"  XAlign="Start" HorizontalOptions="Start" VerticalOptions="Center" Grid.Row="0" Grid.Column="1" />
+            <Label Text="........................................................................................................................................................................." LineBreakMode ="NoWrap" TextColor="Yellow" HorizontalOptions="FillAndExpand" VerticalOptions="Center" Grid.Row="0" Grid.Column="2" />
+            <Label Text="{Binding Action}" FontSize="17" TextColor="Yellow" FontFamily="Roboto"  XAlign="End" HorizontalOptions="End" VerticalOptions="Center" Grid.Row="0" Grid.Column="3" />
+
+        </Grid>
+
+    </ViewCell.View>
+</ViewCell>

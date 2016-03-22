@@ -1,0 +1,69 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.FixedCreateCSharpManifestResourceName" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+		
+	<PropertyGroup>
+		<PrepareResourcesDependsOn>
+			XamlG;
+			$(PrepareResourcesDependsOn);
+		</PrepareResourcesDependsOn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			XamlC;
+		</CompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="UpdateDesignTimeXaml" Condition="'$(UseHostCompilerIfAvailable)' == 'true'" DependsOnTargets="PrepareResources; Compile"/>
+
+	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
+
+	<PropertyGroup>
+		<XamlGDependsOn>
+			_PreXamlG;
+			_CollectXamlFiles;
+			_CoreXamlG;
+		</XamlGDependsOn>
+	</PropertyGroup>
+
+	<Target Name="_PreXamlG">
+		<MakeDir Directories="$(IntermediateOutputPath)"/>
+	</Target>
+
+	<Target Name="_CollectXamlFiles">
+		<ItemGroup>
+			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"/>
+		</ItemGroup>
+		<FixedCreateCSharpManifestResourceName ResourceFiles="@(_XamlResources)" RootNamespace="$(RootNamespace)">
+			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="XamlFiles" />
+		</FixedCreateCSharpManifestResourceName>
+		<ItemGroup>
+			<XamlGFiles Include="@(XamlFiles->'$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)')"/>
+			<Compile Include="@(XamlGFiles)"/>
+			<FileWrites Include="@(XamlGFiles)"/>
+		</ItemGroup>
+	</Target>
+
+	<Target Name="_CoreXamlG"
+		Inputs = "@(XamlFiles)"
+		Outputs = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+		<XamlGTask
+			Source="@(XamlFiles)"
+			Language = "$(Language)"
+			AssemblyName = "$(AssemblyName)"
+			OutputFile = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+		</XamlGTask>
+	</Target>
+
+	<Target Name="XamlC">
+		<XamlCTask
+			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
+			ReferencePath = "@(ReferencePath)"
+			Verbosity = "2"
+			OptimizeIL = "true"
+			DebugSymbols = "$(DebugSymbols)" />
+	</Target>
+</Project>

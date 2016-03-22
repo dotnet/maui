@@ -1,0 +1,75 @@
+using System.ComponentModel;
+using AButton = Android.Widget.Button;
+using AView = Android.Views.View;
+
+namespace Xamarin.Forms.Platform.Android
+{
+	public class TabbedRenderer : VisualElementRenderer<TabbedPage>
+	{
+		public TabbedRenderer()
+		{
+			AutoPackage = false;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && Element != null && Element.Children.Count > 0)
+			{
+				RemoveAllViews();
+				foreach (Page pageToRemove in Element.Children)
+				{
+					IVisualElementRenderer pageRenderer = Platform.GetRenderer(pageToRemove);
+					if (pageRenderer != null)
+						pageRenderer.Dispose();
+					pageToRemove.ClearValue(Platform.RendererProperty);
+				}
+			}
+
+			base.Dispose(disposing);
+		}
+
+		protected override void OnAttachedToWindow()
+		{
+			base.OnAttachedToWindow();
+			Element.SendAppearing();
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			Element.SendDisappearing();
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<TabbedPage> e)
+		{
+			base.OnElementChanged(e);
+
+			TabbedPage tabs = e.NewElement;
+			if (tabs.CurrentPage != null)
+				SwitchContent(tabs.CurrentPage);
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+
+			if (e.PropertyName == "CurrentPage")
+				SwitchContent(Element.CurrentPage);
+		}
+
+		protected virtual void SwitchContent(Page view)
+		{
+			Context.HideKeyboard(this);
+
+			RemoveAllViews();
+
+			if (view == null)
+				return;
+
+			if (Platform.GetRenderer(view) == null)
+				Platform.SetRenderer(view, Platform.CreateRenderer(view));
+
+			AddView(Platform.GetRenderer(view).ViewGroup);
+		}
+	}
+}

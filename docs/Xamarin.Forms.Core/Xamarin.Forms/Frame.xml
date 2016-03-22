@@ -1,0 +1,181 @@
+<Type Name="Frame" FullName="Xamarin.Forms.Frame">
+  <TypeSignature Language="C#" Value="public class Frame : Xamarin.Forms.ContentView" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Frame extends Xamarin.Forms.ContentView" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.ContentView</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.ContentProperty("Content")</AttributeName>
+    </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._FrameRenderer))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>An element containing a single child, with some framing options.</summary>
+    <remarks>
+      <para>Frame have a default <see cref="P:Xamarin.Forms.Layout.Padding" /> of 20.</para>
+      <para>
+          The following example shows how to construct a new Frame with an Outline color.
+          </para>
+      <example>
+        <code lang="C#"><![CDATA[
+MainPage = new ContentPage () {
+    Content = new Frame {
+        Content = new Label { Text = "I'm Framous!" },
+        OutlineColor = Color.Silver,
+        VerticalOptions = LayoutOptions.CenterAndExpand,
+        HorizontalOptions = LayoutOptions.Center
+    }
+};
+          ]]></code>
+      </example>
+      <para>
+        <img href="Frame.TripleScreenShot.png" />
+      </para>
+      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.Frame" /> class:</para>
+      <list type="table">
+        <listheader>
+          <term>Property</term>
+          <description>Value</description>
+        </listheader>
+        <item>
+          <term>HasShadow</term>
+          <description>
+            <para>
+              <c>true</c> or <c>false</c>, to indicate whether to show a shadow effect where the platform supports it.</para>
+          </description>
+        </item>
+        <item>
+          <term>OutlineColor</term>
+          <description>
+            <para>A color specification, with or without the prefix, "Color". For example, "Color.Red" and "Red" both specify the color red.</para>
+          </description>
+        </item>
+      </list>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Frame ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Initializes a new instance of the Frame class.</summary>
+        <remarks>A Frame has a default <see cref="P:Xamarin.Forms.Layout.Padding" /> of 20.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasShadow">
+      <MemberSignature Language="C#" Value="public bool HasShadow { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool HasShadow" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets a flag indicating if the Frame has a shadow displayed. This is a bindable property.</summary>
+        <value>A <see cref="T:System.Boolean" /> indicating whether or not the Frame has a shadow. Default is <see langword="true" />.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasShadowProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty HasShadowProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty HasShadowProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the HasShadow bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OutlineColor">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color OutlineColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Color OutlineColor" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the color of the border of the Frame. This is a bindable property.</summary>
+        <value>A <see cref="T:Xamarin.Forms.Color" /> representing the border Color. Default is <see cref="P:Xamarin.Forms.Color.Default" />.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OutlineColorProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty OutlineColorProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty OutlineColorProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyVersion>1.1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.2.0.0</AssemblyVersion>
+        <AssemblyVersion>1.3.0.0</AssemblyVersion>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the OutlineColor bindable property.</summary>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

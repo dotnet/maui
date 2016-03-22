@@ -1,0 +1,104 @@
+<Type Name="IScrollViewController" FullName="Xamarin.Forms.IScrollViewController">
+  <TypeSignature Language="C#" Value="public interface IScrollViewController : Xamarin.Forms.ILayoutController" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IScrollViewController implements class Xamarin.Forms.ILayoutController" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <AssemblyVersion>1.5.0.0</AssemblyVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.ILayoutController</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Docs>
+    <summary>Interface for a scrollview controller.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="GetScrollPositionForElement">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Point GetScrollPositionForElement (Xamarin.Forms.VisualElement item, Xamarin.Forms.ScrollToPosition position);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance valuetype Xamarin.Forms.Point GetScrollPositionForElement(class Xamarin.Forms.VisualElement item, valuetype Xamarin.Forms.ScrollToPosition position) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="item" Type="Xamarin.Forms.VisualElement" />
+        <Parameter Name="position" Type="Xamarin.Forms.ScrollToPosition" />
+      </Parameters>
+      <Docs>
+        <param name="item">To be added.</param>
+        <param name="position">To be added.</param>
+        <summary>Calculates and returns a point that represents the scroll position that results in <paramref name="item" /> being displayed at <paramref name="position" /> in the scroll view.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ScrollToRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is raised when a request has been made to scroll the scroll view.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SendScrollFinished">
+      <MemberSignature Language="C#" Value="public void SendScrollFinished ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendScrollFinished() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Attempts to set the scroll task completion source state to <c>RanToCompletion</c>.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetScrolledPosition">
+      <MemberSignature Language="C#" Value="public void SetScrolledPosition (double x, double y);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SetScrolledPosition(float64 x, float64 y) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.4.0.0</AssemblyVersion>
+        <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="x" Type="System.Double" />
+        <Parameter Name="y" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="x">To be added.</param>
+        <param name="y">To be added.</param>
+        <summary>Sets the scroll position to (<paramref name="x" />,
+        <paramref name="y" />).</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

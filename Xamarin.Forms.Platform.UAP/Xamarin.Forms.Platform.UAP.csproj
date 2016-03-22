@@ -1,0 +1,450 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{00D8D049-FFAA-4759-8FC9-1ECA30777F72}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xamarin.Forms.Platform.UAP</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Phone\FormsPivot.cs">
+      <Link>FormsPivot.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
+      <Link>AlignmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CarouselViewRenderer.cs">
+      <Link>CarouselViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
+      <Link>FormsTextBox.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsComboBox.cs">
+      <Link>FormsComboBox.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsDatePicker.cs">
+      <Link>FormsDatePicker.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTimePicker.cs">
+      <Link>FormsTimePicker.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\HorizontalTextAlignmentConverter.cs">
+      <Link>HorizontalTextAlignmentConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ITitleProvider.cs">
+      <Link>ITitleProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IToolbarProvider.cs">
+      <Link>IToolbarProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IWrapperAware.cs">
+      <Link>IWrapperAware.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapper.cs">
+      <Link>NativeViewWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapperRenderer.cs">
+      <Link>NativeViewWrapperRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformEffect.cs">
+      <Link>PlatformEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewExtensions.cs">
+      <Link>ViewExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutExtensions.cs">
+      <Link>LayoutExtensions.cs</Link>
+    </Compile>
+    <Compile Include="IToolBarForegroundBinder.cs" />
+    <Compile Include="SearchBarRenderer.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextAlignmentToHorizontalAlignmentConverter.cs">
+      <Link>TextAlignmentToHorizontalAlignmentConverter.cs</Link>
+    </Compile>
+    <Compile Include="StepperControl.cs" />
+    <Compile Include="TabbedPageRenderer.cs" />
+    <Content Include="Properties\Xamarin.Forms.Platform.UAP.rd.xml" />
+    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\Forms.cs">
+      <Link>Forms.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPage.cs">
+      <Link>WindowsPage.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPlatform.cs">
+      <Link>WindowsPlatform.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPlatformServices.cs">
+      <Link>WindowsPlatformServices.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsResourcesProvider.cs">
+      <Link>WindowsResourcesProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ActivityIndicatorRenderer.cs">
+      <Link>ActivityIndicatorRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\AsyncValue.cs">
+      <Link>AsyncValue.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BackgroundTracker.cs">
+      <Link>BackgroundTracker.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BoolToVisibilityConverter.cs">
+      <Link>BoolToVisibilityConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BoxViewRenderer.cs">
+      <Link>BoxViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ButtonRenderer.cs">
+      <Link>ButtonRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CarouselPageRenderer.cs">
+      <Link>CarouselPageRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CaseConverter.cs">
+      <Link>CaseConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CellControl.cs">
+      <Link>CellControl.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CollapseWhenEmptyConverter.cs">
+      <Link>CollapseWhenEmptyConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ColorConverter.cs">
+      <Link>ColorConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ConvertExtensions.cs">
+      <Link>ConvertExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\DatePickerRenderer.cs">
+      <Link>DatePickerRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\DefaultRenderer.cs">
+      <Link>DefaultRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EditorRenderer.cs">
+      <Link>EditorRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EntryCellTextBox.cs">
+      <Link>EntryCellTextBox.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EntryRenderer.cs">
+      <Link>EntryRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ExportRendererAttribute.cs">
+      <Link>ExportRendererAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\Extensions.cs">
+      <Link>Extensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FileImageSourceHandler.cs">
+      <Link>FileImageSourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FileImageSourcePathConverter.cs">
+      <Link>FileImageSourcePathConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FontExtensions.cs">
+      <Link>FontExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsButton.cs">
+      <Link>FormsButton.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FrameRenderer.cs">
+      <Link>FrameRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FrameworkElementExtensions.cs">
+      <Link>FrameworkElementExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\HeightConverter.cs">
+      <Link>HeightConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ICellRenderer.cs">
+      <Link>ICellRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IImageSourceHandler.cs">
+      <Link>IImageSourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageConverter.cs">
+      <Link>ImageConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageLoaderSourceHandler.cs">
+      <Link>ImageLoaderSourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageRenderer.cs">
+      <Link>ImageRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IVisualElementRenderer.cs">
+      <Link>IVisualElementRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\KeyboardConverter.cs">
+      <Link>KeyboardConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\KeyboardExtensions.cs">
+      <Link>KeyboardExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LabelRenderer.cs">
+      <Link>LabelRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutRenderer.cs">
+      <Link>LayoutRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListGroupHeaderPresenter.cs">
+      <Link>ListGroupHeaderPresenter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListViewGroupStyleSelector.cs">
+      <Link>ListViewGroupStyleSelector.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListViewRenderer.cs">
+      <Link>ListViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\MasterBackgroundConverter.cs">
+      <Link>MasterBackgroundConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\MenuItemCommand.cs">
+      <Link>MenuItemCommand.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NavigationPageRenderer.cs">
+      <Link>NavigationPageRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageControl.xaml.cs">
+      <Link>PageControl.xaml.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageRenderer.cs">
+      <Link>PageRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageToRenderedElementConverter.cs">
+      <Link>PageToRenderedElementConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PickerRenderer.cs">
+      <Link>PickerRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\Platform.cs">
+      <Link>Platform.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ProgressBarRenderer.cs">
+      <Link>ProgressBarRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\RendererFactory.cs">
+      <Link>RendererFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ScrollViewRenderer.cs">
+      <Link>ScrollViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\SliderRenderer.cs">
+      <Link>SliderRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\StepperRenderer.cs">
+      <Link>StepperRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\StreamImagesourceHandler.cs">
+      <Link>StreamImagesourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\SwitchRenderer.cs">
+      <Link>SwitchRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TableViewRenderer.cs">
+      <Link>TableViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TaskExtensions.cs">
+      <Link>TaskExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextCellRenderer.cs">
+      <Link>TextCellRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TimePickerRenderer.cs">
+      <Link>TimePickerRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewRenderer.cs">
+      <Link>ViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewToRendererConverter.cs">
+      <Link>ViewToRendererConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementChangedEventArgs.cs">
+      <Link>VisualElementChangedEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementExtensions.cs">
+      <Link>VisualElementExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementPackager.cs">
+      <Link>VisualElementPackager.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementRenderer.cs">
+      <Link>VisualElementRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementTracker.cs">
+      <Link>VisualElementTracker.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WebViewRenderer.cs">
+      <Link>WebViewRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsBasePage.cs">
+      <Link>WindowsBasePage.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsBasePlatformServices.cs">
+      <Link>WindowsBasePlatformServices.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsDeviceInfo.cs">
+      <Link>WindowsDeviceInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsExpressionSearch.cs">
+      <Link>WindowsExpressionSearch.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsIsolatedStorage.cs">
+      <Link>WindowsIsolatedStorage.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsSerializer.cs">
+      <Link>WindowsSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsTicker.cs">
+      <Link>WindowsTicker.cs</Link>
+    </Compile>
+    <Compile Include="FormsCommandBar.cs" />
+    <Compile Include="MasterDetailControl.cs" />
+    <Compile Include="MasterDetailPageRenderer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="FormsTextBoxStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+      <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
+      <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsMobile, Version=10.0.10240.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
