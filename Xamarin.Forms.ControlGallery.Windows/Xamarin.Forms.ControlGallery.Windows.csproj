@@ -177,6 +177,7 @@
     <Content Include="Assets\SmallLogo.scale-100.png" />
     <Content Include="Assets\SplashScreen.scale-100.png" />
     <Content Include="Assets\StoreLogo.scale-100.png" />
+    <Content Include="coffee.png" />
     <Content Include="toolbar_close.png" />
   </ItemGroup>
   <ItemGroup>

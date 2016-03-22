@@ -110,6 +110,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="coffee.png" />
     <Content Include="toolbar_close.png" />
     <None Include="project.json" />
     <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">

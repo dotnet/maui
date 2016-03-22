@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -176,6 +177,29 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindingContext.Command.ChangeCanExecute ();
 
 			Assert.True (button.IsEnabled);
+		}
+
+		[Test]
+		public void ButtonContentLayoutTypeConverterTest()
+		{
+			var converter = new Button.ButtonContentTypeConverter();
+			Assert.True(converter.CanConvertFrom(typeof(string)));
+
+			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 10), converter.ConvertFromInvariantString("left,10"));
+			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Right, 10), converter.ConvertFromInvariantString("right"));
+			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Top, 20), converter.ConvertFromInvariantString("top,20"));
+			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 15), converter.ConvertFromInvariantString("15"));
+			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Bottom, 0), converter.ConvertFromInvariantString("Bottom, 0"));
+
+			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
+		}
+
+		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
+		{
+			var bcl = (Button.ButtonContentLayout)layout2;
+
+			Assert.AreEqual(layout1.Position, bcl.Position);
+			Assert.AreEqual(layout1.Spacing, bcl.Spacing);
 		}
 	}	
 }
