@@ -44,7 +44,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="CellTemplate">
-		<forms:CellControl HorizontalContentAlignment="Stretch" />
+		<forms:CellControl HorizontalContentAlignment="Stretch" Height="{Binding Cell.RenderHeight,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource HeightConverter}}" />
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableRoot">

@@ -175,7 +175,7 @@
 	</Style>
 
     <DataTemplate x:Key="CellTemplate">
-        <uwp:CellControl HorizontalContentAlignment="Stretch" />
+		<uwp:CellControl HorizontalContentAlignment="Stretch" Height="{Binding Cell.RenderHeight,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource HeightConverter}}" />
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableRoot">
