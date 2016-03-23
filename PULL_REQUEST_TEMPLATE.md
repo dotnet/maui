@@ -9,6 +9,7 @@ Describe your changes here.
 ### API Changes ###
 
 List all API changes here (or just put None), example:
+
 Added:
  - string ListView.GroupName { get; set; } //Bindable Property
  - int ListView.GroupId { get; set; } // Bindable Property
