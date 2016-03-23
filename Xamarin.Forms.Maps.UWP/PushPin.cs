@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Maps.WinRT
 			if (pin == null)
 				throw new ArgumentNullException();
 
-			ContentTemplate = Windows.UI.Xaml.Application.Current.Resources["pushPinTemplate"] as Windows.UI.Xaml.DataTemplate;
+			ContentTemplate = Windows.UI.Xaml.Application.Current.Resources["PushPinTemplate"] as Windows.UI.Xaml.DataTemplate;
 			DataContext = Content = _pin = pin;
 
 			UpdateLocation();
