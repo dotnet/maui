@@ -5,10 +5,10 @@
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.FixedCreateCSharpManifestResourceName" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 
 	<PropertyGroup>
-		<PrepareResourcesDependsOn>
+		<CoreCompileDependsOn>
 			XamlG;
-			$(PrepareResourcesDependsOn);
-		</PrepareResourcesDependsOn>
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -19,7 +19,7 @@
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="UpdateDesignTimeXaml" Condition="'$(UseHostCompilerIfAvailable)' == 'true'" DependsOnTargets="PrepareResources; Compile"/>
+	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
 
 	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
 
@@ -37,7 +37,7 @@
 
 	<Target Name="_CollectXamlFiles">
 		<ItemGroup>
-			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml'"/>
+			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"/>
 		</ItemGroup>
 		<FixedCreateCSharpManifestResourceName ResourceFiles="@(_XamlResources)" RootNamespace="$(RootNamespace)">
 			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="XamlFiles" />
