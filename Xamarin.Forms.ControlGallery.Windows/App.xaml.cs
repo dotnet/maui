@@ -37,7 +37,7 @@ namespace Xamarin.Forms.ControlGallery.Windows
 				rootFrame.NavigationFailed += OnNavigationFailed;
 
 				Forms.Init (e);
-				FormsMaps.Init (Controls.App.Secrets["Win8MapsAuthKey"]);
+				FormsMaps.Init (Controls.App.Config["Win8MapsAuthKey"]);
 
 				// Place the frame in the current Window
 				Window.Current.Content = rootFrame;

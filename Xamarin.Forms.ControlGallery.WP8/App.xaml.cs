@@ -26,9 +26,9 @@ namespace Xamarin.Forms.ControlGallery.WP8
 		public App()
 		{
 			if (!Debugger.IsAttached)
-				Insights.Initialize (Controls.App.Secrets["InsightsApiKey"]);
-
-			FormsMaps.Init (Controls.App.Secrets["WP8AppId"], Controls.App.Secrets["WP8AuthToken"]);
+				Insights.Initialize (Controls.App.InsightsApiKey);
+			
+			FormsMaps.Init (Controls.App.Config["WP8AppId"], Controls.App.Config["WP8AuthToken"]);
 			
 			// Global handler for uncaught exceptions.
 			UnhandledException += Application_UnhandledException;

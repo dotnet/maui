@@ -22,7 +22,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			// you can specify it here.
 			#if __UNIFIED__
 			if (!Debugger.IsAttached)
-				Insights.Initialize (App.Secrets["InsightsApiKey"]);
+				Insights.Initialize (App.InsightsApiKey);
 			#endif
 			UIApplication.Main (args, null, "AppDelegate");
 		}
