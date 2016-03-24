@@ -312,7 +312,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			base.OnCreate (bundle);
 
 			if (!Debugger.IsAttached)
-				Insights.Initialize (App.Secrets["InsightsApiKey"], ApplicationContext);
+				Insights.Initialize (App.InsightsApiKey, ApplicationContext);
 
 			Forms.Init (this, bundle);
 			FormsMaps.Init (this, bundle);

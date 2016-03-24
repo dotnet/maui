@@ -65,7 +65,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsPhone
 				rootFrame.CacheSize = 1;
 
 				Forms.Init (e);
-				FormsMaps.Init (Controls.App.Secrets["WinPhoneMapsAuthKey"]);
+				FormsMaps.Init (Controls.App.Config["WinPhoneMapsAuthKey"]);
 
 				if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
 				{

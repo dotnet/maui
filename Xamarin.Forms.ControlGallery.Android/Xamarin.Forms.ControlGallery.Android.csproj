@@ -257,4 +257,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Xamarin.Insights.1.11.4\build\MonoAndroid10\Xamarin.Insights.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Insights.1.11.4\build\MonoAndroid10\Xamarin.Insights.targets'))" />
   </Target>
+  <Target Name="BeforeBuild">
+    <CreateItem Include="Properties\MapsKey.cs.blank">
+      <Output TaskParameter="Include" ItemName="MapsKey" />
+    </CreateItem>
+    <Copy SourceFiles="@(MapsKey)" DestinationFiles="Properties\MapsKey.cs" Condition="!Exists('Properties\MapsKey.cs')" />
+  </Target>
 </Project>

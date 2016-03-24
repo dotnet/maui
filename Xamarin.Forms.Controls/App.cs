@@ -72,7 +72,21 @@ namespace Xamarin.Forms.Controls
 
 	public class App : Application
 	{
-		public string InsightsApiKey = Secrets["InsightsApiKey"];
+		static string s_insightsKey;
+		public static string InsightsApiKey
+		{
+			get
+			{
+				if (s_insightsKey == null)
+				{
+					var key = Config["InsightsApiKey"];
+					s_insightsKey = string.IsNullOrEmpty(key) ? Insights.DebugModeKey : key;
+				}
+
+				return s_insightsKey;
+			}
+		}
+
 		public const string AppName = "XamarinFormsControls";
 		public const string AppVersion = "1.4.3";
 		public static int IOSVersion = -1;
@@ -153,11 +167,11 @@ namespace Xamarin.Forms.Controls
 			return text;
 		}
 
-		public static void InitSecrets ()
+		public static void LoadConfig ()
 		{
-			secrets = new Dictionary<string, string> ();
+			s_config = new Dictionary<string, string> ();
 
-			string keyData = LoadResource ("secrets.txt").Result;
+			string keyData = LoadResource ("controlgallery.config").Result;
 			string[] entries = keyData.Split ("\n\r".ToCharArray (), StringSplitOptions.RemoveEmptyEntries);
 			foreach (string entry in entries) {
 				string[] parts = entry.Split (':');
@@ -165,21 +179,21 @@ namespace Xamarin.Forms.Controls
 					continue;
 				}
 
-				secrets.Add (parts[0].Trim (), parts[1].Trim ());
+				s_config.Add (parts[0].Trim (), parts[1].Trim ());
 			}
 		}
 
-		private static Dictionary<string, string> secrets;
+		static Dictionary<string, string> s_config;
 
-		public static Dictionary<string, string> Secrets
+		public static Dictionary<string, string> Config
 		{
 			get
 			{
-				if (secrets == null) {
-					InitSecrets ();
+				if (s_config == null) {
+					LoadConfig ();
 				}
 
-				return secrets;
+				return s_config;
 			}
 		} 
 	}
