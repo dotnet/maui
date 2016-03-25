@@ -20,7 +20,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>Defines an <see cref="T:System.Windows.Input.ICommand" /> implementation wrapping an <see cref="System.Action" />.</summary>
+    <summary>Defines an <see cref="T:System.Windows.Input.ICommand" /> implementation that wraps a <see cref="T:System.Action" />.</summary>
     <remarks>
       <para>
               The following example creates a new Command and set it to a button.

@@ -15,8 +15,8 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>Represents vertical and horizontal text alignement.</summary>
-    <remarks>This affects the way the text is diaplayed inside of its control bounds.</remarks>
+      <summary>Enumerates values that control text alignment.</summary>
+     <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Center">
@@ -36,7 +36,7 @@
         <ReturnType>Xamarin.Forms.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Center-aligned text.</summary>
+        <summary>Indicates that text will be aligned in the middle of either horizontally or vertically aligned text.</summary>
       </Docs>
     </Member>
     <Member MemberName="End">
@@ -56,7 +56,7 @@
         <ReturnType>Xamarin.Forms.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>End-flushed text. It means right-aligned (resp: bottom-aligned) for horizontal (resp vertical) alignemnt.</summary>
+        <summary>Indicates that text will be aligned to the right or bottom of horizontally or vertically aligned text, respectively.</summary>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -76,7 +76,7 @@
         <ReturnType>Xamarin.Forms.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Start-flushed text. It means left-aligned (resp: top-aligned) for horizontal (resp vertical) alignemnt.</summary>
+        <summary>Indicates that text will be aligned to the left or top of horizontally or vertically aligned text, respectively.</summary>
       </Docs>
     </Member>
   </Members>

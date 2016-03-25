@@ -29,8 +29,9 @@
         <list type="bullet"> 
               <item><term><c>Xamarin.Forms.Platform.Android.PlatformEffect</c>,</term></item>
               <item><term><c>Xamarin.Forms.Platform.iOS.PlatformEffect</c>,</term></item>
-              <item><term><c>Xamarin.Forms.Platform.UWP.PlatformEffect</c>, or</term></item>
-              <item><term><c>Xamarin.Forms.Platform.WinPhone.PlatformEffect</c></term></item>
+              <item><term><c>Xamarin.Forms.Platform.UWP.PlatformEffect</c></term></item>
+              <item><term><c>Xamarin.Forms.Platform.WinPhone.PlatformEffect</c>, or</term></item>
+<item><term><c>Xamarin.Forms.Platform.WinRT.PlatformEffect,</c></term></item>
             </list>
             classes to implement effects on the respective platforms.</para></remarks>
   </Docs>
