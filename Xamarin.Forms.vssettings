@@ -56,11 +56,12 @@
                 <PropertyValue name="Space_WithinSquares">0</PropertyValue>
                 <PropertyValue name="Space_BeforeLambdaArrow">1</PropertyValue>
                 <PropertyValue name="NewLines_Braces_AnonymousTypeInitializer">0</PropertyValue>
+                <PropertyValue name="NewLines_Braces_Property">1</PropertyValue>
                 <PropertyValue name="Space_WithinCastParentheses">0</PropertyValue>
                 <PropertyValue name="Space_AfterSemicolonsInForStatement">1</PropertyValue>
-                <PropertyValue name="Indent_CaseContents">0</PropertyValue>
+                <PropertyValue name="Indent_CaseContents">1</PropertyValue>
                 <PropertyValue name="Indent_FlushLabelsLeft">1</PropertyValue>
-                <PropertyValue name="Wrapping_PreserveSingleLine">1</PropertyValue>
+                <PropertyValue name="Wrapping_PreserveSingleLine">0</PropertyValue>
                 <PropertyValue name="Space_BetweenEmptySquares">0</PropertyValue>
                 <PropertyValue name="Space_BeforeOpenSquare">0</PropertyValue>
                 <PropertyValue name="Space_BeforeDot">0</PropertyValue>
