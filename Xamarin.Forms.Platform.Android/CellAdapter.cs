@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected void SetSelectedBackground(AView view, bool isContextTarget = false)
 		{
 			int attribute = isContextTarget ? global::Android.Resource.Attribute.ColorLongPressedHighlight : global::Android.Resource.Attribute.ColorActivatedHighlight;
-			using(var value = new TypedValue())
+			using (var value = new TypedValue())
 			{
 				if (_context.Theme.ResolveAttribute(attribute, value, true))
 					view.SetBackgroundResource(value.ResourceId);

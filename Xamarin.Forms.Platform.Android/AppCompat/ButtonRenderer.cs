@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					int id = GlobalResource.Attribute.ButtonTint;
 					unchecked
 					{
-						using(var value = new TypedValue())
+						using (var value = new TypedValue())
 						{
 							try
 							{

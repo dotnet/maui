@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var imageLoader = imagesource as UriImageSource;
 			if (imageLoader != null && imageLoader.Uri != null)
 			{
-				using(var streamImage = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
+				using (var streamImage = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
 				{
 					if (streamImage != null)
 						image = UIImage.LoadFromData(NSData.FromStream(streamImage), scale);

@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.iOS
 					MinimumLineSpacing = margin
 				}) { DataSource = new DataSource((NavigationMenu)Element), BackgroundColor = UIColor.White };
 
-			using(var navigationCellId = new NSString("NavigationCell"))
+			using (var navigationCellId = new NSString("NavigationCell"))
 				_collectionView.RegisterClassForCell(typeof(NavigationCell), navigationCellId);
 
 			SetNativeControl(_collectionView);

@@ -293,7 +293,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			FormsAppCompatActivity context = this;
 			int id = global::Android.Resource.Attribute.ColorPrimaryDark;
-			using(var value = new TypedValue())
+			using (var value = new TypedValue())
 			{
 				try
 				{

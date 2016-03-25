@@ -27,12 +27,12 @@ namespace Xamarin.Forms.Platform.Android
 			global::Android.Graphics.Color androidColor = defaultColor;
 
 			Context context = Forms.Context;
-			using(var value = new TypedValue())
+			using (var value = new TypedValue())
 			{
 				if (context.Theme.ResolveAttribute(style, value, true))
 				{
 					var styleattrs = new[] { global::Android.Resource.Attribute.TextSize, global::Android.Resource.Attribute.FontFamily, global::Android.Resource.Attribute.TextColor };
-					using(TypedArray array = context.ObtainStyledAttributes(value.ResourceId, styleattrs))
+					using (TypedArray array = context.ObtainStyledAttributes(value.ResourceId, styleattrs))
 					{
 						fontSize = context.FromPixels(array.GetDimensionPixelSize(0, -1));
 						fontFamily = array.GetString(1);

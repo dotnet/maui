@@ -101,7 +101,7 @@ namespace Xamarin.Forms.Platform.Android
 		Bitmap CreateBitmap(bool pressed, int width, int height)
 		{
 			Bitmap bitmap = Bitmap.CreateBitmap(width, height, Bitmap.Config.Argb8888);
-			using(var canvas = new Canvas(bitmap))
+			using (var canvas = new Canvas(bitmap))
 			{
 				DrawBackground(canvas, width, height, pressed);
 				DrawOutline(canvas, width, height);
@@ -129,8 +129,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (Button.BorderWidth <= 0)
 				return;
 
-			using(var paint = new Paint { AntiAlias = true })
-			using(var path = new Path())
+			using (var paint = new Paint { AntiAlias = true })
+			using (var path = new Path())
 			{
 				float borderWidth = Forms.Context.ToPixels(Button.BorderWidth);
 				float inset = borderWidth / 2;

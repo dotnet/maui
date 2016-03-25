@@ -238,8 +238,8 @@ namespace Xamarin.Forms
 
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 			{
-				using(var client = GetHttpClient())
-				using(var response = await client.GetAsync(uri, cancellationToken))
+				using (var client = GetHttpClient())
+				using (var response = await client.GetAsync(uri, cancellationToken))
 					return await response.Content.ReadAsStreamAsync();
 			}
 

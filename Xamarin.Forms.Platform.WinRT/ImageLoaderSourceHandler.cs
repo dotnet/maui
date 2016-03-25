@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				return null;
 			}
 
-			using(IRandomAccessStream stream = streamImage.AsRandomAccessStream())
+			using (IRandomAccessStream stream = streamImage.AsRandomAccessStream())
 			{
 				try
 				{

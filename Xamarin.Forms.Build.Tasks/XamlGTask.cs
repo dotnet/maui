@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Build.Tasks
 				initcomp.Statements.Add(assign);
 			}
 
-			using(var writer = new StreamWriter(outFile))
+			using (var writer = new StreamWriter(outFile))
 				Provider.GenerateCodeFromCompileUnit(ccu, writer, new CodeGeneratorOptions());
 		}
 
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Build.Tasks
 			string rootType, rootNs;
 			CodeTypeReference baseType;
 			IDictionary<string, CodeTypeReference> namesAndTypes;
-			using(StreamReader reader = File.OpenText(xamlFile))
+			using (StreamReader reader = File.OpenText(xamlFile))
 				ParseXaml(reader, out rootType, out rootNs, out baseType, out namesAndTypes);
 			GenerateCode(rootType, rootNs, baseType, namesAndTypes, outFile);
 		}

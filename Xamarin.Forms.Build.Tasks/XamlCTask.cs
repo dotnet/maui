@@ -301,7 +301,7 @@ namespace Xamarin.Forms.Build.Tasks
 						var filepath = Path.Combine(Path.GetDirectoryName(Assembly), typeDef.FullName + ".decompiled.cs");
 						Log(2, "   Decompiling {0} into {1}...", typeDef.FullName, filepath);
 						var decompilerContext = new DecompilerContext(module);
-						using(var writer = new StreamWriter(filepath))
+						using (var writer = new StreamWriter(filepath))
 						{
 							var output = new PlainTextOutput(writer);
 
@@ -358,7 +358,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
 		{
 			ILRootNode rootnode = null;
-			using(var reader = XmlReader.Create(stream))
+			using (var reader = XmlReader.Create(stream))
 			{
 				while (reader.Read())
 				{
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
-			using(var resourceStream = resource.GetResourceStream())
+			using (var resourceStream = resource.GetResourceStream())
 			{
 				var xmlDoc = new XmlDocument();
 				xmlDoc.Load(resourceStream);

@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			int attr = Resource.Attribute.actionBarSize;
 
 			int actionBarHeight;
-			using(var tv = new TypedValue())
+			using (var tv = new TypedValue())
 			{
 				actionBarHeight = 0;
 				if (Context.Theme.ResolveAttribute(attr, tv, true))

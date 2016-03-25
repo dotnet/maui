@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		async Task SaveToIsoStore(string fileName, string html)
 		{
 			IIsolatedStorageFile store = Device.PlatformServices.GetUserStoreForApplication();
-			using(Stream file = await store.OpenFileAsync(fileName, FileMode.CreateNew, FileAccess.Write).ConfigureAwait(false))
+			using (Stream file = await store.OpenFileAsync(fileName, FileMode.CreateNew, FileAccess.Write).ConfigureAwait(false))
 			{
 				byte[] bytes = Encoding.UTF8.GetBytes(html);
 				await file.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);

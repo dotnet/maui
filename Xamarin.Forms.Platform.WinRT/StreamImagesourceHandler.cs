@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			var streamsource = imagesource as StreamImageSource;
 			if (streamsource != null && streamsource.Stream != null)
 			{
-				using(Stream stream = await streamsource.GetStreamAsync(cancellationToken))
+				using (Stream stream = await streamsource.GetStreamAsync(cancellationToken))
 				{
 					if (stream == null)
 						return null;

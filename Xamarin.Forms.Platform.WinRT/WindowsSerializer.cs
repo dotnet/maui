@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			try
 			{
 				StorageFile file = await ApplicationData.Current.RoamingFolder.GetFileAsync(PropertyStoreFile).DontSync();
-				using(Stream stream = (await file.OpenReadAsync().DontSync()).AsStreamForRead())
+				using (Stream stream = (await file.OpenReadAsync().DontSync()).AsStreamForRead())
 				{
 					if (stream.Length == 0)
 						return new Dictionary<string, object>(4);
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		public async Task SerializePropertiesAsync(IDictionary<string, object> properties)
 		{
 			StorageFile file = await ApplicationData.Current.RoamingFolder.CreateFileAsync(PropertyStoreFile, CreationCollisionOption.ReplaceExisting).DontSync();
-			using(StorageStreamTransaction transaction = await file.OpenTransactedWriteAsync().DontSync())
+			using (StorageStreamTransaction transaction = await file.OpenTransactedWriteAsync().DontSync())
 			{
 				try
 				{

@@ -289,7 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (s_dividerHorizontalDarkId == int.MinValue)
 				{
-					using(var value = new TypedValue())
+					using (var value = new TypedValue())
 					{
 						int id = global::Android.Resource.Drawable.DividerHorizontalDark;
 						if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))

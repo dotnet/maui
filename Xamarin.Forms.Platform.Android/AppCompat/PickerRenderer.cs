@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void OnClick()
 		{
 			Picker model = Element;
-			using(var builder = new AlertDialog.Builder(Context))
+			using (var builder = new AlertDialog.Builder(Context))
 			{
 				builder.SetTitle(model.Title ?? "");
 				string[] items = model.Items.ToArray();

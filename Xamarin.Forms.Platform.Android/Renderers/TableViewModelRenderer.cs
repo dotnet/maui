@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.Android
 				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
 			else
 			{
-				using(var value = new TypedValue())
+				using (var value = new TypedValue())
 				{
 					int id = global::Android.Resource.Drawable.DividerHorizontalDark;
 					if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
