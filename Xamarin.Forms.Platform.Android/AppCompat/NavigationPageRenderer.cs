@@ -625,6 +625,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				});
 			}
 
+			Context.HideKeyboard(this);
+
 			// 200ms is how long the animations are, and they are "reversible" in the sense that starting another one slightly before it's done is fine
 
 			return tcs.Task;
