@@ -288,5 +288,18 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False (added);
 			Assert.False (removed);
 		}
+
+		[Test]
+		public void AddToSecondLayoutRemovesFromOriginal()
+		{
+			var child = new BoxView();
+			var layout1 = new NaiveLayout();
+			var layout2 = new NaiveLayout();
+
+			layout1.Children.Add(child);
+			layout2.Children.Add(child);
+
+			Assert.False(layout1.Children.Contains(child));
+		}
 	}
 }
