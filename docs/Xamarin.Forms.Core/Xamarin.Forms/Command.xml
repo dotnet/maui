@@ -116,7 +116,7 @@ var button = new Button {
         <param name="execute">An Action to execute when the Command is executed.</param>
         <param name="canExecute">A <see cref="T:System.Func&lt;bool&gt;" /> indicating if the Command can be executed.</param>
         <summary>Initializes a new instance of the Command class.</summary>
-        <remarks>Wehenever the value returned by canExecute has changed, a call to <see cref="M:Xamarin.QuickuI.Command.ChangeCanExecute" /> is required to trigger <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged" />.</remarks>
+        <remarks>Whenever the value returned by canExecute has changed, a call to <see cref="M:Xamarin.Forms.Core.Command.ChangeCanExecute" /> is required to trigger <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -140,7 +140,7 @@ var button = new Button {
         <param name="execute">An Action&lt;object&gt; to execute when the Command is executed.</param>
         <param name="canExecute">A <see cref="T:System.Func&lt;object,bool&gt;" /> indicating if the Command can be executed.</param>
         <summary>Initializes a new instance of the Command class.</summary>
-        <remarks>Wehenever the value returned by canExecute has changed, a call to <see cref="M:Xamarin.QuickuI.Command.ChangeCanExecute" /> is required to trigger <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged" />.</remarks>
+        <remarks>Whenever the value returned by canExecute has changed, a call to <see cref="M:Xamarin.Forms.Core.Command.ChangeCanExecute" /> is required to trigger <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged" />.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CanExecute">
