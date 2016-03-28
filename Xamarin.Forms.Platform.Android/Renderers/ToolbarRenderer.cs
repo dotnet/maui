@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 				else
 					view = new AButton(Context);
 
-				using(var param = new LinearLayout.LayoutParams(LayoutParams.WrapContent, (int)Context.ToPixels(48), 1))
+				using (var param = new LinearLayout.LayoutParams(LayoutParams.WrapContent, (int)Context.ToPixels(48), 1))
 					((LinearLayout)Control).AddView(view, param);
 			}
 		}

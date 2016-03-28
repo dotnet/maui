@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Xaml
 
 		public static void Load(BindableObject view, string xaml)
 		{
-			using(var reader = XmlReader.Create(new StringReader(xaml)))
+			using (var reader = XmlReader.Create(new StringReader(xaml)))
 			{
 				while (reader.Read())
 				{
@@ -167,8 +167,8 @@ namespace Xamarin.Forms.Xaml
 
 		static string ReadResourceAsXaml(Type type, Assembly assembly, string likelyTargetName, bool validate = false)
 		{
-			using(var stream = assembly.GetManifestResourceStream(likelyTargetName))
-			using(var reader = new StreamReader(stream))
+			using (var stream = assembly.GetManifestResourceStream(likelyTargetName))
+			using (var reader = new StreamReader(stream))
 			{
 				if (validate)
 				{

@@ -18,9 +18,9 @@ namespace Xamarin.Forms.Platform.iOS
 			// Make sure to use Internal
 			return Task.Run(() =>
 			{
-				using(var store = IsolatedStorageFile.GetUserStoreForApplication())
-				using(var stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.OpenOrCreate))
-				using(var reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
+				using (var store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (var stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.OpenOrCreate))
+				using (var reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
 				{
 					if (stream.Length == 0)
 						return null;
@@ -49,9 +49,9 @@ namespace Xamarin.Forms.Platform.iOS
 			return Task.Run(() =>
 			{
 				var success = false;
-				using(var store = IsolatedStorageFile.GetUserStoreForApplication())
-				using(var stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
-				using(var writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
+				using (var store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (var stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
+				using (var writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
 				{
 					try
 					{
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (!success)
 					return;
-				using(var store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (var store = IsolatedStorageFile.GetUserStoreForApplication())
 				{
 					try
 					{

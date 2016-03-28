@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 		{
-			using(var client = new HttpClient())
+			using (var client = new HttpClient())
 			{
 				HttpResponseMessage streamResponse = await client.GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
 				return await streamResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);

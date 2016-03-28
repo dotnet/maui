@@ -161,7 +161,7 @@ namespace Xamarin.Forms
 				CheckOrientationChanged(_formsActivity.Resources.Configuration.Orientation);
 				formsActivity.ConfigurationChanged += ConfigurationChanged;
 
-				using(DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
+				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
 				{
 					_scalingFactor = display.Density;
 					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
@@ -352,8 +352,8 @@ namespace Xamarin.Forms
 
 			public async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
 			{
-				using(var client = new HttpClient())
-				using(HttpResponseMessage response = await client.GetAsync(uri, cancellationToken))
+				using (var client = new HttpClient())
+				using (HttpResponseMessage response = await client.GetAsync(uri, cancellationToken))
 					return await response.Content.ReadAsStreamAsync();
 			}
 
@@ -366,8 +366,8 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					using(Looper my = Looper.MyLooper())
-					using(Looper main = Looper.MainLooper)
+					using (Looper my = Looper.MyLooper())
+					using (Looper main = Looper.MainLooper)
 						return my != main;
 				}
 			}
@@ -415,13 +415,13 @@ namespace Xamarin.Forms
 				val = 0;
 				try
 				{
-					using(var value = new TypedValue())
+					using (var value = new TypedValue())
 					{
 						if (Context.Theme.ResolveAttribute(appearance, value, true))
 						{
 							var textSizeAttr = new[] { Resource.Attribute.TextSize };
 							const int indexOfAttrTextSize = 0;
-							using(TypedArray array = Context.ObtainStyledAttributes(value.Data, textSizeAttr))
+							using (TypedArray array = Context.ObtainStyledAttributes(value.Data, textSizeAttr))
 							{
 								val = Context.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
 								return true;

@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 			_label.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItem);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };
-			using(layoutParams)
+			using (layoutParams)
 				AddView(_label, layoutParams);
 
 			EditText = new EntryCellEditText(context);
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android
 			EditText.BackButtonPressed += OnBackButtonPressed;
 			//editText.SetBackgroundDrawable (null);
 			layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.FillHorizontal | GravityFlags.Center };
-			using(layoutParams)
+			using (layoutParams)
 				AddView(EditText, layoutParams);
 		}
 

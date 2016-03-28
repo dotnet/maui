@@ -49,7 +49,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_layout.Orientation = Orientation.Vertical;
 
-			using(var layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.FillParent))
+			using (var layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.FillParent))
 				SetContentView(_layout, layoutParams);
 
 			if (_arguments.Destruction != null)

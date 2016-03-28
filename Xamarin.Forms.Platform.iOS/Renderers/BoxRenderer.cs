@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void Draw(RectangleF rect)
 		{
-			using(var context = UIGraphics.GetCurrentContext())
+			using (var context = UIGraphics.GetCurrentContext())
 			{
 				_colorToRenderer.SetFill();
 				context.FillRect(rect);

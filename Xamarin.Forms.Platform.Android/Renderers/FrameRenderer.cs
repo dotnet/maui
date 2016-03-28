@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 					_normalBitmap = CreateBitmap(false, width, height);
 				}
 				Bitmap bitmap = _normalBitmap;
-				using(var paint = new Paint())
+				using (var paint = new Paint())
 					canvas.DrawBitmap(bitmap, 0, 0, paint);
 			}
 
@@ -122,10 +122,10 @@ namespace Xamarin.Forms.Platform.Android
 			Bitmap CreateBitmap(bool pressed, int width, int height)
 			{
 				Bitmap bitmap;
-				using(Bitmap.Config config = Bitmap.Config.Argb8888)
+				using (Bitmap.Config config = Bitmap.Config.Argb8888)
 					bitmap = Bitmap.CreateBitmap(width, height, config);
 
-				using(var canvas = new ACanvas(bitmap))
+				using (var canvas = new ACanvas(bitmap))
 				{
 					DrawBackground(canvas, width, height, pressed);
 					DrawOutline(canvas, width, height);
@@ -136,11 +136,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			void DrawBackground(ACanvas canvas, int width, int height, bool pressed)
 			{
-				using(var paint = new Paint { AntiAlias = true })
-				using(var path = new Path())
-				using(Path.Direction direction = Path.Direction.Cw)
-				using(Paint.Style style = Paint.Style.Fill)
-				using(var rect = new RectF(0, 0, width, height))
+				using (var paint = new Paint { AntiAlias = true })
+				using (var path = new Path())
+				using (Path.Direction direction = Path.Direction.Cw)
+				using (Paint.Style style = Paint.Style.Fill)
+				using (var rect = new RectF(0, 0, width, height))
 				{
 					float rx = Forms.Context.ToPixels(5);
 					float ry = Forms.Context.ToPixels(5);
@@ -157,11 +157,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			void DrawOutline(ACanvas canvas, int width, int height)
 			{
-				using(var paint = new Paint { AntiAlias = true })
-				using(var path = new Path())
-				using(Path.Direction direction = Path.Direction.Cw)
-				using(Paint.Style style = Paint.Style.Stroke)
-				using(var rect = new RectF(0, 0, width, height))
+				using (var paint = new Paint { AntiAlias = true })
+				using (var path = new Path())
+				using (Path.Direction direction = Path.Direction.Cw)
+				using (Paint.Style style = Paint.Style.Stroke)
+				using (var rect = new RectF(0, 0, width, height))
 				{
 					float rx = Forms.Context.ToPixels(5);
 					float ry = Forms.Context.ToPixels(5);
@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Frame.OutlineColorProperty.PropertyName)
 				{
-					using(var canvas = new ACanvas(_normalBitmap))
+					using (var canvas = new ACanvas(_normalBitmap))
 					{
 						int width = Bounds.Width();
 						int height = Bounds.Height();

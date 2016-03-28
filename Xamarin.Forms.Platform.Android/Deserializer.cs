@@ -18,9 +18,9 @@ namespace Xamarin.Forms.Platform.Android
 			// Make sure to use Internal
 			return Task.Run(() =>
 			{
-				using(IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
-				using(IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.OpenOrCreate))
-				using(XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
+				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.OpenOrCreate))
+				using (XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
 				{
 					if (stream.Length == 0)
 						return null;
@@ -49,9 +49,9 @@ namespace Xamarin.Forms.Platform.Android
 			return Task.Run(() =>
 			{
 				var success = false;
-				using(IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
-				using(IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
-				using(XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
+				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile + ".tmp", System.IO.FileMode.OpenOrCreate))
+				using (XmlDictionaryWriter writer = XmlDictionaryWriter.CreateBinaryWriter(stream))
 				{
 					try
 					{
@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (!success)
 					return;
-				using(IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
+				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
 				{
 					try
 					{

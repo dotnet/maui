@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.Android
 				RightMargin = 0,
 				Gravity = GravityFlags.Center
 			};
-			using(imageParams)
+			using (imageParams)
 				AddView(_imageView, imageParams);
 
 			var textLayout = new LinearLayout(context) { Orientation = Orientation.Vertical };
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android
 			_mainText.Ellipsize = TextUtils.TruncateAt.End;
 			_mainText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
 			_mainText.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItem);
-			using(var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
+			using (var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
 				textLayout.AddView(_mainText, lp);
 
 			_detailText = new TextView(context);
@@ -65,12 +65,12 @@ namespace Xamarin.Forms.Platform.Android
 			_detailText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
 			_detailText.Visibility = ViewStates.Gone;
 			_detailText.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItemSmall);
-			using(var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
+			using (var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
 				textLayout.AddView(_detailText, lp);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.Center };
 
-			using(layoutParams)
+			using (layoutParams)
 				AddView(textLayout, layoutParams);
 
 			SetMinimumHeight((int)context.ToPixels(DefaultMinHeight));
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (view != null)
 			{
-				using(var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.FillParent))
+				using (var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.FillParent))
 					AddView(view, layout);
 
 				AccessoryView = view;

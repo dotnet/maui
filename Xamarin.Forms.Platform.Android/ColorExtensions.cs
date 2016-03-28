@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (self == Color.Default)
 			{
-				using(Resources resources = Resources.System)
+				using (Resources resources = Resources.System)
 					return resources.GetColor(defaultColorResourceId);
 			}
 

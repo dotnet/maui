@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var streamsource = imagesource as StreamImageSource;
 			if (streamsource != null && streamsource.Stream != null)
 			{
-				using(Stream stream = await streamsource.GetStreamAsync(cancelationToken))
+				using (Stream stream = await streamsource.GetStreamAsync(cancelationToken))
 				{
 					bitmapimage = new BitmapImage();
 					bitmapimage.SetSource(stream);
@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var imageLoader = imagesoure as UriImageSource;
 			if (imageLoader != null && imageLoader.Uri != null)
 			{
-				using(Stream streamimage = await imageLoader.GetStreamAsync(cancelationToken))
+				using (Stream streamimage = await imageLoader.GetStreamAsync(cancelationToken))
 				{
 					if (streamimage != null && streamimage.CanRead)
 					{

@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static double GetThemeAttributeDp(this Context self, int resource)
 		{
-			using(var value = new TypedValue())
+			using (var value = new TypedValue())
 			{
 				if (!self.Theme.ResolveAttribute(resource, value, true))
 					return -1;
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (s_displayDensity != float.MinValue)
 				return;
 
-			using(DisplayMetrics metrics = context.Resources.DisplayMetrics)
+			using (DisplayMetrics metrics = context.Resources.DisplayMetrics)
 				s_displayDensity = metrics.Density;
 		}
 	}

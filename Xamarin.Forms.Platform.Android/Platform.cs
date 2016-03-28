@@ -463,7 +463,7 @@ namespace Xamarin.Forms.Platform.Android
 				else if (CurrentNavigationPage.BarBackgroundColor != Color.Default)
 					colorToUse = CurrentNavigationPage.BarBackgroundColor;
 			}
-			using(Drawable drawable = colorToUse == Color.Default ? GetActionBarBackgroundDrawable() : new ColorDrawable(colorToUse.ToAndroid()))
+			using (Drawable drawable = colorToUse == Color.Default ? GetActionBarBackgroundDrawable() : new ColorDrawable(colorToUse.ToAndroid()))
 				((Activity)_context).ActionBar.SetBackgroundDrawable(drawable);
 		}
 
@@ -663,7 +663,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			int[] backgroundDataArray = { global::Android.Resource.Attribute.Background };
 
-			using(var outVal = new TypedValue())
+			using (var outVal = new TypedValue())
 			{
 				_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ActionBarStyle, outVal, true);
 				TypedArray actionBarStyle = _context.Theme.ObtainStyledAttributes(outVal.ResourceId, backgroundDataArray);

@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android
 			var imageLoader = imagesource as UriImageSource;
 			if (imageLoader != null && imageLoader.Uri != null)
 			{
-				using(Stream imageStream = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
+				using (Stream imageStream = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
 					return await BitmapFactory.DecodeStreamAsync(imageStream).ConfigureAwait(false);
 			}
 			return null;

@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 		public static void SetWindowBackground(this AView view)
 		{
 			Context context = view.Context;
-			using(var background = new TypedValue())
+			using (var background = new TypedValue())
 			{
 				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
 				{
@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 							view.SetBackgroundColor(color);
 							break;
 						case "drawable":
-							using(Drawable drawable = context.Resources.GetDrawable(background.ResourceId))
+							using (Drawable drawable = context.Resources.GetDrawable(background.ResourceId))
 								view.SetBackgroundDrawable(drawable);
 							break;
 					}
