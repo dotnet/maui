@@ -107,5 +107,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Page?.SendDisappearing();
 			base.OnPause();
 		}
+		
+		public override void OnResume()
+		{
+			Page?.SendAppearing();
+			base.OnResume();
+		}
 	}
 }
