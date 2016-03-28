@@ -395,6 +395,9 @@ namespace Xamarin.Forms
 
 		void OnInternalAdded(View view)
 		{
+			var parent = view.Parent as Layout;
+			parent?.InternalChildren.Remove(view);
+
 			OnChildAdded(view);
 			if (ShouldInvalidateOnChildAdded(view))
 				InvalidateLayout();
