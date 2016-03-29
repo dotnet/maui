@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 
 				Context.HideKeyboard(currentView);
-				RequestFocus();
+				((Activity)Context).Window.DecorView.ClearFocus();
 			} while (false);
 
 			return result;

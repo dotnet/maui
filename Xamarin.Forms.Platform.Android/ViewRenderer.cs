@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.App;
+using Android.OS;
 using Android.Views;
 using AView = Android.Views.View;
 
@@ -149,11 +150,20 @@ namespace Xamarin.Forms.Platform.Android
 			if (Control == null)
 				return;
 
+			e.Result = true;
+
 			if (e.Focus)
-				e.Result = Control.RequestFocus();
+			{
+				// use post being BeginInvokeOnMainThread will not delay on android
+				Looper looper = Context.MainLooper;
+				var handler = new Handler(looper);
+				handler.Post(() =>
+				{
+					Control?.RequestFocus();
+				});
+			}
 			else
 			{
-				e.Result = true;
 				Control.ClearFocus();
 			}
 
