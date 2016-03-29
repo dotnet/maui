@@ -42,6 +42,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			_renderer = new Canvas();
 			_renderer.SizeChanged += RendererSizeChanged;
+			_renderer.Loaded += (sender, args) => UpdateSystemTray();
 
 			_tracker.CollectionChanged += (sender, args) => UpdateToolbarItems();
 
@@ -480,6 +481,15 @@ namespace Xamarin.Forms.Platform.WinPhone
 					((FrameworkElement)pageRenderer.ContainerElement).Width = _renderer.ActualWidth;
 					((FrameworkElement)pageRenderer.ContainerElement).Height = _renderer.ActualHeight;
 				}
+			}
+		}
+
+		void UpdateSystemTray()
+		{
+			var lightThemeVisibility = (Visibility)System.Windows.Application.Current.Resources["PhoneLightThemeVisibility"];
+			if (lightThemeVisibility == Visibility.Visible && SystemTray.BackgroundColor == System.Windows.Media.Color.FromArgb(0, 0, 0, 0))
+			{
+				SystemTray.BackgroundColor = System.Windows.Media.Color.FromArgb(1, 255, 255, 255);
 			}
 		}
 
