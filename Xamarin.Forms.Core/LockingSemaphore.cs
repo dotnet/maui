@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 		public void Release()
 		{
 			TaskCompletionSource<bool> toRelease = null;
-			lock(_waiters)
+			lock (_waiters)
 			{
 				if (_waiters.Count > 0)
 					toRelease = _waiters.Dequeue();
@@ -34,7 +34,7 @@ namespace Xamarin.Forms
 
 		public Task WaitAsync(CancellationToken token)
 		{
-			lock(_waiters)
+			lock (_waiters)
 			{
 				if (_currentCount > 0)
 				{

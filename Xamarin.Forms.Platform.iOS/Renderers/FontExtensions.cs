@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var key = new ToUIFontKey(family, size, attributes);
 
-			lock(ToUiFont)
+			lock (ToUiFont)
 			{
 				UIFont value;
 				if (ToUiFont.TryGetValue(key, out value))
@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var generatedValue = _ToUIFont(family, size, attributes);
 
-			lock(ToUiFont)
+			lock (ToUiFont)
 			{
 				UIFont value;
 				if (!ToUiFont.TryGetValue(key, out value))

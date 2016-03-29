@@ -116,7 +116,7 @@ namespace Xamarin.Forms
 			if (tcs != null)
 				tcs.SetResult(cancelled);
 
-			lock(_synchandle)
+			lock (_synchandle)
 			{
 				CancellationTokenSource = null;
 			}
@@ -124,7 +124,7 @@ namespace Xamarin.Forms
 
 		protected void OnLoadingStarted()
 		{
-			lock(_synchandle)
+			lock (_synchandle)
 			{
 				CancellationTokenSource = new CancellationTokenSource();
 			}
