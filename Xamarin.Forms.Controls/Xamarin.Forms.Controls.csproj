@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="AppLifeCycle.cs" />
     <Compile Include="ControlGalleryPages\CellForceUpdateSizeGalleryPage.cs" />
     <Compile Include="ControlGalleryPages\LayoutAddPerformance.xaml.cs">
       <DependentUpon>LayoutAddPerformance.xaml</DependentUpon>
@@ -94,6 +95,8 @@
     <Compile Include="LegacyRepro\Page1.xaml.cs">
       <DependentUpon>Page1.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainPageLifeCycleTests.cs" />
+    <Compile Include="NavReproApp.cs" />
     <Compile Include="RootPages\RootContentPage.cs" />
     <Compile Include="RootPages\SwapHierachyStackLayout.cs" />
     <Compile Include="GalleryPages\EditableList.cs" />
@@ -116,6 +119,7 @@
     <Compile Include="LegacyRepro\SampleViewCell.xaml.cs">
       <DependentUpon>SampleViewCell.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SimpleApp.cs" />
     <Compile Include="ViewContainers\EventViewContainer.cs" />
     <Compile Include="ViewContainers\LayeredViewContainer.cs" />
     <Compile Include="ViewContainers\MultiBindingHack.cs" />
