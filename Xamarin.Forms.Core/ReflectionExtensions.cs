@@ -9,7 +9,7 @@ namespace Xamarin.Forms
 	{
 		public static FieldInfo GetField(this Type type, Func<FieldInfo, bool> predicate)
 		{
-			return GetFields(type).SingleOrDefault(predicate);
+			return GetFields(type).FirstOrDefault(predicate);
 		}
 
 		public static FieldInfo GetField(this Type type, string name)
