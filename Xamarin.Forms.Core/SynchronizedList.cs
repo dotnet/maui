@@ -12,7 +12,7 @@ namespace Xamarin.Forms
 
 		public void Add(T item)
 		{
-			lock(_list)
+			lock (_list)
 			{
 				_list.Add(item);
 				_snapshot = null;
@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 
 		public void Clear()
 		{
-			lock(_list)
+			lock (_list)
 			{
 				_list.Clear();
 				_snapshot = null;
@@ -30,13 +30,13 @@ namespace Xamarin.Forms
 
 		public bool Contains(T item)
 		{
-			lock(_list)
+			lock (_list)
 				return _list.Contains(item);
 		}
 
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			lock(_list)
+			lock (_list)
 				_list.CopyTo(array, arrayIndex);
 		}
 
@@ -52,7 +52,7 @@ namespace Xamarin.Forms
 
 		public bool Remove(T item)
 		{
-			lock(_list)
+			lock (_list)
 			{
 				if (_list.Remove(item))
 				{
@@ -74,7 +74,7 @@ namespace Xamarin.Forms
 			ReadOnlyCollection<T> snap = _snapshot;
 			if (snap == null)
 			{
-				lock(_list)
+				lock (_list)
 					_snapshot = snap = new ReadOnlyCollection<T>(_list.ToList());
 			}
 
@@ -83,13 +83,13 @@ namespace Xamarin.Forms
 
 		public int IndexOf(T item)
 		{
-			lock(_list)
+			lock (_list)
 				return _list.IndexOf(item);
 		}
 
 		public void Insert(int index, T item)
 		{
-			lock(_list)
+			lock (_list)
 			{
 				_list.Insert(index, item);
 				_snapshot = null;
@@ -104,13 +104,13 @@ namespace Xamarin.Forms
 				if (snap != null)
 					return snap[index];
 
-				lock(_list)
+				lock (_list)
 					return _list[index];
 			}
 
 			set
 			{
-				lock(_list)
+				lock (_list)
 				{
 					_list[index] = value;
 					_snapshot = null;
@@ -120,7 +120,7 @@ namespace Xamarin.Forms
 
 		public void RemoveAt(int index)
 		{
-			lock(_list)
+			lock (_list)
 			{
 				_list.RemoveAt(index);
 				_snapshot = null;

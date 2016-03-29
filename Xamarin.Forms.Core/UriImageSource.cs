@@ -185,7 +185,7 @@ namespace Xamarin.Forms
 		{
 			string key = GetCacheKey(uri);
 			LockingSemaphore sem;
-			lock(s_syncHandle)
+			lock (s_syncHandle)
 			{
 				if (s_semaphores.ContainsKey(key))
 					sem = s_semaphores[key];

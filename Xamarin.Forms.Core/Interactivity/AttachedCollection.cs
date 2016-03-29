@@ -61,7 +61,7 @@ namespace Xamarin.Forms
 
 		protected virtual void OnAttachedTo(BindableObject bindable)
 		{
-			lock(_associatedObjects)
+			lock (_associatedObjects)
 			{
 				_associatedObjects.Add(new WeakReference(bindable));
 			}
@@ -73,7 +73,7 @@ namespace Xamarin.Forms
 		{
 			foreach (T item in this)
 				item.DetachFrom(bindable);
-			lock(_associatedObjects)
+			lock (_associatedObjects)
 			{
 				for (var i = 0; i < _associatedObjects.Count; i++)
 				{
