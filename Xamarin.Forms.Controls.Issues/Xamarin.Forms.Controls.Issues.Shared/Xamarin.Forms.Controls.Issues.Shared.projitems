@@ -374,6 +374,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27350.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla28709.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33578.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39378.xaml.cs">
+      <DependentUpon>Bugzilla39378.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -481,6 +484,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39483.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39378.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

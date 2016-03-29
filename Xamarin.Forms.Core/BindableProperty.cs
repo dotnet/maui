@@ -30,6 +30,12 @@ namespace Xamarin.Forms
 
 		public delegate bool ValidateValueDelegate<in TPropertyType>(BindableObject bindable, TPropertyType value);
 
+		static readonly Dictionary<Type, TypeConverter> WellKnownConvertTypes = new  Dictionary<Type,TypeConverter>
+		{
+			{ typeof(Uri), new UriTypeConverter() },
+			{ typeof(Color), new ColorTypeConverter() },
+		};
+
 		// more or less the encoding of this, without the need to reflect
 		// http://msdn.microsoft.com/en-us/library/y5b434w4.aspx
 		static readonly Dictionary<Type, Type[]> SimpleConvertTypes = new Dictionary<Type, Type[]>
@@ -303,9 +309,14 @@ namespace Xamarin.Forms
 
 			// Dont support arbitrary IConvertible by limiting which types can use this
 			Type[] convertableTo;
+			TypeConverter typeConverterTo;
 			if (SimpleConvertTypes.TryGetValue(valueType, out convertableTo) && Array.IndexOf(convertableTo, type) != -1)
 			{
 				value = Convert.ChangeType(value, type);
+			}
+			else if (WellKnownConvertTypes.TryGetValue(type, out typeConverterTo) && typeConverterTo.CanConvertFrom(valueType))
+			{
+				value = typeConverterTo.ConvertFromInvariantString(value.ToString());
 			}
 			else if (!ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
 			{
