@@ -20,6 +20,8 @@ namespace Xamarin.Forms.Core.UITests
 			App = ConfigureApp
 				.iOS
 				.Debug ()
+				// Keeping the old BundleId for now, Test Cloud doesn't 
+				// like it when we update the BundleId for an existing app
 				.InstalledApp ("com.xamarin.quickui.controlgallery")
 				.StartApp (Xamarin.UITest.Configuration.AppDataMode.Clear);
 		}

@@ -16,6 +16,9 @@ namespace Xamarin.Forms.Controls
     internal static class AppPaths
     {
         public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+
+		// Have to continue using the old BundleId for now; Test Cloud doesn't like
+		// when you change the BundleId
         public static string BundleId = "com.xamarin.quickui.controlgallery";
     }
 

@@ -14,11 +14,6 @@ namespace Xamarin.Forms.Core.UITests
 		public static void Restart () 
 		{
 			App = null;
-			//App = ConfigureApp
-			//	.iOS
-			//	.Debug ()
-			//	.InstalledApp ("com.xamarin.quickui.controlgallery")
-			//	.StartApp ();
 		}
 	}
 }
