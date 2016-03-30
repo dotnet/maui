@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
-			uiTapGestureRecognizer.DelaysTouchesBegan = uiTapGestureRecognizer.DelaysTouchesEnded = false;
+			uiTapGestureRecognizer.DelaysTouchesBegan = uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
 			View.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			UpdateBackground();
