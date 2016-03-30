@@ -13,11 +13,11 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 39499, "CarouselViewTest")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 39499, "CarouselViewTest")]
 	public sealed class CarouselViewContentPage : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public sealed class Item
 		{
 			static int s_id = 0;
@@ -32,30 +32,39 @@ namespace Xamarin.Forms.Controls
 			public int Id => id;
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public sealed class ItemView : ContentView
 		{
-			public ItemView ()
+			public ItemView()
 			{
-				var idLabel = new Label () { StyleId = "id", TextColor = Color.White };
-				idLabel.SetBinding (Label.TextProperty, nameof(Item.Id));
+				var idLabel = new Label() { StyleId = "id", TextColor = Color.White };
+				idLabel.SetBinding(Label.TextProperty, nameof(Item.Id));
 
-				var stackLayout = new StackLayout {
+				var stackLayout = new StackLayout
+				{
 					Children = {
-						new Label { Text = "Target" },
-						new Label { Text = "Stack" }
+						//new Label { Text = "Target" },
+						//new Label { Text = "Stack" }
 					},
 					BackgroundColor = Color.Red
 				};
 
-				var button = CreateButton ("Hide Target Stack", () => {
+				var button = CreateButton("Hide Target Stack", () =>
+				{
 					stackLayout.IsVisible = false;
 				});
 
-				Content = new StackLayout {
+				var buttonImage = CreateButton("AddImage", () =>
+				{
+					stackLayout.IsVisible = true;
+					stackLayout.Children.Add(new Image { Source = "menuIcon.png" });
+				});
+				Content = new StackLayout
+				{
 					Children = {
 						idLabel,
 						button,
+						buttonImage,
 						stackLayout,
 					}
 				};
@@ -63,23 +72,25 @@ namespace Xamarin.Forms.Controls
 
 			Button CreateButton(string text, Action clicked)
 			{
-				var button = new Button ();
+				var button = new Button();
 				button.Text = text;
-				button.Clicked += (s, e) => {
-					clicked ();
+				button.Clicked += (s, e) =>
+				{
+					clicked();
 				};
 				return button;
 			}
 		}
 
-		static readonly IList<Item> Items = new ObservableCollection<Item> () {
+		static readonly IList<Item> Items = new ObservableCollection<Item>() {
 			new Item(),
 			new Item(),
 		};
 
 		Button CreateButton(string text, Action onClicked = null)
 		{
-			var button = new Button {
+			var button = new Button
+			{
 				Text = text
 			};
 
@@ -89,18 +100,20 @@ namespace Xamarin.Forms.Controls
 			return button;
 		}
 
-		protected override void Init ()
+		protected override void Init()
 		{
 			BackgroundColor = Color.Blue;
 
-			var carouselView = new CarouselView {
+			var carouselView = new CarouselView
+			{
 				BackgroundColor = Color.Purple,
 				ItemsSource = Items,
 				ItemTemplate = new DataTemplate(typeof(ItemView)),
 				Position = 0
 			};
 
-			var moveBar = new StackLayout {
+			var moveBar = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children = {
@@ -111,12 +124,13 @@ namespace Xamarin.Forms.Controls
 					}
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					carouselView,
 					moveBar,
 				}
-			};
+			}
 		}
 
 #if UITEST
