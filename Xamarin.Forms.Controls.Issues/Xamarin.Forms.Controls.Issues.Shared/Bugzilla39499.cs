@@ -128,9 +128,9 @@ namespace Xamarin.Forms.Controls
 			{
 				Children = {
 					carouselView,
-					moveBar,
+					moveBar
 				}
-			}
+			};
 		}
 
 #if UITEST
