@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			using (var client = new HttpClient())
 			{
 				HttpResponseMessage streamResponse = await client.GetAsync(uri.AbsoluteUri).ConfigureAwait(false);
-				return await streamResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+				return streamResponse.IsSuccessStatusCode ? await streamResponse.Content.ReadAsStreamAsync().ConfigureAwait(false) : null;
 			}
 		}
 
