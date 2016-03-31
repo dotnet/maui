@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.Issues.Bugzilla39378" xmlns:local="clr-namespace:Xamarin.Forms.Controls">
+    <local:TestContentPage.Content>
+        <Grid BackgroundColor="{Binding BackgroundColor}" Margin="20" Padding="20">
+            <Image AutomationId="image1">
+                <Image.Source>
+                    <UriImageSource Uri="{Binding HomeImage}" />
+                </Image.Source>
+            </Image>
+        </Grid>
+    </local:TestContentPage.Content>
+</local:TestContentPage>
