@@ -158,16 +158,51 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateBitmap()
 		{
-			FileImageSource elementImage = Element.Image;
-			string imageFile = elementImage?.File;
-			if (elementImage != null && !string.IsNullOrEmpty(imageFile))
+			var elementImage = Element.Image;
+			var imageFile = elementImage?.File;
+
+			if (elementImage == null || string.IsNullOrEmpty(imageFile))
 			{
-				Drawable image = Context.Resources.GetDrawable(imageFile);
-				Control.SetCompoundDrawablesWithIntrinsicBounds(image, null, null, null);
-				image?.Dispose();
-			}
-			else
 				Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+				return;
+			}
+
+			var image = Context.Resources.GetDrawable(imageFile);
+
+			if (string.IsNullOrEmpty(Element.Text))
+			{
+				// No text, so no need for relative position; just center the image
+				// There's no option for just plain-old centering, so we'll use Top 
+				// (which handles the horizontal centering) and some tricksy padding 
+				// to handle the vertical centering
+				Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
+				Control.SetPadding(0, Control.PaddingTop, 0, -Control.PaddingTop);
+				image?.Dispose();
+				return;
+			}
+
+			var layout = Element.ContentLayout;
+
+			Control.CompoundDrawablePadding = (int)layout.Spacing;
+
+			switch (layout.Position)
+			{
+				case Button.ButtonContentLayout.ImagePosition.Top:
+					Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
+					break;
+				case Button.ButtonContentLayout.ImagePosition.Bottom:
+					Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, image);
+					break;
+				case Button.ButtonContentLayout.ImagePosition.Right:
+					Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, image, null);
+					break;
+				default:
+					// Defaults to image on the left
+					Control.SetCompoundDrawablesWithIntrinsicBounds(image, null, null, null);
+					break;
+			}
+
+			image?.Dispose();
 		}
 
 		void UpdateEnabled()

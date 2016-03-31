@@ -1,20 +1,18 @@
 using System;
-using System.Drawing;
 using System.Linq;
 using System.ComponentModel;
+using System.Diagnostics;
+
 #if __UNIFIED__
+using Foundation;
 using UIKit;
-using CoreGraphics;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.CoreGraphics;
-#endif
-#if __UNIFIED__
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using PointF = CoreGraphics.CGPoint;
-
 #else
+using System.Drawing;
+using MonoTouch.UIKit;
+using MonoTouch.Foundation;
 using nfloat=System.Single;
 using nint=System.Int32;
 using nuint=System.UInt32;
@@ -27,14 +25,25 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor _buttonTextColorDefaultDisabled;
 		UIColor _buttonTextColorDefaultHighlighted;
 		UIColor _buttonTextColorDefaultNormal;
+		bool _titleChanged;
+		SizeF _titleSize;
+
+		// This looks like it should be a const under iOS Classic,
+		// but that doesn't work under iOS 
+		// ReSharper disable once BuiltInTypeReferenceStyle
+		// Under iOS Classic Resharper wants to suggest this use the built-in type ref
+		// but under iOS that suggestion won't work
+		readonly nfloat _minimumButtonHeight = 44; // Apple docs
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			var result = base.SizeThatFits(size);
-			result.Height = 44; // Apple docs
-			//Compensate for the insets
-			if (!Control.ImageView.Hidden)
-				result.Width += 10;
+
+			if (result.Height < _minimumButtonHeight)
+			{
+				result.Height = _minimumButtonHeight; 
+			}
+
 			return result;
 		}
 
@@ -55,6 +64,8 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Control == null)
 				{
 					SetNativeControl(new UIButton(UIButtonType.RoundedRect));
+
+					Debug.Assert(Control != null, "Control != null");
 
 					_buttonTextColorDefaultNormal = Control.TitleColor(UIControlState.Normal);
 					_buttonTextColorDefaultHighlighted = Control.TitleColor(UIControlState.Highlighted);
@@ -91,8 +102,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnButtonTouchUpInside(object sender, EventArgs eventArgs)
 		{
-			if (Element != null)
-				((IButtonController)Element).SendClicked();
+			((IButtonController)Element)?.SendClicked();
 		}
 
 		void UpdateBackgroundVisibility()
@@ -129,7 +139,7 @@ namespace Xamarin.Forms.Platform.iOS
 		async void UpdateImage()
 		{
 			IImageSourceHandler handler;
-			var source = Element.Image;
+			FileImageSource source = Element.Image;
 			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
 				UIImage uiimage;
@@ -141,31 +151,36 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					uiimage = null;
 				}
-				var button = Control;
+				UIButton button = Control;
 				if (button != null && uiimage != null)
 				{
 					if (Forms.IsiOS7OrNewer)
 						button.SetImage(uiimage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
 					else
 						button.SetImage(uiimage, UIControlState.Normal);
+
 					button.ImageView.ContentMode = UIViewContentMode.ScaleAspectFit;
 
-					Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 10);
-					Control.TitleEdgeInsets = new UIEdgeInsets(0, 10, 0, 0);
+					ComputeEdgeInsets(Control, Element.ContentLayout);
 				}
 			}
 			else
 			{
 				Control.SetImage(null, UIControlState.Normal);
-				Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-				Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+				ClearEdgeInsets(Control);
 			}
 			((IVisualElementController)Element).NativeSizeChanged();
 		}
 
 		void UpdateText()
 		{
-			Control.SetTitle(Element.Text, UIControlState.Normal);
+			var newText = Element.Text;
+
+			if (Control.Title(UIControlState.Normal) != newText)
+			{
+				Control.SetTitle(Element.Text, UIControlState.Normal);
+				_titleChanged = true;
+			}
 		}
 
 		void UpdateTextColor()
@@ -185,6 +200,75 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Forms.IsiOS7OrNewer)
 					Control.TintColor = Element.TextColor.ToUIColor();
 			}
+		}
+
+		void ClearEdgeInsets(UIButton button)
+		{
+			if (button == null)
+			{
+				return;
+			}
+
+			Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			Control.ContentEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+		}
+
+		void ComputeEdgeInsets(UIButton button, Button.ButtonContentLayout layout)
+		{
+			if (button?.ImageView?.Image == null || string.IsNullOrEmpty(button.TitleLabel?.Text))
+			{
+				return;
+			}
+
+			var position = layout.Position;
+			var spacing = (nfloat)(layout.Spacing / 2);
+
+			if (position == Button.ButtonContentLayout.ImagePosition.Left)
+			{
+				button.ImageEdgeInsets = new UIEdgeInsets(0, -spacing, 0, spacing);
+				button.TitleEdgeInsets = new UIEdgeInsets(0, spacing, 0, -spacing);
+				button.ContentEdgeInsets = new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing);
+				return;
+			}
+
+			if (_titleChanged)
+			{
+				var stringToMeasure = new NSString(button.TitleLabel.Text);
+				UIStringAttributes attribs = new UIStringAttributes { Font = button.TitleLabel.Font };
+				_titleSize = stringToMeasure.GetSizeUsingAttributes(attribs);
+				_titleChanged = false;
+			}
+
+			var labelWidth = _titleSize.Width;
+			var imageWidth = button.ImageView.Image.Size.Width;
+
+			if (position == Button.ButtonContentLayout.ImagePosition.Right)
+			{
+				button.ImageEdgeInsets = new UIEdgeInsets(0, labelWidth + spacing, 0, -labelWidth - spacing);
+				button.TitleEdgeInsets = new UIEdgeInsets(0, -imageWidth - spacing, 0, imageWidth + spacing);
+				button.ContentEdgeInsets = new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing);
+				return;
+			}
+
+			var imageVertOffset = (_titleSize.Height / 2);
+			var titleVertOffset = (button.ImageView.Image.Size.Height / 2);
+
+			var edgeOffset = (float)Math.Min(imageVertOffset, titleVertOffset);
+
+			button.ContentEdgeInsets = new UIEdgeInsets(edgeOffset, 0, edgeOffset, 0);
+
+			var horizontalImageOffset = labelWidth / 2;
+			var horizontalTitleOffset = imageWidth / 2;
+
+			if (position == Button.ButtonContentLayout.ImagePosition.Bottom)
+			{
+				imageVertOffset = -imageVertOffset;
+				titleVertOffset = -titleVertOffset;
+			}
+
+			button.ImageEdgeInsets = new UIEdgeInsets(-imageVertOffset, horizontalImageOffset, imageVertOffset, -horizontalImageOffset);
+			button.TitleEdgeInsets = new UIEdgeInsets(titleVertOffset, -horizontalTitleOffset, -titleVertOffset, horizontalTitleOffset);
 		}
 	}
 }

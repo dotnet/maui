@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
 
@@ -11,6 +13,9 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(Button), null,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).CommandCanExecuteChanged(bindable, EventArgs.Empty));
+
+		public static readonly BindableProperty ContentLayoutProperty =
+			BindableProperty.Create("ContentLayout", typeof(ButtonContentLayout), typeof(Button), new ButtonContentLayout(ButtonContentLayout.ImagePosition.Left, DefaultSpacing));
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Button), null,
 			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged));
@@ -39,6 +44,8 @@ namespace Xamarin.Forms
 
 		bool _cancelEvents;
 
+		const double DefaultSpacing = 10;
+
 		public Color BorderColor
 		{
 			get { return (Color)GetValue(BorderColorProperty); }
@@ -55,6 +62,12 @@ namespace Xamarin.Forms
 		{
 			get { return (double)GetValue(BorderWidthProperty); }
 			set { SetValue(BorderWidthProperty, value); }
+		}
+
+		public ButtonContentLayout ContentLayout
+		{
+			get { return (ButtonContentLayout)GetValue(ContentLayoutProperty); }
+			set { SetValue(ContentLayoutProperty, value); }
 		}
 
 		public ICommand Command
@@ -246,6 +259,73 @@ namespace Xamarin.Forms
 			}
 
 			button._cancelEvents = false;
+		}
+
+		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
+		[TypeConverter(typeof(ButtonContentTypeConverter))]
+		public sealed class ButtonContentLayout
+		{
+			public enum ImagePosition
+			{
+				Left,
+				Top,
+				Right,
+				Bottom
+			}
+
+			public ButtonContentLayout(ImagePosition position, double spacing)
+			{
+				Position = position;
+				Spacing = spacing;
+			}
+
+			public ImagePosition Position { get; }
+
+			public double Spacing { get; }
+
+			public override string ToString()
+			{
+				return $"Image Position = {Position}, Spacing = {Spacing}";
+			}
+		}
+
+		public sealed class ButtonContentTypeConverter : TypeConverter
+		{
+			public override object ConvertFromInvariantString(string value)
+			{
+				if (value == null)
+				{
+					throw new InvalidOperationException($"Cannot convert null into {typeof(ButtonContentLayout)}");
+				}
+
+				string[] parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+				if (parts.Length != 1 && parts.Length != 2)
+				{
+					throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(ButtonContentLayout)}");
+				}
+
+				double spacing = DefaultSpacing;
+				var position = ButtonContentLayout.ImagePosition.Left;
+
+				var spacingFirst = char.IsDigit(parts[0][0]);
+
+				int positionIndex = spacingFirst ? (parts.Length == 2 ? 1 : -1) : 0;
+				int spacingIndex = spacingFirst ? 0 : (parts.Length == 2 ? 1 : -1);
+
+				if (spacingIndex > -1)
+				{
+					spacing = double.Parse(parts[spacingIndex]);
+				}
+
+				if (positionIndex > -1)
+				{
+					position =
+						(ButtonContentLayout.ImagePosition)Enum.Parse(typeof(ButtonContentLayout.ImagePosition), parts[positionIndex], true);
+				}
+
+				return new ButtonContentLayout(position, spacing);
+			}
 		}
 	}
 }

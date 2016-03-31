@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Controls
 	{
 		public const string AppName = "XamarinFormsControls";
 		static string s_insightsKey;
-		
+
 		// ReSharper disable once InconsistentNaming
 		public static int IOSVersion = -1;
 
@@ -24,8 +24,7 @@ namespace Xamarin.Forms.Controls
 			_testCloudService = DependencyService.Get<ITestCloudService>();
 			InitInsights();
 			// MainPage = new MainPageLifeCycleTests ();
-			MainPage = new MasterDetailPage
-			{
+			MainPage = new MasterDetailPage {
 				Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
 				Detail = CoreGallery.GetMainPage()
 			};
@@ -65,7 +64,7 @@ namespace Xamarin.Forms.Controls
 
 		static Assembly GetAssembly(out string assemblystring)
 		{
-			assemblystring = typeof (App).AssemblyQualifiedName.Split(',')[1].Trim();
+			assemblystring = typeof(App).AssemblyQualifiedName.Split(',')[1].Trim();
 			var assemblyname = new AssemblyName(assemblystring);
 			return Assembly.Load(assemblyname);
 		}
