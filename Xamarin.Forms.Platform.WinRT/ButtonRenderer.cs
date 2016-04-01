@@ -88,6 +88,14 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
+		protected override void UpdateBackgroundColor()
+		{
+			// Button is a special case; we don't want to set the Control's background
+			// because it goes outside the bounds of the Border/ContentPresenter, 
+			// which is where we might change the BorderRadius to create a rounded shape.
+			return;
+		}
+
 		void OnButtonClick(object sender, RoutedEventArgs e)
 		{
 			Button buttonView = Element;
@@ -97,7 +105,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateBackground()
 		{
-			Control.Background = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
+			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 		}
 
 		void UpdateBorderColor()
