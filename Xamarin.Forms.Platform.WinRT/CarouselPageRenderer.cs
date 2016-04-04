@@ -92,8 +92,12 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				_tracker.Element = newPage;
 
+				// Adding Items triggers the SelectionChanged event,
+				// which will reset the CurrentPage unless we tell it to ignore.
+				_fromUpdate = true;
 				for (var i = 0; i < newPage.Children.Count; i++)
 					Items.Add(newPage.Children[i]);
+				_fromUpdate = false;
 
 				((INotifyCollectionChanged)newPage.Children).CollectionChanged += OnChildrenChanged;
 				newPage.PropertyChanged += OnElementPropertyChanged;
