@@ -6,13 +6,28 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_CarouselViewRenderer))]
 	public class CarouselView : ItemsView, ICarouselViewController
 	{
-		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(int), typeof(CarouselView), 0, BindingMode.TwoWay);
+		public static readonly BindableProperty PositionProperty = 
+			BindableProperty.Create(
+				propertyName: nameof(Position), 
+				returnType: typeof(int), 
+				declaringType: typeof(CarouselView), 
+				defaultValue: 0, 
+				defaultBindingMode: BindingMode.TwoWay
+			);
 
-		public static readonly BindableProperty ItemProperty = BindableProperty.Create(nameof(Item), typeof(object), typeof(CarouselView), 0, BindingMode.TwoWay);
+		public static readonly BindableProperty ItemProperty = 
+			BindableProperty.Create(
+				propertyName: nameof(Item), 
+				returnType: typeof(object), 
+				declaringType: typeof(CarouselView), 
+				defaultValue: null, 
+				defaultBindingMode: BindingMode.TwoWay
+			);
 
+		#region Fields
 		object _lastItem;
-
 		int _lastPosition;
+		#endregion
 
 		public CarouselView()
 		{
@@ -22,47 +37,30 @@ namespace Xamarin.Forms
 			HorizontalOptions = LayoutOptions.FillAndExpand;
 		}
 
-		public int Item
+		#region Private Members
+		object GetItem(int position)
 		{
-			get { return (int)GetValue(ItemProperty); }
+			var controller = (IItemViewController)this;
+			object item = controller.GetItem(position);
+			return item;
 		}
+		#endregion
+
+		// non-public bc unable to implement on iOS
+		internal event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
+		internal event EventHandler<ItemVisibilityEventArgs> ItemDisappearing;
 
 		public int Position
 		{
 			get { return (int)GetValue(PositionProperty); }
 			set { SetValue(PositionProperty, value); }
 		}
-
-		void ICarouselViewController.SendPositionAppearing(int position)
+		public int Item
 		{
-			ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(GetItem(position)));
-		}
-
-		void ICarouselViewController.SendPositionDisappearing(int position)
-		{
-			ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(GetItem(position)));
-		}
-
-		void ICarouselViewController.SendSelectedItemChanged(object item)
-		{
-			if (item.Equals(_lastItem))
-				return;
-
-			ItemSelected?.Invoke(this, new SelectedItemChangedEventArgs(item));
-			_lastItem = item;
-		}
-
-		void ICarouselViewController.SendSelectedPositionChanged(int position)
-		{
-			if (_lastPosition == position)
-				return;
-
-			_lastPosition = position;
-			PositionSelected?.Invoke(this, new SelectedPositionChangedEventArgs(position));
+			get { return (int)GetValue(ItemProperty); }
 		}
 
 		public event EventHandler<SelectedItemChangedEventArgs> ItemSelected;
-
 		public event EventHandler<SelectedPositionChangedEventArgs> PositionSelected;
 
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
@@ -71,16 +69,29 @@ namespace Xamarin.Forms
 			return new SizeRequest(minimumSize, minimumSize);
 		}
 
-		// non-public bc unable to implement on iOS
-		internal event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
-
-		internal event EventHandler<ItemVisibilityEventArgs> ItemDisappearing;
-
-		object GetItem(int position)
+		void ICarouselViewController.SendPositionAppearing(int position)
 		{
-			var controller = (IItemViewController)this;
-			object item = controller.GetItem(position);
-			return item;
+			ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(GetItem(position)));
+		}
+		void ICarouselViewController.SendPositionDisappearing(int position)
+		{
+			ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(GetItem(position)));
+		}
+		void ICarouselViewController.SendSelectedItemChanged(object item)
+		{
+			if (item.Equals(_lastItem))
+				return;
+
+			ItemSelected?.Invoke(this, new SelectedItemChangedEventArgs(item));
+			_lastItem = item;
+		}
+		void ICarouselViewController.SendSelectedPositionChanged(int position)
+		{
+			if (_lastPosition == position)
+				return;
+
+			_lastPosition = position;
+			PositionSelected?.Invoke(this, new SelectedPositionChangedEventArgs(position));
 		}
 	}
 }

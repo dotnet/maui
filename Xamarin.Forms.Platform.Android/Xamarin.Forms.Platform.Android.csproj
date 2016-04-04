@@ -140,7 +140,6 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
     <Compile Include="Renderers\ButtonDrawable.cs" />
-    <Compile Include="Renderers\CarouselViewExtensions.cs" />
     <Compile Include="Renderers\CarouselViewRenderer.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="IStartActivityForResult.cs" />
@@ -158,17 +157,12 @@
     <Compile Include="Renderers\IImageSourceHandler.cs" />
     <Compile Include="Renderers\ImageExtensions.cs" />
     <Compile Include="Renderers\ImageLoaderSourceHandler.cs" />
-    <Compile Include="Renderers\IntVector.cs" />
-    <Compile Include="Renderers\ItemViewAdapter.cs" />
     <Compile Include="Renderers\IToolbarButton.cs" />
     <Compile Include="Renderers\KeyboardExtensions.cs" />
     <Compile Include="AppCompat\PickerRenderer.cs" />
     <Compile Include="AppCompat\ViewRenderer.cs" />
     <Compile Include="Renderers\MasterDetailContainer.cs" />
-    <Compile Include="Renderers\MeasureSpecification.cs" />
-    <Compile Include="Renderers\MeasureSpecificationType.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
-    <Compile Include="Renderers\PhysicalLayoutManager.cs" />
     <Compile Include="Renderers\ScrollViewContainer.cs" />
     <Compile Include="Renderers\StreamImagesourceHandler.cs" />
     <Compile Include="Renderers\ToolbarButton.cs" />
