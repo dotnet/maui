@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Controls
 			}
 
 			public int Id => id;
+
+			public string Text => $"Item {Id}";
 		}
 
 		[Preserve(AllMembers = true)]
@@ -38,13 +40,13 @@ namespace Xamarin.Forms.Controls
 			public ItemView()
 			{
 				var idLabel = new Label() { StyleId = "id", TextColor = Color.White };
-				idLabel.SetBinding(Label.TextProperty, nameof(Item.Id));
+				idLabel.SetBinding(Label.TextProperty, nameof(Item.Text));
 
 				var stackLayout = new StackLayout
 				{
 					Children = {
-						//new Label { Text = "Target" },
-						//new Label { Text = "Stack" }
+						new Label { Text = "Target" },
+						new Label { Text = "Stack" }
 					},
 					BackgroundColor = Color.Red
 				};
@@ -116,17 +118,38 @@ namespace Xamarin.Forms.Controls
 			{
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
-				Children = {
-						CreateButton ("<<", () => carouselView.Position = 0),
-						CreateButton ("<", () => { try { carouselView.Position--; } catch { } }),
-						CreateButton (">", () => { try { carouselView.Position++; } catch { } }),
-						CreateButton (">>", () => carouselView.Position = Items.Count - 1)
-					}
+				Children =
+				{
+					CreateButton("+", () => Items.Add(new Item())),
+					CreateButton("<<", () => carouselView.Position = 0),
+					CreateButton("<", () =>
+					{
+						try
+						{
+							carouselView.Position--;
+						}
+						catch
+						{
+						}
+					}),
+					CreateButton(">", () =>
+					{
+						try
+						{
+							carouselView.Position++;
+						}
+						catch
+						{
+						}
+					}),
+					CreateButton(">>", () => carouselView.Position = Items.Count - 1)
+				}
 			};
 
 			Content = new StackLayout
 			{
-				Children = {
+				Children =
+				{
 					carouselView,
 					moveBar
 				}
@@ -135,13 +158,26 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		//[Test]
-		public void CarouselViewTest ()
+		public void CarouselViewTest()
 		{
 			var app = RunningApp;
-			app.Screenshot ("I am at Issue 1");
-			app.WaitForElement (q => q.Marked ("Remove"));
+			app.WaitForElement(q => q.Marked("Item 0"));
+			app.SwipeRightToLeft();
+			app.WaitForElement(q => q.Marked("Item 1"));
+			app.Tap(c => c.Marked("<"));
+			app.WaitForElement(q => q.Marked("Item 0"));
+		}
 
-			app.Screenshot ("I see the Label");
+		[Test]
+		public void CarouselViewTestAddItem()
+		{
+			var app = RunningApp;
+			app.WaitForElement(q => q.Marked("Hide Target Stack"));
+			app.Tap(c => c.Marked("+"));
+			app.SwipeRightToLeft();
+			app.SwipeRightToLeft();
+			app.WaitForElement(q => q.Marked("Item 2"));
+			app.Screenshot("I see the Item 2");
 		}
 #endif
 	}

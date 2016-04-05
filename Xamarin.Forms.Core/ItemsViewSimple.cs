@@ -73,7 +73,7 @@ namespace Xamarin.Forms
 				var dynamicItemSource = _itemSource as INotifyCollectionChanged;
 				if (dynamicItemSource != null)
 				{
-					new WeakNotifyCollectionChanged(dynamicItemSource, OnCollectionChange);
+					new WeakNotifyCollectionChanged(this, dynamicItemSource);
 				}
 			}
 
@@ -82,34 +82,37 @@ namespace Xamarin.Forms
 
 		internal event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		void OnCollectionChange(object sender, NotifyCollectionChangedEventArgs e)
+		internal void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			CollectionChanged?.Invoke(sender, e);
 		}
 
 		sealed class WeakNotifyCollectionChanged
 		{
-			readonly INotifyCollectionChanged _source;
-			// prevent the itemSource from keeping the itemsView alive
-			readonly WeakReference<NotifyCollectionChangedEventHandler> _weakTarget;
+			readonly WeakReference<INotifyCollectionChanged> _weakCollection;
+			readonly WeakReference<ItemsView> _weakSource;
 
-			public WeakNotifyCollectionChanged(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler target)
+			public WeakNotifyCollectionChanged(ItemsView source, INotifyCollectionChanged incc)
 			{
-				_weakTarget = new WeakReference<NotifyCollectionChangedEventHandler>(target);
-				_source = source;
-				_source.CollectionChanged += OnCollectionChanged;
+				incc.CollectionChanged += OnCollectionChanged;
+
+				_weakSource = new WeakReference<ItemsView>(source);
+				_weakCollection = new WeakReference<INotifyCollectionChanged>(incc);
 			}
 
-			public void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 			{
-				NotifyCollectionChangedEventHandler weakTarget;
-				if (!_weakTarget.TryGetTarget(out weakTarget))
+				ItemsView source;
+				if (!_weakSource.TryGetTarget(out source))
 				{
-					_source.CollectionChanged -= OnCollectionChanged;
+					INotifyCollectionChanged collection;
+					if (_weakCollection.TryGetTarget(out collection))
+						collection.CollectionChanged -= OnCollectionChanged;
+
 					return;
 				}
 
-				weakTarget(sender, e);
+				source.OnCollectionChanged(sender, e);
 			}
 		}
 
