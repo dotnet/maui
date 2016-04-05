@@ -650,6 +650,8 @@ namespace Xamarin.Forms.Platform.Android
 				var renderer = _view as IVisualElementRenderer;
 				renderer.Element.Layout(position.ToFormsRectangle(_layout._context));
 
+				// causes the private LAYOUT_REQUIRED flag to be set so we can be sure the Layout call will properly chain through to all children
+				Measure(position.Width, position.Height);
 				_layout.LayoutDecorated(_view, 
 					left: position.Left, 
 					top: position.Top, 
