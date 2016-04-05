@@ -412,6 +412,7 @@ namespace Xamarin.Forms.Platform.Android
 		#region Fields
 		PhysicalLayoutManager _physicalLayout;
 		int _position;
+		bool _disposed;
 		#endregion
 
 		public CarouselViewRenderer()
@@ -419,11 +420,23 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && !_disposed)
+			{
+				_disposed = true;
+				if (Element != null)
+					Element.CollectionChanged -= OnCollectionChanged;
+			}
+
+			base.Dispose(disposing);
+		}
+
 		#region Private Members
 		void Initialize()
 		{
 			// cache hit? Check if the view page is already created
-			RecyclerView recyclerView = base.Control;
+			RecyclerView recyclerView = Control;
 			if (recyclerView != null)
 				return;
 
@@ -488,24 +501,10 @@ namespace Xamarin.Forms.Platform.Android
 			var adapter = new ItemViewAdapter(this);
 			adapter.RegisterAdapterDataObserver(new PositionUpdater(this));
 			recyclerView.SetAdapter(adapter);
-
-			// initialize properties
-			Element.Position = 0;
-
-			// initialize events
-			Element.CollectionChanged += OnCollectionChanged;
 		}
 
 		ItemViewAdapter Adapter => (ItemViewAdapter)Control.GetAdapter();
 		PhysicalLayoutManager LayoutManager => (PhysicalLayoutManager)Control.GetLayoutManager();
-		new RecyclerView Control
-		{
-			get
-			{
-				Initialize();
-				return base.Control;
-			}
-		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -552,6 +551,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 		ICarouselViewController Controller => Element;
+		IVisualElementController VisualElementController => Element;
 		void OnPositionChanged()
 		{
 			Element.Position = _position;
@@ -566,12 +566,28 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselView> e)
 		{
-			CarouselView oldElement = e.OldElement;
-			if (oldElement != null)
-				e.OldElement.CollectionChanged -= OnCollectionChanged;
-
 			base.OnElementChanged(e);
-			Initialize();
+
+			CarouselView oldElement = e.OldElement;
+			CarouselView newElement = e.NewElement;
+			if (oldElement != null)
+			{
+				e.OldElement.CollectionChanged -= OnCollectionChanged;
+			}
+
+			if (newElement != null)
+			{
+				if (Control == null)
+				{
+					Initialize();
+				}
+
+				// initialize properties
+				VisualElementController.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+
+				// initialize events
+				Element.CollectionChanged += OnCollectionChanged;
+			}
 		}
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
