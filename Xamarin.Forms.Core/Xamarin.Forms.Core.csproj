@@ -31,6 +31,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>0618</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>

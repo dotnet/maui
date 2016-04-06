@@ -456,10 +456,10 @@ namespace Xamarin.Forms.Platform.Android
 			Color colorToUse = Color.Default;
 			if (CurrentNavigationPage != null)
 			{
-#pragma warning disable 618
+//#pragma warning disable 618
 				if (CurrentNavigationPage.Tint != Color.Default)
 					colorToUse = CurrentNavigationPage.Tint;
-#pragma warning restore 618
+//#pragma warning restore 618
 				else if (CurrentNavigationPage.BarBackgroundColor != Color.Default)
 					colorToUse = CurrentNavigationPage.BarBackgroundColor;
 			}
