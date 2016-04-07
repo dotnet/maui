@@ -503,7 +503,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
 				x:Class=""Xamarin.Forms.Xaml.UnitTests.CustEntry"" TextChanged=""onValueChanged"" />
 			</Entry>";
-			var view = new CustEntry ().LoadFromXaml (xaml);
+			new CustEntry ().LoadFromXaml (xaml);
 		}
 
 		[Test]
