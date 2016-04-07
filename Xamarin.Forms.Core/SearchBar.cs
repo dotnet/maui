@@ -134,8 +134,8 @@ namespace Xamarin.Forms
 		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var self = (SearchBar)bindable;
-			var newCommand = (Command)newValue;
-			var oldCommand = (Command)oldValue;
+			var newCommand = (ICommand)newValue;
+			var oldCommand = (ICommand)oldValue;
 
 			if (oldCommand != null)
 			{
