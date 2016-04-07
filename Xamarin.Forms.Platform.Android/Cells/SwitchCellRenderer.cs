@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateText();
 			UpdateChecked();
 			UpdateHeight();
+			UpdateIsEnabled(_view, cell);
 
 			return _view;
 		}
@@ -35,11 +36,21 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateChecked();
 			else if (args.PropertyName == "RenderHeight")
 				UpdateHeight();
+			else if (args.PropertyName == Cell.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled(_view, (SwitchCell)sender);
 		}
 
 		void UpdateChecked()
 		{
 			((ASwitch)_view.AccessoryView).Checked = ((SwitchCell)Cell).On;
+		}
+
+		void UpdateIsEnabled(SwitchCellView cell, SwitchCell switchCell)
+		{
+			cell.Enabled = switchCell.IsEnabled;
+			var aSwitch = cell.AccessoryView as ASwitch;
+			if (aSwitch != null)
+				aSwitch.Enabled = switchCell.IsEnabled;
 		}
 
 		void UpdateHeight()

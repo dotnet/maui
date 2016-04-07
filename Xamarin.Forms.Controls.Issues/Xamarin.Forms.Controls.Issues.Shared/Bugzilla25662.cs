@@ -1,24 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
+
+#if UITEST
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 25662, "Setting IsEnabled does not disable SwitchCell")]
-    public class Bugzilla25662 : ContentPage
+    public class Bugzilla25662 : TestContentPage
     {
+		[Preserve(AllMembers = true)]
 		class MySwitch : SwitchCell
 		{
 			public MySwitch ()
 			{
 				IsEnabled = false;
+				SetBinding(SwitchCell.TextProperty, new Binding("."));
+				OnChanged += (sender, e) => Text = "FAIL";
 			}
 		}
 
-
-		public Bugzilla25662 ()
+		protected override void Init ()
 		{
 			var list = new ListView {
 				ItemsSource = new[] {
@@ -28,8 +32,16 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = list;
-			Title = "My page";
-
 		}
-    }
+
+#if UITEST
+		[Test]
+		public void Bugzilla25662Test ()
+		{
+            RunningApp.WaitForElement (q => q.Marked ("One"));
+			RunningApp.Tap(q => q.Marked("One"));
+			RunningApp.WaitForNoElement(q => q.Marked("FAIL"));
+		}
+#endif
+	}
 }
