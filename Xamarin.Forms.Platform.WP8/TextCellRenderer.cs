@@ -34,6 +34,11 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var entryCell = (EntryCell)parameter;
 			entryCell.SendCompleted();
 		}
+
+		protected virtual void OnCanExecuteChanged()
+		{
+			CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
 	}
 
 	public class EntryCellPhoneTextBox : PhoneTextBox
