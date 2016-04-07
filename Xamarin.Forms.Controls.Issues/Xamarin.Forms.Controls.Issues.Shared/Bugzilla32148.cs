@@ -26,10 +26,7 @@ namespace Xamarin.Forms.Controls
 		{
 			Title = "Contacts";
 			Content = CreateContent();
-			// Disable the await warning
-			#pragma warning disable 4014
 			LoadContactsAsync();
-			#pragma warning restore 4014
 		}
 
 		Layout CreateContent()

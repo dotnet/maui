@@ -22,7 +22,8 @@ namespace Xamarin.Forms.Controls
 			_button = new Button { Text = "Button" };
  
 			// The same behavior happens for both Absolute and Relative layout.
-			var layout = true ? Relative() : Absolute();
+            //var layout = true ? Relative() : Absolute();
+			var layout = Relative();
  
 			Animate();
  

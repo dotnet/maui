@@ -105,7 +105,7 @@ namespace Xamarin.Forms.Core.UITests
 		[UiTest (typeof (VisualElement), "IsEnabled")]
 		public virtual void _IsEnabled ()
 		{
-			var propName = Test.VisualElement.IsEnabled.ToString ();
+			//var propName = Test.VisualElement.IsEnabled.ToString ();
 			var remote = new StateViewContainerRemote (App, Test.VisualElement.IsEnabled, PlatformViewType);
 			remote.GoTo ();
 

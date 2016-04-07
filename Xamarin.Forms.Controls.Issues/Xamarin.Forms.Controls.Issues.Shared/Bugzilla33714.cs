@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			void list_ItemSelected(object sender, SelectedItemChangedEventArgs e)
 			{
-				var listView = (ListView) sender;
+				//var listView = (ListView) sender;
 
 				_masterPage.Detail = new NavigationPage(new DetailPage());
 			}

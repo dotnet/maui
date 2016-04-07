@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
             absLayout.Scale = 1;
 
             var cPx = new ListView ();
-            Point ptx = Point.Zero;
+            //Point ptx = Point.Zero;
 		    cPx.ItemTapped += delegate (object sender, ItemTappedEventArgs e) {
 		    };
             cPx.ClassId = "weather";

@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Core.UITests
 {
 	internal abstract class BaseViewContainerRemote
 	{
-		bool requiresDismissal;
+		//bool requiresDismissal;
 
 		protected IApp App { get; private set; }
 
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Core.UITests
 			LayeredLabelQuery = string.Format ("* marked:'{0}LayeredLabel'", formsType);
 
 			if (platformViewType == PlatformViews.DatePicker) {
-				requiresDismissal = true;
+				//requiresDismissal = true;
 			}			
 		}
 

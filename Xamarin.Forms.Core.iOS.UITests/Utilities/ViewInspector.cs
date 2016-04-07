@@ -66,7 +66,8 @@ namespace Xamarin.Forms.Core.UITests
 					MaybeGetProperty<float>  (app, query, property, out prop) ||
 					MaybeGetProperty<bool>   (app, query, property, out prop);
 
-				//if (found)
+                if (found)
+                    continue;
 				//	Logger.LogLine (string.Format ("{0,-30}: {1}", property, prop));
 			}
 
@@ -139,6 +140,8 @@ namespace Xamarin.Forms.Core.UITests
                     MaybeGetLayerProperty<int>(app, query, property, out prop) ||
                     MaybeGetLayerProperty<bool>(app, query, property, out prop);
 
+                if (found)
+                    continue;
 				//if (found)
 				//	Logger.LogLine(string.Format("{0,-30}: {1}", property, prop));
             }
@@ -304,6 +307,8 @@ namespace Xamarin.Forms.Core.UITests
 					MaybeGetProperty<float>  (app, query, property, out prop) ||
 					MaybeGetProperty<bool>   (app, query, property, out prop);
 
+                if (found)
+                    continue;
 				//if (found)
 				//	Logger.LogLine (string.Format ("{0,-30}: {1}", property, prop));
 			}

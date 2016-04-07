@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			ShouldShowMenu ();
 			if (App is AndroidApp) {
-				var btn = App.Query (c => c.Marked (btn4Id))[0];
+				//App.Query (c => c.Marked (btn4Id))[0];
 			}
 			else {
 				App.Tap (c => c.Marked (btn4Id));
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Core.UITests
 			ShouldHideMenu ();
 			var btn1 = App.Query (c => c.Marked (btn1Id)) [0];
 			ShouldShowMenu ();
-			var btn2 = App.Query (c => c.Marked (btn4Id)) [0];
+			//var btn2 = App.Query (c => c.Marked (btn4Id)) [0];
 			Assert.False (btn1.Enabled, "Toolbar Item  should be disable");
 			//TODO: how to check Enable for the textview
 			//Assert.False (btn2.Enabled, "Toolbar Item  should be disable");

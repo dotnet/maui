@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Description ("Scroll element to the start")]
 		public void ScrollToElement1Start ()
 		{
-			var scroller = App.Query (c => c.Marked ("thescroller"))[0];
+			//var scroller = App.Query (c => c.Marked ("thescroller"))[0];
 			//need to extract the contentOffset on iOS
 			App.Tap(c=> c.Marked("Start"));
 			App.WaitForElement (c => c.Marked ("the scrollto button"));
