@@ -134,7 +134,7 @@ namespace Xamarin.Forms
 
 		public void OpenUriAction(Uri uri)
 		{
-			Launcher.LaunchUriAsync(uri);
+			Launcher.LaunchUriAsync(uri).WatchForError();
 		}
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)

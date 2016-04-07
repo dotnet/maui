@@ -32,7 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>4014;0618;0219</NoWarn>
+    <NoWarn>0618;0219</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -202,6 +202,7 @@
       <DependentUpon>TableView.xaml</DependentUpon>
     </Compile>
     <Compile Include="TableViewRenderer.cs" />
+    <Compile Include="TaskExtensions.cs" />
     <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs" />
     <Compile Include="TextCellRenderer.cs" />
     <Compile Include="TimePickerRenderer.cs" />
