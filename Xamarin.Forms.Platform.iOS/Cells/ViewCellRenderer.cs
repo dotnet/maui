@@ -35,6 +35,8 @@ namespace Xamarin.Forms.Platform.iOS
 			viewCell.PropertyChanged += ViewCellPropertyChanged;
 			cell.ViewCell = viewCell;
 
+			SetRealCell(item, cell);
+
 			WireUpForceUpdateSizeRequested(item, cell, tv);
 
 			UpdateBackground(cell, item);
