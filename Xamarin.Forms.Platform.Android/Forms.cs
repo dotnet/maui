@@ -362,15 +362,7 @@ namespace Xamarin.Forms
 				return new _IsolatedStorageFile(IsolatedStorageFile.GetUserStoreForApplication());
 			}
 
-			public bool IsInvokeRequired
-			{
-				get
-				{
-					using (Looper my = Looper.MyLooper())
-					using (Looper main = Looper.MainLooper)
-						return my != main;
-				}
-			}
+			public bool IsInvokeRequired => !Looper.MainLooper.IsCurrentThread;
 
 			public void OpenUriAction(Uri uri)
 			{
