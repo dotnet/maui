@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -32,13 +33,35 @@ namespace Xamarin.Forms.Xaml
 					continue;
 				object res;
 				if (ve.Resources.TryGetValue(Key, out res))
-					return res;
+				{
+					return ConvertCompiledOnPlatform(res);
+				}
 			}
 			if (Application.Current != null && Application.Current.Resources != null &&
 			    Application.Current.Resources.ContainsKey(Key))
-				return Application.Current.Resources[Key];
+			{
+				var resource = Application.Current.Resources[Key];
 
-			throw new XamlParseException(string.Format("StaticResource not found for key {0}", Key), xmlLineInfo);
+				return ConvertCompiledOnPlatform(resource);
+			}
+
+			throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
+		}
+
+		static object ConvertCompiledOnPlatform(object resource)
+		{
+			var actualType = resource.GetType();
+			if (actualType.GetTypeInfo().IsGenericType && actualType.GetGenericTypeDefinition() == typeof(OnPlatform<>))
+			{
+				// If we're accessing OnPlatform via a StaticResource in compiled XAML 
+				// we'll have to handle the cast to the target type manually 
+				// (Normally the compiled XAML handles this by calling `implicit` explicitly,
+				// but it doesn't know to do that when it's using a static resource)
+				var method = actualType.GetRuntimeMethod("op_Implicit", new[] { actualType });
+				resource = method.Invoke(resource, new[] { resource });
+			}
+
+			return resource;
 		}
 	}
 }
