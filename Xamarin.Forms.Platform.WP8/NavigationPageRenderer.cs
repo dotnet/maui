@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			return stack;
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName != "Parent" || Element.RealParent != null)
 				return;
