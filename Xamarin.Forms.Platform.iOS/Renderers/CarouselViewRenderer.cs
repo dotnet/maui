@@ -48,7 +48,10 @@ namespace Xamarin.Forms.Platform.iOS
 		#endregion
 
 		#region Fields
-		CarouselViewController.Layout _layout;
+		// As on Android, ScrollToPostion from 0 to 2 should not raise OnPositionChanged for 1
+		// Tracking the _targetPosition allows for skipping events for intermediate positions
+		int? _targetPosition;
+
 		int _position;
 		CarouselViewController _controller;
 		#endregion
@@ -73,19 +76,13 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_controller = new CarouselViewController(
-				renderer: this, 
-				layout: _layout = new CarouselViewController.Layout(
-					UICollectionViewScrollDirection.Horizontal
-				),
-				originPosition: Element.Position
+				renderer: this,
+				initialPosition: Element.Position
 			);
 
 			// hook up on position changed event
 			// not ideal; the event is raised upon releasing the swipe instead of animation completion
-			_layout.OnSwipeOffsetChosen += o => OnPositionChange(o);
-
-			// hook up crud events
-			Element.CollectionChanged += OnCollectionChanged;
+			_controller.OnWillDisplayCell += o => OnPositionChange(o);
 
 			// populate cache
 			SetNativeControl(_controller.CollectionView);
@@ -96,22 +93,28 @@ namespace Xamarin.Forms.Platform.iOS
 			var item = Controller.GetItem(position);
 			Controller.SendSelectedItemChanged(item);
 		}
-		bool OnPositionChange(int position)
+		void OnPositionChange(int position)
 		{
 			if (position == _position)
-				return false;
+				return;
 
+			if (_targetPosition != null && position != _targetPosition)
+				return;
+
+			_targetPosition = null;
 			_position = position;
+			Element.Position = _position;
 
 			Controller.SendSelectedPositionChanged(position);
 			OnItemChange(position);
-			return true;
+			return;
 		}
 		void ScrollToPosition(int position, bool animated = true)
 		{
-			if (!OnPositionChange(position))
+			if (position == _position)
 				return;
 
+			_targetPosition = position;
 			_controller.ScrollToPosition(position, animated);
 		}
 		void OnCollectionChanged(object source, NotifyCollectionChangedEventArgs e)
@@ -184,7 +187,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "Position")
+			if (e.PropertyName == "Position" && _position != Element.Position)
 				// not ideal; the event is raised before the animation to move completes (or even starts)
 				ScrollToPosition(Element.Position);
 
@@ -193,7 +196,27 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselView> e)
 		{
 			base.OnElementChanged(e);
-			Initialize();
+
+			CarouselView oldElement = e.OldElement;
+			CarouselView newElement = e.NewElement;
+			if (oldElement != null)
+			{
+				e.OldElement.CollectionChanged -= OnCollectionChanged;
+			}
+
+			if (newElement != null)
+			{
+				if (Control == null)
+				{
+					Initialize();
+				}
+
+				// initialize properties
+				_position = Element.Position;
+
+				// hook up crud events
+				Element.CollectionChanged += OnCollectionChanged;
+			}
 		}
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -204,76 +227,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 	internal sealed class CarouselViewController : UICollectionViewController
 	{
-		internal new sealed class Layout : UICollectionViewFlowLayout
-		{
+		new sealed class Layout : UICollectionViewFlowLayout {
 			static readonly nfloat ZeroMinimumInteritemSpacing = 0;
 			static readonly nfloat ZeroMinimumLineSpacing = 0;
 
-			int _width;
-
-			public Layout(UICollectionViewScrollDirection scrollDirection)
-			{
+			public Layout(UICollectionViewScrollDirection scrollDirection) {
 				ScrollDirection = scrollDirection;
 				MinimumInteritemSpacing = ZeroMinimumInteritemSpacing;
 				MinimumLineSpacing = ZeroMinimumLineSpacing;
-			}
-
-			public Action<int> OnSwipeOffsetChosen;
-
-			public override UICollectionViewLayoutAttributes InitialLayoutAttributesForAppearingItem(NSIndexPath itemIndexPath)
-			{
-				return base.InitialLayoutAttributesForAppearingItem(itemIndexPath);
-			}
-			public override UICollectionViewLayoutAttributes FinalLayoutAttributesForDisappearingItem(NSIndexPath itemIndexPath)
-			{
-				return base.FinalLayoutAttributesForDisappearingItem(itemIndexPath);
-			}
-			public override UICollectionViewLayoutAttributes[] LayoutAttributesForElementsInRect(RectangleF rect)
-			{
-				// couldn't figure a way to use these values to compute when an element appeared to disappeared. YMMV
-				var result = base.LayoutAttributesForElementsInRect(rect);
-				foreach (var item in result)
-				{
-					var index = item.IndexPath;
-					var category = item.RepresentedElementCategory;
-					var kind = item.RepresentedElementKind;
-
-					var hidden = item.Hidden;
-					var bounds = item.Bounds;
-					var frame = item.Frame;
-					var center = item.Center;
-
-					_width = (int)item.Bounds.Width;
-				}
-				return result;
-			}
-			public override SizeF CollectionViewContentSize
-			{
-				get
-				{
-					var result = base.CollectionViewContentSize;
-					return result;
-				}
-			}
-			public override NSIndexPath GetTargetIndexPathForInteractivelyMovingItem(NSIndexPath previousIndexPath, PointF position)
-			{
-				var result = base.GetTargetIndexPathForInteractivelyMovingItem(previousIndexPath, position);
-				return result;
-			}
-			public override PointF TargetContentOffsetForProposedContentOffset(PointF proposedContentOffset)
-			{
-				var result = base.TargetContentOffsetForProposedContentOffset(proposedContentOffset);
-				return result;
-			}
-			public override PointF TargetContentOffset(PointF proposedContentOffset, PointF scrollingVelocity)
-			{
-				var result = base.TargetContentOffset(proposedContentOffset, scrollingVelocity);
-				OnSwipeOffsetChosen?.Invoke((int)result.X / _width);
-				return result;
-			}
-			public override bool ShouldInvalidateLayoutForBoundsChange(RectangleF newBounds)
-			{
-				return true;
 			}
 		}
 		sealed class Cell : UICollectionViewCell
@@ -282,12 +243,6 @@ namespace Xamarin.Forms.Platform.iOS
 			int _position;
 			IVisualElementRenderer _renderer;
 			View _view;
-
-			[Export("initWithFrame:")]
-			internal Cell(RectangleF frame) : base(frame)
-			{
-				_position = -1;
-			}
 
 			void Bind(object item, int position)
 			{
@@ -300,6 +255,11 @@ namespace Xamarin.Forms.Platform.iOS
 				_controller.BindView(_view, item);
 			}
 
+			[Export("initWithFrame:")]
+			internal Cell(RectangleF frame) : base(frame)
+			{
+				_position = -1;
+			}
 			internal void Initialize(IItemViewController controller, object itemType, object item, int position)
 			{
 				_position = position;
@@ -327,7 +287,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			public Action<int> OnBind;
-
 			public override void LayoutSubviews()
 			{
 				base.LayoutSubviews();
@@ -337,21 +296,19 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		readonly Dictionary<object, int> _typeIdByType;
-		UICollectionViewLayout _layout;
 		CarouselViewRenderer _renderer;
 		int _nextItemTypeId;
-		int _originPosition;
+		int _initialPosition;
 
-		public Action<int> OnBind;
-		public Action<int> OnSwipeTargetChosen;
-
-		public CarouselViewController(CarouselViewRenderer renderer, UICollectionViewLayout layout, int originPosition) : base(layout)
+		internal CarouselViewController(
+			CarouselViewRenderer renderer, 
+			int initialPosition)
+			: base(new Layout(UICollectionViewScrollDirection.Horizontal))
 		{
 			_renderer = renderer;
 			_typeIdByType = new Dictionary<object, int>();
 			_nextItemTypeId = 0;
-			_layout = layout;
-			_originPosition = originPosition;
+			_initialPosition = initialPosition;
 		}
 
 		CarouselViewRenderer Renderer => _renderer;
@@ -367,15 +324,19 @@ namespace Xamarin.Forms.Platform.iOS
 			return collectionView.Frame.Size;
 		}
 
+		internal Action<int> OnBind;
+		internal Action<int> OnWillDisplayCell;
+
 		public override void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (_originPosition == 0)
+			if (_initialPosition != 0) {
+				ScrollToPosition(_initialPosition, false);
+				_initialPosition = 0;
 				return;
+			}
 
-			// Ideally position zero would not be rendered in memory however it is.
-			// Thankfully, position zero is not displyed; position originPosition is rendered and displayed.
-			ScrollToPosition(_originPosition, false);
-			_originPosition = 0;
+			var index = indexPath.Row;
+			OnWillDisplayCell?.Invoke(index);
 		}
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
@@ -397,8 +358,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var index = indexPath.Row;
 
-			if (_originPosition != 0)
-				index = _originPosition;
+			if (_initialPosition != 0)
+				index = _initialPosition;
 
 			var item = Controller.GetItem(index);
 			var itemType = Controller.GetItemType(item);
@@ -420,18 +381,18 @@ namespace Xamarin.Forms.Platform.iOS
 			return cell;
 		}
 
-		public void ReloadData() => CollectionView.ReloadData();
-		public void ReloadItems(IEnumerable<int> positions)
+		internal void ReloadData() => CollectionView.ReloadData();
+		internal void ReloadItems(IEnumerable<int> positions)
 		{
 			var indices = positions.Select(o => NSIndexPath.FromRowSection(o, 0)).ToArray();
 			CollectionView.ReloadItems(indices);
 		}
-		public void DeleteItems(IEnumerable<int> positions)
+		internal void DeleteItems(IEnumerable<int> positions)
 		{
 			var indices = positions.Select(o => NSIndexPath.FromRowSection(o, 0)).ToArray();
 			CollectionView.DeleteItems(indices);
 		}
-		public void MoveItem(int oldPosition, int newPosition)
+		internal void MoveItem(int oldPosition, int newPosition)
 		{
 			base.MoveItem(
 				CollectionView, 
@@ -439,7 +400,7 @@ namespace Xamarin.Forms.Platform.iOS
 				NSIndexPath.FromRowSection(newPosition, 0)
 			);
 		}
-		public void ScrollToPosition(int position, bool animated = true)
+		internal void ScrollToPosition(int position, bool animated = true)
 		{
 			CollectionView.ScrollToItem(
 				indexPath: NSIndexPath.FromRowSection(position, 0), 

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Linq;
 using Xamarin.Forms.CustomAttributes;
 using System.Collections;
 using System.Collections.Generic;
@@ -56,15 +56,15 @@ namespace Xamarin.Forms.Controls
 			public ItemView ()
 			{
 
-				var change = CreateButton("Change", (items, index) => items[index] = new Moo ());
+				var change = CreateButton("Change", "Change", (items, index) => items[index] = new Moo ());
 
 				var removeBar = new StackLayout {
 					Orientation = StackOrientation.Horizontal,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					Children = {
-						CreateButton ("- Left", (items, index) => items.RemoveAt (index - 1)),
-						CreateButton ("Remove", (items, index) => items.RemoveAt (index)),
-						CreateButton ("- Right", (items, index) => items.RemoveAt (index + 1)),
+						CreateButton ("- Left", "RemoveLeft", (items, index) => items.RemoveAt (index - 1)),
+						CreateButton ("Remove", "Remove", (items, index) => items.RemoveAt (index)),
+						CreateButton ("- Right", "RemoveRight", (items, index) => items.RemoveAt (index + 1)),
 					}
 				};
 
@@ -72,8 +72,8 @@ namespace Xamarin.Forms.Controls
 					Orientation = StackOrientation.Horizontal,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					Children = {
-						CreateButton ("+ Left", (items, index) => items.Insert (index, new Moo ())),
-						CreateButton ("+ Right", (items, index) => {
+						CreateButton ("+ Left", "AddLeft", (items, index) => items.Insert (index, new Moo ())),
+						CreateButton ("+ Right", "AddRight", (items, index) => {
 							if (index == items.Count - 1)
 								items.Add (new Moo ());
 							else
@@ -85,7 +85,11 @@ namespace Xamarin.Forms.Controls
 				var typeNameLabel = new Label () { StyleId = "typename" };
 				typeNameLabel.SetBinding (Label.TextProperty, nameof(Item.TypeName));
 
-				var idLabel = new Label () { StyleId = "id", TextColor = Color.White };
+				var idLabel = new Label () {
+					AutomationId = "ItemId",
+					StyleId = "id",
+					TextColor = Color.White
+				};
 				idLabel.SetBinding (Label.TextProperty, nameof(Item.Id));
 
 				Content = new StackLayout {
@@ -104,9 +108,10 @@ namespace Xamarin.Forms.Controls
 				};
 			}
 
-			Button CreateButton(string text, Action<IList<Item>, int> clicked)
+			Button CreateButton(string text, string automationId, Action<IList<Item>, int> clicked)
 			{
 				var button = new Button ();
+				button.AutomationId = automationId;
 				button.Text = text;
 				button.Clicked += (s, e) => {
 					var items = (IList<Item>)Context.ItemsSource;
@@ -169,19 +174,11 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		static readonly MyDataTemplateSelector Selector = new MyDataTemplateSelector ();
-
-		static readonly IList<Item> Items = new ObservableCollection<Item> () {
-			new Baz(),
-			new Poo(),
-			new Foo(),
-			new Bar(),
-		};
-
-		Button CreateButton(string text, Action onClicked = null)
+		static Button CreateButton(string text, string automationId, Action onClicked = null)
 		{
 			var button = new Button {
-				Text = text
+				Text = text, 
+				AutomationId = automationId
 			};
 
 			if (onClicked != null)
@@ -189,85 +186,116 @@ namespace Xamarin.Forms.Controls
 
 			return button;
 		}
+		static Label CreateValue(string text, string automationId = "") => CreateLabel(text, Color.Olive, automationId);
+		static Label CreateCopy(string text, string automationId = "") => CreateLabel(text, Color.White, automationId);
+		static Label CreateLabel(string text, Color color, string automationId)
+		{
+			return new Label() {
+				TextColor = color,
+				Text = text,
+				AutomationId = automationId
+			};
+		}
+
+		const int StartPosition = 1;
+		const int EventQueueLength = 7;
+
+		readonly CarouselView _carouselView;
+		readonly MyDataTemplateSelector _selector;
+		readonly IList<Item> _items;
+		readonly Label _position;
+		readonly Label _selectedItem;
+		readonly Label _selectedPosition;
+		readonly Queue<string> _events;
+		readonly Label _eventLog;
+		int _eventId;
+
+		void OnEvent(string name)
+		{
+			_events.Enqueue($"{name}/{_eventId++}");
+
+			if (_events.Count == EventQueueLength)
+				_events.Dequeue();
+			_eventLog.Text = string.Join(", ", _events.ToArray().Reverse());
+
+			_position.Text = $"{_carouselView.Position}";
+		}
 
 		public CarouselViewGallaryPage ()
 		{
-			BackgroundColor = Color.Blue;
+			_selector = new MyDataTemplateSelector ();
+			_items = new ObservableCollection<Item>() {
+				new Baz(),
+				new Poo(),
+				new Foo(),
+				new Bar(),
+			};
 
-			var logLabel = new Label () { TextColor = Color.White };
-			var selectedItemLabel = new Label () { TextColor = Color.White, Text = "0" };
-			var selectedPositionLabel = new Label () { TextColor = Color.White, Text = "@0" };
-			//var appearingLabel = new Label () { TextColor = Color.White };
-			//var disappearingLabel = new Label () { TextColor = Color.White };
-
-			var carouselView = new CarouselView {
+			_carouselView = new CarouselView {
 				BackgroundColor = Color.Purple,
-				ItemsSource = Items,
-				ItemTemplate = Selector,
-				Position = 1
+				ItemsSource = _items,
+				ItemTemplate = _selector,
+				Position = StartPosition
 			};
 
-			bool capture = false;
-			carouselView.ItemSelected += (s, o) => {
-				var item = (Item)o.SelectedItem;
-				selectedItemLabel.Text = $"{item.Id}";
-				if (capture)
-					logLabel.Text += $"({item.Id}) ";
+			_events = new Queue<string>();
+			_eventId = 0;
+			_position = CreateValue($"{_carouselView.Position}", "Position");
+			_selectedItem = CreateValue("?", "SelectedItem");
+			_selectedPosition = CreateValue("?", "SelectedPosition");
+			_eventLog = CreateValue(string.Empty, "EventLog");
+
+			_carouselView.ItemSelected += (s, o) => {
+				var selectedItem = ((Item)o.SelectedItem).Id;
+				_selectedItem.Text = $"{selectedItem}";
+				OnEvent("i");
 			};
-			carouselView.PositionSelected += (s, o) => {
-				var position = (int)o.SelectedPosition;
-				selectedPositionLabel.Text = $"@{position}=={carouselView.Position}";
-				if (capture)
-					logLabel.Text += $"(@{position}) ";
+
+			_carouselView.PositionSelected += (s, o) => {
+				var selectedPosition = (int)o.SelectedPosition;
+				_selectedPosition.Text = $"{selectedPosition}";
+				OnEvent("p");
 			};
-			//carouselView.ItemDisappearing += (s, o) => {
-			//	var item = (Item)o.Item;
-			//	var id = item.Id;
-			//	disappearingLabel.Text = $"-{id}";
-			//	if (capture)
-			//		logLabel.Text += $"(-{id}) ";
-			//};
-			//carouselView.ItemAppearing += (s, o) => {
-			//	var item = (Item)o.Item;
-			//	var id = item.Id;
-			//	appearingLabel.Text = $"+{id}";
-			//	if (capture)
-			//		logLabel.Text += $"(+{id}) ";
-			//};
+
+			BackgroundColor = Color.Blue;
 
 			var moveBar = new StackLayout {
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children = {
-					CreateButton ("<<", () => carouselView.Position = 0),
-					CreateButton ("<", () => { try { carouselView.Position--; } catch { } }),
-					CreateButton (">", () => { try { carouselView.Position++; } catch { } }),
-					CreateButton (">>", () => carouselView.Position = Items.Count - 1)
+					CreateButton ("<<", "First", () => _carouselView.Position = 0),
+					CreateButton ("<", "Previous", () => {
+						if (_carouselView.Position == 0)
+							return;
+						_carouselView.Position--;
+					}),
+					CreateButton (">", "Next", () => {
+						if (_carouselView.Position == _items.Count - 1)
+							return;
+						_carouselView.Position++;
+					}),
+					CreateButton (">>", "Last", () => _carouselView.Position = _items.Count - 1)
 				}
 			};
+
 
 			var statusBar = new StackLayout {
 				Orientation = StackOrientation.Horizontal,
 				Children = {
-					selectedItemLabel,
-					selectedPositionLabel,
-					//disappearingLabel,
-					//appearingLabel,
+					CreateCopy("Pos:"), _position,
+					CreateCopy("OnItemSel:"), _selectedItem,
+					CreateCopy("OnPosSel:"), _selectedPosition,
 				}
 			};
 
 			var logBar = new StackLayout {
 				Orientation = StackOrientation.Horizontal,
-				Children = {
-					CreateButton ("Clear", () => logLabel.Text = ""),
-					CreateButton ("On/Off", () => capture = !capture ),
-					logLabel,
-				}
+				Children = { _eventLog }
 			};
 
 			Content = new StackLayout {
 				Children = {
-					carouselView,
+					_carouselView,
 					moveBar,
 					statusBar,
 					logBar

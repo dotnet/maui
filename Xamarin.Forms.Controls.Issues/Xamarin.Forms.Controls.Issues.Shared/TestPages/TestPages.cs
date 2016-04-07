@@ -64,16 +64,18 @@ namespace Xamarin.Forms.Controls
 			app.Tap (q => q.Raw ("* marked:'SearchButton'"));
 		}
 
-		public static IApp Setup (Type pageType)
+		public static IApp Setup (Type pageType = null)
 		{
 			IApp runningApp = null;
 			try {
 				runningApp = InitializeApp ();
-			} catch {
-				Assert.Inconclusive ("App did not start for some reason");
+			} catch (Exception e) {
+				Assert.Inconclusive ($"App did not start for some reason: {e}");
 			}
 			
-			NavigateToIssue (pageType, runningApp);
+			if (pageType != null)
+				NavigateToIssue (pageType, runningApp);
+
 			return runningApp;
 		}
 	}

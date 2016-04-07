@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.Android
 			internal override bool CanScrollHorizontally => true;
 			internal override bool CanScrollVertically => false;
 
-			internal override IntRectangle GetBounds(int originPosition, RecyclerView.State state) => 
+			internal override IntRectangle GetBounds(int originPosition, State state) => 
 				new IntRectangle(
 					LayoutItem(originPosition, 0).Location, 
 					new IntSize(_itemSize.Width * state.ItemCount, _itemSize.Height)
@@ -583,7 +583,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				// initialize properties
-				VisualElementController.SetValueFromRenderer(CarouselView.PositionProperty, 0);
+				_position = Element.Position;
 
 				// initialize events
 				Element.CollectionChanged += OnCollectionChanged;
@@ -778,10 +778,7 @@ namespace Xamarin.Forms.Platform.Android
 		AdapterChangeType _adapterChangeType;
 		#endregion
 
-		public PhysicalLayoutManager(
-			Context context, 
-			VirtualLayoutManager virtualLayout, 
-			int positionOrigin)
+		internal PhysicalLayoutManager(Context context, VirtualLayoutManager virtualLayout, int positionOrigin)
 		{
 			_positionOrigin = positionOrigin;
 			_context = context;
@@ -793,7 +790,7 @@ namespace Xamarin.Forms.Platform.Android
 			_scroller = new SeekAndSnapScroller(
 				context: context, 
 				vectorToPosition: adapterPosition => {
-					var end = virtualLayout.LayoutItem(positionOrigin, adapterPosition).Center();
+					var end = virtualLayout.LayoutItem(_positionOrigin, adapterPosition).Center();
 					var begin = Viewport.Center();
 					return end - begin;
 				}
@@ -853,24 +850,24 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		public event Action<int> OnAppearing;
-		public event Action<int> OnBeginScroll;
-		public event Action<int> OnDisappearing;
-		public event Action<int> OnEndScroll;
+		internal event Action<int> OnAppearing;
+		internal event Action<int> OnBeginScroll;
+		internal event Action<int> OnDisappearing;
+		internal event Action<int> OnEndScroll;
 
-		public IntVector Velocity => _samples.Aggregate((o, a) => o + a) / _samples.Count;
-		public void Layout(int width, int height)
+		internal IntVector Velocity => _samples.Aggregate((o, a) => o + a) / _samples.Count;
+		internal void Layout(int width, int height)
 		{
 			// e.g. when rotated the width and height are updated the virtual layout will 
 			// need to resize and provide a new viewport offset given the current one.
 			_virtualLayout.Layout(_positionOrigin, new IntSize(width, height), ref _locationOffset);
 		}
-		public IntRectangle Viewport => Rectangle + _locationOffset;
-		public IEnumerable<int> VisiblePositions()
+		internal IntRectangle Viewport => Rectangle + _locationOffset;
+		internal IEnumerable<int> VisiblePositions()
 		{
 			return _visibleAdapterPosition;
 		}
-		public IEnumerable<AndroidView> Views()
+		internal IEnumerable<AndroidView> Views()
 		{
 			return _viewByAdaptorPosition.Values;
 		}
