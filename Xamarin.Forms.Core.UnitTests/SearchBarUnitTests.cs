@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Windows.Input;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -108,5 +108,26 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.True (searchBar.IsEnabled);
 		}
+
+	    class MyCommand : ICommand
+	    {
+	        public bool CanExecute(object parameter)
+	        {
+	            return true;
+	        }
+
+	        public void Execute(object parameter)
+	        {
+	        }
+
+	        public event EventHandler CanExecuteChanged;
+	    }
+
+	    [Test]
+	    public void DoesNotCrashWithNonCommandICommand()
+	    {
+	        var searchBar = new SearchBar();
+            Assert.DoesNotThrow(() => searchBar.SearchCommand = new MyCommand());
+	    }
 	}
 }
