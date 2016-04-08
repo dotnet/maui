@@ -42,11 +42,29 @@ namespace Xamarin.Forms
 
 		public static bool AbortAnimation(this IAnimatable self, string handle)
 		{
-			CheckAccess();
-
 			var key = new AnimatableKey(self, handle);
 
-			return AbortAnimation(key) && AbortKinetic(key);
+			if (!s_animations.ContainsKey(key) && !s_kinetics.ContainsKey(key))
+			{
+				return false;
+			}
+
+			Action abort = () =>
+			{
+				AbortAnimation(key);
+				AbortKinetic(key);
+			};
+
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(abort);
+			}
+			else
+			{
+				abort();
+			}
+
+			return true;
 		}
 
 		public static void Animate(this IAnimatable self, string name, Animation animation, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
@@ -67,8 +85,9 @@ namespace Xamarin.Forms
 			self.Animate(name, x => x, callback, rate, length, easing, finished, repeat);
 		}
 
-		public static void Animate<T>(this IAnimatable self, string name, Func<double, T> transform, Action<T> callback, uint rate = 16, uint length = 250, Easing easing = null,
-									  Action<T, bool> finished = null, Func<bool> repeat = null)
+		public static void Animate<T>(this IAnimatable self, string name, Func<double, T> transform, Action<T> callback,
+			uint rate = 16, uint length = 250, Easing easing = null,
+			Action<T, bool> finished = null, Func<bool> repeat = null)
 		{
 			if (transform == null)
 				throw new ArgumentNullException(nameof(transform));
@@ -77,8 +96,75 @@ namespace Xamarin.Forms
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
-			CheckAccess();
+			Action animate = () => AnimateInternal(self, name, transform, callback, rate, length, easing, finished, repeat);
 
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(animate);
+			}
+			else
+			{
+				animate();
+			}
+		}
+
+
+		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
+		{
+			Action animate = () => AnimateKineticInternal(self, name, callback, velocity, drag, finished);
+
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(animate);
+			}
+			else
+			{
+				animate();
+			}
+		}
+
+		public static bool AnimationIsRunning(this IAnimatable self, string handle)
+		{
+			var key = new AnimatableKey(self, handle);
+			return s_animations.ContainsKey(key);
+		}
+
+		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
+		{
+			double target = reverse ? reverseVal : end;
+			return x => start + (target - start) * x;
+		}
+
+		static void AbortAnimation(AnimatableKey key)
+		{
+			if (!s_animations.ContainsKey(key))
+			{
+				return;
+			}
+
+			Info info = s_animations[key];
+			info.Tweener.ValueUpdated -= HandleTweenerUpdated;
+			info.Tweener.Finished -= HandleTweenerFinished;
+			info.Tweener.Stop();
+			info.Finished?.Invoke(1.0f, true);
+
+			s_animations.Remove(key);
+		}
+
+		static void AbortKinetic(AnimatableKey key)
+		{
+			if (!s_kinetics.ContainsKey(key))
+			{
+				return;
+			}
+
+			Ticker.Default.Remove(s_kinetics[key]);
+			s_kinetics.Remove(key);
+		}
+
+		static void AnimateInternal<T>(IAnimatable self, string name, Func<double, T> transform, Action<T> callback,
+			uint rate, uint length, Easing easing, Action<T, bool> finished, Func<bool> repeat)
+		{
 			var key = new AnimatableKey(self, name);
 
 			AbortAnimation(key);
@@ -107,10 +193,8 @@ namespace Xamarin.Forms
 			tweener.Start();
 		}
 
-		public static void AnimateKinetic(this IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
+		static void AnimateKineticInternal(IAnimatable self, string name, Func<double, double, bool> callback, double velocity, double drag, Action finished = null)
 		{
-			CheckAccess();
-
 			var key = new AnimatableKey(self, name);
 
 			AbortKinetic(key);
@@ -118,8 +202,7 @@ namespace Xamarin.Forms
 			double sign = velocity / Math.Abs(velocity);
 			velocity = Math.Abs(velocity);
 
-			int tick = Ticker.Default.Insert(step =>
-			{
+			int tick = Ticker.Default.Insert(step => {
 				long ms = step;
 
 				velocity -= drag * ms;
@@ -140,56 +223,6 @@ namespace Xamarin.Forms
 			});
 
 			s_kinetics[key] = tick;
-		}
-
-		public static bool AnimationIsRunning(this IAnimatable self, string handle)
-		{
-			CheckAccess();
-
-			var key = new AnimatableKey(self, handle);
-
-			return s_animations.ContainsKey(key);
-		}
-
-		public static Func<double, double> Interpolate(double start, double end = 1.0f, double reverseVal = 0.0f, bool reverse = false)
-		{
-			double target = reverse ? reverseVal : end;
-			return x => start + (target - start) * x;
-		}
-
-		static bool AbortAnimation(AnimatableKey key)
-		{
-			if (!s_animations.ContainsKey(key))
-			{
-				return false;
-			}
-
-			Info info = s_animations[key];
-			info.Tweener.ValueUpdated -= HandleTweenerUpdated;
-			info.Tweener.Finished -= HandleTweenerFinished;
-			info.Tweener.Stop();
-			info.Finished?.Invoke(1.0f, true);
-
-			return s_animations.Remove(key);
-		}
-
-		static bool AbortKinetic(AnimatableKey key)
-		{
-			if (!s_kinetics.ContainsKey(key))
-			{
-				return false;
-			}
-
-			Ticker.Default.Remove(s_kinetics[key]);
-			return s_kinetics.Remove(key);
-		}
-
-		static void CheckAccess()
-		{
-			if (Device.IsInvokeRequired)
-			{
-				throw new InvalidOperationException("Animation operations must be invoked on the UI thread");
-			}
 		}
 
 		static void HandleTweenerFinished(object o, EventArgs args)

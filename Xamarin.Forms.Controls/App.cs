@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Xamarin.Forms.Controls.Issues;
 
 namespace Xamarin.Forms.Controls
 {
@@ -23,8 +24,9 @@ namespace Xamarin.Forms.Controls
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
 			InitInsights();
-			// MainPage = new MainPageLifeCycleTests ();
-			MainPage = new MasterDetailPage {
+			//MainPage = new MainPageLifeCycleTests();
+			MainPage = new MasterDetailPage
+			{
 				Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
 				Detail = CoreGallery.GetMainPage()
 			};
