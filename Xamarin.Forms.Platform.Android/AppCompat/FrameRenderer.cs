@@ -1,4 +1,6 @@
 using System;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
 using Android.Support.V4.View;
@@ -19,11 +21,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		float _defaultElevation = -1f;
 
+		bool _clickable;
 		bool _disposed;
 		Frame _element;
 		InnerGestureListener _gestureListener;
 		VisualElementPackager _visualElementPackager;
 		VisualElementTracker _visualElementTracker;
+		NotifyCollectionChangedEventHandler _collectionChangeHandler;
 
 		public FrameRenderer() : base(Forms.Context)
 		{
@@ -147,17 +151,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 
 			if (e.OldElement != null)
-				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
-			else
 			{
-				SetOnClickListener(this);
-				SetOnTouchListener(this);
+				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
+				UnsubscribeGestureRecognizers(e.OldElement);
 			}
 
 			if (e.NewElement != null)
 			{
 				if (_visualElementTracker == null)
 				{
+					SetOnClickListener(this);
+					SetOnTouchListener(this);
+
+					UpdateGestureRecognizers(true);
+
 					_visualElementTracker = new VisualElementTracker(this);
 					_visualElementPackager = new VisualElementPackager(this);
 					_visualElementPackager.Load();
@@ -166,6 +173,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 				UpdateShadow();
 				UpdateBackgroundColor();
+				SubscribeGestureRecognizers(e.NewElement);
 			}
 		}
 
@@ -185,6 +193,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
+		void HandleGestureRecognizerCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
+		{
+			UpdateGestureRecognizers();
+		}
+
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Frame.HasShadowProperty.PropertyName)
@@ -193,10 +206,52 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateBackgroundColor();
 		}
 
+		void SubscribeGestureRecognizers(VisualElement element)
+		{
+			var view = element as View;
+			if (view == null)
+				return;
+
+			if (_collectionChangeHandler == null)
+				_collectionChangeHandler = HandleGestureRecognizerCollectionChanged;
+
+			var observableCollection = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
+			observableCollection.CollectionChanged += _collectionChangeHandler;
+		}
+
+		void UnsubscribeGestureRecognizers(VisualElement element)
+		{
+			var view = element as View;
+			if (view == null || _collectionChangeHandler == null)
+				return;
+
+			var observableCollection = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
+			observableCollection.CollectionChanged -= _collectionChangeHandler;
+		}
+
 		void UpdateBackgroundColor()
 		{
 			Color bgColor = Element.BackgroundColor;
 			SetCardBackgroundColor(bgColor.IsDefault ? AColor.White : bgColor.ToAndroid());
+		}
+
+		void UpdateClickable(bool force = false)
+		{
+			var view = Element as View;
+			if (view == null)
+				return;
+
+			bool newValue = view.ShouldBeMadeClickable();
+			if (force || _clickable != newValue)
+				Clickable = newValue;
+		}
+
+		void UpdateGestureRecognizers(bool forceClick = false)
+		{
+			if (Element == null)
+				return;
+
+			UpdateClickable(forceClick);
 		}
 
 		void UpdateShadow()

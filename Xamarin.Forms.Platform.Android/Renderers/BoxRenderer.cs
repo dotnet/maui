@@ -5,6 +5,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class BoxRenderer : VisualElementRenderer<BoxView>
 	{
+		bool _isInViewCell;
+
 		public BoxRenderer()
 		{
 			AutoPackage = false;
@@ -12,13 +14,29 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			base.OnTouchEvent(e);
-			return !Element.InputTransparent;
+			if (base.OnTouchEvent(e))
+				return true;
+			return !Element.InputTransparent && !_isInViewCell;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
 			base.OnElementChanged(e);
+
+			if (e.NewElement != null)
+			{
+				var parent = e.NewElement.Parent;
+				while (parent != null)
+				{
+					if (parent is ViewCell)
+					{
+						_isInViewCell = true;
+						break;
+					}
+					parent = parent.Parent;
+				}
+			}
+
 			UpdateBackgroundColor();
 		}
 
