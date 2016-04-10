@@ -20,14 +20,14 @@ namespace Xamarin.Forms.Controls
         [Test]
         public void ButtonBlocked()
         {
-            RunningApp.Tap(q => q.Marked(CantTouchButtonId));
-            RunningApp.WaitForNoElement(q => q.Text(CantTouchFailText));
+            RunningApp.Tap(q => q.All().Marked(CantTouchButtonId));
+            RunningApp.WaitForNoElement(q => q.All().Text(CantTouchFailText));
 
-            RunningApp.Tap(q => q.Marked(CanTouchButtonId));
-            RunningApp.WaitForElement(q => q.Text(CanTouchSuccessText));
+            RunningApp.Tap(q => q.All().Marked(CanTouchButtonId));
+            RunningApp.WaitForElement(q => q.All().Text(CanTouchSuccessText));
 
-            RunningApp.Tap(q => q.Marked(ListTapTarget));
-            RunningApp.WaitForElement(q => q.Text(ListTapSuccessText));
+            RunningApp.Tap(q => q.All().Marked(ListTapTarget));
+            RunningApp.WaitForElement(q => q.All().Text(ListTapSuccessText));
         }
 #endif
 
