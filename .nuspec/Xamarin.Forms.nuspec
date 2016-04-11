@@ -235,5 +235,77 @@
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\uap10.0" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0" />
+
+    <!-- iOS Localized String Resource Assemblies -->
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ar\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ar" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ca\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ca" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\cs\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\cs" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\da\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\da" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\de\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\de" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\el\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\el" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\es\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\es" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\fi\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\fi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\fr\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\fr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\he\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\he" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\hi\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\hr\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\hu\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\hu" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\id\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\id" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\it\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\it" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ja\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ja" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ko\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ko" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ms\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ms" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\nb\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\nb" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\nl\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\nl" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\pl\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pl" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\pt-BR\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pt-BR" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\pt\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\pt" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ro\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ro" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\ru\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\ru" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\sk\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\sk" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\sv\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\sv" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\th\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\th" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\tr\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\tr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\uk\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\uk" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\vi\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\vi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-Hans\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hans" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-Hant\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hant" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-HK\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-HK" />
+
+    <!-- iOS Classic Localized String Resource Assemblies -->
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ar\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ar" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ca\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ca" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\cs\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\cs" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\da\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\da" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\de\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\de" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\el\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\el" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\es\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\es" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\fi\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\fi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\fr\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\fr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\he\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\he" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\hi\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\hi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\hr\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\hr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\hu\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\hu" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\id\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\id" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\it\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\it" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ja\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ja" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ko\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ko" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ms\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ms" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\nb\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\nb" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\nl\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\nl" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\pl\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\pl" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\pt-BR\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\pt-BR" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\pt\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\pt" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ro\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ro" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\ru\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\ru" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\sk\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\sk" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\sv\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\sv" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\th\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\th" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\tr\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\tr" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\uk\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\uk" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\vi\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\vi" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\zh-Hans\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\zh-Hans" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\zh-Hant\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\zh-Hant" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\zh-HK\Xamarin.Forms.Platform.iOS.Classic.resources.dll" target="lib\MonoTouch10\zh-HK" />
   </files>
 </package>
