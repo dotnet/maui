@@ -34,7 +34,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			return true;
 		}
 
+#pragma warning disable 0067 // Revisit: Can't remove; required by interface
 		public event EventHandler CanExecuteChanged;
+#pragma warning restore
 
 		public void Execute(object parameter)
 		{

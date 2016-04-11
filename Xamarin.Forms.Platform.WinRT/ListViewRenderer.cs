@@ -628,7 +628,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		}
 #endif
 
-		bool _deferSelection;
+		bool _deferSelection = false;
 		Tuple<object, SelectedItemChangedEventArgs> _deferredSelectedItemChangedEvent;
 	}
 }

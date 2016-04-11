@@ -98,7 +98,9 @@ namespace Xamarin.Forms.Platform.UWP
 			get { return Element; }
 		}
 
+#pragma warning disable 0067 // Revisit: Can't remove; required by interface
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+#pragma warning restore
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
