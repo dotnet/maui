@@ -18,12 +18,29 @@ namespace Xamarin.Forms.Controls
 		{
 			base.Build (stackLayout);
 
+#pragma warning disable 618
 			var namedSizeMediumBoldContainer = new ViewContainer<Label> (Test.Label.FontAttibutesBold, new Label { Text = "Medium Bold Font", Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold) });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeMediumItalicContainer = new ViewContainer<Label> (Test.Label.FontAttributesItalic, new Label { Text = "Medium Italic Font", Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Italic) });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeLargeContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeLarge, new Label { Text = "Large Font", Font = Font.SystemFontOfSize (NamedSize.Large) });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeMediumContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeMedium, new Label { Text = "Medium Font", Font = Font.SystemFontOfSize (NamedSize.Medium) });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeMicroContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeMicro, new Label { Text = "Micro Font", Font = Font.SystemFontOfSize (NamedSize.Micro) });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeSmallContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeSmall, new Label { Text = "Small Font", Font = Font.SystemFontOfSize (NamedSize.Small) });
+#pragma warning restore 618
 
 			var formattedString = new FormattedString ();
 			formattedString.Spans.Add (new Span { BackgroundColor = Color.Red, ForegroundColor = Color.Olive, Text = "Span 1 " });

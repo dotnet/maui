@@ -32,7 +32,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateBackground()
 		{
+#pragma warning disable 618
 			SetBackgroundDrawable(new FrameDrawable(Element));
+#pragma warning restore 618
 		}
 
 		class FrameDrawable : Drawable

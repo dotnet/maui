@@ -240,7 +240,9 @@ namespace Xamarin.Forms.Controls
 				_secondaryLabel = new Label() { HeightRequest = 40, FontSize = 16, TranslationY = -5, LineBreakMode = LineBreakMode.TailTruncation };
 				_secondaryLabel.SetBinding(Label.TextProperty, "SecondaryLabelText");
 
+#pragma warning disable 618
 				_distanceLabel = new Label() { XAlign = TextAlignment.End, HorizontalOptions = LayoutOptions.EndAndExpand, FontSize = 11, LineBreakMode = LineBreakMode.NoWrap };
+#pragma warning restore 618
 				_distanceLabel.SetBinding(Label.TextProperty, "OtherLabelText");
 
 				_statusCircle = new Label()

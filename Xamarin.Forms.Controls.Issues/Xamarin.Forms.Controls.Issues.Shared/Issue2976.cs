@@ -75,7 +75,9 @@ namespace Xamarin.Forms.Controls
 				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
 				Children = {
 					new Label {
+#pragma warning disable 618
 						XAlign = TextAlignment.Center,
+#pragma warning restore 618
 						Text = Device.OnPlatform("Custom renderer UITableView","Custom renderer ListView","Custom renderer todo")
 					},
 					fasterListView 
@@ -143,7 +145,9 @@ namespace Xamarin.Forms.Controls
 				Padding = new Thickness (5, Device.OnPlatform(20,0,0), 5, 0),
 				Children = {
 					new Label {
+#pragma warning disable 618
 						XAlign = TextAlignment.Center,
+#pragma warning restore 618
 						Text = "Xamarin.Forms built-in ListView"
 					},
 					listView
@@ -183,7 +187,9 @@ namespace Xamarin.Forms.Controls
 				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
 				Children = {
 					new Label {
+#pragma warning disable 618
 						XAlign = TextAlignment.Center,
+#pragma warning restore 618
 						Text = "Xamarin.Forms native Cell" 
 					},
 					listView
@@ -285,7 +291,9 @@ namespace Xamarin.Forms.Controls
 				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
 				Children = {
 					new Label {
+#pragma warning disable 618
 						XAlign = TextAlignment.Center,
+#pragma warning restore 618
 						Text = Device.OnPlatform("Custom UITableView+UICell","Custom ListView+Cell","Custom renderer todo")
 					},
 					nativeListView2

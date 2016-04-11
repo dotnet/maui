@@ -23,12 +23,19 @@ namespace Xamarin.Forms.Controls
 
 			var winPrizeLabel = new Label {
 				Text = "Win a Xamarin Prize",
+#pragma warning disable 618
 				XAlign = TextAlignment.Center,
+#pragma warning restore 618
+
+#pragma warning disable 618
 				YAlign = TextAlignment.Center,
+#pragma warning restore 618
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 
+#pragma warning disable 618
 			Device.OnPlatform (iOS: () => winPrizeLabel.Font = Font.OfSize ("HelveticaNeue-UltraLight", NamedSize.Large));
+#pragma warning restore 618
 
 			StackLayout form = MakeForm ();
 

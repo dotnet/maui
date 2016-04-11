@@ -20,7 +20,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0108;0114;0618;0414;0649</NoWarn>
+    <NoWarn>0108;0114;0414;0649</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -30,7 +30,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0108;0114;0618;0414;0649</NoWarn>
+    <NoWarn>0108;0114;0414;0649</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -42,11 +42,11 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0108;0114;0618;0414;0649</NoWarn>
+    <NoWarn>0108;0114;0414;0649</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AppStore|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0108;0114;0618;0414;0649</NoWarn>
+    <NoWarn>0108;0114;0414;0649</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

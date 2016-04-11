@@ -33,7 +33,9 @@ namespace Xamarin.Forms.Platform.Android
 				Log.Warning("Could not load image named: {0}", name);
 				return null;
 			}
+#pragma warning disable 618
 			return resource.GetDrawable(id);
+#pragma warning restore 618
 		}
 
 		public static int GetDrawableByName(string name)

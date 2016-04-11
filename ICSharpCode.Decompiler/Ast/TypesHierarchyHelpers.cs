@@ -370,10 +370,14 @@ namespace ICSharpCode.Decompiler.Ast
 				var baseType = type.Item.BaseType;
 				var genericBaseType = baseType as GenericInstanceType;
 				if (genericBaseType != null) {
+#pragma warning disable 618
 					type = new GenericContext<TypeDefinition>(genericBaseType.ResolveOrThrow(),
+#pragma warning restore 618
 						genericBaseType.GenericArguments.Select(t => type.ResolveWithContext(t)));
 				} else
+#pragma warning disable 618
 					type = new GenericContext<TypeDefinition>(baseType.ResolveOrThrow());
+#pragma warning restore 618
 				yield return type;
 			}
 		}
@@ -441,7 +445,9 @@ namespace ICSharpCode.Decompiler.Ast
 					var resolvedElementType = ResolveWithContext(typeSpecification.ElementType);
 					return ReplaceElementType(typeSpecification, resolvedElementType);
 				}
+#pragma warning disable 618
 				return type.ResolveOrThrow();
+#pragma warning restore 618
 			}
 
 			TypeReference ReplaceElementType(TypeSpecification ts, TypeReference newElementType)
@@ -460,7 +466,9 @@ namespace ICSharpCode.Decompiler.Ast
 					return new ByReferenceType(newElementType);
 			}
 				// TODO: should we throw an exception instead calling Resolve method?
+#pragma warning disable 618
 				return ts.ResolveOrThrow();
+#pragma warning restore 618
 			}
 
 			public GenericContext<T2> ApplyTo<T2>(T2 item) where T2 : class

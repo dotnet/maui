@@ -39,7 +39,9 @@ namespace Xamarin.Forms.Platform.Android
 			SetPadding(padding, padding, padding, padding);
 
 			_imageView = new ImageView(context);
+#pragma warning disable 618
 			var imageParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.FillParent)
+#pragma warning restore 618
 			{
 				Width = (int)context.ToPixels(60),
 				Height = (int)context.ToPixels(60),
@@ -55,8 +57,13 @@ namespace Xamarin.Forms.Platform.Android
 			_mainText.SetSingleLine(true);
 			_mainText.Ellipsize = TextUtils.TruncateAt.End;
 			_mainText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
+#pragma warning disable 618
 			_mainText.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItem);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			using (var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
+#pragma warning restore 618
 				textLayout.AddView(_mainText, lp);
 
 			_detailText = new TextView(context);
@@ -64,8 +71,13 @@ namespace Xamarin.Forms.Platform.Android
 			_detailText.Ellipsize = TextUtils.TruncateAt.End;
 			_detailText.SetPadding((int)context.ToPixels(15), padding, padding, padding);
 			_detailText.Visibility = ViewStates.Gone;
+#pragma warning disable 618
 			_detailText.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItemSmall);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			using (var lp = new LayoutParams(ViewGroup.LayoutParams.FillParent, ViewGroup.LayoutParams.WrapContent))
+#pragma warning restore 618
 				textLayout.AddView(_detailText, lp);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) { Width = 0, Weight = 1, Gravity = GravityFlags.Center };
@@ -118,7 +130,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (view != null)
 			{
+#pragma warning disable 618
 				using (var layout = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.FillParent))
+#pragma warning restore 618
 					AddView(view, layout);
 
 				AccessoryView = view;

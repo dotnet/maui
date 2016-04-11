@@ -96,7 +96,9 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		async void OnEvalRequested(object sender, EventArg<string> eventArg)
 		{
+#pragma warning disable 618
 			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Control.InvokeScript("eval", new[] { eventArg.Data }));
+#pragma warning restore 618
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)

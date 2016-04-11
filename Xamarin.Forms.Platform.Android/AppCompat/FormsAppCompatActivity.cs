@@ -303,7 +303,9 @@ namespace Xamarin.Forms.Platform.Android
 						if (value.Type >= DataType.FirstInt && value.Type <= DataType.LastInt)
 							return value.Data;
 						if (value.Type == DataType.String)
+#pragma warning disable 618
 							return context.Resources.GetColor(value.ResourceId);
+#pragma warning restore 618
 					}
 				}
 				catch (Exception ex)

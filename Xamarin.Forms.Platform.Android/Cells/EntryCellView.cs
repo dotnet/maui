@@ -29,7 +29,9 @@ namespace Xamarin.Forms.Platform.Android
 			SetPadding((int)context.ToPixels(15), padding, padding, padding);
 
 			_label = new TextView(context);
+#pragma warning disable 618
 			_label.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItem);
+#pragma warning restore 618
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };
 			using (layoutParams)

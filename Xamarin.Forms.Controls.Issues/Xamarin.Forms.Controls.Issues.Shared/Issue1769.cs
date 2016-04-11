@@ -38,7 +38,9 @@ namespace Xamarin.Forms.Controls
 				Label header = new Label
 				{
 					Text = "Switch",
+#pragma warning disable 618
 					Font = Font.BoldSystemFontOfSize(50),
+#pragma warning restore 618
 					HorizontalOptions = LayoutOptions.Center
 				};
 
@@ -52,7 +54,9 @@ namespace Xamarin.Forms.Controls
 				_label = new Label
 				{
 					Text = "Switch is now False",
+#pragma warning disable 618
 					Font = Font.SystemFontOfSize(NamedSize.Large),
+#pragma warning restore 618
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.CenterAndExpand
 				};

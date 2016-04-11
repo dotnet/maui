@@ -93,7 +93,9 @@ namespace Xamarin.Forms.Controls
 				for (var i = 0; i < 100; i++)
 					sb.Append ("View 1a with ScrollView +++ ");
 
+#pragma warning disable 618
 				var label = new Label { Text = sb.ToString (), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
+#pragma warning restore 618
 
 				scrollView.Content = label;
 
@@ -118,7 +120,9 @@ namespace Xamarin.Forms.Controls
 				for (var i = 0; i < 50; i++)
 					sb.Append ("View 1b with ScrollView and recreation of content +++++ ");
 
+#pragma warning disable 618
 				var label = new Label { Text = sb.ToString (), HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
+#pragma warning restore 618
 
 				scrollView.Content = label;
 
@@ -132,7 +136,9 @@ namespace Xamarin.Forms.Controls
 			public View2 ()
 			{
 				BackgroundColor = Color.Teal;
+#pragma warning disable 618
 				Content = new Label { Text = "View 2", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center, XAlign = TextAlignment.Center, };
+#pragma warning restore 618
 			}
 		}
 

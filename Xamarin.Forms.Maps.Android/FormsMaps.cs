@@ -24,7 +24,9 @@ namespace Xamarin
 
 			MapRenderer.Bundle = bundle;
 
+#pragma warning disable 618
 			if (GooglePlayServicesUtil.IsGooglePlayServicesAvailable(Context) == ConnectionResult.Success)
+#pragma warning restore 618
 			{
 				try
 				{

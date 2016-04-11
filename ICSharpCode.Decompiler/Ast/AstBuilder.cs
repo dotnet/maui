@@ -1661,7 +1661,9 @@ namespace ICSharpCode.Decompiler.Ast
 			if (member.DeclaringType.BaseType != null) {
 				var baseTypeRef = member.DeclaringType.BaseType;
 				while (baseTypeRef != null) {
+#pragma warning disable 618
 					var baseType = baseTypeRef.ResolveOrThrow();
+#pragma warning restore 618
 					if (baseType.HasProperties && AnyIsHiddenBy(baseType.Properties, member, m => !m.IsIndexer()))
 						return true;
 					if (baseType.HasEvents && AnyIsHiddenBy(baseType.Events, member))

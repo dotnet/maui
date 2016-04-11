@@ -125,7 +125,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateFont()
 		{
+#pragma warning disable 618
 			Font f = Element.Font;
+#pragma warning restore 618
 
 			Typeface newTypeface = f.ToTypeface();
 			if (newTypeface != _lastTypeface)
@@ -190,7 +192,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element.FormattedText != null)
 			{
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
+#pragma warning disable 618
 				_view.TextFormatted = formattedText.ToAttributed(Element.Font, Element.TextColor, _view);
+#pragma warning restore 618
 				_wasFormatted = true;
 			}
 			else

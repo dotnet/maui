@@ -40,7 +40,9 @@ namespace Xamarin.Forms.Controls
 				new Person ("Abigail", new DateTime (1975, 1, 15), Color.Aqua),
 				new Person ("Bob", new DateTime (1976, 2, 20), Color.Black),
 				new Person ("Cathy", new DateTime (1977, 3, 10), Color.Blue),
+#pragma warning disable 618
 				new Person ("David", new DateTime (1978, 4, 25), Color.Fuschia),
+#pragma warning restore 618
 			};
 
 			var buttonAdd = new Button {

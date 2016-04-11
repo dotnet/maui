@@ -27,7 +27,9 @@ namespace Xamarin.Forms.Core.UITests
 
 		protected abstract void NavigateToGallery ();
 
+#pragma warning disable 618
 		[TestFixtureSetUp]
+#pragma warning restore 618
 		protected virtual void FixtureSetup ()
 		{
 			if (ShouldResetPerFixture) {
@@ -35,7 +37,9 @@ namespace Xamarin.Forms.Core.UITests
 			}
 		}
 
+#pragma warning disable 618
 		[TestFixtureTearDown]
+#pragma warning restore 618
 		protected virtual void FixtureTeardown ()
 		{	
 		}

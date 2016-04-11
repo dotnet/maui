@@ -61,7 +61,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (Control == null)
 			{
 				var webView = new AWebView(Context);
+#pragma warning disable 618
 				webView.LayoutParameters = new global::Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0);
+#pragma warning restore 618
 				webView.SetWebViewClient(new WebClient(this));
 
 				_webChromeClient = GetFormsWebChromeClient();
@@ -178,7 +180,9 @@ namespace Xamarin.Forms.Platform.Android
 				_navigationResult = WebNavigationResult.Failure;
 				if (errorCode == ClientError.Timeout)
 					_navigationResult = WebNavigationResult.Timeout;
+#pragma warning disable 618
 				base.OnReceivedError(view, errorCode, description, failingUrl);
+#pragma warning restore 618
 			}
 
 			public override bool ShouldOverrideUrlLoading(AWebView view, string url)

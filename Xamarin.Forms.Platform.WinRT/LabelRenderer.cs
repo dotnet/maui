@@ -23,7 +23,9 @@ namespace Xamarin.Forms.Platform.WinRT
 				run.Foreground = span.ForegroundColor.ToBrush();
 
 			if (!span.IsDefault())
+#pragma warning disable 618
 				run.ApplyFont(span.Font);
+#pragma warning restore 618
 
 			return run;
 		}
@@ -131,7 +133,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (label == null || (label.IsDefault() && !_fontApplied))
 				return;
 
+#pragma warning disable 618
 			Font fontToApply = label.IsDefault() ? Font.SystemFontOfSize(NamedSize.Medium) : label.Font;
+#pragma warning restore 618
 
 			textBlock.ApplyFont(fontToApply);
 			_fontApplied = true;

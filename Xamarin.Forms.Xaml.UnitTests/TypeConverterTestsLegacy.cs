@@ -63,7 +63,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public Foo Foo { get; set; }
 
 		public static readonly BindableProperty BarProperty = 
+#pragma warning disable 618
 			BindableProperty.Create<Bindable, Bar> (w => w.Bar, default(Bar));
+#pragma warning restore 618
 
 		[TypeConverter (typeof(BarConverter))]
 		public Bar Bar {
@@ -74,7 +76,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public Baz Baz { get; set; }
 
 		public static readonly BindableProperty QuxProperty = 
+#pragma warning disable 618
 			BindableProperty.CreateAttached<Bindable, Qux> (bindable => GetQux (bindable), default(Qux));
+#pragma warning restore 618
 
 		[TypeConverter (typeof(QuxConverter))]
 		public static Qux GetQux (BindableObject bindable)

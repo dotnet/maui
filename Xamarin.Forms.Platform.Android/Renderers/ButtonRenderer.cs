@@ -195,7 +195,9 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 
 				if (_defaultDrawable != null)
+#pragma warning disable 618
 					Control.SetBackgroundDrawable(_defaultDrawable);
+#pragma warning restore 618
 
 				_drawableEnabled = false;
 			}
@@ -212,7 +214,9 @@ namespace Xamarin.Forms.Platform.Android
 				if (_defaultDrawable == null)
 					_defaultDrawable = Control.Background;
 
+#pragma warning disable 618
 				Control.SetBackgroundDrawable(_backgroundDrawable);
+#pragma warning restore 618
 				_drawableEnabled = true;
 			}
 

@@ -102,7 +102,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty AttachedNullableIntProperty =
+#pragma warning disable 618
 			BindableProperty.CreateAttached<Bz24910Control, int?> (bindable => GetAttachedNullableInt (bindable), default(int?));
+#pragma warning restore 618
 
 		public static int? GetAttachedNullableInt (BindableObject bindable)
 		{

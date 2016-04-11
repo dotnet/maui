@@ -27,9 +27,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (s_apiLevel < 16)
 			{
-//#pragma warning disable 618
+#pragma warning disable 618
 				view.SetBackgroundDrawable(drawable);
-//#pragma warning restore 618
+#pragma warning restore 618
 			}
 			else
 				view.Background = drawable;
@@ -46,12 +46,19 @@ namespace Xamarin.Forms.Platform.Android
 					switch (type)
 					{
 						case "color":
+#pragma warning disable 618
 							global::Android.Graphics.Color color = context.Resources.GetColor(background.ResourceId);
+#pragma warning restore 618
 							view.SetBackgroundColor(color);
 							break;
 						case "drawable":
+#pragma warning disable 618
 							using (Drawable drawable = context.Resources.GetDrawable(background.ResourceId))
+#pragma warning restore 618
+
+#pragma warning disable 618
 								view.SetBackgroundDrawable(drawable);
+#pragma warning restore 618
 							break;
 					}
 				}

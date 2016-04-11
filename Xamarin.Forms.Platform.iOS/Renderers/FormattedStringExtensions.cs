@@ -16,7 +16,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (span == null)
 				return null;
 
+#pragma warning disable 618
 			var font = span.Font != Font.Default ? span.Font : defaultFont;
+#pragma warning restore 618
 
 			var fgcolor = span.ForegroundColor;
 			if (fgcolor.IsDefault)

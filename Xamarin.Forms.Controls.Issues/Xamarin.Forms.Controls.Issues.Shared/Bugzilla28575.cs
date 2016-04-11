@@ -21,7 +21,9 @@ namespace Xamarin.Forms.Controls
 			listview.Header = new Label () {
 				Text = _header,
 				TextColor = Color.Red,
+#pragma warning disable 618
 				XAlign = TextAlignment.Center
+#pragma warning restore 618
 			};
 
 			var b = new Button () {

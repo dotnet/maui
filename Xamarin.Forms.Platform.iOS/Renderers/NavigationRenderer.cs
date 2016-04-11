@@ -435,7 +435,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+#pragma warning disable 618
 			if (e.PropertyName == NavigationPage.TintProperty.PropertyName)
+#pragma warning restore 618
 				UpdateTint();
 			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
@@ -643,7 +645,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateTint()
 		{
+#pragma warning disable 618
 			var tintColor = ((NavigationPage)Element).Tint;
+#pragma warning restore 618
 
 			if (Forms.IsiOS7OrNewer)
 			{

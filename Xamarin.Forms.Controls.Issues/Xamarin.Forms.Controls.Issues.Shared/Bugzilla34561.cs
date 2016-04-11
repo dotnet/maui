@@ -62,7 +62,9 @@ namespace Xamarin.Forms.Controls
 
 			void NewMenuItem_Clicked (object sender, EventArgs e)
 			{
+#pragma warning disable 618
 				ParentView.Navigation.PushAsync (new NextPage (), false);
+#pragma warning restore 618
 			}
 		}
 

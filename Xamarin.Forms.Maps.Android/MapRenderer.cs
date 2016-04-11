@@ -30,7 +30,9 @@ namespace Xamarin.Forms.Maps.Android
 
 		const string MoveMessageName = "MapMoveToRegion";
 
+#pragma warning disable 618
 		protected GoogleMap NativeMap => ((MapView) Control).Map;
+#pragma warning restore 618
 
 		protected Map Map => (Map) Element;
 
@@ -56,8 +58,13 @@ namespace Xamarin.Forms.Maps.Android
 
 				MessagingCenter.Unsubscribe<Map, MapSpan> (this, MoveMessageName);
 
+#pragma warning disable 618
 				if (oldMapView.Map != null) {
+#pragma warning restore 618
+
+#pragma warning disable 618
 					oldMapView.Map.SetOnCameraChangeListener (null);
+#pragma warning restore 618
 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
 				}
 

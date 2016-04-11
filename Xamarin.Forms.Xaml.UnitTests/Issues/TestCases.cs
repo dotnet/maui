@@ -27,7 +27,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty InnerViewProperty = 
+#pragma warning disable 618
 			BindableProperty.CreateAttached<TestCases, View> (bindable => GetInnerView (bindable), default(View));
+#pragma warning restore 618
 
 		public static View GetInnerView (BindableObject bindable)
 		{

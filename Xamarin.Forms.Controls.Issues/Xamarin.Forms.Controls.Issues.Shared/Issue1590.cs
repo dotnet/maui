@@ -88,10 +88,14 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 	{
 		public ModuleMediaListItemTemplate()
 		{
+#pragma warning disable 618
 			var title = new Label { YAlign = TextAlignment.Center };
+#pragma warning restore 618
 			title.SetBinding(Label.TextProperty, new Binding("Title", BindingMode.OneWay));
 
+#pragma warning disable 618
 			var description = new Label { YAlign = TextAlignment.Center };
+#pragma warning restore 618
 			description.SetBinding(Label.TextProperty, new Binding("Description", BindingMode.OneWay));
 
 			View = new StackLayout
@@ -108,7 +112,9 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 	{
 		public ModuleMediaListHeaderTemplate()
 		{
+#pragma warning disable 618
 			var title = new Label { TextColor = Color.White, YAlign = TextAlignment.Center };
+#pragma warning restore 618
 			title.SetBinding(Label.TextProperty, new Binding("SectionName", BindingMode.OneWay));
 
 			View = new StackLayout

@@ -305,7 +305,9 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateBackgroundImage(Page view)
 		{
 			if (!string.IsNullOrEmpty(view.BackgroundImage))
+#pragma warning disable 618
 				SetBackgroundDrawable(Context.Resources.GetDrawable(view.BackgroundImage));
+#pragma warning restore 618
 		}
 
 		void UpdateDetail()

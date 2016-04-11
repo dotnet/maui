@@ -36,32 +36,68 @@ namespace Xamarin.Forms.Controls
 			};
 			var formatted = new Label { FormattedText = new FormattedString { 
 					Spans = { 
+#pragma warning disable 618
 						new Span {Text="FormattedStrings ", ForegroundColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
+#pragma warning restore 618
 						new Span {Text="are ", ForegroundColor=Color.Red, BackgroundColor = Color.Gray},
 						new Span {Text="not pretty!", ForegroundColor = Color.Green,},
 					}
 				} };
 			var missingfont = new Label { Text = "Missing font: use default" };
 
+#pragma warning disable 618
 			micro.Font = Font.SystemFontOfSize (NamedSize.Micro);
-			small.Font = Font.SystemFontOfSize (NamedSize.Small);
-			medium.Font = Font.SystemFontOfSize (NamedSize.Medium);
-			large.Font = Font.SystemFontOfSize (NamedSize.Large);
+#pragma warning restore 618
 
+#pragma warning disable 618
+			small.Font = Font.SystemFontOfSize (NamedSize.Small);
+#pragma warning restore 618
+
+#pragma warning disable 618
+			medium.Font = Font.SystemFontOfSize (NamedSize.Medium);
+#pragma warning restore 618
+
+#pragma warning disable 618
+			large.Font = Font.SystemFontOfSize (NamedSize.Large);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			bold.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			italic.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Italic);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			bolditalic.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold | FontAttributes.Italic);
+#pragma warning restore 618
 
 			var fontName = Device.OnPlatform ("Georgia", "sans-serif-light", "Comic Sans MS");
 			var font = Font.OfSize (fontName, NamedSize.Medium);
+#pragma warning disable 618
 			customFont.Font = font;
+#pragma warning restore 618
+
+#pragma warning disable 618
 			italicfont.Font = font.WithAttributes (FontAttributes.Italic);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			boldfont.Font = font.WithAttributes (FontAttributes.Bold);
+#pragma warning restore 618
+
+#pragma warning disable 618
 			bolditalicfont.Font = font.WithAttributes (FontAttributes.Bold | FontAttributes.Italic);
+#pragma warning restore 618
 
+#pragma warning disable 618
 			customFont.GestureRecognizers.Add (new TapGestureRecognizer{Command = new Command (o => customFont.Font = Font.Default)});
+#pragma warning restore 618
 
+#pragma warning disable 618
 			missingfont.Font = Font.OfSize ("FooBar", 20);
+#pragma warning restore 618
 			center.HorizontalTextAlignment = TextAlignment.Center;
 			right.HorizontalTextAlignment = TextAlignment.End;
 			int i = 1;

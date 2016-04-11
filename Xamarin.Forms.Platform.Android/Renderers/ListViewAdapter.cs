@@ -270,7 +270,9 @@ namespace Xamarin.Forms.Platform.Android
 			AView bline;
 			if (makeBline)
 			{
+#pragma warning disable 618
 				bline = new AView(_context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FillParent, 1) };
+#pragma warning restore 618
 
 				layout.AddView(bline);
 			}

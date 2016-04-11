@@ -127,7 +127,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 							{
 								Resources.Theme theme = context.Theme;
 								if (theme != null && theme.ResolveAttribute(id, value, true))
+#pragma warning disable 618
 									Control.SupportBackgroundTintList = Resources.GetColorStateList(value.Data);
+#pragma warning restore 618
 								else
 									Control.SupportBackgroundTintList = new ColorStateList(States, new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
 							}

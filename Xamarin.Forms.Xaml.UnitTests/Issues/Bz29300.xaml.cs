@@ -10,10 +10,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	public class Bz29300DummyView : StackLayout
 	{
 		public static readonly BindableProperty NumOfRepeatProperty =
+#pragma warning disable 618
 			BindableProperty.Create<Bz29300DummyView, int> (p => p.NumOfRepeat, 1, BindingMode.OneWay, null, UpdateTexts);
+#pragma warning restore 618
 
 		public static readonly BindableProperty TextProperty =
+#pragma warning disable 618
 			BindableProperty.Create<Bz29300DummyView, string> (p => p.Text, string.Empty, BindingMode.OneWay, null, UpdateTexts);
+#pragma warning restore 618
 
 		public int NumOfRepeat
 		{

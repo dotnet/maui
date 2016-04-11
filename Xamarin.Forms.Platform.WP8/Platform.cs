@@ -475,7 +475,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 			foreach (Page f in _navModel.Roots)
 			{
 				f.Layout(new Rectangle(0, 0, _renderer.ActualWidth, _renderer.ActualHeight));
+#pragma warning disable 618
 				IVisualElementRenderer pageRenderer = f.GetRenderer();
+#pragma warning restore 618
 				if (pageRenderer != null)
 				{
 					((FrameworkElement)pageRenderer.ContainerElement).Width = _renderer.ActualWidth;
@@ -540,7 +542,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 				var button = new TaggedAppBarButton
 				{
 					IconUri = new Uri(item.Icon ?? "ApplicationIcon.jpg", UriKind.Relative),
+#pragma warning disable 618
 					Text = !string.IsNullOrWhiteSpace(item.Name) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg",
+#pragma warning restore 618
 					IsEnabled = item.IsEnabled,
 					Tag = item
 				};
@@ -554,7 +558,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 				if (_page.ApplicationBar.MenuItems.OfType<TaggedAppBarMenuItem>().Any(b => b.Tag == item))
 					continue;
 
+#pragma warning disable 618
 				var button = new TaggedAppBarMenuItem { Text = !string.IsNullOrWhiteSpace(item.Name) ? item.Text : (string)item.Icon ?? "MenuItem", IsEnabled = true, Tag = item };
+#pragma warning restore 618
 				button.Click += (sender, args) => item.Activate();
 				menuItemsToAdd.Add(button);
 			}
@@ -624,7 +630,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
 					IsEnabled = item.IsEnabled;
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
+#pragma warning disable 618
 					Text = !string.IsNullOrWhiteSpace(item.Name) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg";
+#pragma warning restore 618
 				else if (e.PropertyName == MenuItem.IconProperty.PropertyName)
 					IconUri = new Uri(item.Icon ?? "ApplicationIcon.jpg", UriKind.Relative);
 			}

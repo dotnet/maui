@@ -17,7 +17,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (self == Color.Default)
 			{
 				using (Resources resources = Resources.System)
+#pragma warning disable 618
 					return resources.GetColor(defaultColorResourceId);
+#pragma warning restore 618
 			}
 
 			return ToAndroid(self);
