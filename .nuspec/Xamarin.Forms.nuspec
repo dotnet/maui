@@ -22,7 +22,6 @@
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="[23.1.1.1]"/>
         <dependency id="Xamarin.Android.Support.v7.CardView" version="[23.1.1.1]"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.1.1.1]"/>
-        <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="[29.0.0.1]"/>
       </group>
     </dependencies>
     <references>
