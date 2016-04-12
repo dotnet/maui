@@ -493,7 +493,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			return GetCommandBarAsync();
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async Task<CommandBar> GetCommandBarAsync()
+#pragma warning restore 1998
 		{
 #if !WINDOWS_UWP
 			return _page.BottomAppBar as CommandBar;

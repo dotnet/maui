@@ -59,7 +59,9 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async Task CheckTranslateRunning(BoxView box)
+#pragma warning restore 1998
 		{
 			Debug.WriteLine(box.AnimationIsRunning("TranslateTo") ? "Translate is running" : "Translate is not running");
 		}
@@ -84,18 +86,24 @@ namespace Xamarin.Forms.Controls.Issues
 			await box.RelRotateTo(360);
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async Task Cancel(BoxView box)
+#pragma warning restore 1998
 		{
 			box.AbortAnimation("animate");
 			box.AbortAnimation("kinetic");
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async Task Animate(BoxView box)
+#pragma warning restore 1998
 		{
 			box.Animate("animate", d => d, d => { }, 100, 1);
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async Task Kinetic(BoxView box)
+#pragma warning restore 1998
 		{
 			var resultList = new List<Tuple<double, double>>();
 

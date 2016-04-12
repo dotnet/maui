@@ -377,7 +377,9 @@ namespace Xamarin.Forms.Controls
 				}
 			}
 
+#pragma warning disable 1998 // considered for removal
 			async void FastCompleteForCmd(object sender)
+#pragma warning restore 1998
 			{
 				try
 				{

@@ -278,7 +278,7 @@ namespace Xamarin.Forms.Controls
 			try {
 				IsPresented = !IsPresented;
 			} catch (InvalidOperationException ex) {
-				DisplayAlert ("Error", ex.Message, "ok");
+				await DisplayAlert ("Error", ex.Message, "ok");
 			}
 		
 		}

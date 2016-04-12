@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls
 				var btn = new Button {
 					AutomationId = "popModal",
 					Text = "Pop",
-					Command = new Command (async () => Navigation.PopModalAsync ())
+					Command = new Command (async () => await Navigation.PopModalAsync ())
 				};
 				rootLayout.Children.Add (btn);
 				rootLayout.Children.Add (new ActivityIndicator { AutomationId = "actHello", IsRunning = true });
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Controls
 				var btn = new Button {
 					AutomationId = "popModal",
 					Text = "Pop",
-					Command = new Command (async () => Navigation.PopModalAsync ())
+					Command = new Command (async () => await Navigation.PopModalAsync ())
 				};
 				rootLayout.Children.Add (btn);
 				rootLayout.Children.Add (new Image { AutomationId = "imgHello", Source = "menuIcon" });

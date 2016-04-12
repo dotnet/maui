@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls
 			// Comment this delay out to see the bug
 			// await Task.Delay(500);
  
-			_button.LayoutTo(new Rectangle(100, 100, 100, 100), 1000);
+			await _button.LayoutTo(new Rectangle(100, 100, 100, 100), 1000);
 		}
 	}
 }

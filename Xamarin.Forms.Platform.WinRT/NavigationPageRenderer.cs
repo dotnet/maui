@@ -496,7 +496,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			(this as ITitleProvider).BarForegroundBrush = GetBarForegroundBrush();
 		}
 
+#pragma warning disable 1998 // considered for removal
 		async void UpdateTitleOnParents()
+#pragma warning restore 1998
 		{
 			if (Element == null)
 				return;

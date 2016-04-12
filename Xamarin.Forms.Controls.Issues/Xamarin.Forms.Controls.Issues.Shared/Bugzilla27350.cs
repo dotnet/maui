@@ -30,7 +30,9 @@ namespace Xamarin.Forms.Controls
 
 			public ObservableCollection<RecipeGroup> RecipeGroups { get; set; }
 
+#pragma warning disable 1998 // considered for removal
 			public async Task LoadRecipesAsync ()
+#pragma warning restore 1998
 			{
 				var groups = new  ObservableCollection<RecipeGroup> ();
 				groups.Add (new RecipeGroup { Title = "Teste 1" });

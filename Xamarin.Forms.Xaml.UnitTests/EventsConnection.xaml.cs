@@ -64,7 +64,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		int asyncPrivateClicked;
+#pragma warning disable 1998 // considered for removal
 		async void HandleClickedPrivateAsync (object sender, EventArgs e)
+#pragma warning restore 1998
 		{
 			asyncPrivateClicked++;
 		}

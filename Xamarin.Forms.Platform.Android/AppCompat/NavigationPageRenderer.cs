@@ -362,7 +362,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateToolbar();
 		}
 
-		void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+#pragma warning disable 1998 // considered for removal
+		async void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+#pragma warning restore 1998
 		{
 			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
 				ResetToolbar();
