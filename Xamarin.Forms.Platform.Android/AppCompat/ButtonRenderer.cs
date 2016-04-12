@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Support.V4.Content;
 using Android.Support.V7.Widget;
 using Android.Util;
 using GlobalResource = Android.Resource;
@@ -127,14 +128,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 							{
 								Resources.Theme theme = context.Theme;
 								if (theme != null && theme.ResolveAttribute(id, value, true))
-#pragma warning disable 618
-									Control.SupportBackgroundTintList = Resources.GetColorStateList(value.Data);
-#pragma warning restore 618
+									Control.SupportBackgroundTintList = ContextCompat.GetColorStateList(context, value.Data);
 								else
 									Control.SupportBackgroundTintList = new ColorStateList(States, new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
 							}
 							catch (Exception ex)
 							{
+								Log.Warning("Xamarin.Forms.Platform.Android.ButtonRenderer", "Could not retrieve button background resource: {0}", ex);
 								Control.SupportBackgroundTintList = new ColorStateList(States, new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
 							}
 						}

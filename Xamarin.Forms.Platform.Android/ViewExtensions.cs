@@ -1,15 +1,22 @@
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Support.V4.Content;
 using Android.Util;
 using Android.Views;
 using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public static class ViewExtensions
 	{
-		static int s_apiLevel;
+		static readonly int s_apiLevel;
+
+		static ViewExtensions()
+		{
+			s_apiLevel = (int)Build.VERSION.SdkInt;
+		}
 
 		public static void RemoveFromParent(this AView view)
 		{
@@ -22,17 +29,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void SetBackground(this AView view, Drawable drawable)
 		{
-			if (s_apiLevel == 0)
-				s_apiLevel = (int)Build.VERSION.SdkInt;
-
 			if (s_apiLevel < 16)
 			{
-#pragma warning disable 618
+#pragma warning disable 618 // Using older method for compatibility with API 15
 				view.SetBackgroundDrawable(drawable);
 #pragma warning restore 618
 			}
 			else
+			{
 				view.Background = drawable;
+			}
+			
 		}
 
 		public static void SetWindowBackground(this AView view)
@@ -46,19 +53,12 @@ namespace Xamarin.Forms.Platform.Android
 					switch (type)
 					{
 						case "color":
-#pragma warning disable 618
-							global::Android.Graphics.Color color = context.Resources.GetColor(background.ResourceId);
-#pragma warning restore 618
+							var color = new AColor(ContextCompat.GetColor(context, background.ResourceId));
 							view.SetBackgroundColor(color);
 							break;
 						case "drawable":
-#pragma warning disable 618
-							using (Drawable drawable = context.Resources.GetDrawable(background.ResourceId))
-#pragma warning restore 618
-
-#pragma warning disable 618
-								view.SetBackgroundDrawable(drawable);
-#pragma warning restore 618
+							using (Drawable drawable = ContextCompat.GetDrawable(context, background.ResourceId))
+								view.SetBackground(drawable);
 							break;
 					}
 				}

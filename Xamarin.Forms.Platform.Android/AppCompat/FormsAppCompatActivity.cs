@@ -8,6 +8,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
+using Android.Support.V4.Content;
 using Android.Support.V7.App;
 using Android.Util;
 using Android.Views;
@@ -110,6 +111,8 @@ namespace Xamarin.Forms.Platform.Android
 				RegisterHandlerForDefaultRenderer(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
+
+				_renderersAdded = true;
 			}
 
 			if (application == null)
@@ -303,13 +306,12 @@ namespace Xamarin.Forms.Platform.Android
 						if (value.Type >= DataType.FirstInt && value.Type <= DataType.LastInt)
 							return value.Data;
 						if (value.Type == DataType.String)
-#pragma warning disable 618
-							return context.Resources.GetColor(value.ResourceId);
-#pragma warning restore 618
+							return ContextCompat.GetColor(context, value.ResourceId);
 					}
 				}
 				catch (Exception ex)
 				{
+					Log.Warning("Xamarin.Forms.Platform.Android.FormsAppCompatActivity", "Error retrieving color resource: {0}", ex);
 				}
 
 				return -1;

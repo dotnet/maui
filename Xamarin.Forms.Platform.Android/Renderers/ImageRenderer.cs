@@ -86,8 +86,9 @@ namespace Xamarin.Forms.Platform.Android
 				catch (TaskCanceledException)
 				{
 				}
-				catch (IOException e)
+				catch (IOException ex)
 				{
+					Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
 				}
 			}
 

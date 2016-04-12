@@ -242,8 +242,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			bool newValue = view.ShouldBeMadeClickable();
-			if (force || _clickable != newValue)
-				Clickable = newValue;
+		    if (force || _clickable != newValue)
+		    {
+		        Clickable = newValue;
+		        _clickable = newValue;
+		    }
 		}
 
 		void UpdateGestureRecognizers(bool forceClick = false)

@@ -1,4 +1,5 @@
 using Android.Content.Res;
+using Android.Support.V4.Content;
 using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
@@ -16,10 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (self == Color.Default)
 			{
-				using (Resources resources = Resources.System)
-#pragma warning disable 618
-					return resources.GetColor(defaultColorResourceId);
-#pragma warning restore 618
+				return new AColor(ContextCompat.GetColor(Forms.Context, defaultColorResourceId));
 			}
 
 			return ToAndroid(self);

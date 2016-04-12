@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		readonly TapGestureHandler _tapGestureHandler;
 
-		bool _clickable;
 		NotifyCollectionChangedEventHandler _collectionChangeHandler;
 
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.AutoPackage | VisualElementRendererFlags.AutoTrack;
@@ -28,7 +27,6 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
 		Lazy<ScaleGestureDetector> _scaleDetector;
-		VelocityTracker _velocity;
 
 		protected VisualElementRenderer() : base(Forms.Context)
 		{
@@ -377,7 +375,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			bool newValue = view.ShouldBeMadeClickable();
-			if (force || _clickable != newValue)
+			if (force || newValue)
 				Clickable = newValue;
 		}
 

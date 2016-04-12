@@ -16,7 +16,6 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isAttached;
 
 		bool _isBidirectional;
-		ScrollToRequestedEventArgs _pendingScrollTo;
 		ScrollView _view;
 
 		public ScrollViewRenderer() : base(Forms.Context)
@@ -224,7 +223,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!_isAttached)
 			{
-				_pendingScrollTo = e;
 				return;
 			}
 

@@ -28,7 +28,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0642;0114;0108;0672;0168;0169;0184;0649;1998;0414</NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -163,6 +164,7 @@
     <Compile Include="Renderers\ToolbarImageButton.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
     <Compile Include="TapGestureHandler.cs" />
+    <Compile Include="TextViewExtensions.cs" />
     <Compile Include="ViewInitializedEventArgs.cs" />
     <Compile Include="VisualElementChangedEventArgs.cs" />
     <Compile Include="RendererPool.cs" />

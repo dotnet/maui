@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 				_disposed = true;
 
 				if (Element != null)
-					((IOpenGlViewController)Element).DisplayRequested -= Display;
+					((IOpenGlViewController)Element).DisplayRequested -= Render;
 			}
 			base.Dispose(disposing);
 		}
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
-				((IOpenGlViewController)Element).DisplayRequested -= Display;
+				((IOpenGlViewController)Element).DisplayRequested -= Render;
 
 			if (e.NewElement != null)
 			{
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.Android
 					SetNativeControl(surfaceView);
 				}
 
-				((IOpenGlViewController)Element).DisplayRequested += Display;
+				((IOpenGlViewController)Element).DisplayRequested += Render;
 				surfaceView.SetRenderer(new Renderer(Element));
 				SetRenderMode();
 			}
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 				SetRenderMode();
 		}
 
-		void Display(object sender, EventArgs eventArgs)
+		void Render(object sender, EventArgs eventArgs)
 		{
 			if (Element.HasRenderLoop)
 				return;

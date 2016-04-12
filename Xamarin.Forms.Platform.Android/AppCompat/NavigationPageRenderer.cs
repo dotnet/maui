@@ -27,14 +27,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 {
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments
 	{
-		#region Statics
-
-		// All statics need to be made non-static/bound to platform
-
-		static ViewPropertyAnimator s_currentAnimation;
-
-		#endregion
-
 		readonly List<Fragment> _fragmentStack = new List<Fragment>();
 
 		Drawable _backgroundDrawable;
@@ -370,7 +362,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateToolbar();
 		}
 
-		async void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void DeviceInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
 				ResetToolbar();

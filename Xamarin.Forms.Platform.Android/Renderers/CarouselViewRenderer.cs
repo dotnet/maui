@@ -364,13 +364,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			public override void OnItemRangeInserted(int positionStart, int itemCount)
 			{
-				// removal after the current position won't change current position
 				if (positionStart > _carouselView._position)
-					;
-
-				// raise position changed
+				{
+					// removal after the current position won't change current position
+				}
 				else
 				{
+					// raise position changed
 					_carouselView._position += itemCount;
 					_carouselView.OnPositionChanged();
 				}
@@ -381,30 +381,25 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Assert(itemCount == 1);
 
-				// removal after the current position won't change current position
 				if (positionStart > _carouselView._position)
-					;
-
-				// raise item changed
+				{
+					// removal after the current position won't change current position
+				}
 				else if (positionStart == _carouselView._position &&
 					positionStart != _carouselView.Adapter.ItemCount)
 				{
+					// raise item changed
 					_carouselView.OnItemChanged();
 					return;
 				}
-
-				// raise position changed
 				else
 				{
+					// raise position changed
 					_carouselView._position -= itemCount;
 					_carouselView.OnPositionChanged();
 				}
 
 				base.OnItemRangeRemoved(positionStart, itemCount);
-			}
-			public override void OnItemRangeMoved(int fromPosition, int toPosition, int itemCount)
-			{
-				base.OnItemRangeMoved(fromPosition, toPosition, itemCount);
 			}
 		}
 		#endregion
@@ -761,7 +756,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		#region Static Fields
 		readonly static int s_samplesCount = 5;
-		readonly static Func<int, int> s_fixPosition = o => o;
 		#endregion
 
 		#region Fields

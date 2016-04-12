@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				if (!span.IsDefault())
-#pragma warning disable 618
+#pragma warning disable 618 // We will need to update this when .Font goes away
 					spannable.SetSpan(new FontSpan(span.Font, view), start, end, SpanTypes.InclusiveInclusive);
 #pragma warning restore 618
 				else if (defaultFont != Font.Default)

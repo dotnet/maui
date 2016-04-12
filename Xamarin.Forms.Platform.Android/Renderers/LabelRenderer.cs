@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateFont()
 		{
-#pragma warning disable 618
+#pragma warning disable 618 // We will need to update this when .Font goes away
 			Font f = Element.Font;
 #pragma warning restore 618
 
@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element.FormattedText != null)
 			{
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
-#pragma warning disable 618
+#pragma warning disable 618 // We will need to update this when .Font goes away
 				_view.TextFormatted = formattedText.ToAttributed(Element.Font, Element.TextColor, _view);
 #pragma warning restore 618
 				_wasFormatted = true;

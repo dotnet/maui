@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateBackgroundColor();
 		}
 
-		void UpdateBackgroundColor()
+		protected override void UpdateBackgroundColor()
 		{
 			Color colorToSet = Element.Color;
 

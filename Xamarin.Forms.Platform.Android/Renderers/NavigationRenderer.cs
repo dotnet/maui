@@ -13,7 +13,6 @@ namespace Xamarin.Forms.Platform.Android
 		static ViewPropertyAnimator s_currentAnimation;
 
 		Page _current;
-		Page _exitingPage;
 
 		public NavigationRenderer()
 		{

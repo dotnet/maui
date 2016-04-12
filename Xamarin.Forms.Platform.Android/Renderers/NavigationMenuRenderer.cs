@@ -77,8 +77,8 @@ namespace Xamarin.Forms.Platform.Android
 				_image.SetScaleType(ImageView.ScaleType.FitCenter);
 				_image.Click += (object sender, EventArgs e) =>
 				{
-					if (Selected != null)
-						Selected();
+					if (OnSelected != null)
+						OnSelected();
 				};
 				AddView(_image, new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.Center });
 
@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.Android
 				set { _label.Text = value; }
 			}
 
-			public Action Selected { get; set; }
+			public Action OnSelected { get; set; }
 		}
 
 		class MenuAdapter : BaseAdapter<Page>
@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Platform.Android
 				Page item = this[position];
 				menuItem.Icon = item.Icon;
 				menuItem.Name = item.Title;
-				menuItem.Selected = () => _menu.SendTargetSelected(item);
+				menuItem.OnSelected = () => _menu.SendTargetSelected(item);
 				return menuItem;
 			}
 

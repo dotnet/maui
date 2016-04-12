@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.Webkit;
+using Android.Widget;
 using AWebView = Android.Webkit.WebView;
 
 namespace Xamarin.Forms.Platform.Android
@@ -61,7 +62,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Control == null)
 			{
 				var webView = new AWebView(Context);
-#pragma warning disable 618
+#pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
 				webView.LayoutParameters = new global::Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0);
 #pragma warning restore 618
 				webView.SetWebViewClient(new WebClient(this));
@@ -175,6 +176,7 @@ namespace Xamarin.Forms.Platform.Android
 				base.OnPageFinished(view, url);
 			}
 
+			[Obsolete("This method was deprecated in API level 23.")]
 			public override void OnReceivedError(AWebView view, ClientError errorCode, string description, string failingUrl)
 			{
 				_navigationResult = WebNavigationResult.Failure;
@@ -183,6 +185,14 @@ namespace Xamarin.Forms.Platform.Android
 #pragma warning disable 618
 				base.OnReceivedError(view, errorCode, description, failingUrl);
 #pragma warning restore 618
+			}
+
+			public override void OnReceivedError(AWebView view, IWebResourceRequest request, WebResourceError error)
+			{
+				_navigationResult = WebNavigationResult.Failure;
+				if (error.ErrorCode == ClientError.Timeout)
+					_navigationResult = WebNavigationResult.Timeout;
+				base.OnReceivedError(view, request, error);
 			}
 
 			public override bool ShouldOverrideUrlLoading(AWebView view, string url)

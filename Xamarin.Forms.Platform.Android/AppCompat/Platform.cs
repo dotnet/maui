@@ -245,9 +245,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			Android.Platform.SetPageContext(page, _context);
-#pragma warning disable 618
-			IVisualElementRenderer renderView = RendererFactory.GetRenderer(page);
-#pragma warning restore 618
+			IVisualElementRenderer renderView = Android.Platform.CreateRenderer(page);
 			Android.Platform.SetRenderer(page, renderView);
 
 			if (layout)
@@ -332,9 +330,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				AddView(_backgroundView);
 
 				Android.Platform.SetPageContext(modal, context);
-#pragma warning disable 618
-				_renderer = RendererFactory.GetRenderer(modal);
-#pragma warning restore 618
+				_renderer = Android.Platform.CreateRenderer(modal);
 				Android.Platform.SetRenderer(modal, _renderer);
 
 				AddView(_renderer.ViewGroup);

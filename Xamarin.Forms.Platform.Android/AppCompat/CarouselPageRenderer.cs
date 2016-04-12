@@ -100,7 +100,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (carouselPage.CurrentPage != null)
 					ScrollToCurrentPage();
 
-				UpdateIgnoreContainerAreas();
 				carouselPage.InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 			}
 		}
@@ -137,19 +136,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			((FormsFragmentPagerAdapter<ContentPage>)pager.Adapter).CountOverride = Element.Children.Count;
 			pager.Adapter.NotifyDataSetChanged();
-
-			UpdateIgnoreContainerAreas();
 		}
 
 		void ScrollToCurrentPage()
 		{
 			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), true);
-		}
-
-		void UpdateIgnoreContainerAreas()
-		{
-			foreach (ContentPage child in Element.Children)
-				child.IgnoresContainerArea = child is NavigationPage;
 		}
 	}
 }

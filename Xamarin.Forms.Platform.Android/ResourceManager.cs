@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Support.V4.Content;
 using Path = System.IO.Path;
 
 namespace Xamarin.Forms.Platform.Android
@@ -33,9 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 				Log.Warning("Could not load image named: {0}", name);
 				return null;
 			}
-#pragma warning disable 618
-			return resource.GetDrawable(id);
-#pragma warning restore 618
+			return ContextCompat.GetDrawable(Forms.Context, id);
 		}
 
 		public static int GetDrawableByName(string name)
