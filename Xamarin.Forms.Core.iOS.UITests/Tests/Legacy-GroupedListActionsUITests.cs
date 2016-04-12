@@ -178,10 +178,6 @@ namespace Xamarin.Forms.Core.UITests
 
 //		}
 			
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Child item action test - landscape")]
 //		public void GroupedListActionsGalleryAllElementsExistLandscape ()

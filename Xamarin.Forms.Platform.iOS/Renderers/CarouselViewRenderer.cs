@@ -38,7 +38,9 @@ namespace Xamarin.Forms.Platform.iOS
 	///     The interfaces only implement required method while the UICollectionView exposes optional methods via
 	///     ExportAttribute.
 	///     The C# method name may be aliased. For example, C# "GetCell" maps to obj-C "CellForItemAtIndexPath".
+#pragma warning disable 1584
 	///     <seealso cref="https://developer.apple.com/library/ios/documentation/UIKit/Reference/UICollectionView_class/" />
+#pragma warning restore 1584
 	/// </summary>
 	public class CarouselViewRenderer : ViewRenderer<CarouselView, UICollectionView>
 	{

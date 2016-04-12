@@ -110,9 +110,6 @@ namespace Xamarin.Forms.Core.UITests
 
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
 //		[Test]
 //		[Category ("ManualReview")]
 //		[Description ("Enable disable keyboard, Issues #1182, #1237 - landscape")]

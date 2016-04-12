@@ -250,10 +250,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.DragFromToForElement (2, query, screenBounds.Width - 10, screenBounds.Height / 3.0f, screenBounds.Width - 10,  (2 / 3.0f) * screenBounds.Height);
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Insert tab - Landscape")]
 //		public void TemplatedTabPageGalleryInsertTabLandscape () 

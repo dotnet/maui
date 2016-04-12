@@ -300,9 +300,6 @@ namespace Xamarin.Forms.Core.UITests
 //			ScrollUpForQuery (q => q.Marked (title), scrollContainerBounds);
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
 
 //		[Test]
 //		[Description ("Insert page - Landscape")]

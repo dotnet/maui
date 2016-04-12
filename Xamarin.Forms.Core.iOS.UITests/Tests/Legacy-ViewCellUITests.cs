@@ -47,10 +47,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.Screenshot ("All ViewCells exist");
 		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("All elements exist - Landscape")]
 //		public void ViewCellGalleryScrollDownForAllElementsLandscape ()

@@ -64,10 +64,6 @@ namespace Xamarin.Forms.Core.UITests
 //			Assert.Greater (unevenCellHeight, evenCellHeight);
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("All views exist - Landscape")]
 //		public void UnevenViewCellGalleryScrollDownForAllElementsLandscape ()

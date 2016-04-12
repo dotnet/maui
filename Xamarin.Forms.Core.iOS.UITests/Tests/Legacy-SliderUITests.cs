@@ -65,10 +65,6 @@ namespace Xamarin.Forms.Core.UITests
 
 		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		public void AllElementsPresentLandscape ()
 //		{

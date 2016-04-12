@@ -42,10 +42,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.Screenshot ("Clip elements");
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Check all elements exist - landscape")]
 //		public void ClipToBoundsGalleryAllElementsExistLandscape ()

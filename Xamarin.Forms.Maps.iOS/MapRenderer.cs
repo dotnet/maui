@@ -133,8 +133,7 @@ namespace Xamarin.Forms.Maps.iOS
 
 	public class MapRenderer : ViewRenderer
 	{
-		long _handle = 0;
-		CLLocationManager _locationManager;
+	    CLLocationManager _locationManager;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{

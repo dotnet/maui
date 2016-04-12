@@ -62,10 +62,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.Screenshot ("At the bottom of the list");
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Click 0 - 5 and reset - Landscape")]
 //		public void ListGalleryClickElementsAndResetLandscape ()

@@ -30,10 +30,6 @@ namespace Xamarin.Forms.Core.UITests
 //				App.ScrollDownForElement (q => q.Marked (element.ToString ()), 10);
 		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("All elements are present - Landscape")]
 //		public void RelativeLayoutGalleryAllElementsPresentLandscape ()

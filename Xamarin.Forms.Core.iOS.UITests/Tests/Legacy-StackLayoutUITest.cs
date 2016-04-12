@@ -58,9 +58,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.Screenshot ("All buttons clicked");
 		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
 //		[Test]
 //		[Description ("Check that each button is there and click them - Landscape")]
 //		public void StackLayoutGalleryClickEachButtonLandscape ()

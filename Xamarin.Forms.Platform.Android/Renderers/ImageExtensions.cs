@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Platform.Android
 				default:
 				case Aspect.AspectFit:
 					return s_aspectFit ?? (s_aspectFit = ImageView.ScaleType.FitCenter);
-					;
 			}
 		}
 	}

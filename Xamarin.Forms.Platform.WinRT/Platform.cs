@@ -342,7 +342,9 @@ namespace Xamarin.Forms.Platform.WinRT
 		readonly ToolbarTracker _toolbarTracker = new ToolbarTracker();
 		readonly FileImageSourcePathConverter _fileImageSourcePathConverter = new FileImageSourcePathConverter();
 
-		IToolbarProvider _toolbarProvider;
+#pragma warning disable 649
+        IToolbarProvider _toolbarProvider;
+#pragma warning restore 649
 
 		class ToolbarProvider : IToolbarProvider
 		{

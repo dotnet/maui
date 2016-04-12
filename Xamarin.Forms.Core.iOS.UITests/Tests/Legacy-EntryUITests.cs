@@ -213,10 +213,6 @@ namespace Xamarin.Forms.Core.UITests
 //		}
 			
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("All Entry Gallery elements are present - landscape")]
 //		public void EntryGalleryAllElementsPresentLandscape ()

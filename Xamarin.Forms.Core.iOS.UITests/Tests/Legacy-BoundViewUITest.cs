@@ -52,9 +52,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.WaitForElement (q => q.Marked ("Second Page"), "Timeout : Second Page");
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
 
 //		[Test]
 //		[Description ("Verify all elements are preset - landscape")]

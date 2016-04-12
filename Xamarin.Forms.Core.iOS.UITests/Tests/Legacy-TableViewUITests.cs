@@ -45,10 +45,6 @@ namespace Xamarin.Forms.Core.UITests
 //			App.Screenshot ("TableCells are present");
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Elements of CustomHeader are present - Landscape")]
 //		public void TableViewGalleryCustomHeaderLandscape ()

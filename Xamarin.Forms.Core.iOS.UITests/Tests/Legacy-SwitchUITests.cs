@@ -73,10 +73,6 @@ namespace Xamarin.Forms.Core.UITests
 //			}
 //		}
 
-///*******************************************************/
-///**************** Landscape tests **********************/
-///*******************************************************/
-
 //		[Test]
 //		[Description ("Check all elements exist - Landscape")]
 //		public void SwitchGalleryAllElementsPresetLandscape ()
