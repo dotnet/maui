@@ -511,7 +511,9 @@ namespace Xamarin.Forms
 
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
+#pragma warning disable 0618 // retain until GetSizeRequest removed
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
+#pragma warning restore
 
 			if ((flags & MeasureFlags.IncludeMargins) != 0)
 			{
@@ -577,11 +579,14 @@ namespace Xamarin.Forms
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
+#pragma warning disable 0618 // retain until OnSizeRequest removed
 			return OnSizeRequest(widthConstraint, heightConstraint);
+#pragma warning restore
 		}
 
 		protected override void OnParentSet()
 		{
+#pragma warning disable 0618 // retain until ParentView removed
 			base.OnParentSet();
 
 			if (ParentView != null)
@@ -592,6 +597,7 @@ namespace Xamarin.Forms
 			{
 				NavigationProxy.Inner = null;
 			}
+#pragma warning restore
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)

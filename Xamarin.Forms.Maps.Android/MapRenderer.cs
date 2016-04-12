@@ -260,7 +260,7 @@ namespace Xamarin.Forms.Maps.Android
 				return;
 			
 			foreach (Pin p in pins) {
-				var marker = _markers.FirstOrDefault (m => m.Id == p.Id);
+				var marker = _markers.FirstOrDefault (m => (object)m.Id == p.Id);
 				if (marker == null)
 					continue;
 				marker.Remove ();

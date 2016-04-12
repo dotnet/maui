@@ -27,7 +27,9 @@ namespace Xamarin.Forms
 
 		public virtual object ConvertFromInvariantString(string value)
 		{
+#pragma warning disable 0618 // retain until ConvertFrom removed
 			return ConvertFrom(CultureInfo.InvariantCulture, value);
+#pragma warning restore
 		}
 	}
 }

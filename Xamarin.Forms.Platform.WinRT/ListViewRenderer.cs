@@ -165,8 +165,6 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		sealed class BrushedElement
 		{
-			bool _isBound;
-
 			public BrushedElement(FrameworkElement element, WBinding brushBinding = null, Brush brush = null)
 			{
 				Element = element;

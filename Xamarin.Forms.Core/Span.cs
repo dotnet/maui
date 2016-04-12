@@ -126,6 +126,7 @@ namespace Xamarin.Forms
 				handler(this, new PropertyChangedEventArgs(propertyName));
 		}
 
+#pragma warning disable 0618 // retain until Span.Font removed
 		void UpdateFontPropertiesFromStruct()
 		{
 			if (_inUpdate)
@@ -166,4 +167,5 @@ namespace Xamarin.Forms
 			_inUpdate = false;
 		}
 	}
+#pragma warning restore
 }

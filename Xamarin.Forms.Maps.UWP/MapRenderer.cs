@@ -133,7 +133,9 @@ namespace Xamarin.Forms.Maps.WinRT
 		void ClearPins()
 		{
 			Control.Children.Clear();
+#pragma warning disable 4014 // don't wanna block UI thread
 			UpdateIsShowingUser();
+#pragma warning restore
 		}
 
 		void RemovePin(Pin pinToRemove)

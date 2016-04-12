@@ -74,7 +74,9 @@ namespace Xamarin.Forms
 		static void OnHorizontalTextAlignmentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var label = (EntryCell)bindable;
+#pragma warning disable 0618 // retain until XAlign removed
 			label.OnPropertyChanged(nameof(XAlign));
+#pragma warning restore
 		}
 	}
 }

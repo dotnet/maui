@@ -45,9 +45,11 @@ namespace Xamarin.Forms
 			if (handler != null)
 				handler(sender, new TappedEventArgs(CommandParameter));
 
+#pragma warning disable 0618 // retain until TappedCallback removed
 			Action<View, object> callback = TappedCallback;
 			if (callback != null)
 				callback(sender, TappedCallbackParameter);
+#pragma warning restore
 		}
 
 		#region obsolete cruft
