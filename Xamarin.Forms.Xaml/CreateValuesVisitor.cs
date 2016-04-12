@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Xaml
 				return;
 
 			XamlParseException xpe;
-			var type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement.GetType().GetTypeInfo().Assembly,
+			var type = XamlParser.GetElementType(node.XmlType, node, Context.RootElement?.GetType().GetTypeInfo().Assembly,
 				out xpe);
 			if (xpe != null)
 				throw xpe;

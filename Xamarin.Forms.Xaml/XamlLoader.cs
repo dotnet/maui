@@ -62,23 +62,53 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view);
-
-					XamlParser.ParseXaml(rootnode, reader);
-
-					var visitorContext = new HydratationContext { RootElement = view };
-
-					rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
-						//set parents for {StaticResource}
-					rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
-					rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
-					rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
-					rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
-					rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
-					rootnode.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
+					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
+					XamlParser.ParseXaml (rootnode, reader);
+					Visit (rootnode, new HydratationContext { RootElement = view });
 					break;
 				}
 			}
+		}
+
+		public static object Create (string xaml, bool doNotThrow = false)
+		{
+			object inflatedView = null;
+			using (var reader = XmlReader.Create (new StringReader (xaml))) {
+				while (reader.Read ()) {
+					//Skip until element
+					if (reader.NodeType == XmlNodeType.Whitespace)
+						continue;
+					if (reader.NodeType != XmlNodeType.Element) {
+						Debug.WriteLine ("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
+						continue;
+					}
+
+					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
+					XamlParser.ParseXaml (rootnode, reader);
+					var visitorContext = new HydratationContext {
+						DoNotThrowOnExceptions = doNotThrow,
+					};
+					var cvv = new CreateValuesVisitor (visitorContext);
+					cvv.Visit ((ElementNode)rootnode, null);
+					inflatedView = rootnode.Root = visitorContext.Values [rootnode];
+					visitorContext.RootElement = inflatedView as BindableObject;
+
+					Visit (rootnode, visitorContext);
+					break;
+				}
+			}
+			return inflatedView;
+		}
+
+		static void Visit (RootNode rootnode, HydratationContext visitorContext)
+		{
+			rootnode.Accept (new XamlNodeVisitor ((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
+			rootnode.Accept (new ExpandMarkupsVisitor (visitorContext), null);
+			rootnode.Accept (new NamescopingVisitor (visitorContext), null); //set namescopes for {x:Reference}
+			rootnode.Accept (new CreateValuesVisitor (visitorContext), null);
+			rootnode.Accept (new RegisterXNamesVisitor (visitorContext), null);
+			rootnode.Accept (new FillResourceDictionariesVisitor (visitorContext), null);
+			rootnode.Accept (new ApplyPropertiesVisitor (visitorContext, true), null);
 		}
 
 		static string GetXamlForType(Type type)
@@ -197,12 +227,12 @@ namespace Xamarin.Forms.Xaml
 
 		public class RuntimeRootNode : RootNode
 		{
-			public RuntimeRootNode(XmlType xmlType, object root) : base(xmlType)
+			public RuntimeRootNode(XmlType xmlType, object root, IXmlNamespaceResolver resolver) : base (xmlType, resolver)
 			{
 				Root = root;
 			}
 
-			public object Root { get; private set; }
+			public object Root { get; internal set; }
 		}
 	}
 }

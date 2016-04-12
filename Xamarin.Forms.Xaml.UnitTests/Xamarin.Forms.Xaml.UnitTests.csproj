@@ -334,6 +334,7 @@
     <Compile Include="McIgnorable.xaml.cs">
       <DependentUpon>McIgnorable.xaml</DependentUpon>
     </Compile>
+    <Compile Include="XamlLoaderCreateTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
