@@ -144,9 +144,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				var child = Element.LogicalChildren[i] as VisualElement;
 				if (child == null)
 					continue;
-#pragma warning disable 618
-				IVisualElementRenderer renderer = child.GetRenderer();
-#pragma warning restore 618
+				IVisualElementRenderer renderer = Platform.GetRenderer(child);
 				if (renderer == null)
 					continue;
 				Rectangle bounds = child.Bounds;

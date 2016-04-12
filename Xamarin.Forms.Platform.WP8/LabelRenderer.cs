@@ -27,6 +27,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 #pragma warning disable 618
 				run.ApplyFont(span.Font);
 #pragma warning restore 618
+
 			return run;
 		}
 	}

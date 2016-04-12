@@ -59,7 +59,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 				oldCell.SendDisappearing();
 			}
 
-			DependencyObject content = null;
 			if (newCell != null)
 			{
 				newCell.SendAppearing();

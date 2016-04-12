@@ -481,7 +481,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 				return;
 
 			var cell = (Cell)e.AddedItems[0];
-			Cell parentCell = null;
 
 			if (cell == null)
 			{
