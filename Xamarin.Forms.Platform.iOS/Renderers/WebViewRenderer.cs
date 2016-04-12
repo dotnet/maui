@@ -19,8 +19,6 @@ namespace Xamarin.Forms.Platform.iOS
 		WebNavigationEvent _lastBackForwardEvent;
 		VisualElementPackager _packager;
 
-		VisualElementTracker _tracker;
-
 		public WebViewRenderer() : base(RectangleF.Empty)
 		{
 		}
@@ -48,8 +46,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			AutosizesSubviews = true;
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
-
-			_tracker = new VisualElementTracker(this);
 
 			_packager = new VisualElementPackager(this);
 			_packager.Load();

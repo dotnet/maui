@@ -22,13 +22,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	internal class GlobalCloseContextGestureRecognizer : UIGestureRecognizer
 	{
-		List<UIButton> _buttons;
 		UIScrollView _scrollView;
 
-		public GlobalCloseContextGestureRecognizer(UIScrollView scrollView, List<UIButton> buttons, NSAction activated) : base(activated)
+		public GlobalCloseContextGestureRecognizer(UIScrollView scrollView, NSAction activated) : base(activated)
 		{
 			_scrollView = scrollView;
-			_buttons = buttons;
 
 			ShouldReceiveTouch = OnShouldReceiveTouch;
 		}
@@ -57,7 +55,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (disposing)
 			{
-				_buttons = null;
 				_scrollView = null;
 			}
 		}

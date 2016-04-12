@@ -25,7 +25,7 @@
     <MtouchDebug>true</MtouchDebug>
     <CodesignKey>iPhone Developer</CodesignKey>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0169;0114;0108;0105;0414;0649</NoWarn>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -38,7 +38,7 @@
     <CodesignKey>iPhone Developer</CodesignKey>
     <DefineConstants>TRACE;__IOS__;__MOBILE__;</DefineConstants>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0169;0114;0108;0105;0414;0649</NoWarn>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -50,11 +50,11 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0169;0114;0108;0105;0414;0649</NoWarn>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AppStore|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0169;0114;0108;0105;0414;0649</NoWarn>
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">

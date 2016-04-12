@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.iOS
 						if (table != null)
 						{
 							_table = table;
-							_globalCloser = new GlobalCloseContextGestureRecognizer(scrollView, _buttons, close);
+							_globalCloser = new GlobalCloseContextGestureRecognizer(scrollView, close);
 							_globalCloser.ShouldRecognizeSimultaneously = (recognizer, r) => r == _table.PanGestureRecognizer;
 							table.AddGestureRecognizer(_globalCloser);
 

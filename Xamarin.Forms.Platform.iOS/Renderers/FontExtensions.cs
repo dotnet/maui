@@ -196,10 +196,11 @@ namespace Xamarin.Forms.Platform.iOS
 				_size = size;
 				_attributes = attributes;
 			}
-
+#pragma warning disable 0414 // these are not called explicitly, but they are used to establish uniqueness. allow it!
 			string _family;
 			float _size;
 			FontAttributes _attributes;
+#pragma warning restore 0414
 		}
 	}
 }

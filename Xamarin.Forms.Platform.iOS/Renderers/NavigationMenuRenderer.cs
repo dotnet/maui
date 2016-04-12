@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.iOS
 				set { _nameLabel.Text = value; }
 			}
 
-			public Action Selected { get; set; }
+			public new Action Selected { get; set; }
 
 			public override void LayoutSubviews()
 			{
