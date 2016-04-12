@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Xaml
 
 	internal abstract class RootNode : ElementNode
 	{
-		protected RootNode(XmlType xmlType) : base(xmlType, xmlType.NamespaceUri, null)
+		protected RootNode(XmlType xmlType, IXmlNamespaceResolver nsResolver) : base(xmlType, xmlType.NamespaceUri, nsResolver)
 		{
 		}
 

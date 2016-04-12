@@ -307,19 +307,25 @@ namespace Xamarin.Forms.Xaml
 			if (eventInfo != null && value is string)
 			{
 				var methodInfo = rootElement.GetType().GetRuntimeMethods().FirstOrDefault(mi => mi.Name == (string)value);
-				if (methodInfo == null)
-				{
-					throw new XamlParseException(string.Format("No method {0} found on type {1}", value, rootElement.GetType()),
-						lineInfo);
+				if (methodInfo == null) {
+					var xpe = new XamlParseException (string.Format ("No method {0} found on type {1}", value, rootElement.GetType ()), lineInfo);
+					if (context.DoNotThrowOnExceptions) {
+						System.Diagnostics.Debug.WriteLine (xpe.Message);
+						return;
+					} else
+						throw xpe;
 				}
-
 				try
 				{
 					eventInfo.AddEventHandler(xamlelement, methodInfo.CreateDelegate(eventInfo.EventHandlerType, rootElement));
 				}
 				catch (ArgumentException)
 				{
-					throw new XamlParseException(string.Format("Method {0} does not have the correct signature", value), lineInfo);
+					var xpe = new XamlParseException (string.Format ("Method {0} does not have the correct signature", value), lineInfo);
+					if (context.DoNotThrowOnExceptions)
+						System.Diagnostics.Debug.WriteLine (xpe.Message);
+					else
+						throw xpe;
 				}
 
 				return;
@@ -416,7 +422,10 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 
-			throw exception;
+			if (context.DoNotThrowOnExceptions)
+				System.Diagnostics.Debug.WriteLine (exception.Message);
+			else
+				throw exception;
 		}
 
 		void SetTemplate(ElementTemplate dt, INode node)

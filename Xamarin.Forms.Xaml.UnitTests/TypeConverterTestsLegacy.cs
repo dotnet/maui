@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (bindable.Baz);
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Baz"), node },
 				}
@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (bindable.Foo);
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Foo"), node },
 				}
@@ -176,7 +176,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (bindable.Bar);
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "Bar"), node },
 				}
@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (Bindable.GetQux (bindable));
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
 				}
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var bindable = new Bindable ();
 
 			Assert.IsNull (bindable.FooBar);
-			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable) {
+			var rootNode = new XamlLoader.RuntimeRootNode (new XmlType("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests","Bindable",null), bindable, null) {
 				Properties = {
 					{ new XmlName (null, "FooBar"), node },
 				}
