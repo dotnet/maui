@@ -17,6 +17,8 @@ namespace Xamarin.Forms
 
 		string _automationId;
 
+		IList<BindableObject> _bindableResources;
+
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
 		List<KeyValuePair<string, BindableProperty>> _dynamicResources;
@@ -321,6 +323,12 @@ namespace Xamarin.Forms
 				SetChildInheritedBindingContext(child, bc);
 			}
 
+			if (_bindableResources != null)
+				foreach (BindableObject item in _bindableResources)
+				{
+					SetInheritedBindingContext(item, BindingContext);
+				}
+
 			base.OnBindingContextChanged();
 		}
 
@@ -420,6 +428,8 @@ namespace Xamarin.Forms
 					handler(this, new ResourcesChangedEventArgs(values));
 			if (_dynamicResources == null)
 				return;
+			if (_bindableResources == null)
+				_bindableResources = new List<BindableObject>();
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				List<BindableProperty> changedResources = null;
@@ -434,6 +444,14 @@ namespace Xamarin.Forms
 					continue;
 				foreach (BindableProperty changedResource in changedResources)
 					OnResourceChanged(changedResource, value.Value);
+
+				var bindableObject = value.Value as BindableObject;
+				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
+				{
+					if (!_bindableResources.Contains(bindableObject))
+						_bindableResources.Add(bindableObject);
+					SetInheritedBindingContext(bindableObject, BindingContext);
+				}
 			}
 		}
 

@@ -360,7 +360,7 @@ namespace Xamarin.Forms
 
 			if (fromStyle)
 				context.Attributes |= BindableContextAttributes.IsSetFromStyle;
-			// else ommitted on purpose
+			// else omitted on purpose
 
 			bool currentlyApplying = _applying;
 

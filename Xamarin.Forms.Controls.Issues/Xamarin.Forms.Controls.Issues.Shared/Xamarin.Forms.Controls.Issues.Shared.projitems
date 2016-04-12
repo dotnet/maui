@@ -18,6 +18,9 @@
       <DependentUpon>Bugzilla22229.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla22401.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla23942.xaml.cs">
+      <DependentUpon>Bugzilla23942.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla24769.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla25234.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla25662.cs" />
@@ -511,6 +514,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla27417Xaml.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla23942.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
