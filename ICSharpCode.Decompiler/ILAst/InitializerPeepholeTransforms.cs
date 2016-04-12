@@ -398,14 +398,6 @@ namespace ICSharpCode.Decompiler.ILAst
 		/// <summary>
 		/// Parses an object initializer.
 		/// </summary>
-		/// <param name="body">ILAst block</param>
-		/// <param name="pos">
-		/// Input: position of the instruction assigning to 'v'.
-		/// Output: first position after the object initializer
-		/// </param>
-		/// <param name="v">The variable that holds the object being initialized</param>
-		/// <param name="newObjExpr">The newobj instruction</param>
-		/// <returns>InitObject instruction</returns>
 		ILExpression ParseObjectInitializer(List<ILNode> body, ref int pos, ILVariable v, ILExpression newObjExpr, bool isCollection, bool isValueType)
 		{
 			// Take care not to modify any existing ILExpressions in here.

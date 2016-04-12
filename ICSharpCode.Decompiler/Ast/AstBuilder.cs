@@ -153,7 +153,6 @@ namespace ICSharpCode.Decompiler.Ast
 		/// <summary>
 		/// Generates C# code from the abstract source tree.
 		/// </summary>
-		/// <remarks>This method adds ParenthesizedExpressions into the AST, and will run transformations if <see cref="RunTransformations"/> was not called explicitly</remarks>
 		public void GenerateCode(ITextOutput output)
 		{
 			if (!transformationsHaveRun)
@@ -440,10 +439,6 @@ namespace ICSharpCode.Decompiler.Ast
 		/// <summary>
 		/// Converts a type reference.
 		/// </summary>
-		/// <param name="type">The Cecil type reference that should be converted into
-		/// a type system type reference.</param>
-		/// <param name="typeAttributes">Attributes associated with the Cecil type reference.
-		/// This is used to support the 'dynamic' type.</param>
 		public static AstType ConvertType(TypeReference type, ICustomAttributeProvider typeAttributes = null, ConvertTypeOptions options = ConvertTypeOptions.None)
 		{
 			int typeIndex = 0;
