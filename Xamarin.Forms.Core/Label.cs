@@ -178,13 +178,13 @@ namespace Xamarin.Forms
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.OfSize(family, (double)values[1]).WithAttributes(attributes);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 			else
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.SystemFontOfSize((double)values[1], attributes);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 
 			label._cancelEvents = false;
@@ -207,13 +207,13 @@ namespace Xamarin.Forms
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.OfSize(family, (double)values[0]).WithAttributes((FontAttributes)values[1]);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 			else
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.SystemFontOfSize((double)values[0], (FontAttributes)values[1]);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 
 			label._cancelEvents = false;
@@ -236,13 +236,13 @@ namespace Xamarin.Forms
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.OfSize(family, size).WithAttributes((FontAttributes)values[1]);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 			else
 			{
 #pragma warning disable 0618 // retain until Font removed
 				label.Font = Font.SystemFontOfSize(size, (FontAttributes)values[1]);
-#pragma warning restore
+#pragma warning restore 0618
 			}
 
 			label._cancelEvents = false;
@@ -260,7 +260,7 @@ namespace Xamarin.Forms
 			var label = (Label)bindable;
 #pragma warning disable 0618 // retain until XAlign removed
 			label.OnPropertyChanged(nameof(XAlign));
-#pragma warning restore
+#pragma warning restore 0618
 		}
 
 		static void OnTextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -280,7 +280,7 @@ namespace Xamarin.Forms
 			var label = (Label)bindable;
 #pragma warning disable 0618 // retain until YAlign removed
 			label.OnPropertyChanged(nameof(YAlign));
-#pragma warning restore
+#pragma warning restore 0618
 		}
 	}
 }

@@ -513,7 +513,7 @@ namespace Xamarin.Forms
 		{
 #pragma warning disable 0618 // retain until GetSizeRequest removed
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore
+#pragma warning restore 0618
 
 			if ((flags & MeasureFlags.IncludeMargins) != 0)
 			{
@@ -581,7 +581,7 @@ namespace Xamarin.Forms
 		{
 #pragma warning disable 0618 // retain until OnSizeRequest removed
 			return OnSizeRequest(widthConstraint, heightConstraint);
-#pragma warning restore
+#pragma warning restore 0618
 		}
 
 		protected override void OnParentSet()
@@ -597,7 +597,7 @@ namespace Xamarin.Forms
 			{
 				NavigationProxy.Inner = null;
 			}
-#pragma warning restore
+#pragma warning restore 0618
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)
