@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
@@ -421,9 +422,19 @@ namespace Xamarin.Forms.Platform.WinRT
 				StatusBar statusBar = StatusBar.GetForCurrentView();
 
 				bool landscape = Device.Info.CurrentOrientation.IsLandscape();
+				bool titleBar = CoreApplication.GetCurrentView().TitleBar.IsVisible;
 				double offset = landscape ? statusBar.OccludedRect.Width : statusBar.OccludedRect.Height;
 
 				_bounds = new Rectangle(0, 0, _page.ActualWidth - (landscape ? offset : 0), _page.ActualHeight - (landscape ? 0 : offset));
+
+				// Even if the MainPage is a ContentPage not inside of a NavigationPage, the calculated bounds
+				// assume the TitleBar is there even if it isn't visible. When UpdatePageSizes is called,
+				// _container.ActualWidth is correct because it's aware that the TitleBar isn't there, but the
+				// bounds aren't, and things can subsequently run under the StatusBar.
+				if (!titleBar)
+				{
+					_bounds.Width -= (_bounds.Width - _container.ActualWidth);
+				}
 			}
 #endif
 		}
