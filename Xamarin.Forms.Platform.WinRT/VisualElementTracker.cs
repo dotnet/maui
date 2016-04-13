@@ -457,8 +457,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				{
 					CenterOfRotationX = anchorX,
 					CenterOfRotationY = anchorY,
-					GlobalOffsetX = translationX / scale,
-					GlobalOffsetY = translationY / scale,
+					GlobalOffsetX = scale == 0 ? 0 : translationX / scale,
+					GlobalOffsetY = scale == 0 ? 0 : translationY / scale,
 					RotationX = -rotationX,
 					RotationY = -rotationY,
 					RotationZ = -rotation
