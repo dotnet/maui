@@ -163,7 +163,7 @@ namespace Xamarin.Forms.Maps.WP8
 
 		void RemovePin(Pin pin)
 		{
-			var child = _pushPinLayer.FirstOrDefault(p => ((Pushpin)p.Content).Tag == pin);
+			var child = _pushPinLayer.FirstOrDefault(p => ((Pushpin)p.Content).Tag == (object)pin);
 			if (child != null)
 				_pushPinLayer.Remove(child);
 		}
