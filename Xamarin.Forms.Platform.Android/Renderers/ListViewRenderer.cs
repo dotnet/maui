@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android
 				AListView nativeListView = Control;
 				if (nativeListView == null)
 				{
-					var ctx = (Activity)Context;
+					var ctx = Context;
 					nativeListView = new AListView(ctx);
 					_refresh = new SwipeRefreshLayout(ctx);
 					_refresh.SetOnRefreshListener(this);
