@@ -112,11 +112,19 @@ namespace Xamarin.Forms.UITest.TestCloud
 					"Apple iPhone 5 - iOS 7.1.1"
 				});
 
-		public static readonly DeviceSet IOs8 =
-			new DeviceSet(new List<DeviceSet.Platform> { DeviceSet.Platform.IOs, DeviceSet.Platform.IOsClassic }, "56293ce6",
+		public static readonly DeviceSet IOs7 =
+			new DeviceSet(new List<DeviceSet.Platform> { DeviceSet.Platform.IOs, DeviceSet.Platform.IOsClassic }, "ad7b679b",
 				new List<string>
 				{
-					"Apple iPhone 5S - iOS 8.1"
+					"Apple Ipad Retina Mini - iOS 7.1.2"
+				});
+
+
+		public static readonly DeviceSet IOs8 =
+			new DeviceSet(new List<DeviceSet.Platform> { DeviceSet.Platform.IOs, DeviceSet.Platform.IOsClassic }, "b859db6b",
+				new List<string>
+				{
+					"Apple Iphone 6 plus- iOS 8.4.1"
 				});
 
 		public static readonly DeviceSet IOs7AndiOs8 =
@@ -149,6 +157,13 @@ namespace Xamarin.Forms.UITest.TestCloud
 				{
 					"Apple Iphone 6S - iOS 9.1",
 					"Apple Ipad Air 2 - iOS 9.1"
+				});
+
+		public static readonly DeviceSet IOs93 =
+			new DeviceSet(new List<DeviceSet.Platform> { DeviceSet.Platform.IOs, DeviceSet.Platform.IOsClassic }, "3bd6076f",
+				new List<string>
+				{
+					"Apple Iphone 5S - iOS 9.3.1"
 				});
 	}
 }
