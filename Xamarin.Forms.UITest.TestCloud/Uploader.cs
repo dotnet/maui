@@ -327,7 +327,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 		{
 			get
 			{
-				string[] consolePathElements = { "..", "..", "..", "packages", "Xamarin.UITest.1.3.3", "tools", "test-cloud.exe" };
+				string[] consolePathElements = { "..", "..", "..", "packages", "Xamarin.UITest.1.3.7", "tools", "test-cloud.exe" };
 				return Path.Combine(consolePathElements);
 			}
 		}
