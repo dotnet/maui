@@ -26,7 +26,7 @@ using nuint=System.UInt32;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class NavigationRenderer : UINavigationController, IVisualElementRenderer
+	public class NavigationRenderer : UINavigationController, IVisualElementRenderer, IEffectControlProvider
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -36,7 +36,6 @@ namespace Xamarin.Forms.Platform.iOS
 		Size _queuedSize;
 		UIViewController[] _removeControllers;
 		UIToolbar _secondaryToolbar;
-
 		VisualElementTracker _tracker;
 
 		public NavigationRenderer()
@@ -74,6 +73,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (element != null)
 				element.SendViewInitialized(NativeView);
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
 		public void SetElementSize(Size size)
@@ -174,7 +175,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
 			var modelSize = _queuedSize.IsZero ? Element.Bounds.Size : _queuedSize;
-			((NavigationPage)Element).ContainerArea = new Rectangle(0, toolbar.Hidden ? 0 : toolbar.Frame.Height, modelSize.Width, modelSize.Height - trueBottom);
+			((NavigationPage)Element).ContainerArea = 
+				new Rectangle(0, toolbar.Hidden ? 0 : toolbar.Frame.Height, modelSize.Width, modelSize.Height - trueBottom);
 
 			if (!_queuedSize.IsZero)
 			{
@@ -211,7 +213,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (navPage.CurrentPage == null)
 			{
-				throw new InvalidOperationException("NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
+				throw new InvalidOperationException(
+					"NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 			}
 
 			navPage.PushRequested += OnPushRequested;
@@ -382,7 +385,8 @@ namespace Xamarin.Forms.Platform.iOS
 			var titleText = NavigationPage.GetBackButtonTitle(page);
 			if (titleText != null)
 			{
-				pack.NavigationItem.BackBarButtonItem = new UIBarButtonItem(titleText, UIBarButtonItemStyle.Plain, async (o, e) => await PopViewAsync(page));
+				pack.NavigationItem.BackBarButtonItem = 
+					new UIBarButtonItem(titleText, UIBarButtonItemStyle.Plain, async (o, e) => await PopViewAsync(page));
 			}
 
 			var pageRenderer = Platform.GetRenderer(page);
@@ -558,11 +562,15 @@ namespace Xamarin.Forms.Platform.iOS
 			// Set navigation bar background color
 			if (Forms.IsiOS7OrNewer)
 			{
-				NavigationBar.BarTintColor = barBackgroundColor == Color.Default ? UINavigationBar.Appearance.BarTintColor : barBackgroundColor.ToUIColor();
+				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
+					? UINavigationBar.Appearance.BarTintColor
+					: barBackgroundColor.ToUIColor();
 			}
 			else
 			{
-				NavigationBar.TintColor = barBackgroundColor == Color.Default ? UINavigationBar.Appearance.TintColor : barBackgroundColor.ToUIColor();
+				NavigationBar.TintColor = barBackgroundColor == Color.Default
+					? UINavigationBar.Appearance.TintColor
+					: barBackgroundColor.ToUIColor();
 			}
 		}
 
@@ -586,14 +594,18 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var titleAttributes = new UIStringAttributes();
 				titleAttributes.Font = globalAttributes.Font;
-				titleAttributes.ForegroundColor = barTextColor == Color.Default ? titleAttributes.ForegroundColor ?? UINavigationBar.Appearance.TintColor : barTextColor.ToUIColor();
+				titleAttributes.ForegroundColor = barTextColor == Color.Default
+					? titleAttributes.ForegroundColor ?? UINavigationBar.Appearance.TintColor
+					: barTextColor.ToUIColor();
 				NavigationBar.TitleTextAttributes = titleAttributes;
 			}
 
 			// set Tint color (i. e. Back Button arrow and Text)
 			if (Forms.IsiOS7OrNewer)
 			{
-				NavigationBar.TintColor = barTextColor == Color.Default ? UINavigationBar.Appearance.TintColor : barTextColor.ToUIColor();
+				NavigationBar.TintColor = barTextColor == Color.Default
+					? UINavigationBar.Appearance.TintColor
+					: barTextColor.ToUIColor();
 			}
 
 			if (barTextColor.Luminosity > 0.5)
@@ -626,8 +638,9 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(new UIImage(_parentMasterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain,
-						(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
+					containerController.NavigationItem.LeftBarButtonItem =
+						new UIBarButtonItem(new UIImage(_parentMasterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain,
+							(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
 				}
 				catch (Exception)
 				{
@@ -638,7 +651,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (!shouldUseIcon)
 			{
-				containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(_parentMasterDetailPage.Master.Title, UIBarButtonItemStyle.Plain,
+				containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(_parentMasterDetailPage.Master.Title,
+					UIBarButtonItemStyle.Plain,
 					(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
 			}
 		}
@@ -650,7 +664,9 @@ namespace Xamarin.Forms.Platform.iOS
 #pragma warning restore 0618
 			if (Forms.IsiOS7OrNewer)
 			{
-				NavigationBar.BarTintColor = tintColor == Color.Default ? UINavigationBar.Appearance.BarTintColor : tintColor.ToUIColor();
+				NavigationBar.BarTintColor = tintColor == Color.Default
+					? UINavigationBar.Appearance.BarTintColor
+					: tintColor.ToUIColor();
 				if (tintColor == Color.Default)
 					NavigationBar.TintColor = UINavigationBar.Appearance.TintColor;
 				else
@@ -916,6 +932,13 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_navigation.TryGetTarget(out n))
 					n.UpdateToolBarVisible();
 			}
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.Container = View;
 		}
 	}
 }

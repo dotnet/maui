@@ -21,7 +21,7 @@ using nuint=System.UInt32;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class TabbedRenderer : UITabBarController, IVisualElementRenderer
+	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
 	{
 		bool _loaded;
 		Size _queuedSize;
@@ -73,6 +73,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			//disable edit/reorder of tabs
 			CustomizableViewControllers = null;
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
 		public void SetElementSize(Size size)
@@ -306,6 +308,13 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateCurrentPage()
 		{
 			((TabbedPage)Element).CurrentPage = SelectedIndex >= 0 && SelectedIndex < Tabbed.InternalChildren.Count ? Tabbed.GetPageByIndex((int)SelectedIndex) : null;
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.Container = View;
 		}
 	}
 }

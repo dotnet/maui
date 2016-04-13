@@ -63,6 +63,7 @@
     <Compile Include="CADisplayLinkTicker.cs" />
     <Compile Include="ContextActionCell.cs" />
     <Compile Include="ContextScrollViewDelegate.cs" />
+    <Compile Include="EffectUtilities.cs" />
     <Compile Include="Extensions\CellExtensions.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="GlobalCloseContextGestureRecognizer.cs" />

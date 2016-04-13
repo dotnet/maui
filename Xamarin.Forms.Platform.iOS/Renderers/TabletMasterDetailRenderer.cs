@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public event EventHandler WillDisappear;
 	}
 
-	public class TabletMasterDetailRenderer : UISplitViewController, IVisualElementRenderer
+	public class TabletMasterDetailRenderer : UISplitViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIViewController _detailController;
 
@@ -134,6 +134,8 @@ namespace Xamarin.Forms.Platform.iOS
 			PresentsWithGesture = MasterDetailPage.IsGestureEnabled;
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
 				element.SendViewInitialized(NativeView);
@@ -367,6 +369,13 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				PresentButton = barButtonItem;
 			}
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.Container = View;
 		}
 	}
 }

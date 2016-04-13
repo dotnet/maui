@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 #if __UNIFIED__
 using UIKit;
 
 #else
 using MonoTouch.UIKit;
+
 #endif
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class PageRenderer : UIViewController, IVisualElementRenderer
+	public class PageRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		bool _appeared;
 		bool _disposed;
@@ -23,6 +23,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (!Forms.IsiOS7OrNewer)
 				WantsFullScreenLayout = true;
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.Container = View;
 		}
 
 		public VisualElement Element { get; private set; }
@@ -41,7 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void SetElement(VisualElement element)
 		{
-			var oldElement = Element;
+			VisualElement oldElement = Element;
 			Element = element;
 			UpdateTitle();
 
@@ -52,6 +59,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (element != null)
 				element.SendViewInitialized(NativeView);
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
 		public void SetElementSize(Size size)
@@ -59,10 +68,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
-		public UIViewController ViewController
-		{
-			get { return _disposed ? null : this; }
-		}
+		public UIViewController ViewController => _disposed ? null : this;
 
 		public override void ViewDidAppear(bool animated)
 		{
@@ -94,7 +100,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			uiTapGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 			uiTapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
-			uiTapGestureRecognizer.DelaysTouchesBegan = uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
+			uiTapGestureRecognizer.DelaysTouchesBegan =
+				uiTapGestureRecognizer.DelaysTouchesEnded = uiTapGestureRecognizer.CancelsTouchesInView = false;
 			View.AddGestureRecognizer(uiTapGestureRecognizer);
 
 			UpdateBackground();
@@ -115,8 +122,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewWillDisappear(animated);
 
-			if (View.Window != null)
-				View.Window.EndEditing(true);
+			View.Window?.EndEditing(true);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -157,9 +163,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
-			var changed = ElementChanged;
-			if (changed != null)
-				changed(this, e);
+			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual void SetAutomationId(string id)
@@ -180,20 +184,23 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
-			if (ViewAndSuperviewsOfView(touch.View).Any(v => v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder))
-				return false;
+			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
+			{
+				if (v is UITableView || v is UITableViewCell || v.CanBecomeFirstResponder)
+					return false;
+			}
 			return true;
 		}
 
 		void UpdateBackground()
 		{
-			var bgImage = ((Page)Element).BackgroundImage;
+			string bgImage = ((Page)Element).BackgroundImage;
 			if (!string.IsNullOrEmpty(bgImage))
 			{
 				View.BackgroundColor = UIColor.FromPatternImage(UIImage.FromBundle(bgImage));
 				return;
 			}
-			var bgColor = Element.BackgroundColor;
+			Color bgColor = Element.BackgroundColor;
 			if (bgColor.IsDefault)
 				View.BackgroundColor = UIColor.White;
 			else

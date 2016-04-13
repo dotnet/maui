@@ -20,7 +20,7 @@ using nuint=System.UInt32;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class PhoneMasterDetailRenderer : UIViewController, IVisualElementRenderer
+	public class PhoneMasterDetailRenderer : UIViewController, IVisualElementRenderer, IEffectControlProvider
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
@@ -90,6 +90,8 @@ namespace Xamarin.Forms.Platform.iOS
 			Presented = ((MasterDetailPage)Element).IsPresented;
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null)
 				element.SendViewInitialized(NativeView);
@@ -396,6 +398,13 @@ namespace Xamarin.Forms.Platform.iOS
 				foreach (var vc in ChildViewControllers)
 					vc.View.Frame = View.Bounds;
 			}
+		}
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.Container = View;
 		}
 	}
 }

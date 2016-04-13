@@ -169,13 +169,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (element != null)
 				SendVisualElementInitialized(element, this);
 
-			var controller = (IElementController)oldElement;
-			if (controller != null && controller.EffectControlProvider == this)
-				controller.EffectControlProvider = null;
-
-			controller = element;
-			if (controller != null)
-				controller.EffectControlProvider = this;
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
 				SetAutomationId(Element.AutomationId);
