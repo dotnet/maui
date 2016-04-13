@@ -287,7 +287,7 @@ namespace Xamarin.Forms.Platform.Android
 			_layout.AddView(_canvas.GetViewGroup());
 		}
 
-		void OnStateChanged()
+		async void OnStateChanged()
 		{
 			if (_application == null)
 				return;
@@ -297,7 +297,7 @@ namespace Xamarin.Forms.Platform.Android
 			else if (_previousState == AndroidApplicationLifecycleState.OnStop && _currentState == AndroidApplicationLifecycleState.OnRestart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
-				_application.SendSleepAsync().Wait();
+				await _application.SendSleepAsync();
 		}
 
 		void SetMainPage()
