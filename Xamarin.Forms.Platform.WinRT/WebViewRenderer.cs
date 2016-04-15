@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		async void OnEvalRequested(object sender, EventArg<string> eventArg)
 		{
-			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Control.InvokeScript("eval", new[] { eventArg.Data }));
+			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Control.InvokeScriptAsync("eval", new[] { eventArg.Data }));
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
