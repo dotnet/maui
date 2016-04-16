@@ -193,6 +193,7 @@
     <AndroidResource Include="Resources\values\styles.xml" />
     <AndroidResource Include="Resources\drawable\coffee.png" />
     <AndroidResource Include="Resources\drawable\toolbar_close.png" />
+    <AndroidResource Include="Resources\drawable\test.jpg" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />

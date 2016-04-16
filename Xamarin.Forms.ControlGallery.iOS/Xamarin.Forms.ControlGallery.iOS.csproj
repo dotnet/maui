@@ -228,6 +228,7 @@
     <BundleResource Include="Images\Vegetables.jpg" />
     <BundleResource Include="Images\Vegetables%402x.jpg" />
     <BundleResource Include="toolbar_close.png" />
+    <BundleResource Include="test.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Calabash, Version=18.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065, processorArchitecture=MSIL">

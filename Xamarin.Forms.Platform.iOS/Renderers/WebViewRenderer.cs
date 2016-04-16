@@ -18,7 +18,9 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _ignoreSourceChanges;
 		WebNavigationEvent _lastBackForwardEvent;
 		VisualElementPackager _packager;
-
+#pragma warning disable 0414
+		VisualElementTracker _tracker;
+#pragma warning restore 0414
 		public WebViewRenderer() : base(RectangleF.Empty)
 		{
 		}
@@ -47,6 +49,8 @@ namespace Xamarin.Forms.Platform.iOS
 			AutosizesSubviews = true;
 			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 
+			_tracker = new VisualElementTracker(this);
+
 			_packager = new VisualElementPackager(this);
 			_packager.Load();
 
@@ -62,9 +66,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (element != null)
 				element.SendViewInitialized(this);
-
-			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
-				AccessibilityIdentifier = Element.AutomationId;
 		}
 
 		public void SetElementSize(Size size)
