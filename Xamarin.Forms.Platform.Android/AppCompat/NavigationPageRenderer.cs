@@ -474,7 +474,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				ToolbarNavigationClickListener = new ClickListener(Element)
 			};
 
-			drawerLayout.SetDrawerListener(new DrawerMultiplexedListener { Listeners = { _drawerToggle, renderer } });
+			drawerLayout.AddDrawerListener(new DrawerMultiplexedListener { Listeners = { _drawerToggle, renderer } });
 			_drawerToggle.DrawerIndicatorEnabled = true;
 		}
 

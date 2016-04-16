@@ -17,11 +17,11 @@
         <dependency id="WPtoolkit" version="4.2013.08.16"/>
       </group>
       <group targetFramework="MonoAndroid10">
-        <dependency id="Xamarin.Android.Support.v4" version="[23.1.1.1]"/>
-        <dependency id="Xamarin.Android.Support.Design" version="[23.1.1.1]"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="[23.1.1.1]"/>
-        <dependency id="Xamarin.Android.Support.v7.CardView" version="[23.1.1.1]"/>
-        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.1.1.1]"/>
+        <dependency id="Xamarin.Android.Support.v4" version="[23.3.0]"/>
+        <dependency id="Xamarin.Android.Support.Design" version="[23.3.0]"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="[23.3.0]"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="[23.3.0]"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.3.0]"/>
       </group>
     </dependencies>
     <references>

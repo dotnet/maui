@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 					Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 
-					SetDrawerListener(this);
+					AddDrawerListener(this);
 				}
 
 				UpdateBackgroundColor(newElement);

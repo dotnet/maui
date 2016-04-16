@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Presented = _page.IsPresented;
 
-			SetDrawerListener(this);
+			AddDrawerListener(this);
 
 			if (element != null)
 				element.SendViewInitialized(this);
