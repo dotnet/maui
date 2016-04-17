@@ -400,6 +400,7 @@
       <DependentUpon>Bugzilla39378.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39963.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39987.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

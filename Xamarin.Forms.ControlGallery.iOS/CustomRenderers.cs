@@ -9,12 +9,16 @@ using System.Drawing;
 
 #if __UNIFIED__
 using UIKit;
+using MapKit;
+using CoreLocation;
 using Foundation;
 using RectangleF = CoreGraphics.CGRect;
 
 #else
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
+using MonoTouch.MapKit;
+using MonoTouch.CoreLocation;
 #endif
 
 [assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(CollectionViewRenderer))]
@@ -22,8 +26,54 @@ using MonoTouch.Foundation;
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
+[assembly: ExportRenderer(typeof(CustomMapView), typeof(CustomIOSMapRenderer))]
+
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
+	{
+		private MKMapView _mapView;
+
+		protected override void OnElementChanged(ElementChangedEventArgs<CustomMapView> e)
+		{
+			base.OnElementChanged(e);
+
+			if (e.NewElement != null)
+			{
+				if (Control == null)
+				{
+					_mapView = new MKMapView(UIScreen.MainScreen.Bounds);
+					_mapView.MapType = MKMapType.Standard;
+					_mapView.RotateEnabled = false;
+					SetNativeControl(_mapView);
+				}
+
+			}
+
+			CLLocationCoordinate2D coords = new CLLocationCoordinate2D(48.857, 2.351);
+			MKCoordinateSpan span = new MKCoordinateSpan(MilesToLatitudeDegrees(20), MilesToLongitudeDegrees(20, coords.Latitude));
+			_mapView.Region = new MKCoordinateRegion(coords, span);
+		}
+
+		public double MilesToLatitudeDegrees(double miles)
+		{
+			double earthRadius = 3960.0; // in miles
+			double radiansToDegrees = 180.0 / Math.PI;
+			return (miles / earthRadius) * radiansToDegrees;
+		}
+
+		public double MilesToLongitudeDegrees(double miles, double atLatitude)
+		{
+			double earthRadius = 3960.0; // in miles
+			double degreesToRadians = Math.PI / 180.0;
+			double radiansToDegrees = 180.0 / Math.PI;
+			// derive the earth's radius at that point in latitude
+			double radiusAtLatitude = earthRadius * Math.Cos(atLatitude * degreesToRadians);
+			return (miles / radiusAtLatitude) * radiansToDegrees;
+		}
+	}
+
+
 	public class NativeiOSCellRenderer : ViewCellRenderer
 	{
 		static NSString s_rid = new NSString("NativeCell");
@@ -77,13 +127,15 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			_imageView = new UIImageView();
 
-			_headingLabel = new UILabel() {
+			_headingLabel = new UILabel()
+			{
 				Font = UIFont.FromName("Cochin-BoldItalic", 22f),
 				TextColor = UIColor.FromRGB(127, 51, 0),
 				BackgroundColor = UIColor.Clear
 			};
 
-			_subheadingLabel = new UILabel() {
+			_subheadingLabel = new UILabel()
+			{
 				Font = UIFont.FromName("AmericanTypewriter", 12f),
 				TextColor = UIColor.FromRGB(38, 127, 0),
 				TextAlignment = UITextAlignment.Center,
@@ -130,13 +182,15 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			_imageView = new UIImageView();
 
-			_headingLabel = new UILabel() {
+			_headingLabel = new UILabel()
+			{
 				Font = UIFont.FromName("Cochin-BoldItalic", 22f),
 				TextColor = UIColor.FromRGB(127, 51, 0),
 				BackgroundColor = UIColor.Clear
 			};
 
-			_subheadingLabel = new UILabel() {
+			_subheadingLabel = new UILabel()
+			{
 				Font = UIFont.FromName("AmericanTypewriter", 12f),
 				TextColor = UIColor.FromRGB(38, 127, 0),
 				TextAlignment = UITextAlignment.Center,
@@ -270,10 +324,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		public IEnumerable<DataSource> Items
 		{
 			//get{ }
-			set
-			{
-				_tableItems = value.ToList();
-			}
+			set { _tableItems = value.ToList(); }
 		}
 
 		public NativeiOSListViewSource(NativeListView2 view)
@@ -336,7 +387,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 					, _tableItems[indexPath.Row].Category
 					, null);
 			}
-			else {
+			else
+			{
 				cell.UpdateCell(_tableItems[indexPath.Row].Name
 					, _tableItems[indexPath.Row].Category
 					, UIImage.FromFile("Images/" + _tableItems[indexPath.Row].ImageFilename + ".jpg"));
@@ -355,10 +407,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 		public IEnumerable<string> Items
 		{
-			set
-			{
-				_tableItems = value.ToList();
-			}
+			set { _tableItems = value.ToList(); }
 		}
 
 		public NativeListViewSource(NativeListView view)
@@ -379,6 +428,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			return _tableItems.Count;
 		}
 #endif
+
 		#region user interaction methods
 
 		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
@@ -411,7 +461,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				cell = new UITableViewCell(UITableViewCellStyle.Subtitle, _cellIdentifier);
 
 			// set the item text
-			cell.TextLabel.Text = _tableItems[indexPath.Row];//.Items[indexPath.Row].Heading;
+			cell.TextLabel.Text = _tableItems[indexPath.Row]; //.Items[indexPath.Row].Heading;
 
 			// if it's a cell style that supports a subheading, set it
 			//			if(item.CellStyle == UITableViewCellStyle.Subtitle 
@@ -449,7 +499,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		{
 			if (e.NewElement != null)
 			{
-				var flowLayout = new UICollectionViewFlowLayout {
+				var flowLayout = new UICollectionViewFlowLayout
+				{
 					SectionInset = new UIEdgeInsets(20, 20, 20, 20),
 					ScrollDirection = UICollectionViewScrollDirection.Vertical,
 					MinimumInteritemSpacing = 5, // minimum spacing between cells 
@@ -480,7 +531,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-			CollectionView.RegisterClassForCell(typeof(CollectionViewCell), cellId);
+			CollectionView.RegisterClassForCell(typeof (CollectionViewCell), cellId);
 		}
 
 #if __UNIFIED__
@@ -521,10 +572,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 	public class CollectionViewCell : UICollectionViewCell
 	{
-		public UILabel Label
-		{
-			get; private set;
-		}
+		public UILabel Label { get; private set; }
 
 		[Export("initWithFrame:")]
 		public CollectionViewCell(RectangleF frame) : base(frame)
