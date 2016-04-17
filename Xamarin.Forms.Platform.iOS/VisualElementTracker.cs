@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.iOS
 					var target = new RectangleF(x, y, width, height);
 					// must reset transform prior to setting frame...
 					caLayer.Transform = transform;
-					caLayer.Frame = target;
+					uiview.Frame = target;
 					if (shouldRelayoutSublayers)
 						caLayer.LayoutSublayers();
 				}
