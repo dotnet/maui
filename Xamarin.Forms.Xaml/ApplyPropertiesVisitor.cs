@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Xaml
 				if (typeof (IEnumerable).GetTypeInfo().IsAssignableFrom(Context.Types[parentElement].GetTypeInfo()))
 				{
 					var source = Values[parentNode];
-					if (Context.Types[parentElement] != typeof (ResourceDictionary))
+					if (!(typeof (ResourceDictionary).IsAssignableFrom(Context.Types[parentElement])))
 					{
 						var addMethod =
 							Context.Types[parentElement].GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Xaml
 			return null;
 		}
 
-		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, BindableObject rootElement,
+		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement,
 			INode node, HydratationContext context, IXmlLineInfo lineInfo)
 		{
 			var elementType = xamlelement.GetType();

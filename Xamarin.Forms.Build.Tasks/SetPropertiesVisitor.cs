@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Build.Tasks
 				if (parentVar.VariableType.ImplementsInterface(Module.Import(typeof (IEnumerable))))
 				{
 					var elementType = parentVar.VariableType;
-					if (elementType.FullName != "Xamarin.Forms.ResourceDictionary")
+					if (elementType.FullName != "Xamarin.Forms.ResourceDictionary" && elementType.Resolve().BaseType.FullName != "Xamarin.Forms.ResourceDictionary")
 					{
 						var adderTuple = elementType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
 						var adderRef = Module.Import(adderTuple.Item1);
@@ -213,7 +213,7 @@ namespace Xamarin.Forms.Build.Tasks
 			return parentList.CollectionItems.Contains(node);
 		}
 
-		static string GetContentProperty(TypeReference typeRef)
+		internal static string GetContentProperty(TypeReference typeRef)
 		{
 			var typeDef = typeRef.Resolve();
 			var attributes = typeDef.CustomAttributes;
@@ -461,7 +461,7 @@ namespace Xamarin.Forms.Build.Tasks
 					context.IL.Emit(OpCodes.Ldloc, parent);
 					context.IL.Append(vnode.PushConvertedValue(context,
 						propertyType,
-						new ICustomAttributeProvider[] { propertyType.Resolve() },
+						new ICustomAttributeProvider[] { property, propertyType.Resolve() },
 						valueNode.PushServiceProvider(context), false, true));
 					context.IL.Emit(OpCodes.Callvirt, propertySetterRef);
 

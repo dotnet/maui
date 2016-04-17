@@ -31,13 +31,13 @@ namespace Xamarin.Forms.Xaml
 {
 	public static class Extensions
 	{
-		public static TView LoadFromXaml<TView>(this TView view, Type callingType) where TView : BindableObject
+		public static TXaml LoadFromXaml<TXaml>(this TXaml view, Type callingType) 
 		{
 			XamlLoader.Load(view, callingType);
 			return view;
 		}
 
-		internal static TView LoadFromXaml<TView>(this TView view, string xaml) where TView : BindableObject
+		internal static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
 		{
 			XamlLoader.Load(view, xaml);
 			return view;

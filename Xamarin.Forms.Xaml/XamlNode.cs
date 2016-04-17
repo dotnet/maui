@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Xaml
 				visitor.Visit(this, parentNode);
 		}
 
-		static bool IsDataTemplate(INode node, INode parentNode)
+		internal static bool IsDataTemplate(INode node, INode parentNode)
 		{
 			var parentElement = parentNode as IElementNode;
 			INode createContent;
@@ -169,7 +169,7 @@ namespace Xamarin.Forms.Xaml
 			return false;
 		}
 
-		static bool IsResourceDictionary(INode node, INode parentNode)
+		internal static bool IsResourceDictionary(INode node, INode parentNode)
 		{
 			var enode = node as ElementNode;
 			return enode.XmlType.Name == "ResourceDictionary";
@@ -186,10 +186,14 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (!visitor.VisitChildrenFirst)
 				visitor.Visit(this, parentNode);
-			foreach (var node in Properties.Values.ToList())
-				node.Accept(visitor, this);
-			foreach (var node in CollectionItems)
-				node.Accept(visitor, this);
+			if ((!visitor.StopOnDataTemplate || !IsDataTemplate(this, parentNode)) &&
+				(!visitor.StopOnResourceDictionary || !IsResourceDictionary(this, parentNode)))
+			{
+				foreach (var node in Properties.Values.ToList())
+					node.Accept(visitor, this);
+				foreach (var node in CollectionItems)
+					node.Accept(visitor, this);
+			}
 			if (visitor.VisitChildrenFirst)
 				visitor.Visit(this, parentNode);
 		}

@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		static readonly Dictionary<Type, string> XamlResources = new Dictionary<Type, string>();
 
-		public static void Load(BindableObject view, Type callingType)
+		public static void Load(object view, Type callingType)
 		{
 			var xaml = GetXamlForType(callingType);
 			if (string.IsNullOrEmpty(xaml))
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Xaml
 			Load(view, xaml);
 		}
 
-		public static void Load(BindableObject view, string xaml)
+		public static void Load(object view, string xaml)
 		{
 			using (var reader = XmlReader.Create(new StringReader(xaml)))
 			{

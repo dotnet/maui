@@ -149,7 +149,9 @@ namespace Xamarin.Forms.Xaml
 			var rnode = (XamlLoader.RuntimeRootNode)node;
 			Values[node] = rnode.Root;
 			Context.Types[node] = rnode.Root.GetType();
-			NameScope.SetNameScope(rnode.Root as BindableObject, node.Namescope);
+			var bindableRoot = rnode.Root as BindableObject;
+			if (bindableRoot != null)
+				NameScope.SetNameScope(bindableRoot, node.Namescope);
 		}
 
 		public void Visit(ListNode node, INode parentNode)

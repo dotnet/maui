@@ -2,12 +2,37 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Reflection;
+using System.Linq;
 
 namespace Xamarin.Forms
 {
-	public sealed class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
+	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
+
+		Type _mergedWith;
+		[TypeConverter (typeof(TypeTypeConverter))]
+		public Type MergedWith {
+			get { return _mergedWith; }
+			set { 
+				if (_mergedWith == value)
+					return;
+				_mergedWith = value;
+				if (_mergedWith == null)
+					return;
+
+				_mergedInstance = _mergedWith.GetTypeInfo().BaseType.GetTypeInfo().DeclaredMethods.First(mi => mi.Name == "GetInstance").Invoke(null, new object[] {_mergedWith}) as ResourceDictionary;
+			}
+		}
+
+		static ResourceDictionary _instance;
+		static ResourceDictionary GetInstance(Type type)
+		{
+			return _instance ?? (_instance = ((ResourceDictionary)Activator.CreateInstance (type)));
+		}
+
+		ResourceDictionary _mergedInstance;
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
 		{
@@ -94,7 +119,7 @@ namespace Xamarin.Forms
 
 		public bool TryGetValue(string key, out object value)
 		{
-			return _innerDictionary.TryGetValue(key, out value);
+			return _innerDictionary.TryGetValue(key, out value) || (_mergedInstance != null && _mergedInstance.TryGetValue(key, out value));
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> IResourceDictionary.ValuesChanged

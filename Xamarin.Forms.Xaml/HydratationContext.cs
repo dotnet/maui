@@ -17,8 +17,8 @@ namespace Xamarin.Forms.Xaml
 
 		public HydratationContext ParentContext { get; set; }
 
-		public BindableObject RootElement { get; set; }
-
 		public bool DoNotThrowOnExceptions { get; set; }
+
+		public object RootElement { get; set; }
 	}
 }
