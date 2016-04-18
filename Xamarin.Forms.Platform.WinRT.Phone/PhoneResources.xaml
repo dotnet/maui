@@ -242,7 +242,7 @@
         <Setter Property="HeaderTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" />
+                    <TextBlock Text="{Binding Title}" Foreground="{TemplateBinding ToolbarForeground}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -281,7 +281,7 @@
                         </Grid>
                         <ScrollViewer x:Name="ScrollViewer" HorizontalSnapPointsAlignment="Center" HorizontalSnapPointsType="MandatorySingle" HorizontalScrollBarVisibility="Hidden" Margin="{TemplateBinding Padding}" Grid.Row="1" Template="{StaticResource ScrollViewerScrollBarlessTemplate}" VerticalSnapPointsType="None" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled" VerticalContentAlignment="Stretch" ZoomMode="Disabled">
                             <PivotPanel x:Name="Panel" VerticalAlignment="Stretch">
-                                <PivotHeaderPanel x:Name="Header">
+                                <PivotHeaderPanel x:Name="Header" Background="{TemplateBinding ToolbarBackground}">
                                     <PivotHeaderPanel.RenderTransform>
                                         <CompositeTransform x:Name="HeaderTranslateTransform" TranslateX="0"/>
                                     </PivotHeaderPanel.RenderTransform>

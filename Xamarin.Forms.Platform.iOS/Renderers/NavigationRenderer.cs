@@ -594,6 +594,8 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var titleAttributes = new UIStringAttributes();
 				titleAttributes.Font = globalAttributes.Font;
+				// TODO: the ternary if statement here will always return false because of the encapsulating if statement.
+				// What was the intention?
 				titleAttributes.ForegroundColor = barTextColor == Color.Default
 					? titleAttributes.ForegroundColor ?? UINavigationBar.Appearance.TintColor
 					: barTextColor.ToUIColor();
@@ -640,7 +642,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					containerController.NavigationItem.LeftBarButtonItem =
 						new UIBarButtonItem(new UIImage(_parentMasterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain,
-							(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
+						(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
 				}
 				catch (Exception)
 				{

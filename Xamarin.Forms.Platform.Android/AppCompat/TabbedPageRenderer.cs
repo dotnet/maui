@@ -2,6 +2,9 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
@@ -13,6 +16,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 {
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>, TabLayout.IOnTabSelectedListener, ViewPager.IOnPageChangeListener, IManageFragments
 	{
+		Drawable _backgroundDrawable;
 		bool _disposed;
 		FragmentManager _fragmentManager;
 		TabLayout _tabLayout;
@@ -149,7 +153,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						tabs = _tabLayout = new TabLayout(activity) { TabMode = TabLayout.ModeFixed, TabGravity = TabLayout.GravityFill };
 					FormsViewPager pager =
 						_viewPager =
-						new FormsViewPager(activity)
+						new FormsViewPager(activity) 
 						{
 							OverScrollMode = OverScrollMode.Never,
 							EnableGesture = UseAnimations,
@@ -173,6 +177,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				UpdateIgnoreContainerAreas();
 				tabbedPage.InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+				UpdateBarBackgroundColor();
+				UpdateBarTextColor();
 			}
 		}
 
@@ -180,8 +186,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == "CurrentPage")
+			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 				ScrollToCurrentPage();
+			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
+				UpdateBarBackgroundColor();
+			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
+				UpdateBarTextColor();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -317,6 +327,46 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				TabLayout.Tab tab = tabs.GetTabAt(i);
 				tab.SetIcon(ResourceManager.IdFromTitle(icon, ResourceManager.DrawableClass));
 			}
+		}
+
+		void UpdateBarBackgroundColor()
+		{
+			if (_disposed || _tabLayout == null)
+				return;
+
+			Color tintColor = Element.BarBackgroundColor;
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				if (tintColor.IsDefault)
+					_tabLayout.BackgroundTintMode = null;
+				else
+				{
+					_tabLayout.BackgroundTintMode = PorterDuff.Mode.Src;
+					_tabLayout.BackgroundTintList = ColorStateList.ValueOf(tintColor.ToAndroid());
+				}
+			}
+			else
+			{
+				if (tintColor.IsDefault && _backgroundDrawable != null)
+					_tabLayout.SetBackground(_backgroundDrawable);
+				else if (!tintColor.IsDefault)
+				{
+					if (_backgroundDrawable == null)
+						_backgroundDrawable = _tabLayout.Background;
+					_tabLayout.SetBackgroundColor(tintColor.ToAndroid());
+				}
+			}
+		}
+
+		private void UpdateBarTextColor()
+		{
+			if (_disposed || _tabLayout == null)
+				return;
+
+			var textColor = Element.BarTextColor.ToAndroid().ToArgb();
+
+			_tabLayout.SetTabTextColors(textColor, textColor);
 		}
 	}
 }

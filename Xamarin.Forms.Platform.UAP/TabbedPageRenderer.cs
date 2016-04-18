@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Loaded += TabbedPagePresenter_Loaded;
 			Unloaded += TabbedPagePresenter_Unloaded;
-			SizeChanged += (s, e) =>
+			SizeChanged += (s, e) => 
 			{
 				if (ActualWidth > 0 && ActualHeight > 0)
 				{
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _showTitle;
 		VisualElementTracker<Page, Pivot> _tracker;
 
-		public Pivot Control { get; private set; }
+		public FormsPivot Control { get; private set; }
 
 		public TabbedPage Element { get; private set; }
 
@@ -157,7 +157,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					Control = new FormsPivot { Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"] };
+					Control = new FormsPivot { Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"], };
 
 					Control.SelectionChanged += OnSelectionChanged;
 
@@ -170,6 +170,8 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.DataContext = Element;
 				OnPagesChanged(Element.Children, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 				UpdateCurrentPage();
+				UpdateBarTextColor();
+				UpdateBarBackgroundColor();
 
 				((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
 				element.PropertyChanged += OnElementPropertyChanged;
@@ -177,6 +179,7 @@ namespace Xamarin.Forms.Platform.UWP
 				if (!string.IsNullOrEmpty(element.AutomationId))
 					Control.SetValue(AutomationProperties.AutomationIdProperty, element.AutomationId);
 			}
+
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 		}
@@ -201,8 +204,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "CurrentPage")
+			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 				UpdateCurrentPage();
+			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
+				UpdateBarTextColor();
+			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
+				UpdateBarBackgroundColor();
+
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
@@ -243,6 +251,32 @@ namespace Xamarin.Forms.Platform.UWP
 			Element.SendDisappearing();
 		}
 
+		Brush GetBarBackgroundBrush()
+		{
+			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
+				return (Brush)defaultColor;
+			return Element.BarBackgroundColor.ToBrush();
+		}
+
+		Brush GetBarForegroundBrush()
+		{
+			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			if (Element.BarTextColor.IsDefault)
+				return (Brush)defaultColor;
+			return Element.BarTextColor.ToBrush();
+		}
+
+		void UpdateBarBackgroundColor()
+		{
+			Control.ToolbarBackground = GetBarBackgroundBrush();
+		}
+
+		void UpdateBarTextColor()
+		{
+			Control.ToolbarForeground = GetBarForegroundBrush();
+		}
+
 		void UpdateBarVisibility()
 		{
 			(Control as FormsPivot).ToolbarVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
@@ -254,6 +288,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var nav = page as NavigationPage;
 			((ITitleProvider)this).ShowTitle = nav != null;
+
+			UpdateBarTextColor();
+			UpdateBarBackgroundColor();
 
 			if (page == null)
 				return;

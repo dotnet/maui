@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.WinRT
 {
@@ -46,5 +47,20 @@ namespace Xamarin.Forms.Platform.WinRT
 	public class TabsControl
 		: ItemsControl
 	{
+
+		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(Brush), typeof(TabsControl), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(Brush), typeof(TabsControl), new PropertyMetadata(default(Brush)));
+
+		public Brush ToolbarBackground
+		{
+			get { return (Brush)GetValue(ToolbarBackgroundProperty); }
+			set { SetValue(ToolbarBackgroundProperty, value); }
+		}
+
+		public Brush ToolbarForeground
+		{
+			get { return (Brush)GetValue(ToolbarForegroundProperty); }
+			set { SetValue(ToolbarForegroundProperty, value); }
+		}
 	}
 }

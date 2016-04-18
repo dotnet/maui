@@ -78,40 +78,45 @@ namespace Xamarin.Forms.Controls
 	{
 		protected override void Init ()
 		{
-			
 		}
 #if APP
 		public CoreTabbedPage ()
 		{
 			AutomationId = "TabbedPageRoot";
-			Children.Add (new CoreRootPage (this, NavigationBehavior.PushModalAsync) { Title = "Tab 1" });
-			Children.Add (new CoreRootPage (this, NavigationBehavior.PushModalAsync) { Title = "Tab 2" });
+
+			BarBackgroundColor = Color.Maroon;
+			BarTextColor = Color.White;
+
+			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 1" });
+			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 2" });
 			Children.Add(new NavigationPage(new Page())
 				{
 					Title = "Rubriques",
+					Icon = "coffee.png",
+					BarBackgroundColor = Color.Blue
 				});
 
 			Children.Add(new NavigationPage(new Page())
 				{
-					Title = "Le Club",
+					Title = "Le Club"
 				});
 
-			Children.Add(new NavigationPage(new Page{Title = "Bookmarks"})
+			Children.Add(new NavigationPage(new Page { Title = "Bookmarks" })
 				{
 					Title = "Bookmarks",
 				});
 
-			Children.Add(new NavigationPage(new Page() { Title = "Alertes" })
+			Children.Add(new NavigationPage(new Page { Title = "Alertes" })
 				{
 					Title = "Notifications",  
 				});
 
-			Children.Add(new NavigationPage (new Page(){Title = "My account"})
+			Children.Add(new NavigationPage(new Page { Title = "My account" })
 				{
 					Title = "My account",
 				});
 
-			Children.Add(new NavigationPage(new Page(){Title = "About"})
+			Children.Add(new NavigationPage(new Page { Title = "About" })
 				{
 					Title = "About",
 				});

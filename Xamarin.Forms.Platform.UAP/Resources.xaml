@@ -238,7 +238,9 @@
 		<Setter Property="ContentTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<TextBlock Text="{Binding}" Margin="10,0,0,0" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}" />
+					<Grid Background="{Binding ToolbarBackground}">
+						<TextBlock Text="{Binding}" Margin="10,0,0,0" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}" Foreground="{Binding ToolbarForeground}" />
+					</Grid>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
@@ -471,7 +473,7 @@
 		<Setter Property="HeaderTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<TextBlock Text="{Binding Title}" Style="{ThemeResource BodyTextBlockStyle}" />
+					<TextBlock Text="{Binding Title}" Foreground="{Binding ToolbarForeground}" Style="{ThemeResource BodyTextBlockStyle}" />
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
@@ -616,7 +618,7 @@
                                             <ContentControl.Clip>
                                                 <RectangleGeometry x:Name="HeaderClipperGeometry"/>
                                             </ContentControl.Clip>
-                                            <Grid Background="Transparent">
+                                            <Grid Background="{TemplateBinding ToolbarBackground}">
                                                 <PivotHeaderPanel x:Name="StaticHeader" Visibility="Collapsed"/>
                                                 <PivotHeaderPanel x:Name="Header">
                                                     <PivotHeaderPanel.RenderTransform>

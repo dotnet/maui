@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
 namespace Xamarin.Forms.Platform.WinRT
@@ -87,12 +88,30 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				OnPagesChanged(Page.Children, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 				UpdateCurrentPage();
+				UpdateBarTextColor();
+				UpdateBarBackgroundColor();
 
 				((INotifyCollectionChanged)Page.Children).CollectionChanged += OnPagesChanged;
 				element.PropertyChanged += OnElementPropertyChanged;
 			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+		}
+
+		Brush GetBarBackgroundBrush()
+		{
+			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationPageBackgroundThemeBrush"];
+			if (Page.BarBackgroundColor.IsDefault && defaultColor != null)
+				return (Brush)defaultColor;
+			return Page.BarBackgroundColor.ToBrush();
+		}
+
+		Brush GetBarForegroundBrush()
+		{
+			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			if (Page.BarTextColor.IsDefault)
+				return (Brush)defaultColor;
+			return Page.BarTextColor.ToBrush();
 		}
 
 		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
@@ -153,8 +172,22 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "CurrentPage")
+			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 				UpdateCurrentPage();
+			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
+				UpdateBarTextColor();
+			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
+				UpdateBarBackgroundColor();
+		}
+
+		void UpdateBarBackgroundColor()
+		{
+			_tabs.Background = GetBarBackgroundBrush();
+		}
+
+		void UpdateBarTextColor()
+		{
+			_tabs.Foreground = GetBarForegroundBrush();
 		}
 
 		void UpdateCurrentPage()
