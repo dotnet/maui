@@ -92,7 +92,14 @@ namespace Xamarin.Forms
 		[IndexerName("Item")]
 		public object this[string index]
 		{
-			get { return _innerDictionary[index]; }
+			get
+			{
+				if (_innerDictionary.ContainsKey(index))
+					return _innerDictionary[index];
+				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
+					return _mergedInstance[index];
+				throw new KeyNotFoundException();
+			}
 			set
 			{
 				_innerDictionary[index] = value;
