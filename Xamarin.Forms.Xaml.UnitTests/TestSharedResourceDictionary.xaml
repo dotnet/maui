@@ -3,9 +3,19 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
 		x:Class="Xamarin.Forms.Xaml.UnitTests.TestSharedResourceDictionary">
-	<ContentPage.Resources>
-		<ResourceDictionary MergedWith="local:SharedResourceDictionary">
-		</ResourceDictionary>
-	</ContentPage.Resources>
-	<Label x:Name="label" Style="{StaticResource sharedfoo}"/>
+	<StackLayout>
+		<ContentView>
+			<ContentView.Resources>
+				<ResourceDictionary MergedWith="local:SharedResourceDictionary"/>
+			</ContentView.Resources>
+			<Label x:Name="label" Style="{StaticResource sharedfoo}"/>
+		</ContentView>
+		<ContentView>
+			<ContentView.Resources>
+				<ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
+			</ContentView.Resources>
+			<Label x:Name="label2" Style="{StaticResource sharedStyle2}"/>
+		</ContentView>
+	</StackLayout>
+
 </ContentPage>

@@ -26,10 +26,17 @@ namespace Xamarin.Forms
 			}
 		}
 
-		static ResourceDictionary _instance;
+		static Dictionary<Type, ResourceDictionary> _instances;
 		static ResourceDictionary GetInstance(Type type)
 		{
-			return _instance ?? (_instance = ((ResourceDictionary)Activator.CreateInstance (type)));
+			_instances = _instances ?? new Dictionary<Type, ResourceDictionary>();
+			ResourceDictionary rd;
+			if (!_instances.TryGetValue(type, out rd))
+			{
+				rd = ((ResourceDictionary)Activator.CreateInstance(type));
+				_instances [type] = rd;
+			}
+			return rd;
 		}
 
 		ResourceDictionary _mergedInstance;

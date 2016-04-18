@@ -26,6 +26,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new TestSharedResourceDictionary (useCompiledXaml);
 				Assert.AreEqual (Color.Pink, layout.label.TextColor);
 			}
+
+			[TestCase (false)]
+			[TestCase (true)]
+			public void NoConflictsBetweenSharedRDs (bool useCompiledXaml)
+			{
+				var layout = new TestSharedResourceDictionary (useCompiledXaml);
+				Assert.AreEqual (Color.Pink, layout.label.TextColor);
+				Assert.AreEqual (Color.Purple, layout.label2.TextColor);
+			}
 		}
 	}
 }
