@@ -526,7 +526,7 @@ namespace Xamarin.Forms.Platform.Android
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
-					if (Element.Count == 0)
+					if (Controller.Count == 0)
 						throw new InvalidOperationException("CarouselView must retain a least one item.");
 
 					Adapter.NotifyItemRangeRemoved(
@@ -1195,8 +1195,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override int ItemCount
 		{
-			get {
-				return Element.Count;
+			get
+            {
+				return Controller.Count;
 			}
 		}
 		public override int GetItemViewType(int position)

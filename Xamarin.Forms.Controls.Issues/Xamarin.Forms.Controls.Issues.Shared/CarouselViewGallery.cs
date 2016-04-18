@@ -58,6 +58,7 @@ namespace Xamarin.Forms.Controls
 				return galleryPage;
 			}
 			public void Screenshot(string message) => _app.Screenshot(message);
+			public IApp App => _app;
 		}
 
 		public class CarouselViewGallery : IGalleryPage
@@ -256,22 +257,31 @@ namespace Xamarin.Forms.Controls
 				Assert.AreNotEqual(0, CarouselViewGallery.InitialItemId);
 				Assert.AreEqual(CarouselViewGallery.InitialItemId, carousel.ItemId);
 
-				// programatic jump to first/last
-				carousel.Last();
-				carousel.First();
+				gallery.App.SetOrientationPortrait();
 
-				// programatic step to page
-				carousel.StepToLast();
-				carousel.StepToFirst();
+				for (var i = 0; i < 2; i++)
+				{
+					// programatic jump to first/last
+					carousel.Last();
+					carousel.First();
 
-				// swiping
-				carousel.SwipeToLast();
-				carousel.SwipeNext(); // test swipe past end
-				carousel.SwipeToFirst();
-				carousel.SwipePrevious(); // test swipe past start
+					// programatic step to page
+					carousel.StepToLast();
+					carousel.StepToFirst();
 
-			} catch (Exception e) {
-				gallery.Screenshot(e.ToString());
+					// swiping
+					carousel.SwipeToLast();
+					carousel.SwipeNext(); // test swipe past end
+					carousel.SwipeToFirst();
+					carousel.SwipePrevious(); // test swipe past start
+
+					gallery.App.SetOrientationLandscape();
+				}
+
+				gallery.Screenshot("End");
+			}
+			catch (Exception e) {
+				gallery.Screenshot("End");
 				throw e;
 			}
 		}

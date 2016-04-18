@@ -45,7 +45,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (_flipView == null)
 				{
-					_flipView = new FlipView { IsSynchronizedWithCurrentItem = false, ItemTemplate = (WDataTemplate)WApp.Current.Resources["ItemTemplate"] };
+					_flipView = new FlipView 
+					{
+						IsSynchronizedWithCurrentItem = false,
+						ItemTemplate = (WDataTemplate)WApp.Current.Resources["ItemTemplate"]
+					};
 				}
 
 				_flipView.ItemsSource = Element.ItemsSource;
@@ -89,7 +93,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
-					if (Element.Count == 0)
+					if (Controller.Count == 0)
 						throw new InvalidOperationException("CarouselView must retain a least one item.");
 
 					if (e.OldStartingIndex < Element.Position)
