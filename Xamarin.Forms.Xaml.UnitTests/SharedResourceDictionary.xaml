@@ -11,4 +11,6 @@
 	<Style TargetType="Label">
 		<Setter Property="TextColor" Value="Red" />
 	</Style>
+	<Color x:Key="TestingColor">#454545</Color>
+	<Label x:Key="label" BackgroundColor="{StaticResource TestingColor}" />
 </ResourceDictionary>

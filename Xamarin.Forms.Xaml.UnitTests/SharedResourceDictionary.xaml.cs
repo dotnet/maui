@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void ResourcesDirectoriesCanBeXamlRoots (bool useCompiledXaml)
 			{
 				var layout = new SharedResourceDictionary (useCompiledXaml);
-				Assert.AreEqual (3, layout.Count);
+				Assert.AreEqual (5, layout.Count);
 			}
 		}
 	}

@@ -27,12 +27,11 @@ namespace Xamarin.Forms.Xaml
 			foreach (var p in valueProvider.ParentObjects)
 			{
 				var ve = p as VisualElement;
-				if (ve == null)
-					continue;
-				if (ve.Resources == null)
+				var resDict = ve?.Resources ?? p as ResourceDictionary;
+				if (resDict == null)
 					continue;
 				object res;
-				if (ve.Resources.TryGetValue(Key, out res))
+				if (resDict.TryGetValue(Key, out res))
 				{
 					return ConvertCompiledOnPlatform(res);
 				}
