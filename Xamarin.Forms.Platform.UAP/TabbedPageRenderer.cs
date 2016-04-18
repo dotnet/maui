@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Tracker = null;
 		}
 
-		protected void OnElementChanged(VisualElementChangedEventArgs e)
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
 			EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
 			if (changed != null)
