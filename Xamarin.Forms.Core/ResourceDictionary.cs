@@ -23,6 +23,7 @@ namespace Xamarin.Forms
 					return;
 
 				_mergedInstance = _mergedWith.GetTypeInfo().BaseType.GetTypeInfo().DeclaredMethods.First(mi => mi.Name == "GetInstance").Invoke(null, new object[] {_mergedWith}) as ResourceDictionary;
+				OnValuesChanged (_mergedInstance.ToArray());
 			}
 		}
 
@@ -64,7 +65,7 @@ namespace Xamarin.Forms
 
 		public int Count
 		{
-			get { return _innerDictionary.Count; }
+			get { return _innerDictionary.Count + (_mergedInstance != null ? _mergedInstance.Count: 0); }
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
@@ -116,12 +117,15 @@ namespace Xamarin.Forms
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return ((IEnumerable)_innerDictionary).GetEnumerator();
+			return GetEnumerator();
 		}
 
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			return _innerDictionary.GetEnumerator();
+			var rd = (IEnumerable<KeyValuePair<string,object>>)_innerDictionary;
+			if (_mergedInstance != null)
+				rd = rd.Concat(_mergedInstance._innerDictionary);
+			return rd.GetEnumerator();
 		}
 
 		public bool TryGetValue(string key, out object value)

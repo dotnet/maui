@@ -4,12 +4,13 @@
 		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
 		x:Class="Xamarin.Forms.Xaml.UnitTests.TestSharedResourceDictionary">
 	<StackLayout>
-		<ContentView>
-			<ContentView.Resources>
+		<StackLayout>
+			<StackLayout.Resources>
 				<ResourceDictionary MergedWith="local:SharedResourceDictionary"/>
-			</ContentView.Resources>
+			</StackLayout.Resources>
 			<Label x:Name="label" Style="{StaticResource sharedfoo}"/>
-		</ContentView>
+			<Label x:Name="implicitLabel" />
+		</StackLayout>
 		<ContentView>
 			<ContentView.Resources>
 				<ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
@@ -17,5 +18,4 @@
 			<Label x:Name="label2" Style="{StaticResource sharedStyle2}"/>
 		</ContentView>
 	</StackLayout>
-
 </ContentPage>

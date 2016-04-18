@@ -35,6 +35,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual (Color.Pink, layout.label.TextColor);
 				Assert.AreEqual (Color.Purple, layout.label2.TextColor);
 			}
+
+			[TestCase (false)]
+			[TestCase (true)]
+			public void ImplicitStyleCanBeSharedFromSharedRD (bool useCompiledXaml)
+			{
+				var layout = new TestSharedResourceDictionary(useCompiledXaml);
+				Assert.AreEqual(Color.Red, layout.implicitLabel.TextColor);
+			}
 		}
 	}
 }
