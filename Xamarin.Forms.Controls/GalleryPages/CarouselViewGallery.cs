@@ -246,14 +246,19 @@ namespace Xamarin.Forms.Controls
 			_eventLog = CreateValue(string.Empty, "EventLog");
 
 			_carouselView.ItemSelected += (s, o) => {
-				var selectedItem = ((Item)o.SelectedItem).Id;
-				_selectedItem.Text = $"{selectedItem}";
+				var selectedItem = (Item)o.SelectedItem;
+				var selectedItemId = selectedItem.Id;
+                if (selectedItem != _carouselView.Item)
+                    throw new Exception("CarouselView.Item != ItemSelected");
+				_selectedItem.Text = $"{selectedItemId}";
 				OnEvent("i");
 			};
 
 			_carouselView.PositionSelected += (s, o) => {
 				var selectedPosition = (int)o.SelectedPosition;
-				_selectedPosition.Text = $"{selectedPosition}";
+                if (_items[selectedPosition] != _carouselView.Item)
+                    throw new Exception("CarouselView.Item != Items[selectedPosition]");
+                _selectedPosition.Text = $"{selectedPosition}";
 				OnEvent("p");
 			};
 

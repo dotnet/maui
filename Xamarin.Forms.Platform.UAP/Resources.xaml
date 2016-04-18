@@ -56,6 +56,10 @@
 		</Setter>
 	</Style>
 
+    <DataTemplate x:Key="ItemTemplate">
+        <uwp:ItemControl HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+    </DataTemplate>
+
 	<ControlTemplate TargetType="ContentDialog" x:Key="MyContentDialogControlTemplate">
 		<Border x:Name="Container">
 			<Grid x:Name="LayoutRoot">

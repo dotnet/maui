@@ -30,8 +30,6 @@ namespace Xamarin.Forms
 		{
 		}
 
-		public int Count => _itemSource.Count;
-
 		public IEnumerable ItemsSource
 		{
 			get { return (IEnumerable)GetValue(ItemsSourceProperty); }
@@ -43,6 +41,8 @@ namespace Xamarin.Forms
 			get { return (DataTemplate)GetValue(ItemTemplateProperty); }
 			set { SetValue(ItemTemplateProperty, value); }
 		}
+
+		int IItemViewController.Count => _itemSource.Count;
 
 		void IItemViewController.BindView(View view, object item)
 		{
@@ -190,21 +190,6 @@ namespace Xamarin.Forms
 			public Enumerator GetEnumerator()
 			{
 				return new Enumerator(this);
-			}
-
-			public int IndexOf(object item)
-			{
-				// madness ported from listProxy
-				CollectionSynchronizationContext syncContext = SyncContext;
-				if (syncContext != null)
-				{
-					int value = -1;
-					syncContext.Callback(Enumerable, SyncContext.Context, () => value = _indexable.IndexOf(item), false);
-
-					return value;
-				}
-
-				return _indexable.IndexOf(item);
 			}
 
 			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
