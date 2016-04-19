@@ -15,62 +15,120 @@ using Android.Content;
 using Android.Runtime;
 using Android.Util;
 using AButton = Android.Widget.Button;
+using Android.OS;
+using System.Reflection;
 
-[assembly: ExportRenderer (typeof (Bugzilla31395.CustomContentView), typeof (CustomContentRenderer))]
-[assembly: ExportRenderer (typeof (NativeListView), typeof (NativeListViewRenderer))]
-[assembly: ExportRenderer (typeof (NativeListView2), typeof (NativeAndroidListViewRenderer))]
-[assembly: ExportRenderer (typeof (NativeCell), typeof (NativeAndroidCellRenderer))]
-
+[assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
+[assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
+[assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
+[assembly: ExportRenderer(typeof(NativeCell), typeof(NativeAndroidCellRenderer))]
+#if PRE_APPLICATION_CLASS
+#elif FORMS_APPLICATION_ACTIVITY
+#else
+[assembly: ExportRenderer(typeof(MasterDetailPage), typeof(NativeDroidMasterDetail))]
+#endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
-	public class NativeListViewRenderer : ViewRenderer<NativeListView, global::Android.Widget.ListView>
+
+	public class NativeDroidMasterDetail : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
 	{
-		public NativeListViewRenderer ()
+		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)
 		{
-		}
+			base.OnElementChanged(oldElement, newElement);
 
-		protected override void OnElementChanged (ElementChangedEventArgs<NativeListView> e)
-		{
-			base.OnElementChanged (e);
-
-			if (Control == null) {
-				SetNativeControl (new global::Android.Widget.ListView (Forms.Context));
+			if (newElement == null)
+			{
+				return;
 			}
 
-			if (e.OldElement != null) {
-				// unsubscribe
-				Control.ItemClick -= Clicked;
-			}
-
-			if (e.NewElement != null) {
-				// subscribe
-
-				Control.Adapter = new NativeListViewAdapter (Forms.Context as Activity, e.NewElement);
-				Control.ItemClick += Clicked;
-			}
+			MasterDetailPage page = newElement as MasterDetailPage;
+			page.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) => pChange();
+			page.LayoutChanged += Page_LayoutChanged;
 		}
 
-		void Clicked (object sender, AdapterView.ItemClickEventArgs e) {
-			Element.NotifyItemSelected (Element.Items.ToList()[e.Position]);
-		}
-
-		protected override void OnElementPropertyChanged (object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		private void Page_LayoutChanged(object sender, EventArgs e)
 		{
-			base.OnElementPropertyChanged (sender, e);
-			if (e.PropertyName == NativeListView.ItemsProperty.PropertyName) {
-				// update the Items list in the UITableViewSource
+			pChange();
+		}
 
-				Control.Adapter = new NativeListViewAdapter (Forms.Context as Activity, Element);
+		public void pChange()
+		{
+			if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+			{
+				var drawer = GetChildAt(1);
+				var detail = GetChildAt(0);
+
+				var padding = detail.GetType().GetRuntimeProperty("TopPadding");
+
+				try
+				{
+					int value = (int)padding.GetValue(detail);
+					padding.SetValue(drawer, value);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
 			}
 		}
 	}
 
-	public class NativeListViewAdapter: BaseAdapter<string> {
+	public class NativeListViewRenderer : ViewRenderer<NativeListView, global::Android.Widget.ListView>
+	{
+		public NativeListViewRenderer()
+		{
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView> e)
+		{
+			base.OnElementChanged(e);
+
+			if (Control == null)
+			{
+				SetNativeControl(new global::Android.Widget.ListView(Forms.Context));
+			}
+
+			if (e.OldElement != null)
+			{
+				// unsubscribe
+				Control.ItemClick -= Clicked;
+			}
+
+			if (e.NewElement != null)
+			{
+				// subscribe
+
+				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, e.NewElement);
+				Control.ItemClick += Clicked;
+			}
+		}
+
+		void Clicked(object sender, AdapterView.ItemClickEventArgs e)
+		{
+			Element.NotifyItemSelected(Element.Items.ToList()[e.Position]);
+		}
+
+		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == NativeListView.ItemsProperty.PropertyName)
+			{
+				// update the Items list in the UITableViewSource
+
+				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, Element);
+			}
+		}
+	}
+
+	public class NativeListViewAdapter : BaseAdapter<string>
+	{
 		readonly Activity _context;
 		IList<string> _tableItems = new List<string>();
 
-		public IEnumerable<string> Items {
-			set { 
+		public IEnumerable<string> Items
+		{
+			set
+			{
 				_tableItems = value.ToList();
 			}
 		}
@@ -84,7 +142,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		public override string this[int position]
 		{
 			get
-			{ 
+			{
 				return _tableItems[position];
 			}
 		}
@@ -105,11 +163,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			var item = _tableItems[position];
 
 			var view = convertView;
-			if (view == null) { // no view to re-use, create new
+			if (view == null)
+			{ // no view to re-use, create new
 				view = _context.LayoutInflater.Inflate(global::Android.Resource.Layout.SimpleListItem1, null);
 			}
 
-			view.FindViewById<TextView> (global::Android.Resource.Id.Text1).Text = item;
+			view.FindViewById<TextView>(global::Android.Resource.Id.Text1).Text = item;
 
 			return view;
 		}
@@ -121,53 +180,63 @@ namespace Xamarin.Forms.ControlGallery.Android
 	/// </summary>
 	public class NativeAndroidCellRenderer : ViewCellRenderer
 	{
-		public NativeAndroidCellRenderer ()
+		public NativeAndroidCellRenderer()
 		{
 		}
 
-		protected override global::Android.Views.View GetCellCore (Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
+		protected override global::Android.Views.View GetCellCore(Cell item, global::Android.Views.View convertView, ViewGroup parent, Context context)
 		{
 			var x = (NativeCell)item;
 
 			var view = convertView;
 
-						if (view == null) {// no view to re-use, create new
-							view = (context as Activity).LayoutInflater.Inflate (Resource.Layout.NativeAndroidCell, null);
-						} else { // re-use, clear image
-							// doesn't seem to help
-							//view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
-						}
-			
-						view.FindViewById<TextView>(Resource.Id.Text1).Text = x.Name;
-						view.FindViewById<TextView>(Resource.Id.Text2).Text = x.Category;
+			if (view == null)
+			{// no view to re-use, create new
+				view = (context as Activity).LayoutInflater.Inflate(Resource.Layout.NativeAndroidCell, null);
+			}
+			else { // re-use, clear image
+				   // doesn't seem to help
+				   //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
+			}
 
-						// grab the old image and dispose of it
-						// TODO: optimize if the image is the *same* and we want to just keep it
-						if (view.FindViewById<ImageView> (Resource.Id.Image).Drawable != null) {
-							using (var image = view.FindViewById<ImageView> (Resource.Id.Image).Drawable as BitmapDrawable) {
-								if (image != null) {
-									if (image.Bitmap != null) {
-										//image.Bitmap.Recycle ();
-										image.Bitmap.Dispose ();
-									}
-								}
-							}
+			view.FindViewById<TextView>(Resource.Id.Text1).Text = x.Name;
+			view.FindViewById<TextView>(Resource.Id.Text2).Text = x.Category;
+
+			// grab the old image and dispose of it
+			// TODO: optimize if the image is the *same* and we want to just keep it
+			if (view.FindViewById<ImageView>(Resource.Id.Image).Drawable != null)
+			{
+				using (var image = view.FindViewById<ImageView>(Resource.Id.Image).Drawable as BitmapDrawable)
+				{
+					if (image != null)
+					{
+						if (image.Bitmap != null)
+						{
+							//image.Bitmap.Recycle ();
+							image.Bitmap.Dispose();
 						}
-			
-						// If a new image is required, display it
-						if (!string.IsNullOrWhiteSpace (x.ImageFilename)) {
-							context.Resources.GetBitmapAsync (x.ImageFilename).ContinueWith ((t) => {
-								var bitmap = t.Result;
-								if (bitmap != null) {
-									view.FindViewById<ImageView> (Resource.Id.Image).SetImageBitmap (bitmap);
-									bitmap.Dispose ();
-								}
-							}, TaskScheduler.FromCurrentSynchronizationContext() );
-			
-						} else {
-							// clear the image
-							view.FindViewById<ImageView> (Resource.Id.Image).SetImageBitmap (null);
-						}
+					}
+				}
+			}
+
+			// If a new image is required, display it
+			if (!string.IsNullOrWhiteSpace(x.ImageFilename))
+			{
+				context.Resources.GetBitmapAsync(x.ImageFilename).ContinueWith((t) =>
+				{
+					var bitmap = t.Result;
+					if (bitmap != null)
+					{
+						view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(bitmap);
+						bitmap.Dispose();
+					}
+				}, TaskScheduler.FromCurrentSynchronizationContext());
+
+			}
+			else {
+				// clear the image
+				view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(null);
+			}
 
 			return view;
 		}
@@ -175,26 +244,29 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class NativeAndroidListViewRenderer : ViewRenderer<NativeListView2, global::Android.Widget.ListView>
 	{
-		public NativeAndroidListViewRenderer ()
+		public NativeAndroidListViewRenderer()
 		{
 		}
 
-		protected override void OnElementChanged (ElementChangedEventArgs<NativeListView2> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView2> e)
 		{
-			base.OnElementChanged (e);
+			base.OnElementChanged(e);
 
-			if (Control == null) {
-				SetNativeControl (new global::Android.Widget.ListView (Forms.Context));
+			if (Control == null)
+			{
+				SetNativeControl(new global::Android.Widget.ListView(Forms.Context));
 			}
 
-			if (e.OldElement != null) {
+			if (e.OldElement != null)
+			{
 				// unsubscribe
 				Control.ItemClick -= Clicked;
 			}
 
-			if (e.NewElement != null) {
+			if (e.NewElement != null)
+			{
 				// subscribe
-				Control.Adapter = new NativeAndroidListViewAdapter (Forms.Context as Activity, e.NewElement);
+				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, e.NewElement);
 				Control.ItemClick += Clicked;
 			}
 		}
@@ -204,17 +276,19 @@ namespace Xamarin.Forms.ControlGallery.Android
 		//			base.Layout (l, t, r, b);
 		//		}
 
-		void Clicked (object sender, AdapterView.ItemClickEventArgs e) {
-			Element.NotifyItemSelected (Element.Items.ToList()[e.Position]);
+		void Clicked(object sender, AdapterView.ItemClickEventArgs e)
+		{
+			Element.NotifyItemSelected(Element.Items.ToList()[e.Position]);
 		}
 
-		protected override void OnElementPropertyChanged (object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		protected override void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			base.OnElementPropertyChanged (sender, e);
-			if (e.PropertyName == NativeListView.ItemsProperty.PropertyName) {
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == NativeListView.ItemsProperty.PropertyName)
+			{
 				// update the Items list in the UITableViewSource
 
-				Control.Adapter = new NativeAndroidListViewAdapter (Forms.Context as Activity, Element);
+				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, Element);
 			}
 		}
 	}
@@ -223,12 +297,15 @@ namespace Xamarin.Forms.ControlGallery.Android
 	/// This adapter uses a view defined in /Resources/Layout/NativeAndroidListViewCell.axml
 	/// as the cell layout
 	/// </summary>
-	public class NativeAndroidListViewAdapter : BaseAdapter<DataSource> {
+	public class NativeAndroidListViewAdapter : BaseAdapter<DataSource>
+	{
 		readonly Activity _context;
 		IList<DataSource> _tableItems = new List<DataSource>();
 
-		public IEnumerable<DataSource> Items {
-			set { 
+		public IEnumerable<DataSource> Items
+		{
+			set
+			{
 				_tableItems = value.ToList();
 			}
 		}
@@ -242,7 +319,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 		public override DataSource this[int position]
 		{
 			get
-			{ 
+			{
 				return _tableItems[position];
 			}
 		}
@@ -262,40 +339,50 @@ namespace Xamarin.Forms.ControlGallery.Android
 			var item = _tableItems[position];
 
 			var view = convertView;
-			if (view == null) {// no view to re-use, create new
-				view = _context.LayoutInflater.Inflate (Resource.Layout.NativeAndroidListViewCell, null);
-			} else { // re-use, clear image
-				// doesn't seem to help
-				//view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
+			if (view == null)
+			{// no view to re-use, create new
+				view = _context.LayoutInflater.Inflate(Resource.Layout.NativeAndroidListViewCell, null);
+			}
+			else { // re-use, clear image
+				   // doesn't seem to help
+				   //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
 			}
 			view.FindViewById<TextView>(Resource.Id.Text1).Text = item.Name;
 			view.FindViewById<TextView>(Resource.Id.Text2).Text = item.Category;
 
 			// grab the old image and dispose of it
 			// TODO: optimize if the image is the *same* and we want to just keep it
-			if (view.FindViewById<ImageView> (Resource.Id.Image).Drawable != null) {
-				using (var image = view.FindViewById<ImageView> (Resource.Id.Image).Drawable as BitmapDrawable) {
-					if (image != null) {
-						if (image.Bitmap != null) {
+			if (view.FindViewById<ImageView>(Resource.Id.Image).Drawable != null)
+			{
+				using (var image = view.FindViewById<ImageView>(Resource.Id.Image).Drawable as BitmapDrawable)
+				{
+					if (image != null)
+					{
+						if (image.Bitmap != null)
+						{
 							//image.Bitmap.Recycle ();
-							image.Bitmap.Dispose ();
+							image.Bitmap.Dispose();
 						}
 					}
 				}
 			}
 
 			// If a new image is required, display it
-			if (!string.IsNullOrWhiteSpace (item.ImageFilename)) {
-				_context.Resources.GetBitmapAsync (item.ImageFilename).ContinueWith ((t) => {
+			if (!string.IsNullOrWhiteSpace(item.ImageFilename))
+			{
+				_context.Resources.GetBitmapAsync(item.ImageFilename).ContinueWith((t) =>
+				{
 					var bitmap = t.Result;
-					if (bitmap != null) {
-						view.FindViewById<ImageView> (Resource.Id.Image).SetImageBitmap (bitmap);
-						bitmap.Dispose ();
+					if (bitmap != null)
+					{
+						view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(bitmap);
+						bitmap.Dispose();
 					}
 				}, TaskScheduler.FromCurrentSynchronizationContext());
-			} else {
+			}
+			else {
 				// clear the image
-				view.FindViewById<ImageView> (Resource.Id.Image).SetImageBitmap (null);
+				view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(null);
 			}
 
 			return view;
@@ -305,40 +392,41 @@ namespace Xamarin.Forms.ControlGallery.Android
 	{
 	}
 
-    public class CustomNativeButton : AButton
-    {
-        public CustomNativeButton (IntPtr javaReference, JniHandleOwnership transfer) : base (javaReference, transfer)
-        {
-        }
+	public class CustomNativeButton : AButton
+	{
+		public CustomNativeButton(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+		{
+		}
 
-        public CustomNativeButton (Context context) : base (context)
-        {
-        }
+		public CustomNativeButton(Context context) : base(context)
+		{
+		}
 
-        public CustomNativeButton (Context context, IAttributeSet attrs) : base (context, attrs)
-        {
-        }
+		public CustomNativeButton(Context context, IAttributeSet attrs) : base(context, attrs)
+		{
+		}
 
-        public CustomNativeButton (Context context, IAttributeSet attrs, int defStyleAttr) : base (context, attrs, defStyleAttr)
-        {
-        }
+		public CustomNativeButton(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+		{
+		}
 
-        public CustomNativeButton (Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base (context, attrs, defStyleAttr, defStyleRes)
-        {
-        }
-    }
+		public CustomNativeButton(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
+		{
+		}
+	}
 
-    public class CustomButtonRenderer : ButtonRenderer
-    {
-        protected override void OnElementChanged (ElementChangedEventArgs<Button> e)
-        {
-            if(Control == null) {
-                CustomNativeButton b = new CustomNativeButton (Context);
-                SetNativeControl (b);
-            }
+	public class CustomButtonRenderer : ButtonRenderer
+	{
+		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
+		{
+			if (Control == null)
+			{
+				CustomNativeButton b = new CustomNativeButton(Context);
+				SetNativeControl(b);
+			}
 
-            base.OnElementChanged (e);
-        }
-    }
+			base.OnElementChanged(e);
+		}
+	}
 }
 

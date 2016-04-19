@@ -402,8 +402,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void RegisterHandlerForDefaultRenderer(Type target, Type handler, Type filter)
 		{
-			Type current = Registrar.Registered.GetHandlerType(filter);
-			if (current == target)
+			Type current = Registrar.Registered.GetHandlerType(target);
+			if (current != filter)
 				return;
 
 			Registrar.Registered.Register(target, handler);
