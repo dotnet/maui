@@ -38,14 +38,14 @@ namespace Xamarin.Forms.Platform.Android
 		internal static IntVector Clamp(this IntVector position, IntRectangle bound)
 		{
 			return new IntVector(
-				x: position.X.Clamp(bound.Left, bound.Right), 
+				x: position.X.Clamp(bound.Left, bound.Right),
 				y: position.Y.Clamp(bound.Top, bound.Bottom)
 			);
 		}
 		internal static IntVector LeadingCorner(this IntRectangle rectangle, IntVector delta)
 		{
 			return new IntVector(
-				x: delta.X < 0 ? rectangle.Left : rectangle.Right, 
+				x: delta.X < 0 ? rectangle.Left : rectangle.Right,
 				y: delta.Y < 0 ? rectangle.Top : rectangle.Bottom
 			);
 		}
@@ -63,16 +63,16 @@ namespace Xamarin.Forms.Platform.Android
 			return new Rectangle(
 				x: context.FromPixels(rectangle.Left),
 				y: context.FromPixels(rectangle.Top),
-				width: context.FromPixels(rectangle.Width), 
+				width: context.FromPixels(rectangle.Width),
 				height: context.FromPixels(rectangle.Height)
 			);
 		}
 		internal static Rect ToAndroidRectangle(this IntRectangle rectangle)
 		{
 			return new Rect(
-				left: rectangle.Left, 
-				right: rectangle.Right, 
-				top: rectangle.Top, 
+				left: rectangle.Left,
+				right: rectangle.Right,
+				top: rectangle.Top,
 				bottom: rectangle.Bottom
 			);
 		}
@@ -121,39 +121,39 @@ namespace Xamarin.Forms.Platform.Android
 			return !(lhs == rhs);
 		}
 		public static IntRectangle operator -(IntRectangle source, IntVector vector) => source + -vector;
-		public static IntRectangle operator +(IntRectangle source, IntVector vector) => 
+		public static IntRectangle operator +(IntRectangle source, IntVector vector) =>
 			new IntRectangle(source.Location + vector, source.Size);
 
 		public static IntVector operator -(IntVector vector, IntVector other) => vector + -other;
-		public static IntVector operator +(IntVector vector, IntVector other) => 
+		public static IntVector operator +(IntVector vector, IntVector other) =>
 			new IntVector(
-				x: vector.X + other.X, 
+				x: vector.X + other.X,
 				y: vector.Y + other.Y
 			);
 
 		public static IntPoint operator -(IntPoint point, IntVector delta) => point + -delta;
-		public static IntPoint operator +(IntPoint point, IntVector delta) => 
+		public static IntPoint operator +(IntPoint point, IntVector delta) =>
 			new IntPoint(
-				x: point.X + delta.X, 
+				x: point.X + delta.X,
 				y: point.Y + delta.Y
 			);
 
 		public static IntVector operator -(IntVector vector) => vector * -1;
-		public static IntVector operator *(IntVector vector, int scaler) => 
+		public static IntVector operator *(IntVector vector, int scaler) =>
 			new IntVector(
-				x: vector.X * scaler, 
+				x: vector.X * scaler,
 				y: vector.Y * scaler
 			);
-		public static IntVector operator /(IntVector vector, int scaler) => 
+		public static IntVector operator /(IntVector vector, int scaler) =>
 			new IntVector(
-				x: vector.X / scaler, 
+				x: vector.X / scaler,
 				y: vector.Y / scaler
 			);
 
-		public static IntVector operator *(IntVector vector, double scaler) => 
+		public static IntVector operator *(IntVector vector, double scaler) =>
 			new IntVector(
 				x: (int)(vector.X * scaler),
-				y:  (int)(vector.Y * scaler)
+				y: (int)(vector.Y * scaler)
 			);
 		public static IntVector operator /(IntVector vector, double scaler) => vector * (1 / scaler);
 
@@ -267,16 +267,16 @@ namespace Xamarin.Forms.Platform.Android
 			internal override bool CanScrollHorizontally => true;
 			internal override bool CanScrollVertically => false;
 
-			internal override IntRectangle GetBounds(int originPosition, State state) => 
+			internal override IntRectangle GetBounds(int originPosition, State state) =>
 				new IntRectangle(
-					LayoutItem(originPosition, 0).Location, 
+					LayoutItem(originPosition, 0).Location,
 					new IntSize(_itemSize.Width * state.ItemCount, _itemSize.Height)
 				);
 
 			internal override Tuple<int, int> GetPositions(
-				int positionOrigin, 
-				int itemCount, 
-				IntRectangle viewport, 
+				int positionOrigin,
+				int itemCount,
+				IntRectangle viewport,
 				bool includeBuffer)
 			{
 				// returns one item off-screen in either direction. 
@@ -442,8 +442,8 @@ namespace Xamarin.Forms.Platform.Android
 			// layoutManager
 			recyclerView.SetLayoutManager(
 				layout: _physicalLayout = new PhysicalLayoutManager(
-					context: Context, 
-					virtualLayout: new VirtualLayoutManager(), 
+					context: Context,
+					virtualLayout: new VirtualLayoutManager(),
 					positionOrigin: Element.Position
 				)
 			);
@@ -452,14 +452,14 @@ namespace Xamarin.Forms.Platform.Android
 			var dragging = false;
 			recyclerView.AddOnScrollListener(
 				new OnScrollListener(
-					onDragStart: () => dragging = true, 
-					onDragEnd: () => 
+					onDragStart: () => dragging = true,
+					onDragEnd: () =>
 					{
 						dragging = false;
 						var velocity = _physicalLayout.Velocity;
 
-						var target = velocity.X > 0 ? 
-							_physicalLayout.VisiblePositions().Max() : 
+						var target = velocity.X > 0 ?
+							_physicalLayout.VisiblePositions().Max() :
 							_physicalLayout.VisiblePositions().Min();
 						_physicalLayout.ScrollToPosition(target);
 					}
@@ -472,7 +472,7 @@ namespace Xamarin.Forms.Platform.Android
 			_physicalLayout.OnEndScroll += position => scrolling = false;
 
 			// appearing
-			_physicalLayout.OnAppearing += appearingPosition => 
+			_physicalLayout.OnAppearing += appearingPosition =>
 			{
 				Controller.SendPositionAppearing(appearingPosition);
 			};
@@ -507,7 +507,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				case NotifyCollectionChangedAction.Add:
 					Adapter.NotifyItemRangeInserted(
-						positionStart: e.NewStartingIndex, 
+						positionStart: e.NewStartingIndex,
 						itemCount: e.NewItems.Count
 					);
 					break;
@@ -515,7 +515,7 @@ namespace Xamarin.Forms.Platform.Android
 				case NotifyCollectionChangedAction.Move:
 					for (var i = 0; i < e.NewItems.Count; i++)
 						Adapter.NotifyItemMoved(
-							fromPosition: e.OldStartingIndex + i, 
+							fromPosition: e.OldStartingIndex + i,
 							toPosition: e.NewStartingIndex + i
 						);
 					break;
@@ -525,14 +525,14 @@ namespace Xamarin.Forms.Platform.Android
 						throw new InvalidOperationException("CarouselView must retain a least one item.");
 
 					Adapter.NotifyItemRangeRemoved(
-						positionStart: e.OldStartingIndex, 
+						positionStart: e.OldStartingIndex,
 						itemCount: e.OldItems.Count
 					);
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
 					Adapter.NotifyItemRangeChanged(
-						positionStart: e.OldStartingIndex, 
+						positionStart: e.OldStartingIndex,
 						itemCount: e.OldItems.Count
 					);
 					break;
@@ -633,7 +633,7 @@ namespace Xamarin.Forms.Platform.Android
 			#endregion
 
 			internal DecoratedView(
-				PhysicalLayoutManager layout, 
+				PhysicalLayoutManager layout,
 				AndroidView view)
 			{
 				_layout = layout;
@@ -663,10 +663,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				// causes the private LAYOUT_REQUIRED flag to be set so we can be sure the Layout call will properly chain through to all children
 				Measure(position.Width, position.Height);
-				_layout.LayoutDecorated(_view, 
-					left: position.Left, 
-					top: position.Top, 
-					right: position.Right, 
+				_layout.LayoutDecorated(_view,
+					left: position.Left,
+					top: position.Top,
+					right: position.Right,
 					bottom: position.Bottom
 				);
 			}
@@ -682,15 +682,21 @@ namespace Xamarin.Forms.Platform.Android
 		internal abstract class VirtualLayoutManager
 		{
 			internal abstract Tuple<int, int> GetPositions(
-				int positionOrigin, 
-				int itemCount, 
-				IntRectangle viewport, 
+				int positionOrigin,
+				int itemCount,
+				IntRectangle viewport,
 				bool isPreLayout
 			);
 
 			internal abstract IntRectangle LayoutItem(int positionOrigin, int position);
-			internal abstract bool CanScrollHorizontally { get; }
-			internal abstract bool CanScrollVertically { get; }
+			internal abstract bool CanScrollHorizontally
+			{
+				get;
+			}
+			internal abstract bool CanScrollVertically
+			{
+				get;
+			}
 
 			internal abstract void Layout(int positionOrigin, IntSize viewportSize, ref IntVector offset);
 			internal abstract IntRectangle GetBounds(int positionOrigin, State state);
@@ -719,9 +725,9 @@ namespace Xamarin.Forms.Platform.Android
 			#endregion
 
 			internal SeekAndSnapScroller(
-				Context context, 
-				Func<int, IntVector> vectorToPosition, 
-				SnapPreference snapPreference = SnapPreference.None) 
+				Context context,
+				Func<int, IntVector> vectorToPosition,
+				SnapPreference snapPreference = SnapPreference.None)
 				: base(context)
 			{
 				_vectorToPosition = vectorToPosition;
@@ -782,8 +788,9 @@ namespace Xamarin.Forms.Platform.Android
 			_samples = Enumerable.Repeat(IntVector.Origin, s_samplesCount).ToList();
 			_deferredLayout = new Queue<Action<Recycler, State>>();
 			_scroller = new SeekAndSnapScroller(
-				context: context, 
-				vectorToPosition: adapterPosition => {
+				context: context,
+				vectorToPosition: adapterPosition =>
+				{
 					var end = virtualLayout.LayoutItem(_positionOrigin, adapterPosition).Center();
 					var begin = Viewport.Center();
 					return end - begin;
@@ -807,7 +814,7 @@ namespace Xamarin.Forms.Platform.Android
 			_adapterChangeType = default(AdapterChangeType);
 
 			delta = Viewport.BoundTranslation(
-				delta: delta, 
+				delta: delta,
 				bound: _virtualLayout.GetBounds(_positionOrigin, state)
 			);
 
@@ -882,7 +889,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_adapterChangeType = AdapterChangeType.Added;
 
-			_deferredLayout.Enqueue((recycler, state) => {
+			_deferredLayout.Enqueue((recycler, state) =>
+			{
 
 				var viewByAdaptorPositionCopy = _viewByAdaptorPosition.ToArray();
 				_viewByAdaptorPosition.Clear();
@@ -912,7 +920,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			var positionEnd = positionStart + itemCount;
 
-			_deferredLayout.Enqueue((recycler, state) => {
+			_deferredLayout.Enqueue((recycler, state) =>
+			{
 				if (state.ItemCount == 0)
 					throw new InvalidOperationException("Cannot delete all items.");
 
@@ -975,7 +984,8 @@ namespace Xamarin.Forms.Platform.Android
 			_adapterChangeType = AdapterChangeType.Updated;
 
 			// rebind rendered updated elements
-			_deferredLayout.Enqueue((recycler, state) => {
+			_deferredLayout.Enqueue((recycler, state) =>
+			{
 				for (var i = 0; i < itemCount; i++)
 				{
 					var position = positionStart + i;
@@ -1145,7 +1155,7 @@ namespace Xamarin.Forms.Platform.Android
 			readonly IVisualElementRenderer _visualElementRenderer;
 			#endregion
 
-			public CarouselViewHolder(View view, IVisualElementRenderer renderer) 
+			public CarouselViewHolder(View view, IVisualElementRenderer renderer)
 				: base(renderer.ViewGroup)
 			{
 				_visualElementRenderer = renderer;
@@ -1175,13 +1185,15 @@ namespace Xamarin.Forms.Platform.Android
 		#region Private Members
 		ItemsView Element
 		{
-			get {
+			get
+			{
 				return (ItemsView)_renderer.Element;
 			}
 		}
 		IItemViewController Controller
 		{
-			get {
+			get
+			{
 				return Element;
 			}
 		}
@@ -1190,7 +1202,7 @@ namespace Xamarin.Forms.Platform.Android
 		public override int ItemCount
 		{
 			get
-            {
+			{
 				return Controller.Count;
 			}
 		}

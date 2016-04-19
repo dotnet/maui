@@ -60,7 +60,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		ICarouselViewController Controller
 		{
-			get { return Element; }
+			get
+			{
+				return Element;
+			}
 		}
 		void Initialize()
 		{
@@ -233,11 +236,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 	internal sealed class CarouselViewController : UICollectionViewController
 	{
-		new sealed class Layout : UICollectionViewFlowLayout {
+		new sealed class Layout : UICollectionViewFlowLayout
+		{
 			static readonly nfloat ZeroMinimumInteritemSpacing = 0;
 			static readonly nfloat ZeroMinimumLineSpacing = 0;
 
-			public Layout(UICollectionViewScrollDirection scrollDirection) {
+			public Layout(UICollectionViewScrollDirection scrollDirection)
+			{
 				ScrollDirection = scrollDirection;
 				MinimumInteritemSpacing = ZeroMinimumInteritemSpacing;
 				MinimumLineSpacing = ZeroMinimumLineSpacing;
@@ -307,7 +312,7 @@ namespace Xamarin.Forms.Platform.iOS
 		int _initialPosition;
 
 		internal CarouselViewController(
-			CarouselViewRenderer renderer, 
+			CarouselViewRenderer renderer,
 			int initialPosition)
 			: base(new Layout(UICollectionViewScrollDirection.Horizontal))
 		{
@@ -324,7 +329,7 @@ namespace Xamarin.Forms.Platform.iOS
 		[Export("collectionView:layout:sizeForItemAtIndexPath:")]
 		SizeF GetSizeForItem(
 			UICollectionView collectionView,
-			UICollectionViewLayout layout, 
+			UICollectionViewLayout layout,
 			NSIndexPath indexPath)
 		{
 			return collectionView.Frame.Size;
@@ -335,7 +340,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (_initialPosition != 0) {
+			if (_initialPosition != 0)
+			{
 				ScrollToPosition(_initialPosition, false);
 				_initialPosition = 0;
 				return;
@@ -401,16 +407,16 @@ namespace Xamarin.Forms.Platform.iOS
 		internal void MoveItem(int oldPosition, int newPosition)
 		{
 			base.MoveItem(
-				CollectionView, 
-				NSIndexPath.FromRowSection(oldPosition, 0), 
+				CollectionView,
+				NSIndexPath.FromRowSection(oldPosition, 0),
 				NSIndexPath.FromRowSection(newPosition, 0)
 			);
 		}
 		internal void ScrollToPosition(int position, bool animated = true)
 		{
 			CollectionView.ScrollToItem(
-				indexPath: NSIndexPath.FromRowSection(position, 0), 
-				scrollPosition: UICollectionViewScrollPosition.CenteredHorizontally, 
+				indexPath: NSIndexPath.FromRowSection(position, 0),
+				scrollPosition: UICollectionViewScrollPosition.CenteredHorizontally,
 				animated: animated
 			);
 		}

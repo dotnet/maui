@@ -6,21 +6,21 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_CarouselViewRenderer))]
 	public class CarouselView : ItemsView, ICarouselViewController
 	{
-		public static readonly BindableProperty PositionProperty = 
+		public static readonly BindableProperty PositionProperty =
 			BindableProperty.Create(
-				propertyName: nameof(Position), 
-				returnType: typeof(int), 
-				declaringType: typeof(CarouselView), 
-				defaultValue: 0, 
+				propertyName: nameof(Position),
+				returnType: typeof(int),
+				declaringType: typeof(CarouselView),
+				defaultValue: 0,
 				defaultBindingMode: BindingMode.TwoWay
 			);
 
-		public static readonly BindableProperty ItemProperty = 
+		public static readonly BindableProperty ItemProperty =
 			BindableProperty.Create(
-				propertyName: nameof(Item), 
-				returnType: typeof(object), 
-				declaringType: typeof(CarouselView), 
-				defaultValue: null, 
+				propertyName: nameof(Item),
+				returnType: typeof(object),
+				declaringType: typeof(CarouselView),
+				defaultValue: null,
 				defaultBindingMode: BindingMode.TwoWay
 			);
 
@@ -48,13 +48,25 @@ namespace Xamarin.Forms
 
 		public int Position
 		{
-			get { return (int)GetValue(PositionProperty); }
-			set { SetValue(PositionProperty, value); }
+			get
+			{
+				return (int)GetValue(PositionProperty);
+			}
+			set
+			{
+				SetValue(PositionProperty, value);
+			}
 		}
 		public object Item
 		{
-			get { return GetValue(ItemProperty); }
-			internal set { SetValue(ItemProperty, value); }
+			get
+			{
+				return GetValue(ItemProperty);
+			}
+			internal set
+			{
+				SetValue(ItemProperty, value);
+			}
 		}
 
 		public event EventHandler<SelectedItemChangedEventArgs> ItemSelected;
@@ -80,8 +92,8 @@ namespace Xamarin.Forms
 				return;
 			_lastItem = item;
 
-            Item = item;
-            ItemSelected?.Invoke(this, new SelectedItemChangedEventArgs(item));
+			Item = item;
+			ItemSelected?.Invoke(this, new SelectedItemChangedEventArgs(item));
 		}
 		void ICarouselViewController.SendSelectedPositionChanged(int position)
 		{
@@ -89,7 +101,7 @@ namespace Xamarin.Forms
 				return;
 			_lastPosition = position;
 
-            Item = ((IItemViewController)this).GetItem(position);
+			Item = ((IItemViewController)this).GetItem(position);
 			PositionSelected?.Invoke(this, new SelectedPositionChangedEventArgs(position));
 		}
 	}

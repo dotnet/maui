@@ -12,8 +12,8 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 900000, "CarouselView General Tests")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 900000, "CarouselView General Tests")]
 	public class CarouselViewGalleryTests
 	{
 #if UITEST
@@ -24,7 +24,10 @@ namespace Xamarin.Forms.Controls
 		}
 		public interface IGalleryPage : IUIProxy
 		{
-			string Name { get; }
+			string Name
+			{
+				get;
+			}
 		}
 
 		public class Gallery
@@ -98,7 +101,8 @@ namespace Xamarin.Forms.Controls
 			Queue<string> _expectedEvents;
 			int _eventId;
 
-			public CarouselViewGallery() {
+			public CarouselViewGallery()
+			{
 				_itemIds = Enumerable.Range(0, InitialItems).ToList();
 				_currentPosition = InitialItemId;
 				_currentItem = _itemIds[_currentPosition];
@@ -184,8 +188,8 @@ namespace Xamarin.Forms.Controls
 					expectedPosition = 0;
 
 				// handle swipe past last
-				else if (expectedPosition == Count && _currentPosition == Count -1)
-					expectedPosition = Count -1;
+				else if (expectedPosition == Count && _currentPosition == Count - 1)
+					expectedPosition = Count - 1;
 
 				// anticipate events
 				ExpectMovementEvents(expectedPosition);
@@ -250,7 +254,8 @@ namespace Xamarin.Forms.Controls
 		{
 			var gallery = Gallery.Launch();
 
-			try {
+			try
+			{
 				var carousel = gallery.NaviateToGallery<CarouselViewGallery>();
 
 				// start at something other than 0
@@ -280,11 +285,12 @@ namespace Xamarin.Forms.Controls
 
 				gallery.Screenshot("End");
 			}
-			catch (Exception e) {
+			catch (Exception e)
+			{
 				gallery.Screenshot("End");
 				throw e;
 			}
 		}
 #endif
-    }
+	}
 }

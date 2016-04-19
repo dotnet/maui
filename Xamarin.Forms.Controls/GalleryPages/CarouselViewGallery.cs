@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	public sealed class CarouselViewGallaryPage : ContentPage // or TestMasterDetailPage, etc ...
 	{
 		public abstract class Item
@@ -28,37 +28,48 @@ namespace Xamarin.Forms.Controls
 			}
 
 			public int Id => id;
-			public string TypeName => GetType ().Name;
+			public string TypeName => GetType().Name;
 		}
-		public sealed class Foo : Item { }
-		public sealed class Bar : Item { }
-		public sealed class Baz : Item { }
-		public sealed class Poo : Item { }
-		public sealed class Moo : Item { }
+		public sealed class Foo : Item
+		{
+		}
+		public sealed class Bar : Item
+		{
+		}
+		public sealed class Baz : Item
+		{
+		}
+		public sealed class Poo : Item
+		{
+		}
+		public sealed class Moo : Item
+		{
+		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public sealed class ItemView : ContentView
 		{
-			public static readonly BindableProperty TextColorProperty = BindableProperty.Create (
+			public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
 				propertyName: nameof(TextColor),
-				returnType: typeof (Color),
-				declaringType: typeof (ItemView),
+				returnType: typeof(Color),
+				declaringType: typeof(ItemView),
 				defaultValue: Color.White,
 				defaultBindingMode: BindingMode.TwoWay
 			);
-			public static readonly BindableProperty ContextProperty = BindableProperty.Create (
+			public static readonly BindableProperty ContextProperty = BindableProperty.Create(
 				propertyName: nameof(Context),
-				returnType: typeof (CarouselView),
-				declaringType: typeof (ItemView),
+				returnType: typeof(CarouselView),
+				declaringType: typeof(ItemView),
 				defaultBindingMode: BindingMode.TwoWay
 			);
 
-			public ItemView ()
+			public ItemView()
 			{
 
-				var change = CreateButton("Change", "Change", (items, index) => items[index] = new Moo ());
+				var change = CreateButton("Change", "Change", (items, index) => items[index] = new Moo());
 
-				var removeBar = new StackLayout {
+				var removeBar = new StackLayout
+				{
 					Orientation = StackOrientation.Horizontal,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					Children = {
@@ -68,7 +79,8 @@ namespace Xamarin.Forms.Controls
 					}
 				};
 
-				var addBar = new StackLayout {
+				var addBar = new StackLayout
+				{
 					Orientation = StackOrientation.Horizontal,
 					HorizontalOptions = LayoutOptions.FillAndExpand,
 					Children = {
@@ -82,17 +94,19 @@ namespace Xamarin.Forms.Controls
 					}
 				};
 
-				var typeNameLabel = new Label () { StyleId = "typename" };
-				typeNameLabel.SetBinding (Label.TextProperty, nameof(Item.TypeName));
+				var typeNameLabel = new Label() { StyleId = "typename" };
+				typeNameLabel.SetBinding(Label.TextProperty, nameof(Item.TypeName));
 
-				var idLabel = new Label () {
+				var idLabel = new Label()
+				{
 					AutomationId = "ItemId",
 					StyleId = "id",
 					TextColor = Color.White
 				};
-				idLabel.SetBinding (Label.TextProperty, nameof(Item.Id));
+				idLabel.SetBinding(Label.TextProperty, nameof(Item.Id));
 
-				Content = new StackLayout {
+				Content = new StackLayout
+				{
 					Children = {
 						typeNameLabel,
 						idLabel,
@@ -102,7 +116,8 @@ namespace Xamarin.Forms.Controls
 					}
 				};
 
-				PropertyChanged += (s, e) => {
+				PropertyChanged += (s, e) =>
+				{
 					if (e.PropertyName == "TextColor")
 						typeNameLabel.TextColor = TextColor;
 				};
@@ -110,45 +125,58 @@ namespace Xamarin.Forms.Controls
 
 			Button CreateButton(string text, string automationId, Action<IList<Item>, int> clicked)
 			{
-				var button = new Button ();
+				var button = new Button();
 				button.AutomationId = automationId;
 				button.Text = text;
-				button.Clicked += (s, e) => {
+				button.Clicked += (s, e) =>
+				{
 					var items = (IList<Item>)Context.ItemsSource;
-					var index = items.IndexOf (BindingContext);
-					clicked (items, index);
+					var index = items.IndexOf(BindingContext);
+					clicked(items, index);
 				};
 				return button;
 			}
 
 			public CarouselView Context
 			{
-				get { return (CarouselView)GetValue (ContextProperty); }
-				set { SetValue (ContextProperty, value); }
+				get
+				{
+					return (CarouselView)GetValue(ContextProperty);
+				}
+				set
+				{
+					SetValue(ContextProperty, value);
+				}
 			}
 			public Color TextColor
 			{
-				get { return (Color)GetValue(TextColorProperty); }
-				set { SetValue(TextColorProperty, value); }
+				get
+				{
+					return (Color)GetValue(TextColorProperty);
+				}
+				set
+				{
+					SetValue(TextColorProperty, value);
+				}
 			}
 		}
 		public sealed class MyDataTemplateSelector : DataTemplateSelector
 		{
-			Dictionary<Type, Color> m_colorByType = new Dictionary<Type, Color> ();
-			Dictionary<Type, DataTemplate> m_dataTemplateByType = new Dictionary<Type, DataTemplate> ();
+			Dictionary<Type, Color> m_colorByType = new Dictionary<Type, Color>();
+			Dictionary<Type, DataTemplate> m_dataTemplateByType = new Dictionary<Type, DataTemplate>();
 
 			public MyDataTemplateSelector()
 			{
-				m_colorByType[typeof (Foo)] = Color.Green;
-				m_colorByType[typeof (Bar)] = Color.Red;
+				m_colorByType[typeof(Foo)] = Color.Green;
+				m_colorByType[typeof(Bar)] = Color.Red;
 			}
 
-			protected override DataTemplate OnSelectTemplate (object item, BindableObject container)
+			protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 			{
-				return OnSelectTemplate (item.GetType (), container);
+				return OnSelectTemplate(item.GetType(), container);
 			}
 
-			DataTemplate OnSelectTemplate (Type itemType, BindableObject container)
+			DataTemplate OnSelectTemplate(Type itemType, BindableObject container)
 			{
 				DataTemplate dataTemplate;
 				if (!m_dataTemplateByType.TryGetValue(itemType, out dataTemplate))
@@ -158,26 +186,30 @@ namespace Xamarin.Forms.Controls
 
 			DataTemplate CreateTemplate(Type itemType, BindableObject container)
 			{
-				var dataTemplate = new DataTemplate (typeof (ItemView));
+				var dataTemplate = new DataTemplate(typeof(ItemView));
 
 				Color color;
-				if (!m_colorByType.TryGetValue (itemType, out color)) {
+				if (!m_colorByType.TryGetValue(itemType, out color))
+				{
 					color = Color.Pink;
-					dataTemplate.SetValue (BackgroundColorProperty, Color.Black);
-				} else {
-					dataTemplate.SetValue (BackgroundColorProperty, Color.Blue);
+					dataTemplate.SetValue(BackgroundColorProperty, Color.Black);
+				}
+				else
+				{
+					dataTemplate.SetValue(BackgroundColorProperty, Color.Blue);
 				}
 
-				dataTemplate.SetValue (ItemView.TextColorProperty, color);
-				dataTemplate.SetValue (ItemView.ContextProperty, container);
+				dataTemplate.SetValue(ItemView.TextColorProperty, color);
+				dataTemplate.SetValue(ItemView.ContextProperty, container);
 				return dataTemplate;
 			}
 		}
 
 		static Button CreateButton(string text, string automationId, Action onClicked = null)
 		{
-			var button = new Button {
-				Text = text, 
+			var button = new Button
+			{
+				Text = text,
 				AutomationId = automationId
 			};
 
@@ -190,7 +222,8 @@ namespace Xamarin.Forms.Controls
 		static Label CreateCopy(string text, string automationId = "") => CreateLabel(text, Color.White, automationId);
 		static Label CreateLabel(string text, Color color, string automationId)
 		{
-			return new Label() {
+			return new Label()
+			{
 				TextColor = color,
 				Text = text,
 				AutomationId = automationId
@@ -221,9 +254,9 @@ namespace Xamarin.Forms.Controls
 			_position.Text = $"{_carouselView.Position}";
 		}
 
-		public CarouselViewGallaryPage ()
+		public CarouselViewGallaryPage()
 		{
-			_selector = new MyDataTemplateSelector ();
+			_selector = new MyDataTemplateSelector();
 			_items = new ObservableCollection<Item>() {
 				new Baz(),
 				new Poo(),
@@ -231,7 +264,8 @@ namespace Xamarin.Forms.Controls
 				new Bar(),
 			};
 
-			_carouselView = new CarouselView {
+			_carouselView = new CarouselView
+			{
 				BackgroundColor = Color.Purple,
 				ItemsSource = _items,
 				ItemTemplate = _selector,
@@ -245,26 +279,29 @@ namespace Xamarin.Forms.Controls
 			_selectedPosition = CreateValue("?", "SelectedPosition");
 			_eventLog = CreateValue(string.Empty, "EventLog");
 
-			_carouselView.ItemSelected += (s, o) => {
+			_carouselView.ItemSelected += (s, o) =>
+			{
 				var selectedItem = (Item)o.SelectedItem;
 				var selectedItemId = selectedItem.Id;
-                if (selectedItem != _carouselView.Item)
-                    throw new Exception("CarouselView.Item != ItemSelected");
+				if (selectedItem != _carouselView.Item)
+					throw new Exception("CarouselView.Item != ItemSelected");
 				_selectedItem.Text = $"{selectedItemId}";
 				OnEvent("i");
 			};
 
-			_carouselView.PositionSelected += (s, o) => {
+			_carouselView.PositionSelected += (s, o) =>
+			{
 				var selectedPosition = (int)o.SelectedPosition;
-                if (_items[selectedPosition] != _carouselView.Item)
-                    throw new Exception("CarouselView.Item != Items[selectedPosition]");
-                _selectedPosition.Text = $"{selectedPosition}";
+				if (_items[selectedPosition] != _carouselView.Item)
+					throw new Exception("CarouselView.Item != Items[selectedPosition]");
+				_selectedPosition.Text = $"{selectedPosition}";
 				OnEvent("p");
 			};
 
 			BackgroundColor = Color.Blue;
 
-			var moveBar = new StackLayout {
+			var moveBar = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				Children = {
@@ -284,7 +321,8 @@ namespace Xamarin.Forms.Controls
 			};
 
 
-			var statusBar = new StackLayout {
+			var statusBar = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				Children = {
 					CreateCopy("Pos:"), _position,
@@ -293,12 +331,14 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			var logBar = new StackLayout {
+			var logBar = new StackLayout
+			{
 				Orientation = StackOrientation.Horizontal,
 				Children = { _eventLog }
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
 					_carouselView,
 					moveBar,

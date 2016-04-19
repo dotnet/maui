@@ -9,18 +9,18 @@ namespace Xamarin.Forms
 {
 	public abstract class ItemsView : View, IItemViewController
 	{
-		public static readonly BindableProperty ItemsSourceProperty = 
+		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(
 				propertyName: "ItemsSource",
-				returnType: typeof(IEnumerable), 
-				declaringType: typeof(ItemsView), 
+				returnType: typeof(IEnumerable),
+				declaringType: typeof(ItemsView),
 				defaultValue: Enumerable.Empty<object>()
 			);
 
-		public static readonly BindableProperty ItemTemplateProperty = 
+		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(
-				propertyName: "ItemTemplate", 
-				returnType: typeof(DataTemplate), 
+				propertyName: "ItemTemplate",
+				returnType: typeof(DataTemplate),
 				declaringType: typeof(ItemsView)
 			);
 
@@ -32,14 +32,26 @@ namespace Xamarin.Forms
 
 		public IEnumerable ItemsSource
 		{
-			get { return (IEnumerable)GetValue(ItemsSourceProperty); }
-			set { SetValue(ItemsSourceProperty, value); }
+			get
+			{
+				return (IEnumerable)GetValue(ItemsSourceProperty);
+			}
+			set
+			{
+				SetValue(ItemsSourceProperty, value);
+			}
 		}
 
 		public DataTemplate ItemTemplate
 		{
-			get { return (DataTemplate)GetValue(ItemTemplateProperty); }
-			set { SetValue(ItemTemplateProperty, value); }
+			get
+			{
+				return (DataTemplate)GetValue(ItemTemplateProperty);
+			}
+			set
+			{
+				SetValue(ItemTemplateProperty, value);
+			}
 		}
 
 		int IItemViewController.Count => _itemSource.Count;
@@ -80,7 +92,7 @@ namespace Xamarin.Forms
 				var itemsSource = ItemsSource;
 				if (itemsSource == null)
 					itemsSource = Enumerable.Empty<object>();
-				
+
 				// abstract enumerable, IList, IList<T>, and IReadOnlyList<T>
 				_itemSource = new ItemSource(itemsSource);
 
@@ -233,7 +245,10 @@ namespace Xamarin.Forms
 					return true;
 				}
 
-				public object Current { get; private set; }
+				public object Current
+				{
+					get; private set;
+				}
 
 				public void Reset()
 				{
@@ -264,7 +279,10 @@ namespace Xamarin.Forms
 					Enumerable = list.Cast<object>().ToArray();
 				}
 
-				internal IEnumerable Enumerable { get; }
+				internal IEnumerable Enumerable
+				{
+					get;
+				}
 
 				internal int Count
 				{

@@ -27,7 +27,10 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		ICarouselViewController Controller
 		{
-			get { return Element; }
+			get
+			{
+				return Element;
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselView> e)
@@ -45,7 +48,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (_flipView == null)
 				{
-					_flipView = new FlipView 
+					_flipView = new FlipView
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (WDataTemplate)WApp.Current.Resources["ItemTemplate"]
