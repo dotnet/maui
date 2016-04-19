@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetPadding((int)context.ToPixels(15), padding, padding, padding);
 
 			_label = new TextView(context);
-			_label.SetTextAppearance(context, global::Android.Resource.Attribute.TextAppearanceListItem);
+			_label.SetTextAppearanceCompat(context, global::Android.Resource.Style.TextAppearanceSmall);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };
 			using (layoutParams)
