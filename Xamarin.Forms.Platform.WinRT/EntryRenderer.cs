@@ -27,10 +27,11 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (Control == null)
 				{
 					var textBox = new FormsTextBox { Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style };
+					
+					SetNativeControl(textBox);
 
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.KeyUp += TextBoxOnKeyUp;
-					SetNativeControl(textBox);
 				}
 
 				UpdateIsPassword();
@@ -42,6 +43,17 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateAlignment();
 				UpdatePlaceholderColor();
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && Control != null)
+			{
+				Control.TextChanged -= OnNativeTextChanged;
+				Control.KeyUp -= TextBoxOnKeyUp;
+			}
+
+			base.Dispose(disposing);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -107,7 +119,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void TextBoxOnKeyUp(object sender, KeyRoutedEventArgs args)
 		{
-			if (args.Key != VirtualKey.Enter)
+			if (args?.Key != VirtualKey.Enter)
 				return;
 
 			Element.SendCompleted();
