@@ -8,10 +8,19 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public sealed class FileImageSourceHandler : IImageSourceHandler
 	{
+		// This is set to true when run under designer context
+		internal static bool DecodeSynchronously {
+			get;
+			set;
+		}
+
 		public async Task<Bitmap> LoadImageAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default(CancellationToken))
 		{
 			string file = ((FileImageSource)imagesource).File;
-			return await (File.Exists(file) ? BitmapFactory.DecodeFileAsync(file) : context.Resources.GetBitmapAsync(file)).ConfigureAwait(false);
+			if (File.Exists (file))
+				return !DecodeSynchronously ? (await BitmapFactory.DecodeFileAsync (file).ConfigureAwait (false)) : BitmapFactory.DecodeFile (file);
+			else
+				return !DecodeSynchronously ? (await context.Resources.GetBitmapAsync (file).ConfigureAwait (false)) : context.Resources.GetBitmap (file);
 		}
 	}
 }
