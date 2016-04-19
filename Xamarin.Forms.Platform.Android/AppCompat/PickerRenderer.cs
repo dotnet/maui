@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Android.App;
+using Android.Content.Res;
 using Android.Text;
 using Android.Widget;
 using Object = Java.Lang.Object;
@@ -12,6 +13,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	{
 		AlertDialog _dialog;
 		bool _disposed;
+		TextColorSwitcher _textColorSwitcher;
 
 		public PickerRenderer()
 		{
@@ -51,9 +53,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					textField.Tag = this;
 					textField.InputType = InputTypes.Null;
 					textField.SetOnClickListener(PickerListener.Instance);
+					_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
 					SetNativeControl(textField);
 				}
 				UpdatePicker();
+				UpdateTextColor();
 			}
 
 			base.OnElementChanged(e);
@@ -67,6 +71,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdatePicker();
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
+			if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -121,6 +127,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Control.Text = null;
 			else
 				Control.Text = Element.Items[Element.SelectedIndex];
+		}
+
+		void UpdateTextColor()
+		{
+			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
 		class PickerListener : Object, IOnClickListener

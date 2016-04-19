@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class DatePickerRenderer : ViewRenderer<DatePicker, UITextField>
 	{
 		UIDatePicker _picker;
+		UIColor _defaultTextColor;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
@@ -62,6 +63,8 @@ namespace Xamarin.Forms.Platform.iOS
 				entry.InputView = _picker;
 				entry.InputAccessoryView = toolbar;
 
+				_defaultTextColor = entry.TextColor;
+
 				SetNativeControl(entry);
 			}
 
@@ -70,6 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateDateFromModel(false);
 				UpdateMaximumDate();
 				UpdateMinimumDate();
+				UpdateTextColor();
 			}
 		}
 
@@ -83,6 +87,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMinimumDate();
 			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
 				UpdateMaximumDate();
+			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		void HandleValueChanged(object sender, EventArgs e)
@@ -117,6 +123,16 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateMinimumDate()
 		{
 			_picker.MinimumDate = Element.MinimumDate.ToNSDate();
+		}
+
+		void UpdateTextColor()
+		{
+			var textColor = Element.TextColor;
+
+			if (textColor.IsDefault || !Element.IsEnabled)
+				Control.TextColor = _defaultTextColor;
+			else
+				Control.TextColor = textColor.ToUIColor();
 		}
 	}
 }

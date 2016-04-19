@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Core;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 #if WINDOWS_UWP
 
@@ -15,6 +17,7 @@ namespace Xamarin.Forms.Platform.WinRT
 	public class PickerRenderer : ViewRenderer<Picker, FormsComboBox>
 	{
 		bool _isAnimating;
+		Brush _defaultBrush;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -27,6 +30,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					Control.DropDownOpened -= OnDropDownOpenStateChanged;
 					Control.DropDownClosed -= OnDropDownOpenStateChanged;
 					Control.OpenAnimationCompleted -= ControlOnOpenAnimationCompleted;
+					Control.Loaded -= ControlOnLoaded;
 				}
 			}
 
@@ -45,6 +49,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					Control.DropDownClosed += OnDropDownOpenStateChanged;
 					Control.OpenAnimationCompleted += ControlOnOpenAnimationCompleted;
 					Control.ClosedAnimationStarted += ControlOnClosedAnimationStarted;
+					Control.Loaded += ControlOnLoaded;
 				}
 
 				Control.ItemsSource = Element.Items;
@@ -64,6 +69,16 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateSelectedIndex();
 			else if (e.PropertyName == Picker.TitleProperty.PropertyName)
 				UpdateTitle();
+			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+				UpdateTextColor();
+		}
+
+		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
+		{
+			// The defaults from the control template won't be available
+			// right away; we have to wait until after the template has been applied
+			_defaultBrush = Control.Foreground;
+			UpdateTextColor();
 		}
 
 		void ControlOnClosedAnimationStarted(object sender, EventArgs eventArgs)
@@ -137,6 +152,12 @@ namespace Xamarin.Forms.Platform.WinRT
 		void UpdateSelectedIndex()
 		{
 			Control.SelectedIndex = Element.SelectedIndex;
+		}
+
+		void UpdateTextColor()
+		{
+			Color color = Element.TextColor;
+			Control.Foreground = color.IsDefault ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
 		}
 
 		void UpdateTitle()

@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public static class ColorExtensions
 	{
-		static readonly int[][] ColorStates = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
+		public static readonly int[][] States = { new[] { global::Android.Resource.Attribute.StateEnabled }, new[] { -global::Android.Resource.Attribute.StateEnabled } };
 
 		public static AColor ToAndroid(this Color self)
 		{
@@ -33,8 +33,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static ColorStateList ToAndroidPreserveDisabled(this Color color, ColorStateList defaults)
 		{
-			int disabled = defaults.GetColorForState(ColorStates[1], color.ToAndroid());
-			return new ColorStateList(ColorStates, new[] { color.ToAndroid().ToArgb(), disabled });
+			int disabled = defaults.GetColorForState(States[1], color.ToAndroid());
+			return new ColorStateList(States, new[] { color.ToAndroid().ToArgb(), disabled });
 		}
 	}
 }

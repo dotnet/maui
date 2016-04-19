@@ -464,7 +464,8 @@ namespace Xamarin.Forms.CustomAttributes
 			MinimumDate,
 			MaximumDate,
 			Focus,
-			IsVisible
+			IsVisible,
+			TextColor
 		}
 
 		public enum InputView
@@ -652,7 +653,8 @@ namespace Xamarin.Forms.CustomAttributes
 		public enum TimePicker {
 			Format,
 			Time,
-			Focus
+			Focus,
+			TextColor
 		}
 
 		public enum WebView {
@@ -690,7 +692,8 @@ namespace Xamarin.Forms.CustomAttributes
 			Title,
 			Items,
 			SelectedIndex,
-			Focus
+			Focus,
+			TextColor
 		}
 
 		public enum FileImageSource {

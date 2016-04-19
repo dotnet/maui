@@ -1,17 +1,28 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reflection;
+using System.Windows.Media;
 using Microsoft.Phone.Controls;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
 	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.Phone.Controls.DatePicker>
 	{
+		Brush _defaultBrush;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
 			base.OnElementChanged(e);
 
 			var datePicker = new Microsoft.Phone.Controls.DatePicker { Value = Element.Date };
+
+			datePicker.Loaded += (sender, args) => {
+				// The defaults from the control template won't be available
+				// right away; we have to wait until after the template has been applied
+				_defaultBrush = datePicker.Foreground;
+				UpdateTextColor();
+			};
+
 			datePicker.ValueChanged += DatePickerOnValueChanged;
 			SetNativeControl(datePicker);
 
@@ -20,11 +31,14 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == "Date")
+			base.OnElementPropertyChanged(sender, e);
+
+			if (e.PropertyName == DatePicker.DateProperty.PropertyName)
 				Control.Value = Element.Date;
 			else if (e.PropertyName == DatePicker.FormatProperty.PropertyName)
 				UpdateFormatString();
-			base.OnElementPropertyChanged(sender, e);
+			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		internal override void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
@@ -54,6 +68,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 		void UpdateFormatString()
 		{
 			Control.ValueStringFormat = "{0:" + Element.Format + "}";
+		}
+
+		void UpdateTextColor()
+		{
+			Color color = Element.TextColor;
+			Control.Foreground = color.IsDefault ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
 		}
 	}
 }

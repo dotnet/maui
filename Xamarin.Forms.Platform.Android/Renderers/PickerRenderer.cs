@@ -2,19 +2,21 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Android.App;
+using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
 using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
+using Orientation = Android.Widget.Orientation;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public class PickerRenderer : ViewRenderer<Picker, EditText>
 	{
 		AlertDialog _dialog;
-
 		bool _isDisposed;
+		TextColorSwitcher _textColorSwitcher;
 
 		public PickerRenderer()
 		{
@@ -44,9 +46,11 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var textField = new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
 					textField.SetOnClickListener(PickerListener.Instance);
+					_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
 					SetNativeControl(textField);
 				}
 				UpdatePicker();
+				UpdateTextColor();
 			}
 
 			base.OnElementChanged(e);
@@ -60,6 +64,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdatePicker();
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
+			if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -146,6 +152,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (oldText != Control.Text)
 				((IVisualElementController)Element).NativeSizeChanged();
+		}
+
+		void UpdateTextColor()
+		{
+			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
 		class PickerListener : Object, IOnClickListener

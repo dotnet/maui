@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.App;
+using Android.Content.Res;
 using Android.Widget;
 using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class TimePickerRenderer : ViewRenderer<TimePicker, EditText>, TimePickerDialog.IOnTimeSetListener
 	{
 		AlertDialog _dialog;
+		TextColorSwitcher _textColorSwitcher;
 
 		public TimePickerRenderer()
 		{
@@ -36,17 +38,23 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors); 
 			}
 
 			SetTime(e.NewElement.Time);
+			UpdateTextColor();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			if (e.PropertyName == TimePicker.TimeProperty.PropertyName ||
+			    e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				SetTime(Element.Time);
+
+			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -76,6 +84,11 @@ namespace Xamarin.Forms.Platform.Android
 		void SetTime(TimeSpan time)
 		{
 			Control.Text = DateTime.Today.Add(time).ToString(Element.Format);
+		}
+
+		void UpdateTextColor()
+		{
+			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
 		class TimePickerListener : Object, IOnClickListener

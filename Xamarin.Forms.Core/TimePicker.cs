@@ -6,9 +6,11 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_TimePickerRenderer))]
 	public class TimePicker : View
 	{
-		public static readonly BindableProperty FormatProperty = BindableProperty.Create("Format", typeof(string), typeof(TimePicker), "t");
+		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");
 
-		public static readonly BindableProperty TimeProperty = BindableProperty.Create("Time", typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay, (bindable, value) =>
+		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(TimePicker), Color.Default);
+
+		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay, (bindable, value) =>
 		{
 			var time = (TimeSpan)value;
 			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
@@ -18,6 +20,12 @@ namespace Xamarin.Forms
 		{
 			get { return (string)GetValue(FormatProperty); }
 			set { SetValue(FormatProperty, value); }
+		}
+
+		public Color TextColor
+		{
+			get { return (Color)GetValue(TextColorProperty); }
+			set { SetValue(TextColorProperty, value); }
 		}
 
 		public TimeSpan Time

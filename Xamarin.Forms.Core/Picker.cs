@@ -8,9 +8,11 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_PickerRenderer))]
 	public class Picker : View
 	{
-		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Picker), default(string));
+		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(Picker), Color.Default);
 
-		public static readonly BindableProperty SelectedIndexProperty = BindableProperty.Create("SelectedIndex", typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Picker), default(string));
+
+		public static readonly BindableProperty SelectedIndexProperty = BindableProperty.Create(nameof(SelectedIndex), typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				EventHandler eh = ((Picker)bindable).SelectedIndexChanged;
@@ -30,6 +32,12 @@ namespace Xamarin.Forms
 		{
 			get { return (int)GetValue(SelectedIndexProperty); }
 			set { SetValue(SelectedIndexProperty, value); }
+		}
+
+		public Color TextColor
+		{
+			get { return (Color)GetValue(TextColorProperty); }
+			set { SetValue(TextColorProperty, value); }
 		}
 
 		public string Title

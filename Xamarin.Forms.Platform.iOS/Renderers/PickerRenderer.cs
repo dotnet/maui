@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class PickerRenderer : ViewRenderer<Picker, UITextField>
 	{
 		UIPickerView _picker;
+		UIColor _defaultTextColor;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
@@ -56,12 +57,15 @@ namespace Xamarin.Forms.Platform.iOS
 					entry.InputView = _picker;
 					entry.InputAccessoryView = toolbar;
 
+					_defaultTextColor = entry.TextColor;
+
 					SetNativeControl(entry);
 				}
 
 				_picker.Model = new PickerSource(this);
 
 				UpdatePicker();
+				UpdateTextColor();
 
 				((ObservableList<string>)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
 			}
@@ -76,6 +80,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdatePicker();
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
+			if (e.PropertyName == Picker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
@@ -131,6 +137,16 @@ namespace Xamarin.Forms.Platform.iOS
 			source.SelectedIndex = formsIndex;
 			source.SelectedItem = formsIndex >= 0 ? Element.Items[formsIndex] : null;
 			_picker.Select(Math.Max(formsIndex, 0), 0, true);
+		}
+
+		void UpdateTextColor()
+		{
+			var textColor = Element.TextColor;
+
+			if (textColor.IsDefault || !Element.IsEnabled)
+				Control.TextColor = _defaultTextColor;
+			else
+				Control.TextColor = textColor.ToUIColor();
 		}
 
 		class PickerSource : UIPickerViewModel

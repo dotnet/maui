@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Microsoft.Phone.Controls;
 
 namespace Xamarin.Forms.Platform.WinPhone
@@ -11,8 +12,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 	public class PickerRenderer : ViewRenderer<Picker, FrameworkElement>
 	{
 		bool _isChanging;
-
 		FormsListPicker _listPicker;
+		Brush _defaultBrush;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
@@ -34,6 +35,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 			_listPicker.Items.Add(new ItemViewModel(" ") { MaxHeight = 0 });
 
 			_listPicker.ListPickerModeChanged += ListPickerModeChanged;
+			_listPicker.Loaded += (sender, args) => {
+				// The defaults from the control template won't be available
+				// right away; we have to wait until after the template has been applied
+				_defaultBrush = _listPicker.Foreground;
+				UpdateTextColor();
+			};
 
 			var grid = new System.Windows.Controls.Grid { Children = { _listPicker }, MaxWidth = Device.Info.PixelScreenSize.Width };
 			SetNativeControl(grid);
@@ -45,20 +52,29 @@ namespace Xamarin.Forms.Platform.WinPhone
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
+
 			if (e.PropertyName == Picker.TitleProperty.PropertyName)
+			{
 				_listPicker.FullModeHeader = Element.Title;
-
-			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			}
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
 				UpdateIsEnabled();
-
-			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
+				UpdateTextColor();
+			}
+			else if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 			{
 				if (Element.SelectedIndex >= 0 && Element.SelectedIndex < Element.Items.Count)
 					_listPicker.SelectedIndex = Element.SelectedIndex + 1;
 			}
-
-			if (e.PropertyName == View.HorizontalOptionsProperty.PropertyName)
+			else if (e.PropertyName == View.HorizontalOptionsProperty.PropertyName)
+			{
 				UpdateAlignment();
+			}
+			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
+			{
+				UpdateTextColor();
+			}
 		}
 
 		protected override void OnGotFocus(object sender, RoutedEventArgs args)
@@ -196,6 +212,17 @@ namespace Xamarin.Forms.Platform.WinPhone
 			_listPicker.FullModeHeader = Element.Title;
 			UpdateItems();
 			_listPicker.SelectedIndex = Element.SelectedIndex + 1;
+		}
+
+		void UpdateTextColor()
+		{
+			if (!_listPicker.IsEnabled)
+			{
+				return;
+			}
+
+			Color color = Element.TextColor;
+			_listPicker.Foreground = color.IsDefault ? (_defaultBrush ?? color.ToBrush()) : color.ToBrush();
 		}
 
 		class ItemViewModel : INotifyPropertyChanged

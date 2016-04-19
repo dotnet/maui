@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.App;
+using Android.Content.Res;
 using Android.Widget;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		DatePickerDialog _dialog;
 		bool _disposed;
+		TextColorSwitcher _textColorSwitcher;
 
 		public DatePickerRenderer()
 		{
@@ -47,24 +49,28 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TextFieldClickHandler.Instance);
 				SetNativeControl(textField);
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors); 
 			}
 
 			SetDate(Element.Date);
 
 			UpdateMinimumDate();
 			UpdateMaximumDate();
+			UpdateTextColor();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == "Date" || e.PropertyName == DatePicker.FormatProperty.PropertyName)
+			if (e.PropertyName == DatePicker.DateProperty.PropertyName || e.PropertyName == DatePicker.FormatProperty.PropertyName)
 				SetDate(Element.Date);
-			else if (e.PropertyName == "MinimumDate")
+			else if (e.PropertyName == DatePicker.MinimumDateProperty.PropertyName)
 				UpdateMinimumDate();
-			else if (e.PropertyName == "MaximumDate")
+			else if (e.PropertyName == DatePicker.MaximumDateProperty.PropertyName)
 				UpdateMaximumDate();
+			if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		internal override void OnFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
@@ -139,6 +145,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_dialog.DatePicker.MinDate = (long)Element.MinimumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
+		}
+
+		void UpdateTextColor()
+		{
+			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
 		class TextFieldClickHandler : Object, IOnClickListener

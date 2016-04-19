@@ -6,16 +6,18 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_DatePickerRenderer))]
 	public class DatePicker : View
 	{
-		public static readonly BindableProperty FormatProperty = BindableProperty.Create("Format", typeof(string), typeof(DatePicker), "d");
+		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
-		public static readonly BindableProperty DateProperty = BindableProperty.Create("Date", typeof(DateTime), typeof(DatePicker), DateTime.Today, BindingMode.TwoWay, coerceValue: CoerceDate,
+		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), DateTime.Today, BindingMode.TwoWay, coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged);
 
-		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create("MinimumDate", typeof(DateTime), typeof(DatePicker), new DateTime(1900, 1, 1),
+		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime), typeof(DatePicker), new DateTime(1900, 1, 1),
 			validateValue: ValidateMinimumDate, coerceValue: CoerceMinimumDate);
 
-		public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create("MaximumDate", typeof(DateTime), typeof(DatePicker), new DateTime(2100, 12, 31),
+		public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(nameof(MaximumDate), typeof(DateTime), typeof(DatePicker), new DateTime(2100, 12, 31),
 			validateValue: ValidateMaximumDate, coerceValue: CoerceMaximumDate);
+
+		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(DatePicker), Color.Default);
 
 		public DateTime Date
 		{
@@ -39,6 +41,12 @@ namespace Xamarin.Forms
 		{
 			get { return (DateTime)GetValue(MinimumDateProperty); }
 			set { SetValue(MinimumDateProperty, value); }
+		}
+
+		public Color TextColor
+		{
+			get { return (Color)GetValue(TextColorProperty); }
+			set { SetValue(TextColorProperty, value); }
 		}
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;

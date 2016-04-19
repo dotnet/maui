@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class TimePickerRenderer : ViewRenderer<TimePicker, UITextField>
 	{
 		UIDatePicker _picker;
+		UIColor _defaultTextColor;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -61,12 +62,15 @@ namespace Xamarin.Forms.Platform.iOS
 					entry.InputView = _picker;
 					entry.InputAccessoryView = toolbar;
 
+					_defaultTextColor = entry.TextColor;
+
 					_picker.ValueChanged += OnValueChanged;
 
 					SetNativeControl(entry);
 				}
 
 				UpdateTime();
+				UpdateTextColor();
 			}
 
 			base.OnElementChanged(e);
@@ -78,6 +82,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				UpdateTime();
+
+			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateTextColor();
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
@@ -93,6 +100,16 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));
+		}
+
+		void UpdateTextColor()
+		{
+			var textColor = Element.TextColor;
+
+			if (textColor.IsDefault || !Element.IsEnabled)
+				Control.TextColor = _defaultTextColor;
+			else
+				Control.TextColor = textColor.ToUIColor();
 		}
 
 		void UpdateTime()
