@@ -93,6 +93,7 @@
     <Compile Include="Cells\EntryCellView.cs" />
     <Compile Include="Cells\ImageCellRenderer.cs" />
     <Compile Include="Cells\SwitchCellView.cs" />
+    <Compile Include="Cells\TextViewExtensions.cs" />
     <Compile Include="Deserializer.cs" />
     <Compile Include="AppCompat\FormsAppCompatActivity.cs" />
     <Compile Include="ElementChangedEventArgs.cs" />
