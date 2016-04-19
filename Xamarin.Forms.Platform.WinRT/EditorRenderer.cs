@@ -22,10 +22,10 @@ namespace Xamarin.Forms.Platform.WinRT
 				{
 					var textBox = new TextBox { AcceptsReturn = true, TextWrapping = TextWrapping.Wrap };
 
+					SetNativeControl(textBox);
+
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.LostFocus += OnLostFocus;
-
-					SetNativeControl(textBox);
 				}
 
 				UpdateText();
@@ -35,6 +35,17 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && Control != null)
+			{
+				Control.TextChanged -= OnNativeTextChanged;
+				Control.LostFocus -= OnLostFocus;
+			}
+
+			base.Dispose(disposing);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -65,12 +76,12 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnLostFocus(object sender, RoutedEventArgs e)
 		{
-			Element?.SendCompleted();
+			Element.SendCompleted();
 		}
 
 		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
 		{
-			Element?.SetValueCore(Editor.TextProperty, Control.Text);
+			Element.SetValueCore(Editor.TextProperty, Control.Text);
 		}
 
 		void UpdateFont()
