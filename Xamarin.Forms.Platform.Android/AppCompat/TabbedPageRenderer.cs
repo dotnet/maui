@@ -359,14 +359,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		private void UpdateBarTextColor()
+		void UpdateBarTextColor()
 		{
 			if (_disposed || _tabLayout == null)
 				return;
 
-			var textColor = Element.BarTextColor.ToAndroid().ToArgb();
-
-			_tabLayout.SetTabTextColors(textColor, textColor);
+			Color textColor = Element.BarTextColor;
+			if (!textColor.IsDefault)
+				_tabLayout.SetTabTextColors(textColor.ToAndroid().ToArgb(), textColor.ToAndroid().ToArgb());
 		}
 	}
 }
