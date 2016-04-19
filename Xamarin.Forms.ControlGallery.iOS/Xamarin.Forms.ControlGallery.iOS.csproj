@@ -231,10 +231,6 @@
     <BundleResource Include="test.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Calabash, Version=18.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.TestCloud.Agent.0.18.0\lib\Xamarin.iOS10\Calabash.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="PLCrashReporterUnifiedBinding, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Xamarin.Insights.1.11.4\lib\Xamarin.iOS10\PLCrashReporterUnifiedBinding.dll</HintPath>
       <Private>True</Private>
@@ -247,6 +243,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Xamarin.iOS" />
+    <Reference Include="Calabash">
+      <HintPath>..\packages\Xamarin.TestCloud.Agent.0.19.0\lib\Xamarin.iOS10\Calabash.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

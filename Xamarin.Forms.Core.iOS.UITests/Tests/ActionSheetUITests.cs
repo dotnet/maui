@@ -24,8 +24,8 @@ namespace Xamarin.Forms.Core.UITests
 
 		static void CheckExtras ()
 		{
-			App.WaitForElement (c => c.Marked ("Extra One"));
-			App.WaitForElement (c => c.Marked ("Extra Eight"));
+			App.WaitForElement(c => c.Marked("Extra One"));
+			App.WaitForElement(c => c.Marked("Extra Six"));
 		}
 
 		protected override void TestSetup ()
