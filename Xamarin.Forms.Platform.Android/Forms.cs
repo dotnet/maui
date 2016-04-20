@@ -366,8 +366,6 @@ namespace Xamarin.Forms
 			{
 				get
 				{
-					if ((int)Build.VERSION.SdkInt >= 23)
-						return !Looper.MainLooper.IsCurrentThread;
 					return Looper.MainLooper != Looper.MyLooper();
 				}
 			}
