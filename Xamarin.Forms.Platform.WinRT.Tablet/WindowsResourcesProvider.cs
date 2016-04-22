@@ -44,14 +44,22 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				// TODO: Need to implement a stealth pass-through for things we don't support
 
-				if (setter.Property == TextBlock.FontSizeProperty)
-					formsStyle.Setters.Add(Label.FontSizeProperty, setter.Value);
-				else if (setter.Property == TextBlock.FontFamilyProperty)
-					formsStyle.Setters.Add(Label.FontFamilyProperty, setter.Value);
-				else if (setter.Property == TextBlock.FontWeightProperty)
-					formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(Convert.ToUInt16(setter.Value)));
-				else if (setter.Property == TextBlock.TextWrappingProperty)
-					formsStyle.Setters.Add(Label.LineBreakModeProperty, ToLineBreakMode((TextWrapping)setter.Value));
+				try
+				{
+					if (setter.Property == TextBlock.FontSizeProperty)
+						formsStyle.Setters.Add(Label.FontSizeProperty, setter.Value);
+					else if (setter.Property == TextBlock.FontFamilyProperty)
+						formsStyle.Setters.Add(Label.FontFamilyProperty, setter.Value);
+					else if (setter.Property == TextBlock.FontWeightProperty)
+						formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(Convert.ToUInt16(setter.Value)));
+					else if (setter.Property == TextBlock.TextWrappingProperty)
+						formsStyle.Setters.Add(Label.LineBreakModeProperty, ToLineBreakMode((TextWrapping)setter.Value));
+				}
+				catch (NotImplementedException)
+				{
+					// see https://bugzilla.xamarin.com/show_bug.cgi?id=33135
+					// WinRT implementation of Windows.UI.Xaml.Setter.get_Value is not implemented.
+				}
 			}
 
 			return formsStyle;
