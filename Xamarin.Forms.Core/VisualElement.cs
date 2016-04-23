@@ -511,16 +511,24 @@ namespace Xamarin.Forms
 
 		public SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
+			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
+			Thickness margin = default(Thickness);
+			if (includeMargins)
+			{
+				var view = this as View;
+				if (view != null)
+					margin = view.Margin;
+				widthConstraint = Math.Max(0, widthConstraint - margin.HorizontalThickness);
+				heightConstraint = Math.Max(0, heightConstraint - margin.VerticalThickness);
+			}
 #pragma warning disable 0618 // retain until GetSizeRequest removed
 			SizeRequest result = GetSizeRequest(widthConstraint, heightConstraint);
 #pragma warning restore 0618
 
-			if ((flags & MeasureFlags.IncludeMargins) != 0)
+			if (includeMargins)
 			{
-				Thickness margin = default(Thickness);
-				var view = this as View;
-				if (view != null)
-					margin = view.Margin;
+				
+				
 
 				if (!margin.IsDefault)
 				{
