@@ -47,7 +47,6 @@ namespace Xamarin.Forms.Platform.iOS
 			BackgroundColor = UIColor.Clear;
 
 			AutosizesSubviews = true;
-			AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 
 			_tracker = new VisualElementTracker(this);
 
@@ -103,6 +102,9 @@ namespace Xamarin.Forms.Platform.iOS
 				((WebView)Element).EvalRequested -= OnEvalRequested;
 				((WebView)Element).GoBackRequested -= OnGoBackRequested;
 				((WebView)Element).GoForwardRequested -= OnGoForwardRequested;
+
+				_tracker?.Dispose();
+				_packager?.Dispose();
 			}
 
 			base.Dispose(disposing);
