@@ -1,5 +1,7 @@
+using System;
 using Android.Content;
 using Android.Content.Res;
+using Android.Runtime;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
@@ -17,6 +19,8 @@ namespace Xamarin.Forms.Platform.Android
 			_parent = parent;
 			_isMaster = isMaster;
 		}
+
+		public MasterDetailContainer(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer) { }
 
 		public VisualElement ChildView
 		{
