@@ -79,7 +79,7 @@
         <ReturnType>Xamarin.Forms.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Scale the image so it exactly fill the view. Scaling may not be uniform in X and Y.</summary>
+        <summary>Scale the image so it exactly fills the view. Scaling may not be uniform in X and Y.</summary>
       </Docs>
     </Member>
   </Members>
