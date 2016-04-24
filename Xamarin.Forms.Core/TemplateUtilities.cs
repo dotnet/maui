@@ -110,14 +110,20 @@ namespace Xamarin.Forms
 			}
 
 			ControlTemplate template = self.ControlTemplate;
-			var content = template.CreateContent() as View;
-
-			if (content == null)
+			if (template == null)
 			{
-				throw new NotSupportedException("ControlTemplate must return a type derived from View.");
+				// do nothing for now
 			}
+			else
+			{
+				var content = template.CreateContent() as View;
+				if (content == null)
+				{
+					throw new NotSupportedException("ControlTemplate must return a type derived from View.");
+				}
 
-			self.InternalChildren.Add(content);
+				self.InternalChildren.Add(content);
+			}
 		}
 	}
 }

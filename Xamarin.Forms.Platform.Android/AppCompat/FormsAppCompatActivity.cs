@@ -119,7 +119,10 @@ namespace Xamarin.Forms.Platform.Android
 				throw new ArgumentNullException("application");
 
 			_application = application;
+			(application as IApplicationController)?.SetAppIndexingProvider(new AndroidAppIndexProvider(this));
 			Xamarin.Forms.Application.Current = application;
+
+			CheckForAppLink(Intent);
 
 			application.PropertyChanged += AppOnPropertyChanged;
 
@@ -205,6 +208,7 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnNewIntent(Intent intent)
 		{
 			base.OnNewIntent(intent);
+			CheckForAppLink(intent);
 		}
 
 		protected override void OnPause()
@@ -290,6 +294,17 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (args.PropertyName == "MainPage")
 				InternalSetPage(_application.MainPage);
+		}
+
+		void CheckForAppLink(Intent intent)
+		{
+			string action = intent.Action;
+			string strLink = intent.DataString;
+			if (Intent.ActionView != action || string.IsNullOrWhiteSpace(strLink))
+				return;
+
+			var link = new Uri(strLink);
+			_application?.SendOnAppLinkRequestReceived(link);
 		}
 
 		int GetColorPrimaryDark()

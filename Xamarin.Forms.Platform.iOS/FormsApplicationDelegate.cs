@@ -5,10 +5,12 @@ using System.Text;
 #if __UNIFIED__
 using Foundation;
 using UIKit;
+using CoreSpotlight;
 
 #else
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using MonoTouch.CoreSpotlight;
 #endif
 
 namespace Xamarin.Forms.Platform.iOS
@@ -25,6 +27,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override bool ContinueUserActivity(UIApplication application, NSUserActivity userActivity, UIApplicationRestorationHandler completionHandler)
 		{
+			CheckForAppLink(userActivity);
 			return true;
 		}
 
@@ -77,6 +80,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void UserActivityUpdated(UIApplication application, NSUserActivity userActivity)
 		{
+			CheckForAppLink(userActivity);
 		}
 
 		// from background to foreground, not yet active
@@ -121,6 +125,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			Application.Current = application;
 			_application = application;
+			(application as IApplicationController)?.SetAppIndexingProvider(new IOSAppIndexingProvider());
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;
 		}
@@ -129,6 +134,29 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (args.PropertyName == "MainPage")
 				UpdateMainPage();
+		}
+
+		void CheckForAppLink(NSUserActivity userActivity)
+		{
+			var strLink = string.Empty;
+
+			switch (userActivity.ActivityType)
+			{
+				case "NSUserActivityTypeBrowsingWeb":
+					strLink = userActivity.WebPageUrl.AbsoluteString;
+					break;
+				case "com.apple.corespotlightitem":
+					if (userActivity.UserInfo.ContainsKey(CSSearchableItem.ActivityIdentifier))
+						strLink = userActivity.UserInfo.ObjectForKey(CSSearchableItem.ActivityIdentifier).ToString();
+					break;
+				default:
+					if (userActivity.UserInfo.ContainsKey(new NSString("link")))
+						strLink = userActivity.UserInfo[new NSString("link")].ToString();
+					break;
+			}
+
+			if (!string.IsNullOrEmpty(strLink))
+				_application.SendOnAppLinkRequestReceived(new Uri(strLink));
 		}
 
 		void SetMainPage()

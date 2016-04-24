@@ -144,6 +144,8 @@
       <DependentUpon>StringResources.resx</DependentUpon>
     </Compile>
     <Compile Include="ViewInitializedEventArgs.cs" />
+    <Compile Include="IOSAppIndexingProvider.cs" />
+    <Compile Include="IOSAppLinks.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\StringResources.ar.resx" />

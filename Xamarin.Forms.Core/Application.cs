@@ -10,7 +10,8 @@ namespace Xamarin.Forms
 	{
 		static Application s_current;
 		readonly Task<IDictionary<string, object>> _propertiesTask;
-		
+
+		IAppIndexingProvider _appIndexProvider;
 		bool _isSaving;
 
 		ReadOnlyCollection<Element> _logicalChildren;
@@ -31,6 +32,18 @@ namespace Xamarin.Forms
 
 			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 			SystemResources.ValuesChanged += OnParentResourcesChanged;
+		}
+
+		public IAppLinks AppLinks
+		{
+			get
+			{
+				if (_appIndexProvider == null)
+					throw new ArgumentException("No IAppIndexingProvider was provided");
+				if (_appIndexProvider.AppLinks == null)
+					throw new ArgumentException("No AppLinks implementation was found, if in Android make sure you installed the Xamarin.Forms.AppLinks");
+				return _appIndexProvider.AppLinks;
+			}
 		}
 
 		public static Application Current
@@ -94,6 +107,11 @@ namespace Xamarin.Forms
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		void IApplicationController.SetAppIndexingProvider(IAppIndexingProvider provider)
+		{
+			_appIndexProvider = provider;
+		}
+
 		public ResourceDictionary Resources
 		{
 			get { return _resources; }
@@ -126,6 +144,10 @@ namespace Xamarin.Forms
 				Device.BeginInvokeOnMainThread(async () => await SetPropertiesAsync());
 			else
 				await SetPropertiesAsync();
+		}
+
+		protected virtual void OnAppLinkRequestReceived(Uri uri)
+		{
 		}
 
 		protected override void OnParentSet()
@@ -176,6 +198,11 @@ namespace Xamarin.Forms
 		}
 
 		internal event EventHandler PopCanceled;
+
+		internal void SendOnAppLinkRequestReceived(Uri uri)
+		{
+			OnAppLinkRequestReceived(uri);
+		}
 
 		internal void SendResume()
 		{

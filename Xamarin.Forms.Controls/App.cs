@@ -32,6 +32,37 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
+		protected override void OnAppLinkRequestReceived(Uri uri)
+		{
+
+			var appDomain = "http://" + AppName.ToLowerInvariant() + "/";
+
+			if (!uri.ToString().ToLowerInvariant().StartsWith(appDomain))
+				return;
+
+			var url = uri.ToString().Replace(appDomain, "");
+
+			var parts = url.Split('/');
+			if (parts.Length == 2)
+			{
+				var isPage = parts[0].Trim().ToLower() == "gallery";
+				if (isPage)
+				{
+					string page = parts[1].Trim();
+					var pageForms = Activator.CreateInstance(Type.GetType(page));
+
+					var appLinkPageGallery = pageForms as AppLinkPageGallery;
+					if (appLinkPageGallery != null)
+					{
+						appLinkPageGallery.ShowLabel = true;
+						(MainPage as MasterDetailPage)?.Detail.Navigation.PushAsync((pageForms as Page));
+					}
+				}
+			}
+
+			base.OnAppLinkRequestReceived(uri);
+		}
+
 		public static Dictionary<string, string> Config
 		{
 			get

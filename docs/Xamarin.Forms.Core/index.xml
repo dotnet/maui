@@ -139,6 +139,7 @@
       <Type Name="Animation" Kind="Class" />
       <Type Name="AnimationExtensions" Kind="Class" />
       <Type Name="Application" Kind="Class" />
+      <Type Name="AppLinkEntry" Kind="Class" />
       <Type Name="Aspect" Kind="Enumeration" />
       <Type Name="BackButtonPressedEventArgs" Kind="Class" />
       <Type Name="BaseMenuItem" Kind="Class" />
@@ -230,7 +231,10 @@
       <Type Name="HtmlWebViewSource" Kind="Class" />
       <Type Name="IAnimatable" Kind="Interface" />
       <Type Name="ICarouselViewController" Kind="Interface" />
+      <Type Name="IAppIndexingProvider" Kind="Interface" />
       <Type Name="IApplicationController" Kind="Interface" />
+      <Type Name="IAppLinkEntry" Kind="Interface" />
+      <Type Name="IAppLinks" Kind="Interface" />
       <Type Name="IDefinition" Kind="Interface" />
       <Type Name="IEffectControlProvider" Kind="Interface" />
       <Type Name="IElementController" Kind="Interface" />

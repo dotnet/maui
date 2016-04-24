@@ -395,7 +395,11 @@
     <Compile Include="PinchGestureRecognizer.cs" />
     <Compile Include="IStyle.cs" />
     <Compile Include="MergedStyle.cs" />
+    <Compile Include="IAppLinks.cs" />
+    <Compile Include="IAppLinkEntry.cs" />
+    <Compile Include="AppLinkEntry.cs" />
     <Compile Include="IApplicationController.cs" />
+    <Compile Include="IAppIndexingProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

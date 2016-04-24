@@ -196,6 +196,7 @@ namespace Xamarin.Forms.Controls
 		{
 			var pages = new List<Page> {
 				new CarouselViewGallaryPage {Title = "CarouselView Gallery"},
+				new AppLinkPageGallery {Title = "App Link Page Gallery"},
 				new NestedNativeControlGalleryPage {Title = "Nested Native Controls Gallery"},
 				new CellForceUpdateSizeGalleryPage {Title = "Cell Force Update Size Gallery"},
 				new AppearingGalleryPage {Title = "Appearing Gallery"},

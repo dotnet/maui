@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<p:ListDataPage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:p="clr-namespace:Xamarin.Forms.Pages;assembly=Xamarin.Forms.Pages"
+                x:Class="PagesGallery.SpeakersPage"
+                Title="Speakers"
+                DetailTemplate="{StaticResource SpeakerDetailTemplate}"
+                StyleClass="Speakers">
+  <p:DataPage.DataSource>
+    <p:JsonDataSource Source="http://demo7391822.mockable.io/speakers" />
+  </p:DataPage.DataSource>
+  <p:DataPage.DefaultItemTemplate>
+    <DataTemplate>
+      <ImageCell ImageSource="{Binding Value[picture]}" Text="{Binding Value[name]}" Detail="{Binding Value[twitter]}" />
+    </DataTemplate>
+  </p:DataPage.DefaultItemTemplate>
+</p:ListDataPage>
