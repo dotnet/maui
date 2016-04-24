@@ -54,6 +54,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 		}
 
+#pragma warning disable 0414
 		static PropertyTestCase[] Properties = {
 			new PropertyTestCase<View, ResourceDictionary> ("Resources", v => v.Resources, (v, o) => v.Resources = o, () => null, new ResourceDictionary ()),
 			new PropertyTestCase<View, bool> ("InputTransparent", v => v.InputTransparent, (v, o) => v.InputTransparent = o, () => false, true),
@@ -151,6 +152,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			new PropertyTestCase<TapGestureRecognizer, ICommand> ("Command", t => t.Command, (t, o) => t.Command = o, () => null, new Command(()=>{})),
 			new PropertyTestCase<MasterDetailPage, bool> ("IsGestureEnabled", md => md.IsGestureEnabled, (md, v) => md.IsGestureEnabled = v, () => true, false)
 		};
+#pragma warning restore 0414
 
 		[SetUp]
 		public override void Setup ()
