@@ -212,6 +212,12 @@ namespace Xamarin.Forms.Platform.Android
 			Performance.Stop();
 		}
 
+		/// <summary>
+		/// Determines whether the native control is disposed of when this renderer is disposed
+		/// Can be overridden in deriving classes 
+		/// </summary>
+		protected virtual bool ManageNativeControlLifetime => true;
+
 		protected override void Dispose(bool disposing)
 		{
 			if ((_flags & VisualElementRendererFlags.Disposed) != 0)
@@ -244,11 +250,14 @@ namespace Xamarin.Forms.Platform.Android
 					_gestureListener = null;
 				}
 
-				int count = ChildCount;
-				for (var i = 0; i < count; i++)
+				if (ManageNativeControlLifetime)
 				{
-					AView child = GetChildAt(i);
-					child.Dispose();
+					int count = ChildCount;
+					for (var i = 0; i < count; i++)
+					{
+						AView child = GetChildAt(i);
+						child.Dispose();
+					}
 				}
 
 				RemoveAllViews();

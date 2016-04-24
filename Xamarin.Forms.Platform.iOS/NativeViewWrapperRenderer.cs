@@ -68,5 +68,10 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.OldElement == null)
 				SetNativeControl(Element.NativeView);
 		}
+
+		/// <summary>
+		/// The native control we're wrapping isn't ours to dispose of
+		/// </summary>
+		protected override bool ManageNativeControlLifetime => false;
 	}
 }

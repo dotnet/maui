@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (disposing && !_disposed)
 			{
-				if (Control != null)
+				if (Control != null && ManageNativeControlLifetime)
 				{
 					Control.RemoveFromParent();
 					Control.Dispose();

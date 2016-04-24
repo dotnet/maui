@@ -41,11 +41,17 @@ namespace Xamarin.Forms.Platform.iOS
 			return Control.SizeThatFits(size);
 		}
 
+		/// <summary>
+		/// Determines whether the native control is disposed of when this renderer is disposed
+		/// Can be overridden in deriving classes 
+		/// </summary>
+		protected virtual bool ManageNativeControlLifetime => true;
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
 
-			if (disposing && Control != null)
+			if (disposing && Control != null && ManageNativeControlLifetime)
 			{
 				Control.Dispose();
 				Control = null;

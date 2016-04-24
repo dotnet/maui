@@ -57,5 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (!handled)
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
+
+		protected override bool ManageNativeControlLifetime => false;
 	}
 }
