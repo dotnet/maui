@@ -14,7 +14,11 @@ function Update
     )
     
     Write-Host "Updating docs for $dllPath ..."
-    & $MdocPath update --delete $dllPath -L $ProfilePath --out $docsPath
+    if(Test-Path $dllPath) {
+        & $MdocPath update --delete $dllPath -L $ProfilePath --out $docsPath
+    } else {
+        Write-Warning "$dllPath was not found; you may need to rebuild"
+    }
 }
 
 function ParseChanges
@@ -28,6 +32,10 @@ function ParseChanges
 
     $suggestedCommands = @()
 
+    if($changes.Length -eq 0){
+        return
+    }
+
     $changes | % {$n=0} { 
         if($changes[$n+1] -match "Member Added:" -or $changes[$n+1] -match "Member Removed:"){
         
@@ -38,6 +46,13 @@ function ParseChanges
             }
 
         } 
+
+        if($changes[$n] -match "^New Type: (.*)"){
+            $modified = "$($docsPath.Replace("\", "/"))/$(ClassToXMLPath($matches[1]))"
+            Write-Host "$modified was added"
+            $suggestedCommands += "git add $modified"
+        }
+
         $n = $n + 1
     }
 
