@@ -83,10 +83,6 @@
 	{
 	}
 
-	internal class _ToolbarRenderer
-	{
-	}
-
 	internal class _ActivityIndicatorRenderer
 	{
 	}

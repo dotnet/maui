@@ -314,7 +314,6 @@
     <Compile Include="TabbedPage.cs" />
     <Compile Include="TemplateExtensions.cs" />
     <Compile Include="TimePicker.cs" />
-    <Compile Include="Toolbar.cs" />
     <Compile Include="ToolbarTracker.cs" />
     <Compile Include="ViewExtensions.cs" />
     <Compile Include="ViewState.cs" />

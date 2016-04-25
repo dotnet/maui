@@ -290,7 +290,6 @@ namespace Xamarin.Forms.Controls
 				new TableViewGallery { Title = "TableView Gallery - Legacy" }, 
 				new TemplatedCarouselGallery { Title = "TemplatedCarouselPage Gallery - Legacy" }, 
 				new TemplatedTabbedGallery { Title = "TemplatedTabbedPage Gallery - Legacy" }, 
-				new ToolbarGallery { Title = "Toolbar Gallery - Legacy" },
  				new UnevenViewCellGallery { Title = "UnevenViewCell Gallery - Legacy" }, 
 				new UnevenListGallery { Title = "UnevenList Gallery - Legacy" }, 
 				new ViewCellGallery { Title = "ViewCell Gallery - Legacy" }, 

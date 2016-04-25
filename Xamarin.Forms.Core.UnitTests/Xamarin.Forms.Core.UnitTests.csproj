@@ -149,7 +149,6 @@
     <Compile Include="TimePickerUnitTest.cs" />
     <Compile Include="ToolbarItemTests.cs" />
     <Compile Include="ToolbarTrackerTests.cs" />
-    <Compile Include="ToolbarUnitTests.cs" />
     <Compile Include="TypeUnitTests.cs" />
     <Compile Include="ViewCellTests.cs" />
     <Compile Include="ViewUnitTests.cs" />

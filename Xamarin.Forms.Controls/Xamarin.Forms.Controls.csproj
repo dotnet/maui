@@ -211,7 +211,6 @@
     <Compile Include="GalleryPages\TableViewGallery.cs" />
     <Compile Include="GalleryPages\TemplatedCarouselGallery.cs" />
     <Compile Include="GalleryPages\TemplatedTabbedGallery.cs" />
-    <Compile Include="GalleryPages\ToolbarGallery.cs" />
     <Compile Include="GalleryPages\UnevenListGallery.cs" />
     <Compile Include="GalleryPages\WebViewGallery.cs" />
     <Compile Include="GalleryPages\StyleGallery.cs" />

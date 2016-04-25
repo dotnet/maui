@@ -83,13 +83,6 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (ScrollViewRenderer))]
 	internal class _ScrollViewRenderer { }
 
-#if !WINDOWS_PHONE && !WINDOWS_PHONE_APP
-	[RenderWith (typeof (ToolbarRenderer))]
-#else
-	[RenderWith (null)]
-#endif
-	internal class _ToolbarRenderer { }
-
 	[RenderWith (typeof (ActivityIndicatorRenderer))]
 	internal class _ActivityIndicatorRenderer { }
 

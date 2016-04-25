@@ -223,7 +223,6 @@
     <Compile Include="Renderers\TableViewModelRenderer.cs" />
     <Compile Include="Renderers\TableViewRenderer.cs" />
     <Compile Include="Renderers\TimePickerRenderer.cs" />
-    <Compile Include="Renderers\ToolbarRenderer.cs" />
     <Compile Include="Renderers\WebViewRenderer.cs" />
     <Compile Include="ResourceManager.cs" />
     <Compile Include="ViewExtensions.cs" />
