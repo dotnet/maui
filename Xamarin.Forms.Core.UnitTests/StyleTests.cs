@@ -7,6 +7,13 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class StyleTests : BaseTestFixture
 	{
+		[SetUp]
+		public void Setup ()
+		{
+			base.Setup ();
+			Device.PlatformServices = new MockPlatformServices ();
+		}
+
 		[Test]
 		public void ApplyUnapplyStyle ()
 		{
@@ -470,7 +477,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view = new ContentView {
 				Resources = new ResourceDictionary { classstyle },
 				Content = new Label { 
-					StyleClass = "fooClass",
+					StyleClass = new [] {"fooClass"},
 					Style = style
 				}
 			};
@@ -545,17 +552,17 @@ namespace Xamarin.Forms.Core.UnitTests
 
 
 			var button = new Button {
-				StyleClass = "pink",
+				StyleClass = new [] {"pink"},
 			};
 			var myButton = new MyButton {
-				StyleClass = "pink",
+				StyleClass = new [] {"pink"},
 			};
 
 			var label = new Label {
-				StyleClass = "pink"
+				StyleClass = new [] {"pink"},
 			};
 			var myLabel = new MyLabel {
-				StyleClass = "pink"
+				StyleClass = new [] {"pink"},
 			};
 
 
@@ -601,10 +608,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			var button = new Button {
-				StyleClass = "pink",
+				StyleClass = new [] {"pink"},
 			};
 			var label = new Label {
-				StyleClass = "pink"
+				StyleClass = new [] {"pink"},
 			};
 
 			var cv = new ContentView {
@@ -644,10 +651,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			var button = new Button {
-				StyleClass = "pink",
+				StyleClass = new [] {"pink"},
 			};
 			var label = new Label {
-				StyleClass = "pink"
+				StyleClass = new [] {"pink"},
 			};
 
 			var cv = new ContentView {
@@ -665,6 +672,36 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (Color.Pink, label.BackgroundColor);
 			Assert.AreEqual (Color.Default, label.TextColor);
+		}
+
+		[Test]
+		public void MultipleStyleClassAreApplied ()
+		{
+			var pinkStyle = new Style (typeof (Button)) {
+				Setters = {
+					new Setter { Property = Button.TextColorProperty, Value = Color.Pink },
+				},
+				Class = "pink",
+				ApplyToDerivedTypes = true,
+			};
+			var bigStyle = new Style (typeof (Button)) {
+				Setters = {
+					new Setter { Property = Button.FontSizeProperty, Value = 20 },
+				},
+				Class = "big",
+				ApplyToDerivedTypes = true,
+			};
+			var button = new Button {
+				StyleClass = new [] {"pink", "big"},
+			};
+
+			new ContentView {
+				Resources = new ResourceDictionary { pinkStyle, bigStyle },
+				Content = button
+			};
+
+			Assert.AreEqual (Color.Pink, button.TextColor);
+			Assert.AreEqual (20d, button.FontSize);
 		}
 	}
 }

@@ -13,18 +13,17 @@ namespace Xamarin.Forms
 			////The last one (typeof(Element)) is a safety guard as we might be creating VisualElement directly in internal code
 			static readonly IList<Type> s_stopAtTypes = new List<Type> { typeof(View), typeof(Layout<>), typeof(VisualElement), typeof(Element) };
 
-			readonly BindableProperty _classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(VisualElement), default(IList<Style>),
-				propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable)._mergedStyle.OnClassStyleChanged());
+			IList<BindableProperty> _classStyleProperties;
 
 			readonly List<BindableProperty> _implicitStyles = new List<BindableProperty>();
 
-			IStyle _classStyle;
+			IList<Style> _classStyles;
 
 			IStyle _implicitStyle;
 
 			IStyle _style;
 
-			string _styleClass;
+			IList<string> _styleClass;
 
 			public MergedStyle(Type targetType, BindableObject target)
 			{
@@ -37,46 +36,55 @@ namespace Xamarin.Forms
 			public IStyle Style
 			{
 				get { return _style; }
-				set { SetStyle(ImplicitStyle, ClassStyle, value); }
+				set { SetStyle(ImplicitStyle, ClassStyles, value); }
 			}
 
-			public string StyleClass
+			public IList<string> StyleClass
 			{
 				get { return _styleClass; }
 				set
 				{
-					string val = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-					if (_styleClass == val)
+					if (_styleClass == value)
 						return;
 
-					if (_styleClass != null)
-						Target.RemoveDynamicResource(_classStyleProperty);
+					if (_styleClass != null && _classStyles != null)
+						foreach (var classStyleProperty in _classStyleProperties)
+							Target.RemoveDynamicResource(classStyleProperty);
 
-					_styleClass = val;
+					_styleClass = value;
 
-					if (_styleClass != null)
-						Target.SetDynamicResource(_classStyleProperty, Forms.Style.StyleClassPrefix + _styleClass);
+					if (_styleClass != null) {
+						_classStyleProperties = new List<BindableProperty> ();
+						foreach (var styleClass in _styleClass) {
+							var classStyleProperty = BindableProperty.Create ("ClassStyle", typeof(IList<Style>), typeof(VisualElement), default(IList<Style>),
+								propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable)._mergedStyle.OnClassStyleChanged());
+							_classStyleProperties.Add (classStyleProperty);
+							Target.OnSetDynamicResource (classStyleProperty, Forms.Style.StyleClassPrefix + styleClass);
+						}
+					}
 				}
 			}
 
 			public BindableObject Target { get; }
 
-			IStyle ClassStyle
+			IList<Style> ClassStyles
 			{
-				get { return _classStyle; }
+				get { return _classStyles; }
 				set { SetStyle(ImplicitStyle, value, Style); }
 			}
 
 			IStyle ImplicitStyle
 			{
 				get { return _implicitStyle; }
-				set { SetStyle(value, ClassStyle, Style); }
+				set { SetStyle(value, ClassStyles, Style); }
 			}
 
 			public void Apply(BindableObject bindable)
 			{
 				ImplicitStyle?.Apply(bindable);
-				ClassStyle?.Apply(bindable);
+				if (ClassStyles != null)
+					foreach (var classStyle in ClassStyles)
+						((IStyle)classStyle)?.Apply(bindable);
 				Style?.Apply(bindable);
 			}
 
@@ -85,19 +93,15 @@ namespace Xamarin.Forms
 			public void UnApply(BindableObject bindable)
 			{
 				Style?.UnApply(bindable);
-				ClassStyle?.UnApply(bindable);
+				if (ClassStyles != null)
+					foreach (var classStyle in ClassStyles)
+						((IStyle)classStyle)?.UnApply(bindable);
 				ImplicitStyle?.UnApply(bindable);
 			}
 
 			void OnClassStyleChanged()
 			{
-				var classStyles = Target.GetValue(_classStyleProperty) as IList<Style>;
-				if (classStyles == null)
-					ClassStyle = null;
-				else
-				{
-					ClassStyle = classStyles.FirstOrDefault(s => s.CanBeAppliedTo(TargetType));
-				}
+				ClassStyles = _classStyleProperties.Select (p => (Target.GetValue (p) as IList<Style>)?.FirstOrDefault (s => s.CanBeAppliedTo (TargetType))).ToList ();
 			}
 
 			void OnImplicitStyleChanged()
@@ -133,27 +137,29 @@ namespace Xamarin.Forms
 				}
 			}
 
-			void SetStyle(IStyle implicitStyle, IStyle classStyle, IStyle style)
+			void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)
 			{
-				bool shouldReApplyStyle = implicitStyle != ImplicitStyle || classStyle != ClassStyle || Style != style;
-				bool shouldReApplyClassStyle = implicitStyle != ImplicitStyle || classStyle != ClassStyle;
+				bool shouldReApplyStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles || Style != style;
+				bool shouldReApplyClassStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles;
 				bool shouldReApplyImplicitStyle = implicitStyle != ImplicitStyle && (Style as Style == null || ((Style)Style).CanCascade);
 
 				if (shouldReApplyStyle)
 					Style?.UnApply(Target);
-				if (shouldReApplyClassStyle)
-					ClassStyle?.UnApply(Target);
+				if (shouldReApplyClassStyle && ClassStyles != null)
+					foreach (var classStyle in ClassStyles)
+						((IStyle)classStyle)?.UnApply(Target);
 				if (shouldReApplyImplicitStyle)
 					ImplicitStyle?.UnApply(Target);
 
 				_implicitStyle = implicitStyle;
-				_classStyle = classStyle;
+				_classStyles = classStyles;
 				_style = style;
 
 				if (shouldReApplyImplicitStyle)
 					ImplicitStyle?.Apply(Target);
-				if (shouldReApplyClassStyle)
-					ClassStyle?.Apply(Target);
+				if (shouldReApplyClassStyle && ClassStyles != null)
+					foreach (var classStyle in ClassStyles)
+						((IStyle)classStyle)?.Apply(Target);
 				if (shouldReApplyStyle)
 					Style?.Apply(Target);
 			}

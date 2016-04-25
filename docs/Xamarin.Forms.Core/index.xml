@@ -274,6 +274,7 @@
       <Type Name="LayoutOptions" Kind="Structure" />
       <Type Name="LayoutOptionsConverter" Kind="Class" />
       <Type Name="LineBreakMode" Kind="Enumeration" />
+      <Type Name="ListStringTypeConverter" Kind="Class" />
       <Type Name="ListView" Kind="Class" />
       <Type Name="ListViewCachingStrategy" Kind="Enumeration" />
       <Type Name="MasterBehavior" Kind="Enumeration" />
