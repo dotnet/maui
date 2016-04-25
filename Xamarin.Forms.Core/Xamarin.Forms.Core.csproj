@@ -93,6 +93,7 @@
     <Compile Include="ElementEventArgs.cs" />
     <Compile Include="ElementTemplate.cs" />
     <Compile Include="EmailKeyboard.cs" />
+    <Compile Include="Internals\EvalRequested.cs" />
     <Compile Include="ExportEffectAttribute.cs" />
     <Compile Include="ExpressionSearch.cs" />
     <Compile Include="FileAccess.cs" />
@@ -144,7 +145,7 @@
     <Compile Include="IValueProvider.cs" />
     <Compile Include="IViewController.cs" />
     <Compile Include="IVisualElementController.cs" />
-    <Compile Include="IWebViewRenderer.cs" />
+    <Compile Include="IWebViewDelegate.cs" />
     <Compile Include="IXamlTypeResolver.cs" />
     <Compile Include="IXmlLineInfoProvider.cs" />
     <Compile Include="KeyboardFlags.cs" />

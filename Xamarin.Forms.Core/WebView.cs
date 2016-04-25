@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -52,9 +53,8 @@ namespace Xamarin.Forms
 
 		public void Eval(string script)
 		{
-			EventHandler<EventArg<string>> handler = EvalRequested;
-			if (handler != null)
-				handler(this, new EventArg<string>(script));
+			EventHandler<EvalRequested> handler = EvalRequested;
+			handler?.Invoke(this, new EvalRequested(script));
 		}
 
 		public void GoBack()
@@ -103,7 +103,7 @@ namespace Xamarin.Forms
 			OnPropertyChanged(SourceProperty.PropertyName);
 		}
 
-		internal event EventHandler<EventArg<string>> EvalRequested;
+		internal event EventHandler<EvalRequested> EvalRequested;
 
 		internal event EventHandler GoBackRequested;
 

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -11,7 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 namespace Xamarin.Forms.Platform.WinRT
 #endif
 {
-	public class WebViewRenderer : ViewRenderer<WebView, Windows.UI.Xaml.Controls.WebView>, IWebViewRenderer
+	public class WebViewRenderer : ViewRenderer<WebView, Windows.UI.Xaml.Controls.WebView>, IWebViewDelegate
 	{
 		WebNavigationEvent _eventState;
 		bool _updating;
@@ -94,9 +95,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			UpdateCanGoBackForward();
 		}
 
-		async void OnEvalRequested(object sender, EventArg<string> eventArg)
+		async void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
-			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Control.InvokeScriptAsync("eval", new[] { eventArg.Data }));
+			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Control.InvokeScriptAsync("eval", new[] { eventArg.Script }));
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)

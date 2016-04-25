@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 				eh(this, EventArgs.Empty);
 		}
 
-		internal abstract void Load(IWebViewRenderer renderer);
+		internal abstract void Load(IWebViewDelegate renderer);
 
 		internal event EventHandler SourceChanged;
 	}
