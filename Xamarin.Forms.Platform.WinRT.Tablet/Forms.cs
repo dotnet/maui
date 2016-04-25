@@ -59,8 +59,6 @@ namespace Xamarin.Forms
 					break;
 			}
 #endif
-			Ticker.Default = new WindowsTicker();
-
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 
 #if WINDOWS_UWP

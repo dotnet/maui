@@ -9,6 +9,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 using System.Security.Cryptography;
 using System.Text;
+using Xamarin.Forms.Internals;
+
 #if WINDOWS_PHONE
 using Xamarin.Forms.Platform.WinPhone;
 #endif
@@ -86,6 +88,11 @@ namespace Xamarin.Forms.Core.UnitTests
 				action ();
 			else
 				invokeOnMainThread (action);
+		}
+
+		public Ticker CreateTicker()
+		{
+			return new MockTicker();
 		}
 
 		public void StartTimer (TimeSpan interval, Func<bool> callback)
@@ -265,6 +272,26 @@ namespace Xamarin.Forms.Core.UnitTests
 	{
 		public MockApplication ()
 		{
+		}
+	}
+
+	internal class MockTicker : Ticker
+	{
+		bool _enabled;
+
+		protected override void EnableTimer()
+		{
+			_enabled = true;
+
+			while (_enabled)
+			{
+				SendSignals(16);
+			}
+		}
+
+		protected override void DisableTimer()
+		{
+			_enabled = false;
 		}
 	}
 }

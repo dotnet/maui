@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Windows.System;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.WinPhone;
 
 namespace Xamarin.Forms
@@ -22,29 +23,9 @@ namespace Xamarin.Forms
 			Deployment.Current.Dispatcher.BeginInvoke(action);
 		}
 
-		public ITimer CreateTimer(Action<object> callback)
+		public Ticker CreateTicker()
 		{
-			return new _Timer(new Timer(o => callback(o)));
-		}
-
-		public ITimer CreateTimer(Action<object> callback, object state, int dueTime, int period)
-		{
-			return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer(Action<object> callback, object state, long dueTime, long period)
-		{
-			return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer(Action<object> callback, object state, TimeSpan dueTime, TimeSpan period)
-		{
-			return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer(Action<object> callback, object state, uint dueTime, uint period)
-		{
-			return new _Timer(new Timer(o => callback(o), state, dueTime, period));
+			return new WinPhoneTicker();
 		}
 
 		public Assembly[] GetAssemblies()

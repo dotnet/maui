@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Threading;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {

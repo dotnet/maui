@@ -1,5 +1,6 @@
 using System;
 using Android.Animation;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

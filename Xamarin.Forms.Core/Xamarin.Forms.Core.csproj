@@ -232,7 +232,7 @@
     <Compile Include="TextChangedEventArgs.cs" />
     <Compile Include="TextKeyboard.cs" />
     <Compile Include="ThicknessTypeConverter.cs" />
-    <Compile Include="Ticker.cs" />
+    <Compile Include="Internals\Ticker.cs" />
     <Compile Include="ToggledEventArgs.cs" />
     <Compile Include="ToolbarItemEventArgs.cs" />
     <Compile Include="ToolbarItemOrder.cs" />

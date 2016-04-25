@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Microsoft.Phone.Controls;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.WinPhone;
 
 using Expression = System.Linq.Expressions.Expression;

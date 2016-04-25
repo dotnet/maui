@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 using CoreAnimation;

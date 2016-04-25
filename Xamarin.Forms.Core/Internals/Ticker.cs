@@ -2,26 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class Ticker
+	public abstract class Ticker
 	{
 		static Ticker s_ticker;
 		readonly Stopwatch _stopwatch;
-		readonly SynchronizationContext _sync;
 		readonly List<Tuple<int, Func<long, bool>>> _timeouts;
 
-		readonly ITimer _timer;
 		int _count;
 		bool _enabled;
 
 		internal Ticker()
 		{
-			_sync = SynchronizationContext.Current;
 			_count = 0;
-			_timer = Device.PlatformServices.CreateTimer(HandleElapsed, null, Timeout.Infinite, Timeout.Infinite);
 			_timeouts = new List<Tuple<int, Func<long, bool>>>();
 
 			_stopwatch = new Stopwatch();
@@ -30,7 +25,7 @@ namespace Xamarin.Forms
 		public static Ticker Default
 		{
 			internal set { s_ticker = value; }
-			get { return s_ticker ?? (s_ticker = new Ticker()); }
+			get { return s_ticker ?? (s_ticker =  Device.PlatformServices.CreateTicker()); }
 		}
 
 		public virtual int Insert(Func<long, bool> timeout)
@@ -61,16 +56,10 @@ namespace Xamarin.Forms
 			});
 		}
 
-		protected virtual void DisableTimer()
-		{
-			_timer.Change(Timeout.Infinite, Timeout.Infinite);
-		}
+		protected abstract void DisableTimer();
 
-		protected virtual void EnableTimer()
-		{
-			_timer.Change(16, 16);
-		}
-
+		protected abstract void EnableTimer();
+		
 		protected void SendSignals(int timestep = -1)
 		{
 			long step = timestep >= 0 ? timestep : _stopwatch.ElapsedMilliseconds;
@@ -102,16 +91,6 @@ namespace Xamarin.Forms
 		{
 			_stopwatch.Start();
 			EnableTimer();
-		}
-
-		void HandleElapsed(object state)
-		{
-			if (_timeouts.Count > 0)
-			{
-				_sync.Post(o => SendSignals(), null);
-				_stopwatch.Reset();
-				_stopwatch.Start();
-			}
 		}
 	}
 }

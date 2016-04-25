@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 using CoreFoundation;
@@ -86,7 +87,6 @@ namespace Xamarin.Forms
 			Device.PlatformServices = new IOSPlatformServices();
 			Device.Info = new IOSDeviceInfo();
 
-			Ticker.Default = new CADisplayLinkTicker();
 			Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
 
 			Device.Idiom = UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone;
@@ -173,29 +173,9 @@ namespace Xamarin.Forms
 				NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
 			}
 
-			public ITimer CreateTimer(Action<object> callback)
+			public Ticker CreateTicker()
 			{
-				return new _Timer(new Timer(o => callback(o)));
-			}
-
-			public ITimer CreateTimer(Action<object> callback, object state, int dueTime, int period)
-			{
-				return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-			}
-
-			public ITimer CreateTimer(Action<object> callback, object state, long dueTime, long period)
-			{
-				return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-			}
-
-			public ITimer CreateTimer(Action<object> callback, object state, TimeSpan dueTime, TimeSpan period)
-			{
-				return new _Timer(new Timer(o => callback(o), state, dueTime, period));
-			}
-
-			public ITimer CreateTimer(Action<object> callback, object state, uint dueTime, uint period)
-			{
-				return new _Timer(new Timer(o => callback(o), state, dueTime, period));
+				return new CADisplayLinkTicker();
 			}
 
 			public Assembly[] GetAssemblies()
