@@ -57,7 +57,6 @@
     <Compile Include="BindingTypeConverter.cs" />
     <Compile Include="BoundsConstraint.cs" />
     <Compile Include="BoundsTypeConverter.cs" />
-    <Compile Include="CarouselView.cs" />
     <Compile Include="CastingEnumerator.cs" />
     <Compile Include="Cells\EntryCell.cs" />
     <Compile Include="Cells\ImageCell.cs" />
@@ -104,7 +103,6 @@
     <Compile Include="HandlerAttribute.cs" />
     <Compile Include="HtmlWebViewSource.cs" />
     <Compile Include="IButtonController.cs" />
-    <Compile Include="ICarouselViewController.cs" />
     <Compile Include="IControlTemplated.cs" />
     <Compile Include="IDefinition.cs" />
     <Compile Include="IEffectControlProvider.cs" />

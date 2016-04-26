@@ -119,9 +119,6 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
       <Link>AlignmentExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CarouselViewRenderer.cs">
-      <Link>CarouselViewRenderer.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
       <Link>FormsTextBox.cs</Link>
     </Compile>

@@ -20,28 +20,24 @@
 		<Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
 	</Style>
 
-	<Style x:Key="ActionSheetList" TargetType="ListView">
-		<Setter Property="SelectionMode" Value="None" />
-		<Setter Property="ItemContainerStyle">
-			<Setter.Value>
-				<Style TargetType="ListViewItem">
-					<Setter Property="Margin" Value="0" />
-					<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-				</Style>
-			</Setter.Value>
-		</Setter>
-		<Setter Property="ItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<TextBlock Text="{Binding}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Style="{ThemeResource SubheaderTextBlockStyle}" />
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
-    <DataTemplate x:Key="ItemTemplate">
-        <forms:ItemControl HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-    </DataTemplate>
+    <Style x:Key="ActionSheetList" TargetType="ListView">
+        <Setter Property="SelectionMode" Value="None" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Style="{ThemeResource SubheaderTextBlockStyle}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <DataTemplate x:Key="CellTemplate">
 		<forms:CellControl HorizontalContentAlignment="Stretch" Height="{Binding Cell.RenderHeight,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource HeightConverter}}" />
