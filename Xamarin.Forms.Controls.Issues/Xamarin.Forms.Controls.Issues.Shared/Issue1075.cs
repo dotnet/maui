@@ -2,6 +2,7 @@
 using System.Reflection;
 
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

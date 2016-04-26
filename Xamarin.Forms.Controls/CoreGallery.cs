@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Controls.GalleryPages;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

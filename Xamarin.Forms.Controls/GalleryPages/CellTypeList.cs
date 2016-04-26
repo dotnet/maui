@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

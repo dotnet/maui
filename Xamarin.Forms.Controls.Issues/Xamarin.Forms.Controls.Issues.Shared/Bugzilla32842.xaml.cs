@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {

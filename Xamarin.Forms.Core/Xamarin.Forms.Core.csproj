@@ -182,7 +182,7 @@
     <Compile Include="PinchGestureUpdatedEventArgs.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="PointTypeConverter.cs" />
-    <Compile Include="PreserveAttribute.cs" />
+    <Compile Include="Internals\PreserveAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BindableObject.cs" />
     <Compile Include="BindableObjectExtensions.cs" />

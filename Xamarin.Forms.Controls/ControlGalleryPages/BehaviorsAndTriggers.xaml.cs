@@ -1,5 +1,6 @@
 ﻿using Xamarin.Forms;
 using System;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

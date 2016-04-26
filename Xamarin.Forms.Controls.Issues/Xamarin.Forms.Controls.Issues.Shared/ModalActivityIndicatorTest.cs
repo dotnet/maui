@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
+
 namespace Xamarin.Forms.Controls
 {
 	[Preserve (AllMembers = true)]

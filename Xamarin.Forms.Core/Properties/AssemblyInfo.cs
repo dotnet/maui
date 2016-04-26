@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 [assembly: AssemblyTitle("Xamarin.Forms.Core")]
 [assembly: AssemblyDescription("")]

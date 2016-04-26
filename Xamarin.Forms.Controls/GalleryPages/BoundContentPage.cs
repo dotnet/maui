@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Input;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

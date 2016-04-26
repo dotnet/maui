@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Threading;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;

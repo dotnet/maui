@@ -5,6 +5,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
 using System.Windows.Input;
 using System.Diagnostics;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

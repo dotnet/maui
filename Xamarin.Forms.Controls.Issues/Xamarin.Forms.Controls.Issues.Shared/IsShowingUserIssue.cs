@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 
 #if UITEST

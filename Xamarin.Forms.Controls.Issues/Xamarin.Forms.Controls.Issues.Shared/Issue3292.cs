@@ -4,6 +4,7 @@ using Xamarin.Forms.CustomAttributes;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;

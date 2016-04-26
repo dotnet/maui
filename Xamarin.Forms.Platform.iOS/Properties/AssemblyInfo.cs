@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes. 
 // Change them to the values specific to your project.
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 #if __UNIFIED__
 using UIKit;

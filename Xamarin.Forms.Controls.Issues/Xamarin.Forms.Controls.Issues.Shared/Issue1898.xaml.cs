@@ -10,6 +10,7 @@ using System.Windows.Input;
 
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

@@ -2,6 +2,7 @@
 
 using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;

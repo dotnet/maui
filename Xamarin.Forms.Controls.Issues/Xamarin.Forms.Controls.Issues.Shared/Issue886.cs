@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Controls

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections.Generic;
-
+using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;

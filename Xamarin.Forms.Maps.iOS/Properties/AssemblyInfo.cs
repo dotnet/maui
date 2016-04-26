@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 using Xamarin.Forms.Maps.iOS;
 // General Information about an assembly is controlled through the following 

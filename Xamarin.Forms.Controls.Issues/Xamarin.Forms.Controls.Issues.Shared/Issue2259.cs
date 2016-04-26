@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 
 using Xamarin.Forms;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 
 namespace Xamarin.Forms.Controls

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;

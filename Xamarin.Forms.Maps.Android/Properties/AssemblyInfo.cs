@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Android;
 using Android.App;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 using Xamarin.Forms.Maps.Android;
 // General Information about an assembly is controlled through the following 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.ComponentModel;
 using System.Text;
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

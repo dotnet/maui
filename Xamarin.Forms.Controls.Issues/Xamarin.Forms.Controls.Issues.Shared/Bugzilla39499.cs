@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-
+using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
