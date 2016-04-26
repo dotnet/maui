@@ -94,7 +94,6 @@
     <Compile Include="ControlGalleryPages\PanGestureGalleryPage.cs" />
     <Compile Include="CoreGalleryPages\KeyboardCoreGalleryPage.cs" />
     <Compile Include="GalleryPages\BackgroundImageGallery.cs" />
-    <Compile Include="GalleryPages\CarouselViewGallery.cs" />
     <Compile Include="GalleryPages\ControlTemplatePage.cs" />
     <Compile Include="GalleryPages\ControlTemplateXamlPage.xaml.cs">
       <DependentUpon>ControlTemplateXamlPage.xaml</DependentUpon>

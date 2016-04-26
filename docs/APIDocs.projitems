@@ -9,6 +9,6 @@
     <Import_RootNamespace>APIDocs</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)**\*.xml" />
+    <Folder Include="$(MSBuildThisFileDirectory)Xamarin.Forms.Core\Xamarin.Forms\" />
   </ItemGroup>
 </Project>

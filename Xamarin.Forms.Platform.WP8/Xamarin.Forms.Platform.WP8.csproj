@@ -158,7 +158,6 @@
     <Compile Include="FormsPhoneTextBox.cs" />
     <Compile Include="FrameworkElementExtensions.cs" />
     <Compile Include="LayoutExtensions.cs" />
-    <Compile Include="CarouselViewRenderer.cs" />
     <Compile Include="MD5.cs" />
     <Compile Include="MD5CryptoServiceProvider.cs" />
     <Compile Include="NativeViewWrapper.cs" />

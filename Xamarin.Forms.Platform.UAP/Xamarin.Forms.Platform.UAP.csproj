@@ -27,7 +27,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn></NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -38,7 +39,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn></NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <PlatformTarget>ARM</PlatformTarget>
@@ -128,9 +130,6 @@
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
       <Link>AlignmentExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CarouselViewRenderer.cs">
-      <Link>CarouselViewRenderer.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
       <Link>FormsTextBox.cs</Link>

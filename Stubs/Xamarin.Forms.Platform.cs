@@ -49,10 +49,7 @@ namespace Xamarin.Forms.Platform
 
 	[RenderWith (typeof (ListViewRenderer))]
 	internal class _ListViewRenderer { }
-
-	[RenderWith (typeof (CarouselViewRenderer))]
-	internal class _CarouselViewRenderer { }
-
+	
 	[RenderWith (typeof (SliderRenderer))]
 	internal class _SliderRenderer { }
 

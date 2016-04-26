@@ -150,7 +150,6 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
     <Compile Include="Renderers\ButtonDrawable.cs" />
-    <Compile Include="Renderers\CarouselViewRenderer.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="IStartActivityForResult.cs" />
     <Compile Include="Renderers\ConditionalFocusLayout.cs" />

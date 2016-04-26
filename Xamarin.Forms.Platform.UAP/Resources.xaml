@@ -37,30 +37,26 @@
 	</Style>
 
     <Style x:Key="ActionSheetStyle" TargetType="ContentDialog" />
-	<Style x:Key="ActionSheetList" TargetType="ListView">
-		<Setter Property="SelectionMode" Value="None" />
-		<Setter Property="ItemContainerStyle">
-			<Setter.Value>
-				<Style TargetType="ListViewItem">
-					<Setter Property="Margin" Value="0" />
-					<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-				</Style>
-			</Setter.Value>
-		</Setter>
-		<Setter Property="ItemTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<TextBlock Text="{Binding}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Style="{ThemeResource SubtitleTextBlockStyle}" />
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
+    <Style x:Key="ActionSheetList" TargetType="ListView">
+        <Setter Property="SelectionMode" Value="None" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
-    <DataTemplate x:Key="ItemTemplate">
-        <uwp:ItemControl HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-    </DataTemplate>
-
-	<ControlTemplate TargetType="ContentDialog" x:Key="MyContentDialogControlTemplate">
+    <ControlTemplate TargetType="ContentDialog" x:Key="MyContentDialogControlTemplate">
 		<Border x:Name="Container">
 			<Grid x:Name="LayoutRoot">
 				<Grid.RowDefinitions>

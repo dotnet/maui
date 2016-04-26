@@ -78,7 +78,6 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="PageExtensions.cs" />
-    <Compile Include="Renderers\CarouselViewRenderer.cs" />
     <Compile Include="Renderers\ExportCellAttribute.cs" />
     <Compile Include="Renderers\ExportImageSourceHandlerAttribute.cs" />
     <Compile Include="Renderers\ExportRendererAttribute.cs" />
