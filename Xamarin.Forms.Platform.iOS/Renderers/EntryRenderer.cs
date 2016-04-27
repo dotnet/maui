@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool OnShouldReturn(UITextField view)
 		{
 			Control.ResignFirstResponder();
-			Element.SendCompleted();
+			((IEntryController)Element).SendCompleted();
 			return true;
 		}
 

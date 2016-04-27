@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				Control.ClearFocus();
 				v.HideKeyboard();
-				Element.SendCompleted();
+				((IEntryController)Element).SendCompleted();
 			}
 
 			return true;

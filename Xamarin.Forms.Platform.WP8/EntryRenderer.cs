@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		void TextBoxOnKeyUp(object sender, KeyEventArgs keyEventArgs)
 		{
 			if (keyEventArgs.Key == Key.Enter)
-				Element.SendCompleted();
+				((IEntryController)Element).SendCompleted();
 		}
 
 		void TextBoxOnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)

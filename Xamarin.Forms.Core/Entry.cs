@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EntryRenderer))]
-	public class Entry : InputView, IFontElement
+	public class Entry : InputView, IFontElement, IEntryController
 	{
 		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create("Placeholder", typeof(string), typeof(Entry), default(string));
 
@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
 
-		internal void SendCompleted()
+		void IEntryController.SendCompleted()
 		{
 			Completed?.Invoke(this, EventArgs.Empty);
 		}

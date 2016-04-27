@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (args?.Key != VirtualKey.Enter)
 				return;
 
-			Element.SendCompleted();
+			((IEntryController)Element).SendCompleted();
 		}
 
 		void UpdateAlignment()

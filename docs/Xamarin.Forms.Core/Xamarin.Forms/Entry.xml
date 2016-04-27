@@ -1,6 +1,6 @@
 <Type Name="Entry" FullName="Xamarin.Forms.Entry">
-  <TypeSignature Language="C#" Value="public class Entry : Xamarin.Forms.InputView" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Entry extends Xamarin.Forms.InputView" />
+  <TypeSignature Language="C#" Value="public class Entry : Xamarin.Forms.InputView, Xamarin.Forms.IEntryController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Entry extends Xamarin.Forms.InputView implements class Xamarin.Forms.IEntryController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>Xamarin.Forms.InputView</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IEntryController</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._EntryRenderer))</AttributeName>
@@ -490,6 +494,22 @@ View CreateLoginForm ()
         <summary>Identifies the Text bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IEntryController.SendCompleted">
+      <MemberSignature Language="C#" Value="void IEntryController.SendCompleted ();" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IEntryController.SendCompleted() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
