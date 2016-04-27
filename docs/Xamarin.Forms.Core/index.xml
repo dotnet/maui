@@ -170,7 +170,6 @@
       <Type Name="BoxView" Kind="Class" />
       <Type Name="Button" Kind="Class" />
       <Type Name="CarouselPage" Kind="Class" />
-      <Type Name="CarouselView" Kind="Class" />
       <Type Name="Cell" Kind="Class" />
       <Type Name="CollectionSynchronizationCallback" Kind="Delegate" />
       <Type Name="Color" Kind="Structure" />
@@ -230,7 +229,6 @@
       <Type Name="HandlerAttribute" Kind="Class" />
       <Type Name="HtmlWebViewSource" Kind="Class" />
       <Type Name="IAnimatable" Kind="Interface" />
-      <Type Name="ICarouselViewController" Kind="Interface" />
       <Type Name="IAppIndexingProvider" Kind="Interface" />
       <Type Name="IApplicationController" Kind="Interface" />
       <Type Name="IAppLinkEntry" Kind="Interface" />
