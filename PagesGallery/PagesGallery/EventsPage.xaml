@@ -2,16 +2,21 @@
 <p:ListDataPage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:p="clr-namespace:Xamarin.Forms.Pages;assembly=Xamarin.Forms.Pages"
+                xmlns:azure="clr-namespace:Xamarin.Forms.Pages.Azure;assembly=Xamarin.Forms.Pages.Azure"
                 x:Class="PagesGallery.EventsPage"
                 Title="Events"
                 DetailTemplate="{StaticResource EventDetailTemplate}"
                 Style="{StaticResource EventPageStyle}">
   <p:DataPage.DataSource>
-    <p:JsonDataSource Source="http://demo7391822.mockable.io/events" />
+    <azure:AzureDataSource>
+      <azure:AzureDataSource.Source>
+        <azure:AzureEasyTableSource Uri="http://evolvedemo.azurewebsites.net" TableName="Employee" />
+      </azure:AzureDataSource.Source>
+    </azure:AzureDataSource>
   </p:DataPage.DataSource>
   <p:DataPage.DefaultItemTemplate>
     <DataTemplate>
-      <TextCell Text="{Binding Value[name]}" Detail="{Binding Value[presenter]}" />
+      <TextCell Text="{Binding Value[firstName]}" Detail="{Binding Value[companyName]}" />
     </DataTemplate>
   </p:DataPage.DefaultItemTemplate>
 </p:ListDataPage>

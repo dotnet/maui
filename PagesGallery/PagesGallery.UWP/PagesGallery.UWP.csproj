@@ -132,6 +132,10 @@
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Xamarin.Forms.Pages.Azure\Xamarin.Forms.Pages.Azure.csproj">
+      <Project>{c9696465-7657-4843-872e-3c01891c4a9b}</Project>
+      <Name>Xamarin.Forms.Pages.Azure</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj">
       <Project>{d6133dbd-6c60-4bd5-bea2-07e0a3927c31}</Project>
       <Name>Xamarin.Forms.Pages</Name>

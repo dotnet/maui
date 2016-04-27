@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Pages
 		public static readonly BindableProperty UriProperty = BindableProperty.Create(nameof(Uri), typeof(Uri),
 			typeof(UriJsonSource), null);
 
+		[TypeConverter(typeof(UriTypeConverter))]
 		public Uri Uri
 		{
 			get { return (Uri)GetValue(UriProperty); }
@@ -19,7 +20,7 @@ namespace Xamarin.Forms.Pages
 
 		public override async Task<string> GetJson()
 		{
-			var webClient = new HttpClient(new ModernHttpClient.NativeMessageHandler());
+			var webClient = new HttpClient();
 			try
 			{
 				string json = await webClient.GetStringAsync(Uri);

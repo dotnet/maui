@@ -15,8 +15,10 @@ namespace PagesGallery.Droid
 			ToolbarResource = Resource.Layout.Toolbar;
 			TabLayoutResource = Resource.Layout.Tabbar;
 
-			base.OnCreate(bundle);
+			Microsoft.WindowsAzure.MobileServices.CurrentPlatform.Init();
 
+			base.OnCreate(bundle);
+			
 			Forms.Init(this, bundle);
 			LoadApplication(new App());
 		}
