@@ -76,8 +76,9 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			UpdateBounds();
 
+
 #if WINDOWS_UWP
-			if (ApiInformation.IsTypePresent(typeof(StatusBar).ToString()))
+			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
 			{
 				StatusBar statusBar = StatusBar.GetForCurrentView();
 				statusBar.Showing += (sender, args) => UpdateBounds();
@@ -417,7 +418,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			_bounds = new Rectangle(0, 0, _page.ActualWidth, _page.ActualHeight);
 #if WINDOWS_UWP
-			if (ApiInformation.IsTypePresent(typeof(StatusBar).ToString()))
+			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
 			{
 				StatusBar statusBar = StatusBar.GetForCurrentView();
 
