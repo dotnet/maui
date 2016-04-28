@@ -71,7 +71,6 @@ namespace Xamarin.Forms.Core.UITests
 		public const string TableViewGalleryLegacy = "* marked:'TableView Gallery - Legacy'";
 		public const string TemplatedCarouselPageGalleryLegacy = "* marked:'TemplatedCarouselPage Gallery - Legacy'";
 		public const string TemplatedTabbedPageGalleryLegacy = "* marked:'TemplatedTabbedPage Gallery - Legacy'";
-		public const string ToolbarGalleryLegacy = "* marked:'Toolbar Gallery - Legacy'";
 		public const string UnevenViewCellGalleryLegacy = "* marked:'UnevenViewCell Gallery - Legacy'";
 		public const string UnevenListGalleryLegacy = "* marked:'UnevenList Gallery - Legacy'";
 		public const string ViewCellGalleryLegacy = "* marked:'ViewCell Gallery - Legacy'";

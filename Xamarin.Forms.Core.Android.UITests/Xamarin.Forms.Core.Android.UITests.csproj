@@ -186,9 +186,6 @@
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-TemplatedTabPageUITests.cs">
       <Link>Tests\Legacy-TemplatedTabPageUITests.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-ToolbarGalleryUITests.cs">
-      <Link>Tests\Legacy-ToolbarGalleryUITests.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-UnevenViewCellUITests.cs">
       <Link>Tests\Legacy-UnevenViewCellUITests.cs</Link>
     </Compile>

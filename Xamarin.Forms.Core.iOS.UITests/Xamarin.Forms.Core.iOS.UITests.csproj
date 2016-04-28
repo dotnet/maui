@@ -105,7 +105,6 @@
     <Compile Include="Tests\Legacy-TemplatedCarouselPageUITests.cs" />
     <Compile Include="Tests\Legacy-TemplatedTabPageUITests.cs" />
     <Compile Include="Tests\Legacy-TableViewUITests.cs" />
-    <Compile Include="Tests\Legacy-ToolbarGalleryUITests.cs" />
     <Compile Include="Tests\Legacy-UnevenViewCellUITests.cs" />
     <Compile Include="Tests\Legacy-ViewCellUITests.cs" />
     <Compile Include="Tests\Legacy-NavigationBarUITests.cs" />
