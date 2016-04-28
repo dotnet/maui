@@ -54,4 +54,13 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 ## Contributing ##
 
 - [How to Contribute](https://github.com/xamarin/xamarin.forms/wiki/Contributing-Code)
-- Use [Bugzilla](https://bugzilla.xamarin.com/) to track open issues.
+
+### Mailing Lists
+
+To discuss this project, and participate in the design, we use the [forms-devel@lists.xamarin.com](http://lists.xamarin.com/mailman/listinfo/forms-devel) mailing list.   
+
+### Reporting Bugs
+
+We use [Bugzilla](https://bugzilla.xamarin.com/newbug) to track issues.
+
+
