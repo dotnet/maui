@@ -5,7 +5,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_SearchBarRenderer))]
-	public class SearchBar : View, IFontElement
+	public class SearchBar : View, IFontElement, ISearchBarController
 	{
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
@@ -113,7 +113,7 @@ namespace Xamarin.Forms
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
 
-		internal void OnSearchButtonPressed()
+		void ISearchBarController.OnSearchButtonPressed()
 		{
 			ICommand cmd = SearchCommand;
 

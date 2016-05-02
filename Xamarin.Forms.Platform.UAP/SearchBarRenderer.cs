@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
-			Element.OnSearchButtonPressed();
+			((ISearchBarController)Element).OnSearchButtonPressed();
 		}
 
 		void OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs e)

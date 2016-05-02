@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		void PhoneTextBoxOnKeyUp(object sender, KeyEventArgs keyEventArgs)
 		{
 			if (keyEventArgs.Key == Key.Enter)
-				Element.OnSearchButtonPressed();
+				((ISearchBarController)Element).OnSearchButtonPressed();
 		}
 
 		void PhoneTextBoxOnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)

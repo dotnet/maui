@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool SearchView.IOnQueryTextListener.OnQueryTextSubmit(string query)
 		{
-			Element.OnSearchButtonPressed();
+			((ISearchBarController)Element).OnSearchButtonPressed();
 			Control.ClearFocus();
 			return true;
 		}
