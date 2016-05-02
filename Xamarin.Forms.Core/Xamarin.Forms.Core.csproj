@@ -126,7 +126,7 @@
     <Compile Include="ImageSourceConverter.cs" />
     <Compile Include="INavigation.cs" />
     <Compile Include="InvalidationEventArgs.cs" />
-    <Compile Include="InvalidationTrigger.cs" />
+    <Compile Include="Internals\InvalidationTrigger.cs" />
     <Compile Include="InvalidNavigationException.cs" />
     <Compile Include="IOpenGlViewController.cs" />
     <Compile Include="IPanGestureController.cs" />

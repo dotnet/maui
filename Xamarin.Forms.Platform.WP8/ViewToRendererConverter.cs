@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -40,7 +41,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				{
 					frameworkElement.Loaded += (sender, args) =>
 					{
-						_view.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+						((IVisualElementController)_view).InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 						InvalidateMeasure();
 					};
 				}

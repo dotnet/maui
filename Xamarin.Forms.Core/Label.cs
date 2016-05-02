@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -41,13 +42,13 @@ namespace Xamarin.Forms
 			{
 				if (newvalue != null)
 					((FormattedString)newvalue).PropertyChanged += ((Label)bindable).OnFormattedTextChanged;
-				((Label)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				if (newvalue != null)
 					((Label)bindable).Text = null;
 			});
 
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create("LineBreakMode", typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		bool _cancelEvents;
 
@@ -158,7 +159,7 @@ namespace Xamarin.Forms
 
 			label._cancelEvents = false;
 
-			label.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnFontAttributesChanged(BindableObject bindable, object oldValue, object newValue)
@@ -189,7 +190,7 @@ namespace Xamarin.Forms
 
 			label._cancelEvents = false;
 
-			label.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnFontFamilyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -217,7 +218,7 @@ namespace Xamarin.Forms
 			}
 
 			label._cancelEvents = false;
-			label.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnFontSizeChanged(BindableObject bindable, object oldValue, object newValue)
@@ -247,7 +248,7 @@ namespace Xamarin.Forms
 
 			label._cancelEvents = false;
 
-			label.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
@@ -270,7 +271,7 @@ namespace Xamarin.Forms
 			bool isVerticallyFixed = (label.Constraint & LayoutConstraint.VerticallyFixed) != 0;
 			bool isSingleLine = !(breakMode == LineBreakMode.CharacterWrap || breakMode == LineBreakMode.WordWrap);
 			if (!isVerticallyFixed || !isSingleLine)
-				((Label)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (newvalue != null)
 				((Label)bindable).FormattedText = null;
 		}

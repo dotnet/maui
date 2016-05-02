@@ -1,4 +1,5 @@
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -67,7 +68,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (e.OldElement == null)
 			{
 				SetNativeControl(Element.NativeElement);
-				Control.LayoutUpdated += (sender, args) => { Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
+				Control.LayoutUpdated += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
 			}
 		}
 	}

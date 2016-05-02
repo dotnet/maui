@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -132,7 +133,7 @@ namespace Xamarin.Forms
 		{
 			if (e.PropertyName == LayoutFlagsProperty.PropertyName || e.PropertyName == LayoutBoundsProperty.PropertyName)
 			{
-				InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 				UpdateChildrenLayout();
 			}
 		}

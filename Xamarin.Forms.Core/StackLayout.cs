@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -73,10 +74,10 @@ namespace Xamarin.Forms
 			ComputeConstraintForView(view, false);
 		}
 
-		internal override void InvalidateMeasure(InvalidationTrigger trigger)
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_layoutInformation = new LayoutInformation();
-			base.InvalidateMeasure(trigger);
+			base.InvalidateMeasureInternal(trigger);
 		}
 
 		void AlignOffAxis(LayoutInformation layout, StackOrientation orientation, double widthConstraint, double heightConstraint)

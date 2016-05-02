@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -353,7 +354,7 @@ namespace Xamarin.Forms
 					return;
 				_isNativeStateConsistent = value;
 				if (value && IsPlatformEnabled)
-					InvalidateMeasure(InvalidationTrigger.RendererReady);
+					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			}
 		}
 
@@ -367,7 +368,7 @@ namespace Xamarin.Forms
 
 				_isPlatformEnabled = value;
 				if (value && IsNativeStateConsistent)
-					InvalidateMeasure(InvalidationTrigger.RendererReady);
+					InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 
 				OnIsPlatformEnabledChanged();
 			}
@@ -428,7 +429,7 @@ namespace Xamarin.Forms
 
 		void IVisualElementController.NativeSizeChanged()
 		{
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		public event EventHandler ChildrenReordered;
@@ -559,9 +560,9 @@ namespace Xamarin.Forms
 
 		public event EventHandler<FocusEventArgs> Unfocused;
 
-		protected virtual void InvalidateMeasure()
+		protected virtual void InvalidateMeasureInternal()
 		{
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		protected override void OnChildAdded(Element child)
@@ -647,10 +648,15 @@ namespace Xamarin.Forms
 
 		internal event EventHandler<FocusRequestArgs> FocusChangeRequested;
 
-		internal virtual void InvalidateMeasure(InvalidationTrigger trigger)
+		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+		}
+
+		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger)
+		{
+			InvalidateMeasureInternal(trigger);
 		}
 
 		internal void MockBounds(Rectangle bounds)
@@ -672,7 +678,7 @@ namespace Xamarin.Forms
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			InvalidateMeasure(InvalidationTrigger.Undefined);
+			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -746,7 +752,7 @@ namespace Xamarin.Forms
 			}
 
 			element.SelfConstraint = constraint;
-			((VisualElement)bindable).InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.SizeRequestChanged);
 		}
 
 		void OnUnfocus()

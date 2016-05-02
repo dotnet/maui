@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -110,7 +111,7 @@ namespace Xamarin.Forms
 		void OnSourceChanged(object sender, EventArgs eventArgs)
 		{
 			OnPropertyChanged(SourceProperty.PropertyName);
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnSourcePropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -125,7 +126,7 @@ namespace Xamarin.Forms
 				newvalue.SourceChanged += OnSourceChanged;
 				SetInheritedBindingContext(newvalue, BindingContext);
 			}
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnSourcePropertyChanging(BindableObject bindable, object oldvalue, object newvalue)

@@ -1,4 +1,5 @@
 using System.Windows;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -55,7 +56,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (e.OldElement == null)
 			{
 				SetNativeControl(Element.NativeElement);
-				Control.LayoutUpdated += (sender, args) => { Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
+				Control.LayoutUpdated += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
 			}
 		}
 	}

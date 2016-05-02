@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -168,7 +169,7 @@ namespace Xamarin.Forms
 		protected virtual void InvalidateLayout()
 		{
 			_hasDoneLayout = false;
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 				ForceLayout();
 		}
@@ -304,11 +305,11 @@ namespace Xamarin.Forms
 			_allocatedFlag = false;
 			if (trigger == InvalidationTrigger.RendererReady)
 			{
-				InvalidateMeasure(InvalidationTrigger.RendererReady);
+				InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			}
 			else
 			{
-				InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			}
 
 			s_resolutionList.Add(new KeyValuePair<Layout, int>(this, GetElementDepth(this)));

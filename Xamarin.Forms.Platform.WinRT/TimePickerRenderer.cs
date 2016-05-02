@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -77,12 +78,12 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnControlTimeChanged(object sender, TimePickerValueChangedEventArgs e)
 		{
 			Element.Time = e.NewTime;
-			Element?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
+			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
 		}
 
 		void PickerOnForceInvalidate(object sender, EventArgs eventArgs)
 		{
-			Element?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
+			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
 		}
 
 		void UpdateTime()

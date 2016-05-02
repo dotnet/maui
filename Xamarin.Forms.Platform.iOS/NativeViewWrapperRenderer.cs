@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using CoreGraphics;
 using UIKit;
@@ -33,7 +34,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (Element?.LayoutSubViews == null)
 			{
-				Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 				base.LayoutSubviews();
 				return;
 			}

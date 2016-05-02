@@ -1,9 +1,9 @@
 using System;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
 	[Flags]
-	internal enum InvalidationTrigger
+	public enum InvalidationTrigger
 	{
 		Undefined = 0,
 		MeasureChanged = 1 << 0,

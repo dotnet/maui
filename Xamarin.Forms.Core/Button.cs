@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Input;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -18,7 +19,7 @@ namespace Xamarin.Forms
 			BindableProperty.Create("ContentLayout", typeof(ButtonContentLayout), typeof(Button), new ButtonContentLayout(ButtonContentLayout.ImagePosition.Left, DefaultSpacing));
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Button), null,
-			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Button), Color.Default);
 
@@ -178,7 +179,7 @@ namespace Xamarin.Forms
 			if (button._cancelEvents)
 				return;
 
-			button.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			button.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 			button._cancelEvents = true;
 
@@ -219,7 +220,7 @@ namespace Xamarin.Forms
 		void OnSourceChanged(object sender, EventArgs eventArgs)
 		{
 			OnPropertyChanged(ImageProperty.PropertyName);
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnSourcePropertyChanged(ImageSource oldvalue, ImageSource newvalue)
@@ -229,7 +230,7 @@ namespace Xamarin.Forms
 				newvalue.SourceChanged += OnSourceChanged;
 				SetInheritedBindingContext(newvalue, BindingContext);
 			}
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnSourcePropertyChanging(ImageSource oldvalue, ImageSource newvalue)
@@ -245,7 +246,7 @@ namespace Xamarin.Forms
 			if (button._cancelEvents)
 				return;
 
-			button.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			button.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 			button._cancelEvents = true;
 

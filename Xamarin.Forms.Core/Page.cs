@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -283,7 +284,7 @@ namespace Xamarin.Forms
 			}
 
 			_allocatedFlag = false;
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_allocatedFlag && Width >= 0 && Height >= 0)
 			{
 				SizeAllocated(Width, Height);
@@ -348,7 +349,7 @@ namespace Xamarin.Forms
 			view.MeasureInvalidated += OnChildMeasureInvalidated;
 
 			OnChildAdded(view);
-			InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnInternalRemoved(VisualElement view)

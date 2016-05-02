@@ -5,6 +5,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -97,7 +98,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (!Control.IsFullScreen)
 			{
 				// Force a final redraw after the closing animation has completed
-				Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 			}
 		}
 
@@ -119,7 +120,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 				else
 				{
-					Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+					((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 				}
 			}
 			else
@@ -127,7 +128,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				// The ComboBox is now closed; if we were animating the closure, stop
 				_isAnimating = false;
 				// and force the final redraw
-				Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 			}
 		}
 
@@ -144,7 +145,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				while (_isAnimating)
 				{
 					await Task.Delay(16);
-					await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged));
+					await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged));
 				}
 			});
 		}

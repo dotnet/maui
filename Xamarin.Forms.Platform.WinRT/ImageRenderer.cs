@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -90,7 +91,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void RefreshImage()
 		{
-			Element?.InvalidateMeasure(InvalidationTrigger.RendererReady);
+			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.RendererReady);
 		}
 
 		void UpdateAspect()

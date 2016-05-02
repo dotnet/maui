@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
 	public class View : VisualElement, IViewController
 	{
 		public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create("VerticalOptions", typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasure(InvalidationTrigger.VerticalOptionsChanged));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged));
 
 		public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create("HorizontalOptions", typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasure(InvalidationTrigger.HorizontalOptionsChanged));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.HorizontalOptionsChanged));
 
 		public static readonly BindableProperty MarginProperty = BindableProperty.Create("Margin", typeof(Thickness), typeof(View), default(Thickness), propertyChanged: MarginPropertyChanged);
 
@@ -100,7 +101,7 @@ namespace Xamarin.Forms
 
 		static void MarginPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			((View)bindable).InvalidateMeasure(InvalidationTrigger.MarginChanged);
+			((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.MarginChanged);
 		}
 
 		void ValidateGesture(IGestureRecognizer gesture)

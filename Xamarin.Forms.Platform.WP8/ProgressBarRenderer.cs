@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void ProgressBarOnValueChanged(object sender, RoutedPropertyChangedEventArgs<double> routedPropertyChangedEventArgs)
 		{
-			Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 		}
 	}
 }

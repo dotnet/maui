@@ -1,3 +1,5 @@
+using Xamarin.Forms.Internals;
+
 namespace Xamarin.Forms.Platform.Android
 {
 	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, global::Android.Views.View>
@@ -22,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.OldElement == null)
 			{
 				SetNativeControl(Element.NativeView);
-				Control.LayoutChange += (sender, args) => Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+				Control.LayoutChange += (sender, args) => ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 			}
 		}
 

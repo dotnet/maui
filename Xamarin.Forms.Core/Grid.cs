@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -17,10 +18,10 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan", typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1);
 
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double), typeof(Grid), 6d,
-			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double), typeof(Grid), 6d,
-			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasure(InvalidationTrigger.MeasureChanged));
+			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions", typeof(ColumnDefinitionCollection), typeof(Grid), null,
 			validateValue: (bindable, value) => value != null, propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -211,9 +212,9 @@ namespace Xamarin.Forms
 			view.ComputedConstraint = result;
 		}
 
-		internal override void InvalidateMeasure(InvalidationTrigger trigger)
+		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			base.InvalidateMeasure(trigger);
+			base.InvalidateMeasureInternal(trigger);
 			_columns = null;
 			_rows = null;
 		}

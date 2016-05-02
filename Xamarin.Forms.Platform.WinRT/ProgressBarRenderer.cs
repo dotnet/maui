@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Windows.UI.Xaml.Controls.Primitives;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -53,7 +54,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void ProgressBarOnValueChanged(object sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)
 		{
-			Element?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
+			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 		}
 	}
 }
