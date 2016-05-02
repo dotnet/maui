@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		async void UpdateSource()
 		{
-			Element.SetValueCore(Image.IsLoadingPropertyKey, true);
+			((IImageController)Element).SetIsLoading(true);
 
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			else
 				Control.Source = null;
 
-			Element?.SetValueCore(Image.IsLoadingPropertyKey, false);
+			((IImageController)Element)?.SetIsLoading(false);
 		}
 	}
 }

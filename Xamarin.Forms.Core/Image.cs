@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ImageRenderer))]
-	public class Image : View
+	public class Image : View, IImageController
 	{
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(ImageSource), typeof(Image), default(ImageSource), propertyChanging: OnSourcePropertyChanging,
 			propertyChanged: OnSourcePropertyChanged);
@@ -140,6 +140,11 @@ namespace Xamarin.Forms
 
 			oldvalue.SourceChanged -= OnSourceChanged;
 			await oldvalue.Cancel();
+		}
+
+		void IImageController.SetIsLoading(bool isLoading)
+		{
+			SetValue(IsLoadingPropertyKey, isLoading);
 		}
 	}
 }
