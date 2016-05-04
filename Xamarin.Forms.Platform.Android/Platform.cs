@@ -872,7 +872,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 
 			bool hasMasterDetailPage = CurrentMasterDetailPage != null;
-			bool navigated = CurrentNavigationPage != null && CurrentNavigationPage.StackDepth > 1;
+			bool navigated = CurrentNavigationPage != null && ((INavigationPageController)CurrentNavigationPage).StackDepth > 1;
 			bool navigationPageHasNavigationBar = CurrentNavigationPage != null && NavigationPage.GetHasNavigationBar(CurrentNavigationPage.CurrentPage);
 			return navigationPageHasNavigationBar || (hasMasterDetailPage && !navigated);
 		}
@@ -880,7 +880,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool ShouldUpdateActionBarUpColor()
 		{
 			bool hasMasterDetailPage = CurrentMasterDetailPage != null;
-			bool navigated = CurrentNavigationPage != null && CurrentNavigationPage.StackDepth > 1;
+			bool navigated = CurrentNavigationPage != null && ((INavigationPageController)CurrentNavigationPage).StackDepth > 1;
 			return (hasMasterDetailPage && navigated) || !hasMasterDetailPage;
 		}
 
@@ -903,7 +903,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (CurrentNavigationPage == null)
 				return false;
 
-			bool pagePushed = CurrentNavigationPage.StackDepth > 1;
+			bool pagePushed = ((INavigationPageController)CurrentNavigationPage).StackDepth > 1;
 			bool pushedPageHasBackButton = NavigationPage.GetHasBackButton(CurrentNavigationPage.CurrentPage);
 
 			return pagePushed && pushedPageHasBackButton;

@@ -1,6 +1,6 @@
 <Type Name="NavigationPage" FullName="Xamarin.Forms.NavigationPage">
-  <TypeSignature Language="C#" Value="public class NavigationPage : Xamarin.Forms.Page, Xamarin.Forms.IPageContainer&lt;Xamarin.Forms.Page&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit NavigationPage extends Xamarin.Forms.Page implements class Xamarin.Forms.IPageContainer`1&lt;class Xamarin.Forms.Page&gt;" />
+  <TypeSignature Language="C#" Value="public class NavigationPage : Xamarin.Forms.Page, Xamarin.Forms.INavigationPageController, Xamarin.Forms.IPageContainer&lt;Xamarin.Forms.Page&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit NavigationPage extends Xamarin.Forms.Page implements class Xamarin.Forms.INavigationPageController, class Xamarin.Forms.IPageContainer`1&lt;class Xamarin.Forms.Page&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -15,6 +15,9 @@
     <BaseTypeName>Xamarin.Forms.Page</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.INavigationPageController</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IPageContainer&lt;Xamarin.Forms.Page&gt;</InterfaceName>
     </Interface>
@@ -419,7 +422,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__68))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__36))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -515,7 +518,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__71))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__44))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -572,7 +575,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__65))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__46))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -808,6 +811,68 @@ public class MyPage : NavigationPage
       </ReturnValue>
       <Docs>
         <summary>Indicates the <see cref="M:Xamarin.Forms.NavigationPage.SetTitleIcon" />/<see cref="M:Xamarin.Forms.NavigationPage.GetTitleIcon" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.INavigationPageController.PopAsyncInner">
+      <MemberSignature Language="C#" Value="System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt; INavigationPageController.PopAsyncInner (bool animated, bool fast);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class Xamarin.Forms.Page&gt; Xamarin.Forms.INavigationPageController.PopAsyncInner(bool animated, bool fast) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-PopAsyncInner&gt;d__61))</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="animated" Type="System.Boolean" />
+        <Parameter Name="fast" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="animated">To be added.</param>
+        <param name="fast">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.INavigationPageController.StackCopy">
+      <MemberSignature Language="C#" Value="System.Collections.Generic.Stack&lt;Xamarin.Forms.Page&gt; Xamarin.Forms.INavigationPageController.StackCopy { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.Stack`1&lt;class Xamarin.Forms.Page&gt; Xamarin.Forms.INavigationPageController.StackCopy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.Stack&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.INavigationPageController.StackDepth">
+      <MemberSignature Language="C#" Value="int Xamarin.Forms.INavigationPageController.StackDepth { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance int32 Xamarin.Forms.INavigationPageController.StackDepth" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

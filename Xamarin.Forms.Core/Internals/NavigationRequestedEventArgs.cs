@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class NavigationRequestedEventArgs : NavigationEventArgs
+	public class NavigationRequestedEventArgs : NavigationEventArgs
 	{
 		public NavigationRequestedEventArgs(Page page, bool animated, bool realize = true) : base(page)
 		{

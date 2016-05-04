@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using AndroidAnimation = Android.Animation;
@@ -47,11 +48,13 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (Element != null)
 				{
-					Element.PushRequested -= OnPushed;
-					Element.PopRequested -= OnPopped;
-					Element.PopToRootRequested -= OnPoppedToRoot;
-					Element.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-					Element.RemovePageRequested -= OnRemovePageRequested;
+					var navController = (INavigationPageController)Element;
+
+					navController.PushRequested -= OnPushed;
+					navController.PopRequested -= OnPopped;
+					navController.PopToRootRequested -= OnPoppedToRoot;
+					navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+					navController.RemovePageRequested -= OnRemovePageRequested;
 				}
 			}
 
@@ -76,25 +79,27 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.OldElement != null)
 			{
-				NavigationPage oldNav = e.OldElement;
-				oldNav.PushRequested -= OnPushed;
-				oldNav.PopRequested -= OnPopped;
-				oldNav.PopToRootRequested -= OnPoppedToRoot;
-				oldNav.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-				oldNav.RemovePageRequested -= OnRemovePageRequested;
+				var oldNavController = (INavigationPageController)e.OldElement;
+
+				oldNavController.PushRequested -= OnPushed;
+				oldNavController.PopRequested -= OnPopped;
+				oldNavController.PopToRootRequested -= OnPoppedToRoot;
+				oldNavController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+				oldNavController.RemovePageRequested -= OnRemovePageRequested;
 
 				RemoveAllViews();
 			}
 
-			NavigationPage nav = e.NewElement;
-			nav.PushRequested += OnPushed;
-			nav.PopRequested += OnPopped;
-			nav.PopToRootRequested += OnPoppedToRoot;
-			nav.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
-			nav.RemovePageRequested += OnRemovePageRequested;
+			var newNavController = (INavigationPageController)e.NewElement;
+
+			newNavController.PushRequested += OnPushed;
+			newNavController.PopRequested += OnPopped;
+			newNavController.PopToRootRequested += OnPoppedToRoot;
+			newNavController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
+			newNavController.RemovePageRequested += OnRemovePageRequested;
 
 			// If there is already stuff on the stack we need to push it
-			nav.StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
+			newNavController.StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -112,7 +117,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual Task<bool> OnPopViewAsync(Page page, bool animated)
 		{
-			Page pageToShow = Element.StackCopy.Skip(1).FirstOrDefault();
+			Page pageToShow = ((INavigationPageController)Element).StackCopy.Skip(1).FirstOrDefault();
 			if (pageToShow == null)
 				return Task.FromResult(false);
 

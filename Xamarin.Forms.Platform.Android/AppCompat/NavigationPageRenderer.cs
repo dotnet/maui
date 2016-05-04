@@ -15,6 +15,7 @@ using Android.Support.V4.Widget;
 using Android.Support.V7.Graphics.Drawable;
 using Android.Util;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using ActionBarDrawerToggle = Android.Support.V7.App.ActionBarDrawerToggle;
 using AView = Android.Views.View;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
@@ -137,11 +138,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
 						renderer?.Dispose();
 					}
-					Element.PushRequested -= OnPushed;
-					Element.PopRequested -= OnPopped;
-					Element.PopToRootRequested -= OnPoppedToRoot;
-					Element.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-					Element.RemovePageRequested -= OnRemovePageRequested;
+
+					var navController = (INavigationPageController)Element;
+
+					navController.PushRequested -= OnPushed;
+					navController.PopRequested -= OnPopped;
+					navController.PopToRootRequested -= OnPoppedToRoot;
+					navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+					navController.RemovePageRequested -= OnRemovePageRequested;
 					Element.SendDisappearing();
 				}
 
@@ -188,11 +192,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (e.OldElement != null)
 			{
-				e.OldElement.PushRequested -= OnPushed;
-				e.OldElement.PopRequested -= OnPopped;
-				e.OldElement.PopToRootRequested -= OnPoppedToRoot;
-				e.OldElement.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-				e.OldElement.RemovePageRequested -= OnRemovePageRequested;
+				var oldNavController = (INavigationPageController)e.OldElement;
+
+				oldNavController.PushRequested -= OnPushed;
+				oldNavController.PopRequested -= OnPopped;
+				oldNavController.PopToRootRequested -= OnPoppedToRoot;
+				oldNavController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+				oldNavController.RemovePageRequested -= OnRemovePageRequested;
 
 				RemoveAllViews();
 				if (_toolbar != null)
@@ -220,14 +226,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_toolbarTracker.AdditionalTargets = parents;
 				UpdateMenu();
 
-				e.NewElement.PushRequested += OnPushed;
-				e.NewElement.PopRequested += OnPopped;
-				e.NewElement.PopToRootRequested += OnPoppedToRoot;
-				e.NewElement.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
-				e.NewElement.RemovePageRequested += OnRemovePageRequested;
+				var navController = (INavigationPageController)e.NewElement;
+
+				navController.PushRequested += OnPushed;
+				navController.PopRequested += OnPopped;
+				navController.PopToRootRequested += OnPoppedToRoot;
+				navController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
+				navController.RemovePageRequested += OnRemovePageRequested;
 
 				// If there is already stuff on the stack we need to push it
-				e.NewElement.StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
+				((INavigationPageController)e.NewElement).StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
 			}
 		}
 
@@ -415,7 +423,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		Task<bool> OnPopViewAsync(Page page, bool animated)
 		{
-			Page pageToShow = Element.StackCopy.Skip(1).FirstOrDefault();
+			Page pageToShow = ((INavigationPageController)Element).StackCopy.Skip(1).FirstOrDefault();
 			if (pageToShow == null)
 				return Task.FromResult(false);
 
@@ -593,10 +601,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (!removed)
 				{
 					UpdateToolbar();
-					if (_drawerToggle != null && Element.StackDepth == 2)
+					if (_drawerToggle != null && ((INavigationPageController)Element).StackDepth == 2)
 						AnimateArrowIn();
 				}
-				else if (_drawerToggle != null && Element.StackDepth == 2)
+				else if (_drawerToggle != null && ((INavigationPageController)Element).StackDepth == 2)
 					AnimateArrowOut();
 
 				Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
@@ -680,7 +688,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (bar == null)
 				return;
 
-			bool isNavigated = Element.StackDepth > 1;
+			bool isNavigated = ((INavigationPageController)Element).StackDepth > 1;
 			bar.NavigationIcon = null;
 
 			if (isNavigated)

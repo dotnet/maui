@@ -203,7 +203,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			await nav.PushAsync (child1);
 			await nav.PushAsync (child2);
 
-			var copy = nav.StackCopy;
+			var copy = ((INavigationPageController)nav).StackCopy;
 
 			Assert.AreEqual (child2, copy.Pop ());
 			Assert.AreEqual (child1, copy.Pop ());
@@ -217,7 +217,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var nav = new NavigationPage (root);
 
 			Assert.AreEqual (root, nav.LogicalChildren[0]);
-			Assert.AreEqual (1, nav.StackDepth);
+			Assert.AreEqual (1, ((INavigationPageController)nav).StackDepth);
 		}
 
 		[Test]

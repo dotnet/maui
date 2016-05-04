@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -26,11 +27,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			Action init = () =>
 			{
-				Element.PushRequested += PageOnPushed;
-				Element.PopRequested += PageOnPopped;
-				Element.PopToRootRequested += PageOnPoppedToRoot;
-				Element.RemovePageRequested += RemovePageRequested;
-				Element.InsertPageBeforeRequested += ElementOnInsertPageBeforeRequested;
+				var navController = (INavigationPageController)Element;
+
+				navController.PushRequested += PageOnPushed;
+				navController.PopRequested += PageOnPopped;
+				navController.PopToRootRequested += PageOnPoppedToRoot;
+				navController.RemovePageRequested += RemovePageRequested;
+				navController.InsertPageBeforeRequested += ElementOnInsertPageBeforeRequested;
 				Element.PropertyChanged += OnElementPropertyChanged;
 
 				var platform = (Platform)Element.Platform;
@@ -132,7 +135,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var platform = Element.Platform as Platform;
 			if (platform != null)
 			{
-				if (e.Page == Element.StackCopy.LastOrDefault())
+				if (e.Page == ((INavigationPageController)Element).StackCopy.LastOrDefault())
 					e.Page.IgnoresContainerArea = true;
 				e.Task = platform.PushCore(e.Page, Element, e.Animated, e.Realize).ContinueWith((t, o) => true, null);
 			}

@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Xamarin.Forms.Internals;
 #if WINDOWS_UWP
 using Windows.UI.Xaml.Data;
 using Windows.UI.Core;
@@ -154,8 +155,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			if (oldElement != null)
 			{
-				oldElement.PushRequested -= OnPushRequested;
-				oldElement.PopRequested -= OnPopRequested;
+				((INavigationPageController)oldElement).PushRequested -= OnPushRequested;
+				((INavigationPageController)oldElement).PopRequested -= OnPopRequested;
 				oldElement.InternalChildren.CollectionChanged -= OnChildrenChanged;
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -184,8 +185,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateTitleColor();
 				UpdateNavigationBarBackground();
 				Element.PropertyChanged += OnElementPropertyChanged;
-				Element.PushRequested += OnPushRequested;
-				Element.PopRequested += OnPopRequested;
+				((INavigationPageController)Element).PushRequested += OnPushRequested;
+				((INavigationPageController)Element).PopRequested += OnPopRequested;
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
@@ -391,8 +392,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void PushExistingNavigationStack()
 		{
-			for (int i = Element.StackCopy.Count - 1; i >= 0; i--)
-				SetPage(Element.StackCopy.ElementAt(i), false, false);
+			for (int i = ((INavigationPageController)Element).StackCopy.Count - 1; i >= 0; i--)
+				SetPage(((INavigationPageController)Element).StackCopy.ElementAt(i), false, false);
 		}
 
 		void SetPage(Page page, bool isAnimated, bool isPopping)
