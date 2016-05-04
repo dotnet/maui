@@ -1,6 +1,6 @@
 <Type Name="StreamImageSource" FullName="Xamarin.Forms.StreamImageSource">
-  <TypeSignature Language="C#" Value="public class StreamImageSource : Xamarin.Forms.ImageSource" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StreamImageSource extends Xamarin.Forms.ImageSource" />
+  <TypeSignature Language="C#" Value="public class StreamImageSource : Xamarin.Forms.ImageSource, Xamarin.Forms.IStreamImageSource" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StreamImageSource extends Xamarin.Forms.ImageSource implements class Xamarin.Forms.IStreamImageSource" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>Xamarin.Forms.ImageSource</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IStreamImageSource</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Docs>
     <summary>
       <see cref="T:Xamarin.Forms.ImageSource" /> that loads an image from a <see cref="T:System.IO.Stream" />.</summary>
@@ -107,6 +111,34 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Xamarin.Forms.StreamImageSource.Stream" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IStreamImageSource.GetStreamAsync">
+      <MemberSignature Language="C#" Value="System.Threading.Tasks.Task&lt;System.IO.Stream&gt; IStreamImageSource.GetStreamAsync (System.Threading.CancellationToken userToken);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; Xamarin.Forms.IStreamImageSource.GetStreamAsync(valuetype System.Threading.CancellationToken userToken) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.StreamImageSource/&lt;Xamarin-Forms-IStreamImageSource-GetStreamAsync&gt;d__5))</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.IO.Stream&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="userToken" Type="System.Threading.CancellationToken" />
+      </Parameters>
+      <Docs>
+        <param name="userToken">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

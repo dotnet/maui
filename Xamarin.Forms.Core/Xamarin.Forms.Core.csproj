@@ -140,6 +140,7 @@
     <Compile Include="IRootObjectProvider.cs" />
     <Compile Include="IScrollViewController.cs" />
     <Compile Include="ISearchBarController.cs" />
+    <Compile Include="IStreamImageSource.cs" />
     <Compile Include="ItemTappedEventArgs.cs" />
     <Compile Include="ItemVisibilityEventArgs.cs" />
     <Compile Include="IValueConverterProvider.cs" />

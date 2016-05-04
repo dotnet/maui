@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms
 {
-	public class StreamImageSource : ImageSource
+	public class StreamImageSource : ImageSource, IStreamImageSource
 	{
 		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
@@ -21,9 +21,9 @@ namespace Xamarin.Forms
 			if (propertyName == StreamProperty.PropertyName)
 				OnSourceChanged();
 			base.OnPropertyChanged(propertyName);
-		}
+		} 
 
-		internal async Task<Stream> GetStreamAsync(CancellationToken userToken = default(CancellationToken))
+		async Task<Stream> IStreamImageSource.GetStreamAsync(CancellationToken userToken)
 		{
 			if (Stream == null)
 				return null;

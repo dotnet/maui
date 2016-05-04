@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android
 			var streamsource = imagesource as StreamImageSource;
 			if (streamsource != null && streamsource.Stream != null)
 			{
-				using (Stream stream = await streamsource.GetStreamAsync(cancelationToken).ConfigureAwait(false))
+				using (Stream stream = await ((IStreamImageSource)streamsource).GetStreamAsync(cancelationToken).ConfigureAwait(false))
 					return await BitmapFactory.DecodeStreamAsync(stream).ConfigureAwait(false);
 			}
 			return null;
