@@ -3,7 +3,6 @@ using Xamarin.UITest;
 using System;
 using System.Threading;
 
-
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
@@ -60,26 +59,5 @@ namespace Xamarin.Forms.Core.UITests
 			App.Screenshot ("Display Alert Closed with True");
 			App.WaitForElement (c => c.Marked ("Result: True"));
 		}
-			
-//		[Test]
-//		public void TestRotation ()
-//		{
-//			App.SetOrientationLandscape ();
-//
-//			//App.Tap (c => c.Marked ("Alert Override1"));
-//			// 27-01-2015 14:30:02.125 -08:00 - 28524 - Tapping first element (2 total) matching Marked("Alert Override1") at coordinates [ 512, 113 ]. 
-//
-//			App.TapCoordinates (665, 512);
-//
-//			App.WaitForElement (c => c.Marked ("TheAlertTitle"));
-//
-//			App.Screenshot ("Display Alert After Rotation");
-//			App.WaitForElement (c => c.Marked ("TheAlertTitle"));
-//			App.Tap (c => c.Marked("TheCancelButton"));
-//			App.WaitForNoElement (c => c.Marked("TheCancelButton"));
-//			App.SetOrientationPortrait ();
-//
-//		}
-
 	}
 }

@@ -46,34 +46,8 @@ namespace Xamarin.Forms.Core.UITests
 		public const string AppearingGallery = "* marked:'Appearing Gallery'";
 
 		// Legacy galleries
-		public const string AbsoluteLayoutGalleryLegacy = "* marked:'AbsoluteLayout Gallery - Legacy'";
-		public const string BoundPageGalleryLegacy = "* marked:'BoundPage Gallery - Legacy'";
-		public const string ButtonGalleryLegacy = "* marked:'Button Gallery - Legacy'";
 		public const string CellsGalleryLegacy = "* marked:'Cells Gallery - Legacy'";
-		public const string CarouselPageGalleryLegacy = "* marked:'CarouselPage Gallery - Legacy'";
-		public const string ClipToBoundsGalleryLegacy = "* marked:'ClipToBounds Gallery - Legacy'";
-		public const string EditorGalleryLegacy = "* marked:'Editor Gallery - Legacy'";
-		public const string EntryGalleryLegacy = "* marked:'Entry Gallery - Legacy'";
-		public const string GridGalleryLegacy = "* marked:'Grid Gallery - Legacy'";
-		public const string GroupedListActionsGalleryLegacy = "* marked:'GroupedListActions Gallery - Legacy'";
-		public const string GroupedListGalleryLegacy = "* marked:'GroupedList Gallery - Legacy'";
-		public const string InputIntentGalleryLegacy = "* marked:'InputIntent Gallery - Legacy'";
-		public const string ListViewGalleryLegacy = "* marked:'ListView Gallery - Legacy'";
-		public const string MapGalleryLegacy = "* marked:'Map Gallery - Legacy'";
-		public const string MinimumSizeGalleryLegacy = "* marked:'MinimumSize Gallery - Legacy'";
-		public const string NavigationBarGalleryLegacy = "* marked:'NavigationBar Gallery - Legacy'";
-		public const string RelativeLayoutGalleryLegacy = "* marked:'RelativeLayout Gallery - Legacy'";
-		public const string SearchBarGalleryLegacy = "* marked:'SearchBar Gallery - Legacy'";
-		public const string SliderGalleryLegacy = "* marked:'Slider Gallery - Legacy'";
-		public const string StackLayoutGalleryLegacy = "* marked:'StackLayout Gallery - Legacy'";
-		public const string StepperGalleryLegacy = "* marked:'Stepper Gallery - Legacy'";
-		public const string SwitchGalleryLegacy = "* marked:'Switch Gallery - Legacy'";
-		public const string TableViewGalleryLegacy = "* marked:'TableView Gallery - Legacy'";
-		public const string TemplatedCarouselPageGalleryLegacy = "* marked:'TemplatedCarouselPage Gallery - Legacy'";
-		public const string TemplatedTabbedPageGalleryLegacy = "* marked:'TemplatedTabbedPage Gallery - Legacy'";
-		public const string UnevenViewCellGalleryLegacy = "* marked:'UnevenViewCell Gallery - Legacy'";
 		public const string UnevenListGalleryLegacy = "* marked:'UnevenList Gallery - Legacy'";
-		public const string ViewCellGalleryLegacy = "* marked:'ViewCell Gallery - Legacy'";
 	}
 
 	internal static class Queries

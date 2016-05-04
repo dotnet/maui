@@ -42,18 +42,6 @@ namespace Xamarin.Forms.Core.UITests
 		[UiTestExempt (ExemptReason.CannotTest, "Invalid interaction")]
 		public override void _UnFocus () {}
 
-		//[UiTest (typeof(ActivityIndicator), "Color")]
-		public void Color ()
-		{
-			//TODO: this was failing and is changing in next version of calabash (UI-Test-pre nuget) to a json rgb
-
-//			var remote = RemoteFactory.CreateRemote<ViewContainerRemote> (App, "Color", PlatformViewType);
-//			remote.GoTo ();
-//
-//			var color = remote.GetProperty<Color> (ActivityIndicator.ColorProperty);
-//			Assert.AreEqual (Forms.Color.Lime, color);
-		}
-
 		// ActivityIndicator tests
 		[Test]
 		[UiTest (typeof(ActivityIndicator), "IsRunning")]

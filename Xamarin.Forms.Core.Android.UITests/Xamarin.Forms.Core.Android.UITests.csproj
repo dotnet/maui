@@ -114,83 +114,11 @@
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\LabelUITests.cs">
       <Link>Tests\LabelUITests.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-AbsoluteLayoutGalleryTest.cs">
-      <Link>Tests\Legacy-AbsoluteLayoutGalleryTest.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-BoundViewUITest.cs">
-      <Link>Tests\Legacy-BoundViewUITest.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-ButtonUITests.cs">
-      <Link>Tests\Legacy-ButtonUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-CarouselPageUITests.cs">
-      <Link>Tests\Legacy-CarouselPageUITests.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-CellsUITests.cs">
       <Link>Tests\Legacy-CellsUITests.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-ClipToBoundsUITests.cs">
-      <Link>Tests\Legacy-ClipToBoundsUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-EditorUITests.cs">
-      <Link>Tests\Legacy-EditorUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-EntryUITests.cs">
-      <Link>Tests\Legacy-EntryUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-GridGalleryUITests.cs">
-      <Link>Tests\Legacy-GridGalleryUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-GroupedListActionsUITests.cs">
-      <Link>Tests\Legacy-GroupedListActionsUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-InputIntentUITests.cs">
-      <Link>Tests\Legacy-InputIntentUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-ListUITests.cs">
-      <Link>Tests\Legacy-ListUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-MapUITests.cs">
-      <Link>Tests\Legacy-MapUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-MinimumSizeUITest.cs">
-      <Link>Tests\Legacy-MinimumSizeUITest.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-NavigationBarUITests.cs">
       <Link>Tests\Legacy-NavigationBarUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-RelativeLayoutUITest.cs">
-      <Link>Tests\Legacy-RelativeLayoutUITest.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-SearchBarUITests.cs">
-      <Link>Tests\Legacy-SearchBarUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-SliderUITests.cs">
-      <Link>Tests\Legacy-SliderUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-StackLayoutUITest.cs">
-      <Link>Tests\Legacy-StackLayoutUITest.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-StepperUITests.cs">
-      <Link>Tests\Legacy-StepperUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-SwitchUITests.cs">
-      <Link>Tests\Legacy-SwitchUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-TableViewUITests.cs">
-      <Link>Tests\Legacy-TableViewUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-TemplatedCarouselPageUITests.cs">
-      <Link>Tests\Legacy-TemplatedCarouselPageUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-TemplatedTabPageUITests.cs">
-      <Link>Tests\Legacy-TemplatedTabPageUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-UnevenViewCellUITests.cs">
-      <Link>Tests\Legacy-UnevenViewCellUITests.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-ViewCellUITests.cs">
-      <Link>Tests\Legacy-ViewCellUITests.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\PickerUITests.cs">
       <Link>Tests\PickerUITests.cs</Link>

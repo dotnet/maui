@@ -211,32 +211,6 @@ namespace Xamarin.Forms.Core.UITests
 			App.Screenshot ("All EntryCells are present");
 		}
 			
-		[Description ("Entered text stays after scrolled out of view")]
-		[Issue (IssueTracker.Github, 1024, "EntryCell with text set clears after scrolling off screen", PlatformAffected.Android)]
-		[UiTest (typeof(EntryCell))]
-		public void CellsGalleryIssue1024 ()
-		{
-			// TODO fix
-//			App.ScrollForElement ("* marked:'EntryCell List'", new Drag (ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
-//
-//			App.Tap (q => q.Marked ("EntryCell List"));
-//			App.WaitForElement (q => q.Marked ("Label 0"), "Timeout : Label 0");
-//			App.Screenshot ("At EntryCell List Gallery");
-//
-//			App.Tap (Queries.EntryCellWithPlaceholder ("Placeholder 1"));
-//			App.EnterText (Queries.EntryCellWithPlaceholder ("Placeholder 1"), "I am going to be scrolled off screen");
-//
-//			App.Screenshot ("Dismiss keyboard");
-//
-//			App.ScrollForElement ("* marked:'Label 40'", new Drag (ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
-//			App.Screenshot ("Scroll down");
-//			
-//			App.ScrollForElement ("* marked:'Label 0'", new Drag (ScreenBounds, Drag.Direction.TopToBottom, Drag.DragLength.Medium));
-//
-//			App.WaitForElement (Queries.EntryCellWithText ("I am going to be scrolled off screen"), "Timeout : Scrolled Entry with Text");
-//			App.Screenshot ("Scroll back up to cell");
-		}
-
 		[Test]
 		[Description ("TableView with EntryCells, all are present")]
 		[UiTest (typeof(TableView))]
@@ -281,31 +255,6 @@ namespace Xamarin.Forms.Core.UITests
 			}
 			App.WaitForElement (q => q.Marked ("Entered: 1"));
 			App.Screenshot ("Completed should have changed label's text");
-		}
-
-		//[Test]
-		[Description ("Issue 1033 - page does not respect orientation changes")]
-		public void CellsGalleryIssue1033 ()
-		{
-//			App.SetOrientationLandscape ();
-//			App.Tap (q => q.Marked ("TextCell List"));
-//			App.WaitForElement (q => q.Marked ("Text 2"), "Timeout : Text 2");
-//			float listViewHeightLandscape = App.Query (q => q.Raw (Views.ListView))[0].Rect.Height;
-//			App.Screenshot ("Landscape list");
-//
-//
-//			App.NavigateBack ();
-//			App.Screenshot ("Navigate back");
-//			App.SetOrientationPortrait ();
-//			App.Screenshot ("Set orientation to portrait");
-//
-//			App.Tap (q => q.Marked ("TextCell List"));
-//			App.WaitForElement (q => q.Marked ("Text 2"), "Timeout : Text 2");
-//			float listViewHeightPortrait = App.Query (q => q.Raw (Views.ListView))[0].Rect.Height;
-//			App.Screenshot ("Portrait list");
-//
-//			// Should be be the same size if the layout is resized
-//			Assert.AreNotEqual (listViewHeightLandscape, listViewHeightPortrait);
 		}
 
 		protected override void TestTearDown()
