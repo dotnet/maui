@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		MasterDetailPage Element { get; set; }
 
+		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
+
 		bool Presented
 		{
 			get { return _presented; }
@@ -39,7 +41,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 				UpdateSplitViewLayout();
 				_presented = value;
-				if (Element.MasterBehavior == MasterBehavior.Default && Element.ShouldShowSplitMode)
+				if (Element.MasterBehavior == MasterBehavior.Default && MasterDetailPageController.ShouldShowSplitMode)
 					return;
 				if (_presented)
 					OpenDrawer(_masterLayout);
@@ -87,7 +89,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (oldElement != null)
 			{
-				oldElement.BackButtonPressed -= OnBackButtonPressed;
+				((IMasterDetailPageController)oldElement).BackButtonPressed -= OnBackButtonPressed;
 				oldElement.PropertyChanged -= HandlePropertyChanged;
 				oldElement.Appearing -= MasterDetailPageAppearing;
 				oldElement.Disappearing -= MasterDetailPageDisappearing;
@@ -126,7 +128,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateMaster();
 				UpdateDetail();
 
-				newElement.BackButtonPressed += OnBackButtonPressed;
+				((IMasterDetailPageController)newElement).BackButtonPressed += OnBackButtonPressed;
 				newElement.PropertyChanged += HandlePropertyChanged;
 				newElement.Appearing += MasterDetailPageAppearing;
 				newElement.Disappearing += MasterDetailPageDisappearing;
@@ -182,7 +184,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (Element != null)
 				{
-					Element.BackButtonPressed -= OnBackButtonPressed;
+					MasterDetailPageController.BackButtonPressed -= OnBackButtonPressed;
 					Element.PropertyChanged -= HandlePropertyChanged;
 					Element.Appearing -= MasterDetailPageAppearing;
 					Element.Disappearing -= MasterDetailPageDisappearing;
@@ -215,7 +217,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnLayout(changed, l, t, r, b);
 			//hack to make the split layout handle touches the full width
-			if (Element.ShouldShowSplitMode && _masterLayout != null)
+			if (MasterDetailPageController.ShouldShowSplitMode && _masterLayout != null)
 				_masterLayout.Right = r;
 		}
 
@@ -223,9 +225,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (nameof(Device.Info.CurrentOrientation) == e.PropertyName)
 			{
-				if (!Element.ShouldShowSplitMode && Presented)
+				if (!MasterDetailPageController.ShouldShowSplitMode && Presented)
 				{
-					Element.CanChangeIsPresented = true;
+					MasterDetailPageController.CanChangeIsPresented = true;
 					//hack : when the orientation changes and we try to close the Master on Android		
 					//sometimes Android picks the width of the screen previous to the rotation 		
 					//this leaves a little of the master visible, the hack is to delay for 50ms closing the drawer
@@ -343,7 +345,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (Device.Idiom == TargetIdiom.Tablet)
 			{
-				bool isShowingSplit = Element.ShouldShowSplitMode || (Element.ShouldShowSplitMode && Element.MasterBehavior != MasterBehavior.Default && Element.IsPresented);
+				bool isShowingSplit = MasterDetailPageController.ShouldShowSplitMode || (MasterDetailPageController.ShouldShowSplitMode && Element.MasterBehavior != MasterBehavior.Default && Element.IsPresented);
 				SetLockMode(isShowingSplit ? LockModeLockedOpen : LockModeUnlocked);
 				unchecked
 				{

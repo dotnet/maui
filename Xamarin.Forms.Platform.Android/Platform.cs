@@ -32,6 +32,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static readonly BindableProperty PageContextProperty = BindableProperty.CreateAttached("PageContext", typeof(Context), typeof(Platform), null);
 
+		IMasterDetailPageController MasterDetailPageController => CurrentMasterDetailPage as IMasterDetailPageController;
+
 		readonly Context _context;
 
 		readonly PlatformRenderer _renderer;
@@ -378,7 +380,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else if (CurrentMasterDetailPage != null)
 			{
-				if (CurrentMasterDetailPage.ShouldShowSplitMode && CurrentMasterDetailPage.IsPresented)
+				if (MasterDetailPageController.ShouldShowSplitMode && CurrentMasterDetailPage.IsPresented)
 					return;
 				CurrentMasterDetailPage.IsPresented = !CurrentMasterDetailPage.IsPresented;
 			}
@@ -480,7 +482,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 			if (!CurrentMasterDetailPage.ShouldShowToolbarButton() || string.IsNullOrEmpty(CurrentMasterDetailPage.Master.Icon) ||
-				(CurrentMasterDetailPage.ShouldShowSplitMode && CurrentMasterDetailPage.IsPresented))
+				(MasterDetailPageController.ShouldShowSplitMode && CurrentMasterDetailPage.IsPresented))
 			{
 				//clear out existing icon;
 				ClearMasterDetailToggle();

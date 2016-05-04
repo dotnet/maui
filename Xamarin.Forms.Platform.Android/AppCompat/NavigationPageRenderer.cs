@@ -469,7 +469,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 			}
 
-			if (masterDetailPage.ShouldShowSplitMode)
+			if (((IMasterDetailPageController)masterDetailPage).ShouldShowSplitMode)
 				return;
 
 			var renderer = Android.Platform.GetRenderer(masterDetailPage) as MasterDetailPageRenderer;

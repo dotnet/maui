@@ -56,6 +56,8 @@ namespace Xamarin.Forms.Platform.UWP
 			set { Control.ToolbarForeground = value; }
 		}
 
+		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
+
 		bool ITitleProvider.ShowTitle
 		{
 			get { return _showTitle; }
@@ -234,8 +236,8 @@ namespace Xamarin.Forms.Platform.UWP
 			Windows.Foundation.Size masterSize = Control.MasterSize;
 			Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			Element.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
-			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
+			MasterDetailPageController.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
+			MasterDetailPageController.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
 		}
 
 		void UpdateDetail()
@@ -290,7 +292,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateMode()
 		{
-			Control.ShouldShowSplitMode = Element.ShouldShowSplitMode;
+			Control.ShouldShowSplitMode = MasterDetailPageController.ShouldShowSplitMode;
 		}
 
 #if WINDOWS_UWP

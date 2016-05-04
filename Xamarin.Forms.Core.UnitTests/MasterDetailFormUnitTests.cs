@@ -188,9 +188,9 @@ namespace Xamarin.Forms.Core.UnitTests
 				Detail = new ContentPage {Content = new View ()}
 			};
 
-			page.MasterBounds = new Rectangle (0, 0, 100, 100);
+			((IMasterDetailPageController)page).MasterBounds = new Rectangle (0, 0, 100, 100);
 			Assert.AreEqual (new Rectangle (0, 0, 100, 100), page.Master.Bounds);
-			Assert.AreEqual (new Rectangle (0, 0, 100, 100), page.MasterBounds);
+			Assert.AreEqual (new Rectangle (0, 0, 100, 100), ((IMasterDetailPageController)page).MasterBounds);
 		}
 
 		[Test]
@@ -201,9 +201,9 @@ namespace Xamarin.Forms.Core.UnitTests
 				Detail = new ContentPage {Content = new View ()}
 			};
 
-			page.DetailBounds = new Rectangle (0, 0, 100, 100);
+			((IMasterDetailPageController)page).DetailBounds = new Rectangle (0, 0, 100, 100);
 			Assert.AreEqual (new Rectangle (0, 0, 100, 100), page.Detail.Bounds);
-			Assert.AreEqual (new Rectangle (0, 0, 100, 100), page.DetailBounds);
+			Assert.AreEqual (new Rectangle (0, 0, 100, 100), ((IMasterDetailPageController)page).DetailBounds);
 		}
 
 		[Test]
@@ -216,8 +216,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				Platform = new UnitPlatform ()
 			};
 
-			page.MasterBounds = new Rectangle (0, 0, 100, 200);
-			page.DetailBounds = new Rectangle (0, 0, 100, 100);
+			((IMasterDetailPageController)page).MasterBounds = new Rectangle (0, 0, 100, 200);
+			((IMasterDetailPageController)page).DetailBounds = new Rectangle (0, 0, 100, 100);
 
 			page.Master.Layout (new Rectangle(0, 0, 1, 1));
 			page.Detail.Layout (new Rectangle(0, 0, 1, 1));
@@ -261,7 +261,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Platform = new UnitPlatform ()
 			};
 
-			Assert.Throws<InvalidOperationException> (() => page.DetailBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException> (() => ((IMasterDetailPageController)page).DetailBounds = new Rectangle(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -273,7 +273,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Platform = new UnitPlatform ()
 			};
 
-			Assert.Throws<InvalidOperationException> (() => page.MasterBounds = new Rectangle(0, 0, 200, 200));
+			Assert.Throws<InvalidOperationException> (() => ((IMasterDetailPageController)page).MasterBounds = new Rectangle(0, 0, 200, 200));
 		}
 
 		[Test]
@@ -338,7 +338,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Platform = new UnitPlatform ()
 			};
 
-			mdp.BackButtonPressed += (sender, args) => {
+			((IMasterDetailPageController)mdp).BackButtonPressed += (sender, args) => {
 				args.Handled = mdp.IsPresented;
 				mdp.IsPresented = false;
 			};
@@ -369,7 +369,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				Platform = new UnitPlatform ()
 			};
 
-			mdp.BackButtonPressed += (sender, args) => {
+			((IMasterDetailPageController)mdp).BackButtonPressed += (sender, args) => {
 				args.Handled = mdp.IsPresented;
 				mdp.IsPresented = false;
 			};
