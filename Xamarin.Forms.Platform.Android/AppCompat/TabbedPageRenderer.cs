@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		public FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
+		FragmentManager FragmentManager => _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
 
 		internal bool UseAnimations
 		{
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		public void SetFragmentManager(FragmentManager childFragmentManager)
+		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
 			if (_fragmentManager == null)
 				_fragmentManager = childFragmentManager;

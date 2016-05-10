@@ -104,6 +104,7 @@
     <Compile Include="AppCompat\FragmentContainer.cs" />
     <Compile Include="AppCompat\FrameRenderer.cs" />
     <Compile Include="AppCompat\IManageFragments.cs" />
+    <Compile Include="AppCompat\MasterDetailContainer.cs" />
     <Compile Include="AppCompat\Platform.cs" />
     <Compile Include="AppCompat\Resource.cs" />
     <Compile Include="CellAdapter.cs" />

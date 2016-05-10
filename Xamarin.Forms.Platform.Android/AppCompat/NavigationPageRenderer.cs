@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		public void SetFragmentManager(FragmentManager childFragmentManager)
+		void IManageFragments.SetFragmentManager(FragmentManager childFragmentManager)
 		{
 			if (_fragmentManager == null)
 				_fragmentManager = childFragmentManager;

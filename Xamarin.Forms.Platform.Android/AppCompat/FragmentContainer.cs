@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	{
 		readonly WeakReference _pageReference;
 
+		Action<PageContainer> _onCreateCallback;
 		bool? _isVisible;
 		PageContainer _pageContainer;
 		IVisualElementRenderer _visualElementRenderer;
@@ -51,6 +52,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return new FragmentContainer(page) { Arguments = new Bundle() };
 		}
 
+		public void SetOnCreateCallback(Action<PageContainer> callback)
+		{
+			_onCreateCallback = callback;
+		}
+
 		public override AView OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 		{
 			if (Page != null)
@@ -59,6 +65,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Android.Platform.SetRenderer(Page, _visualElementRenderer);
 
 				_pageContainer = new PageContainer(Forms.Context, _visualElementRenderer, true);
+
+				_onCreateCallback?.Invoke(_pageContainer);
+
 				return _pageContainer;
 			}
 

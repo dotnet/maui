@@ -1,8 +1,10 @@
 using System;
+using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
+using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -40,19 +42,24 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_childView == null)
 					return;
+				
+				AddChildView(_childView);
+			}
+		}
 
-				IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
-				if (renderer == null)
-					Platform.SetRenderer(_childView, renderer = Platform.CreateRenderer(_childView));
+		protected virtual void AddChildView(VisualElement childView)
+		{
+			IVisualElementRenderer renderer = Platform.GetRenderer(childView);
+			if (renderer == null)
+				Platform.SetRenderer(childView, renderer = Platform.CreateRenderer(childView));
 
-				if (renderer.ViewGroup.Parent != this)
-				{
-					if (renderer.ViewGroup.Parent != null)
-						renderer.ViewGroup.RemoveFromParent();
-					SetDefaultBackgroundColor(renderer);
-					AddView(renderer.ViewGroup);
-					renderer.UpdateLayout();
-				}
+			if (renderer.ViewGroup.Parent != this)
+			{
+				if (renderer.ViewGroup.Parent != null)
+					renderer.ViewGroup.RemoveFromParent();
+				SetDefaultBackgroundColor(renderer);
+				AddView(renderer.ViewGroup);
+				renderer.UpdateLayout();
 			}
 		}
 
@@ -97,7 +104,7 @@ namespace Xamarin.Forms.Platform.Android
 				MasterDetailPageController.DetailBounds = bounds;
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(_childView);
-			renderer.UpdateLayout();
+			renderer?.UpdateLayout();
 		}
 
 		void DisposeChildRenderers()
@@ -132,7 +139,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new Rectangle(xPos, padding, width, height - padding);
 		}
 
-		void SetDefaultBackgroundColor(IVisualElementRenderer renderer)
+		protected void SetDefaultBackgroundColor(IVisualElementRenderer renderer)
 		{
 			if (ChildView.BackgroundColor == Color.Default)
 			{

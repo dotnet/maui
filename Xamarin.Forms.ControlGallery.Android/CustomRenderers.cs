@@ -4,6 +4,7 @@ using Android.App;
 using System.Collections.Generic;
 using Android.Views;
 using System.Collections;
+using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.Android;
@@ -29,9 +30,10 @@ using System.Reflection;
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
-
 	public class NativeDroidMasterDetail : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
 	{
+		MasterDetailPage _page;
+
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)
 		{
 			base.OnElementChanged(oldElement, newElement);
@@ -41,14 +43,30 @@ namespace Xamarin.Forms.ControlGallery.Android
 				return;
 			}
 
-			MasterDetailPage page = newElement as MasterDetailPage;
-			page.PropertyChanged += (object sender, System.ComponentModel.PropertyChangedEventArgs e) => pChange();
-			page.LayoutChanged += Page_LayoutChanged;
+			_page = newElement as MasterDetailPage;
+			_page.PropertyChanged += Page_PropertyChanged; 
+			_page.LayoutChanged += Page_LayoutChanged;
 		}
 
-		private void Page_LayoutChanged(object sender, EventArgs e)
+		void Page_PropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
 		{
 			pChange();
+		}
+
+		void Page_LayoutChanged(object sender, EventArgs e)
+		{
+			pChange();
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && _page != null)
+			{
+				_page.LayoutChanged -= Page_LayoutChanged;
+				_page.PropertyChanged -= Page_PropertyChanged;
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public void pChange()

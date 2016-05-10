@@ -3,10 +3,11 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Support.V4.Widget;
 using Android.Views;
+using Android.Support.V4.App;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener
+	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments
 	{
 		#region Statics
 
@@ -17,12 +18,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		int _currentLockMode = -1;
 		MasterDetailContainer _detailLayout;
-
+		MasterDetailContainer _masterLayout;
 		bool _disposed;
 		bool _isPresentingFromCore;
-		MasterDetailContainer _masterLayout;
 		bool _presented;
 		VisualElementTracker _tracker;
+		FragmentManager _fragmentManager;
 
 		public MasterDetailPageRenderer() : base(Forms.Context)
 		{
@@ -66,6 +67,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			_presented = IsDrawerVisible(_masterLayout);
 			UpdateIsPresented();
+		}
+
+		void IManageFragments.SetFragmentManager(FragmentManager fragmentManager)
+		{
+			if (_fragmentManager == null)
+				_fragmentManager = fragmentManager;
 		}
 
 		VisualElement IVisualElementRenderer.Element => Element;
@@ -113,6 +120,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					{
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = (int)GravityFlags.Start }
 					};
+
+					if (_fragmentManager != null)
+					{
+						_detailLayout.SetFragmentManager(_fragmentManager);
+						_masterLayout.SetFragmentManager(_fragmentManager);
+					}
 
 					AddView(_detailLayout);
 					AddView(_masterLayout);
@@ -329,7 +342,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateMaster()
 		{
-			MasterDetailContainer masterContainer = _masterLayout;
+			Android.MasterDetailContainer masterContainer = _masterLayout;
 			if (masterContainer == null)
 				return;
 
