@@ -118,9 +118,6 @@
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-CellsUITests.cs">
       <Link>Tests\Legacy-CellsUITests.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-NavigationBarUITests.cs">
-      <Link>Tests\Legacy-NavigationBarUITests.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\Legacy-UnevenListTests.cs">
       <Link>Tests\Legacy-UnevenListTests.cs</Link>
     </Compile>

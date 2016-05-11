@@ -83,7 +83,6 @@
     <Compile Include="Tests\EditorUITests.cs" />
     <Compile Include="Tests\FrameUITests.cs" />
     <Compile Include="Tests\ImageUITests.cs" />
-    <Compile Include="Tests\Legacy-NavigationBarUITests.cs" />
     <Compile Include="Tests\WebViewUITests.cs" />
     <Compile Include="Tests\TimePickerUITests.cs" />
     <Compile Include="Tests\SwitchUITests.cs" />
