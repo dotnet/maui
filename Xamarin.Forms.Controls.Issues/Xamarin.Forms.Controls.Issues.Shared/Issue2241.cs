@@ -37,7 +37,11 @@ namespace Xamarin.Forms.Controls
 		[Ignore("Fails intermittently on TestCloud")]
 		public void ChangeOrientationCheckScroll ()
 		{
-			var isAndroid = RunningApp is AndroidApp;
+#if __ANDROID__
+			var isAndroid = true;
+#else
+			var isAndroid = false;
+#endif
 			var className = "Xamarin_Forms_Platform_iOS_BoxRenderer";
 			if (isAndroid) {
 				className = "BoxRenderer";

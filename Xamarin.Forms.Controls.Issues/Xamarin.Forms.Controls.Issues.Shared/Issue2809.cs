@@ -38,14 +38,14 @@ namespace Xamarin.Forms.Controls
 
 		void ShouldShowMenu ()
 		{
-			if (RunningApp is AndroidApp) {
-				//show secondary menu
-				RunningApp.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
-			}
+#if __ANDROID__
+			//show secondary menu
+			RunningApp.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
+#endif
 		}
 
 #endif
 
-	}
+		}
 }
 

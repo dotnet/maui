@@ -53,11 +53,7 @@ namespace Xamarin.Forms.Core.UITests
 
 			App.EnterText (q=> q.Raw (remote.ViewQuery), "Test");
 
-			if (App is AndroidApp) {
-				((AndroidApp)App).PressUserAction (UserAction.Done);
-			} else {
-				App.PressEnter ();
-			}
+			App.PressEnter ();
 
 			var eventLabelText = remote.GetEventLabel ().Text;
 			Assert.AreEqual (eventLabelText, "Event: Completed (fired 1)");

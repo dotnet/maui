@@ -12,32 +12,35 @@ namespace Xamarin.Forms.Core.UITests
 	{
 		string btn1Id = "tb1";
 		string btn4Id = "tb4";
-
+#if __ANDROID__
 		static bool isSecondaryMenuOpen = false;
+#endif
 		static void ShouldShowMenu ()
 		{
-			if (App is AndroidApp) {
-				isSecondaryMenuOpen = true;
-				//show secondary menu
-				App.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
-			}
+#if __ANDROID__
+			isSecondaryMenuOpen = true;
+			//show secondary menu
+			App.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
+#endif
 		}
 
 		static void ShouldHideMenu ()
 		{
-			if (App is AndroidApp && isSecondaryMenuOpen) {
+#if __ANDROID__
+			if (isSecondaryMenuOpen) {
 				isSecondaryMenuOpen = false;
 				App.Back ();	
 			}
+#endif
 		}
 
 		protected override void NavigateToGallery ()
 		{
 			App.NavigateToGallery (GalleryQueries.ToolbarItemGallery);
-			if (App is iOSApp) {
-				btn1Id = "menuIcon";
-				btn4Id = "tb4";
-			}
+#if __IOS__
+			btn1Id = "menuIcon";
+			btn4Id = "tb4";
+#endif
 		}
 
 		[Test]
@@ -51,12 +54,11 @@ namespace Xamarin.Forms.Core.UITests
 		public void ToolbarButtonsCommand ()
 		{
 			ShouldShowMenu ();
-			if (App is AndroidApp) {
-				//App.Query (c => c.Marked (btn4Id))[0];
-			}
-			else {
-				App.Tap (c => c.Marked (btn4Id));
-			}
+#if __ANDROID__
+			//App.Query (c => c.Marked (btn4Id))[0];
+#else
+			App.Tap (c => c.Marked (btn4Id));
+#endif
 		}
 
 		[Test]
@@ -93,8 +95,9 @@ namespace Xamarin.Forms.Core.UITests
 			var btn1 = App.Query (c => c.Marked (btn1Id)) [0];
 			ShouldShowMenu ();
 			var btn2 = App.Query (c => c.Marked ("tb4")) [0];
-			if(App is iOSApp)
-				Assert.True (btn1.Rect.CenterY < btn2.Rect.CenterY);
+#if __IOS__
+			Assert.True (btn1.Rect.CenterY < btn2.Rect.CenterY);
+#endif
 		}
 
 	}

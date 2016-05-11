@@ -248,11 +248,8 @@ namespace Xamarin.Forms.Core.UITests
 			App.Tap (PlatformQueries.EntryCellWithPlaceholder ("I am a placeholder"));
 			App.EnterText (PlatformQueries.EntryCellWithPlaceholder ("I am a placeholder"), "Hi");
 			App.Screenshot ("Entered Text");
-			if (App is AndroidApp) {
-				((AndroidApp)App).PressUserAction (UserAction.Done);
-			} else {
-				App.PressEnter ();
-			}
+			App.PressEnter ();
+			
 			App.WaitForElement (q => q.Marked ("Entered: 1"));
 			App.Screenshot ("Completed should have changed label's text");
 		}

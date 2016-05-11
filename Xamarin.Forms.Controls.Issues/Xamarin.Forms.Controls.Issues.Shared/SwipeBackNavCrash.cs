@@ -39,23 +39,23 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Screenshot ("At Second Page");
 		}
 
+#if __IOS__
 		[Test]
 		public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
 		{
-			if (RunningApp is iOSApp) {
-				RunningApp.WaitForElement (q => q.Marked ("Page One"));
-				RunningApp.Tap (q => q.Button ("Go to second page"));
-				RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
-				System.Threading.Thread.Sleep (3);
+			RunningApp.WaitForElement (q => q.Marked ("Page One"));
+			RunningApp.Tap (q => q.Button ("Go to second page"));
+			RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
+			System.Threading.Thread.Sleep (3);
 
-				var mainBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
+			var mainBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
 
-				Xamarin.Forms.Core.UITests.Gestures.Pan (RunningApp, new Xamarin.Forms.Core.UITests.Drag (mainBounds, 0, 125, 75, 125, Xamarin.Forms.Core.UITests.Drag.Direction.LeftToRight));
-				System.Threading.Thread.Sleep (3);
-				RunningApp.Screenshot ("Crash?");
-				RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
-			}
+			Xamarin.Forms.Core.UITests.Gestures.Pan (RunningApp, new Xamarin.Forms.Core.UITests.Drag (mainBounds, 0, 125, 75, 125, Xamarin.Forms.Core.UITests.Drag.Direction.LeftToRight));
+			System.Threading.Thread.Sleep (3);
+			RunningApp.Screenshot ("Crash?");
+			RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
 		}
+#endif
 #endif
 
 	}

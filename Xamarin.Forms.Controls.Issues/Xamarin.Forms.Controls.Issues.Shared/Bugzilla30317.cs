@@ -173,87 +173,75 @@ namespace Xamarin.Forms.Controls
 			Navigation.PushAsync (new Bugzilla30317Page1 ());
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 		[Test]
 		public void Bugzilla30317ItemSourceOnAppearingContentPage ()
 		{
-			if (RunningApp is AndroidApp) {
-				RunningApp.Screenshot ("I am at Bugzilla30317");
-				RunningApp.WaitForElement (q => q.Marked ("PageOne"));
-				RunningApp.Screenshot ("I see Page 1");
+			RunningApp.Screenshot ("I am at Bugzilla30317");
+			RunningApp.WaitForElement (q => q.Marked ("PageOne"));
+			RunningApp.Screenshot ("I see Page 1");
 	
-				RunningApp.WaitForElement (q => q.Marked ("PageOneItem1"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageOneItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageOneItem1"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageOneItem1"));
 		
-				RunningApp.WaitForElement (q => q.Marked ("PageOneItem5"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageOneItem5"));
+			RunningApp.WaitForElement (q => q.Marked ("PageOneItem5"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageOneItem5"));
 
-				RunningApp.Screenshot ("I did not crash");
-			} else {
-				Assert.Inconclusive ("Not run on iOS");	
-			}
+			RunningApp.Screenshot ("I did not crash");
 		}
 
 		[Test]
 		public void Bugzilla30317ItemSourceCtorContentPage ()
 		{
-			if (RunningApp is AndroidApp) {
-				RunningApp.WaitForElement (q => q.Marked ("GoToPageTwoButton"));
-				RunningApp.Tap (q => q.Marked ("GoToPageTwoButton"));
+			RunningApp.WaitForElement (q => q.Marked ("GoToPageTwoButton"));
+			RunningApp.Tap (q => q.Marked ("GoToPageTwoButton"));
 
-				RunningApp.WaitForElement (q => q.Marked ("PageTwo"));
-				RunningApp.Screenshot ("I see Page 2");
+			RunningApp.WaitForElement (q => q.Marked ("PageTwo"));
+			RunningApp.Screenshot ("I see Page 2");
 				
-				RunningApp.WaitForElement (q => q.Marked ("PageTwoItem1"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageTwoItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageTwoItem1"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageTwoItem1"));
 				
-				RunningApp.WaitForElement (q => q.Marked ("PageTwoItem5"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageTwoItem5"));
+			RunningApp.WaitForElement (q => q.Marked ("PageTwoItem5"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageTwoItem5"));
 				
-				RunningApp.Screenshot ("I did not crash");
-			} else {
-				Assert.Inconclusive ("Not run on iOS");	
-			}
+			RunningApp.Screenshot ("I did not crash");
 		}
 
 		[Test]
 		public void Bugzilla30317ItemSourceTabbedPage ()
 		{
-			if (RunningApp is AndroidApp) {
-				RunningApp.WaitForElement (q => q.Marked ("GoToPageTwoButton"));
-				RunningApp.Tap (q => q.Marked ("GoToPageTwoButton"));
+			RunningApp.WaitForElement (q => q.Marked ("GoToPageTwoButton"));
+			RunningApp.Tap (q => q.Marked ("GoToPageTwoButton"));
 
-				RunningApp.Screenshot ("I see Page 2");
-				RunningApp.WaitForElement (q => q.Marked ("PageTwo"));
+			RunningApp.Screenshot ("I see Page 2");
+			RunningApp.WaitForElement (q => q.Marked ("PageTwo"));
 
-				RunningApp.WaitForElement (q => q.Marked ("GoToPageThreeButton"));
-				RunningApp.Tap (q => q.Marked ("GoToPageThreeButton"));
+			RunningApp.WaitForElement (q => q.Marked ("GoToPageThreeButton"));
+			RunningApp.Tap (q => q.Marked ("GoToPageThreeButton"));
 
-				RunningApp.Screenshot ("I see TabbedPage One");
-				RunningApp.WaitForElement (q => q.Marked ("TabOneCtor"));
+			RunningApp.Screenshot ("I see TabbedPage One");
+			RunningApp.WaitForElement (q => q.Marked ("TabOneCtor"));
 
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem1"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabOneItem1"));
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem1"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabOneItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem1"));
 
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem5"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabOneItem5"));
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem5"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem5"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabOneItem5"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabOneItem5"));
 
-				RunningApp.Screenshot ("I see TabbedPage Two");
-				RunningApp.WaitForElement (q => q.Marked ("TabTwoOnAppearing"));
-				RunningApp.Tap (q => q.Marked ("TabTwoOnAppearing"));
+			RunningApp.Screenshot ("I see TabbedPage Two");
+			RunningApp.WaitForElement (q => q.Marked ("TabTwoOnAppearing"));
+			RunningApp.Tap (q => q.Marked ("TabTwoOnAppearing"));
 
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem1"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabTwoItem1"));
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem1"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabTwoItem1"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem1"));
 
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem5"));
-				RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabTwoItem5"));
-				RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem5"));
-			} else {
-				Assert.Inconclusive ("Not run on iOS");	
-			}
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem5"));
+			RunningApp.TouchAndHold (q => q.Marked ("PageThreeTabTwoItem5"));
+			RunningApp.WaitForElement (q => q.Marked ("PageThreeTabTwoItem5"));
 		}
 #endif
 	}

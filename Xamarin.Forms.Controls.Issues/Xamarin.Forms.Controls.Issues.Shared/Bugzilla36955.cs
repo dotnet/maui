@@ -42,23 +42,16 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = tv;
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		[Ignore("Test failing due to unrelated issue, disable for moment")]
 		[Test]
 		public void Bugzilla36955Test()
 		{
-			if (RunningApp is iOSApp)
-			{
-				AppResult[] buttonFalse = RunningApp.Query(q => q.Button().Text("False"));
-				Assert.AreEqual(buttonFalse.Length == 1, true);
-				RunningApp.Tap(q => q.Class("Switch"));
-				AppResult[] buttonTrue = RunningApp.Query(q => q.Button().Text("True"));
-				Assert.AreEqual(buttonTrue.Length == 1, true);
-			}
-			else
-			{
-				Assert.Inconclusive("Test is only run on iOS.");
-			}
+			AppResult[] buttonFalse = RunningApp.Query(q => q.Button().Text("False"));
+			Assert.AreEqual(buttonFalse.Length == 1, true);
+			RunningApp.Tap(q => q.Class("Switch"));
+			AppResult[] buttonTrue = RunningApp.Query(q => q.Button().Text("True"));
+			Assert.AreEqual(buttonTrue.Length == 1, true);
 		}
 #endif
 	}

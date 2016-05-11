@@ -79,10 +79,7 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Tap (q => q.Marked ("Toggle"));
 			RunningApp.Screenshot ("Portrait Visible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now visible"));
-			if (RunningApp is iOSApp)
-				RunningApp.Tap (q => q.Marked ("Toggle"));
-			else
-				RunningApp.Back ();
+			Back();
 			RunningApp.Screenshot ("Portrait Invisible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now invisible"));
 			RunningApp.SetOrientationLandscape ();
@@ -91,23 +88,26 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Tap (q => q.Marked ("Toggle"));
 			RunningApp.Screenshot ("Landscape Visible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now visible"));
-			if (RunningApp is iOSApp)
-				RunningApp.Tap (q => q.Marked ("Toggle"));
-			else
-				RunningApp.Back ();
+			Back();
 			RunningApp.Screenshot ("Landscape InVisible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now invisible"));
 			RunningApp.SetOrientationPortrait ();
 			RunningApp.Tap (q => q.Marked ("Toggle"));
 			RunningApp.Screenshot ("Portrait Visible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now visible"));
-			if (RunningApp is iOSApp)
-				RunningApp.Tap (q => q.Marked ("Toggle"));
-			else
-				RunningApp.Back ();
+			Back();
 			RunningApp.Screenshot ("Portrait Invisible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now invisible"));
 			RunningApp.SetOrientationLandscape ();
+		}
+
+		void Back()
+		{
+#if __IOS__
+			RunningApp.Tap (q => q.Marked ("Toggle"));
+#else
+			RunningApp.Back();
+#endif
 		}
 #endif
 	}

@@ -222,11 +222,11 @@ namespace Xamarin.Forms.Controls
 			return !isMasterVisible;
 		}
 		public void OpenMDP() {
-			if (RunningApp is iOSApp) {
-				RunningApp.Tap (q => q.Marked ("Menu"));
-			} else {
-				RunningApp.Tap ("ShowMasterBtn");
-			}				
+#if __IOS__
+			RunningApp.Tap (q => q.Marked ("Menu"));
+#else
+			RunningApp.Tap ("ShowMasterBtn");
+#endif
 		}
 #endif
 	}

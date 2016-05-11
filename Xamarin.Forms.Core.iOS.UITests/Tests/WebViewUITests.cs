@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _IsVisible () {}
 
 		[UiTestExempt (ExemptReason.CannotTest, "Invalid interaction with Label")]
@@ -51,31 +52,38 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Opacity () {}
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Rotation () {}
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _RotationX () {}
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _RotationY () {}
 
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _TranslationX () {}
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _TranslationY () {}
 
 		[Test]
 		[Category ("ManualReview")]
+		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Scale () {}
 
 		[UiTestExempt (ExemptReason.CannotTest, "Invalid interaction with Label")]

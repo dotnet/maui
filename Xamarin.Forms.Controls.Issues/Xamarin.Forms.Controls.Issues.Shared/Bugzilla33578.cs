@@ -74,26 +74,24 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		[Ignore("Needs Xamarin.UITest 0.18")]
 		public void Bugzilla33578Test ()
 		{
-			if (RunningApp is iOSApp) {
-				RunningApp.ScrollDown ();
-				RunningApp.ScrollDown ();
-				RunningApp.Tap (x => x.Marked ("0"));
-				var e = RunningApp.Query (c => c.Marked ("0").Parent ("UITextField").Index (0).Invoke ("keyboardType")) [0];
-				//8 DecimalPad
-				Assert.AreEqual (8, e);
-				RunningApp.DismissKeyboard ();
-				RunningApp.Tap (x => x.Marked ("Enter text here").Index (0).Parent ());
-				RunningApp.ScrollUp ();
-				RunningApp.Tap (x => x.Marked ("Enter text here 1"));
-				RunningApp.Tap (x => x.Marked ("Enter text here 2").Index (0).Parent ());
-				var e1 = RunningApp.Query (c => c.Marked ("Enter text here 2").Parent ("UITextField").Index (0).Invoke ("keyboardType")) [0];
-				Assert.AreEqual (0, e1);		
-			}
+			RunningApp.ScrollDown ();
+			RunningApp.ScrollDown ();
+			RunningApp.Tap (x => x.Marked ("0"));
+			var e = RunningApp.Query (c => c.Marked ("0").Parent ("UITextField").Index (0).Invoke ("keyboardType")) [0];
+			//8 DecimalPad
+			Assert.AreEqual (8, e);
+			RunningApp.DismissKeyboard ();
+			RunningApp.Tap (x => x.Marked ("Enter text here").Index (0).Parent ());
+			RunningApp.ScrollUp ();
+			RunningApp.Tap (x => x.Marked ("Enter text here 1"));
+			RunningApp.Tap (x => x.Marked ("Enter text here 2").Index (0).Parent ());
+			var e1 = RunningApp.Query (c => c.Marked ("Enter text here 2").Parent ("UITextField").Index (0).Invoke ("keyboardType")) [0];
+			Assert.AreEqual (0, e1);		
 		}
 #endif
 	}

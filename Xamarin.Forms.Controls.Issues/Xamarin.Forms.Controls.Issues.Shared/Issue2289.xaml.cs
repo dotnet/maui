@@ -43,75 +43,56 @@ namespace Xamarin.Forms.Controls
 
 		public ICommand DeleteCommand { get; protected set; }
 
-#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		[Ignore("Fails sometimes on XTC")]
 		public void TestIsEnabledFalse ()
 		{
-			if (RunningApp is iOSApp) {
-				var disable1 = RunningApp.Query (c => c.Marked ("txtCellDisable1")) [0];
-				Assert.IsFalse (disable1.Enabled);
-				var disable2 = RunningApp.Query (c => c.Marked ("txtCellDisable2")) [0];
-				Assert.IsFalse (disable2.Enabled);
-			}
+			var disable1 = RunningApp.Query (c => c.Marked ("txtCellDisable1")) [0];
+			Assert.IsFalse (disable1.Enabled);
+			var disable2 = RunningApp.Query (c => c.Marked ("txtCellDisable2")) [0];
+			Assert.IsFalse (disable2.Enabled);
 		}
 
 		[Test]
 		[Ignore("Fails sometimes on XTC")]
 		public void TestIsEnabledFalseContextActions ()
 		{
-			if (RunningApp is iOSApp) {
-				var disable1 = RunningApp.Query (c => c.Marked ("txtCellDisableContextActions1")) [0];
-				Assert.IsFalse (disable1.Enabled);
+			var disable1 = RunningApp.Query (c => c.Marked ("txtCellDisableContextActions1")) [0];
+			Assert.IsFalse (disable1.Enabled);
 
-				var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
+			var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
 
-				if (RunningApp is iOSApp) {
-					RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
-				} else {
-					disable1 = RunningApp.Query (c => c.Marked ("txtCellDisableContextActions1")) [0];
-					RunningApp.TouchAndHoldCoordinates (disable1.Rect.CenterX, disable1.Rect.CenterY);
-				}
-				RunningApp.Screenshot ("Not showing context menu");
-				RunningApp.WaitForNoElement (c => c.Marked ("More"));
-				RunningApp.TapCoordinates (screenBounds.CenterX, screenBounds.CenterY);
-			}
+			RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
+
+			RunningApp.Screenshot ("Not showing context menu");
+			RunningApp.WaitForNoElement (c => c.Marked ("More"));
+			RunningApp.TapCoordinates (screenBounds.CenterX, screenBounds.CenterY);
 		}
 
 		[Test]
 		[Ignore("Fails sometimes on XTC")]
 		public void TestIsEnabledTrue ()
 		{
-			if (RunningApp is iOSApp) {
-				var disable1 = RunningApp.Query (c => c.Marked ("txtCellEnable1")) [0];
-				Assert.IsTrue (disable1.Enabled);
-				var disable2 = RunningApp.Query (c => c.Marked ("txtCellEnable2")) [0];
-				Assert.IsTrue (disable2.Enabled);
-			}
-
+			var disable1 = RunningApp.Query (c => c.Marked ("txtCellEnable1")) [0];
+			Assert.IsTrue (disable1.Enabled);
+			var disable2 = RunningApp.Query (c => c.Marked ("txtCellEnable2")) [0];
+			Assert.IsTrue (disable2.Enabled);
 		}
 
 		[Test]
 		[Ignore("Fails sometimes on XTC")]
 		public void TestIsEnabledTrueContextActions ()
 		{
-			if (RunningApp is iOSApp) {
-				var disable1 = RunningApp.Query (c => c.Marked ("txtCellEnabledContextActions1")) [0];
-				Assert.IsTrue (disable1.Enabled);
+			var disable1 = RunningApp.Query (c => c.Marked ("txtCellEnabledContextActions1")) [0];
+			Assert.IsTrue (disable1.Enabled);
 
-				var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
+			var screenBounds = RunningApp.Query (q => q.Raw ("* index:0")) [0].Rect;
 
-				if (RunningApp is iOSApp) {
-					RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
-				} else {
-					disable1 = RunningApp.Query (c => c.Marked ("txtCellEnabledContextActions1")) [0];
-					RunningApp.TouchAndHoldCoordinates (disable1.Rect.CenterX, disable1.Rect.CenterY);
-				}
+			RunningApp.DragCoordinates (screenBounds.Width - 10, disable1.Rect.CenterY, 10, disable1.Rect.CenterY);
 
-				RunningApp.Screenshot ("Showing context menu");
-				RunningApp.WaitForElement (c => c.Marked ("More"));
-			}
-
+			RunningApp.Screenshot ("Showing context menu");
+			RunningApp.WaitForElement (c => c.Marked ("More"));
 		}
 #endif
 

@@ -136,9 +136,9 @@ namespace Xamarin.Forms.Core.UITests
 			bool found = false;
 
 			bool isEdgeCase = false;
-			if (App is AndroidApp && formProperty == View.ScaleProperty)
-				isEdgeCase = true;
-		
+#if __ANDROID__
+			isEdgeCase = (formProperty == View.ScaleProperty);
+#endif
 		    if (!isEdgeCase) {
 			    found =
 					MaybeGetProperty<string> (App, query, propertyPath, out prop) ||
@@ -147,8 +147,8 @@ namespace Xamarin.Forms.Core.UITests
 					MaybeGetProperty<object> (App, query, propertyPath, out prop);
 		    }
 
-			
-			if (App is AndroidApp && formProperty == View.ScaleProperty) {
+#if __ANDROID__
+			if (formProperty == View.ScaleProperty) {
 				var matrix = new Matrix ();
 				matrix.M00 = App.Query (q => q.Raw (query).Invoke (propertyPath[0]).Value<float> ()).First ();
 				matrix.M11 = App.Query (q => q.Raw (query).Invoke (propertyPath[1]).Value<float> ()).First ();
@@ -156,6 +156,7 @@ namespace Xamarin.Forms.Core.UITests
 				matrix.M33 = 1.0f;
 				return (T)((object)matrix);
 			}
+#endif
 
 			if (!found || prop == null) {
 				throw new NullReferenceException ("null property");
@@ -170,24 +171,22 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 			if (typeof(T) == typeof(Color)) {
-				if (App is iOSApp) {
-					Color color = ParsingUtils.ParseUIColor ((string)prop);
-					return (T)((object)color);
-				} else {
-					uint intColor = (uint)((float)prop);
-					Color color = Color.FromUint (intColor);
-					return (T)((object)color);
-				}
+#if __IOS__
+				Color color = ParsingUtils.ParseUIColor ((string)prop);
+				return (T)((object)color);
+#else
+				uint intColor = (uint)((float)prop);
+				Color color = Color.FromUint (intColor);
+				return (T)((object)color);
+#endif
 			}
 
+#if __IOS__
 			if (prop.GetType () == typeof (string) && typeof(T) == typeof(Font)) {
-				if (App is iOSApp) {
-					Font font = ParsingUtils.ParseUIFont ((string)prop);
-					return (T)((object)font);
-				} else {
-					
-				}
+				Font font = ParsingUtils.ParseUIFont ((string)prop);
+				return (T)((object)font);
 			}
+#endif
 
 			T result = default(T);
 

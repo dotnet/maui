@@ -20,20 +20,7 @@ namespace Xamarin.Forms.Core.UITests
 		//[UiTest (Test.VisualElement.AnchorX)]
 		public virtual void _AnchorX ()
 		{
-			//var remote = RemoteFactory.CreateRemote<StateViewContainerRemote> (App, "AnchorX", PlatformViewType);
-			//remote.GoTo ();
-
-			////App.LogPropertiesForView (remote.ViewQuery, true);
-
-			//if (App is AndroidApp) {
-			//	var anchorX = remote.GetProperty<float> (View.AnchorXProperty);
-			//	var viewWidth = remote.GetView ().Rect.Width;
-			//	Assert.AreEqual (anchorX, 0.25 * viewWidth);
-			//} else if (App is iOSApp) {
-			//	var anchorXMatrix = remote.GetProperty<Matrix> (View.AnchorXProperty);
-			//	var viewWidth = remote.GetView ().Rect.Width;
-			//	Assert.AreEqual (anchorXMatrix.M30, 0 - (viewWidth * 0.25f));
-			//} 
+			
 		}
 
 		// [Test]
@@ -41,18 +28,7 @@ namespace Xamarin.Forms.Core.UITests
 		// TODO: working on some views, others not
 		public virtual void _AnchorY ()
 		{
-			//var remote = RemoteFactory.CreateRemote<StateViewContainerRemote> (App, "AnchorY", PlatformViewType);
-			//remote.GoTo ();
-
-			//if (App is AndroidApp) {
-			//	var anchorY = remote.GetProperty<float> (View.AnchorYProperty);
-			//	var viewHeight = remote.GetView ().Rect.Height;
-			//	Assert.AreEqual (anchorY, viewHeight);
-			//} else if (App is iOSApp) {
-			//	var anchorYMatrix = remote.GetProperty<Matrix> (View.AnchorYProperty);
-			//	var viewHeight = remote.GetView ().Rect.Height;
-			//	Assert.AreEqual (anchorYMatrix.M31, viewHeight / 2.0f);
-			//} 
+			
 		}
 
 		// [Test]
@@ -175,16 +151,17 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			var remote = new ViewContainerRemote (App, Test.VisualElement.Rotation, PlatformViewType);
 			remote.GoTo ();
-			
-			if (App is AndroidApp) {
-				var rotation = remote.GetProperty<float> (View.RotationProperty);
-				Assert.AreEqual (10.0f, rotation);
-			} else if (App is iOSApp) {
-				var rotationMatrix = remote.GetProperty<Matrix> (View.RotationProperty);
-				Matrix generatedMatrix = NumericExtensions.CalculateRotationMatrixForDegrees (10, Axis.Z);
-				Assert.AreEqual (generatedMatrix, rotationMatrix);
-			}
-		}
+
+#if __ANDROID__
+			var rotation = remote.GetProperty<float> (View.RotationProperty);
+			Assert.AreEqual (10.0f, rotation);
+#endif
+#if __IOS__
+			var rotationMatrix = remote.GetProperty<Matrix> (View.RotationProperty);
+			Matrix generatedMatrix = NumericExtensions.CalculateRotationMatrixForDegrees (10, Axis.Z);
+			Assert.AreEqual (generatedMatrix, rotationMatrix);
+#endif
+}
 
 		[Test]
 		[UiTest (typeof (VisualElement), "RotationX")]
@@ -193,14 +170,15 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationX, PlatformViewType);
 			remote.GoTo ();
 
-			if (App is AndroidApp) {
-				var rotationX = remote.GetProperty<float> (View.RotationXProperty);
-				Assert.AreEqual (33.0f, rotationX);
-			} else if (App is iOSApp) {
-				var rotationXMatrix = remote.GetProperty<Matrix> (View.RotationXProperty);
-				Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (33.0f, Axis.X);
-				Assert.AreEqual (matrix, rotationXMatrix);
-			}
+#if __ANDROID__
+			var rotationX = remote.GetProperty<float> (View.RotationXProperty);
+			Assert.AreEqual (33.0f, rotationX);
+#endif
+#if __IOS__
+			var rotationXMatrix = remote.GetProperty<Matrix> (View.RotationXProperty);
+			Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (33.0f, Axis.X);
+			Assert.AreEqual (matrix, rotationXMatrix);
+#endif
 		}
 
 		[Test]
@@ -210,14 +188,15 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationY, PlatformViewType);
 			remote.GoTo ();
 
-			if (App is AndroidApp) {
-				var rotationY = remote.GetProperty<float> (View.RotationYProperty);
-				Assert.AreEqual (10.0f, rotationY);
-			} else if (App is iOSApp) {
-				var rotationYMatrix = remote.GetProperty<Matrix> (View.RotationYProperty);
-				Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (10.0f, Axis.Y);
-				Assert.AreEqual (matrix, rotationYMatrix);
-			}
+#if __ANDROID__
+			var rotationY = remote.GetProperty<float> (View.RotationYProperty);
+			Assert.AreEqual (10.0f, rotationY);
+#endif
+#if __IOS__
+			var rotationYMatrix = remote.GetProperty<Matrix> (View.RotationYProperty);
+			Matrix matrix = NumericExtensions.CalculateRotationMatrixForDegrees (10.0f, Axis.Y);
+			Assert.AreEqual (matrix, rotationYMatrix);
+#endif
 		}
 
 		[Test]

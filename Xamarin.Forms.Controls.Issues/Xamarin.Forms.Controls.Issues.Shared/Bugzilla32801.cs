@@ -73,19 +73,17 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		#if UITEST
+		#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla32801Test ()
 		{
-			if (RunningApp is iOSApp) {
-				RunningApp.Tap (c => c.Marked ("btnAdd"));
-				RunningApp.Tap (c => c.Marked ("btnAdd"));
-				RunningApp.Tap (c => c.Marked ("btnStack"));
-				RunningApp.WaitForElement (c => c.Marked ("Stack 3"));
-				RunningApp.Tap (c => c.Marked ("Tab"));
-				RunningApp.Tap (c => c.Marked ("btnStack"));
-				RunningApp.WaitForElement (c => c.Marked ("Stack 1"));
-			}
+			RunningApp.Tap (c => c.Marked ("btnAdd"));
+			RunningApp.Tap (c => c.Marked ("btnAdd"));
+			RunningApp.Tap (c => c.Marked ("btnStack"));
+			RunningApp.WaitForElement (c => c.Marked ("Stack 3"));
+			RunningApp.Tap (c => c.Marked ("Tab"));
+			RunningApp.Tap (c => c.Marked ("btnStack"));
+			RunningApp.WaitForElement (c => c.Marked ("Stack 1"));
 		}
 #endif
 	}

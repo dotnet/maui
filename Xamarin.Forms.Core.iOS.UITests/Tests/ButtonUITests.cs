@@ -64,11 +64,11 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.Button.BorderRadius, PlatformViewType);
 			remote.GoTo ();
 
-			if (App is iOSApp) {
-				var borderRadius = remote.GetProperty<float> (Button.BorderRadiusProperty);
-				Assert.AreEqual (20.0f, borderRadius);
-			}
-			
+#if __IOS__
+			var borderRadius = remote.GetProperty<float> (Button.BorderRadiusProperty);
+			Assert.AreEqual (20.0f, borderRadius);
+#endif
+
 		}
 
 		[Test]
@@ -79,10 +79,10 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.Button.BorderWidth, PlatformViewType);
 			remote.GoTo ();
 
-			if (App is iOSApp) {
-				var borderWidth = remote.GetProperty<float> (Button.BorderWidthProperty);
+#if __IOS__
+			var borderWidth = remote.GetProperty<float> (Button.BorderWidthProperty);
 				Assert.AreEqual (15.0f, borderWidth);
-			}
+#endif
 
 		}
 
@@ -124,14 +124,13 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.Button.Font, PlatformViewType);
 			remote.GoTo ();
 
-			if (App is AndroidApp) {
-				var isBold = remote.GetProperty<bool> (Button.FontProperty);
-				Assert.True (isBold);
-			} else {
-				var font = remote.GetProperty<Font> (Button.FontProperty);
-				Assert.True (font.FontAttributes.HasFlag (FontAttributes.Bold));
-			}
-
+#if __ANDROID__
+			var isBold = remote.GetProperty<bool> (Button.FontProperty);
+			Assert.True (isBold);
+#else
+			var font = remote.GetProperty<Font> (Button.FontProperty);
+			Assert.True (font.FontAttributes.HasFlag (FontAttributes.Bold));
+#endif
 		}
 
 		[Test]
@@ -155,19 +154,20 @@ namespace Xamarin.Forms.Core.UITests
 			Assert.AreEqual ("Text", buttonText);
 		}
 
+		//TODO iOS
+
+#if __ANDROID__
 		[Test]
 		[UiTest (typeof (Button), "TextColor")]
 		public void TextColor ()
 		{
-			//TODO iOS
-			if (App is AndroidApp) {
-				var remote = new ViewContainerRemote (App, Test.Button.TextColor, PlatformViewType);
-				remote.GoTo ();
+			var remote = new ViewContainerRemote (App, Test.Button.TextColor, PlatformViewType);
+			remote.GoTo ();
 
-				var buttonTextColor = remote.GetProperty<Color> (Button.TextColorProperty);
-				Assert.AreEqual (Color.Pink, buttonTextColor);
-			}
+			var buttonTextColor = remote.GetProperty<Color> (Button.TextColorProperty);
+			Assert.AreEqual (Color.Pink, buttonTextColor);
 		}
+#endif
 
 		protected override void FixtureTeardown ()
 		{

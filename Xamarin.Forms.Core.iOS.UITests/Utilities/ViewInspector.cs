@@ -12,15 +12,17 @@ namespace Xamarin.Forms.Core.UITests
 	{
 	    public static void LogPropertiesForView (this IApp app, string query, bool isOnParent = false)
 	    {
-	        if (app is AndroidApp) {
-	            LogPropertiesForAndroidView ((AndroidApp)app, query, isOnParent);
-	        } else {
-	            LogPropertiesForUIView ((iOSApp)app, query, isOnParent);
-                LogPropertiesForCALayer ((iOSApp)app, query, isOnParent);
-	        }
-	    }
+#if __ANDROID__
+			LogPropertiesForAndroidView (app, query, isOnParent);
+#endif
+#if __IOS__
 
-		static void LogPropertiesForUIView (this iOSApp app, string query, bool isOnParent = false) {
+			LogPropertiesForUIView(app, query, isOnParent);
+			LogPropertiesForCALayer (app, query, isOnParent);
+#endif
+		}
+
+		static void LogPropertiesForUIView (this IApp app, string query, bool isOnParent = false) {
 
             //Logger.LogLine ("--- UIView Properties ---");
 
@@ -75,7 +77,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		}
 
-		static void LogPropertiesForCALayer(this iOSApp app, string query, bool isOnParent = false)
+		static void LogPropertiesForCALayer(this IApp app, string query, bool isOnParent = false)
         {
            // Logger.LogLine ("--- UIView.Layer Properties ---");
 
@@ -150,7 +152,7 @@ namespace Xamarin.Forms.Core.UITests
 
         }
 
-		static void LogPropertiesForAndroidView (this AndroidApp app, string query, bool isOnParent = false)
+		static void LogPropertiesForAndroidView (this IApp app, string query, bool isOnParent = false)
 		{
            // Logger.LogLine( "--- Android View Properties ---");
 
@@ -317,7 +319,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		}
 
-		static bool MaybeGetLayerProperty<T> (iOSApp app, string query, string property, out object result)
+		static bool MaybeGetLayerProperty<T> (IApp app, string query, string property, out object result)
 		{
 
 			try {

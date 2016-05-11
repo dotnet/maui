@@ -8,12 +8,12 @@ using Xamarin.Forms.CustomAttributes;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
-using Xamarin.UITest.Queries;
+
 #endif
 
 namespace Xamarin.Forms.Controls
 {
-    internal static class AppPaths
+	internal static class AppPaths
     {
         public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
 
@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Controls
 			if (app == null)
 				throw new NullReferenceException ("App was not initialized.");
 
-			return app;
+			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
+			return new ScreenshotConditionalApp(app);
 		}
 
 		static void NavigateToIssue (Type type, IApp app)

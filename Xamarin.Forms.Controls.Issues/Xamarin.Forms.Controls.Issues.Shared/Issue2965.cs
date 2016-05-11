@@ -131,22 +131,22 @@ namespace Xamarin.Forms.Controls
 			var element = RunningApp.WaitForElement (q => q.Marked ("lblCount"))[0];
 			Assert.That (element.Text, Is.EqualTo ("1"));
 
-			if(RunningApp is iOSApp)
-				RunningApp.Tap (q => q.Marked("Menu"));
-			else
-				RunningApp.Tap ("ShowMasterBtnPage1");
-
+#if __IOS__
+			RunningApp.Tap (q => q.Marked("Menu"));
+#else
+			RunningApp.Tap ("ShowMasterBtnPage1");
+#endif
 			RunningApp.Tap (q => q.Marked("btnDetail2"));
 
-			if(RunningApp is iOSApp)
-				RunningApp.Tap (q => q.Marked("Menu"));
-			else
-				RunningApp.Tap ("ShowMasterBtnPage2");
-			
+#if __IOS__
+			RunningApp.Tap (q => q.Marked("Menu"));
+#else
+			RunningApp.Tap ("ShowMasterBtnPage2");
+#endif
 			RunningApp.Tap (q => q.Marked("btnDetail1"));
 			element = RunningApp.WaitForElement (q => q.Marked ("lblCount"))[0];
 			Assert.That (element.Text, Is.EqualTo ("1"));
 		}
 #endif
+		}
 	}
-}

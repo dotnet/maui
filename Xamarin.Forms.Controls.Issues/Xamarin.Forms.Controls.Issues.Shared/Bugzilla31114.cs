@@ -399,26 +399,24 @@ namespace Xamarin.Forms.Controls
 
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		[Ignore("Fails sometimes - needs a better test")]
 		public void Bugzilla31114Test ()
 		{
-			if (RunningApp is iOSApp) {
-				for (int i = 0; i < 5; i++) {
-					RunningApp.DragCoordinates (10, 300, 10, 10);
-				}
-				RunningApp.Tap (q => q.Marked ("btnLoad"));
+			for (int i = 0; i < 5; i++) {
 				RunningApp.DragCoordinates (10, 300, 10, 10);
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1007"));
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1008"));
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1009"));
-				RunningApp.DragCoordinates (10, 300, 10, 10);
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1010"));
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1011"));
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1012"));
-				RunningApp.WaitForElement (q => q.Marked ("PIPE #1013"));
 			}
+			RunningApp.Tap (q => q.Marked ("btnLoad"));
+			RunningApp.DragCoordinates (10, 300, 10, 10);
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1007"));
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1008"));
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1009"));
+			RunningApp.DragCoordinates (10, 300, 10, 10);
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1010"));
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1011"));
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1012"));
+			RunningApp.WaitForElement (q => q.Marked ("PIPE #1013"));
 		}
 #endif
 	}

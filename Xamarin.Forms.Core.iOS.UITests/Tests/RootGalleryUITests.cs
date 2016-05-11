@@ -78,8 +78,15 @@ namespace Xamarin.Forms.Core.UITests
 				var scrollViewArea = App.Query (q => q.Marked ("ChoosePageScrollView")).First ().Rect;
 				App.ScrollForElement (string.Format("* marked:'{0}'", page.ButtonId), new Drag (scrollViewArea, Drag.Direction.BottomToTop, Drag.DragLength.Long));
 				App.Tap (q => q.Marked (page.ButtonId));
-				if(!page.IsModal || App is iOSApp)
+
+				var ios = false;
+#if __IOS__
+				ios = true;	
+#endif
+
+				if (!page.IsModal || ios)
 					App.WaitForElement (q => q.Marked (page.PageId));
+
 				App.Screenshot ("Page: " + page.PageId);
 			}
 		}

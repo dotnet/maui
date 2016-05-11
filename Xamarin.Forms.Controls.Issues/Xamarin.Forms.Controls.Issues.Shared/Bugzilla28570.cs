@@ -105,13 +105,13 @@ namespace Xamarin.Forms.Controls
 		[Ignore("Fails intermittently on TestCloud")]
 		public void Bugzilla28570Test ()
 		{
-			if (RunningApp is AndroidApp) {
-				RunningApp.WaitForElement (q => q.Marked ("Tap"));
-				RunningApp.Screenshot ("At test page");
-				RunningApp.Tap (q => q.Marked ("Tap"));
+#if __ANDROID__
+			RunningApp.WaitForElement (q => q.Marked ("Tap"));
+			RunningApp.Screenshot ("At test page");
+			RunningApp.Tap (q => q.Marked ("Tap"));
 
-				RunningApp.WaitForElement (q => q.Marked ("28570Target"));
-			}
+			RunningApp.WaitForElement (q => q.Marked ("28570Target"));
+#endif
 		}
 #endif
 	}
