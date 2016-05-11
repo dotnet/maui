@@ -25,15 +25,11 @@
     <typeparam name="TContainer">To be added.</typeparam>
     <typeparam name="TControl">To be added.</typeparam>
     <summary>Base class for platform-specific effect classes.</summary>
-    <remarks><para>App developers derive from the
-        <list type="bullet"> 
-              <item><term><c>Xamarin.Forms.Platform.Android.PlatformEffect</c>,</term></item>
-              <item><term><c>Xamarin.Forms.Platform.iOS.PlatformEffect</c>,</term></item>
-              <item><term><c>Xamarin.Forms.Platform.UWP.PlatformEffect</c></term></item>
-              <item><term><c>Xamarin.Forms.Platform.WinPhone.PlatformEffect</c>, or</term></item>
-<item><term><c>Xamarin.Forms.Platform.WinRT.PlatformEffect,</c></term></item>
-            </list>
-            classes to implement effects on the respective platforms.</para></remarks>
+    <remarks>
+      <para>App developers derive from the
+        <list type="bullet"><item><term><c>Xamarin.Forms.Platform.Android.PlatformEffect</c>,</term></item><item><term><c>Xamarin.Forms.Platform.iOS.PlatformEffect</c>,</term></item><item><term><c>Xamarin.Forms.Platform.UWP.PlatformEffect</c></term></item><item><term><c>Xamarin.Forms.Platform.WinPhone.PlatformEffect</c>, or</term></item><item><term><c>Xamarin.Forms.Platform.WinRT.PlatformEffect,</c></term></item></list>
+            classes to implement effects on the respective platforms.</para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

@@ -11,8 +11,11 @@
   <Interfaces />
   <Docs>
     <summary>Binds a template property to the parent of the view that owns a <see cref="T:Xamarin.Forms.ControlTemplate" />.</summary>
-    <remarks><para>Control templates provide reusable styling and functionality for common UI elements in an application. They do this by providing a common set of properties that bind to the parents of the View that owns the View to which the control template is bound.</para>
-    <example><para>Application developers can assign these properties through XAML, as in the following example: </para><code lang="XAML"><![CDATA[
+    <remarks>
+      <para>Control templates provide reusable styling and functionality for common UI elements in an application. They do this by providing a common set of properties that bind to the parents of the View that owns the View to which the control template is bound.</para>
+      <example>
+        <para>Application developers can assign these properties through XAML, as in the following example: </para>
+        <code lang="XAML"><![CDATA[
 <ControlTemplate x:Key="LoginTemplate">
   <StackLayout VerticalOptions="CenterAndExpand" Spacing="20" Padding="20">
     <Entry Text="{TemplateBinding Username}" Placeholder="Username" />
@@ -20,7 +23,9 @@
     <Button Command="{TemplateBinding Command}" Text="Click Here To Log In" />
   </StackLayout>
 </ControlTemplate>]]></code>
-<para>Additionally, application developers can use the <see cref="T:Xamarin.Forms.TemplateExtensions.SetBinding" /> static method to set template bindings in code.</para></example></remarks>
+        <para>Additionally, application developers can use the <see cref="T:Xamarin.Forms.TemplateExtensions.SetBinding" /> static method to set template bindings in code.</para>
+      </example>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

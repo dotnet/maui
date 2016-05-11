@@ -225,7 +225,9 @@ Content = new TableView
       <Parameters />
       <Docs>
         <summary>Immediately updates the cell's size.</summary>
-        <remarks><para>Developers can call this method to update the cell's size, even if the cell is currently visible. Developers should note that this operation can be expensive.</para></remarks>
+        <remarks>
+          <para>Developers can call this method to update the cell's size, even if the cell is currently visible. Developers should note that this operation can be expensive.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="HasContextActions">

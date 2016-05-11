@@ -233,8 +233,8 @@
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
-      <MemberSignature Language="C#" Value="public static bool op_Equality (Xamarin.Forms.Point pt_a, Xamarin.Forms.Point pt_b);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Forms.Point pt_a, valuetype Xamarin.Forms.Point pt_b) cil managed" />
+      <MemberSignature Language="C#" Value="public static bool op_Equality (Xamarin.Forms.Point ptA, Xamarin.Forms.Point ptB);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Forms.Point ptA, valuetype Xamarin.Forms.Point ptB) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -253,8 +253,8 @@
         <Parameter Name="pt_b" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="pt_a">A <see cref="T:Xamarin.Forms.Point" /> to be compared.</param>
-        <param name="pt_b">A <see cref="T:Xamarin.Forms.Point" /> to be compared.</param>
+        <param name="ptA">To be added.</param>
+        <param name="ptB">To be added.</param>
         <summary>Whether the two <see cref="T:Xamarin.Forms.Point" />s are equal.</summary>
         <returns>
           <see langword="true" /> if the two <see cref="T:Xamarin.Forms.Point" />s have equal values.</returns>
@@ -288,8 +288,8 @@
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
-      <MemberSignature Language="C#" Value="public static bool op_Inequality (Xamarin.Forms.Point pt_a, Xamarin.Forms.Point pt_b);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Forms.Point pt_a, valuetype Xamarin.Forms.Point pt_b) cil managed" />
+      <MemberSignature Language="C#" Value="public static bool op_Inequality (Xamarin.Forms.Point ptA, Xamarin.Forms.Point ptB);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Forms.Point ptA, valuetype Xamarin.Forms.Point ptB) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -308,8 +308,8 @@
         <Parameter Name="pt_b" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="pt_a">A <see cref="T:Xamarin.Forms.Point" /> to be compared.</param>
-        <param name="pt_b">A <see cref="T:Xamarin.Forms.Point" /> to be compared.</param>
+        <param name="ptA">To be added.</param>
+        <param name="ptB">To be added.</param>
         <summary>Whether two points are not equal.</summary>
         <returns>
           <see langword="true" /> if <paramref name="pt_a" /> and <paramref name="pt_b" /> do not have equivalent X and Y values.</returns>

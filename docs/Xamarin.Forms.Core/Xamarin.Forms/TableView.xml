@@ -163,7 +163,9 @@ public class App : Application
         <value>To be added.</value>
         <remarks>
           <para>When the <see cref="P:Xamarin.Forms.TableView.HasUnevenRows" /> property is <see langword="true" />, application developers can set the <see cref="P:Xamarin.Forms.Cell.Height" /> properties to control the height of <see cref="T:Xamarin.Forms.Cell" /> items in the table. When the <see cref="P:Xamarin.Forms.TableView.HasUnevenRows" /> property is <see langword="true" />, the <see cref="P:Xamarin.Forms.TableView.RowHeight" /> property is ignored. When the <see cref="P:Xamarin.Forms.TableView.HasUnevenRows" /> property is <see langword="false" />, app developers can set the <see cref="P:Xamarin.Forms.TableView.RowHeight" /> property to set the height of all Cells, and their individual <see cref="P:Xamarin.Forms.Cell.Height" /> properties are ignored.</para>
-          <block subset="none" type="note"><para>Developers must specify row heights on the iOS platform, even when <see cref="P:Xamarin.Forms.TableView.HasUnevenRows" /> is <see langword="true" />.</para></block>
+          <block subset="none" type="note">
+            <para>Developers must specify row heights on the iOS platform, even when <see cref="P:Xamarin.Forms.TableView.HasUnevenRows" /> is <see langword="true" />.</para>
+          </block>
         </remarks>
       </Docs>
     </Member>

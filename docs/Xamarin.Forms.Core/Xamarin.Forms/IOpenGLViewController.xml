@@ -1,6 +1,6 @@
-<Type Name="IOpenGLViewController" FullName="Xamarin.Forms.IOpenGLViewController">
-  <TypeSignature Language="C#" Value="public interface IOpenGLViewController : Xamarin.Forms.IViewController" />
-  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IOpenGLViewController implements class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
+<Type Name="IOpenGlViewController" FullName="Xamarin.Forms.IOpenGlViewController">
+  <TypeSignature Language="C#" Value="public interface IOpenGlViewController : Xamarin.Forms.IViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IOpenGlViewController implements class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.5.0.0</AssemblyVersion>

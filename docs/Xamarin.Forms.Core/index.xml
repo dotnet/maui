@@ -12,7 +12,7 @@
           <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2015")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2016")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyDescription("")</AttributeName>
@@ -102,6 +102,9 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.Android.UITests")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.Windows.UITests")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.iOS.UITests")</AttributeName>
         </Attribute>
         <Attribute>
@@ -120,10 +123,19 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Pages")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Pages.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -169,6 +181,9 @@
       <Type Name="BoundsTypeConverter" Kind="Class" />
       <Type Name="BoxView" Kind="Class" />
       <Type Name="Button" Kind="Class" />
+      <Type Name="Button+ButtonContentLayout" Kind="Class" />
+      <Type Name="Button+ButtonContentLayout+ImagePosition" Kind="Enumeration" />
+      <Type Name="Button+ButtonContentTypeConverter" Kind="Class" />
       <Type Name="CarouselPage" Kind="Class" />
       <Type Name="Cell" Kind="Class" />
       <Type Name="CollectionSynchronizationCallback" Kind="Delegate" />
@@ -233,11 +248,14 @@
       <Type Name="IApplicationController" Kind="Interface" />
       <Type Name="IAppLinkEntry" Kind="Interface" />
       <Type Name="IAppLinks" Kind="Interface" />
+      <Type Name="IButtonController" Kind="Interface" />
       <Type Name="IDefinition" Kind="Interface" />
       <Type Name="IEffectControlProvider" Kind="Interface" />
       <Type Name="IElementController" Kind="Interface" />
+      <Type Name="IEntryController" Kind="Interface" />
       <Type Name="IExtendedTypeConverter" Kind="Interface" />
       <Type Name="IGestureRecognizer" Kind="Interface" />
+      <Type Name="IImageController" Kind="Interface" />
       <Type Name="IItemViewController" Kind="Interface" />
       <Type Name="ILayout" Kind="Interface" />
       <Type Name="ILayoutController" Kind="Interface" />
@@ -248,13 +266,14 @@
       <Type Name="INativeElementView" Kind="Interface" />
       <Type Name="INavigation" Kind="Interface" />
       <Type Name="InputView" Kind="Class" />
+      <Type Name="IOpenGlViewController" Kind="Interface" />
       <Type Name="IOpenGLViewController" Kind="Interface" />
       <Type Name="IPageContainer`1" DisplayName="IPageContainer&lt;T&gt;" Kind="Interface" />
       <Type Name="IPlatform" Kind="Interface" />
       <Type Name="IPlatformEngine" Kind="Interface" />
       <Type Name="IRegisterable" Kind="Interface" />
       <Type Name="IScrollViewController" Kind="Interface" />
-      <Type Name="ItemsView" Kind="Class" />
+      <Type Name="ISearchBarController" Kind="Interface" />
       <Type Name="ItemsView`1" DisplayName="ItemsView&lt;TVisual&gt;" Kind="Class" />
       <Type Name="ItemTappedEventArgs" Kind="Class" />
       <Type Name="ItemVisibilityEventArgs" Kind="Class" />
@@ -262,6 +281,7 @@
       <Type Name="IViewContainer`1" DisplayName="IViewContainer&lt;T&gt;" Kind="Interface" />
       <Type Name="IViewController" Kind="Interface" />
       <Type Name="IVisualElementController" Kind="Interface" />
+      <Type Name="IWebViewDelegate" Kind="Interface" />
       <Type Name="Keyboard" Kind="Class" />
       <Type Name="KeyboardFlags" Kind="Enumeration" />
       <Type Name="KeyboardTypeConverter" Kind="Class" />
@@ -394,10 +414,14 @@
     </Namespace>
     <Namespace Name="Xamarin.Forms.Internals">
       <Type Name="DynamicResource" Kind="Class" />
+      <Type Name="EvalRequested" Kind="Class" />
       <Type Name="IDataTemplate" Kind="Interface" />
       <Type Name="IDynamicResourceHandler" Kind="Interface" />
       <Type Name="INameScope" Kind="Interface" />
+      <Type Name="InvalidationTrigger" Kind="Enumeration" />
       <Type Name="NameScope" Kind="Class" />
+      <Type Name="PreserveAttribute" Kind="Class" />
+      <Type Name="Ticker" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Xaml">
       <Type Name="IMarkupExtension" Kind="Interface" />

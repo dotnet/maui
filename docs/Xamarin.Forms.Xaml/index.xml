@@ -12,7 +12,7 @@
           <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2015")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2016")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyDescription("")</AttributeName>
@@ -48,7 +48,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>Xamarin.Forms.Preserve</AttributeName>
+          <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -85,31 +85,27 @@
   <ExtensionMethods>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Xamarin.Forms.BindableObject" />
+        <Target Type="System.Object" />
       </Targets>
-      <Member MemberName="LoadFromXaml&lt;TView&gt;">
-        <MemberSignature Language="C#" Value="public static TView LoadFromXaml&lt;TView&gt; (this TView view, Type callingType) where TView : Xamarin.Forms.BindableObject;" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!TView LoadFromXaml&lt;(class Xamarin.Forms.BindableObject) TView&gt;(!!TView view, class System.Type callingType) cil managed" />
+      <Member MemberName="LoadFromXaml&lt;TXaml&gt;">
+        <MemberSignature Language="C#" Value="public static TXaml LoadFromXaml&lt;TXaml&gt; (this TXaml view, Type callingType);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!TXaml LoadFromXaml&lt;TXaml&gt;(!!TXaml view, class System.Type callingType) cil managed" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
-          <ReturnType>TView</ReturnType>
+          <ReturnType>TXaml</ReturnType>
         </ReturnValue>
         <TypeParameters>
-          <TypeParameter Name="TView">
-            <Constraints>
-              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
-            </Constraints>
-          </TypeParameter>
+          <TypeParameter Name="TXaml" />
         </TypeParameters>
         <Parameters>
-          <Parameter Name="view" Type="TView" RefType="this" />
+          <Parameter Name="view" Type="TXaml" RefType="this" />
           <Parameter Name="callingType" Type="System.Type" />
         </Parameters>
         <Docs>
-          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TXaml">To be added.</typeparam>
           <param name="view">To be added.</param>
           <param name="callingType">To be added.</param>
-          <summary>Configures <paramref name="view" /> with the properties that are defined in the application manifest for <paramref name="callingType" />.</summary>
+          <summary>To be added.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Xaml.Extensions" Member="M:Xamarin.Forms.Xaml.Extensions.LoadFromXaml``1(``0,System.Type)" />
       </Member>

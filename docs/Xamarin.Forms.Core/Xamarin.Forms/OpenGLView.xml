@@ -1,6 +1,6 @@
 <Type Name="OpenGLView" FullName="Xamarin.Forms.OpenGLView">
-  <TypeSignature Language="C#" Value="public sealed class OpenGLView : Xamarin.Forms.View, Xamarin.Forms.IOpenGLViewController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit OpenGLView extends Xamarin.Forms.View implements class Xamarin.Forms.IElementController, class Xamarin.Forms.IOpenGLViewController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
+  <TypeSignature Language="C#" Value="public sealed class OpenGLView : Xamarin.Forms.View, Xamarin.Forms.IOpenGlViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit OpenGLView extends Xamarin.Forms.View implements class Xamarin.Forms.IElementController, class Xamarin.Forms.IOpenGlViewController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -16,7 +16,7 @@
   </Base>
   <Interfaces>
     <Interface>
-      <InterfaceName>Xamarin.Forms.IOpenGLViewController</InterfaceName>
+      <InterfaceName>Xamarin.Forms.IOpenGlViewController</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>

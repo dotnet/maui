@@ -111,19 +111,20 @@
       <Docs>
         <summary>Gets the ID that is used to resolve this effect at runtime.</summary>
         <value>The ID that is used to resolve this effect at runtime.</value>
-        <remarks><para>Developers must supply a name to <see cref="T:Xamarin.Forms.ExportEffectAttribute" /> that is unique over the scope of the name that they supply to <see cref="T:Xamarin.Forms.ResolutionGroupNameAttribute" />. The <see cref="T:Xamarin.Forms.Effect.Resolve" /> method takes a string that is the concatenation of <paramref name="name" /> (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Xamarin.Forms.ExportEffectAttribute" />, and returns the specified effect.</para>
-        <example><para>For example, with the declarations:</para>
-        <code lang="c#"><![CDATA[
+        <remarks>
+          <para>Developers must supply a name to <see cref="T:Xamarin.Forms.ExportEffectAttribute" /> that is unique over the scope of the name that they supply to <see cref="T:Xamarin.Forms.ResolutionGroupNameAttribute" />. The <see cref="T:Xamarin.Forms.Effect.Resolve" /> method takes a string that is the concatenation of <paramref name="name" /> (the resolution group name), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Xamarin.Forms.ExportEffectAttribute" />, and returns the specified effect.</para>
+          <example>
+            <para>For example, with the declarations:</para>
+            <code lang="c#"><![CDATA[
             [assembly: ResolutionGroupName ("com.YourCompany")]
-            [assembly: ExportEffect (typeof (ShadowEffect), "ShadowEffect")]]]>
-        </code>
-        <para>Then the code below will add the effect to a button:</para>
-        <code lang="c#"><![CDATA[
+            [assembly: ExportEffect (typeof (ShadowEffect), "ShadowEffect")]]]></code>
+            <para>Then the code below will add the effect to a button:</para>
+            <code lang="c#"><![CDATA[
             [var button = new Button { Text = "I have a shadow" };
-    button.Effects.Add (Effect.Resolve ("com.YourCompany.ShadowEffect"));]]>
-        </code>
-    </example>
-<para>This property returns the string that developers pass to <see cref="T:Xamarin.Forms.Effect.Resolve" /> to get the effect at runtime.</para></remarks>
+    button.Effects.Add (Effect.Resolve ("com.YourCompany.ShadowEffect"));]]></code>
+          </example>
+          <para>This property returns the string that developers pass to <see cref="T:Xamarin.Forms.Effect.Resolve" /> to get the effect at runtime.</para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

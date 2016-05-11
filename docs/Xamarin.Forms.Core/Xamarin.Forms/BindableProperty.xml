@@ -71,7 +71,7 @@
       </Docs>
     </Member>
     <Member MemberName="Create">
-      <MemberSignature Language="C#" Value="public static Xamarin.Forms.BindableProperty Create (string propertyName, Type returnType, Type declaringType, object defaultValue, Xamarin.Forms.BindingMode defaultBindingMode = Xamarin.Forms.BindingMode.OneWay, Xamarin.Forms.BindableProperty.ValidateValueDelegate validateValue = null, Xamarin.Forms.BindableProperty.BindingPropertyChangedDelegate propertyChanged = null, Xamarin.Forms.BindableProperty.BindingPropertyChangingDelegate propertyChanging = null, Xamarin.Forms.BindableProperty.CoerceValueDelegate coerceValue = null, Xamarin.Forms.BindableProperty.CreateDefaultValueDelegate defaultValueCreator = null);" />
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.BindableProperty Create (string propertyName, Type returnType, Type declaringType, object defaultValue = null, Xamarin.Forms.BindingMode defaultBindingMode = Xamarin.Forms.BindingMode.OneWay, Xamarin.Forms.BindableProperty.ValidateValueDelegate validateValue = null, Xamarin.Forms.BindableProperty.BindingPropertyChangedDelegate propertyChanged = null, Xamarin.Forms.BindableProperty.BindingPropertyChangingDelegate propertyChanging = null, Xamarin.Forms.BindableProperty.CoerceValueDelegate coerceValue = null, Xamarin.Forms.BindableProperty.CreateDefaultValueDelegate defaultValueCreator = null);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.BindableProperty Create(string propertyName, class System.Type returnType, class System.Type declaringType, object defaultValue, valuetype Xamarin.Forms.BindingMode defaultBindingMode, class Xamarin.Forms.BindableProperty/ValidateValueDelegate validateValue, class Xamarin.Forms.BindableProperty/BindingPropertyChangedDelegate propertyChanged, class Xamarin.Forms.BindableProperty/BindingPropertyChangingDelegate propertyChanging, class Xamarin.Forms.BindableProperty/CoerceValueDelegate coerceValue, class Xamarin.Forms.BindableProperty/CreateDefaultValueDelegate defaultValueCreator) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -206,7 +206,8 @@
         <param name="defaultValueCreator">A Func used to initialize default value for reference types..</param>
         <summary>Deprecated. Do not use.</summary>
         <returns>A newly created BindableProperty.</returns>
-        <remarks></remarks>
+        <remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateAttached">
@@ -415,7 +416,9 @@
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Creates a new instance of the BindableProperty class for attached read-only properties.</summary>
         <returns>A newly created attached read-only BindableProperty.</returns>
-        <remarks><para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para></remarks>
+        <remarks>
+          <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateAttachedReadOnly">
@@ -457,7 +460,9 @@
         <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
         <summary>Creates a new instance of the BindableProperty class for attached read-only properties.</summary>
         <returns>A newly created attached read-only BindableProperty.</returns>
-        <remarks><para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para></remarks>
+        <remarks>
+          <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateAttachedReadOnly&lt;TDeclarer,TPropertyType&gt;">
@@ -497,7 +502,9 @@
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Deprecated. Do not use.</summary>
         <returns>A newly created BindablePropertyKey.</returns>
-        <remarks><para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para></remarks>
+        <remarks>
+          <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateAttachedReadOnly&lt;TDeclarer,TPropertyType&gt;">
@@ -586,7 +593,9 @@
         <summary>Creates a new instance of the BindablePropertyKey class.</summary>
         <returns>
         </returns>
-        <remarks><para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para></remarks>
+        <remarks>
+          <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateReadOnly">
@@ -628,8 +637,10 @@
         <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
         <summary>Creates a new instance of the BindablePropertyKey class.</summary>
         <returns>
-        </returns><para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para><remarks>
+        </returns>
+        <remarks>
         </remarks>
+        <para>Attached properties are bindable properties that are bound to an object other than their parent. Often, they are used for child items in tables and grids, where data about the location of an item is maintained by its parent, but must be accessed from the child item itself.</para>
       </Docs>
     </Member>
     <Member MemberName="CreateReadOnly&lt;TDeclarer,TPropertyType&gt;">
