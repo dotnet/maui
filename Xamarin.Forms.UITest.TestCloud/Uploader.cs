@@ -21,6 +21,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 			loaderActions = new LoaderActions();
 
 			var categories = new List<string>();
+			var excludeCategories = new List<string>();
 			string series = null;
 			var platform = DeviceSet.Platform.None;
 			DeviceSet deviceSet = null;
@@ -37,7 +38,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 					s => platform = (DeviceSet.Platform)Enum.Parse(typeof (DeviceSet.Platform), s)
 				},
 				{ "d|deviceset=", "the device set to use for the test run", s => deviceSet = StringToDeviceSet(s) },
-				{ "c|category=", "add a category to the test run", s => categories.Add(s) },
+				{ "c|category=", "add a category to the test run [deprecated, use include]", str => categories.Add(str) },
 				{ "s|series=", "specify the series when uploaded to Test Cloud", s => series = s },
 				{ "l|list", "list categories available in test suite", ListCategories },
 				{ "sets", "list available device sets", ListDeviceSets },
@@ -46,7 +47,9 @@ namespace Xamarin.Forms.UITest.TestCloud
 				{ "v|validate", "validate all tests or a specified category", s => validate = true },
 				{ "o|output=", "output destination for NUnit XML", s => outputFile = s },
 				{ "a|account=", "Test Cloud key", s => account = s },
-				{ "u|user=", "Test Cloud user", s => user = s }
+				{ "u|user=", "Test Cloud user", s => user = s },
+				{ "n|include=", "add a category to the test run", str => categories.Add(str) },
+				{ "e|exclude=", "exclude a category from the test run", str => excludeCategories.Add(str) }
 			};
 
 			List<string> extra;
@@ -90,7 +93,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 					deviceSet = DeviceSets.IOsFastParallel;
 			}
 
-			var execString = BuildExecutionString(platform, deviceSet, categories, series, account, user, outputFile);
+			var execString = BuildExecutionString(platform, deviceSet, categories, series, account, user, outputFile, excludeCategories);
 
 			Console.WriteLine(execString);
 
@@ -101,7 +104,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 		}
 
 		static string BuildExecutionString(DeviceSet.Platform platform, DeviceSet deviceSet, IEnumerable<string> categories,
-			string series, string account, string user, string outputFile = null)
+			string series, string account, string user, string outputFile = null, IEnumerable<string> excludeCategories = null)
 		{
 			var stringBuilder = new StringBuilder();
 			stringBuilder.Append(ConsolePath);
@@ -129,8 +132,15 @@ namespace Xamarin.Forms.UITest.TestCloud
 
 			foreach (var category in categories)
 			{
-				stringBuilder.Append(" --include ");
-				stringBuilder.Append(category);
+				stringBuilder.Append($" --include {category}");
+			}
+
+			if (excludeCategories != null)
+			{
+				foreach (var category in excludeCategories)
+				{
+					stringBuilder.Append($" --exclude {category}");
+				}
 			}
 
 			if (!string.IsNullOrEmpty(series))
@@ -182,6 +192,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 				var platform = DeviceSet.Platform.None;
 				var deviceSet = "";
 				var categories = new List<string>();
+				var excludeCategories = new List<string>();
 				var series = "";
 				var account = "";
 				var user = "";
@@ -191,12 +202,14 @@ namespace Xamarin.Forms.UITest.TestCloud
 				{
 					{ "q|quit", "quit", Exit },
 					{ "h|help", "show this message and exit", str => ShowInteractiveHelp(options) },
-					{ "c|category=", "specify the category to run in Test cloud", str => categories.Add(str) },
+					{ "c|category=", "add a category to the test run [deprecated, use include]", str => categories.Add(str) },
 					{ "d|deviceset=", "specify the device set to upload", str => deviceSet = str },
 					{ "lc|listcategories", "Lists categories in uitests", ListCategories },
 					{ "ld|listdevicesets", "Lists defined devices sets", ListDeviceSets },
 					{ "a|account=", "Test Cloud key", str => account = str },
-					{ "u|user=", "Test Cloud user", str => user = str }
+					{ "u|user=", "Test Cloud user", str => user = str },
+					{ "n|include=", "add a category to the test run", str => categories.Add(str) },
+					{ "e|exclude=", "exclude a category from the test run", str => excludeCategories.Add(str) }
 				};
 
 				List<string> extra;
@@ -240,7 +253,7 @@ namespace Xamarin.Forms.UITest.TestCloud
 					if (validQuery)
 					{
 						var devSet = StringToDeviceSet(deviceSet);
-						var execString = BuildExecutionString(devSet.DeviceSetPlatform.First(), devSet, categories, series, account, user);
+						var execString = BuildExecutionString(devSet.DeviceSetPlatform.First(), devSet, categories, series, account, user, excludeCategories: excludeCategories);
 						Console.WriteLine(execString);
 						TestCloudUtils.UploadApp(execString);
 					}
