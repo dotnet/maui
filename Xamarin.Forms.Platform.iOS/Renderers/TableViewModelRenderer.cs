@@ -148,8 +148,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
-			var h = View.Model.GetCell(indexPath.Section, indexPath.Row).Height;
-			if (h == -1)
+			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
+			var h = cell.Height;
+
+			if (View.RowHeight == -1 && h == -1 && cell is ViewCell && Forms.IsiOS8OrNewer) {
+				return UITableView.AutomaticDimension;
+			} else if (h == -1)
 				return tableView.RowHeight;
 			return (nfloat)h;
 		}

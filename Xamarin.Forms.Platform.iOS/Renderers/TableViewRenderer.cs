@@ -14,13 +14,14 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
+		const int DefaultRowHeight = 44;
 		KeyboardInsetTracker _insetTracker;
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return Control.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
+			return Control.GetSizeRequest(widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
 		}
 
 		public override void LayoutSubviews()
@@ -92,7 +93,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				SetSource();
 				UpdateRowHeight();
-
+				UpdateEstimatedRowHeight();
 				UpdateBackgroundView();
 			}
 
@@ -103,11 +104,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == "RowHeight")
+			if (e.PropertyName == TableView.RowHeightProperty.PropertyName)
 				UpdateRowHeight();
-			else if (e.PropertyName == "HasUnevenRows")
+			else if (e.PropertyName == TableView.HasUnevenRowsProperty.PropertyName)
 				SetSource();
-			else if (e.PropertyName == "BackgroundColor")
+			else if (e.PropertyName == TableView.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundView();
 		}
 
@@ -139,12 +140,23 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateRowHeight()
 		{
-			var height = Element.RowHeight;
+			var rowHeight = Element.RowHeight;
+			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS7OrNewer) {
+				if (Forms.IsiOS8OrNewer)
+					Control.RowHeight = UITableView.AutomaticDimension;
+			} else
+				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
+		}
 
-			if (height <= 0)
-				height = 44;
-
-			Control.RowHeight = height;
+		void UpdateEstimatedRowHeight()
+		{
+			var rowHeight = Element.RowHeight;
+			if (Element.HasUnevenRows && rowHeight == -1) {
+				Control.EstimatedRowHeight = DefaultRowHeight;
+			} else {
+				if (Forms.IsiOS7OrNewer)
+					Control.EstimatedRowHeight = 0;
+			}
 		}
 	}
 }

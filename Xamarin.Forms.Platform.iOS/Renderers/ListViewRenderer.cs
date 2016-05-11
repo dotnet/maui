@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return Control.GetSizeRequest(widthConstraint, heightConstraint, 44, 44);
+			return Control.GetSizeRequest(widthConstraint, heightConstraint, DefaultRowHeight, DefaultRowHeight);
 		}
 
 		public override void LayoutSubviews()
