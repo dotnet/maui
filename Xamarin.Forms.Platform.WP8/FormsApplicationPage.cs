@@ -47,18 +47,18 @@ namespace Xamarin.Forms.Platform.WinPhone
 		}
 
 		// when app gets tombstoned, user press back past first page
-		void OnClosing(object sender, ClosingEventArgs e)
+		async void OnClosing(object sender, ClosingEventArgs e)
 		{
 			// populate isolated storage.
 			//SerializePropertyStore ();
-			_application.SendSleepAsync().Wait();
+			await _application.SendSleepAsync();
 		}
 
-		void OnDeactivated(object sender, DeactivatedEventArgs e)
+		async void OnDeactivated(object sender, DeactivatedEventArgs e)
 		{
 			// populate state dictionaries, properties
 			//SerializePropertyStore ();
-			_application.SendSleepAsync().Wait();
+			await _application.SendSleepAsync();
 		}
 
 		void OnLaunching(object sender, LaunchingEventArgs e)
