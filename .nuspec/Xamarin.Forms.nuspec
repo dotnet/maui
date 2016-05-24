@@ -81,12 +81,15 @@
     <!--PCL-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*pdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*mdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*pdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*mdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\Xamarin.Forms.Platform.*pdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\Xamarin.Forms.Platform.*mdb" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
 
     <!--Xaml PCL Stuff-->
     <file src="Xamarin.Forms.targets" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms$IdAppend$.targets" />
@@ -146,22 +149,28 @@
     <!--iPhone Unified-->
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*pdb" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\Xamarin.Forms.Platform.iOS.*mdb" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*pdb" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*mdb" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.iOS10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*pdb" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*mdb" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.iOS10" />
 
     <!--iPhone Classic-->
     <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Platform.iOS.Classic.dll" target="lib\MonoTouch10" />
     <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Platform.iOS.Classic.*pdb" target="lib\MonoTouch10" />
+    <file src="..\Xamarin.Forms.Platform.iOS\classic_bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Platform.iOS.Classic.*mdb" target="lib\MonoTouch10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\MonoTouch10" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*pdb" target="lib\MonoTouch10" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.*mdb" target="lib\MonoTouch10" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\MonoTouch10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\MonoTouch10" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*pdb" target="lib\MonoTouch10" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.*mdb" target="lib\MonoTouch10" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\MonoTouch10" />
     <file src="..\Stubs\Xamarin.Forms.Platform.iOS.Classic\bin\iPhone\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\MonoTouch10" />
 
