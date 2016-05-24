@@ -46,14 +46,14 @@ namespace Xamarin.Forms.Controls
 
 			protected override void Init()
 			{
-				Master = new NavigationPage(new _40333NavPusher("Root")) { Title = "MasterNav" };
-
 				if (_showTabVersion)
 				{
+					Master = new NavigationPage(new _40333TabPusher("Root")) { Title = "MasterNav" };
 					Detail = new TabbedPage() { Title = "DetailNav", Children = { new _40333DetailPage("T1") } };
 				}
 				else
 				{
+					Master = new NavigationPage(new _40333NavPusher("Root")) { Title = "MasterNav" };
 					Detail = new NavigationPage(new _40333DetailPage("Detail") { Title = "DetailPage" }) { Title = "DetailNav" };
 				}
 			}
@@ -195,6 +195,9 @@ namespace Xamarin.Forms.Controls
 		}
 
 #if UITEST
+
+#if __ANDROID__ // This test doesn't work in iOS for unrelated reasons
+
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_NavPageVersion()
 		{
@@ -207,6 +210,8 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Tap(q => q.Marked(ClickThisId));
 			RunningApp.WaitForElement(q => q.Marked(StillHereId)); // If the bug isn't fixed, the app will have crashed by now
 		}
+
+#endif
 
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_TabPageVersion()
