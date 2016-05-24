@@ -59,6 +59,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
+			if (Control == null)
+				return (base.GetDesiredSize(widthConstraint, heightConstraint));
+				        
 			AView view = _container == this ? (AView)Control : _container;
 			view.Measure(widthConstraint, heightConstraint);
 

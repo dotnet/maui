@@ -38,6 +38,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
+			if (Control == null)
+				return (base.SizeThatFits(size));
+
 			return Control.SizeThatFits(size);
 		}
 
