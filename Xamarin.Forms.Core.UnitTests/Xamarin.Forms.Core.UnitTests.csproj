@@ -175,6 +175,7 @@
     <Compile Include="MultiTriggerTests.cs" />
     <Compile Include="TriggerTests.cs" />
     <Compile Include="PinchGestureRecognizerTests.cs" />
+    <Compile Include="AppLinkEntryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
