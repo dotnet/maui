@@ -5,6 +5,13 @@ namespace Xamarin.Forms
 {
 	public class AppLinkEntry : Element, IAppLinkEntry
 	{
+		readonly Dictionary<string, string> keyValues;
+
+		public AppLinkEntry()
+		{
+			keyValues = new Dictionary<string, string>();
+		}
+
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(AppLinkEntry), default(string));
 
 		public static readonly BindableProperty DescriptionProperty = BindableProperty.Create(nameof(Description), typeof(string), typeof(AppLinkEntry), default(string));
@@ -33,7 +40,10 @@ namespace Xamarin.Forms
 			set { SetValue(IsLinkActiveProperty, value); }
 		}
 
-		public IDictionary<string, string> KeyValues => new Dictionary<string, string>();
+		public IDictionary<string, string> KeyValues
+		{
+			get { return keyValues; }
+		}
 
 		public ImageSource Thumbnail
 		{
