@@ -91,15 +91,16 @@ namespace Xamarin.Forms.Platform.iOS
 				base.LayoutSubviews();
 
 				var contentFrame = ContentView.Frame;
+				var view = ViewCell.View;
 
-				Layout.LayoutChildIntoBoundingRegion(ViewCell.View, contentFrame.ToRectangle());
+				Layout.LayoutChildIntoBoundingRegion(view, contentFrame.ToRectangle());
 
 				if (_rendererRef == null)
 					return;
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
-					renderer.NativeView.Frame = contentFrame;
+					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
 			}
 
 			public override SizeF SizeThatFits(SizeF size)
