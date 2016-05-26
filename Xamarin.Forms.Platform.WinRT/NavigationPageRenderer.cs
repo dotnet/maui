@@ -157,6 +157,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				((INavigationPageController)oldElement).PushRequested -= OnPushRequested;
 				((INavigationPageController)oldElement).PopRequested -= OnPopRequested;
+				((INavigationPageController)oldElement).PopToRootRequested -= OnPopToRootRequested;
 				oldElement.InternalChildren.CollectionChanged -= OnChildrenChanged;
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
@@ -187,6 +188,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				Element.PropertyChanged += OnElementPropertyChanged;
 				((INavigationPageController)Element).PushRequested += OnPushRequested;
 				((INavigationPageController)Element).PopRequested += OnPopRequested;
+				((INavigationPageController)Element).PopToRootRequested += OnPopToRootRequested;
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
@@ -375,6 +377,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			var newCurrent = (Page)Element.InternalChildren[Element.InternalChildren.Count - 2];
 			SetPage(newCurrent, e.Animated, true);
+		}
+
+		void OnPopToRootRequested(object sender, NavigationRequestedEventArgs e)
+		{
+			SetPage(e.Page, e.Animated, true);
 		}
 
 		void OnPushRequested(object sender, NavigationRequestedEventArgs e)
