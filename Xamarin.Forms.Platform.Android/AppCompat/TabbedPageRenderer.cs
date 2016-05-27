@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	public class TabbedPageRenderer : VisualElementRenderer<TabbedPage>, TabLayout.IOnTabSelectedListener, ViewPager.IOnPageChangeListener, IManageFragments
 	{
 		Drawable _backgroundDrawable;
+		int? _defaultColor;
 		bool _disposed;
 		FragmentManager _fragmentManager;
 		TabLayout _tabLayout;
@@ -153,7 +154,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						tabs = _tabLayout = new TabLayout(activity) { TabMode = TabLayout.ModeFixed, TabGravity = TabLayout.GravityFill };
 					FormsViewPager pager =
 						_viewPager =
-						new FormsViewPager(activity) 
+						new FormsViewPager(activity)
 						{
 							OverScrollMode = OverScrollMode.Never,
 							EnableGesture = UseAnimations,
@@ -364,9 +365,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (_disposed || _tabLayout == null)
 				return;
 
-			Color textColor = Element.BarTextColor;
-			if (!textColor.IsDefault)
-				_tabLayout.SetTabTextColors(textColor.ToAndroid().ToArgb(), textColor.ToAndroid().ToArgb());
+			int currentColor = _tabLayout.TabTextColors.DefaultColor;
+
+			if (!_defaultColor.HasValue)
+				_defaultColor = currentColor;
+
+			Color newTextColor = Element.BarTextColor;
+			int newTextColorArgb = newTextColor.ToAndroid().ToArgb();
+
+			if (!newTextColor.IsDefault && currentColor != newTextColorArgb)
+				_tabLayout.SetTabTextColors(newTextColorArgb, newTextColorArgb);
+			else if (newTextColor.IsDefault && _defaultColor.HasValue && currentColor != _defaultColor)
+				_tabLayout.SetTabTextColors(_defaultColor.Value, _defaultColor.Value);
 		}
 	}
 }

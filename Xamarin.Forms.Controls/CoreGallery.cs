@@ -69,6 +69,17 @@ namespace Xamarin.Forms.Controls
 		public CoreNavigationPage ()
 		{
 			AutomationId = "NavigationPageRoot";
+
+			BarBackgroundColor = Color.Maroon;
+			BarTextColor = Color.Yellow;
+
+			Device.StartTimer(TimeSpan.FromSeconds(2), () => {
+				BarBackgroundColor = Color.Default;
+				BarTextColor = Color.Default;
+
+				return false;
+			});
+
 			Navigation.PushAsync (new CoreRootPage (this));
 		}
 	}
@@ -86,7 +97,14 @@ namespace Xamarin.Forms.Controls
 			AutomationId = "TabbedPageRoot";
 
 			BarBackgroundColor = Color.Maroon;
-			BarTextColor = Color.White;
+			BarTextColor = Color.Yellow;
+
+			Device.StartTimer(TimeSpan.FromSeconds(2), () => {
+				BarBackgroundColor = Color.Default;
+				BarTextColor = Color.Default;
+
+				return false;
+			});
 
 			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 1" });
 			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 2" });
