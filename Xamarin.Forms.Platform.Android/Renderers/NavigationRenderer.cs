@@ -131,6 +131,15 @@ namespace Xamarin.Forms.Platform.Android
 
 		void InsertPageBefore(Page page, Page before)
 		{
+
+			int index = Element.InternalChildren.IndexOf(before);
+			if (index == -1)
+				throw new InvalidOperationException("This should never happen, please file a bug");
+
+			Device.StartTimer(TimeSpan.FromMilliseconds(0), () => {
+				((Platform)Element.Platform).UpdateNavigationTitleBar();
+				return false;
+			});
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs e)
