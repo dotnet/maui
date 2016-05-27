@@ -81,6 +81,9 @@
       <Link>MockPlatformServices.cs</Link>
     </Compile>
     <Compile Include="FontConverterTests.cs" />
+    <Compile Include="Issues\Bz41296.xaml.cs">
+      <DependentUpon>Bz41296.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LoaderTests.cs" />
     <Compile Include="ViewExtensionsTest.cs" />
     <Compile Include="MarkupExpressionParserTests.cs" />
@@ -629,5 +632,9 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Issues\Bz41296.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

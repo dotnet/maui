@@ -158,6 +158,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
+		public void TestMarkupExtensionInDefaultNamespace ()
+		{
+			var xaml = @"
+			<forms:Label 
+				xmlns=""clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests""
+				xmlns:x=""http://schemas.microsoft.com/winfx/2006/xaml""
+				xmlns:forms=""http://xamarin.com/schemas/2014/forms""
+				Text=""{AppendMarkupExtension Value0=Foo, Value1=Bar}""
+			/>";
+
+			var label = new Label();
+			label.LoadFromXaml(xaml);
+			Assert.AreEqual("FooBar", label.Text.ToString());
+		}
+
+		[Test]
 		public void TestDocumentationCode ()
 		{
 			var xaml =@"
