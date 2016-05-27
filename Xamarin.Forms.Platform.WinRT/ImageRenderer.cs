@@ -97,6 +97,16 @@ namespace Xamarin.Forms.Platform.WinRT
 		void UpdateAspect()
 		{
 			Control.Stretch = GetStretch(Element.Aspect);
+			if (Element.Aspect == Aspect.AspectFill) // Then Center Crop
+			{
+				Control.HorizontalAlignment = HorizontalAlignment.Center;
+				Control.VerticalAlignment = VerticalAlignment.Center;
+			}
+			else // Default
+			{
+				Control.HorizontalAlignment = HorizontalAlignment.Left;
+				Control.VerticalAlignment = VerticalAlignment.Top;
+			}
 		}
 
 		async void UpdateSource()
