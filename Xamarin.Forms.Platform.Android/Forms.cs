@@ -361,13 +361,20 @@ namespace Xamarin.Forms
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				Timer timer = null;
-				TimerCallback onTimeout = o => BeginInvokeOnMainThread(() =>
+				bool invoking = false;
+				TimerCallback onTimeout = o =>
 				{
-					if (callback())
-						return;
-
-					timer.Dispose();
-				});
+					if (!invoking)
+					{
+						invoking = true;
+						BeginInvokeOnMainThread(() =>
+						{
+							if (!callback())
+								timer.Dispose();
+							invoking = false;
+						});
+					}
+				};
 				timer = new Timer(onTimeout, null, interval, interval);
 			}
 
