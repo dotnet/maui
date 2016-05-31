@@ -26,7 +26,7 @@ namespace Xamarin.Forms
 
 		internal bool IsDefault
 		{
-			get { return Left == 0 && Top == 0 && Right == 0 && Left == 0; }
+			get { return Left == 0 && Top == 0 && Right == 0 && Bottom == 0; }
 		}
 
 		public Thickness(double uniformSize) : this(uniformSize, uniformSize, uniformSize, uniformSize)
