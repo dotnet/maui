@@ -62,9 +62,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="Xamarin.UITest, Version=1.3.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Xamarin.UITest.1.3.7\lib\Xamarin.UITest.dll</HintPath>
       <Private>True</Private>
