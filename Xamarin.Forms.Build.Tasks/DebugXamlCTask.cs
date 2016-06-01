@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Build.Tasks
 				LogLine(2, " Module: {0}", module.Name);
 				foreach (var resource in module.Resources.OfType<EmbeddedResource>())
 				{
-					Log(2, "  Resource: {0}... ", resource.Name);
+					LogString(2, "  Resource: {0}... ", resource.Name);
 					string classname;
 					if (!resource.IsXaml(out classname))
 					{
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 					LogLine(2, "");
 
-					Log(2, "   Duplicating {0}.InitializeComponent () into {0}.InitCompRuntime ... ", typeDef.Name);
+					LogString(2, "   Duplicating {0}.InitializeComponent () into {0}.InitCompRuntime ... ", typeDef.Name);
 					var initCompRuntime = new MethodDefinition("InitCompRuntime", initComp.Attributes, initComp.ReturnType);
 					initCompRuntime.Body = initComp.Body;
 					typeDef.Methods.Add(initCompRuntime);
@@ -100,10 +100,10 @@ namespace Xamarin.Forms.Build.Tasks
 							md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters[0].ParameterType == module.TypeSystem.Boolean)
 							.FirstOrDefault();
 					if (altCtor != null)
-						Log(2, "   Replacing body of {0}.{0} (bool {1}) ... ", typeDef.Name, altCtor.Parameters[0].Name);
+						LogString(2, "   Replacing body of {0}.{0} (bool {1}) ... ", typeDef.Name, altCtor.Parameters[0].Name);
 					else
 					{
-						Log(2, "   Adding {0}.{0} (bool useCompiledXaml) ... ", typeDef.Name);
+						LogString(2, "   Adding {0}.{0} (bool useCompiledXaml) ... ", typeDef.Name);
 						altCtor = new MethodDefinition(".ctor",
 							MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName |
 							MethodAttributes.RTSpecialName, module.TypeSystem.Void);
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				LogLine(2, "");
 			}
-			Log(1, "Writing the assembly... ");
+			LogString(1, "Writing the assembly... ");
 			assemblyDefinition.Write(Assembly, new WriterParameters
 			{
 				WriteSymbols = DebugSymbols

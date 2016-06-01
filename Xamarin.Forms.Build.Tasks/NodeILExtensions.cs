@@ -90,10 +90,11 @@ namespace Xamarin.Forms.Build.Tasks
 			MethodReference nullableCtor = null;
 			if (targetTypeRef.Resolve().FullName == "System.Nullable`1")
 			{
+				var nullableTypeRef = targetTypeRef;
 				targetTypeRef = ((GenericInstanceType)targetTypeRef).GenericArguments[0];
 				isNullable = true;
 				nullableCtor = originalTypeRef.GetMethods(md => md.IsConstructor && md.Parameters.Count == 1, module).Single().Item1;
-				nullableCtor = nullableCtor.MakeGeneric(targetTypeRef);
+				nullableCtor = nullableCtor.ResolveGenericParameters(nullableTypeRef, module);
 			}
 			//Obvious Built-in conversions
 			if (targetTypeRef.Resolve().BaseType != null && targetTypeRef.Resolve().BaseType.FullName == "System.Enum")

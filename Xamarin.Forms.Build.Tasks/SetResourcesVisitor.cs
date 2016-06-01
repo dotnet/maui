@@ -76,7 +76,6 @@ namespace Xamarin.Forms.Build.Tasks
 			if (IsCollectionItem(node, parentNode) && parentNode is IElementNode)
 			{
 				// Collection element, implicit content, or implicit collection element.
-				CustomAttribute cpAttr;
 				var parentVar = Context.Variables[(IElementNode)parentNode];
 				if (parentVar.VariableType.ImplementsInterface(Module.Import(typeof (IEnumerable))))
 				{

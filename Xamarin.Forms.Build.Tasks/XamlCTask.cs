@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 		}
 
-		protected void Log(int level, string format, params object[] arg)
+		protected void LogString(int level, string format, params object[] arg)
 		{
 			if (level <= 0)
 				Console.Error.Write(format, arg);
@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var resourcesToPrune = new List<EmbeddedResource>();
 				foreach (var resource in module.Resources.OfType<EmbeddedResource>())
 				{
-					Log(2, "  Resource: {0}... ", resource.Name);
+					LogString(2, "  Resource: {0}... ", resource.Name);
 					string classname;
 					if (!resource.IsXaml(out classname))
 					{
@@ -232,7 +232,7 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 					LogLine(2, "");
 
-					Log(2, "   Parsing Xaml... ");
+					LogString(2, "   Parsing Xaml... ");
 					var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
 					if (rootnode == null)
 					{
@@ -245,7 +245,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 					try
 					{
-						Log(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
+						LogString(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
 						var body = new MethodBody(initComp);
 						var il = body.GetILProcessor();
 						il.Emit(OpCodes.Nop);
@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 					if (OptimizeIL)
 					{
-						Log(2, "   Optimizing IL... ");
+						LogString(2, "   Optimizing IL... ");
 						initComp.Body.OptimizeMacros();
 						LogLine(2, "done");
 					}
@@ -299,7 +299,7 @@ namespace Xamarin.Forms.Build.Tasks
 					if (OutputGeneratedILAsCode)
 					{
 						var filepath = Path.Combine(Path.GetDirectoryName(Assembly), typeDef.FullName + ".decompiled.cs");
-						Log(2, "   Decompiling {0} into {1}...", typeDef.FullName, filepath);
+						LogString(2, "   Decompiling {0} into {1}...", typeDef.FullName, filepath);
 						var decompilerContext = new DecompilerContext(module);
 						using (var writer = new StreamWriter(filepath))
 						{
@@ -320,7 +320,7 @@ namespace Xamarin.Forms.Build.Tasks
 						LogLine(2, "  Removing compiled xaml resources");
 					foreach (var resource in resourcesToPrune)
 					{
-						Log(2, "   Removing {0}... ", resource.Name);
+						LogString(2, "   Removing {0}... ", resource.Name);
 						module.Resources.Remove(resource);
 						LogLine(2, "done");
 					}
@@ -335,7 +335,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return success;
 			}
 
-			Log(1, "Writing the assembly... ");
+			LogString(1, "Writing the assembly... ");
 			try
 			{
 				assemblyDefinition.Write(Assembly, new WriterParameters

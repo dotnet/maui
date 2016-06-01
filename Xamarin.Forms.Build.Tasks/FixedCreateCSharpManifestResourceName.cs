@@ -7,7 +7,9 @@ namespace Xamarin.Forms.Build.Tasks
 	public class FixedCreateCSharpManifestResourceName : CreateCSharpManifestResourceName
 	{
 		[Output]
+#pragma warning disable 0108
 		public ITaskItem[] ResourceFilesWithManifestResourceNames { get; set; }
+#pragma warning restore 0108
 
 		public override bool Execute()
 		{

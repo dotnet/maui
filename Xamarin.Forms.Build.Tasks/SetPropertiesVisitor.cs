@@ -239,7 +239,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
 				var provideValue = module.Import(provideValueInfo);
 				provideValue =
-					module.Import(provideValue.MakeGeneric(markupExtension.GenericArguments.Select(tr => module.Import(tr)).ToArray()));
+					module.Import(provideValue.ResolveGenericParameters(markupExtension, module));
 
 				var typeNode = node.Properties[new XmlName("", "Type")];
 				TypeReference arrayTypeRef;
@@ -263,7 +263,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
 				var provideValue = module.Import(provideValueInfo);
 				provideValue =
-					module.Import(provideValue.MakeGeneric(markupExtension.GenericArguments.Select(tr => module.Import(tr)).ToArray()));
+					module.Import(provideValue.ResolveGenericParameters(markupExtension, module));
 
 				vardefref.VariableDefinition = new VariableDefinition(module.Import(genericArguments.First()));
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables[node]);
@@ -311,7 +311,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var handled = false;
 
 			//If it's an attached BP, update elementType and propertyName
-			var attached = GetNameAndTypeRef(ref elementType, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
+			GetNameAndTypeRef(ref elementType, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
 
 			//If the target is an event, connect
 			//			IL_0007:  ldloc.0 
@@ -650,16 +650,18 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//SetDataTemplate
 			parentIl.Emit(OpCodes.Ldftn, loadTemplate);
+			var funcObjRef = module.Import(typeof(Func<object>));
 			var funcCtor =
-				module.Import(typeof (Func<>))
-					.MakeGenericInstanceType(module.TypeSystem.Object)
+				funcObjRef
 					.Resolve()
 					.Methods.First(md => md.IsConstructor && md.Parameters.Count == 2)
-					.MakeGeneric(module.TypeSystem.Object);
+					.ResolveGenericParameters(funcObjRef, module);
 			parentIl.Emit(OpCodes.Newobj, module.Import(funcCtor));
 
+#pragma warning disable 0612
 			var propertySetter =
 				module.Import(typeof (IDataTemplate)).Resolve().Properties.First(p => p.Name == "LoadTemplate").SetMethod;
+#pragma warning restore 0612
 			parentContext.IL.Emit(OpCodes.Callvirt, module.Import(propertySetter));
 		}
 	}
