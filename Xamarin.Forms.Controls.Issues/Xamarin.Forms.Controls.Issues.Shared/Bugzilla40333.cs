@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 
-#if __ANDROID__ // This test doesn't work in iOS for unrelated reasons
+#if __ANDROID__ // These tests don't work in iOS for unrelated reasons (see https://bugzilla.xamarin.com/show_bug.cgi?id=41085)
 
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_NavPageVersion()
@@ -211,8 +211,6 @@ namespace Xamarin.Forms.Controls
 			RunningApp.WaitForElement(q => q.Marked(StillHereId)); // If the bug isn't fixed, the app will have crashed by now
 		}
 
-#endif
-
 		[Test]
 		public void ClickingOnMenuItemInMasterDoesNotCrash_TabPageVersion()
 		{
@@ -225,6 +223,7 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Tap(q => q.Marked(ClickThisId));
 			RunningApp.WaitForElement(q => q.Marked(StillHereId)); // If the bug isn't fixed, the app will have crashed by now
 		}
+#endif
 #endif
 	}
 }
