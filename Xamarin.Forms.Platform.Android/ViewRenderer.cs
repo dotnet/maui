@@ -86,6 +86,12 @@ namespace Xamarin.Forms.Platform.Android
 					_container = null;
 				}
 
+				if (Element != null && _focusChangeHandler != null)
+				{
+					Element.FocusChangeRequested -= _focusChangeHandler;
+					_focusChangeHandler = null;
+				}
+
 				_disposed = true;
 			}
 
