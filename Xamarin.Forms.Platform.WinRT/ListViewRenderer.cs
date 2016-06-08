@@ -83,6 +83,12 @@ namespace Xamarin.Forms.Platform.WinRT
 				// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
 				List.DataContext = new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
 
+#if !WINDOWS_UWP
+				var selected = Element.SelectedItem;
+				if (selected != null)
+					OnElementItemSelected(null, new SelectedItemChangedEventArgs(selected));
+#endif
+
 				UpdateGrouping();
 				UpdateHeader();
 				UpdateFooter();
