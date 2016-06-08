@@ -138,7 +138,7 @@ namespace Xamarin.Forms
 					foreach (Attribute attribute in effectAttributes)
 					{
 						var effect = (ExportEffectAttribute)attribute;
-						Effects.Add(resolutionName + "." + effect.Id, effect.Type);
+						Effects [resolutionName + "." + effect.Id] = effect.Type;
 					}
 				}
 			}
