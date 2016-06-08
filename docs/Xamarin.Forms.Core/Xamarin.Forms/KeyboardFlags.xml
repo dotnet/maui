@@ -64,6 +64,20 @@
         <summary>Capitalize the first words of sentences.</summary>
       </Docs>
     </Member>
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="None" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags None = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.KeyboardFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>No special features provided by the keyboard.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Spellcheck">
       <MemberSignature Language="C#" Value="Spellcheck" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags Spellcheck = int32(2)" />

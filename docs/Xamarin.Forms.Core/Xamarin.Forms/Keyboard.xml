@@ -139,6 +139,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Plain">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Keyboard Plain { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.Keyboard Plain" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Keyboard</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Returns a new keyboard with None <see cref="T:Xamarin.Forms.KeyboardFlags" /> ".</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Telephone">
       <MemberSignature Language="C#" Value="public static Xamarin.Forms.Keyboard Telephone { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.Keyboard Telephone" />

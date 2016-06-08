@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls
 				Keyboard.Default,
 				Keyboard.Email,
 				Keyboard.Numeric,
+				Keyboard.Plain,
 				Keyboard.Telephone,
 				Keyboard.Text,
 				Keyboard.Url
@@ -27,6 +28,7 @@ namespace Xamarin.Forms.Controls
 			}
 
 			var customKeyboards = new [] {
+				Tuple.Create ("None", Keyboard.Create (KeyboardFlags.None)),
 				Tuple.Create ("Suggestions", Keyboard.Create (KeyboardFlags.Suggestions)),
 				Tuple.Create ("Spellcheck", Keyboard.Create (KeyboardFlags.Spellcheck)),
 				Tuple.Create ("SpellcheckSuggestions", Keyboard.Create (KeyboardFlags.Spellcheck | KeyboardFlags.Suggestions)),
