@@ -12,6 +12,11 @@ namespace Xamarin.Forms
 			get { return new GridLength(1, GridUnitType.Auto); }
 		}
 
+		public static GridLength Star
+		{
+			get { return new GridLength(1, GridUnitType.Star); }
+		}
+
 		public double Value { get; }
 
 		public GridUnitType GridUnitType { get; }

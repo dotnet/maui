@@ -270,6 +270,22 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Star">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.GridLength Star { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Forms.GridLength Star" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.GridLength</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A ready to reuse GridLength of GridUnitType.Star with a Value of 1.</summary>
+        <value></value>
+        <remarks>If a Value other than 1 is needed with GridUnitType.Star, then use the constructor GridLength (value, GridUnitType.Star).</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ToString">
       <MemberSignature Language="C#" Value="public override string ToString ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
