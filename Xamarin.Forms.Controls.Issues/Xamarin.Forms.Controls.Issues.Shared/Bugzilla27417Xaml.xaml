@@ -2,14 +2,14 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Xamarin.Forms.Controls.Issues.Bugzilla27417Xaml">
-  <StackLayout Spacing="10">
+	<StackLayout Spacing="10" HorizontalOptions="Center" >
 
-    <Button BackgroundColor="Color.Gray" Text="Click Me"></Button>
-    <Button BackgroundColor="Color.Gray" Image="coffee.png"></Button>
-    <Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me"></Button>
-    <Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Top,10"></Button>
-    <Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Bottom,10"></Button>
-    <Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Right"></Button>
-    
-  </StackLayout>
+		<Button BackgroundColor="Color.Gray" Text="Click Me"></Button>
+		<Button BackgroundColor="Color.Gray" Image="coffee.png"></Button>
+		<Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me"></Button>
+		<Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Top,10"></Button>
+		<Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Bottom,10"></Button>
+		<Button BackgroundColor="Color.Gray" Image="coffee.png" Text="Click Me" ContentLayout="Right"></Button>
+
+	</StackLayout>
 </ContentPage>

@@ -4,6 +4,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Xamarin.Forms.Internals;
 using WThickness = Windows.UI.Xaml.Thickness;
 using WButton = Windows.UI.Xaml.Controls.Button;
 using WImage = Windows.UI.Xaml.Controls.Image;
@@ -135,13 +136,20 @@ namespace Xamarin.Forms.Platform.WinRT
 				return;
 			}
 
+			var bmp = new BitmapImage(new Uri("ms-appx:///" + elementImage.File));
+
 			var image = new WImage
 			{
-				Source = new BitmapImage(new Uri("ms-appx:///" + elementImage.File)),
-				Width = 30,
-				Height = 30,
+				Source = bmp,
 				VerticalAlignment = VerticalAlignment.Center,
-				HorizontalAlignment = HorizontalAlignment.Center
+				HorizontalAlignment = HorizontalAlignment.Center,
+				Stretch = Stretch.Uniform
+			};
+
+			bmp.ImageOpened += (sender, args) => {
+				image.Width = bmp.PixelWidth;
+				image.Height = bmp.PixelHeight;
+				Element.InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			};
 
 			// No text, just the image
@@ -152,10 +160,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			// Both image and text, so we need to build a container for them
-			var layout = Element.ContentLayout;
+			Control.Content = CreateContentContainer(Element.ContentLayout, image, text);
+		}
+
+		static StackPanel CreateContentContainer(Button.ButtonContentLayout layout, WImage image, string text)
+		{
 			var container = new StackPanel();
-			var textBlock = new TextBlock
-			{
+			var textBlock = new TextBlock {
 				Text = text,
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Center
@@ -195,8 +206,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					break;
 			}
 
-			Control.Content = container;
-
+			return container;
 		}
 
 		void UpdateFont()

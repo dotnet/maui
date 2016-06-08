@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Xamarin.Forms.Internals;
 using WButton = System.Windows.Controls.Button;
 using WImage = System.Windows.Controls.Image;
 using WThickness = System.Windows.Thickness;
@@ -91,13 +92,19 @@ namespace Xamarin.Forms.Platform.WinPhone
 				return;
 			}
 
+			var bmp = new BitmapImage(new Uri("/" + elementImage.File, UriKind.Relative));
+
 			var image = new WImage
 			{
-				Source = new BitmapImage(new Uri("/" + elementImage.File, UriKind.Relative)),
-				Width = 30,
-				Height = 30,
+				Source = bmp,
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Center
+			};
+
+			bmp.ImageOpened += (sender, args) => {
+				image.Width = bmp.PixelWidth;
+				image.Height = bmp.PixelHeight;
+				Element.InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
 			};
 
 			// No text, just the image
@@ -108,10 +115,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 			}
 
 			// Both image and text, so we need to build a container for them
-			var layout = Element.ContentLayout;
+			Control.Content = CreateContentContainer(Element.ContentLayout, image, text);
+		}
+
+		static StackPanel CreateContentContainer(Button.ButtonContentLayout layout, WImage image, string text)
+		{
 			var container = new StackPanel();
-			var textBlock = new TextBlock
-			{
+			var textBlock = new TextBlock {
 				Text = text,
 				VerticalAlignment = VerticalAlignment.Center,
 				HorizontalAlignment = HorizontalAlignment.Center
@@ -127,26 +137,31 @@ namespace Xamarin.Forms.Platform.WinPhone
 				case Button.ButtonContentLayout.ImagePosition.Top:
 					container.Orientation = Orientation.Vertical;
 					image.Margin = new WThickness(0, 0, 0, spacing);
+					container.Children.Add(image);
+					container.Children.Add(textBlock);
 					break;
 				case Button.ButtonContentLayout.ImagePosition.Bottom:
 					container.Orientation = Orientation.Vertical;
 					image.Margin = new WThickness(0, spacing, 0, 0);
+					container.Children.Add(textBlock);
+					container.Children.Add(image);
 					break;
 				case Button.ButtonContentLayout.ImagePosition.Right:
 					container.Orientation = Orientation.Horizontal;
 					image.Margin = new WThickness(spacing, 0, 0, 0);
+					container.Children.Add(textBlock);
+					container.Children.Add(image);
 					break;
 				default:
 					// Defaults to image on the left
 					container.Orientation = Orientation.Horizontal;
 					image.Margin = new WThickness(0, 0, spacing, 0);
+					container.Children.Add(image);
+					container.Children.Add(textBlock);
 					break;
 			}
 
-			container.Children.Add(image);
-			container.Children.Add(textBlock);
-
-			Control.Content = container;
+			return container;
 		}
 
 		void UpdateFont()
