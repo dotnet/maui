@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Converter that returns a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> for a JSON string or a URI string.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new JSON source converter.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -41,9 +41,9 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="value">.</param>
+        <summary>Returns a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> for an invariant JSON string or URI string.</summary>
+        <returns>A <see cref="T:Xamarin.Forms.Pages.JsonSource" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

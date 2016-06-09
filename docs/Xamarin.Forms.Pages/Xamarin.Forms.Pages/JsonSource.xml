@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Represents a source for a JSON string.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty JSON source.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -41,9 +41,9 @@
         <Parameter Name="json" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="json">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="json">The JSON source string.</param>
+        <summary>Creates a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> from the specified <paramref name="json" /> string.</summary>
+        <returns>A <see cref="T:Xamarin.Forms.Pages.JsonSource" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -62,8 +62,8 @@
       </Parameters>
       <Docs>
         <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Creates a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> from the specified <paramref name="uri" />.</summary>
+        <returns>A <see cref="T:Xamarin.Forms.Pages.JsonSource" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -79,8 +79,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>When implemented by the application developer, returns a task that retrieves the string representation of the JSON source.</summary>
+        <returns>A task that retrieves the string representation of the JSON source.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -98,9 +98,9 @@
         <Parameter Name="json" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="json">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="json">The JSON string to convert to a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> object.</param>
+        <summary>Implicitly converts a JSON string to a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> object.</summary>
+        <returns>A JSON string to a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> object.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

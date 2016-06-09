@@ -14,7 +14,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Base class for <see cref="T:Xamarin.Forms.Pages.DirectoryPage" />, <see cref="T:Xamarin.Forms.Pages.ListDataPage" />, and <see cref="T:Xamarin.Forms.Pages.PersonDetailPage" />, and for data pages defined by the developer .</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -27,7 +27,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new DataPage with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -42,8 +42,8 @@
         <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Pages.IDataItem&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the data that will be displayed by the data page.</summary>
+        <value>The data that will be displayed by the data page.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -58,7 +58,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataPage.Data" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -73,8 +73,8 @@
         <ReturnType>Xamarin.Forms.Pages.IDataSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets a data source, such as a URL or file, from which an enumerable list of <see cref="T:Xamarin.Forms.Pages.IDataItem" /> objects can be obtained.</summary>
+        <value>The data source from which an enumerable list of <see cref="T:Xamarin.Forms.Pages.IDataItem" /> objects can be obtained.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -89,7 +89,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataPage.DataSource" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -104,8 +104,8 @@
         <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the <see cref="T:Xamarin.Forms.DataTemplate" /> to use when none is specified by a <see cref="T:Xamarin.Forms.DataTemplateSelector" />.</summary>
+        <value>The <see cref="T:Xamarin.Forms.DataTemplate" /> to use when none is specified by a <see cref="T:Xamarin.Forms.DataTemplateSelector" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -120,7 +120,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataPage.DefaultItemTemplate" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -138,8 +138,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="key">The key of the key-value pair to suppress from the data source.</param>
+        <summary>Makes a data key unavailable to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -157,8 +157,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="key">The key of the previously masked key-value pair to make available to the application.</param>
+        <summary>Makes a previously masked data key available to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

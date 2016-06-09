@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>An image data view for featuring a person or thing.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty hero image.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -38,8 +38,8 @@
         <ReturnType>Xamarin.Forms.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the image aspect, which controls clipping and filling when the image size does not match the view size.</summary>
+        <value>The image aspect, which controls clipping and filling when the image size does not match the view size.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -54,7 +54,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.HeroImage.Aspect" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -69,8 +69,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the detailed description of the hero image.</summary>
+        <value>The detailed description of the hero image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -85,7 +85,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.HeroImage.Detail" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -100,8 +100,8 @@
         <ReturnType>Xamarin.Forms.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the image source from which to get the hero image.</summary>
+        <value>The image source from which to get the hero image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -116,7 +116,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.HeroImage.ImageSource" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -131,8 +131,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the title, or main, text for the hero image.</summary>
+        <value>The title, or main, text for the hero image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -147,7 +147,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.HeroImage.Text" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -14,7 +14,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Supports data presentation, and is the base class for <see cref="T:Xamarin.Forms.Pages.CardView" />, <see cref="T:Xamarin.Forms.Pages.HeroImage" />, and <see cref="T:Xamarin.Forms.Pages.ListItemControl" />.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -27,7 +27,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty data view.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -42,8 +42,8 @@
         <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Pages.IDataItem&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the enumerable list of data to display.</summary>
+        <value>The enumerable list of data to display.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -58,7 +58,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataView.Data" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -73,8 +73,8 @@
         <ReturnType>Xamarin.Forms.Pages.IDataSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the data source.</summary>
+        <value>The data source.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -89,7 +89,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataView.DataSource" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -104,8 +104,8 @@
         <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the default template to use for displaying data when none is specified by a data template selector.</summary>
+        <value>The default template to use for displaying data when none is specified by a data template selector.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -120,7 +120,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DataView.DefaultItemTemplate" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -138,8 +138,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+          <param name="key">The key for the data item to block from the application.</param>
+          <summary>Prevents the data item that is identified by <paramref name="key" /> from being available to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -157,8 +157,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+          <param name="key">The key for the data item to unblock from the application</param>
+          <summary>Makes the previously masked data item that is identified by <paramref name="key" /> available to the application</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

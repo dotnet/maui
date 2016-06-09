@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Represents a source of JSON data.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty JSON data source.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -47,8 +47,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Returns the raw JSON data from the source.</summary>
+        <returns>The raw JSON data from the source.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -66,9 +66,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="key">The key of the data to get.</param>
+        <summary>Returns the first data item that matches the <paramref name="key" />.</summary>
+        <returns>The first data item that matches the <paramref name="key" />, or <see langword="null" /> if no such item exists.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -87,10 +87,10 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="key">The key to add or modify.</param>
+        <param name="value">The value to assign.</param>
+        <summary>Assigns the data that is identified by <paramref name="key"/> to <paramref name="value" />, creating it if it does not exist.</summary>
+        <returns><see langword="true" /> if an existing value was modified, or if a new value was assigned to a value other than <parmamref name="null" />. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -110,8 +110,8 @@
         <ReturnType>Xamarin.Forms.Pages.JsonSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the source of the raw JSON data.</summary>
+        <value>The source of the raw JSON data.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

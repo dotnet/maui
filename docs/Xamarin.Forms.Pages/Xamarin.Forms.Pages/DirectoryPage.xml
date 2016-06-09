@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Displays items, optionally grouping them.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty directory page.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -38,8 +38,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets a value that controls whether items will be grouped.</summary>
+        <value>The value that controls whether items will be grouped.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -54,7 +54,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.DirectoryPage.IsGroupingEnabled" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

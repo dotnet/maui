@@ -7,7 +7,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Interface that represents a data source provider.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -22,8 +22,8 @@
         <ReturnType>Xamarin.Forms.Pages.IDataSource</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the data source.</summary>
+        <value>The data source.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -41,8 +41,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+          <param name="key">The key for the data item to block from the application.</param>
+          <summary>Prevents the data item that is identified by <paramref name="key" /> from being available to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -60,8 +60,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+          <param name="key">The key for the data item to unblock from the application</param>
+          <summary>Makes the previously masked data item that is identified by <paramref name="key" /> available to the application</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

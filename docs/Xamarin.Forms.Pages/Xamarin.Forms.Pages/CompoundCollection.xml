@@ -17,7 +17,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>A collection that consists of prepended items, a main list, and appended items.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -30,7 +30,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty compound collection.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -49,7 +49,7 @@
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -65,8 +65,8 @@
         <ReturnType>System.Collections.IList</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the list of appended items.</summary>
+        <value>The list of appended items.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -82,7 +82,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -97,7 +97,7 @@
         <ReturnType>System.Collections.Specialized.NotifyCollectionChangedEventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Event that is raised when the collection is changed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -115,9 +115,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="value">The value to check.</param>
+        <summary>Returns <see langword="true" /> if <paramref name="value" /> is contained in the compound collection. Otherwise, returns <see langword="false" />.</summary>
+        <returns><see langword="true" /> if <paramref name="value" /> is contained in the compound collection. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -138,7 +138,7 @@
       <Docs>
         <param name="array">To be added.</param>
         <param name="index">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -153,8 +153,8 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the number of items in the compound collection.</summary>
+        <value>The number of items in the compound collection.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -170,8 +170,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Gets an enumerator for iterating over the objects in the compound collection.</summary>
+        <returns>The enumerator for iterating over the objects in the compound collection.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -189,9 +189,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="value">The value for which to locate the first index at which it appears.</param>
+        <summary>Finds the first index where the value appears, or -1 if the object is not present in the compound collection.</summary>
+        <returns>The first index where the value appears, or -1 if the object is not present in the compound collection.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -212,7 +212,7 @@
       <Docs>
         <param name="index">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -227,8 +227,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Returns <see langword="false" />.</summary>
+        <value><see langword="false" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -243,8 +243,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+          <summary>Returns <see langword="true" />.</summary>
+          <value><see langword="true" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -259,8 +259,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+          <summary>Returns <see langword="false" />.</summary>
+          <value><see langword="false" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -279,8 +279,8 @@
       </Parameters>
       <Docs>
         <param name="index">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the item at the specified <paramref name="index" />. Setting is not supported.</summary>
+        <value>When used as an rvalue, the item at the specified <paramref name="index" />. Use as an lvalue is not supported.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -295,8 +295,8 @@
         <ReturnType>System.Collections.Generic.IReadOnlyList&lt;System.Object&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the unappended list.</summary>
+        <value>The unappended list.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -311,7 +311,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.CompoundCollection.MainList" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -326,8 +326,8 @@
         <ReturnType>System.Collections.IList</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the list of prepended items.</summary>
+        <value>The list of prepended items.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -346,7 +346,7 @@
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -365,7 +365,7 @@
       </Parameters>
       <Docs>
         <param name="index">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -380,8 +380,8 @@
         <ReturnType>System.Object</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Returns <see langword="null" />.</summary>
+        <value><see langword="null" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

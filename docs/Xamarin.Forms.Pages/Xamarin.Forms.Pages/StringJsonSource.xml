@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>A JSON source that sources its data from a string.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty string JSON source</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -39,8 +39,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Returns a task that gets the string representation of the JSON in the string JSON source.</summary>
+        <returns>A task that gets the string representation of the JSON in the string JSON source.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -55,8 +55,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the string representation of the JSON in the string JSON source.</summary>
+        <value>The string representation of the JSON in the string JSON source.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -71,7 +71,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.StringJsonSource.Json" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

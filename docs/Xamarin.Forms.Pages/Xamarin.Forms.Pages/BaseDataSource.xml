@@ -17,7 +17,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Base class for data sources.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -30,7 +30,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates an empty data source.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -45,8 +45,8 @@
         <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Xamarin.Forms.Pages.IDataItem&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the enumerable list of data items in the data source.</summary>
+        <value>The enumerable list of data items in the data source.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -62,8 +62,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Gets a list of the underlying data for the data source.</summary>
+        <returns>The list of the underlying data for the data source.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -81,9 +81,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="key">The key that identifies the value to get.</param>
+        <summary>Returns the value that is identified by <paramref name="key" />.</summary>
+        <returns>The value that is identified by <paramref name="key" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -98,8 +98,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+          <summary>Gets a value that is <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</summary>
+          <value><see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -117,9 +117,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+          <param name="key">The key for the data item to get or set.</param>
+          <summary>Gets or sets the data item that is identified by <paramref nam="key" />.</summary>
+          <value>The data item that is identified by <paramref nam="key" />.</value>>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -143,8 +143,8 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="property">The property that was changed.</param>
+        <summary>Method that is called when a monitored property is changed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -163,10 +163,10 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="key">The identifier for the data item to change.</param>
+        <param name="value">The new value.</param>
+        <summary>Sets the data that is identified by <paramref name="key" /> to <paramref name="value" /> and calls the <see cref="M:Xamarin.Forms.Pages.BaseDataSource.OnPropertyChanged" /> method if <paramref name="value" /> is different from the current value.</summary>
+        <returns><see langword="false" /> if the new value is the same as the old value. Otherwise, <see langword="true" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -181,7 +181,7 @@
         <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -209,7 +209,7 @@
       </Parameters>
       <Docs>
         <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -236,7 +236,7 @@
       </Parameters>
       <Docs>
         <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

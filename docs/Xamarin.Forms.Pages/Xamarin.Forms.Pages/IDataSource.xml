@@ -7,7 +7,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Interface that represents a source for data to display in a data page.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -22,8 +22,8 @@
         <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Xamarin.Forms.Pages.IDataItem&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets the list of data items to display.</summary>
+        <value>The list of data items to display.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -38,8 +38,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets a value that is <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</summary>
+        <value><see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -57,9 +57,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <param name="key">The key for the data item to get or set.</param>
+        <summary>Gets or sets the data item that is identified by <paramref nam="key" />.</summary>
+        <value>The data item that is identified by <paramref nam="key" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -74,8 +74,8 @@
         <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets an enumerable list of keys that have been masked with <see cref="M:Xamarin.Forms.Pages.IDataSource.MaskKey" />.</summary>
+        <value>The enumerable list of keys that have been masked with <see cref="M:Xamarin.Forms.Pages.IDataSource.MaskKey" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -93,8 +93,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="key">The key for the data item to block from the application.</param>
+        <summary>Prevents the data item that is identified by <paramref name="key" /> from being available to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -112,8 +112,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="key">The key for the data item to unblock from the application</param>
+        <summary>Makes the previously masked data item that is identified by <paramref name="key" /> available to the application</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
