@@ -421,7 +421,20 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (global == position || cells.Count > 0)
 				{
-					cells.Add(group.HeaderContent);
+					if (_listView.CachingStrategy == ListViewCachingStrategy.RecycleElement)
+					{
+						var groupContent = _listView.TemplatedItems.GroupHeaderTemplate.CreateContent(group.ItemsSource, _listView) as Cell;
+						if (groupContent != null)
+						{
+							groupContent.BindingContext = group.ItemsSource;
+							cells.Add(groupContent);
+						}
+					}
+					else
+					{
+						cells.Add(group.HeaderContent);
+					}
+
 					if (cells.Count == take)
 						return cells;
 				}
