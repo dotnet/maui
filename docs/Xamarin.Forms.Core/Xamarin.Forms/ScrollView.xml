@@ -34,16 +34,17 @@
       <para>  The following example shows the creation of a ScrollView with a large <see cref="T:Xamarin.Forms.StackLayout" /> in it.</para>
       <example>
         <code lang="C#"><![CDATA[
-StackLayout stack;
-var scrollview = new ScrollView {
-  Content = new StackLayout {
-    Padding = new Thickness (20),
-  },
-};
+var stack = new StackLayout();
 
-for (var i=0; i<100; i++)
-  stack.Children.Add (new Button { Text = "Foo"});
-              ]]></code>
+for (int i = 0; i < 100; i++)
+{
+    stack.Children.Add(new Button { Text = "Button " + i });
+}
+
+MainPage = new ContentPage
+{
+    Content = new ScrollView { Content = stack }
+};]]></code>
       </example>
       <block type="note">Application developers should not nest one <see cref="T:Xamarin.Forms.ScrollView" /> within another. Additionally, they should refrain from nesting them  other elements that can scroll, such as <see cref="T:Xamarin.Forms.WebView" />.</block>
       <para>
