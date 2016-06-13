@@ -71,6 +71,11 @@
       <Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
       <Name>Xamarin.Forms.Xaml</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
+      <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
+      <Name>Xamarin.Forms.Build.Tasks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.xaml">
