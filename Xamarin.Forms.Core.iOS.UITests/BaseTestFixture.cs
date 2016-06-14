@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,8 +33,17 @@ namespace Xamarin.Forms.Core.UITests
 #pragma warning restore 618
 		protected virtual void FixtureSetup ()
 		{
-			if (ShouldResetPerFixture) {
-				RelaunchApp ();
+			try
+			{
+				if (ShouldResetPerFixture)
+				{
+					RelaunchApp();
+				}
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine(ex);
+				throw;
 			}
 		}
 
