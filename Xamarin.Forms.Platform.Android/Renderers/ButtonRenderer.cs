@@ -4,6 +4,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
+using static System.String;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
@@ -18,8 +19,8 @@ namespace Xamarin.Forms.Platform.Android
 		float _defaultFontSize;
 		Typeface _defaultTypeface;
 		bool _drawableEnabled;
-
 		bool _isDisposed;
+		int _imageHeight = -1;
 
 		public ButtonRenderer()
 		{
@@ -44,6 +45,20 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			UpdateText();
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			if (_imageHeight > -1)
+			{
+				// We've got an image (and no text); it's already centered horizontally,
+				// we just need to adjust the padding so it centers vertically
+				var diff = (b - t - _imageHeight) / 2;
+				diff = Math.Max(diff, 0);
+				Control?.SetPadding(0, diff, 0, -diff);
+			}
+
+			base.OnLayout(changed, l, t, r, b);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -142,8 +157,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var elementImage = Element.Image;
 			var imageFile = elementImage?.File;
+			_imageHeight = -1;
 
-			if (elementImage == null || string.IsNullOrEmpty(imageFile))
+			if (elementImage == null || IsNullOrEmpty(imageFile))
 			{
 				Control.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 				return;
@@ -151,14 +167,20 @@ namespace Xamarin.Forms.Platform.Android
 
 			var image = Context.Resources.GetDrawable(imageFile);
 
-			if (string.IsNullOrEmpty(Element.Text))
+			if (IsNullOrEmpty(Element.Text))
 			{
 				// No text, so no need for relative position; just center the image
 				// There's no option for just plain-old centering, so we'll use Top 
-				// (which handles the horizontal centering) and some tricksy padding 
-				// to handle the vertical centering
+				// (which handles the horizontal centering) and some tricksy padding (in OnLayout)
+				// to handle the vertical centering 
+
+				// Clear any previous padding and set the image as top/center
+				Control.SetPadding(0, 0, 0, 0);
 				Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
-				Control.SetPadding(0, Control.PaddingTop, 0, -Control.PaddingTop);
+
+				// Keep track of the image height so we can use it in OnLayout
+				_imageHeight = image.IntrinsicHeight;
+
 				image?.Dispose();
 				return;
 			}
@@ -250,7 +272,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateText()
 		{
+			var oldText = NativeButton.Text;
 			NativeButton.Text = Element.Text;
+
+			// If we went from or to having no text, we need to update the image position
+			if (IsNullOrEmpty(oldText) != IsNullOrEmpty(NativeButton.Text))
+			{
+				UpdateBitmap();
+			}
 		}
 
 		void UpdateTextColor()
