@@ -329,7 +329,11 @@ namespace Xamarin.Forms
 		protected override void SetupContent(Cell content, int index)
 		{
 			base.SetupContent(content, index);
+			var viewCell = content as ViewCell;
+			if (viewCell != null && viewCell.View != null && HasUnevenRows)
+				viewCell.View.ComputedConstraint = LayoutConstraint.None;
 			content.Parent = this;
+
 		}
 
 		protected override void UnhookContent(Cell content)
