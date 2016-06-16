@@ -771,7 +771,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			layout.Children.Remove (labela0);
-			Assert.False (layout.LogicalChildren.Contains (labela0));
+			Assert.False (((IElementController)layout).LogicalChildren.Contains (labela0));
 		}
 
 		[Test]

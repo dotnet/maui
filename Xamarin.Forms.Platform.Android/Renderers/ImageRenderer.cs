@@ -11,6 +11,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		bool _isDisposed;
 
+		IElementController ElementController => Element as IElementController;
+
 		public ImageRenderer()
 		{
 			AutoPackage = false;
@@ -98,8 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (!_isDisposed)
 			{
 				Control.SetImageBitmap(bitmap);
-				if (bitmap != null)
-					bitmap.Dispose();
+				bitmap?.Dispose();
 
 				((IImageController)Element).SetIsLoading(false);
 				((IVisualElementController)Element).NativeSizeChanged();

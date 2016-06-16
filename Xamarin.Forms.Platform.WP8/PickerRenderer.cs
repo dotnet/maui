@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 		FormsListPicker _listPicker;
 		Brush _defaultBrush;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			_listPicker = new FormsListPicker();
@@ -134,12 +136,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (oldVal == ListPickerMode.Normal && newVal == ListPickerMode.Full)
 			{
 				// Picker Page is now showing
-				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 			}
 			else if (oldVal == ListPickerMode.Full && newVal == ListPickerMode.Normal)
 			{
 				// PickerPage is now dismissed
-				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 			}
 		}
 
@@ -165,7 +167,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				return;
 
 			int elementSelectedIndex = picker.SelectedIndex - 1;
-			((IElementController)Element).SetValueFromRenderer(Picker.SelectedIndexProperty, elementSelectedIndex);
+			ElementController.SetValueFromRenderer(Picker.SelectedIndexProperty, elementSelectedIndex);
 		}
 
 		void UpdateAlignment()

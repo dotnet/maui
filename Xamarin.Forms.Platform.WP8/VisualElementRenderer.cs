@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		VisualElementTracker _tracker;
 
+		IElementController ElementController => Element as IElementController;
+
 		public TNativeElement Control { get; private set; }
 
 		public TElement Element { get; private set; }
@@ -139,9 +141,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 				Control.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 			}
 
-			for (var i = 0; i < Element.LogicalChildren.Count; i++)
+			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
-				var child = Element.LogicalChildren[i] as VisualElement;
+				var child = ElementController.LogicalChildren[i] as VisualElement;
 				if (child == null)
 					continue;
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
@@ -164,9 +166,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			Element.IsInNativeLayout = true;
 
-			for (var i = 0; i < Element.LogicalChildren.Count; i++)
+			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
-				var child = Element.LogicalChildren[i] as VisualElement;
+				var child = ElementController.LogicalChildren[i] as VisualElement;
 				if (child == null)
 					continue;
 				IVisualElementRenderer renderer = Platform.GetRenderer(child);
@@ -227,12 +229,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		protected virtual void OnGotFocus(object sender, RoutedEventArgs args)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		protected virtual void OnLostFocus(object sender, RoutedEventArgs args)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)

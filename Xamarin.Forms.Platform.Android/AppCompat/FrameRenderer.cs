@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (Element == null)
 				return;
 
-			var children = Element.LogicalChildren;
+			var children = ((IElementController)Element).LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
 			{
 				var visualElement = children[i] as VisualElement;

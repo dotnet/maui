@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			get { return (TabbedPage)Element; }
 		}
 
+		IPageController PageController => Element as IPageController;
+
 		protected VisualElementTracker<Page, Canvas> Tracker
 		{
 			get { return _tracker; }
@@ -205,7 +207,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				return;
 
 			ShowTabs();
-			Page.SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		Windows.UI.Xaml.Controls.Page GetTopPage()
@@ -262,8 +264,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnUnloaded(object sender, RoutedEventArgs args)
 		{
 			RemoveTabs();
-			if (Page != null)
-				Page.SendDisappearing();
+			PageController?.SendDisappearing();
 		}
 	}
 }

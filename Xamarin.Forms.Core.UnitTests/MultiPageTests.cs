@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			container.Children.Add (CreateContainedPage());
 
 			Assert.AreEqual (2, childCount);
-			Assert.AreEqual (2, page.LogicalChildren.Count);
+			Assert.AreEqual (2, ((IElementController)page).LogicalChildren.Count);
 			Assert.AreEqual (2, pagesAdded);
 		}
 
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (2, removeCount);
 			Assert.AreEqual (2, childCount);
-			Assert.AreEqual (2, page.LogicalChildren.Count);
+			Assert.AreEqual (2, ((IElementController)page).LogicalChildren.Count);
 		}
 
 		[Test]

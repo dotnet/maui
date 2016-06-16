@@ -26,6 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 		UIDatePicker _picker;
 		UIColor _defaultTextColor;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -89,17 +91,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		void OnValueChanged(object sender, EventArgs e)
 		{
-			((IElementController)Element).SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));
+			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, _picker.Date.ToDateTime() - new DateTime(1, 1, 1));
 		}
 
 		void UpdateTextColor()

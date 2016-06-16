@@ -12,6 +12,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 		WButton _downButton;
 		WButton _upButton;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Stepper> e)
 		{
 			base.OnElementChanged(e);
@@ -51,12 +53,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void DownButtonOnClick(object sender, RoutedEventArgs routedEventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(Stepper.ValueProperty, Math.Max(Element.Minimum, Element.Value - Element.Increment));
+			ElementController.SetValueFromRenderer(Stepper.ValueProperty, Math.Max(Element.Minimum, Element.Value - Element.Increment));
 		}
 
 		void UpButtonOnClick(object sender, RoutedEventArgs routedEventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(Stepper.ValueProperty, Math.Min(Element.Maximum, Element.Value + Element.Increment));
+			ElementController.SetValueFromRenderer(Stepper.ValueProperty, Math.Min(Element.Maximum, Element.Value + Element.Increment));
 		}
 
 		void UpdateButtons()

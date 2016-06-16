@@ -11,8 +11,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			base.OnElementChanged(e);
 
-			Loaded += (sender, args) => Element.SendAppearing();
-			Unloaded += (sender, args) => Element.SendDisappearing();
+			Loaded += (sender, args) => ((IPageController)Element).SendAppearing();
+			Unloaded += (sender, args) => ((IPageController)Element).SendDisappearing();
 		}
 	}
 }

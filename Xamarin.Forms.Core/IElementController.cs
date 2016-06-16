@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace Xamarin.Forms
 {
 	public interface IElementController
@@ -6,5 +8,6 @@ namespace Xamarin.Forms
 
 		void SetValueFromRenderer(BindableProperty property, object value);
 		void SetValueFromRenderer(BindablePropertyKey propertyKey, object value);
+		ReadOnlyCollection<Element> LogicalChildren { get; }
 	}
 }

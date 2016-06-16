@@ -24,6 +24,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		public bool Visible { get; private set; }
 
+		IPageController PageController => Element as IPageController;
+
 		protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
 		{
 			UpdateSizes(finalSize.Width, finalSize.Height);
@@ -49,11 +51,11 @@ namespace Xamarin.Forms.Platform.WinPhone
 			{
 				if (Element.IsPresented)
 					Toggle();
-				Element.SendAppearing();
+				PageController.SendAppearing();
 			};
 			Unloaded += (sender, args) =>
 			{
-				Element.SendDisappearing();
+				PageController.SendDisappearing();
 				if (Visible)
 				{
 					var platform = (Platform)Element.Platform;

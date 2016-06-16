@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
+		IPageController PageController => Element as IPageController;
+
 		public PageRenderer()
 		{
 			if (!Forms.IsiOS7OrNewer)
@@ -78,7 +80,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_appeared = true;
-			((Page)Element).SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -89,7 +91,7 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_appeared = false;
-			((Page)Element).SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		public override void ViewDidLoad()
@@ -132,7 +134,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Element.PropertyChanged -= OnHandlePropertyChanged;
 				Platform.SetRenderer(Element, null);
 				if (_appeared)
-					((Page)Element).SendDisappearing();
+					PageController.SendDisappearing();
 
 				_appeared = false;
 

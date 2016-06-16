@@ -31,6 +31,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public Page Page => (Page)_pageReference?.Target;
 
+		IPageController PageController => Page as IPageController;
+
 		public override bool UserVisibleHint
 		{
 			get { return base.UserVisibleHint; }
@@ -41,9 +43,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 				_isVisible = value;
 				if (_isVisible.Value)
-					Page?.SendAppearing();
+					PageController?.SendAppearing();
 				else
-					Page?.SendDisappearing();
+					PageController?.SendDisappearing();
 			}
 		}
 
@@ -106,20 +108,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			if (hidden)
-				Page.SendDisappearing();
+				PageController.SendDisappearing();
 			else
-				Page.SendAppearing();
+				PageController.SendAppearing();
 		}
 
 		public override void OnPause()
 		{
-			Page?.SendDisappearing();
+			PageController?.SendDisappearing();
 			base.OnPause();
 		}
 		
 		public override void OnResume()
 		{
-			Page?.SendAppearing();
+			PageController?.SendAppearing();
 			base.OnResume();
 		}
 	}

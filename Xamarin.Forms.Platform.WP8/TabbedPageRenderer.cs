@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				if (pivotItem.ActualWidth > 0 && pivotItem.ActualHeight > 0)
 				{
 					var tab = (Page)DataContext;
-					((TabbedPage)tab.RealParent).ContainerArea = new Rectangle(0, 0, pivotItem.ActualWidth, pivotItem.ActualHeight);
+					((IPageController)tab.RealParent).ContainerArea = new Rectangle(0, 0, pivotItem.ActualWidth, pivotItem.ActualHeight);
 				}
 			};
 		}
@@ -74,8 +74,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			_page.PropertyChanged += OnPropertyChanged;
 
-			Loaded += (sender, args) => _page.SendAppearing();
-			Unloaded += (sender, args) => _page.SendDisappearing();
+			Loaded += (sender, args) => ((IPageController)_page).SendAppearing();
+			Unloaded += (sender, args) => ((IPageController)_page).SendDisappearing();
 
 			OnElementChanged(new VisualElementChangedEventArgs(_page, element));
 		}

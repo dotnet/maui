@@ -23,6 +23,8 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		UIToolbar _accessoryView;
 
+		IElementController ElementController => Element as IElementController;
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			if (!Forms.IsiOS7OrNewer)
@@ -106,7 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandleChanged(object sender, EventArgs e)
 		{
-			((IElementController)Element).SetValueFromRenderer(Editor.TextProperty, Control.Text);
+			ElementController.SetValueFromRenderer(Editor.TextProperty, Control.Text);
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
@@ -117,7 +119,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		void UpdateEditable()

@@ -45,6 +45,8 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		bool _isDisposed;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_isDisposed)

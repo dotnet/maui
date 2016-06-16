@@ -24,6 +24,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 		}
 
+		IPageController PageController => Element as IPageController;
+
 		void ViewPager.IOnPageChangeListener.OnPageSelected(int position)
 		{
 			Element.CurrentPage = Element.Children[position];
@@ -54,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 
 				if (Element != null)
-					Element.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+					PageController.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			}
 
 			base.Dispose(disposing);
@@ -63,13 +65,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			Element.SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			Element.SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselPage> e)
@@ -79,7 +81,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			var activity = (FormsAppCompatActivity)Context;
 
 			if (e.OldElement != null)
-				e.OldElement.InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
+				((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 
 			if (e.NewElement != null)
 			{
@@ -100,7 +102,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (carouselPage.CurrentPage != null)
 					ScrollToCurrentPage();
 
-				carouselPage.InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
+				((IPageController)carouselPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 			}
 		}
 
@@ -123,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (width > 0 && height > 0)
 			{
-				Element.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height));
+				PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height));
 				pager.Layout(0, 0, width, b);
 			}
 

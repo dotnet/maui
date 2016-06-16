@@ -280,7 +280,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			contentView.Content = child;
 			contentView.Platform = platform;
 
-			Assert.AreEqual (child, contentView.LogicalChildren[0]);
+			Assert.AreEqual (child, ((IElementController)contentView).LogicalChildren[0]);
 		}
 
 		class SimpleTemplate : StackLayout
@@ -303,7 +303,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			contentView.ControlTemplate = new ControlTemplate (typeof (SimpleTemplate));
 			contentView.Platform = platform;
 
-			Assert.That (contentView.LogicalChildren[0], Is.TypeOf<SimpleTemplate> ());
+			Assert.That (((IElementController)contentView).LogicalChildren[0], Is.TypeOf<SimpleTemplate> ());
 		}
 
 		[Test]
@@ -318,7 +318,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			contentView.Content = child;
 			contentView.Platform = platform;
 
-			Assume.That (contentView.LogicalChildren[0], Is.TypeOf<SimpleTemplate> ());
+			Assume.That (((IElementController)contentView).LogicalChildren[0], Is.TypeOf<SimpleTemplate> ());
 			Assert.That (contentView.Descendants (), Contains.Item (child));
 		}
 
@@ -337,8 +337,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var bc = "Test";
 			contentView.BindingContext = bc;
 
-			Assert.AreNotEqual (bc, contentView.LogicalChildren[0].BindingContext);
-			Assert.IsNull (contentView.LogicalChildren[0].BindingContext);
+			Assert.AreNotEqual (bc, ((IElementController)contentView).LogicalChildren[0].BindingContext);
+			Assert.IsNull (((IElementController)contentView).LogicalChildren[0].BindingContext);
 		}
 
 		[Test]

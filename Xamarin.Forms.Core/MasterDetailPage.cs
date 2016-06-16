@@ -22,6 +22,8 @@ namespace Xamarin.Forms
 
 		Rectangle _masterBounds;
 
+		IPageController PageController => this as IPageController;
+
 		public Page Detail
 		{
 			get { return _detail; }
@@ -38,9 +40,9 @@ namespace Xamarin.Forms
 
 				OnPropertyChanging();
 				if (_detail != null)
-					InternalChildren.Remove(_detail);
+					PageController.InternalChildren.Remove(_detail);
 				_detail = value;
-				InternalChildren.Add(_detail);
+				PageController.InternalChildren.Add(_detail);
 				OnPropertyChanged();
 			}
 		}
@@ -76,9 +78,9 @@ namespace Xamarin.Forms
 
 				OnPropertyChanging();
 				if (_master != null)
-					InternalChildren.Remove(_master);
+					PageController.InternalChildren.Remove(_master);
 				_master = value;
-				InternalChildren.Add(_master);
+				PageController.InternalChildren.Add(_master);
 				OnPropertyChanged();
 			}
 		}

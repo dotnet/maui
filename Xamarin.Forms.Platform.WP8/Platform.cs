@@ -248,7 +248,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var parent = current.Parent as NavigationPage;
 			if (parent != null)
 			{
-				if (parent.InternalChildren[0] == current)
+				if (((IPageController)parent).InternalChildren[0] == current)
 					replaceWithRoot = true;
 			}
 

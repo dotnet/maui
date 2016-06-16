@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			new PropertyTestCase<Page, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => default(Color), new Color (0, 1, 0)),
 			new PropertyTestCase<Page, string> ("Title", v => v.Title, (v, o) => v.Title = o, () => null, "Foo"),
 			new PropertyTestCase<Page, bool> ("IsBusy", v => v.IsBusy, (v, o) => v.IsBusy = o, () => false, true),
-			new PropertyTestCase<Page, bool> ("IgnoresContainerArea", v => v.IgnoresContainerArea, (v, o) => v.IgnoresContainerArea = o, () => false, true),
+			new PropertyTestCase<Page, bool> ("IgnoresContainerArea", v => ((IPageController)v).IgnoresContainerArea, (v, o) => ((IPageController)v).IgnoresContainerArea = o, () => false, true),
 			new PropertyTestCase<Page, Thickness> ("Padding", v => v.Padding, (v, o) => v.Padding = o, () => default(Thickness), new Thickness (12)),
 			new PropertyTestCase<Picker, string> ("Title", v=>v.Title, (v, o) =>v.Title = o, () => null, "FooBar"),
 			new PropertyTestCase<Picker, int> ("SelectedIndex", v=>v.SelectedIndex, (v, o) =>v.SelectedIndex = o, () => -1, 2, ()=>new Picker{Items= {"Foo", "Bar", "Baz", "Qux"}}),

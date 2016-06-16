@@ -70,7 +70,11 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var label = new Label ();
 			testView.Content = label;
-			var originalPresenter = (ContentPresenter)testView.LogicalChildren[0].LogicalChildren[0];
+
+			var child1 = ((IElementController)testView).LogicalChildren[0];
+			var child2 = ((IElementController)child1).LogicalChildren[0];
+
+			var originalPresenter = (ContentPresenter)child2;
 
 			Assert.AreEqual (label, originalPresenter.Content);
 
@@ -83,7 +87,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void NestedTemplateBindings ()
 		{
 			var testView = new TestView ();
-			var label = (Label)testView.LogicalChildren[0].LogicalChildren[0];
+
+			var child1 = ((IElementController)testView).LogicalChildren[0];
+			var child2 = ((IElementController)child1).LogicalChildren[0];
+
+			var label = (Label)child2;
 
 			testView.Platform = new UnitPlatform ();
 			Assert.IsNull (label.Text);
@@ -101,7 +109,11 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			parentView.Content = childView;
 			childView.Content = new Button ();
-			var childPresenter = (ContentPresenter)childView.LogicalChildren[0].LogicalChildren[1];
+
+			var child1 = ((IElementController)childView).LogicalChildren[0];
+			var child2 = ((IElementController)child1).LogicalChildren[1];
+
+			var childPresenter = (ContentPresenter)child2;
 
 			parentView.ControlTemplate = new ControlTemplate (typeof (ContentControl));
 			Assert.IsNotNull (childPresenter.Content);
@@ -171,7 +183,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.ControlTemplate = new ControlTemplate (typeof (TestContent));
 			page.SetBinding (TestPage.NameProperty, "Name");
 
-			var entry = ((ContentView)page.LogicalChildren[0]).Content as Entry;
+			var entry = ((ContentView)((IElementController)page).LogicalChildren[0]).Content as Entry;
 			((IElementController)entry).SetValueFromRenderer (Entry.TextProperty, "Bar");
 			viewModel.Name = "Raz";
 

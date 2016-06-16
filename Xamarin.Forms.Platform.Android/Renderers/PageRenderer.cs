@@ -12,9 +12,11 @@ namespace Xamarin.Forms.Platform.Android
 			return true;
 		}
 
+		IPageController PageController => Element as IPageController;
+
 		protected override void Dispose(bool disposing)
 		{
-			Element?.SendDisappearing();
+			PageController?.SendDisappearing();
 			base.Dispose(disposing);
 		}
 
@@ -24,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 			var pageContainer = Parent as PageContainer;
 			if (pageContainer != null && pageContainer.IsInFragment)
 				return;
-			Element.SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -33,7 +35,7 @@ namespace Xamarin.Forms.Platform.Android
 			var pageContainer = Parent as PageContainer;
 			if (pageContainer != null && pageContainer.IsInFragment)
 				return;
-			Element.SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Page> e)

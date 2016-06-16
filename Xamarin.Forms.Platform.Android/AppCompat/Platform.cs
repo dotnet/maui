@@ -41,6 +41,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		Page Page { get; set; }
 
+		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
+
 		public void Dispose()
 		{
 			if (_disposed)
@@ -79,7 +81,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		Task<Page> INavigation.PopModalAsync(bool animated)
 		{
 			Page modal = _navModel.PopModal();
-			modal.SendDisappearing();
+			((IPageController)modal).SendDisappearing();
 			var source = new TaskCompletionSource<Page>();
 
 			IVisualElementRenderer modalRenderer = Android.Platform.GetRenderer(modal);
@@ -95,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 							modalContainer.RemoveFromParent();
 							modalContainer.Dispose();
 							source.TrySetResult(modal);
-							_navModel.CurrentPage?.SendAppearing();
+							CurrentPageController?.SendAppearing();
 							modalContainer = null;
 						}
 					});
@@ -105,7 +107,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					modalContainer.RemoveFromParent();
 					modalContainer.Dispose();
 					source.TrySetResult(modal);
-					_navModel.CurrentPage?.SendAppearing();
+					CurrentPageController?.SendAppearing();
 				}
 			}
 
@@ -139,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
-			_navModel.CurrentPage?.SendDisappearing();
+			CurrentPageController?.SendDisappearing();
 
 			_navModel.PushModal(modal);
 
@@ -151,7 +153,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			// Verify that the modal is still on the stack
 			if (_navModel.CurrentPage == modal)
-				modal.SendAppearing();
+				((IPageController)modal).SendAppearing();
 		}
 
 		void INavigation.RemovePage(Page page)

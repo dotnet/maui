@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			get { return internalChildren; }
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildren
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
 		{
 			get { return new ReadOnlyCollection<Element> (internalChildren); }
 		}

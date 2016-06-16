@@ -625,6 +625,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Xamarin.Forms.IElementController.LogicalChildren">
+      <MemberSignature Language="C#" Value="System.Collections.ObjectModel.ReadOnlyCollection&lt;Xamarin.Forms.Element&gt; Xamarin.Forms.IElementController.LogicalChildren { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.ObjectModel.ReadOnlyCollection`1&lt;class Xamarin.Forms.Element&gt; Xamarin.Forms.IElementController.LogicalChildren" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.ObjectModel.ReadOnlyCollection&lt;Xamarin.Forms.Element&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Xamarin.Forms.IElementController.SetValueFromRenderer">
       <MemberSignature Language="C#" Value="void IElementController.SetValueFromRenderer (Xamarin.Forms.BindableProperty property, object value);" />
       <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IElementController.SetValueFromRenderer(class Xamarin.Forms.BindableProperty property, object value) cil managed" />

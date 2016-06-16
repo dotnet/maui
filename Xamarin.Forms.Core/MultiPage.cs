@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,6 +23,8 @@ namespace Xamarin.Forms
 		readonly TemplatedItemsList<MultiPage<T>, T> _templatedItems;
 
 		T _current;
+
+		ObservableCollection<Element> InternalChildren => ((IPageController)this).InternalChildren;
 
 		protected MultiPage()
 		{
@@ -305,7 +308,7 @@ namespace Xamarin.Forms
 
 		void Reset()
 		{
-			List<Element> snapshot = InternalChildren.ToList();
+			List <Element> snapshot = InternalChildren.ToList();
 
 			InternalChildren.Clear();
 

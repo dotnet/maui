@@ -20,6 +20,8 @@ namespace Xamarin.Forms.Platform.iOS
 			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -99,17 +101,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnEditingBegan(object sender, EventArgs e)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		void OnEditingChanged(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(Entry.TextProperty, Control.Text);
+			ElementController.SetValueFromRenderer(Entry.TextProperty, Control.Text);
 		}
 
 		void OnEditingEnded(object sender, EventArgs e)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		bool OnShouldReturn(UITextField view)

@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool _ignoreAndroidSelection;
 		CarouselPage _page;
 
+		IElementController ElementController => _page as IElementController;
+
 		public CarouselPageAdapter(ViewPager pager, CarouselPage page, Context context)
 		{
 			_pager = pager;
@@ -43,7 +45,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			int currentItem = _pager.CurrentItem;
-			_page.CurrentPage = currentItem >= 0 && currentItem < _page.LogicalChildren.Count ? _page.LogicalChildren[currentItem] as ContentPage : null;
+			_page.CurrentPage = currentItem >= 0 && currentItem < ElementController.LogicalChildren.Count ? ElementController.LogicalChildren[currentItem] as ContentPage : null;
 		}
 
 		public override void DestroyItem(ViewGroup p0, int p1, Object p2)
@@ -117,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (disposing && _page != null)
 			{
-				foreach (Element element in _page.LogicalChildren)
+				foreach (Element element in ElementController.LogicalChildren)
 				{
 					var childPage = element as VisualElement;
 

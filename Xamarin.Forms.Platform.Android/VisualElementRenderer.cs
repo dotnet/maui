@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Element == null)
 				return;
 
-			ReadOnlyCollection<Element> children = Element.LogicalChildren;
+			ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
 			for (var i = 0; i < children.Count; i++)
 			{
 				var visualElement = children[i] as VisualElement;

@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 				}
 
 				if (navPage != null) {
-					navPage.Navigation.RemovePage ((Page) navPage.InternalChildren[navPage.InternalChildren.Count - 2]);
+					navPage.Navigation.RemovePage ((Page)((IPageController)navPage).InternalChildren[((IPageController)navPage).InternalChildren.Count - 2]);
 				}
 			};
 

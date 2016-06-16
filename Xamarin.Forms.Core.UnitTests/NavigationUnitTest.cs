@@ -216,8 +216,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			var root = new ContentPage ();
 			var nav = new NavigationPage (root);
 
-			Assert.AreEqual (root, nav.LogicalChildren[0]);
+
 			Assert.AreEqual (1, ((INavigationPageController)nav).StackDepth);
+			Assert.AreEqual (root, ((IElementController)nav).LogicalChildren[0]);
+
 		}
 
 		[Test]

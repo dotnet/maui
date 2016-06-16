@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (ActualWidth > 0 && ActualHeight > 0)
 				{
 					var tab = ((Page)DataContext);
-					((TabbedPage)tab.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
+					((IPageController)tab.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
 				}
 			};
 		}
@@ -259,7 +259,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (Element == null)
 				return;
 
-			Element.SendAppearing();
+			((IPageController)Element).SendAppearing();
 		}
 
 		void OnUnloaded(object sender, RoutedEventArgs args)
@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (Element == null)
 				return;
 
-			Element.SendDisappearing();
+			((IPageController)Element).SendDisappearing();
 		}
 
 		void OnTrackerUpdated(object sender, EventArgs e)

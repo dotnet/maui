@@ -22,8 +22,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			var child = new Label ();
 			Page root = new ContentPage {Content = child};
 
-			Assert.AreEqual (root.LogicalChildren.Count, 1);
-			Assert.AreSame (root.LogicalChildren.First (), child);
+			Assert.AreEqual (((IElementController)root).LogicalChildren.Count, 1);
+			Assert.AreSame (((IElementController)root).LogicalChildren.First (), child);
 		}
 
 		[Test]
@@ -257,8 +257,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			page.Layout (new Rectangle (0, 0, 800, 800));
 
 			Assert.AreEqual (new Rectangle (0, 0, 800, 800), child.Bounds);
-
-			page.ContainerArea = new Rectangle (10, 10, 30, 30);
+			((IPageController)page).ContainerArea = new Rectangle (10, 10, 30, 30);
 
 			Assert.AreEqual (new Rectangle (10, 10, 30, 30), child.Bounds);
 
@@ -315,7 +314,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That (sent, Is.False, "Busy message sent while not visible");
 
-			page.SendAppearing();
+			((IPageController)page).SendAppearing();
 
 			Assert.That (sent, Is.True, "Busy message not sent when visible");
 		}
@@ -324,7 +323,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void BusySentWhenBusyPageDisappears()
 		{
 			var page = new ContentPage { IsBusy = true };
-			page.SendAppearing();
+			((IPageController)page).SendAppearing();
 
 			var sent = false;
 			MessagingCenter.Subscribe<Page, bool> (this, Page.BusySetSignalName, (p, b) => {
@@ -332,7 +331,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				sent = true;
 			});
 
-			page.SendDisappearing();
+			((IPageController)page).SendDisappearing();
 
 			Assert.That (sent, Is.True, "Busy message not sent when visible");
 		}
@@ -344,7 +343,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			MessagingCenter.Subscribe<Page, bool> (this, Page.BusySetSignalName, (p, b) => sent = true);
 
 			var page = new ContentPage();
-			page.SendAppearing();
+			((IPageController)page).SendAppearing();
 
 			Assert.That (sent, Is.False, "Busy message sent appearing while not busy");
 
@@ -408,7 +407,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool sent = false;
 			page.Appearing += (sender, args) => sent = true;
 
-			page.SendAppearing ();
+			((IPageController)page).SendAppearing ();
 
 			Assert.True (sent);
 		}
@@ -418,12 +417,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var page = new ContentPage ();
 
-			page.SendAppearing ();
+			((IPageController)page).SendAppearing ();
 
 			bool sent = false;
 			page.Disappearing += (sender, args) => sent = true;
 
-			page.SendDisappearing ();
+			((IPageController)page).SendDisappearing ();
 
 			Assert.True (sent);
 		}
@@ -436,8 +435,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			int countAppearing = 0;
 			page.Appearing += (sender, args) => countAppearing++;
 
-			page.SendAppearing ();
-			page.SendAppearing ();
+			((IPageController)page).SendAppearing ();
+			((IPageController)page).SendAppearing ();
 
 			Assert.That (countAppearing, Is.EqualTo(1));
 		}
@@ -465,7 +464,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			navPage.Appearing += (sender, e) => sentNav = true;
 
-			navPage.SendAppearing ();
+			((IPageController)navPage).SendAppearing ();
 
 			Assert.True (sentNav);
 			Assert.True (sent);
@@ -478,7 +477,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var page = new ContentPage ();
 
 			var navPage = new NavigationPage (page);
-			navPage.SendAppearing ();
+			((IPageController)navPage).SendAppearing ();
 
 			bool sentNav = false;
 			bool sent = false;
@@ -489,7 +488,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				if (sent)
 					sentNav = true;
 			};
-			navPage.SendDisappearing ();
+			((IPageController)navPage).SendDisappearing ();
 
 			Assert.True (sentNav);
 			Assert.True (sent);

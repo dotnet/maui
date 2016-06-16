@@ -27,6 +27,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 	public class ImageRenderer : ViewRenderer<Image, System.Windows.Controls.Image>
 	{
+		IElementController ElementController => Element as IElementController;
+
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			// Someone reported a NRE happening in this method which can only be explained by Control being null

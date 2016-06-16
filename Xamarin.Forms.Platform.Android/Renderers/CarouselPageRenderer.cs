@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
+		IPageController PageController => Element as IPageController;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && _viewPager != null)
@@ -34,13 +36,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			adapter.UpdateCurrentItem();
 
-			Element.SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			Element.SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselPage> e)
@@ -91,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateCurrentItem()
 		{
 			int index = CarouselPage.GetIndex(Element.CurrentPage);
-			if (index < 0 || index >= Element.LogicalChildren.Count)
+			if (index < 0 || index >= ((IElementController)Element).LogicalChildren.Count)
 				return;
 
 			_viewPager.CurrentItem = index;

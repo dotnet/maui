@@ -63,8 +63,8 @@ namespace Xamarin.Forms
 		{
 			get
 			{
-				var result = new Stack<Page>(InternalChildren.Count);
-				foreach (Page page in InternalChildren)
+				var result = new Stack<Page>(PageController.InternalChildren.Count);
+				foreach (Page page in PageController.InternalChildren)
 					result.Push(page);
 				return result;
 			}
@@ -72,8 +72,10 @@ namespace Xamarin.Forms
 
 		int INavigationPageController.StackDepth
 		{
-			get { return InternalChildren.Count; }
+			get { return PageController.InternalChildren.Count; }
 		}
+
+		IPageController PageController => this as IPageController;
 
 		public Page CurrentPage
 		{
@@ -231,7 +233,7 @@ namespace Xamarin.Forms
 				return null;
 			}
 
-			var page = (Page)InternalChildren.Last();
+			var page = (Page)PageController.InternalChildren.Last();
 
 			var args = new NavigationRequestedEventArgs(page, animated);
 
@@ -249,9 +251,9 @@ namespace Xamarin.Forms
 			if (!removed && !fast)
 				return CurrentPage;
 
-			InternalChildren.Remove(page);
+			PageController.InternalChildren.Remove(page);
 
-			CurrentPage = (Page)InternalChildren.Last();
+			CurrentPage = (Page)PageController.InternalChildren.Last();
 
 			if (Popped != null)
 				Popped(this, args);
@@ -293,18 +295,17 @@ namespace Xamarin.Forms
 
 		void InsertPageBefore(Page page, Page before)
 		{
-			if (!InternalChildren.Contains(before))
+			if (!PageController.InternalChildren.Contains(before))
 				throw new ArgumentException("before must be a child of the NavigationPage", "before");
 
-			if (InternalChildren.Contains(page))
+			if (PageController.InternalChildren.Contains(page))
 				throw new ArgumentException("Cannot insert page which is already in the navigation stack");
 
 			EventHandler<NavigationRequestedEventArgs> handler = InsertPageBeforeRequestedInternal;
-			if (handler != null)
-				handler(this, new NavigationRequestedEventArgs(page, before, false));
+			handler?.Invoke(this, new NavigationRequestedEventArgs(page, before, false));
 
-			int index = InternalChildren.IndexOf(before);
-			InternalChildren.Insert(index, page);
+			int index = PageController.InternalChildren.IndexOf(before);
+			PageController.InternalChildren.Insert(index, page);
 
 			// Shouldn't be required?
 			if (Width > 0 && Height > 0)
@@ -316,9 +317,9 @@ namespace Xamarin.Forms
 			if (((INavigationPageController)this).StackDepth == 1)
 				return;
 
-			var root = (Page)InternalChildren.First();
+			var root = (Page)PageController.InternalChildren.First();
 
-			InternalChildren.ToArray().Where(c => c != root).ForEach(c => InternalChildren.Remove(c));
+			PageController.InternalChildren.ToArray().Where(c => c != root).ForEach(c => PageController.InternalChildren.Remove(c));
 
 			CurrentPage = root;
 
@@ -339,7 +340,7 @@ namespace Xamarin.Forms
 
 		async Task PushAsyncInner(Page page, bool animated)
 		{
-			if (InternalChildren.Contains(page))
+			if (PageController.InternalChildren.Contains(page))
 				return;
 
 			PushPage(page);
@@ -361,7 +362,7 @@ namespace Xamarin.Forms
 
 		void PushPage(Page page)
 		{
-			InternalChildren.Add(page);
+			PageController.InternalChildren.Add(page);
 
 			CurrentPage = page;
 		}
@@ -377,14 +378,14 @@ namespace Xamarin.Forms
 				return;
 			}
 
-			if (!InternalChildren.Contains(page))
+			if (!PageController.InternalChildren.Contains(page))
 				throw new ArgumentException("Page to remove must be contained on this Navigation Page");
 
 			EventHandler<NavigationRequestedEventArgs> handler = RemovePageRequestedInternal;
 			if (handler != null)
 				handler(this, new NavigationRequestedEventArgs(page, true));
 
-			InternalChildren.Remove(page);
+			PageController.InternalChildren.Remove(page);
 		}
 
 		void SafePop()
@@ -403,7 +404,7 @@ namespace Xamarin.Forms
 			public NavigationImpl(NavigationPage owner)
 			{
 				Owner = owner;
-				_castingList = new Lazy<ReadOnlyCastingList<Page, Element>>(() => new ReadOnlyCastingList<Page, Element>(Owner.InternalChildren));
+				_castingList = new Lazy<ReadOnlyCastingList<Page, Element>>(() => new ReadOnlyCastingList<Page, Element>(((IPageController)Owner).InternalChildren));
 			}
 
 			NavigationPage Owner { get; }

@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 			_renderer = renderer;
 		}
 
+		IElementController ElementController => _renderer.Element as IElementController;
+
 		public void Load()
 		{
 			if (_loaded)
@@ -32,15 +34,15 @@ namespace Xamarin.Forms.Platform.WinPhone
 			_renderer.Element.ChildRemoved += HandleChildRemoved;
 			_renderer.Element.ChildrenReordered += HandleChildrenReordered;
 
-			foreach (Element child in _renderer.Element.LogicalChildren)
+			foreach (Element child in ElementController.LogicalChildren)
 				HandleChildAdded(_renderer.Element, new ElementEventArgs(child));
 		}
 
 		void EnsureZIndex()
 		{
-			for (var index = 0; index < _renderer.Element.LogicalChildren.Count; index++)
+			for (var index = 0; index < ElementController.LogicalChildren.Count; index++)
 			{
-				var child = (VisualElement)_renderer.Element.LogicalChildren[index];
+				var child = (VisualElement)ElementController.LogicalChildren[index];
 				IVisualElementRenderer r = Platform.GetRenderer(child);
 				if (r == null)
 					continue;

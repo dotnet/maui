@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				var wrapperAwareRenderer = currentRenderer as IWrapperAware;
 				wrapperAwareRenderer?.NotifyWrapped();
 
-				foreach (Element child in currentView.LogicalChildren)
+				foreach (Element child in ((IElementController)currentView).LogicalChildren)
 				{
 					var childView = child as View;
 					if (childView == null)

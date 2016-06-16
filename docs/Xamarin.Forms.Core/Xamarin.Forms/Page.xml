@@ -1,6 +1,6 @@
 <Type Name="Page" FullName="Xamarin.Forms.Page">
-  <TypeSignature Language="C#" Value="public class Page : Xamarin.Forms.VisualElement, Xamarin.Forms.ILayout" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Page extends Xamarin.Forms.VisualElement implements class Xamarin.Forms.ILayout" />
+  <TypeSignature Language="C#" Value="public class Page : Xamarin.Forms.VisualElement, Xamarin.Forms.ILayout, Xamarin.Forms.IPageController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Page extends Xamarin.Forms.VisualElement implements class Xamarin.Forms.ILayout, class Xamarin.Forms.IPageController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,6 +17,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>Xamarin.Forms.ILayout</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IPageController</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>
@@ -212,6 +215,36 @@ namespace MyFirstFormsApp.WinPhone
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ActionSheetSignalName">
+      <MemberSignature Language="C#" Value="public const string ActionSheetSignalName;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string ActionSheetSignalName" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AlertSignalName">
+      <MemberSignature Language="C#" Value="public const string AlertSignalName;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string AlertSignalName" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Appearing">
       <MemberSignature Language="C#" Value="public event EventHandler Appearing;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler Appearing" />
@@ -273,6 +306,21 @@ namespace MyFirstFormsApp.WinPhone
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Xamarin.Forms.Page.BackgroundImage" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="BusySetSignalName">
+      <MemberSignature Language="C#" Value="public const string BusySetSignalName;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string BusySetSignalName" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -868,6 +916,86 @@ namespace MyFirstFormsApp.WinPhone
       <Parameters />
       <Docs>
         <summary>Requests that the children <see cref="T:Xamarin.Forms.Element" />s of the <see cref="T:Xamarin.Forms.Page" /> update their layouts.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IPageController.ContainerArea">
+      <MemberSignature Language="C#" Value="Xamarin.Forms.Rectangle Xamarin.Forms.IPageController.ContainerArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Rectangle Xamarin.Forms.IPageController.ContainerArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Rectangle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IPageController.IgnoresContainerArea">
+      <MemberSignature Language="C#" Value="bool Xamarin.Forms.IPageController.IgnoresContainerArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool Xamarin.Forms.IPageController.IgnoresContainerArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IPageController.InternalChildren">
+      <MemberSignature Language="C#" Value="System.Collections.ObjectModel.ObservableCollection&lt;Xamarin.Forms.Element&gt; Xamarin.Forms.IPageController.InternalChildren { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.ObjectModel.ObservableCollection`1&lt;class Xamarin.Forms.Element&gt; Xamarin.Forms.IPageController.InternalChildren" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.ObjectModel.ObservableCollection&lt;Xamarin.Forms.Element&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IPageController.SendAppearing">
+      <MemberSignature Language="C#" Value="void IPageController.SendAppearing ();" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPageController.SendAppearing() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IPageController.SendDisappearing">
+      <MemberSignature Language="C#" Value="void IPageController.SendDisappearing ();" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPageController.SendDisappearing() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

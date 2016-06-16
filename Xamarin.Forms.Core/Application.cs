@@ -94,7 +94,7 @@ namespace Xamarin.Forms
 			get { return _propertiesTask.Result; }
 		}
 
-		internal override ReadOnlyCollection<Element> LogicalChildren
+		internal override ReadOnlyCollection<Element> LogicalChildrenInternal
 		{
 			get { return _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren)); }
 		}

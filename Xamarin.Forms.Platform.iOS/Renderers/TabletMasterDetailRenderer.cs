@@ -59,6 +59,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		VisualElementTracker _tracker;
 
+		IPageController PageController => Element as IPageController;
+		IElementController ElementController => Element as IElementController;
+
 		protected MasterDetailPage MasterDetailPage
 		{
 			get { return _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element); }
@@ -77,7 +80,7 @@ namespace Xamarin.Forms.Platform.iOS
 		    {
 		        if (Element != null)
 		        {
-		            ((Page)Element).SendDisappearing();
+		            PageController.SendDisappearing();
 		            Element.PropertyChanged -= HandlePropertyChanged;
 		            Element = null;
 		        }
@@ -155,7 +158,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ViewDidAppear(bool animated)
 		{
-			((Page)Element).SendAppearing();
+			PageController.SendAppearing();
 			base.ViewDidAppear(animated);
 			ToggleMaster();
 		}
@@ -163,7 +166,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			((Page)Element).SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -277,14 +280,14 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			_masterVisible = true;
 			if (MasterDetailPageController.CanChangeIsPresented)
-				((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
+				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
 		}
 
 		void MasterControllerWillDisappear(object sender, EventArgs e)
 		{
 			_masterVisible = false;
 			if (MasterDetailPageController.CanChangeIsPresented)
-				((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
+				ElementController.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
 		}
 
 		void PerformButtonSelector()

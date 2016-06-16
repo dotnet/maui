@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void ClearChildrenRenderers()
 		{
-			if (_parent.Element.LogicalChildren.Count == 0)
+			if (((IElementController)_parent.Element).LogicalChildren.Count == 0)
 				return;
 			ClearChildrenRenderers(_oldElement);
 		}
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (view == null)
 				return;
 
-			foreach (Element logicalChild in view.LogicalChildren)
+			foreach (Element logicalChild in ((IElementController)view).LogicalChildren)
 			{
 				var child = logicalChild as VisualElement;
 				if (child != null)

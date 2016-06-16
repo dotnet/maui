@@ -9,14 +9,16 @@ namespace Xamarin.Forms.Platform.WinPhone
 	{
 		readonly ToggleSwitchButton _toggleSwitch = new ToggleSwitchButton();
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
 		{
 			base.OnElementChanged(e);
 
 			var container = new Border { Child = _toggleSwitch };
 			_toggleSwitch.IsChecked = Element.IsToggled;
-			_toggleSwitch.Checked += (sender, args) => ((IElementController)Element).SetValueFromRenderer(Switch.IsToggledProperty, true);
-			_toggleSwitch.Unchecked += (sender, args) => ((IElementController)Element).SetValueFromRenderer(Switch.IsToggledProperty, false);
+			_toggleSwitch.Checked += (sender, args) => ElementController.SetValueFromRenderer(Switch.IsToggledProperty, true);
+			_toggleSwitch.Unchecked += (sender, args) => ElementController.SetValueFromRenderer(Switch.IsToggledProperty, false);
 			_toggleSwitch.HorizontalAlignment = HorizontalAlignment.Right;
 
 			SetNativeControl(container);

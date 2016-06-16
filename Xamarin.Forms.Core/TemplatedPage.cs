@@ -13,7 +13,7 @@ namespace Xamarin.Forms
 			set { SetValue(ControlTemplateProperty, value); }
 		}
 
-		IList<Element> IControlTemplated.InternalChildren => InternalChildren;
+		IList<Element> IControlTemplated.InternalChildren => ((IPageController)this).InternalChildren;
 
 		internal override void ComputeConstraintForView(View view)
 		{

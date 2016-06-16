@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Platform.iOS
 		UIDatePicker _picker;
 		UIColor _defaultTextColor;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
 		{
 			base.OnElementChanged(e);
@@ -93,18 +95,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandleValueChanged(object sender, EventArgs e)
 		{
-			if (Element != null)
-				((IElementController)Element).SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
+			ElementController?.SetValueFromRenderer(DatePicker.DateProperty, _picker.Date.ToDateTime().Date);
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		void UpdateDateFromModel(bool animate)

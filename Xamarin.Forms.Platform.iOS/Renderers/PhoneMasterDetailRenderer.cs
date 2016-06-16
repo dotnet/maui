@@ -37,6 +37,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		VisualElementTracker _tracker;
 
+		IPageController PageController => Element as IPageController;
+
 		public PhoneMasterDetailRenderer()
 		{
 			if (!Forms.IsiOS7OrNewer)
@@ -112,13 +114,13 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidAppear(bool animated)
 		{
 			base.ViewDidAppear(animated);
-			((Page)Element).SendAppearing();
+			PageController.SendAppearing();
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			((Page)Element).SendDisappearing();
+			PageController.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -198,7 +200,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				EmptyContainers();
 
-				((Page)Element).SendDisappearing();
+				PageController.SendDisappearing();
 
 				_disposed = true;
 			}

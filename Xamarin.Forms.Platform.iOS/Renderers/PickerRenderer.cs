@@ -24,6 +24,8 @@ namespace Xamarin.Forms.Platform.iOS
 		UIPickerView _picker;
 		UIColor _defaultTextColor;
 
+		IElementController ElementController => Element as IElementController;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.OldElement != null)
@@ -86,12 +88,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
 		void OnStarted(object sender, EventArgs eventArgs)
 		{
-			((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
 		void RowsCollectionChanged(object sender, EventArgs e)
@@ -119,7 +121,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element != null)
 			{
 				var oldText = Control.Text;
-				((IElementController)Element).SetValueFromRenderer(Picker.SelectedIndexProperty, s.SelectedIndex);
+				ElementController.SetValueFromRenderer(Picker.SelectedIndexProperty, s.SelectedIndex);
 				Control.Text = s.SelectedItem;
 				UpdatePickerNativeSize(oldText);
 			}
