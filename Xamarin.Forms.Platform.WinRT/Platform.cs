@@ -13,7 +13,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
 #if WINDOWS_UWP
+using Windows.Foundation;
 using Windows.Foundation.Metadata;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 #endif
 
@@ -591,6 +593,17 @@ namespace Xamarin.Forms.Platform.WinRT
 				options.SetResult((string)e.ClickedItem);
 			};
 
+			TypedEventHandler<CoreWindow, CharacterReceivedEventArgs> onEscapeButtonPressed = delegate(CoreWindow window, CharacterReceivedEventArgs args)
+			{
+				if (args.KeyCode == 27)
+				{
+					dialog.Hide();
+					options.SetResult(ContentDialogResult.None.ToString());
+				}
+			};
+
+			Window.Current.CoreWindow.CharacterReceived += onEscapeButtonPressed;
+
 			_actionSheetOptions = options;
 
 			if (options.Cancel != null)
@@ -604,6 +617,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				options.SetResult(options.Cancel);
 			else if (result == ContentDialogResult.Primary)
 				options.SetResult(options.Destruction);
+
+			Window.Current.CoreWindow.CharacterReceived -= onEscapeButtonPressed;
 		}
 #else
 		void OnPageActionSheet(Page sender, ActionSheetArguments options)
