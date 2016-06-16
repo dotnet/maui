@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 				_disposed = true;
 				if (_dialog != null)
 				{
+					_dialog.CancelEvent -= OnCancelButtonClicked;
 					_dialog.Hide();
 					_dialog.Dispose();
 					_dialog = null;
@@ -84,6 +85,7 @@ namespace Xamarin.Forms.Platform.Android
 				_dialog.Hide();
 				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 				Control.ClearFocus();
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog = null;
 			}
 		}
@@ -96,6 +98,8 @@ namespace Xamarin.Forms.Platform.Android
 				view.Date = e.Date;
 				((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 				Control.ClearFocus();
+
+				_dialog.CancelEvent -= OnCancelButtonClicked;
 				_dialog = null;
 			}, year, month, day);
 		}
@@ -123,7 +127,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			UpdateMinimumDate();
 			UpdateMaximumDate();
+
+			_dialog.CancelEvent += OnCancelButtonClicked;
 			_dialog.Show();
+		}
+
+		void OnCancelButtonClicked(object sender, EventArgs e)
+		{
+			Element.Unfocus();
 		}
 
 		void SetDate(DateTime date)
