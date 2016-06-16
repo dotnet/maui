@@ -222,6 +222,13 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			if (_parentMasterDetailPage != null)
 				_parentMasterDetailPage.PropertyChanged -= MultiPagePropertyChanged;
+
+#if WINDOWS_UWP
+			if (_navManager != null)
+			{
+				_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
+			}
+#endif
 		}
 
 		protected void OnElementChanged(VisualElementChangedEventArgs e)

@@ -99,6 +99,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			_navModel.Push(newRoot, null);
 			newRoot.NavigationProxy.Inner = this;
 			SetCurrent(newRoot, false, true);
+			((Application)newRoot.RealParent).NavigationProxy.Inner = this;
 		}
 
 		public IReadOnlyList<Page> NavigationStack
