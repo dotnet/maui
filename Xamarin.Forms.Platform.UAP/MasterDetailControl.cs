@@ -167,7 +167,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_commandBarTcs = new TaskCompletionSource<CommandBar>();
 			ApplyTemplate();
-			return _commandBarTcs.Task;
+
+			var commandBarFromTemplate = _commandBarTcs.Task;
+			_commandBarTcs = null;
+
+			return commandBarFromTemplate;
 		}
 
 		protected override void OnApplyTemplate()
@@ -193,12 +197,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			UpdateMode();
 
-			TaskCompletionSource<CommandBar> tcs = _commandBarTcs;
-			if (tcs != null)
-			{
-				_commandBarTcs = null;
-				tcs.SetResult(_commandBar);
-			}
+			if (_commandBarTcs != null)
+				_commandBarTcs.SetResult(_commandBar);
 		}
 
 		static void OnShouldShowSplitModeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
