@@ -406,6 +406,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39987.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40704.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41038.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38284.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

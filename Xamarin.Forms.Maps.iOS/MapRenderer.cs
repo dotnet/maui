@@ -134,6 +134,7 @@ namespace Xamarin.Forms.Maps.iOS
 	public class MapRenderer : ViewRenderer
 	{
 	    CLLocationManager _locationManager;
+		bool _shouldUpdateRegion;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -215,6 +216,19 @@ namespace Xamarin.Forms.Maps.iOS
 				UpdateHasScrollEnabled();
 			else if (e.PropertyName == Map.HasZoomEnabledProperty.PropertyName)
 				UpdateHasZoomEnabled();
+			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName && ((Map)Element).LastMoveToRegion != null)
+				_shouldUpdateRegion = true;
+		}
+
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+			if (_shouldUpdateRegion)
+			{
+				MoveToRegion(((Map)Element).LastMoveToRegion, false);
+				_shouldUpdateRegion = false;
+			}
+
 		}
 
 		void AddPins(IList pins)
