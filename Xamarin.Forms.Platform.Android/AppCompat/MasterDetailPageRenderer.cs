@@ -122,6 +122,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 					_masterLayout = new MasterDetailContainer(newElement, true, Context)
 					{
+						TopPadding = ((IMasterDetailPageController)newElement).ShouldShowSplitMode ? statusBarHeight : 0,
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = (int)GravityFlags.Start }
 					};
 

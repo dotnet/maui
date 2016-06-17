@@ -120,6 +120,7 @@ namespace Xamarin.Forms.Platform.Android
 			double width = Context.FromPixels(right - left);
 			double height = Context.FromPixels(bottom - top);
 			double xPos = 0;
+			bool supressPadding = false;
 
 			//splitview
 			if (MasterDetailPageController.ShouldShowSplitMode)
@@ -131,11 +132,13 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
+				//if we are showing the normal popover master doesn't have padding
+				supressPadding = isMasterPage;
 				//popover make the master smaller
 				width = isMasterPage && (Device.Info.CurrentOrientation.IsLandscape() || Device.Idiom == TargetIdiom.Tablet) ? DefaultWidthMaster : width;
 			}
 
-			double padding = Context.FromPixels(TopPadding);
+			double padding = supressPadding ? 0 : Context.FromPixels(TopPadding);
 			return new Rectangle(xPos, padding, width, height - padding);
 		}
 
