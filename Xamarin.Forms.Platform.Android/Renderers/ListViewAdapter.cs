@@ -187,11 +187,11 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 
-			var makeBline = true;
+			var cellIsBeingReused = false;
 			var layout = convertView as ConditionalFocusLayout;
 			if (layout != null)
 			{
-				makeBline = false;
+				cellIsBeingReused = true;
 				convertView = layout.GetChildAt(0);
 			}
 			else
@@ -262,7 +262,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Performance.Start("AddView");
 
-			if (!makeBline)
+			if (cellIsBeingReused)
 			{
 				if (convertView != view)
 				{
@@ -275,42 +275,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			Performance.Stop("AddView");
 
-			AView bline;
-			if (makeBline)
-			{
-				bline = new AView(_context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };
-
-				layout.AddView(bline);
-			}
-			else
-				bline = layout.GetChildAt(1);
-
 			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
-			Color separatorColor = _listView.SeparatorColor;
+			AView bline;
 
-			if (nextCellIsHeader || _listView.SeparatorVisibility == SeparatorVisibility.None)
-				bline.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
-			else if (isHeader || !separatorColor.IsDefault)
-				bline.SetBackgroundColor(separatorColor.ToAndroid(Color.Accent));
-			else
-			{
-				if (s_dividerHorizontalDarkId == int.MinValue)
-				{
-					using (var value = new TypedValue())
-					{
-						int id = global::Android.Resource.Drawable.DividerHorizontalDark;
-						if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
-							id = value.ResourceId;
-						else if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
-							id = value.ResourceId;
+			UpdateSeparatorVisibility(cell, cellIsBeingReused, isHeader, nextCellIsHeader, layout, out bline);
 
-						s_dividerHorizontalDarkId = id;
-					}
-				}
-
-				bline.SetBackgroundResource(s_dividerHorizontalDarkId);
-			}
+			UpdateSeparatorColor(isHeader, bline);
 
 			if ((bool)cell.GetValue(IsSelectedProperty))
 				Select(position, layout);
@@ -544,6 +515,53 @@ namespace Xamarin.Forms.Platform.Android
 				view = _realListView.GetChildAt(position + 1 - _realListView.FirstVisiblePosition);
 
 			Select(position, view);
+		}
+
+		void UpdateSeparatorVisibility(Cell cell, bool cellIsBeingReused, bool isHeader, bool nextCellIsHeader, ConditionalFocusLayout layout, out AView bline)
+		{
+			bline = null;
+			if (cellIsBeingReused)
+				return;
+			var makeBline = _listView.SeparatorVisibility == SeparatorVisibility.Default || isHeader && !nextCellIsHeader;
+			if (makeBline)
+			{
+				bline = new AView(_context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };
+				layout.AddView(bline);
+			}
+			else if (layout.ChildCount > 1)
+			{
+				layout.RemoveViewAt(1);
+			}
+		}
+
+
+		void UpdateSeparatorColor(bool isHeader, AView bline)
+		{
+			if (bline == null)
+				return;
+
+			Color separatorColor = _listView.SeparatorColor;
+
+			if (isHeader || !separatorColor.IsDefault)
+				bline.SetBackgroundColor(separatorColor.ToAndroid(Color.Accent));
+			else
+			{
+				if (s_dividerHorizontalDarkId == int.MinValue)
+				{
+					using (var value = new TypedValue())
+					{
+						int id = global::Android.Resource.Drawable.DividerHorizontalDark;
+						if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ListDivider, value, true))
+							id = value.ResourceId;
+						else if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.Divider, value, true))
+							id = value.ResourceId;
+
+						s_dividerHorizontalDarkId = id;
+					}
+				}
+
+				bline.SetBackgroundResource(s_dividerHorizontalDarkId);
+			}
 		}
 
 		enum CellType

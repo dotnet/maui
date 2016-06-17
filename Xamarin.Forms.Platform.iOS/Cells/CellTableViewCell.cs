@@ -89,6 +89,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (contextCell != null)
 			{
 				contextCell.Update(tableView, cell, nativeCell);
+				var viewTableCell = contextCell.ContentCell as ViewCellRenderer.ViewTableCell;
+				if (viewTableCell != null)
+					viewTableCell.SupressSeparator = true;
 				nativeCell = contextCell;
 			}
 
