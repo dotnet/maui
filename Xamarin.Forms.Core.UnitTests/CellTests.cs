@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool emitted = false;
 			cell.Appearing += (sender, args) => emitted = true;
 
-			cell.SendAppearing ();
+			((ICellController)cell).SendAppearing ();
 			Assert.True (emitted);
 			Assert.True (cell.OnAppearingSent);
 			Assert.False (cell.OnDisappearingSent);
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool emitted = false;
 			cell.Disappearing += (sender, args) => emitted = true;
 
-			cell.SendDisappearing ();
+			((ICellController)cell).SendDisappearing ();
 			Assert.True (emitted);
 			Assert.False (cell.OnAppearingSent);
 			Assert.True (cell.OnDisappearingSent);
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var cell = new ViewCell { Parent = lv };
 
 			int numberOfCalls = 0;
-			cell.ForceUpdateSizeRequested += (object sender, System.EventArgs e) => { numberOfCalls++; };
+			((ICellController)cell).ForceUpdateSizeRequested += (object sender, System.EventArgs e) => { numberOfCalls++; };
 
 			cell.ForceUpdateSize ();
 			cell.ForceUpdateSize ();
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var cell = new ViewCell { Parent = lv };
 
 			int numberOfCalls = 0;
-			cell.ForceUpdateSizeRequested += (object sender, System.EventArgs e) => { numberOfCalls++; };
+			((ICellController)cell).ForceUpdateSizeRequested += (object sender, System.EventArgs e) => { numberOfCalls++; };
 
 			cell.ForceUpdateSize ();
 

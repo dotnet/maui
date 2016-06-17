@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Phone.Controls;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -19,7 +20,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		{
 			Unloaded += (sender, args) =>
 			{
-				var cell = DataContext as Cell;
+				var cell = DataContext as ICellController;
 				if (cell != null)
 					cell.SendDisappearing();
 			};
@@ -56,12 +57,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (oldCell != null)
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
-				oldCell.SendDisappearing();
+				((ICellController)oldCell).SendDisappearing();
 			}
 
 			if (newCell != null)
 			{
-				newCell.SendAppearing();
+				((ICellController)newCell).SendAppearing();
 
 				if (oldCell == null || oldCell.GetType() != newCell.GetType())
 					ContentTemplate = GetTemplate(newCell);

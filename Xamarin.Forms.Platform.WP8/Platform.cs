@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -536,6 +537,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var buttonsToAdd = new List<TaggedAppBarButton>();
 			foreach (ToolbarItem item in items.Where(i => i.Order != ToolbarItemOrder.Secondary))
 			{
+				IMenuItemController controller = item;
 				if (_page.ApplicationBar.Buttons.OfType<TaggedAppBarButton>().Any(b => b.Tag == item))
 					continue;
 
@@ -543,10 +545,10 @@ namespace Xamarin.Forms.Platform.WinPhone
 				{
 					IconUri = new Uri(item.Icon ?? "ApplicationIcon.jpg", UriKind.Relative),
 					Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg",
-					IsEnabled = item.IsEnabled,
+					IsEnabled = controller.IsEnabled,
 					Tag = item
 				};
-				button.Click += (sender, args) => item.Activate();
+				button.Click += (sender, args) => controller.Activate();
 				buttonsToAdd.Add(button);
 			}
 
@@ -557,7 +559,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					continue;
 
 				var button = new TaggedAppBarMenuItem { Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "MenuItem", IsEnabled = true, Tag = item };
-				button.Click += (sender, args) => item.Activate();
+				button.Click += (sender, args) => ((IMenuItemController)item).Activate();
 				menuItemsToAdd.Add(button);
 			}
 
@@ -565,7 +567,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			TaggedAppBarMenuItem[] deadMenuItems = _page.ApplicationBar.MenuItems.OfType<TaggedAppBarMenuItem>().Where(b => b.Tag is ToolbarItem && !items.Contains(b.Tag)).ToArray();
 
-			// we must remove the dead buttons before adding the new ones so we dont accidentally go over the limit during the tranistion
+			// we must remove the dead buttons before adding the new ones so we don't accidentally go over the limit during the transition
 			foreach (TaggedAppBarButton deadButton in deadButtons)
 			{
 				deadButton.Dispose();
@@ -623,8 +625,10 @@ namespace Xamarin.Forms.Platform.WinPhone
 				if (item == null)
 					return;
 
-				if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-					IsEnabled = item.IsEnabled;
+				IMenuItemController controller = item;
+
+				if (e.PropertyName == controller.IsEnabledPropertyName)
+					IsEnabled = controller.IsEnabled;
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 					Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg";
 				else if (e.PropertyName == MenuItem.IconProperty.PropertyName)

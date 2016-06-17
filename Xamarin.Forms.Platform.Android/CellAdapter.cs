@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (action.Command != null)
 					action.Command.CanExecuteChanged += commandChanged;
 
-				if (!action.IsEnabled)
+				if (!((IMenuItemController)action).IsEnabled)
 					item.SetEnabled(false);
 			}
 		}
@@ -247,7 +247,7 @@ namespace Xamarin.Forms.Platform.Android
 		void OnActionItemClickedImpl(IMenuItem item)
 		{
 			int index = item.ItemId;
-			MenuItem action = ActionModeContext.ContextActions[index];
+			IMenuItemController action = ActionModeContext.ContextActions[index];
 
 			action.Activate();
 		}

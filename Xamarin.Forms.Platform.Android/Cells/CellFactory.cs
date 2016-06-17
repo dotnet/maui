@@ -2,6 +2,7 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

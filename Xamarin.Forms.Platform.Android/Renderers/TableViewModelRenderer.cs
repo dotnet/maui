@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		readonly TableView _view;
 		protected readonly Context Context;
+		ITableViewController Controller => _view;
 		Cell _restoreFocus;
 
 		public TableViewModelRenderer(Context context, AListView listView, TableView view) : base(context)
@@ -18,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 			_view = view;
 			Context = context;
 
-			view.ModelChanged += (sender, args) => NotifyDataSetChanged();
+			Controller.ModelChanged += (sender, args) => NotifyDataSetChanged();
 
 			listView.OnItemClickListener = this;
 			listView.OnItemLongClickListener = this;
@@ -31,9 +32,10 @@ namespace Xamarin.Forms.Platform.Android
 				var count = 0;
 
 				//Get each adapter's count + 1 for the header
-				int section = _view.Model.GetSectionCount();
+				ITableModel model = Controller.Model;
+				int section = model.GetSectionCount();
 				for (var i = 0; i < section; i++)
-					count += _view.Model.GetRowCount(i) + 1;
+					count += model.GetRowCount(i) + 1;
 
 				return count;
 			}
@@ -55,11 +57,12 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				//The headers count as a view type too
 				var viewTypeCount = 1;
+				ITableModel model = Controller.Model;
 
 				//Get each adapter's ViewTypeCount
-				int section = _view.Model.GetSectionCount();
+				int section = model.GetSectionCount();
 				for (var i = 0; i < section; i++)
-					viewTypeCount += _view.Model.GetRowCount(i);
+					viewTypeCount += model.GetRowCount(i);
 
 				return viewTypeCount;
 			}
@@ -165,17 +168,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void HandleItemClick(AdapterView parent, AView nview, int position, long id)
 		{
-			int sectionCount = _view.Model.GetSectionCount();
+			ITableModel model = Controller.Model;
+
+			int sectionCount = model.GetSectionCount();
 			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
 			{
 				if (position == 0)
 					return;
 
-				int size = _view.Model.GetRowCount(sectionIndex) + 1;
+				int size = model.GetRowCount(sectionIndex) + 1;
 
 				if (position < size)
 				{
-					_view.Model.RowSelected(sectionIndex, position - 1);
+					model.RowSelected(sectionIndex, position - 1);
 					return;
 				}
 
@@ -188,25 +193,26 @@ namespace Xamarin.Forms.Platform.Android
 			isHeader = false;
 			nextIsHeader = false;
 
-			int sectionCount = _view.Model.GetSectionCount();
+			ITableModel model = Controller.Model;
+			int sectionCount = model.GetSectionCount();
 
 			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex ++)
 			{
-				int size = _view.Model.GetRowCount(sectionIndex) + 1;
+				int size = model.GetRowCount(sectionIndex) + 1;
 
 				if (position == 0)
 				{
 					isHeader = true;
 					nextIsHeader = size == 0 && sectionIndex < sectionCount - 1;
 
-					Cell header = _view.Model.GetHeaderCell(sectionIndex);
+					Cell header = model.GetHeaderCell(sectionIndex);
 
 					Cell resultCell = null;
 					if (header != null)
 						resultCell = header;
 
 					if (resultCell == null)
-						resultCell = new TextCell { Text = _view.Model.GetSectionTitle(sectionIndex) };
+						resultCell = new TextCell { Text = model.GetSectionTitle(sectionIndex) };
 
 					resultCell.Parent = _view;
 
@@ -216,7 +222,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (position < size)
 				{
 					nextIsHeader = position == size - 1;
-					return (Cell)_view.Model.GetItem(sectionIndex, position - 1);
+					return (Cell)model.GetItem(sectionIndex, position - 1);
 				}
 
 				position -= size;

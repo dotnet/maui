@@ -1,8 +1,10 @@
 ﻿using System.Collections;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public abstract class ItemsView<TVisual> : View, IItemsView<TVisual> where TVisual : BindableObject
+
+	public abstract class ItemsView<TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
 		public static readonly BindableProperty InfiniteScrollingProperty =
@@ -40,10 +42,12 @@ namespace Xamarin.Forms
 			this.templatedItems.ForceUpdate();
 		}*/
 
-		internal ListProxy ListProxy
+		IListProxy ITemplatedItemsView<TVisual>.ListProxy
 		{
 			get { return TemplatedItems.ListProxy; }
 		}
+
+		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems { get { return TemplatedItems; } }
 
 		internal TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
 

@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Platform.WinRT
 	internal class MenuItemCommand : ICommand
 	{
 		readonly MenuItem _menuItem;
+		IMenuItemController Controller => _menuItem;
 
 		public MenuItemCommand(MenuItem item)
 		{
@@ -22,14 +23,14 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		public virtual bool CanExecute(object parameter)
 		{
-			return _menuItem.IsEnabled;
+			return Controller.IsEnabled;
 		}
 
 		public event EventHandler CanExecuteChanged;
 
 		public void Execute(object parameter)
 		{
-			_menuItem.Activate();
+			Controller.Activate();
 		}
 
 		void OnCanExecuteChanged()

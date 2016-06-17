@@ -12,14 +12,14 @@
   </Docs>
   <Members>
     <Member MemberName="InsertPageBeforeRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt; InsertPageBeforeRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.NavigationRequestedEventArgs&gt; InsertPageBeforeRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; InsertPageBeforeRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; InsertPageBeforeRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -49,14 +49,14 @@
       </Docs>
     </Member>
     <Member MemberName="PopRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt; PopRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.NavigationRequestedEventArgs&gt; PopRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PopRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PopRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -64,14 +64,14 @@
       </Docs>
     </Member>
     <Member MemberName="PopToRootRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt; PopToRootRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.NavigationRequestedEventArgs&gt; PopToRootRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PopToRootRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PopToRootRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -79,14 +79,14 @@
       </Docs>
     </Member>
     <Member MemberName="PushRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt; PushRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.NavigationRequestedEventArgs&gt; PushRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PushRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; PushRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
@@ -94,14 +94,14 @@
       </Docs>
     </Member>
     <Member MemberName="RemovePageRequested">
-      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt; RemovePageRequested;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.NavigationRequestedEventArgs&gt; RemovePageRequested" />
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; RemovePageRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; RemovePageRequested" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Forms.NavigationRequestedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>

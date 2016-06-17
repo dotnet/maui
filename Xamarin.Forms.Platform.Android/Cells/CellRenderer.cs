@@ -5,6 +5,7 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -36,7 +37,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (renderHolder != null)
 				{
 					Cell oldCell = renderHolder.Renderer.Cell;
-					oldCell.SendDisappearing();
+					((ICellController)oldCell).SendDisappearing();
 
 					if (Cell != oldCell)
 						SetRenderer(oldCell, null);
@@ -54,7 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 				holder.Renderer = this;
 
 			Cell.PropertyChanged += PropertyChangedHandler;
-			Cell.SendAppearing();
+			((ICellController)Cell).SendAppearing();
 
 			Performance.Stop();
 
@@ -85,9 +86,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected void WireUpForceUpdateSizeRequested(Cell cell, AView nativeCell)
 		{
-			cell.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
+			ICellController cellController = cell;
+			cellController.ForceUpdateSizeRequested -= _onForceUpdateSizeRequested;
 
-			_onForceUpdateSizeRequested = delegate
+			_onForceUpdateSizeRequested = (sender, e) => 
 			{
 				// RenderHeight may not be changed, but that's okay, since we
 				// don't actually use the height argument in the OnMeasure override.
@@ -96,7 +98,7 @@ namespace Xamarin.Forms.Platform.Android
 				nativeCell.SetMinimumWidth(nativeCell.MeasuredWidth);
 			};
 
-			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
+			cellController.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
 		}
 
 		internal static CellRenderer GetRenderer(BindableObject cell)
@@ -120,7 +122,6 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			renderer.OnCellPropertyChanged(sender, e);
-			;
 		}
 
 		class RendererHolder : Object

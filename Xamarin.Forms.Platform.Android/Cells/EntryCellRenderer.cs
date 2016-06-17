@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnEditingCompleted()
 		{
-			var entryCell = (EntryCell)Cell;
+			var entryCell = (IEntryCellController)Cell;
 			entryCell.SendCompleted();
 		}
 

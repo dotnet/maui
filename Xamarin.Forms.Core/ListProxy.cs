@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	internal sealed class ListProxy : IReadOnlyList<object>, IList, INotifyCollectionChanged
+	internal sealed class ListProxy : IReadOnlyList<object>, IListProxy, INotifyCollectionChanged
 	{
 		readonly ICollection _collection;
 		readonly IList _list;

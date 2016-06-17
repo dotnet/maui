@@ -1,6 +1,6 @@
 <Type Name="MultiPage&lt;T&gt;" FullName="Xamarin.Forms.MultiPage&lt;T&gt;">
-  <TypeSignature Language="C#" Value="public abstract class MultiPage&lt;T&gt; : Xamarin.Forms.Page, Xamarin.Forms.IPageContainer&lt;T&gt;, Xamarin.Forms.IViewContainer&lt;T&gt; where T : Page" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit MultiPage`1&lt;(class Xamarin.Forms.Page) T&gt; extends Xamarin.Forms.Page implements class Xamarin.Forms.IPageContainer`1&lt;!T&gt;, class Xamarin.Forms.IViewContainer`1&lt;!T&gt;" />
+  <TypeSignature Language="C#" Value="public abstract class MultiPage&lt;T&gt; : Xamarin.Forms.Page, Xamarin.Forms.IItemsView&lt;T&gt;, Xamarin.Forms.IPageContainer&lt;T&gt;, Xamarin.Forms.IViewContainer&lt;T&gt; where T : Page" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit MultiPage`1&lt;(class Xamarin.Forms.Page) T&gt; extends Xamarin.Forms.Page implements class Xamarin.Forms.IItemsView`1&lt;!T&gt;, class Xamarin.Forms.IPageContainer`1&lt;!T&gt;, class Xamarin.Forms.IViewContainer`1&lt;!T&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -22,6 +22,9 @@
     <BaseTypeName>Xamarin.Forms.Page</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IItemsView&lt;T&gt;</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IPageContainer&lt;T&gt;</InterfaceName>
     </Interface>

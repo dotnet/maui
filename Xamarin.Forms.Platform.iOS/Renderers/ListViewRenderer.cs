@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 using Foundation;
@@ -38,6 +39,8 @@ namespace Xamarin.Forms.Platform.iOS
 		ScrollToRequestedEventArgs _requestedScroll;
 		bool _shouldEstimateRowHeight = true;
 		FormsUITableViewController _tableViewController;
+		IListViewController Controller => Element;
+		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -123,8 +126,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (Element != null)
 				{
-					Element.TemplatedItems.CollectionChanged -= OnCollectionChanged;
-					Element.TemplatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+					var templatedItems = TemplatedItemsView.TemplatedItems;
+					templatedItems.CollectionChanged -= OnCollectionChanged;
+					templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				}
 
 				if (_tableViewController != null)
@@ -151,14 +155,12 @@ namespace Xamarin.Forms.Platform.iOS
 					_footerRenderer = null;
 				}
 
-				var controller = Element as IListViewController;
-
-				var headerView = controller?.HeaderElement as VisualElement;
+				var headerView = Controller?.HeaderElement as VisualElement;
 				if (headerView != null)
 					headerView.MeasureInvalidated -= OnHeaderMeasureInvalidated;
 				Control?.TableHeaderView?.Dispose();
 
-				var footerView = controller?.FooterElement as VisualElement;
+				var footerView = Controller?.FooterElement as VisualElement;
 				if (footerView != null)
 					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				Control?.TableFooterView?.Dispose();
@@ -182,9 +184,11 @@ namespace Xamarin.Forms.Platform.iOS
 				if (footerView != null)
 					footerView.MeasureInvalidated -= OnFooterMeasureInvalidated;
 
-				e.OldElement.ScrollToRequested -= OnScrollToRequested;
-				e.OldElement.TemplatedItems.CollectionChanged -= OnCollectionChanged;
-				e.OldElement.TemplatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+				controller.ScrollToRequested -= OnScrollToRequested;
+				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
+
+				templatedItems.CollectionChanged -= OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 			}
 
 			if (e.NewElement != null)
@@ -204,14 +208,14 @@ namespace Xamarin.Forms.Platform.iOS
 					});
 				}
 				_shouldEstimateRowHeight = true;
-				//if the user specifies he wants to sacrifice performance we will do things like:
-				// - don't EstimateRowHeight anymore
-				if (e.NewElement.TakePerformanceHit)
-					_shouldEstimateRowHeight = false;
 
-				e.NewElement.ScrollToRequested += OnScrollToRequested;
-				e.NewElement.TemplatedItems.CollectionChanged += OnCollectionChanged;
-				e.NewElement.TemplatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
+				var controller = (IListViewController)e.NewElement;
+
+				controller.ScrollToRequested += OnScrollToRequested;
+				var templatedItems = ((ITemplatedItemsView<Cell>)e.NewElement).TemplatedItems;
+
+				templatedItems.CollectionChanged += OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 
 				UpdateRowHeight();
 
@@ -306,9 +310,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var til = (TemplatedItemsList<ItemsView<Cell>, Cell>)sender;
+			var til = (ITemplatedItemsList<Cell>)sender;
 
-			var groupIndex = Element.TemplatedItems.IndexOf(til.HeaderContent);
+			var templatedItems = TemplatedItemsView.TemplatedItems;
+			var groupIndex = templatedItems.IndexOf(til.HeaderContent);
 			UpdateItems(e, groupIndex, false);
 		}
 
@@ -334,16 +339,17 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var position = GetScrollPosition(e.Position);
-
+			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
+			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (Element.IsGroupingEnabled)
 			{
-				var result = Element.TemplatedItems.GetGroupAndIndexOfItem(e.Group, e.Item);
+				var result = templatedItems.GetGroupAndIndexOfItem(scrollArgs.Group, scrollArgs.Item);
 				if (result.Item1 != -1 && result.Item2 != -1)
 					Control.ScrollToRow(NSIndexPath.FromRowSection(result.Item2, result.Item1), position, e.ShouldAnimate);
 			}
 			else
 			{
-				var index = Element.TemplatedItems.GetGlobalIndexOfItem(e.Item);
+				var index = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
 				if (index != -1)
 					Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
 			}
@@ -360,16 +366,17 @@ namespace Xamarin.Forms.Platform.iOS
 				var source = _dataSource as UnevenListViewDataSource;
 				if (_shouldEstimateRowHeight)
 				{
-					if (Element.TemplatedItems.Count > 0 && source != null)
+					var templatedItems = TemplatedItemsView.TemplatedItems;
+					if (templatedItems.Count > 0 && source != null)
 					{
-						var estimatedHeightFromFirstCell = source.CalculateHeightForCell(Control, Element.TemplatedItems.First());
+						var estimatedHeightFromFirstCell = source.CalculateHeightForCell(Control, templatedItems.First());
 						Control.EstimatedRowHeight = estimatedHeightFromFirstCell;
 						_estimatedRowHeight = true;
 					}
 					else
 					{
 						//We need to set a default estimated row height, because re-setting it later(when we have items on the TIL)
-						//will cause the UITableView to reload, and throw a Excepetion
+						//will cause the UITableView to reload, and throw an Exception
 						Control.EstimatedRowHeight = DefaultRowHeight;
 					}
 				}
@@ -384,7 +391,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFooter()
 		{
-			var footer = ((IListViewController)Element).FooterElement;
+			var footer = Controller.FooterElement;
 			var footerView = (View)footer;
 
 			if (footerView != null)
@@ -428,7 +435,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateHeader()
 		{
-			var header = ((IListViewController)Element).HeaderElement;
+			var header = Controller.HeaderElement;
 			var headerView = (View)header;
 
 			if (headerView != null)
@@ -506,7 +513,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 					Control.EndUpdates();
 
-					if (_estimatedRowHeight && Element.TemplatedItems.Count == 0)
+					if (_estimatedRowHeight && TemplatedItemsView.TemplatedItems.Count == 0)
 						_estimatedRowHeight = false;
 
 					break;
@@ -558,7 +565,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_tableViewController != null)
 			{
-				var isPullToRequestEnabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+				var isPullToRequestEnabled = Element.IsPullToRefreshEnabled && Controller.RefreshAllowed;
 				_tableViewController.UpdatePullToRefreshEnabled(isPullToRequestEnabled);
 			}
 		}
@@ -667,6 +674,8 @@ namespace Xamarin.Forms.Platform.iOS
 			readonly UITableView _uiTableView;
 			readonly FormsUITableViewController _uiTableViewController;
 			protected readonly ListView List;
+			IListViewController Controller => List;
+			ITemplatedItemsView<Cell> TemplatedItemsView => List;
 			bool _isDragging;
 			bool _selectionFromNative;
 
@@ -715,7 +724,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UITableViewCell nativeCell = null;
 
-				var cachingStrategy = List.CachingStrategy;
+				var cachingStrategy = Controller.CachingStrategy;
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)
 				{
 					var cell = GetCellForPath(indexPath);
@@ -732,11 +741,12 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 					else
 					{
-						var templatedList = List.TemplatedItems.GetGroup(indexPath.Section);
+						var templatedList = TemplatedItemsView.TemplatedItems.GetGroup(indexPath.Section);
 						var cell = (Cell)((INativeElementView)nativeCell).Element;
-						cell.SendDisappearing();
+						ICellController controller = cell;
+						controller.SendDisappearing();
 						templatedList.UpdateContent(cell, indexPath.Row);
-						cell.SendAppearing();
+						controller.SendAppearing();
 					}
 				}
 				else
@@ -753,7 +763,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (List.IsGroupingEnabled)
 				{
-					var cell = List.TemplatedItems[(int)section];
+					var cell = TemplatedItemsView.TemplatedItems[(int)section];
 					nfloat height = (float)cell.RenderHeight;
 					if (height == -1)
 						height = _defaultSectionHeight;
@@ -768,7 +778,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (List.IsGroupingEnabled && List.GroupHeaderTemplate != null)
 				{
-					var cell = List.TemplatedItems[(int)section];
+					var cell = TemplatedItemsView.TemplatedItems[(int)section];
 					if (cell.HasContextActions)
 						throw new NotSupportedException("Header cells do not support context actions");
 
@@ -786,7 +796,7 @@ namespace Xamarin.Forms.Platform.iOS
 			public override nint NumberOfSections(UITableView tableView)
 			{
 				if (List.IsGroupingEnabled)
-					return List.TemplatedItems.Count;
+					return TemplatedItemsView.TemplatedItems.Count;
 
 				return 1;
 			}
@@ -799,7 +809,7 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 				}
 
-				var location = List.TemplatedItems.GetGroupAndIndexOfItem(eventArg.SelectedItem);
+				var location = TemplatedItemsView.TemplatedItems.GetGroupAndIndexOfItem(eventArg.SelectedItem);
 				if (location.Item1 == -1 || location.Item2 == -1)
 				{
 					var selectedIndexPath = _uiTableView.IndexPathForSelectedRow;
@@ -842,7 +852,7 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 
 				Cell formsCell = null;
-				if (List.CachingStrategy == ListViewCachingStrategy.RecycleElement)
+				if (Controller.CachingStrategy == ListViewCachingStrategy.RecycleElement)
 					formsCell = (Cell)((INativeElementView)cell).Element;
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
@@ -850,7 +860,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_selectionFromNative = true;
 
 				tableView.EndEditing(true);
-				List.NotifyRowTapped(indexPath.Section, indexPath.Row, formsCell);
+				Controller.NotifyRowTapped(indexPath.Section, indexPath.Row, formsCell);
 			}
 
 			public override nint RowsInSection(UITableView tableview, nint section)
@@ -862,13 +872,14 @@ namespace Xamarin.Forms.Platform.iOS
 					return countOverride;
 				}
 
+				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
 				{
-					var group = (IList)((IList)List.TemplatedItems)[(int)section];
+					var group = (IList)((IList)templatedItems)[(int)section];
 					return group.Count;
 				}
 
-				return List.TemplatedItems.Count;
+				return templatedItems.Count;
 			}
 
 			public override void Scrolled(UIScrollView scrollView)
@@ -879,10 +890,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override string[] SectionIndexTitles(UITableView tableView)
 			{
-				if (List.TemplatedItems.ShortNames == null)
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				if (templatedItems.ShortNames == null)
 					return null;
 
-				return List.TemplatedItems.ShortNames.ToArray();
+				return templatedItems.ShortNames.ToArray();
 			}
 
 			public override string TitleForHeader(UITableView tableView, nint section)
@@ -905,25 +917,25 @@ namespace Xamarin.Forms.Platform.iOS
 
 			protected Cell GetCellForPath(NSIndexPath indexPath)
 			{
-				var templatedList = List.TemplatedItems;
+				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
-					templatedList = (TemplatedItemsList<ItemsView<Cell>, Cell>)((IList)templatedList)[indexPath.Section];
+					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
 
-				var cell = templatedList[indexPath.Row];
+				var cell = templatedItems[indexPath.Row];
 				return cell;
 			}
 
-			TemplatedItemsList<ItemsView<Cell>, Cell> GetSectionList(int section)
+			ITemplatedItemsList<Cell> GetSectionList(int section)
 			{
-				return (TemplatedItemsList<ItemsView<Cell>, Cell>)((IList)List.TemplatedItems)[section];
+				return (ITemplatedItemsList<Cell>)((IList)TemplatedItemsView.TemplatedItems) [section];
 			}
 
 			void OnSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				var currentSelected = _uiTableView.IndexPathForSelectedRow;
 
-				var til = (TemplatedItemsList<ItemsView<Cell>, Cell>)sender;
-				var groupIndex = ((IList)List.TemplatedItems).IndexOf(til);
+				var til = (ITemplatedItemsView<Cell>)sender;
+				var groupIndex = ((IList)TemplatedItemsView.TemplatedItems).IndexOf(til);
 				if (groupIndex == -1)
 				{
 					til.PropertyChanged -= OnSectionPropertyChanged;
@@ -954,11 +966,11 @@ namespace Xamarin.Forms.Platform.iOS
 				if (selector == null)
 					return DefaultItemTemplateId;
 
-				var templatedList = List.TemplatedItems;
+				var templatedList = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
-					templatedList = (TemplatedItemsList<ItemsView<Cell>, Cell>)((IList)templatedList)[indexPath.Section];
+					templatedList = (ITemplatedItemsList<Cell>)((IList)templatedList)[indexPath.Section];
 
-				var item = templatedList.ListProxy[indexPath.Row];
+				var item = ((ITemplatedItemsView<Cell>)templatedList).ListProxy[indexPath.Row];
 
 				itemTemplate = selector.SelectTemplate(item, List);
 				int key;
@@ -973,15 +985,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateShortNameListener()
 			{
+				var templatedList = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
 				{
-					if (List.TemplatedItems.ShortNames != null)
-						((INotifyCollectionChanged)List.TemplatedItems.ShortNames).CollectionChanged += OnShortNamesCollectionChanged;
+					if (templatedList.ShortNames != null)
+						((INotifyCollectionChanged)templatedList.ShortNames).CollectionChanged += OnShortNamesCollectionChanged;
 				}
 				else
 				{
-					if (List.TemplatedItems.ShortNames != null)
-						((INotifyCollectionChanged)List.TemplatedItems.ShortNames).CollectionChanged -= OnShortNamesCollectionChanged;
+					if (templatedList.ShortNames != null)
+						((INotifyCollectionChanged)templatedList.ShortNames).CollectionChanged -= OnShortNamesCollectionChanged;
 				}
 			}
 		}
@@ -1000,6 +1013,7 @@ namespace Xamarin.Forms.Platform.iOS
 	internal class FormsUITableViewController : UITableViewController
 	{
 		readonly ListView _list;
+		IListViewController Controller => _list;
 		UIRefreshControl _refresh;
 
 		bool _refreshAdded;
@@ -1101,7 +1115,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnRefreshingChanged(object sender, EventArgs eventArgs)
 		{
 			if (_refresh.Refreshing)
-				(_list as IListViewController).SendRefreshing();
+				Controller.SendRefreshing();
 		}
 
 		void RemoveRefresh()

@@ -129,6 +129,9 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Pages.UnitTests")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.CarouselView")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>
         <Attribute>
@@ -249,22 +252,30 @@
       <Type Name="IAppLinkEntry" Kind="Interface" />
       <Type Name="IAppLinks" Kind="Interface" />
       <Type Name="IButtonController" Kind="Interface" />
+      <Type Name="ICellController" Kind="Interface" />
       <Type Name="IDefinition" Kind="Interface" />
       <Type Name="IEffectControlProvider" Kind="Interface" />
       <Type Name="IElementController" Kind="Interface" />
+      <Type Name="IEntryCellController" Kind="Interface" />
       <Type Name="IEntryController" Kind="Interface" />
       <Type Name="IExtendedTypeConverter" Kind="Interface" />
       <Type Name="IGestureRecognizer" Kind="Interface" />
       <Type Name="IImageController" Kind="Interface" />
+      <Type Name="IItemsView`1" DisplayName="IItemsView&lt;T&gt;" Kind="Interface" />
       <Type Name="IItemViewController" Kind="Interface" />
       <Type Name="ILayout" Kind="Interface" />
       <Type Name="ILayoutController" Kind="Interface" />
+      <Type Name="IListProxy" Kind="Interface" />
+      <Type Name="IListViewController" Kind="Interface" />
       <Type Name="Image" Kind="Class" />
       <Type Name="ImageCell" Kind="Class" />
       <Type Name="ImageSource" Kind="Class" />
       <Type Name="ImageSourceConverter" Kind="Class" />
+      <Type Name="IMasterDetailPageController" Kind="Interface" />
+      <Type Name="IMenuItemController" Kind="Interface" />
       <Type Name="INativeElementView" Kind="Interface" />
       <Type Name="INavigation" Kind="Interface" />
+      <Type Name="INavigationPageController" Kind="Interface" />
       <Type Name="InputView" Kind="Class" />
       <Type Name="IOpenGlViewController" Kind="Interface" />
       <Type Name="IOpenGLViewController" Kind="Interface" />
@@ -274,6 +285,12 @@
       <Type Name="IRegisterable" Kind="Interface" />
       <Type Name="IScrollViewController" Kind="Interface" />
       <Type Name="ISearchBarController" Kind="Interface" />
+      <Type Name="IStreamImageSource" Kind="Interface" />
+      <Type Name="ITableModel" Kind="Interface" />
+      <Type Name="ITableViewController" Kind="Interface" />
+      <Type Name="ITemplatedItemsList`1" DisplayName="ITemplatedItemsList&lt;TItem&gt;" Kind="Interface" />
+      <Type Name="ITemplatedItemsListScrollToRequestedEventArgs" Kind="Interface" />
+      <Type Name="ITemplatedItemsView`1" DisplayName="ITemplatedItemsView&lt;TItem&gt;" Kind="Interface" />
       <Type Name="ItemsView`1" DisplayName="ItemsView&lt;TVisual&gt;" Kind="Class" />
       <Type Name="ItemTappedEventArgs" Kind="Class" />
       <Type Name="ItemVisibilityEventArgs" Kind="Class" />
@@ -413,6 +430,7 @@
       <Type Name="WebViewSourceTypeConverter" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Internals">
+      <Type Name="CellExtensions" Kind="Class" />
       <Type Name="DynamicResource" Kind="Class" />
       <Type Name="EvalRequested" Kind="Class" />
       <Type Name="IDataTemplate" Kind="Interface" />
@@ -420,8 +438,12 @@
       <Type Name="INameScope" Kind="Interface" />
       <Type Name="InvalidationTrigger" Kind="Enumeration" />
       <Type Name="NameScope" Kind="Class" />
+      <Type Name="NavigationRequestedEventArgs" Kind="Class" />
+      <Type Name="NotifyCollectionChangedEventArgsEx" Kind="Class" />
+      <Type Name="NotifyCollectionChangedEventArgsExtensions" Kind="Class" />
       <Type Name="PreserveAttribute" Kind="Class" />
       <Type Name="Ticker" Kind="Class" />
+      <Type Name="ToolbarTracker" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Xaml">
       <Type Name="IMarkupExtension" Kind="Interface" />
@@ -728,6 +750,288 @@
           <summary>Creates and applies a binding from an expression.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.BindableObjectExtensions" Member="M:Xamarin.Forms.BindableObjectExtensions.SetBinding``1(Xamarin.Forms.BindableObject,Xamarin.Forms.BindableProperty,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},Xamarin.Forms.BindingMode,Xamarin.Forms.IValueConverter,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="GetGroup&lt;TView,TItem&gt;">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.ITemplatedItemsList&lt;TItem&gt; GetGroup&lt;TView,TItem&gt; (this TItem cell) where TView : Xamarin.Forms.BindableObject, Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt; where TItem : Xamarin.Forms.BindableObject;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.ITemplatedItemsList`1&lt;!!TItem&gt; GetGroup&lt;(class Xamarin.Forms.BindableObject, class Xamarin.Forms.ITemplatedItemsView`1&lt;!!TItem&gt;) TView, (class Xamarin.Forms.BindableObject) TItem&gt;(!!TItem cell) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.ITemplatedItemsList&lt;TItem&gt;</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TView">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+              <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt;</InterfaceName>
+            </Constraints>
+          </TypeParameter>
+          <TypeParameter Name="TItem">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="cell" Type="TItem" RefType="this" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TItem">To be added.</typeparam>
+          <param name="cell">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroup``2(``1)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="GetGroupHeaderContent&lt;TView,TItem&gt;">
+        <MemberSignature Language="C#" Value="public static TItem GetGroupHeaderContent&lt;TView,TItem&gt; (this TItem cell) where TView : Xamarin.Forms.BindableObject, Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt; where TItem : Xamarin.Forms.BindableObject;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!TItem GetGroupHeaderContent&lt;(class Xamarin.Forms.BindableObject, class Xamarin.Forms.ITemplatedItemsView`1&lt;!!TItem&gt;) TView, (class Xamarin.Forms.BindableObject) TItem&gt;(!!TItem cell) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>TItem</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TView">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+              <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt;</InterfaceName>
+            </Constraints>
+          </TypeParameter>
+          <TypeParameter Name="TItem">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="cell" Type="TItem" RefType="this" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TItem">To be added.</typeparam>
+          <param name="cell">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroupHeaderContent``2(``1)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="GetIndex&lt;TView,TItem&gt;">
+        <MemberSignature Language="C#" Value="public static int GetIndex&lt;TView,TItem&gt; (this TItem cell) where TView : Xamarin.Forms.BindableObject, Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt; where TItem : Xamarin.Forms.BindableObject;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 GetIndex&lt;(class Xamarin.Forms.BindableObject, class Xamarin.Forms.ITemplatedItemsView`1&lt;!!TItem&gt;) TView, (class Xamarin.Forms.BindableObject) TItem&gt;(!!TItem cell) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Int32</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TView">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+              <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt;</InterfaceName>
+            </Constraints>
+          </TypeParameter>
+          <TypeParameter Name="TItem">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="cell" Type="TItem" RefType="this" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TItem">To be added.</typeparam>
+          <param name="cell">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIndex``2(``1)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="GetIsGroupHeader&lt;TView,TItem&gt;">
+        <MemberSignature Language="C#" Value="public static bool GetIsGroupHeader&lt;TView,TItem&gt; (this TItem cell) where TView : Xamarin.Forms.BindableObject, Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt; where TItem : Xamarin.Forms.BindableObject;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool GetIsGroupHeader&lt;(class Xamarin.Forms.BindableObject, class Xamarin.Forms.ITemplatedItemsView`1&lt;!!TItem&gt;) TView, (class Xamarin.Forms.BindableObject) TItem&gt;(!!TItem cell) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TView">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+              <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt;</InterfaceName>
+            </Constraints>
+          </TypeParameter>
+          <TypeParameter Name="TItem">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="cell" Type="TItem" RefType="this" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TItem">To be added.</typeparam>
+          <param name="cell">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIsGroupHeader``2(``1)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.Cell" />
+      </Targets>
+      <Member MemberName="GetPath">
+        <MemberSignature Language="C#" Value="public static Tuple&lt;int,int&gt; GetPath (this Xamarin.Forms.Cell cell);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Tuple`2&lt;int32, int32&gt; GetPath(class Xamarin.Forms.Cell cell) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Tuple&lt;System.Int32,System.Int32&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="cell" Type="Xamarin.Forms.Cell" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="cell">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetPath(Xamarin.Forms.Cell)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.BindableObject" />
+      </Targets>
+      <Member MemberName="SetIsGroupHeader&lt;TView,TItem&gt;">
+        <MemberSignature Language="C#" Value="public static void SetIsGroupHeader&lt;TView,TItem&gt; (this TItem cell, bool value) where TView : Xamarin.Forms.BindableObject, Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt; where TItem : Xamarin.Forms.BindableObject;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIsGroupHeader&lt;(class Xamarin.Forms.BindableObject, class Xamarin.Forms.ITemplatedItemsView`1&lt;!!TItem&gt;) TView, (class Xamarin.Forms.BindableObject) TItem&gt;(!!TItem cell, bool value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TView">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+              <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TItem&gt;</InterfaceName>
+            </Constraints>
+          </TypeParameter>
+          <TypeParameter Name="TItem">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.BindableObject</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="cell" Type="TItem" RefType="this" />
+          <Parameter Name="value" Type="System.Boolean" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TView">To be added.</typeparam>
+          <typeparam name="TItem">To be added.</typeparam>
+          <param name="cell">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.SetIsGroupHeader``2(``1,System.Boolean)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Specialized.NotifyCollectionChangedEventArgs" />
+      </Targets>
+      <Member MemberName="Apply">
+        <MemberSignature Language="C#" Value="public static System.Collections.Specialized.NotifyCollectionChangedAction Apply (this System.Collections.Specialized.NotifyCollectionChangedEventArgs self, Action&lt;object,int,bool&gt; insert, Action&lt;object,int&gt; removeAt, Action reset);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Collections.Specialized.NotifyCollectionChangedAction Apply(class System.Collections.Specialized.NotifyCollectionChangedEventArgs self, class System.Action`3&lt;object, int32, bool&gt; insert, class System.Action`2&lt;object, int32&gt; removeAt, class System.Action reset) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Collections.Specialized.NotifyCollectionChangedAction</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="System.Collections.Specialized.NotifyCollectionChangedEventArgs" RefType="this" />
+          <Parameter Name="insert" Type="System.Action&lt;System.Object,System.Int32,System.Boolean&gt;" />
+          <Parameter Name="removeAt" Type="System.Action&lt;System.Object,System.Int32&gt;" />
+          <Parameter Name="reset" Type="System.Action" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="insert">To be added.</param>
+          <param name="removeAt">To be added.</param>
+          <param name="reset">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Action{System.Object,System.Int32,System.Boolean},System.Action{System.Object,System.Int32},System.Action)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Specialized.NotifyCollectionChangedEventArgs" />
+      </Targets>
+      <Member MemberName="Apply&lt;TFrom&gt;">
+        <MemberSignature Language="C#" Value="public static void Apply&lt;TFrom&gt; (this System.Collections.Specialized.NotifyCollectionChangedEventArgs self, System.Collections.Generic.IList&lt;TFrom&gt; from, System.Collections.Generic.IList&lt;object&gt; to);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Apply&lt;TFrom&gt;(class System.Collections.Specialized.NotifyCollectionChangedEventArgs self, class System.Collections.Generic.IList`1&lt;!!TFrom&gt; from, class System.Collections.Generic.IList`1&lt;object&gt; to) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TFrom" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="self" Type="System.Collections.Specialized.NotifyCollectionChangedEventArgs" RefType="this" />
+          <Parameter Name="from" Type="System.Collections.Generic.IList&lt;TFrom&gt;" />
+          <Parameter Name="to" Type="System.Collections.Generic.IList&lt;System.Object&gt;" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TFrom">To be added.</typeparam>
+          <param name="self">To be added.</param>
+          <param name="from">To be added.</param>
+          <param name="to">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply``1(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Collections.Generic.IList{``0},System.Collections.Generic.IList{System.Object})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Specialized.NotifyCollectionChangedEventArgs" />
+      </Targets>
+      <Member MemberName="WithCount">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsEx WithCount (this System.Collections.Specialized.NotifyCollectionChangedEventArgs e, int count);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsEx WithCount(class System.Collections.Specialized.NotifyCollectionChangedEventArgs e, int32 count) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsEx</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="e" Type="System.Collections.Specialized.NotifyCollectionChangedEventArgs" RefType="this" />
+          <Parameter Name="count" Type="System.Int32" />
+        </Parameters>
+        <Docs>
+          <param name="e">To be added.</param>
+          <param name="count">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.WithCount(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Int32)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>

@@ -1,6 +1,6 @@
 <Type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/mono/mono/master/mcs/tools/mdoc/Resources/monodoc-ecma.xsd" Name="ItemsView&lt;TVisual&gt;" FullName="Xamarin.Forms.ItemsView&lt;TVisual&gt;">
-  <TypeSignature Language="C#" Value="public abstract class ItemsView&lt;TVisual&gt; : Xamarin.Forms.View where TVisual : BindableObject" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit ItemsView`1&lt;(class Xamarin.Forms.BindableObject) TVisual&gt; extends Xamarin.Forms.View" />
+  <TypeSignature Language="C#" Value="public abstract class ItemsView&lt;TVisual&gt; : Xamarin.Forms.View, Xamarin.Forms.IItemsView&lt;TVisual&gt;, Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt; where TVisual : BindableObject" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit ItemsView`1&lt;(class Xamarin.Forms.BindableObject) TVisual&gt; extends Xamarin.Forms.View implements class Xamarin.Forms.IItemsView`1&lt;!TVisual&gt;, class Xamarin.Forms.ITemplatedItemsView`1&lt;!TVisual&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -22,6 +22,12 @@
     <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IItemsView&lt;TVisual&gt;</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;</InterfaceName>
+    </Interface>
   </Interfaces>
   <Docs>
     <typeparam name="TVisual">The type of visual that the <see cref="P:Xamarin.Forms.ItemsView{TVisual}.ItemsSource" /> items will be templated into.</typeparam>
@@ -331,6 +337,38 @@ void SetupView()
       <Docs>
         <param name="content">To be added.</param>
         <summary>Internal use only.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.ListProxy">
+      <MemberSignature Language="C#" Value="Xamarin.Forms.IListProxy Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.ListProxy { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.IListProxy Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.ListProxy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IListProxy</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.TemplatedItems">
+      <MemberSignature Language="C#" Value="Xamarin.Forms.ITemplatedItemsList&lt;TVisual&gt; Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.TemplatedItems { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.ITemplatedItemsList`1&lt;!TVisual&gt; Xamarin.Forms.ITemplatedItemsView&lt;TVisual&gt;.TemplatedItems" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.ITemplatedItemsList&lt;TVisual&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

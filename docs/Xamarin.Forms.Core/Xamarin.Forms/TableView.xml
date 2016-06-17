@@ -1,6 +1,6 @@
 <Type Name="TableView" FullName="Xamarin.Forms.TableView">
-  <TypeSignature Language="C#" Value="public class TableView : Xamarin.Forms.View" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit TableView extends Xamarin.Forms.View" />
+  <TypeSignature Language="C#" Value="public class TableView : Xamarin.Forms.View, Xamarin.Forms.ITableViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit TableView extends Xamarin.Forms.View implements class Xamarin.Forms.ITableViewController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.ITableViewController</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>Xamarin.Forms.ContentProperty("Root")</AttributeName>
@@ -348,6 +352,22 @@ public class App : Application
       </ReturnValue>
       <Docs>
         <summary>Backing store for the row height property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.ITableViewController.Model">
+      <MemberSignature Language="C#" Value="Xamarin.Forms.ITableModel Xamarin.Forms.ITableViewController.Model { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.ITableModel Xamarin.Forms.ITableViewController.Model" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.ITableModel</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

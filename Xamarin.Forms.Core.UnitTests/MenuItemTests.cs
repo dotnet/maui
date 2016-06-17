@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool activated = false;
 			item.Clicked += (sender, args) => activated = true;
 
-			item.Activate();
+			((IMenuItemController)item).Activate();
 
 			Assert.That (activated, Is.True);
 		}
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			});
 
 			var item = new MenuItem { Command = c, CommandParameter = param };
-			item.Activate();
+			((IMenuItemController)item).Activate();
 
 			Assert.That (executed, Is.True);
 		}
@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		protected override void Activate (T source)
 		{
-			source.Activate();
+			((IMenuItemController)source).Activate();
 		}
 
 		protected override BindableProperty IsEnabledProperty

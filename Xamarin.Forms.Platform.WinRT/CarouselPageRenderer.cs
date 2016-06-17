@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 

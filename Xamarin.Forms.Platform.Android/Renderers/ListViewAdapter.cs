@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -31,6 +32,9 @@ namespace Xamarin.Forms.Platform.Android
 		AView _lastSelected;
 		WeakReference<Cell> _selectedCell;
 
+		IListViewController Controller => _listView;
+		ITemplatedItemsView<Cell> TemplatedItemsView => _listView;
+
 		public ListViewAdapter(Context context, AListView realListView, ListView listView) : base(context)
 		{
 			_context = context;
@@ -40,8 +44,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (listView.SelectedItem != null)
 				SelectItem(listView.SelectedItem);
 
-			listView.TemplatedItems.CollectionChanged += OnCollectionChanged;
-			listView.TemplatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
+			var templatedItems = ((ITemplatedItemsView<Cell>)listView).TemplatedItems;
+			templatedItems.CollectionChanged += OnCollectionChanged;
+			templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 			listView.ItemSelected += OnItemSelected;
 
 			realListView.OnItemClickListener = this;
@@ -54,12 +59,13 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			get
 			{
-				int count = _listView.TemplatedItems.Count;
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				int count = templatedItems.Count;
 
 				if (_listView.IsGroupingEnabled)
 				{
-					for (var i = 0; i < _listView.TemplatedItems.Count; i++)
-						count += _listView.TemplatedItems.GetGroup(i).Count;
+					for (var i = 0; i < templatedItems.Count; i++)
+						count += templatedItems.GetGroup(i).Count;
 				}
 
 				return count;
@@ -87,7 +93,7 @@ namespace Xamarin.Forms.Platform.Android
 					return cell.BindingContext;
 				}
 
-				return _listView.ListProxy[index];
+				return TemplatedItemsView.ListProxy[index];
 			}
 		}
 
@@ -115,7 +121,7 @@ namespace Xamarin.Forms.Platform.Android
 				itemTemplate = _listView.ItemTemplate;
 			else
 			{
-				group = _listView.TemplatedItems.GetGroupIndexFromGlobal(position, out row);
+				group = TemplatedItemsView.TemplatedItems.GetGroupIndexFromGlobal(position, out row);
 
 				if (row == 0)
 				{
@@ -138,9 +144,9 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				object item = null;
 				if (_listView.IsGroupingEnabled)
-					item = _listView.TemplatedItems.GetGroup(group).ListProxy[row];
+					item = ((ITemplatedItemsView<Cell>)TemplatedItemsView.TemplatedItems.GetGroup(group)).ListProxy[row];
 				else
-					item = _listView.TemplatedItems.ListProxy[position];
+					item = ((ITemplatedItemsView<Cell>)TemplatedItemsView.TemplatedItems).ListProxy[position];
 				itemTemplate = selector.SelectTemplate(item, _listView);
 			}
 			int key;
@@ -159,7 +165,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Performance.Start();
 
-			ListViewCachingStrategy cachingStrategy = _listView.CachingStrategy;
+			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;
 			if (cachingStrategy == ListViewCachingStrategy.RetainElement || convertView == null)
 			{
@@ -170,7 +176,7 @@ namespace Xamarin.Forms.Platform.Android
 						cell = cells[0];
 
 					if (cells.Count == 2)
-						nextCellIsHeader = TemplatedItemsList<ItemsView<Cell>, Cell>.GetIsGroupHeader(cells[1]);
+						nextCellIsHeader = cells[1].GetIsGroupHeader<ItemsView<Cell>, Cell>();
 				}
 
 				if (cell == null)
@@ -208,18 +214,20 @@ namespace Xamarin.Forms.Platform.Android
 					ContextView = null;
 				}
 				// We are going to re-set the Platform here because in some cases (headers mostly) its possible this is unset and
-				// when the binding context gets updated the measure passes will all fail. By applying this hear the Update call
+				// when the binding context gets updated the measure passes will all fail. By applying this here the Update call
 				// further down will result in correct layouts.
 				cell.Platform = _listView.Platform;
 
-				cell.SendDisappearing();
+				ICellController cellController = cell;
+				cellController.SendDisappearing();
 
 				int row = position;
 				var group = 0;
+				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (_listView.IsGroupingEnabled)
-					group = _listView.TemplatedItems.GetGroupIndexFromGlobal(position, out row);
+					group = templatedItems.GetGroupIndexFromGlobal(position, out row);
 
-				TemplatedItemsList<ItemsView<Cell>, Cell> templatedList = _listView.TemplatedItems.GetGroup(group);
+				var templatedList = templatedItems.GetGroup(group);
 
 				if (_listView.IsGroupingEnabled)
 				{
@@ -231,7 +239,7 @@ namespace Xamarin.Forms.Platform.Android
 				else
 					templatedList.UpdateContent(cell, row);
 
-				cell.SendAppearing();
+				cellController.SendAppearing();
 
 				if (cell.BindingContext == ActionModeObject)
 				{
@@ -277,7 +285,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				bline = layout.GetChildAt(1);
 
-			bool isHeader = TemplatedItemsList<ItemsView<Cell>, Cell>.GetIsGroupHeader(cell);
+			bool isHeader = cell.GetIsGroupHeader<ItemsView<Cell>, Cell>();
 
 			Color separatorColor = _listView.SeparatorColor;
 
@@ -320,19 +328,20 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ListView list = _listView;
 
+			ITemplatedItemsView<Cell> templatedItemsView = list;
 			if (list.IsGroupingEnabled)
 			{
 				int leftOver;
-				list.TemplatedItems.GetGroupIndexFromGlobal(position, out leftOver);
+				templatedItemsView.TemplatedItems.GetGroupIndexFromGlobal(position, out leftOver);
 				return leftOver > 0;
 			}
 
-			if (list.CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if (((IListViewController)list).CachingStrategy == ListViewCachingStrategy.RecycleElement)
 			{
 				if (_enabledCheckCell == null)
 					_enabledCheckCell = GetCellForPosition(position);
 				else
-					list.TemplatedItems.UpdateContent(_enabledCheckCell, position);
+					templatedItemsView.TemplatedItems.UpdateContent(_enabledCheckCell, position);
 				return _enabledCheckCell.IsEnabled;
 			}
 
@@ -349,8 +358,9 @@ namespace Xamarin.Forms.Platform.Android
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;
 
-				_listView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
-				_listView.TemplatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				templatedItems.CollectionChanged -= OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				_listView.ItemSelected -= OnItemSelected;
 
 				if (_lastSelected != null)
@@ -372,7 +382,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Cell cell = null;
 
-			if (_listView.CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if (Controller.CachingStrategy == ListViewCachingStrategy.RecycleElement)
 			{
 				AView cellOwner = view;
 				var layout = cellOwner as ConditionalFocusLayout;
@@ -389,7 +399,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Select(position, view);
 			_fromNative = true;
-			_listView.NotifyRowTapped(position, cell);
+			Controller.NotifyRowTapped(position, cell);
 		}
 
 		// TODO: We can optimize this by storing the last position, group index and global index
@@ -400,14 +410,15 @@ namespace Xamarin.Forms.Platform.Android
 			if (position < 0)
 				return cells;
 
+			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (!_listView.IsGroupingEnabled)
 			{
 				for (var x = 0; x < take; x++)
 				{
-					if (position + x >= _listView.TemplatedItems.Count)
+					if (position + x >= templatedItems.Count)
 						return cells;
 
-					cells.Add(_listView.TemplatedItems[x + position]);
+					cells.Add(templatedItems[x + position]);
 				}
 
 				return cells;
@@ -415,9 +426,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			var i = 0;
 			var global = 0;
-			for (; i < _listView.TemplatedItems.Count; i++)
+			for (; i < templatedItems.Count; i++)
 			{
-				TemplatedItemsList<ItemsView<Cell>, Cell> group = _listView.TemplatedItems.GetGroup(i);
+				var group = templatedItems.GetGroup(i);
 
 				if (global == position || cells.Count > 0)
 				{
@@ -527,7 +538,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SelectItem(object item)
 		{
-			int position = _listView.TemplatedItems.GetGlobalIndexOfItem(item);
+			int position = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(item);
 			AView view = null;
 			if (position != -1)
 				view = _realListView.GetChildAt(position + 1 - _realListView.FirstVisiblePosition);

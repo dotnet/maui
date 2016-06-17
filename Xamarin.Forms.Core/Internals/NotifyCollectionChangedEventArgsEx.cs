@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class NotifyCollectionChangedEventArgsEx : NotifyCollectionChangedEventArgs
+	public class NotifyCollectionChangedEventArgsEx : NotifyCollectionChangedEventArgs
 	{
 		public NotifyCollectionChangedEventArgsEx(int count, NotifyCollectionChangedAction action) : base(action)
 		{

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			Loaded += (sender, args) => SetBinding(SourceProperty, new System.Windows.Data.Binding());
 			Unloaded += (sender, args) =>
 			{
-				var cell = DataContext as Cell;
+				var cell = DataContext as ICellController;
 				if (cell != null)
 					cell.SendDisappearing();
 			};
@@ -47,8 +48,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void SetSource(object oldSource, object newSource)
 		{
-			var oldCell = oldSource as Cell;
-			var newCell = newSource as Cell;
+			var oldCell = oldSource as ICellController;
+			var newCell = newSource as ICellController;
 
 			if (oldCell != null)
 				oldCell.SendDisappearing();

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Windows.Input;
 using Xamarin.Forms.Platform;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -59,8 +60,6 @@ namespace Xamarin.Forms
 
 		public ListView()
 		{
-			TakePerformanceHit = false;
-
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
 
 			TemplatedItems.IsGroupingEnabledProperty = IsGroupingEnabledProperty;
@@ -190,8 +189,13 @@ namespace Xamarin.Forms
 		}
 
 		internal ListViewCachingStrategy CachingStrategy { get; private set; }
-
-		internal bool TakePerformanceHit { get; set; }
+		ListViewCachingStrategy IListViewController.CachingStrategy
+		{
+			get
+			{
+				return CachingStrategy;
+			}
+		}
 
 		bool RefreshAllowed
 		{
@@ -342,14 +346,32 @@ namespace Xamarin.Forms
 			content.Parent = null;
 		}
 
-		internal Cell CreateDefaultCell(object item)
+		Cell IListViewController.CreateDefaultCell(object item)
 		{
 			return CreateDefault(item);
 		}
 
+		string IListViewController.GetDisplayTextFromGroup(object cell)
+		{
+			int groupIndex = TemplatedItems.GetGlobalIndexOfGroup(cell);
+			var group = TemplatedItems.GetGroup(groupIndex);
+
+			string displayBinding = null;
+
+			if (GroupDisplayBinding != null)
+				displayBinding = group.Name;
+
+			if (GroupShortNameBinding != null)
+				displayBinding = group.ShortName;
+
+			// TODO: what if they set both? should it default to the ShortName, like it will here?
+			// ShortNames binding did not appear to be functional before.
+			return displayBinding;
+		}
+
 		internal void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
 		{
-			TemplatedItemsList<ItemsView<Cell>, Cell> group = TemplatedItems.GetGroup(groupIndex);
+			var group = TemplatedItems.GetGroup(groupIndex);
 
 			bool changed = _previousGroupSelected != groupIndex || _previousRowSelected != inGroupIndex;
 
@@ -381,6 +403,16 @@ namespace Xamarin.Forms
 				NotifyRowTapped(0, index, cell);
 		}
 
+		void IListViewController.NotifyRowTapped(int index, Cell cell)
+		{
+			NotifyRowTapped(index, cell);
+		}
+
+		void IListViewController.NotifyRowTapped(int index, int inGroupIndex, Cell cell)
+		{
+			NotifyRowTapped(index, inGroupIndex, cell);
+		}
+
 		internal override void OnIsPlatformEnabledChanged()
 		{
 			base.OnIsPlatformEnabledChanged();
@@ -393,6 +425,7 @@ namespace Xamarin.Forms
 		}
 
 		internal event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
+		event EventHandler<ScrollToRequestedEventArgs> IListViewController.ScrollToRequested { add { ScrollToRequested += value; } remove { ScrollToRequested -= value; } }
 
 		void OnCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{

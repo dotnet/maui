@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using WDataTemplate = Windows.UI.Xaml.DataTemplate;
 using WApplication = Windows.UI.Xaml.Application;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -17,7 +18,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (cell.RealParent is ListView)
 			{
-				if (TemplatedItemsList<ItemsView<Cell>, Cell>.GetIsGroupHeader(cell))
+				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 					return (WDataTemplate)WApplication.Current.Resources["ListViewHeaderTextCell"];
 
 				//return (WDataTemplate) WApplication.Current.Resources["ListViewTextCell"];
@@ -40,7 +41,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		public void Execute(object parameter)
 		{
-			var entryCell = (EntryCell)parameter;
+			var entryCell = (IEntryCellController)parameter;
 			entryCell.SendCompleted();
 		}
 	}

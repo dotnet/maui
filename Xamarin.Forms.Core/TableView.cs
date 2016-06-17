@@ -3,12 +3,13 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Platform;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Root")]
 	[RenderWith(typeof(_TableViewRenderer))]
-	public class TableView : View
+	public class TableView : View, ITableViewController
 	{
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
@@ -85,6 +86,13 @@ namespace Xamarin.Forms
 				OnModelChanged();
 			}
 		}
+		ITableModel ITableViewController.Model
+		{
+			get
+			{
+				return Model;
+			}
+		}
 
 		protected override void OnBindingContextChanged()
 		{
@@ -113,6 +121,11 @@ namespace Xamarin.Forms
 		}
 
 		internal event EventHandler ModelChanged;
+		event EventHandler ITableViewController.ModelChanged
+		{
+			add { ModelChanged += value; }
+			remove { ModelChanged -= value; }
+		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{

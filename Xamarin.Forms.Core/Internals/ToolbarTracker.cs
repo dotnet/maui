@@ -5,9 +5,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class ToolbarTracker
+	public class ToolbarTracker
 	{
 		int _masterDetails;
 		Page _target;

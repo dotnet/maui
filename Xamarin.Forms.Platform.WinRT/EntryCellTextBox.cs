@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (e.Key == VirtualKey.Enter)
 			{
-				var cell = DataContext as EntryCell;
+				var cell = DataContext as IEntryCellController;
 				if (cell != null)
 				{
 					cell.SendCompleted();

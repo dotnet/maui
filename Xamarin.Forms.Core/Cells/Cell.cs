@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms
 {
-	public abstract class Cell : Element
+	public abstract class Cell : Element, ICellController
 	{
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
@@ -77,6 +77,13 @@ namespace Xamarin.Forms
 		public event EventHandler Appearing;
 
 		public event EventHandler Disappearing;
+
+		event EventHandler ForceUpdateSizeRequested;
+		event EventHandler ICellController.ForceUpdateSizeRequested
+		{
+			add { ForceUpdateSizeRequested += value; }
+			remove { ForceUpdateSizeRequested -= value; }
+		}
 
 		public void ForceUpdateSize()
 		{
@@ -148,9 +155,7 @@ namespace Xamarin.Forms
 			base.OnPropertyChanging(propertyName);
 		}
 
-		internal event EventHandler ForceUpdateSizeRequested;
-
-		internal void SendAppearing()
+		void ICellController.SendAppearing()
 		{
 			OnAppearing();
 
@@ -159,7 +164,7 @@ namespace Xamarin.Forms
 				container.SendCellAppearing(this);
 		}
 
-		internal void SendDisappearing()
+		void ICellController.SendDisappearing()
 		{
 			OnDisappearing();
 

@@ -2,7 +2,7 @@ using System;
 
 namespace Xamarin.Forms
 {
-	public class EntryCell : Cell
+	public class EntryCell : Cell, IEntryCellController
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(EntryCell), null, BindingMode.TwoWay);
 
@@ -64,7 +64,7 @@ namespace Xamarin.Forms
 
 		public event EventHandler Completed;
 
-		internal void SendCompleted()
+		void IEntryCellController.SendCompleted()
 		{
 			EventHandler handler = Completed;
 			if (handler != null)

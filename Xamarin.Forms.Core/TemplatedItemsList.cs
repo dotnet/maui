@@ -6,11 +6,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Cadenza.Collections;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	internal sealed class TemplatedItemsList<TView, TItem> : BindableObject, IReadOnlyList<TItem>, IList, INotifyCollectionChanged, IDisposable where TView : BindableObject, IItemsView<TItem>
-																																				where TItem : BindableObject
+
+	internal sealed class TemplatedItemsList<TView, TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
+												where TView : BindableObject, IItemsView<TItem>
+												where TItem : BindableObject
 	{
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
@@ -83,6 +86,12 @@ namespace Xamarin.Forms
 			}
 			else
 				ListProxy = new ListProxy(new object[0]);
+		}
+
+		event PropertyChangedEventHandler ITemplatedItemsList<TItem>.PropertyChanged
+		{
+			add { PropertyChanged += value; }
+			remove { PropertyChanged -= value; }
 		}
 
 		public BindingBase GroupDisplayBinding
@@ -179,9 +188,9 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal ListProxy ListProxy
+		internal IListProxy ListProxy
 		{
-			get { return (ListProxy)GetValue(ListProxyPropertyKey.BindableProperty); }
+			get { return (IListProxy)GetValue(ListProxyPropertyKey.BindableProperty); }
 			private set { SetValue(ListProxyPropertyKey, value); }
 		}
 
@@ -337,7 +346,7 @@ namespace Xamarin.Forms
 			return count;
 		}
 
-		public int GetGlobalIndexForGroup(TemplatedItemsList<TView, TItem> group)
+		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
 		{
 			if (group == null)
 				throw new ArgumentNullException("group");
@@ -493,6 +502,11 @@ namespace Xamarin.Forms
 		}
 
 		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
+		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
+		{
+			add { GroupedCollectionChanged += value; }
+			remove { GroupedCollectionChanged -= value; }
+		}
 
 		public int IndexOf(TItem item)
 		{
@@ -534,6 +548,11 @@ namespace Xamarin.Forms
 				return this;
 
 			return _groupedItems[index];
+		}
+
+		ITemplatedItemsList<TItem> ITemplatedItemsList<TItem>.GetGroup(int index)
+		{
+			return GetGroup(index);
 		}
 
 		internal static TemplatedItemsList<TView, TItem> GetGroup(TItem item)
@@ -590,6 +609,10 @@ namespace Xamarin.Forms
 			object item = ListProxy[index];
 			return UpdateContent(content, index, item);
 		}
+		TItem ITemplatedItemsList<TItem>.UpdateContent(TItem content, int index)
+		{
+			return UpdateContent(content, index);
+		}
 
 		internal TItem UpdateHeader(TItem content, int groupIndex)
 		{
@@ -607,6 +630,10 @@ namespace Xamarin.Forms
 			_itemsView.SetupContent(content, groupIndex);
 
 			return content;
+		}
+		TItem ITemplatedItemsList<TItem>.UpdateHeader(TItem content, int groupIndex)
+		{
+			return UpdateHeader(content, groupIndex);
 		}
 
 		void BindableOnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -642,6 +669,14 @@ namespace Xamarin.Forms
 		IEnumerable GetItemsViewSource()
 		{
 			return (IEnumerable)_itemsView.GetValue(_itemSourceProperty);
+		}
+
+		object ITemplatedItemsList<TItem>.BindingContext
+		{
+			get
+			{
+				return BindingContext;
+			}
 		}
 
 		void GroupedReset()

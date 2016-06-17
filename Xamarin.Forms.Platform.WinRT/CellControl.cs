@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -41,7 +42,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			Unloaded += (sender, args) =>
 			{
-				Cell cell = Cell;
+				ICellController cell = Cell;
 				if (cell != null)
 					cell.SendDisappearing();
 			};
@@ -108,28 +109,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			return result;
-		}
-
-		static string GetDisplayTextFromGroup(ListView lv, TemplatedItemsList<ItemsView<Cell>, Cell> group)
-		{
-			string displayBinding = null;
-
-			if (lv.GroupDisplayBinding != null)
-				displayBinding = group.Name;
-
-			if (lv.GroupShortNameBinding != null)
-				displayBinding = group.ShortName;
-
-			// TODO: what if they set both? should it default to the ShortName, like it will here?
-			// ShortNames binding did not appear to be functional before.
-			return displayBinding;
-		}
-
-		static TemplatedItemsList<ItemsView<Cell>, Cell> GetGroup(object newContext, ListView lv)
-		{
-			int groupIndex = lv.TemplatedItems.GetGlobalIndexOfGroup(newContext);
-			TemplatedItemsList<ItemsView<Cell>, Cell> group = lv.TemplatedItems.GetGroup(groupIndex);
-			return group;
 		}
 
 		ListView GetListView()
@@ -251,13 +230,12 @@ namespace Xamarin.Forms.Platform.WinRT
 				{
 					string textContent = newContext.ToString();
 
-					if (isGroupHeader)
-					{
-						TemplatedItemsList<ItemsView<Cell>, Cell> group = GetGroup(newContext, lv);
-						textContent = GetDisplayTextFromGroup(lv, group);
-					}
+					IListViewController listViewController = lv;
 
-					cell = lv.CreateDefaultCell(textContent);
+					if (isGroupHeader)
+						textContent = listViewController.GetDisplayTextFromGroup(newContext);
+
+					cell = listViewController.CreateDefaultCell(textContent);
 				}
 
 				// A TableView cell should already have its parent,
@@ -266,7 +244,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				// This provides the Group Header styling (e.g., larger font, etc.) when the
 				// template is loaded later.
-				TemplatedItemsList<ItemsView<Cell>, Cell>.SetIsGroupHeader(cell, isGroupHeader);
+				cell.SetIsGroupHeader<ItemsView<Cell>, Cell>(isGroupHeader);
 			}
 
 			Cell = cell;
@@ -277,12 +255,12 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (oldCell != null)
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
-				oldCell.SendDisappearing();
+				((ICellController)oldCell).SendDisappearing();
 			}
 
 			if (newCell != null)
 			{
-				newCell.SendAppearing();
+				((ICellController)newCell).SendAppearing();
 
 				UpdateContent(newCell);
 				SetupContextMenu();

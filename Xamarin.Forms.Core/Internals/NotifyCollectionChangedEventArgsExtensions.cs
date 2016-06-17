@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal static class NotifyCollectionChangedEventArgsExtensions
+	public static class NotifyCollectionChangedEventArgsExtensions
 	{
 		public static void Apply<TFrom>(this NotifyCollectionChangedEventArgs self, IList<TFrom> from, IList<object> to)
 		{

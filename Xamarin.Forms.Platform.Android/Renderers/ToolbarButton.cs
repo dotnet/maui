@@ -6,15 +6,16 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal sealed class ToolbarButton : global::Android.Widget.Button, IToolbarButton
 	{
+		IMenuItemController Controller => Item;
 		public ToolbarButton(Context context, ToolbarItem item) : base(context)
 		{
 			if (item == null)
 				throw new ArgumentNullException("item", "you should specify a ToolbarItem");
 			Item = item;
-			Enabled = Item.IsEnabled;
+			Enabled = Controller.IsEnabled;
 			Text = Item.Text;
 			SetBackgroundColor(new Color(0, 0, 0, 0).ToAndroid());
-			Click += (sender, e) => Item.Activate();
+			Click += (sender, e) => Controller.Activate();
 			Item.PropertyChanged += HandlePropertyChanged;
 		}
 
@@ -29,8 +30,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-				Enabled = Item.IsEnabled;
+			if (e.PropertyName == Controller.IsEnabledPropertyName)
+				Enabled = Controller.IsEnabled;
 		}
 	}
 }

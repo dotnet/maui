@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 	public class TableViewRenderer : ViewRenderer<Xamarin.Forms.TableView, TableView>
 	{
 		TableView _view;
+		ITableViewController Controller => Element;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -23,7 +24,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		{
 			base.OnElementChanged(e);
 
-			Element.ModelChanged += OnModelChanged;
+			Controller.ModelChanged += OnModelChanged;
 
 			_view = new TableView { DataContext = Element.Root };
 			_view.Tap += OnTapTable;
@@ -71,7 +72,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (!FindIndices(e, out sectionIndex, out cellIndex))
 				return;
 
-			Element.Model.RowLongPressed(sectionIndex, cellIndex);
+			Controller.Model.RowLongPressed(sectionIndex, cellIndex);
 		}
 
 		void OnModelChanged(object sender, EventArgs eventArgs)
@@ -85,7 +86,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (!FindIndices(e, out sectionIndex, out cellIndex))
 				return;
 
-			Element.Model.RowSelected(sectionIndex, cellIndex);
+			Controller.Model.RowSelected(sectionIndex, cellIndex);
 		}
 	}
 }

@@ -64,6 +64,8 @@
     <Compile Include="BoundsTypeConverter.cs" />
     <Compile Include="CastingEnumerator.cs" />
     <Compile Include="Cells\EntryCell.cs" />
+    <Compile Include="Cells\ICellController.cs" />
+    <Compile Include="Cells\IEntryCellController.cs" />
     <Compile Include="Cells\ImageCell.cs" />
     <Compile Include="Cells\INativeElementView.cs" />
     <Compile Include="ChatKeyboard.cs" />
@@ -84,6 +86,8 @@
     <Compile Include="DataTemplateSelector.cs" />
     <Compile Include="DateChangedEventArgs.cs" />
     <Compile Include="DelegateLogListener.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="IFontElement.cs" />
     <Compile Include="DependencyAttribute.cs" />
     <Compile Include="DependencyFetchTarget.cs" />
     <Compile Include="DeviceOrientation.cs" />
@@ -92,6 +96,8 @@
     <Compile Include="ElementEventArgs.cs" />
     <Compile Include="ElementTemplate.cs" />
     <Compile Include="EmailKeyboard.cs" />
+    <Compile Include="IListProxy.cs" />
+    <Compile Include="IMenuItemController.cs" />
     <Compile Include="IEntryController.cs" />
     <Compile Include="IImageController.cs" />
     <Compile Include="INavigationPageController.cs" />
@@ -119,7 +125,6 @@
     <Compile Include="IElementController.cs" />
     <Compile Include="IExpressionSearch.cs" />
     <Compile Include="IExtendedTypeConverter.cs" />
-    <Compile Include="IFontElement.cs" />
     <Compile Include="IGestureRecognizer.cs" />
     <Compile Include="IItemsView.cs" />
     <Compile Include="IItemViewController.cs" />
@@ -134,6 +139,7 @@
     <Compile Include="IPageController.cs" />
     <Compile Include="IPanGestureController.cs" />
     <Compile Include="IPinchGestureController.cs" />
+    <Compile Include="IPlatform.cs" />
     <Compile Include="IProvideParentValues.cs" />
     <Compile Include="IProvideValueTarget.cs" />
     <Compile Include="IRegisterable.cs" />
@@ -141,6 +147,11 @@
     <Compile Include="IResourcesProvider.cs" />
     <Compile Include="IRootObjectProvider.cs" />
     <Compile Include="IScrollViewController.cs" />
+    <Compile Include="ITableModel.cs" />
+    <Compile Include="ITableViewController.cs" />
+    <Compile Include="ITemplatedItemsList.cs" />
+    <Compile Include="ITemplatedItemsListScrollToRequestedEventArgs.cs" />
+    <Compile Include="ITemplatedItemsView.cs" />
     <Compile Include="ISearchBarController.cs" />
     <Compile Include="IStreamImageSource.cs" />
     <Compile Include="ItemTappedEventArgs.cs" />
@@ -174,8 +185,8 @@
     <Compile Include="NavigationEventArgs.cs" />
     <Compile Include="NavigationModel.cs" />
     <Compile Include="Internals\NavigationRequestedEventArgs.cs" />
-    <Compile Include="NotifyCollectionChangedEventArgsEx.cs" />
-    <Compile Include="NotifyCollectionChangedEventArgsExtensions.cs" />
+    <Compile Include="Internals\NotifyCollectionChangedEventArgsEx.cs" />
+    <Compile Include="Internals\NotifyCollectionChangedEventArgsExtensions.cs" />
     <Compile Include="NullEffect.cs" />
     <Compile Include="NumericKeyboard.cs" />
     <Compile Include="ObservableList.cs" />
@@ -203,6 +214,7 @@
     <Compile Include="ReadOnlyCastingList.cs" />
     <Compile Include="ReadOnlyListAdapter.cs" />
     <Compile Include="RectangleTypeConverter.cs" />
+    <Compile Include="Registrar.cs" />
     <Compile Include="RenderWithAttribute.cs" />
     <Compile Include="ResolutionGroupNameAttribute.cs" />
     <Compile Include="ResourcesChangedEventArgs.cs" />
@@ -230,6 +242,7 @@
     <Compile Include="TelephoneKeyboard.cs" />
     <Compile Include="TemplateBinding.cs" />
     <Compile Include="TemplatedItemsList.cs" />
+    <Compile Include="Internals\CellExtensions.cs" />
     <Compile Include="TemplatedPage.cs" />
     <Compile Include="TemplatedView.cs" />
     <Compile Include="TemplateUtilities.cs" />
@@ -265,8 +278,6 @@
     <Compile Include="Color.cs" />
     <Compile Include="ResourceDictionary.cs" />
     <Compile Include="EventArg.cs" />
-    <Compile Include="IPlatform.cs" />
-    <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="Size.cs" />
     <Compile Include="GestureState.cs" />
     <Compile Include="Point.cs" />
@@ -286,7 +297,6 @@
     <Compile Include="DataTemplate.cs" />
     <Compile Include="ListProxy.cs" />
     <Compile Include="AbsoluteLayout.cs" />
-    <Compile Include="Registrar.cs" />
     <Compile Include="ActivityIndicator.cs" />
     <Compile Include="BoxView.cs" />
     <Compile Include="Button.cs" />
@@ -318,7 +328,7 @@
     <Compile Include="TabbedPage.cs" />
     <Compile Include="TemplateExtensions.cs" />
     <Compile Include="TimePicker.cs" />
-    <Compile Include="ToolbarTracker.cs" />
+    <Compile Include="Internals\ToolbarTracker.cs" />
     <Compile Include="ViewExtensions.cs" />
     <Compile Include="ViewState.cs" />
     <Compile Include="WeakReferenceExtensions.cs" />

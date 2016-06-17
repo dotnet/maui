@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Drawing;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 #else

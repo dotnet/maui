@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
+using Xamarin.Forms.Internals;
+
 #if __UNIFIED__
 using UIKit;
 #else
@@ -145,11 +146,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateCell(ViewCell cell)
 			{
-				if (_viewCell != null)
-					Device.BeginInvokeOnMainThread(_viewCell.SendDisappearing);
+				ICellController cellController = _viewCell;
+				if (cellController != null)
+					Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
 
 				_viewCell = cell;
-				Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
+				cellController = cell;
+
+				Device.BeginInvokeOnMainThread(cellController.SendAppearing);
 
 				IVisualElementRenderer renderer;
 				if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))

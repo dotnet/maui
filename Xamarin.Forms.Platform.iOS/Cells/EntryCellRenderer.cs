@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.iOS
 		static void OnKeyBoardDoneButtonPressed(object sender, EventArgs e)
 		{
 			var cell = (EntryCellTableViewCell)sender;
-			var model = (EntryCell)cell.Cell;
+			var model = (IEntryCellController)cell.Cell;
 
 			model.SendCompleted();
 		}

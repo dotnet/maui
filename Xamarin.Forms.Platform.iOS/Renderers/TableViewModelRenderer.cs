@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 using Foundation;
@@ -25,6 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		readonly Dictionary<nint, Cell> _headerCells = new Dictionary<nint, Cell>();
 
+		protected ITableViewController Controller => View;
+
 		protected bool HasBoundGestures;
 		protected UITableView Table;
 
@@ -33,7 +36,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public TableViewModelRenderer(TableView model)
 		{
 			View = model;
-			View.ModelChanged += (s, e) =>
+			Controller.ModelChanged += (s, e) =>
 			{
 				if (Table != null)
 					Table.ReloadData();
@@ -45,7 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
-			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
+			var cell = Controller.Model.GetCell(indexPath.Section, indexPath.Row);
 
 			var nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
 			return nativeCell;
@@ -54,7 +57,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 		{
 			if (!_headerCells.ContainsKey((int)section))
-				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+				_headerCells[section] = Controller.Model.GetHeaderCell((int)section);
 
 			var result = _headerCells[section];
 
@@ -64,7 +67,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override UIView GetViewForHeader(UITableView tableView, nint section)
 		{
 			if (!_headerCells.ContainsKey((int)section))
-				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+				_headerCells[section] = Controller.Model.GetHeaderCell((int)section);
 
 			var result = _headerCells[section];
 
@@ -85,35 +88,35 @@ namespace Xamarin.Forms.Platform.iOS
 			if (indexPath == null)
 				return;
 
-			View.Model.RowLongPressed(indexPath.Section, indexPath.Row);
+			Controller.Model.RowLongPressed(indexPath.Section, indexPath.Row);
 		}
 
 		public override nint NumberOfSections(UITableView tableView)
 		{
 			BindGestures(tableView);
-			return View.Model.GetSectionCount();
+			return Controller.Model.GetSectionCount();
 		}
 
 		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
-			View.Model.RowSelected(indexPath.Section, indexPath.Row);
+			Controller.Model.RowSelected(indexPath.Section, indexPath.Row);
 			if (AutomaticallyDeselect)
 				tableView.DeselectRow(indexPath, true);
 		}
 
 		public override nint RowsInSection(UITableView tableview, nint section)
 		{
-			return View.Model.GetRowCount((int)section);
+			return Controller.Model.GetRowCount((int)section);
 		}
 
 		public override string[] SectionIndexTitles(UITableView tableView)
 		{
-			return View.Model.GetSectionIndexTitles();
+			return Controller.Model.GetSectionIndexTitles();
 		}
 
 		public override string TitleForHeader(UITableView tableView, nint section)
 		{
-			return View.Model.GetSectionTitle((int)section);
+			return Controller.Model.GetSectionTitle((int)section);
 		}
 
 		void BindGestures(UITableView tableview)

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Xamarin.Forms.Internals;
 #if __UNIFIED__
 using UIKit;
 
@@ -27,11 +28,16 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_cell == value)
 					return;
 
-				if (_cell != null)
-					Device.BeginInvokeOnMainThread(_cell.SendDisappearing);
+				ICellController cellController = _cell;
+
+				if (cellController != null)
+					Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
+				
 				_cell = value;
-				if (_cell != null)
-					Device.BeginInvokeOnMainThread(_cell.SendAppearing);
+				cellController = value;
+
+				if (cellController != null)
+					Device.BeginInvokeOnMainThread(cellController.SendAppearing);
 			}
 		}
 

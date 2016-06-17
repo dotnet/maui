@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace Xamarin.Forms
 {
-	public class MenuItem : BaseMenuItem
+	public class MenuItem : BaseMenuItem, IMenuItemController
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(MenuItem), null);
 
@@ -18,6 +18,14 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty IconProperty = BindableProperty.Create("Icon", typeof(FileImageSource), typeof(MenuItem), default(FileImageSource));
 
 		internal static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(ToolbarItem), true);
+
+		string IMenuItemController.IsEnabledPropertyName
+		{
+			get
+			{
+				return IsEnabledProperty.PropertyName;
+			}
+		}
 
 		public ICommand Command
 		{
@@ -55,6 +63,14 @@ namespace Xamarin.Forms
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
+		bool IMenuItemController.IsEnabled
+		{
+			get
+			{
+				return IsEnabled;
+			}
+		}
+
 		bool IsEnabledCore
 		{
 			set { SetValueCore(IsEnabledProperty, value); }
@@ -69,7 +85,7 @@ namespace Xamarin.Forms
 				handler(this, EventArgs.Empty);
 		}
 
-		internal void Activate()
+		void IMenuItemController.Activate()
 		{
 			if (Command != null)
 			{

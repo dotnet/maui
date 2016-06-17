@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms
 {
-	public class ScrollToRequestedEventArgs : EventArgs
+	public class ScrollToRequestedEventArgs : EventArgs, ITemplatedItemsListScrollToRequestedEventArgs
 	{
 		internal ScrollToRequestedEventArgs(double scrollX, double scrollY, bool shouldAnimate)
 		{
@@ -50,7 +50,22 @@ namespace Xamarin.Forms
 		public bool ShouldAnimate { get; private set; }
 
 		internal object Group { get; private set; }
+		object ITemplatedItemsListScrollToRequestedEventArgs.Group
+		{
+			get
+			{
+				return Group;
+			}
+		}
 
 		internal object Item { get; private set; }
+		object ITemplatedItemsListScrollToRequestedEventArgs.Item
+		{
+			get
+			{
+				return Item;
+			}
+		}
+
 	}
 }
