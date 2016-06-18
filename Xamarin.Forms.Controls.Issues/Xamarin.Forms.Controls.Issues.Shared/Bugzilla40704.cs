@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Controls
 				tapGesture = new TapGestureRecognizer();
 				tapGesture.Tapped += HeaderCell_OnTapped;
 				grd.GestureRecognizers.Add(tapGesture);
-				var lbl = new Label { HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Color.Black, FontSize = 16 };
+				var lbl = new Label { VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.FillAndExpand, TextColor = Color.Black, FontSize = 16 };
 				lbl.SetBinding(Label.TextProperty, new Binding("Title"));
 
 				grd.Children.Add(lbl);
@@ -212,7 +212,12 @@ namespace Xamarin.Forms.Controls
 		}
 
 
-		#if UITEST
+#if UITEST
+		[Test]
+		public void Bugzilla40704HeaderPresentTest()
+		{
+			RunningApp.WaitForElement("Menu - 0");
+		}
 		[Test]
 		public void Bugzilla40704Test()
 		{

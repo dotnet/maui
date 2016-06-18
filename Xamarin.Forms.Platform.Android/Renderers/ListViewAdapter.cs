@@ -408,6 +408,7 @@ namespace Xamarin.Forms.Platform.Android
 						var groupContent = _listView.TemplatedItems.GroupHeaderTemplate.CreateContent(group.ItemsSource, _listView) as Cell;
 						if (groupContent != null)
 						{
+							groupContent.Parent = _listView;
 							groupContent.BindingContext = group.ItemsSource;
 							cells.Add(groupContent);
 						}
