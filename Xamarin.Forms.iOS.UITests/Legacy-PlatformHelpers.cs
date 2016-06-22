@@ -91,15 +91,15 @@ namespace Xamarin.Forms.UITests
 
 		public static void SwipeBackNavigation (this iOSApp app)
 		{
-			app.PanCoordinates (0, 125, 75, 125, TimeSpan.FromSeconds (5));
+			//app.PanCoordinates (0, 125, 75, 125, TimeSpan.FromSeconds (5));
 		}
 			
 		public static void DragFromTo (this iOSApp app, float xStart, float yStart, float xEnd, float yEnd, Speed speed = Speed.Fast)
 		{
-			if (speed == Speed.Slow)
-				app.PanCoordinates (xStart, yStart, xEnd, yEnd, TimeSpan.FromMilliseconds (3000));
-			else
-				app.PanCoordinates (xStart, yStart, xEnd, yEnd, TimeSpan.FromMilliseconds (1000));
+			//if (speed == Speed.Slow)
+			//	app.PanCoordinates (xStart, yStart, xEnd, yEnd, TimeSpan.FromMilliseconds (3000));
+			//else
+			//	app.PanCoordinates (xStart, yStart, xEnd, yEnd, TimeSpan.FromMilliseconds (1000));
 
 		}
 	
