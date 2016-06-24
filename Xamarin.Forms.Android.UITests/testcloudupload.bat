@@ -1,1 +1,0 @@
-xut-console.exe submit --assembly-dir ..\Xamarin.Forms.Android.UITests\bin\debug ..\Xamarin.Forms.ControlGallery.Android\bin\Release\AndroidControlGallery.AndroidControlGallery-Signed.apk 1a02b2e1ee5a2895e47da095cc895a49 6bbba6ec
