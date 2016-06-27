@@ -268,7 +268,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == "IsGestureEnabled")
+			else if (e.PropertyName == MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				SetGestureState();
 			else if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
 			{

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		FragmentManager _fragmentManager;
 		readonly bool _isMaster;
 		readonly MasterDetailPage _parent;
+		Fragment _currentFragment;
 
 		public MasterDetailContainer(MasterDetailPage parent, bool isMaster, Context context) : base(parent, isMaster, context)
 		{
@@ -59,17 +60,30 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (page == null)
 			{
-				// Not a NavigationPage or TabbedPage? Just do the normal thing
+				// The thing we're adding is not a NavigationPage or TabbedPage, so we can just use the old AddChildView 
+
+				if (_currentFragment != null)
+				{
+					// But first, if the previous occupant of this container was a fragment, we need to remove it properly
+					FragmentTransaction transaction = FragmentManager.BeginTransaction();
+					transaction.DisallowAddToBackStack();
+					transaction.Remove(_currentFragment);
+					transaction.SetTransition((int)FragmentTransit.None);
+					transaction.Commit();
+
+					_currentFragment = null;
+				}
+				
 				base.AddChildView(childView);
 			}
 			else
 			{
 				// The renderers for NavigationPage and TabbedPage both host fragments, so they need to be wrapped in a 
 				// FragmentContainer in order to get isolated fragment management
-
 				Fragment fragment = FragmentContainer.CreateInstance(page);
 				
 				var fc = fragment as FragmentContainer;
+
 				fc?.SetOnCreateCallback(pc =>
 				{
 					_pageContainer = pc;
@@ -78,9 +92,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				FragmentTransaction transaction = FragmentManager.BeginTransaction();
 				transaction.DisallowAddToBackStack();
+
+				if (_currentFragment != null)
+				{
+					transaction.Remove(_currentFragment);
+				}
+
 				transaction.Add(Id, fragment);
 				transaction.SetTransition((int)FragmentTransit.FragmentOpen);
 				transaction.Commit();
+
+				_currentFragment = fragment;
 			}
 		}
 

@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 		static ViewPropertyAnimator s_currentAnimation;
 
 		Page _current;
+		bool _disposed;
 
 		public NavigationRenderer()
 		{
@@ -39,17 +40,24 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (disposing && !_disposed)
 			{
-				foreach (VisualElement child in PageController.InternalChildren)
-				{
-					IVisualElementRenderer renderer = Platform.GetRenderer(child);
-					if (renderer != null)
-						renderer.Dispose();
-				}
+				_disposed = true;
 
 				if (Element != null)
 				{
+					foreach (Element element in PageController.InternalChildren)
+					{
+						var child = (VisualElement)element;
+						if (child == null)
+						{
+							continue;
+						}
+
+						IVisualElementRenderer renderer = Platform.GetRenderer(child);
+						renderer?.Dispose();
+					}
+
 					var navController = (INavigationPageController)Element;
 
 					navController.PushRequested -= OnPushed;
@@ -101,7 +109,10 @@ namespace Xamarin.Forms.Platform.Android
 			newNavController.RemovePageRequested += OnRemovePageRequested;
 
 			// If there is already stuff on the stack we need to push it
-			newNavController.StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
+			foreach(Page page in newNavController.StackCopy.Reverse())
+			{
+				PushViewAsync(page, false);
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

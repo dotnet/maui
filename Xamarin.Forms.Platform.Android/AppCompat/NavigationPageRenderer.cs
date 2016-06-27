@@ -132,11 +132,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (Element != null)
 				{
-					for (var i = 0; i < PageController.InternalChildren.Count; i++)
+					foreach(Element element in PageController.InternalChildren)
 					{
-						var child = PageController.InternalChildren[i] as VisualElement;
+						var child = element as VisualElement;
 						if (child == null)
+						{
 							continue;
+						}
+							
 						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
 						renderer?.Dispose();
 					}
@@ -148,7 +151,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					navController.PopToRootRequested -= OnPoppedToRoot;
 					navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
 					navController.RemovePageRequested -= OnRemovePageRequested;
-					PageController.SendDisappearing();
 				}
 
 				if (_toolbarTracker != null)
@@ -164,6 +166,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_toolbar.Dispose();
 					_toolbar = null;
 				}
+
+				if (_drawerLayout != null && _drawerListener != null)
+				{
+					_drawerLayout.RemoveDrawerListener(_drawerListener);
+				}
+
+				_drawerToggle = null;
 
 				Current = null;
 
@@ -237,7 +246,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				navController.RemovePageRequested += OnRemovePageRequested;
 
 				// If there is already stuff on the stack we need to push it
-				((INavigationPageController)e.NewElement).StackCopy.Reverse().ForEach(p => PushViewAsync(p, false));
+				foreach (Page page in navController.StackCopy.Reverse())
+				{
+					PushViewAsync(page, false);
+				}
 			}
 		}
 
@@ -447,6 +459,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			RemovePage(e.Page);
 		}
 
+		private DrawerMultiplexedListener _drawerListener;
+		private DrawerLayout _drawerLayout;
+
 		void RegisterToolbar()
 		{
 			Context context = Context;
@@ -478,13 +493,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (renderer == null)
 				return;
 
-			var drawerLayout = (DrawerLayout)renderer;
-			_drawerToggle = new ActionBarDrawerToggle((Activity)context, drawerLayout, bar, global::Android.Resource.String.Ok, global::Android.Resource.String.Ok)
+			_drawerLayout = (DrawerLayout)renderer;
+			_drawerToggle = new ActionBarDrawerToggle((Activity)context, _drawerLayout, bar, global::Android.Resource.String.Ok, global::Android.Resource.String.Ok)
 			{
 				ToolbarNavigationClickListener = new ClickListener(Element)
 			};
 
-			drawerLayout.AddDrawerListener(new DrawerMultiplexedListener { Listeners = { _drawerToggle, renderer } });
+			if (_drawerListener != null) 
+			{
+				_drawerLayout.RemoveDrawerListener(_drawerListener);
+			}
+
+			_drawerListener = new DrawerMultiplexedListener { Listeners = { _drawerToggle, renderer } };
+			_drawerLayout.AddDrawerListener(_drawerListener);
+
 			_drawerToggle.DrawerIndicatorEnabled = true;
 		}
 
@@ -542,7 +564,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		Task<bool> SwitchContentAsync(Page view, bool animated, bool removed = false, bool popToRoot = false)
 		{
-			var activity = (FormsAppCompatActivity)Context;
 			var tcs = new TaskCompletionSource<bool>();
 			Fragment fragment = FragmentContainer.CreateInstance(view);
 			FragmentManager fm = FragmentManager;

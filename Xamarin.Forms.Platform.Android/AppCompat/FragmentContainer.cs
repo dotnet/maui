@@ -75,25 +75,31 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			return null;
 		}
-
+		
 		public override void OnDestroyView()
 		{
 			if (Page != null)
 			{
-				IVisualElementRenderer renderer = _visualElementRenderer;
-				PageContainer container = _pageContainer;
-
-				if (container.Handle != IntPtr.Zero && renderer.ViewGroup.Handle != IntPtr.Zero)
+				if (_visualElementRenderer != null)
 				{
-					container.RemoveFromParent();
-					renderer.ViewGroup.RemoveFromParent();
-					Page.ClearValue(Android.Platform.RendererProperty);
+					if (_visualElementRenderer.ViewGroup.Handle != IntPtr.Zero)
+					{
+						_visualElementRenderer.ViewGroup.RemoveFromParent();
+					}
 
-					container.Dispose();
-					renderer.Dispose();
+					_visualElementRenderer.Dispose();
 				}
+
+				if (_pageContainer != null && _pageContainer.Handle != IntPtr.Zero)
+				{
+					_pageContainer.RemoveFromParent();
+					_pageContainer.Dispose();
+				}
+
+				Page?.ClearValue(Android.Platform.RendererProperty);
 			}
 
+			_onCreateCallback = null;
 			_visualElementRenderer = null;
 			_pageContainer = null;
 
@@ -108,9 +114,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			if (hidden)
-				PageController.SendDisappearing();
+				PageController?.SendDisappearing();
 			else
-				PageController.SendAppearing();
+				PageController?.SendAppearing();
 		}
 
 		public override void OnPause()
