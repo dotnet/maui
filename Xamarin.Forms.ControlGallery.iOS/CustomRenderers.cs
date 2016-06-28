@@ -28,7 +28,7 @@ using MonoTouch.CoreLocation;
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(CustomMapView), typeof(CustomIOSMapRenderer))]
-
+[assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageWithCustomBarColorRenderer))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
@@ -593,5 +593,16 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		}
 	}
 
+	public class TabbedPageWithCustomBarColorRenderer : TabbedRenderer
+	{
+		public TabbedPageWithCustomBarColorRenderer()
+		{
+			TabBar.TintColor = UIColor.White;
+			TabBar.BarTintColor = UIColor.Purple;
+
+			//UITabBar.Appearance.TintColor = UIColor.White;
+			//UITabBar.Appearance.BarTintColor = UIColor.Purple;
+		}
+	}
 }
 
