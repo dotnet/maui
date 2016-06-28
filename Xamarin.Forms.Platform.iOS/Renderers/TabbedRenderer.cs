@@ -24,6 +24,12 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class TabbedRenderer : UITabBarController, IVisualElementRenderer, IEffectControlProvider
 	{
+		bool _barBackgroundColorWasSet;
+		bool _barTextColorWasSet;
+		UIColor _defaultBarTextColor;
+		bool _defaultBarTextColorSet;
+		UIColor _defaultBarColor;
+		bool _defaultBarColorSet;
 		bool _loaded;
 		Size _queuedSize;
 
@@ -309,14 +315,31 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			var barBackgroundColor = Tabbed.BarBackgroundColor;
+			var isDefaultColor = barBackgroundColor.IsDefault;
+
+			if (isDefaultColor && !_barBackgroundColorWasSet)
+				return;
+
+			if (!_defaultBarColorSet)
+			{
+				if (Forms.IsiOS7OrNewer)
+					_defaultBarColor = TabBar.BarTintColor;
+				else
+					_defaultBarColor = TabBar.TintColor;
+
+				_defaultBarColorSet = true;
+			}
+
+			if (!isDefaultColor)
+				_barBackgroundColorWasSet = true;
 
 			if (Forms.IsiOS7OrNewer)
 			{
-				TabBar.BarTintColor = barBackgroundColor == Color.Default ? UINavigationBar.Appearance.BarTintColor : barBackgroundColor.ToUIColor();
+				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
 			}
 			else
 			{
-				TabBar.TintColor = barBackgroundColor == Color.Default ? UINavigationBar.Appearance.TintColor : barBackgroundColor.ToUIColor();
+				TabBar.TintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
 			}
 		}
 
@@ -326,13 +349,24 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			var barTextColor = Tabbed.BarTextColor;
+			var isDefaultColor = barTextColor.IsDefault;
 
-			var globalAttributes = UINavigationBar.Appearance.GetTitleTextAttributes();
+			if (isDefaultColor && !_barTextColorWasSet)
+				return;
 
-			var attributes = new UITextAttributes { Font = globalAttributes.Font };
+			if (!_defaultBarTextColorSet)
+			{
+				_defaultBarTextColor = TabBar.TintColor; 
+				_defaultBarTextColorSet = true;
+			}
 
-			if (barTextColor == Color.Default)
-				attributes.TextColor = globalAttributes.TextColor;
+			if (!isDefaultColor)
+				_barTextColorWasSet = true;
+
+			var attributes = new UITextAttributes();
+
+			if (isDefaultColor)
+				attributes.TextColor = _defaultBarTextColor;
 			else
 				attributes.TextColor = barTextColor.ToUIColor();
 
@@ -345,7 +379,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// setting the unselected icon tint is not supported by iOS
 			if (Forms.IsiOS7OrNewer)
 			{
-				TabBar.TintColor = barTextColor == Color.Default ? UINavigationBar.Appearance.TintColor : barTextColor.ToUIColor();
+				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
 			}
 		}
 
