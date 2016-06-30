@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var result = renderer.Element.Measure(width, height);
 
 				// make sure to add in the separator if needed
-				var finalheight = ((float)result.Request.Height + (SupressSeparator ? 0f : 1f)) / UIScreen.MainScreen.Scale;
+				var finalheight = (float)result.Request.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
 				return new SizeF(size.Width, finalheight);
 			}
 
