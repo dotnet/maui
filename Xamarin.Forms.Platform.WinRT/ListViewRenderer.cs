@@ -287,7 +287,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (Device.Idiom == TargetIdiom.Phone)
 				await Task.Delay(1);
 
-			IListProxy listProxy = ((ITemplatedItemsView<Cell>)til).ListProxy;
+			IListProxy listProxy = til.ListProxy;
 			ScrollTo(listProxy.ProxiedEnumerable, listProxy[0], ScrollToPosition.Start, true, true);
 		}
 

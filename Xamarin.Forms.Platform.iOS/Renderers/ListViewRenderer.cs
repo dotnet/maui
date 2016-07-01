@@ -310,7 +310,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnGroupedCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var til = (ITemplatedItemsList<Cell>)sender;
+			var til = (TemplatedItemsList<ItemsView<Cell>, Cell>)sender;
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			var groupIndex = templatedItems.IndexOf(til.HeaderContent);
@@ -919,7 +919,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
-					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
+					templatedItems = (TemplatedItemsList<ItemsView<Cell>, Cell>)((IList)templatedItems)[indexPath.Section];
 
 				var cell = templatedItems[indexPath.Row];
 				return cell;
@@ -934,7 +934,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var currentSelected = _uiTableView.IndexPathForSelectedRow;
 
-				var til = (ITemplatedItemsView<Cell>)sender;
+				var til = (TemplatedItemsList<ItemsView<Cell>, Cell>)sender;
 				var groupIndex = ((IList)TemplatedItemsView.TemplatedItems).IndexOf(til);
 				if (groupIndex == -1)
 				{
@@ -968,9 +968,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				var templatedList = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
-					templatedList = (ITemplatedItemsList<Cell>)((IList)templatedList)[indexPath.Section];
+					templatedList = (TemplatedItemsList<ItemsView<Cell>, Cell>)((IList)templatedList)[indexPath.Section];
 
-				var item = ((ITemplatedItemsView<Cell>)templatedList).ListProxy[indexPath.Row];
+				var item = templatedList.ListProxy[indexPath.Row];
 
 				itemTemplate = selector.SelectTemplate(item, List);
 				int key;
