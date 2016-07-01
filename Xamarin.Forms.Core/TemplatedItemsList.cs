@@ -194,6 +194,11 @@ namespace Xamarin.Forms
 			private set { SetValue(ListProxyPropertyKey, value); }
 		}
 
+		IListProxy ITemplatedItemsList<TItem>.ListProxy
+		{
+			get { return ListProxy; }
+		}
+
 		DataTemplate ItemTemplate
 		{
 			get { return (DataTemplate)_itemsView.GetValue(_itemTemplateProperty); }

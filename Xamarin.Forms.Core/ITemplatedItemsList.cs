@@ -17,6 +17,8 @@ namespace Xamarin.Forms
 		IEnumerable ItemsSource { get; }
 		IReadOnlyList<string> ShortNames { get; }
 
+		IListProxy ListProxy { get; }
+
 		int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group);
 		int GetGlobalIndexOfItem(object item);
 		ITemplatedItemsList<TItem> GetGroup(int index);
