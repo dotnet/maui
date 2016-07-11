@@ -188,6 +188,31 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public async Task TestPopToRootEventArgs ()
+		{
+			var nav = new NavigationPage ();
+
+			List<Page> poppedChildren = null;
+			nav.PoppedToRoot += (sender, args) => poppedChildren = (args as PoppedToRootEventArgs).PoppedPages.ToList();
+
+			var root = new ContentPage {Content = new View ()};
+			var child1 = new ContentPage {Content = new View ()};
+			var child2 = new ContentPage {Content = new View ()};
+
+			await nav.PushAsync (root);
+			await nav.PushAsync (child1);
+			await nav.PushAsync (child2);
+
+			await nav.PopToRootAsync ();
+
+			Assert.IsNotNull (poppedChildren);
+			Assert.AreEqual (2, poppedChildren.Count);
+			Assert.Contains (child1, poppedChildren);
+			Assert.Contains (child2, poppedChildren);
+			Assert.AreEqual (root, nav.CurrentPage);
+		}
+
+		[Test]
 		public async Task TestStackCopy ()
 		{
 			var nav = new NavigationPage ();

@@ -319,7 +319,9 @@ namespace Xamarin.Forms
 
 			var root = (Page)PageController.InternalChildren.First();
 
-			PageController.InternalChildren.ToArray().Where(c => c != root).ForEach(c => PageController.InternalChildren.Remove(c));
+			var childrenToRemove = PageController.InternalChildren.ToArray().Where(c => c != root);
+			foreach (var child in childrenToRemove)
+				PageController.InternalChildren.Remove(child);
 
 			CurrentPage = root;
 
@@ -335,7 +337,7 @@ namespace Xamarin.Forms
 			}
 
 			if (PoppedToRoot != null)
-				PoppedToRoot(this, new NavigationEventArgs(root));
+				PoppedToRoot(this, new PoppedToRootEventArgs(root, childrenToRemove.OfType<Page>().ToList()));
 		}
 
 		async Task PushAsyncInner(Page page, bool animated)

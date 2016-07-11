@@ -477,7 +477,9 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the last nonroot element is popped from this <see cref="T:Xamarin.Forms.NavigationPage" /> element.</summary>
-        <remarks>To be added.</remarks>
+        <remarks>The <see cref="T:Xamarin.Forms.NavigationEventArgs" /> can be cast to <see cref="T:Xamarin.Forms.PoppedToRootEventArgs" /> for 
+        access to additional properties. For example, the list of popped pages.
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootAsync">
