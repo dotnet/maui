@@ -560,7 +560,7 @@ namespace Xamarin.Forms
 
 		public event EventHandler<FocusEventArgs> Unfocused;
 
-		protected virtual void InvalidateMeasureInternal()
+		protected virtual void InvalidateMeasure()
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
