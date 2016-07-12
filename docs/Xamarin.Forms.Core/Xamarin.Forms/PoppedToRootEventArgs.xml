@@ -20,23 +20,25 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public PoppedToRootEventArgs (Xamarin.Forms.Page page);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Forms.Page page) cil managed" />
+      <MemberSignature Language="C#" Value="public PoppedToRootEventArgs (Xamarin.Forms.Page page, System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt; poppedPages);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Forms.Page page, class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Forms.Page&gt; poppedPages) cil managed" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="page" Type="Xamarin.Forms.Page" />
+        <Parameter Name="poppedPages" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt;" />
       </Parameters>
       <Docs>
-        <param name="page">The page that is the new root page.</param>
-        <summary></summary>
-        <remarks></remarks>
+        <param name="page">To be added.</param>
+        <param name="poppedPages">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PoppedPages">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt; PoppedPages { get; set; }" />
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt; PoppedPages { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Forms.Page&gt; PoppedPages" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
@@ -47,7 +49,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a collection of pages that was removed from the navigation stack.</summary>
-        <value></value>
+        <value>
+        </value>
         <remarks>
           <para>For <see cref="E:Xamarin.Forms.NavigationPage.PoppedToRoot" /> this represents the pages
           that were popped. The order of the pages represents the order of the stack that was popped. The first page in the

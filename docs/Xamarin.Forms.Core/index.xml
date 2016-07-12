@@ -280,6 +280,7 @@
       <Type Name="IOpenGlViewController" Kind="Interface" />
       <Type Name="IOpenGLViewController" Kind="Interface" />
       <Type Name="IPageContainer`1" DisplayName="IPageContainer&lt;T&gt;" Kind="Interface" />
+      <Type Name="IPageController" Kind="Interface" />
       <Type Name="IPlatform" Kind="Interface" />
       <Type Name="IPlatformEngine" Kind="Interface" />
       <Type Name="IRegisterable" Kind="Interface" />
@@ -341,6 +342,7 @@
       <Type Name="PlatformEffect`2" DisplayName="PlatformEffect&lt;TContainer,TControl&gt;" Kind="Class" />
       <Type Name="Point" Kind="Structure" />
       <Type Name="PointTypeConverter" Kind="Class" />
+      <Type Name="PoppedToRootEventArgs" Kind="Class" />
       <Type Name="ProgressBar" Kind="Class" />
       <Type Name="PropertyChangingEventArgs" Kind="Class" />
       <Type Name="PropertyChangingEventHandler" Kind="Delegate" />
