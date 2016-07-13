@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (cachingStrategy == ListViewCachingStrategy.RecycleElement && convertView != null)
 			{
-				var boxedCell = (INativeElementView)convertView;
+				var boxedCell = convertView as INativeElementView;
 				if (boxedCell == null)
 				{
 					throw new InvalidOperationException($"View for cell must implement {nameof(INativeElementView)} to enable recycling.");
@@ -403,20 +403,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (global == position || cells.Count > 0)
 				{
-					if (_listView.CachingStrategy == ListViewCachingStrategy.RecycleElement)
-					{
-						var groupContent = _listView.TemplatedItems.GroupHeaderTemplate?.CreateContent(group.ItemsSource, _listView) as Cell;
-						if (groupContent != null)
-						{
-							groupContent.Parent = _listView;
-							groupContent.BindingContext = group.ItemsSource;
-							cells.Add(groupContent);
-						}
-					}
-					else
-					{
-						cells.Add(group.HeaderContent);
-					}
+					//Always create a new cell if we are using the RecycleElement strategy
+					var headerCell = _listView.CachingStrategy == ListViewCachingStrategy.RecycleElement ? GetNewGroupHeaderCell(group) : group.HeaderContent;
+					cells.Add(headerCell);
 
 					if (cells.Count == take)
 						return cells;
@@ -563,6 +552,26 @@ namespace Xamarin.Forms.Platform.Android
 
 				bline.SetBackgroundResource(s_dividerHorizontalDarkId);
 			}
+		}
+
+		Cell GetNewGroupHeaderCell(ITemplatedItemsList<Cell> group)
+		{
+			var groupHeaderCell = _listView.TemplatedItems.GroupHeaderTemplate?.CreateContent(group.ItemsSource, _listView) as Cell;
+
+			if (groupHeaderCell != null)
+			{
+				groupHeaderCell.BindingContext = group.ItemsSource;
+			}
+			else
+			{
+				groupHeaderCell = new TextCell();
+				groupHeaderCell.SetBinding(TextCell.TextProperty, nameof(group.Name));
+				groupHeaderCell.BindingContext = group;
+			}
+
+			groupHeaderCell.Parent = _listView;
+			groupHeaderCell.SetIsGroupHeader<ItemsView<Cell>, Cell>(true);
+			return groupHeaderCell;
 		}
 
 		enum CellType
