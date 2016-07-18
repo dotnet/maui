@@ -125,7 +125,7 @@
     <Compile Include="HeightConverter.cs" />
     <Compile Include="ICellRenderer.cs" />
     <Compile Include="IImageSourceHandler.cs" />
-    <Compile Include="ImageLoaderSourceHandler.cs" />
+    <Compile Include="UriImageSourceHandler.cs" />
     <Compile Include="ImageRenderer.cs" />
     <Compile Include="IVisualElementRenderer.cs" />
     <Compile Include="LabelRenderer.cs" />

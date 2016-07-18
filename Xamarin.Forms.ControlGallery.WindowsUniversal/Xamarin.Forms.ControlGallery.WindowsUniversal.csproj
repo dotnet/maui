@@ -117,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="coffee.png" />
+    <Content Include="invalidimage.jpg" />
     <Content Include="toolbar_close.png" />
     <None Include="project.json" />
     <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">
@@ -150,6 +151,9 @@
       <Link>seth.png</Link>
     </Content>
     <Content Include="Properties\default.rd.xml" />
+    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\BrokenImageSourceHandler.cs">
+      <Link>BrokenImageSourceHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\StringProvider.cs">
       <Link>StringProvider.cs</Link>
     </Compile>

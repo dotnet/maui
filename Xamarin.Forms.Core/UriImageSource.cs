@@ -68,7 +68,8 @@ namespace Xamarin.Forms
 		{
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
-			Stream stream = null;
+			Stream stream;
+
 			try
 			{
 				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token);
@@ -78,14 +79,13 @@ namespace Xamarin.Forms
 			{
 				OnLoadingCompleted(true);
 				throw;
-#if DEBUG
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				Debug.WriteLine(e);
+				Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 				throw;
-#endif
 			}
+
 			return stream;
 		}
 
@@ -121,8 +121,9 @@ namespace Xamarin.Forms
 				{
 					stream = await Device.GetStreamAsync(uri, cancellationToken).ConfigureAwait(false);
 				}
-				catch (Exception)
+				catch (Exception ex) 
 				{
+					Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 					stream = null;
 				}
 			}
@@ -166,8 +167,9 @@ namespace Xamarin.Forms
 				if (stream == null)
 					return null;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				Log.Warning("Image Loading", $"Error getting stream for {Uri}: {ex}");
 				return null;
 			}
 

@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 namespace Xamarin.Forms.Platform.WinRT
 #endif 
 {
-	public sealed class StreamImagesourceHandler : IImageSourceHandler
+	public sealed class StreamImageSourceHandler : IImageSourceHandler
 	{
 		public async Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{

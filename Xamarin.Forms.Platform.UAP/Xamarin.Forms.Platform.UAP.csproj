@@ -164,6 +164,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformEffect.cs">
       <Link>PlatformEffect.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\UriImageSourceHandler.cs">
+      <Link>UriImageSourceHandler.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewExtensions.cs">
       <Link>ViewExtensions.cs</Link>
     </Compile>
@@ -282,9 +285,6 @@
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageConverter.cs">
       <Link>ImageConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageLoaderSourceHandler.cs">
-      <Link>ImageLoaderSourceHandler.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageRenderer.cs">
       <Link>ImageRenderer.cs</Link>

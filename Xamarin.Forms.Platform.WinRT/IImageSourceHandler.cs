@@ -11,6 +11,6 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public interface IImageSourceHandler : IRegisterable
 	{
-		Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesoure, CancellationToken cancellationToken = default(CancellationToken));
+		Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = default(CancellationToken));
 	}
 }

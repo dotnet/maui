@@ -13,10 +13,10 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public sealed class FileImageSourceHandler : IImageSourceHandler
 	{
-		public Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesoure, CancellationToken cancellationToken = new CancellationToken())
+		public Task<Windows.UI.Xaml.Media.ImageSource> LoadImageAsync(ImageSource imagesource, CancellationToken cancellationToken = new CancellationToken())
 		{
 			Windows.UI.Xaml.Media.ImageSource image = null;
-			var filesource = imagesoure as FileImageSource;
+			var filesource = imagesource as FileImageSource;
 			if (filesource != null)
 			{
 				string file = filesource.File;

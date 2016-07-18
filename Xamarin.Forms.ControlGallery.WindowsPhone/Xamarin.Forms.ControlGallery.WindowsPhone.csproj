@@ -110,6 +110,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\BrokenImageSourceHandler.cs">
+      <Link>BrokenImageSourceHandler.cs</Link>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>

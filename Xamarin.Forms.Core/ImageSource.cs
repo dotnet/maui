@@ -14,7 +14,7 @@ namespace Xamarin.Forms
 
 		TaskCompletionSource<bool> _completionSource;
 
-		internal ImageSource()
+		protected ImageSource()
 		{
 		}
 
