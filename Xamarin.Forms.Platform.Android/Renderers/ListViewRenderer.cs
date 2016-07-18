@@ -249,7 +249,8 @@ namespace Xamarin.Forms.Platform.Android
 			var footer = (VisualElement)Controller.FooterElement;
 			if (_footerRenderer != null && (footer == null || Registrar.Registered.GetHandlerType(footer.GetType()) != _footerRenderer.GetType()))
 			{
-				_footerView.Child = null;
+				if (_footerView != null)
+					_footerView.Child = null;
 				_footerRenderer.Dispose();
 				_footerRenderer = null;
 			}
@@ -262,7 +263,8 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				_footerRenderer = Platform.CreateRenderer(footer);
-				_footerView.Child = _footerRenderer;
+				if (_footerView != null)
+					_footerView.Child = _footerRenderer;
 			}
 
 			Platform.SetRenderer(footer, _footerRenderer);
@@ -273,7 +275,8 @@ namespace Xamarin.Forms.Platform.Android
 			var header = (VisualElement)Controller.HeaderElement;
 			if (_headerRenderer != null && (header == null || Registrar.Registered.GetHandlerType(header.GetType()) != _headerRenderer.GetType()))
 			{
-				_headerView.Child = null;
+				if (_headerView != null)
+					_headerView.Child = null;
 				_headerRenderer.Dispose();
 				_headerRenderer = null;
 			}
@@ -286,7 +289,8 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				_headerRenderer = Platform.CreateRenderer(header);
-				_headerView.Child = _headerRenderer;
+				if (_headerView != null)
+					_headerView.Child = _headerRenderer;
 			}
 
 			Platform.SetRenderer(header, _headerRenderer);
@@ -294,12 +298,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateIsRefreshing()
 		{
-			_refresh.Refreshing = Element.IsRefreshing;
+			if (_refresh != null)
+				_refresh.Refreshing = Element.IsRefreshing;
 		}
 
 		void UpdateIsSwipeToRefreshEnabled()
 		{
-			_refresh.Enabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+			if (_refresh != null)
+				_refresh.Enabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
 		}
 
 		internal class Container : ViewGroup
