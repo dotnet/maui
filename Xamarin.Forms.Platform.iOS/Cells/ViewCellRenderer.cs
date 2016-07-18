@@ -118,7 +118,10 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!_rendererRef.TryGetTarget(out renderer))
 					return base.SizeThatFits(size);
 
-				double width = size.Width;
+                		if (renderer.Element == null)
+                			return SizeF.Empty;
+                			
+                		double width = size.Width;
 				var height = size.Height > 0 ? size.Height : double.PositiveInfinity;
 				var result = renderer.Element.Measure(width, height);
 
