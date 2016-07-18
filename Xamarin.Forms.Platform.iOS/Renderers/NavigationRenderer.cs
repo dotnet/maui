@@ -946,6 +946,40 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_navigation.TryGetTarget(out n))
 					n.UpdateToolBarVisible();
 			}
+
+			public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
+			{
+				IVisualElementRenderer childRenderer;
+				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
+					return childRenderer.ViewController.GetSupportedInterfaceOrientations();
+				return base.GetSupportedInterfaceOrientations();
+			}
+
+			public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation()
+			{
+				IVisualElementRenderer childRenderer;
+				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
+					return childRenderer.ViewController.PreferredInterfaceOrientationForPresentation();
+				return base.PreferredInterfaceOrientationForPresentation();
+			}
+
+			public override bool ShouldAutorotate()
+			{
+				IVisualElementRenderer childRenderer;
+				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
+					return childRenderer.ViewController.ShouldAutorotate();				
+				return base.ShouldAutorotate();
+			}
+
+			public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
+			{
+				IVisualElementRenderer childRenderer;
+				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
+					return childRenderer.ViewController.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+				return base.ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
+			}
+
+			public override bool ShouldAutomaticallyForwardRotationMethods => true;
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
