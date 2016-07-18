@@ -228,14 +228,13 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 				else
 				{
-					string textContent = newContext.ToString();
-
 					IListViewController listViewController = lv;
+					var defaultContext = newContext;
 
 					if (isGroupHeader)
-						textContent = listViewController.GetDisplayTextFromGroup(newContext);
+						defaultContext = listViewController.GetDisplayTextFromGroup(newContext);
 
-					cell = listViewController.CreateDefaultCell(textContent);
+					cell = listViewController.CreateDefaultCell(defaultContext);
 				}
 
 				// A TableView cell should already have its parent,
