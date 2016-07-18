@@ -93,25 +93,27 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void OnClick()
 		{
 			Picker model = Element;
-			using (var builder = new AlertDialog.Builder(Context))
+			if (_dialog == null)
 			{
-				builder.SetTitle(model.Title ?? "");
-				string[] items = model.Items.ToArray();
-				builder.SetItems(items, (s, e) => ((IElementController)model).SetValueFromRenderer(Picker.SelectedIndexProperty, e.Which));
+				using (var builder = new AlertDialog.Builder(Context))
+				{
+					builder.SetTitle(model.Title ?? "");
+					string[] items = model.Items.ToArray();
+					builder.SetItems(items, (s, e) => ((IElementController)model).SetValueFromRenderer(Picker.SelectedIndexProperty, e.Which));
 
-				builder.SetNegativeButton(global::Android.Resource.String.Cancel, (o, args) => { });
+					builder.SetNegativeButton(global::Android.Resource.String.Cancel, (o, args) => { });
 
-				_dialog = builder.Create();
+					_dialog = builder.Create();
+				}
+				_dialog.SetCanceledOnTouchOutside(true);
+				_dialog.DismissEvent += (sender, args) =>
+				{
+					_dialog.Dispose();
+					_dialog = null;
+				};
+
+				_dialog.Show();
 			}
-
-			_dialog.SetCanceledOnTouchOutside(true);
-			_dialog.DismissEvent += (sender, args) =>
-			{
-				_dialog.Dispose();
-				_dialog = null;
-			};
-
-			_dialog.Show();
 		}
 
 		void RowsCollectionChanged(object sender, EventArgs e)
