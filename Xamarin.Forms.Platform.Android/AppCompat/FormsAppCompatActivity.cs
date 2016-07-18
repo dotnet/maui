@@ -44,6 +44,9 @@ namespace Xamarin.Forms.Platform.Android
 		int _statusBarHeight = -1;
 		global::Android.Views.View _statusBarUnderlay;
 
+		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
+		protected virtual bool AllowFragmentRestore => false;
+
 		protected FormsAppCompatActivity()
 		{
 			_previousState = AndroidApplicationLifecycleState.Uninitialized;
@@ -139,8 +142,17 @@ namespace Xamarin.Forms.Platform.Android
 				callback(resultCode, data);
 		}
 
+
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
+			if (!AllowFragmentRestore)
+			{
+				// Remove the automatically persisted fragment structure; we don't need them
+				// because we're rebuilding everything from scratch. This saves a bit of memory
+				// and prevents loading errors from child fragment managers
+				savedInstanceState?.Remove("android:support:fragments");
+			}
+
 			base.OnCreate(savedInstanceState);
 
 			AToolbar bar;
