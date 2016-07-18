@@ -316,7 +316,12 @@ namespace Xamarin.Forms.Build.Tasks
 			//If the target is an event, connect
 			//			IL_0007:  ldloc.0 
 			//			IL_0008:  ldarg.0 
+			//
 			//			IL_0009:  ldftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+			//OR, if the handler is virtual
+			//			    IL_000x:  ldarg.0 
+			//			    IL_0009:  ldvirtftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+			//
 			//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
 			//			IL_0014:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::add_Clicked(class [mscorlib]System.EventHandler)
 
@@ -345,7 +350,14 @@ namespace Xamarin.Forms.Build.Tasks
 						string.Format("EventHandler \"{0}\" not found in type \"{1}\"", value, context.Body.Method.DeclaringType.FullName),
 						iXmlLineInfo);
 				}
-				context.IL.Emit(OpCodes.Ldftn, handler);
+				if (handler.IsVirtual)
+				{
+					context.IL.Emit(OpCodes.Ldarg_0);
+					context.IL.Emit(OpCodes.Ldvirtftn, handler);
+				}
+				else
+					context.IL.Emit(OpCodes.Ldftn, handler);
+
 				//FIXME: eventually get the right ctor instead fo the First() one, just in case another one could exists (not even sure it's possible).
 				var ctor = module.Import(eventinfo.EventType.Resolve().GetConstructors().First());
 				ctor = ctor.ResolveGenericParameters(eventinfo.EventType, module);

@@ -71,6 +71,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			asyncPrivateClicked++;
 		}
 
+		int baseForVirtualClicked;
+		protected virtual void HandleVirtualClicked(object sender, EventArgs e)
+		{
+			baseForVirtualClicked++;
+		}
+
 		[TestFixture]
 		public class Tests
 		{
@@ -113,6 +119,37 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				layout.elementwithAsyncprivateHandler.SendClicked ();
 				Assert.AreEqual (1, layout.asyncPrivateClicked);
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestVirtualHandler(bool useCompiledXaml)
+			{
+				var layout = new SubForEvents(useCompiledXaml);
+				Assert.AreEqual(0, layout.baseForVirtualClicked);
+				Assert.AreEqual(0, layout.overrideClicked);
+				layout.elementWithVirtualHandler.SendClicked();
+				Assert.AreEqual(0, layout.baseForVirtualClicked);
+				Assert.AreEqual(1, layout.overrideClicked);
+			}
+		}
+	}
+
+	public class SubForEvents : EventsConnection
+	{
+		public SubForEvents(bool useCompiledXaml) : base(useCompiledXaml)
+		{
+		}
+
+		public int overrideClicked;
+		protected override void HandleVirtualClicked(object sender, EventArgs e)
+		{
+			overrideClicked++;
+		}
+
+#pragma warning disable 1998 // considered for removal
+		async void HandleClickedPrivateAsync(object sender, EventArgs e)
+#pragma warning restore 1998
+		{
 		}
 	}
 }

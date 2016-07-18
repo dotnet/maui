@@ -12,5 +12,7 @@
 								Clicked="HandleClickedOnBase" />
 		<local:ElementWithEvent x:Name="elementwithAsyncprivateHandler"
 								Clicked="HandleClickedPrivateAsync" />
+		<local:ElementWithEvent x:Name="elementWithVirtualHandler"
+								Clicked="HandleVirtualClicked" />
 	</StackLayout>
 </local:BaseForEvents>
