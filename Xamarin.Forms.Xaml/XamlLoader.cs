@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Xaml
 	internal static class XamlLoader
 	{
 		static readonly Dictionary<Type, string> XamlResources = new Dictionary<Type, string>();
+		internal static bool DoNotThrowOnExceptions { get; set; }
+		internal static IXamlFileProvider XamlFileProvider { get; set; }
 
 		public static void Load(object view, Type callingType)
 		{
@@ -64,12 +66,16 @@ namespace Xamarin.Forms.Xaml
 
 					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml (rootnode, reader);
-					Visit (rootnode, new HydratationContext { RootElement = view });
+					Visit (rootnode, new HydratationContext {
+						RootElement = view,
+						DoNotThrowOnExceptions = XamlLoader.DoNotThrowOnExceptions
+					});
 					break;
 				}
 			}
 		}
 
+		[Obsolete ("Use the XamlFileProvider to provide xaml files")]
 		public static object Create (string xaml, bool doNotThrow = false)
 		{
 			object inflatedView = null;
@@ -113,6 +119,12 @@ namespace Xamarin.Forms.Xaml
 
 		static string GetXamlForType(Type type)
 		{
+			string xaml = null;
+
+			//the Previewer might want to provide it's own xaml for this... let them do that
+			if (XamlFileProvider != null && (xaml = XamlFileProvider.GetXamlFor(type)) != null)
+				return xaml;
+
 			var assembly = type.GetTypeInfo().Assembly;
 
 			string resourceId;
@@ -129,7 +141,6 @@ namespace Xamarin.Forms.Xaml
 
 			// first pass, pray to find it because the user named it correctly
 
-			string xaml = null;
 			foreach (var resource in resourceNames)
 			{
 				if (ResourceMatchesFilename(assembly, resource, likelyResourceName))
