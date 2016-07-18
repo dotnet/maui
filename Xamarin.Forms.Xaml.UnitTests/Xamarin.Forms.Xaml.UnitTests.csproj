@@ -347,6 +347,9 @@
     <Compile Include="SharedResourceDictionary2.xaml.cs">
       <DependentUpon>SharedResourceDictionary2.xaml</DependentUpon>
     </Compile>
+    <Compile Include="XamlLoaderGetXamlForTypeTests.xaml.cs">
+      <DependentUpon>XamlLoaderGetXamlForTypeTests.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -615,6 +618,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="SharedResourceDictionary2.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XamlLoaderGetXamlForTypeTests.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

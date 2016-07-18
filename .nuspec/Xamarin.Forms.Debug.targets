@@ -14,8 +14,8 @@
 	<PropertyGroup>
 		<CompileDependsOn>
 			$(CompileDependsOn);
-			GenerateDebugCode;
 			XamlC;
+			GenerateDebugCode;
 		</CompileDependsOn>
 	</PropertyGroup>
 

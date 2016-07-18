@@ -75,6 +75,7 @@
     <Namespace Name="Xamarin.Forms.Xaml.Internals">
       <Type Name="NameScopeProvider" Kind="Class" />
       <Type Name="SimpleValueTargetProvider" Kind="Class" />
+      <Type Name="XamlLoader" Kind="Class" />
       <Type Name="XamlServiceProvider" Kind="Class" />
       <Type Name="XamlTypeResolver" Kind="Class" />
       <Type Name="XmlLineInfoProvider" Kind="Class" />

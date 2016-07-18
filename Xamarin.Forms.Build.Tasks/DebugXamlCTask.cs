@@ -67,18 +67,11 @@ namespace Xamarin.Forms.Build.Tasks
 						LogLine(2, "no InitializeComponent found... skipped.");
 						continue;
 					}
-					if (typeDef.Methods.FirstOrDefault(md => md.Name == "InitCompRuntime") != null)
-					{
-						LogLine(2, "InitCompRuntime already exists... skipped");
+					var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
+					if (initCompRuntime == null) {
+						LogLine(2, "no __InitComponentRuntime found... skipped.");
 						continue;
 					}
-					LogLine(2, "");
-
-					LogString(2, "   Duplicating {0}.InitializeComponent () into {0}.InitCompRuntime ... ", typeDef.Name);
-					var initCompRuntime = new MethodDefinition("InitCompRuntime", initComp.Attributes, initComp.ReturnType);
-					initCompRuntime.Body = initComp.Body;
-					typeDef.Methods.Add(initCompRuntime);
-					LogLine(2, "done.");
 
 					//					IL_0000:  ldarg.0 
 					//					IL_0001:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ContentPage::'.ctor'()
@@ -92,7 +85,7 @@ namespace Xamarin.Forms.Build.Tasks
 					//					IL_0013:  br IL_001e
 					//
 					//					IL_0018:  ldarg.0 
-					//					IL_0019:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::InitCompRuntime()
+					//					IL_0019:  callvirt instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::__InitComponentRuntime()
 					//					IL_001e:  ret 
 
 					var altCtor =
