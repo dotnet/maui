@@ -12,12 +12,12 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public class FormsPivot : Pivot, IToolbarProvider
 	{
-		public static readonly DependencyProperty ToolbarVisibilityProperty = DependencyProperty.Register("ToolbarVisibility", typeof(Visibility), typeof(FormsPivot),
+		public static readonly DependencyProperty ToolbarVisibilityProperty = DependencyProperty.Register(nameof(ToolbarVisibility), typeof(Visibility), typeof(FormsPivot),
 			new PropertyMetadata(Visibility.Collapsed));
 
-		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register("ToolbarForeground", typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
 
-		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register("ToolbarBackground", typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
 
 		CommandBar _commandBar;
 

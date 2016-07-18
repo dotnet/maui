@@ -117,7 +117,8 @@ namespace Xamarin.Forms.Controls
 				{
 					Title = "Rubriques",
 					Icon = "coffee.png",
-					BarBackgroundColor = Color.Blue
+					BarBackgroundColor = Color.Blue,
+					BarTextColor = Color.Aqua
 				});
 
 			Children.Add(new NavigationPage(new Page())

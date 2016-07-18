@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using WGrid = Windows.UI.Xaml.Controls.Grid;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -16,7 +17,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Loaded += TabbedPagePresenter_Loaded;
 			Unloaded += TabbedPagePresenter_Unloaded;
-			SizeChanged += (s, e) => 
+			SizeChanged += (s, e) =>
 			{
 				if (ActualWidth > 0 && ActualHeight > 0)
 				{
@@ -41,9 +42,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
 	{
+		const string TabBarHeaderTextBlockName = "TabbedPageHeaderTextBlock";
+		const string TabBarHeaderGridName = "TabbedPageHeaderGrid";
+
+		Color _barBackgroundColor;
+		Color _barTextColor;
 		bool _disposed;
 		bool _showTitle;
 		VisualElementTracker<Page, Pivot> _tracker;
+
+		ITitleProvider TitleProvider => this;
 
 		public FormsPivot Control { get; private set; }
 
@@ -71,12 +79,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		Brush ITitleProvider.BarBackgroundBrush
 		{
-			set { (Control as FormsPivot).ToolbarBackground = value; }
+			set { Control.ToolbarBackground = value; }
 		}
 
 		Brush ITitleProvider.BarForegroundBrush
 		{
-			set { (Control as FormsPivot).ToolbarForeground = value; }
+			set { Control.ToolbarForeground = value; }
 		}
 
 		IPageController PageController => Element as IPageController;
@@ -172,9 +180,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 				Control.DataContext = Element;
 				OnPagesChanged(Element.Children, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
 				UpdateCurrentPage();
-				UpdateBarTextColor();
-				UpdateBarBackgroundColor();
 
 				((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
 				element.PropertyChanged += OnElementPropertyChanged;
@@ -182,7 +189,6 @@ namespace Xamarin.Forms.Platform.UWP
 				if (!string.IsNullOrEmpty(element.AutomationId))
 					Control.SetValue(AutomationProperties.AutomationIdProperty, element.AutomationId);
 			}
-
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 		}
@@ -208,17 +214,22 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
+			{
 				UpdateCurrentPage();
+				UpdateBarTextColor();
+				UpdateBarBackgroundColor();
+			}
 			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
-
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
 		{
 			PageController?.SendAppearing();
+			UpdateBarTextColor();
+			UpdateBarBackgroundColor();
 		}
 
 		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -259,24 +270,59 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush GetBarForegroundBrush()
 		{
 			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
-			if (Element.BarTextColor.IsDefault)
+			if (Element.BarTextColor.IsDefault && defaultColor != null)
 				return (Brush)defaultColor;
 			return Element.BarTextColor.ToBrush();
 		}
 
 		void UpdateBarBackgroundColor()
 		{
-			Control.ToolbarBackground = GetBarBackgroundBrush();
+			if (Element == null) return;
+			var barBackgroundColor = Element.BarBackgroundColor;
+
+			if (barBackgroundColor == _barBackgroundColor) return;
+			_barBackgroundColor = barBackgroundColor;
+
+			var controlToolbarBackground = Control.ToolbarBackground;
+			if (controlToolbarBackground == null && barBackgroundColor.IsDefault) return;
+
+			var brush = GetBarBackgroundBrush();
+			if (brush == controlToolbarBackground) return;
+
+			TitleProvider.BarBackgroundBrush = brush;
+
+			foreach (WGrid tabBarGrid in Control.GetDescendantsByName<WGrid>(TabBarHeaderGridName))
+			{
+				tabBarGrid.Background = brush;
+			}
 		}
 
 		void UpdateBarTextColor()
 		{
-			Control.ToolbarForeground = GetBarForegroundBrush();
+			if (Element == null) return;
+			var barTextColor = Element.BarTextColor;
+
+			if (barTextColor == _barTextColor) return;
+			_barTextColor = barTextColor;
+
+			var controlToolbarForeground = Control.ToolbarForeground;
+			if (controlToolbarForeground == null && barTextColor.IsDefault) return;
+
+			var brush = GetBarForegroundBrush();
+			if (brush == controlToolbarForeground)
+				return;
+
+			TitleProvider.BarForegroundBrush = brush;
+
+			foreach (TextBlock tabBarTextBlock in Control.GetDescendantsByName<TextBlock>(TabBarHeaderTextBlockName))
+			{
+				tabBarTextBlock.Foreground = brush;
+			}
 		}
 
 		void UpdateBarVisibility()
 		{
-			(Control as FormsPivot).ToolbarVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
+			Control.ToolbarVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
 		}
 
 		void UpdateCurrentPage()
@@ -284,10 +330,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Page page = Element.CurrentPage;
 
 			var nav = page as NavigationPage;
-			((ITitleProvider)this).ShowTitle = nav != null;
-
-			UpdateBarTextColor();
-			UpdateBarBackgroundColor();
+			TitleProvider.ShowTitle = nav != null;
 
 			if (page == null)
 				return;

@@ -250,7 +250,7 @@
 		<Setter Property="ItemsPanel">
 			<Setter.Value>
 				<ItemsPanelTemplate>
-					<StackPanel Orientation="Horizontal" Margin="0,11,0,0" Background="{TemplateBinding ToolbarBackground}" />
+					<StackPanel Orientation="Horizontal" Margin="0,11,0,0" Background="{Binding BarBackgroundColor, Converter={StaticResource ColorConverter}, ConverterParameter=TabButtonBackgroundBrush}" Name="TabbedPageHeaderStackPanel" />
 				</ItemsPanelTemplate>
 			</Setter.Value>
 		</Setter>
@@ -261,7 +261,7 @@
 						<StackPanel VerticalAlignment="Bottom">
 							<Image DataContext="{Binding Icon, Converter={StaticResource ImageConverter}}" Source="{Binding Value}" HorizontalAlignment="Left" />
 							<TextBlock Margin="0,15,0,15" Text="{Binding Title, Converter={StaticResource UpperConverter}}"
-									   Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Foreground="{TemplateBinding ToolbarForeground}"  HorizontalAlignment="Left" />
+									   Style="{ThemeResource CaptionTextBlockStyle}" FontWeight="SemiBold" Name="TabbedPageHeaderTextBlock"  HorizontalAlignment="Left" />
 						</StackPanel>
 					</local:TabButton>
 				</DataTemplate>

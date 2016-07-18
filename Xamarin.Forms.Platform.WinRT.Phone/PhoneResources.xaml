@@ -242,7 +242,7 @@
         <Setter Property="HeaderTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Title}" Foreground="{TemplateBinding ToolbarForeground}" />
+					<TextBlock Text="{Binding Title}" Name="TabbedPageHeaderTextBlock" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -450,10 +450,6 @@
 	
 	<DataTemplate x:Key="TabbedPage">
 		<local:TabbedPagePresenter Content="{Binding Converter={StaticResource PageToRenderer}}" />
-	</DataTemplate>
-
-	<DataTemplate x:Key="TabbedPageHeader">
-		<TextBlock Text="{Binding Title}" />
 	</DataTemplate>
 
 	<Style x:Key="JumpListGrid" TargetType="GridView">
