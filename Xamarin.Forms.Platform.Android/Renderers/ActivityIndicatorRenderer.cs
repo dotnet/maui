@@ -40,9 +40,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateColor()
 		{
-			if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
-				return;
-
 			Color color = Element.Color;
 
 			if (!color.IsDefault)
