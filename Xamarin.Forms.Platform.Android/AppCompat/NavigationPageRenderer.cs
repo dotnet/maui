@@ -382,6 +382,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				ToolbarVisible = NavigationPage.GetHasNavigationBar(Current);
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateToolbar();
+			else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
+				UpdateToolbar();
 		}
 
 #pragma warning disable 1998 // considered for removal
