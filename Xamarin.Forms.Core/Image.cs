@@ -140,7 +140,14 @@ namespace Xamarin.Forms
 				return;
 
 			oldvalue.SourceChanged -= OnSourceChanged;
-			await oldvalue.Cancel();
+			try
+			{
+				await oldvalue.Cancel();
+			}
+			catch(ObjectDisposedException)
+			{ 
+				// Workaround bugzilla 37792 https://bugzilla.xamarin.com/show_bug.cgi?id=37792
+			}
 		}
 
 		void IImageController.SetIsLoading(bool isLoading)
