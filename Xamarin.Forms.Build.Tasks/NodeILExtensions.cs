@@ -220,7 +220,10 @@ namespace Xamarin.Forms.Build.Tasks
 				return true;
 			}
 
-			var getters = bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + pName && md.IsStatic, module).SingleOrDefault();
+			var getters = bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + pName && 
+			                                             md.IsStatic && 
+			                                             md.Parameters.Count() == 1 &&
+			                                             md.Parameters[0].ParameterType.FullName == "Xamarin.Forms.BindableObject", module).SingleOrDefault();
 			if (getters != null)
 			{
 				if (getters.Item1.HasCustomAttributes)
@@ -263,7 +266,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 			//Then check for getter or setter (attached BPs)
 			var getters =
-				bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + name && md.IsStatic, context.Body.Method.Module)
+				bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + name &&
+				                               md.IsStatic &&
+				                               md.Parameters.Count() == 1 &&
+				                               md.Parameters [0].ParameterType.FullName == "Xamarin.Forms.BindableObject", context.Body.Method.Module)
 					.SingleOrDefault();
 			if (getters != null)
 				return getters.Item1.ReturnType;

@@ -350,6 +350,9 @@
     <Compile Include="XamlLoaderGetXamlForTypeTests.xaml.cs">
       <DependentUpon>XamlLoaderGetXamlForTypeTests.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Unreported004.xaml.cs">
+      <DependentUpon>Unreported004.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -621,6 +624,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="XamlLoaderGetXamlForTypeTests.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Unreported004.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
