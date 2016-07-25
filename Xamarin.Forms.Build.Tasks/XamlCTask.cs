@@ -232,13 +232,12 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 					LogLine(2, "");
 
-					if (typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime") != null) {
+					var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
+					if (initCompRuntime != null)
 						LogLine(2, "   __InitComponentRuntime already exists... not duplicating");
-					} else {
+					else {
 						LogString(2, "   Duplicating {0}.InitializeComponent () into {0}.__InitComponentRuntime ... ", typeDef.Name);
-						var initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
-						initCompRuntime.Body = initComp.Body;
-						typeDef.Methods.Add(initCompRuntime);
+						initCompRuntime = DuplicateMethodDef(typeDef, initComp, "__InitComponentRuntime");
 						LogLine(2, "done.");
 					}
 
@@ -293,7 +292,6 @@ namespace Xamarin.Forms.Build.Tasks
 						il.Emit(OpCodes.Callvirt, func);
 						il.Emit(OpCodes.Brfalse, nop);
 						il.Emit(OpCodes.Ldarg_0);
-						var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
 						il.Emit(OpCodes.Call, initCompRuntime);
 						il.Emit(OpCodes.Ret);
 						il.Append(nop);
@@ -402,6 +400,14 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			return success;
+		}
+
+		protected static MethodDefinition DuplicateMethodDef(TypeDefinition typeDef, MethodDefinition methodDef, string newName)
+		{
+			var dup = new MethodDefinition(newName, methodDef.Attributes, methodDef.ReturnType);
+			dup.Body = methodDef.Body;
+			typeDef.Methods.Add(dup);
+			return dup;
 		}
 
 		static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)

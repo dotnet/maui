@@ -69,8 +69,8 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 					var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
 					if (initCompRuntime == null) {
-						LogLine(2, "no __InitComponentRuntime found... skipped.");
-						continue;
+						LogLine(2, "no __InitComponentRuntime found... duplicating.");
+						initCompRuntime = DuplicateMethodDef(typeDef, initComp, "__InitComponentRuntime");
 					}
 
 					//					IL_0000:  ldarg.0 
