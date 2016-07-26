@@ -133,7 +133,12 @@ namespace Xamarin.Forms.Platform.Android
 				_dialog = null;
 			});
 
-			(_dialog = builder.Create()).Show();
+			_dialog = builder.Create();
+			_dialog.DismissEvent += (sender, args) =>
+			{
+				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+			};
+			_dialog.Show();
 		}
 
 		void RowsCollectionChanged(object sender, EventArgs e)

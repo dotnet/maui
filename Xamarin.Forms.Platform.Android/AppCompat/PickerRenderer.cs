@@ -102,12 +102,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					builder.SetItems(items, (s, e) => ((IElementController)model).SetValueFromRenderer(Picker.SelectedIndexProperty, e.Which));
 
 					builder.SetNegativeButton(global::Android.Resource.String.Cancel, (o, args) => { });
+					
+					((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
 					_dialog = builder.Create();
 				}
 				_dialog.SetCanceledOnTouchOutside(true);
 				_dialog.DismissEvent += (sender, args) =>
 				{
+					((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 					_dialog.Dispose();
 					_dialog = null;
 				};
