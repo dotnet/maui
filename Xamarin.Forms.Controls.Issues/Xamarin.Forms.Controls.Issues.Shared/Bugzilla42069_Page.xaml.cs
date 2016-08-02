@@ -10,8 +10,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 		public Bugzilla42069_Page()
 		{
+			#if APP
 			InitializeComponent();
-
+			
 			ImageWhichChanges = ImageSource.FromFile("oasissmall.jpg") as FileImageSource;
 
 			ChangingImage.SetBinding(Image.SourceProperty, nameof(ImageWhichChanges));
@@ -24,6 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			BindingContext = this;
+			#endif
 		}
 
 		~Bugzilla42069_Page()
