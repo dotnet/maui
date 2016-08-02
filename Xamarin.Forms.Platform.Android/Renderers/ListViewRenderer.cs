@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeader();
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
-				UpdateIsRefreshing();
+				UpdateIsRefreshing(isInitialValue: true);
 			}
 		}
 
@@ -296,10 +296,22 @@ namespace Xamarin.Forms.Platform.Android
 			Platform.SetRenderer(header, _headerRenderer);
 		}
 
-		void UpdateIsRefreshing()
+		void UpdateIsRefreshing(bool isInitialValue = false)
 		{
 			if (_refresh != null)
-				_refresh.Refreshing = Element.IsRefreshing;
+			{
+				var isRefreshing = Element.IsRefreshing;
+				if (isRefreshing && isInitialValue)
+				{
+					_refresh.Refreshing = false;
+					_refresh.Post(() =>
+					{
+						_refresh.Refreshing = true;
+					});
+				}
+				else
+					_refresh.Refreshing = isRefreshing;
+			}
 		}
 
 		void UpdateIsSwipeToRefreshEnabled()

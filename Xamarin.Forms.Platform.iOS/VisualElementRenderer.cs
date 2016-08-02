@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
-		public UIViewController ViewController
+		public virtual UIViewController ViewController
 		{
 			get { return null; }
 		}

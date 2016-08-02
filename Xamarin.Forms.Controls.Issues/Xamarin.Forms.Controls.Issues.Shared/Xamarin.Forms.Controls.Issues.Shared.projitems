@@ -169,6 +169,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ImageLoadingErrorHandling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1075.cs" />
