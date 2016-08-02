@@ -138,9 +138,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_visualElementPackager.Dispose();
 					_visualElementPackager = null;
 				}
+			
+				int count = ChildCount;
+				for (var i = 0; i < count; i++)
+				{
+					AView child = GetChildAt(i);
+					child.Dispose();
+				}
 
 				if (Element != null)
+				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
+					UnsubscribeGestureRecognizers(Element);
+				}
+				
 			}
 
 			base.Dispose(disposing);
@@ -216,7 +227,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_collectionChangeHandler = HandleGestureRecognizerCollectionChanged;
 
 			var observableCollection = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-			observableCollection.CollectionChanged += _collectionChangeHandler;
+			if (observableCollection != null)
+			{
+				observableCollection.CollectionChanged += _collectionChangeHandler;
+			}
 		}
 
 		void UnsubscribeGestureRecognizers(VisualElement element)
@@ -226,7 +240,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 
 			var observableCollection = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
-			observableCollection.CollectionChanged -= _collectionChangeHandler;
+			if (observableCollection != null)
+			{
+				observableCollection.CollectionChanged -= _collectionChangeHandler;
+			}
 		}
 
 		void UpdateBackgroundColor()
