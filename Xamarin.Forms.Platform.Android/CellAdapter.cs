@@ -211,6 +211,9 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Cell cell = GetCellForPosition(position);
 
+			if (cell == null)
+				return false;
+
 			if (_actionMode != null || _supportActionMode != null)
 			{
 				if (!cell.HasContextActions)
