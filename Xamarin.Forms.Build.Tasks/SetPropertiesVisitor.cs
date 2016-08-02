@@ -141,10 +141,10 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode)
 			{
-				//				IL_000d:  ldloc.2 
-				//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [Xamarin.Forms.Core]Xamarin.Forms.Layout`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::get_Children()
-				//				IL_0013:  ldloc.0 
-				//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::Add(!0)
+//				IL_000d:  ldloc.2 
+//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [Xamarin.Forms.Core]Xamarin.Forms.Layout`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::get_Children()
+//				IL_0013:  ldloc.0 
+//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [Xamarin.Forms.Core]Xamarin.Forms.View>::Add(!0)
 
 				var parentList = (ListNode)parentNode;
 				var parent = Context.Variables[((IElementNode)parentNode.Parent)];
@@ -314,16 +314,16 @@ namespace Xamarin.Forms.Build.Tasks
 			GetNameAndTypeRef(ref elementType, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
 
 			//If the target is an event, connect
-			//			IL_0007:  ldloc.0 
-			//			IL_0008:  ldarg.0 
-			//
-			//			IL_0009:  ldftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+//			IL_0007:  ldloc.0 
+//			IL_0008:  ldarg.0 
+//
+//			IL_0009:  ldftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//OR, if the handler is virtual
-			//			    IL_000x:  ldarg.0 
-			//			    IL_0009:  ldvirtftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
-			//
-			//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
-			//			IL_0014:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::add_Clicked(class [mscorlib]System.EventHandler)
+//			IL_000x:  ldarg.0 
+//			IL_0009:  ldvirtftn instance void class Xamarin.Forms.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
+//
+//			IL_000f:  newobj instance void class [mscorlib]System.EventHandler::'.ctor'(object, native int)
+//			IL_0014:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::add_Clicked(class [mscorlib]System.EventHandler)
 
 			var eventinfo = elementType.GetEvent(ed => ed.Name == localName);
 			if (eventinfo != null)
@@ -409,10 +409,10 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			//If it's a BP, SetValue ()
-			//			IL_0007:  ldloc.0 
-			//			IL_0008:  ldsfld class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty [Xamarin.Forms.Core]Xamarin.Forms.Label::TextProperty
-			//			IL_000d:  ldstr "foo"
-			//			IL_0012:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.BindableObject::SetValue(class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty, object)
+//			IL_0007:  ldloc.0 
+//			IL_0008:  ldsfld class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty [Xamarin.Forms.Core]Xamarin.Forms.Label::TextProperty
+//			IL_000d:  ldstr "foo"
+//			IL_0012:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.BindableObject::SetValue(class [Xamarin.Forms.Core]Xamarin.Forms.BindableProperty, object)
 			if (bpRef != null)
 			{
 				//TODO: check if parent is a BP
@@ -454,9 +454,9 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			//If it's a property, set it
-			//			IL_0007:  ldloc.0 
-			//			IL_0008:  ldstr "foo"
-			//			IL_000d:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Label::set_Text(string)
+//			IL_0007:  ldloc.0 
+//			IL_0008:  ldstr "foo"
+//			IL_000d:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.Label::set_Text(string)
 			PropertyDefinition property = elementType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
 			MethodDefinition propertySetter;
 			if (property != null && (propertySetter = property.SetMethod) != null && propertySetter.IsPublic)
@@ -483,28 +483,7 @@ namespace Xamarin.Forms.Build.Tasks
 				if (valueNode is IElementNode)
 				{
 					var vardef = context.Variables[(ElementNode)valueNode];
-					var implicitOperators =
-						vardef.VariableType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit",
-							module).ToList();
-					MethodReference implicitOperator = null;
-					if (implicitOperators.Any())
-					{
-						foreach (var op in implicitOperators)
-						{
-							var cast = op.Item1;
-							var opDeclTypeRef = op.Item2;
-							var castDef = module.Import(cast).ResolveGenericParameters(opDeclTypeRef, module);
-							var returnType = castDef.ReturnType;
-							if (returnType.IsGenericParameter)
-								returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments[((GenericParameter)returnType).Position];
-							if (returnType.FullName == propertyType.FullName &&
-							    cast.Parameters[0].ParameterType.Name == vardef.VariableType.Name)
-							{
-								implicitOperator = castDef;
-								break;
-							}
-						}
-					}
+					var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(propertyType, module);
 
 					//TODO replace latest check by a runtime type check
 					if (implicitOperator != null || vardef.VariableType.InheritsFromOrImplements(propertyType) ||
@@ -514,7 +493,7 @@ namespace Xamarin.Forms.Build.Tasks
 						context.IL.Emit(OpCodes.Ldloc, vardef);
 						if (implicitOperator != null)
 						{
-							//						IL_000f:  call !0 class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<bool>::op_Implicit(class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<!0>)
+//							IL_000f:  call !0 class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<bool>::op_Implicit(class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<!0>)
 							context.IL.Emit(OpCodes.Call, module.Import(implicitOperator));
 						}
 						else if (!vardef.VariableType.IsValueType && propertyType.IsValueType)
@@ -537,6 +516,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var propertyGetterRef = module.Import(propertyGetter);
 				propertyGetterRef = module.Import(propertyGetterRef.ResolveGenericParameters(declaringTypeReference, module));
 				var propertyType = propertyGetterRef.ReturnType.ResolveGenericParameters(declaringTypeReference);
+				var vardef = context.Variables [(ElementNode)valueNode];
 
 				//TODO check md.Parameters[0] type
 				var adderTuple =
@@ -545,12 +525,16 @@ namespace Xamarin.Forms.Build.Tasks
 				{
 					var adderRef = module.Import(adderTuple.Item1);
 					adderRef = module.Import(adderRef.ResolveGenericParameters(adderTuple.Item2, module));
+					var childType = GetParameterType(adderRef.Parameters [0]);
+					var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(childType, module);
 
 					if (valueNode is IElementNode)
 					{
 						context.IL.Emit(OpCodes.Ldloc, parent);
 						context.IL.Emit(OpCodes.Callvirt, propertyGetterRef);
-						context.IL.Emit(OpCodes.Ldloc, context.Variables[(ElementNode)valueNode]);
+						context.IL.Emit(OpCodes.Ldloc, vardef);
+						if (implicitOperator != null)
+							context.IL.Emit(OpCodes.Call, module.Import(implicitOperator));
 						context.IL.Emit(OpCodes.Callvirt, adderRef);
 						if (adderRef.ReturnType.FullName != "System.Void")
 							context.IL.Emit(OpCodes.Pop);
@@ -565,6 +549,14 @@ namespace Xamarin.Forms.Build.Tasks
 					iXmlLineInfo);
 			}
 			context.IL.Append(br);
+		}
+
+		public static TypeReference GetParameterType(ParameterDefinition param)
+		{
+			if (!param.ParameterType.IsGenericParameter)
+				return param.ParameterType;
+			var type = (param.Method as MethodReference).DeclaringType as GenericInstanceType;
+			return type.GenericArguments [0];
 		}
 
 		static bool GetNameAndTypeRef(ref TypeReference elementType, string namespaceURI, ref string localname,

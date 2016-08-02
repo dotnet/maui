@@ -417,7 +417,7 @@ namespace Xamarin.Forms.Xaml
 				    null)
 				{
 					addMethod.Invoke(collection,
-						new[] { value.ConvertTo(propertyInfo.PropertyType, (Func<TypeConverter>)null, serviceProvider) });
+					                 new[] { value.ConvertTo(addMethod.GetParameters()[0].ParameterType, (Func<TypeConverter>)null, serviceProvider) });
 					return;
 				}
 			}

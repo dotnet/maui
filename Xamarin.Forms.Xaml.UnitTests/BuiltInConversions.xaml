@@ -2,7 +2,7 @@
 <ContentPage
 		xmlns="http://xamarin.com/schemas/2014/forms"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-		x:Class="Xamarin.Forms.Xaml.UnitTests.ImplicitConversions">
+		x:Class="Xamarin.Forms.Xaml.UnitTests.BuiltInConversions">
 	<StackLayout>
 		<DatePicker x:Name="datetime0" Date="2015-01-16"/>
 		<DatePicker x:Name="datetime1">

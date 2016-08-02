@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-
-using Xamarin.Forms;
 
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	public partial class ImplicitConversions : ContentPage
+	public partial class BuiltInConversions : ContentPage
 	{
-		public ImplicitConversions ()
+		public BuiltInConversions ()
 		{
 			InitializeComponent ();
 		}
@@ -20,7 +17,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[Test]
 			public void Datetime ()
 			{
-				var layout = new ImplicitConversions ();
+				var layout = new BuiltInConversions ();
 
 				Assert.AreEqual (new DateTime (2015, 01, 16), layout.datetime0.Date);
 				Assert.AreEqual (new DateTime (2015, 01, 16), layout.datetime1.Date);
@@ -29,7 +26,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[Test]
 			public void String ()
 			{
-				var layout = new ImplicitConversions ();
+				var layout = new BuiltInConversions ();
 
 				Assert.AreEqual ("foobar", layout.label0.Text);
 				Assert.AreEqual ("foobar", layout.label1.Text);

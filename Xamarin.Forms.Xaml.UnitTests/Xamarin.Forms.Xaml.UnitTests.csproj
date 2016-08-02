@@ -121,9 +121,6 @@
     <Compile Include="Issues\Issue2016.xaml.cs">
       <DependentUpon>Issue2016.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Compiled\FindByName.xaml.cs">
-      <DependentUpon>FindByName.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Validation\SetterOnNonBP.xaml.cs">
       <DependentUpon>SetterOnNonBP.xaml</DependentUpon>
     </Compile>
@@ -143,8 +140,8 @@
     <Compile Include="Issues\Issue2152.xaml.cs">
       <DependentUpon>Issue2152.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImplicitConversions.xaml.cs">
-      <DependentUpon>ImplicitConversions.xaml</DependentUpon>
+    <Compile Include="BuiltInConversions.xaml.cs">
+      <DependentUpon>BuiltInConversions.xaml</DependentUpon>
     </Compile>
     <Compile Include="Issues\Issue2450.xaml.cs">
       <DependentUpon>Issue2450.xaml</DependentUpon>
@@ -169,9 +166,6 @@
     </Compile>
     <Compile Include="Issues\Issue2742.xaml.cs">
       <DependentUpon>Issue2742.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Compiled\SetValue.xaml.cs">
-      <DependentUpon>SetValue.xaml</DependentUpon>
     </Compile>
     <Compile Include="X2009Primitives.xaml.cs">
       <DependentUpon>X2009Primitives.xaml</DependentUpon>
@@ -353,6 +347,12 @@
     <Compile Include="Issues\Unreported004.xaml.cs">
       <DependentUpon>Unreported004.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FindByName.xaml.cs">
+      <DependentUpon>FindByName.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SetValue.xaml.cs">
+      <DependentUpon>SetValue.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -422,7 +422,7 @@
     <EmbeddedResource Include="Issues\Issue2152.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImplicitConversions.xaml">
+    <EmbeddedResource Include="BuiltInConversions.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Issue2450.xaml">
@@ -447,12 +447,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Issue2742.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Compiled\FindByName.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Compiled\SetValue.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="X2009Primitives.xaml">
@@ -627,6 +621,12 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Unreported004.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FindByName.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SetValue.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

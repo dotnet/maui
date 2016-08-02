@@ -200,6 +200,27 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return tuple;
 		}
 
+		public static MethodReference GetImplicitOperatorTo(this TypeReference fromType, TypeReference toType, ModuleDefinition module)
+		{ 
+			var implicitOperators = fromType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit",
+												module).ToList();
+			if (implicitOperators.Any()) {
+				foreach (var op in implicitOperators) {
+					var cast = op.Item1;
+					var opDeclTypeRef = op.Item2;
+					var castDef = module.Import(cast).ResolveGenericParameters(opDeclTypeRef, module);
+					var returnType = castDef.ReturnType;
+					if (returnType.IsGenericParameter)
+						returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments [((GenericParameter)returnType).Position];
+					if (returnType.FullName == toType.FullName &&
+					    cast.Parameters [0].ParameterType.Name == fromType.Name) {
+						return castDef;
+					}
+				}
+			}
+			return null;
+		}
+
 		public static TypeReference ResolveGenericParameters(this TypeReference self, TypeReference declaringTypeReference)
 		{
 			var genericself = self as GenericInstanceType;

@@ -2,7 +2,8 @@
 <ContentPage 
 	xmlns="http://xamarin.com/schemas/2014/forms"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	x:Class="Xamarin.Forms.Xaml.UnitTests.Compiled.SetValue">
+	xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+	x:Class="Xamarin.Forms.Xaml.UnitTests.SetValue">
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<Color x:Key="purple">Purple</Color>
@@ -67,5 +68,11 @@
 			</Grid.ColumnDefinitions>
 		</Grid>
 		<Label x:Name="label14" AbsoluteLayout.LayoutFlags="PositionProportional,WidthProportional" />
+		<ContentView x:Name="content0">
+			<local:ConvertibleToView/>
+		</ContentView>
+		<StackLayout x:Name="stack4">
+			<local:ConvertibleToView/>
+		</StackLayout>
 	</StackLayout>
 </ContentPage>

@@ -2,7 +2,7 @@
 
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Xaml.UnitTests.Compiled
+namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public partial class FindByName : ContentPage
 	{	
