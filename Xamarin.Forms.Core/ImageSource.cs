@@ -14,6 +14,8 @@ namespace Xamarin.Forms
 
 		TaskCompletionSource<bool> _completionSource;
 
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
 		protected ImageSource()
 		{
 		}
@@ -132,11 +134,13 @@ namespace Xamarin.Forms
 
 		protected void OnSourceChanged()
 		{
-			EventHandler eh = SourceChanged;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(SourceChanged));
 		}
 
-		internal event EventHandler SourceChanged;
+		internal event EventHandler SourceChanged
+		{
+			add { _weakEventManager.AddEventHandler(nameof(SourceChanged), value); }
+			remove { _weakEventManager.RemoveEventHandler(nameof(SourceChanged), value);}
+		}
 	}
 }

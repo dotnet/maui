@@ -110,6 +110,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40998.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41205.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41424.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42069.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42069_Page.xaml.cs">
+      <DependentUpon>Bugzilla42069_Page.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42074.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42075.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
@@ -540,6 +545,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla39636.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla42069_Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

@@ -77,9 +77,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (_isDisposed)
 				return;
 
+			if (disposing)
+			{
+				_information.OrientationChanged -= OnOrientationChanged;
+				_information = null;
+			}
+
 			_isDisposed = true;
-			_information.OrientationChanged -= OnOrientationChanged;
-			_information = null;
 
 			base.Dispose(disposing);
 		}

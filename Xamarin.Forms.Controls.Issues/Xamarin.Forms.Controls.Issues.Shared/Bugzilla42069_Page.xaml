@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.Issues.Bugzilla42069_Page">
+	<StackLayout>
+		<Image x:Name="ChangingImage" />
+		<Button x:Name="Button2" Text="Change Image"></Button>
+		<Label Text="Tap the 'Change Image' button; the image at the top should toggle between two images. If the image doesn't toggle, the test has failed." ></Label>
+		<Label Text="There should be several instances of the same image below." ></Label>
+		<Button x:Name="Button" Text="Back"></Button>
+		<Label Text="Tap the 'Back' button." ></Label>
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage} "/>
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+		<Image Source="{StaticResource SomeSmallImage}" />
+	</StackLayout>
+</ContentPage>

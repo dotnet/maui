@@ -331,6 +331,7 @@
     <Compile Include="Internals\ToolbarTracker.cs" />
     <Compile Include="ViewExtensions.cs" />
     <Compile Include="ViewState.cs" />
+    <Compile Include="WeakEventManager.cs" />
     <Compile Include="WeakReferenceExtensions.cs" />
     <Compile Include="WebNavigatedEventArgs.cs" />
     <Compile Include="WebNavigatingEventArgs.cs" />
