@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				var seekBar = new SeekBar(Context);
+				var seekBar = new FormsSeekBar(Context);
 				SetNativeControl(seekBar);
 
 				seekBar.Max = 1000;
