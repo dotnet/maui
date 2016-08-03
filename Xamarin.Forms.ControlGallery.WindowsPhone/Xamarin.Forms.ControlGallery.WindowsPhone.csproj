@@ -166,7 +166,10 @@
     <Content Include="Assets\StoreLogo.scale-240.png" />
     <Content Include="Assets\WideLogo.scale-240.png" />
     <Content Include="coffee.png" />
+    <Content Include="default.css" />
+    <Content Include="local.html" />
     <Content Include="toolbar_close.png" />
+    <Content Include="WebImages\XamarinLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
