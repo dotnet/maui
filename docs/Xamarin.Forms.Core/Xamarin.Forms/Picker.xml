@@ -117,13 +117,13 @@ namespace FormsGallery
         <item>
           <term>Items</term>
           <description>
-            <para>A local file specification that identifies an image.</para>
+            <para>A list of items with which to populate the picker.</para>
           </description>
         </item>
         <item>
           <term>SelectedIndex</term>
           <description>
-            <para>An integer, from 0 to 1 less than the count of items that are listed in <c>Items</c>. Currently, this element must be specified in a tag that appears lexically below <c>Items</c>.</para>
+            <para>An integer from 0 to 1 less than the count of items that are listed in <c>Items</c>. This element must be specified in a tag that appears lexically after <c>Items</c>.</para>
           </description>
         </item>
         <item>
