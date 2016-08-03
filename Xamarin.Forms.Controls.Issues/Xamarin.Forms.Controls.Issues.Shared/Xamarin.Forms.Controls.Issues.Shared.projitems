@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31333.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31366.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31964.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32033.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32034.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32776.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32842.xaml.cs">

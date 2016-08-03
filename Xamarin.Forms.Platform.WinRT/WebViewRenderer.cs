@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.UI.Core;
+using Windows.UI.WebUI;
 using Windows.UI.Xaml.Controls;
+using Windows.Web.Http;
 using Xamarin.Forms.Internals;
+using static System.String;
 
 #if WINDOWS_UWP
 
@@ -16,19 +22,59 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		WebNavigationEvent _eventState;
 		bool _updating;
+		const string LocalScheme = "ms-appx-web:///";
+
+		// Script to insert a <base> tag into an HTML document
+		const string BaseInsertionScript = @"
+var head = document.getElementsByTagName('head')[0];
+var bases = head.getElementsByTagName('base');
+if(bases.length == 0){
+    head.innerHTML = 'baseTag' + head.innerHTML;
+}";
 
 		public void LoadHtml(string html, string baseUrl)
 		{
-			/*
-			 * FIXME: If baseUrl is a file URL, set the Base property to its path.
-			 * Otherwise, it doesn't seem as if WebBrowser can handle it.
-			 */
-			Control.NavigateToString(html);
+			if (IsNullOrEmpty(baseUrl))
+			{
+				baseUrl = LocalScheme;
+			}
+
+			// Generate a base tag for the document
+			var baseTag = $"<base href=\"{baseUrl}\"></base>";
+
+			string htmlWithBaseTag;
+
+			// Set up an internal WebView we can use to load and parse the original HTML string
+			var internalWebView = new Windows.UI.Xaml.Controls.WebView();
+
+			// When the 'navigation' to the original HTML string is done, we can modify it to include our <base> tag
+			internalWebView.NavigationCompleted += async (sender, args) =>
+			{
+				// Generate a version of the <base> script with the correct <base> tag
+				var script = BaseInsertionScript.Replace("baseTag", baseTag);
+
+				// Run it and retrieve the updated HTML from our WebView
+				await sender.InvokeScriptAsync("eval", new[] { script });
+				htmlWithBaseTag = await sender.InvokeScriptAsync("eval", new[] { "document.documentElement.outerHTML;" });
+
+				// Set the HTML for the 'real' WebView to the updated HTML
+				Control.NavigateToString(!IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
+			};
+
+			// Kick off the initial navigation
+			internalWebView.NavigateToString(html);
 		}
 
 		public void LoadUrl(string url)
 		{
-			Control.Source = new Uri(url);
+			Uri uri = new Uri(url, UriKind.RelativeOrAbsolute);
+
+			if (!uri.IsAbsoluteUri)
+			{
+				uri = new Uri(LocalScheme +  url, UriKind.RelativeOrAbsolute);
+			}
+
+			Control.Source = uri;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -165,7 +211,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			_eventState = WebNavigationEvent.NewPage;
 		}
 
-		// Nasty hack because we cant bind this because OneWayToSource isn't a thing in WP8, yay
 		void UpdateCanGoBackForward()
 		{
 			Element.CanGoBack = Control.CanGoBack;

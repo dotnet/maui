@@ -117,8 +117,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="coffee.png" />
+    <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
+    <Content Include="local.html" />
     <Content Include="toolbar_close.png" />
+    <Content Include="WebImages\XamarinLogo.png" />
     <None Include="project.json" />
     <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">
       <Link>bank.png</Link>

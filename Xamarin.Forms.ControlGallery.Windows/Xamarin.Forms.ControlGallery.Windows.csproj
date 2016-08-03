@@ -189,7 +189,10 @@
     <Content Include="Assets\SplashScreen.scale-100.png" />
     <Content Include="Assets\StoreLogo.scale-100.png" />
     <Content Include="coffee.png" />
+    <Content Include="default.css" />
+    <Content Include="local.html" />
     <Content Include="toolbar_close.png" />
+    <Content Include="WebImages\XamarinLogo.png" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
