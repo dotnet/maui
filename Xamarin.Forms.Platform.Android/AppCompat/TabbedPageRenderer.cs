@@ -264,7 +264,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void ScrollToCurrentPage()
 		{
+			((Platform)Element.Platform).NavAnimationInProgress = true;
 			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), UseAnimations);
+			((Platform)Element.Platform).NavAnimationInProgress = false;
 		}
 
 		void UpdateIgnoreContainerAreas()

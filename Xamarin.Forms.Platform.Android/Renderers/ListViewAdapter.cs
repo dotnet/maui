@@ -52,7 +52,11 @@ namespace Xamarin.Forms.Platform.Android
 			realListView.OnItemClickListener = this;
 			realListView.OnItemLongClickListener = this;
 
-			MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextAction());
+			var platform = _listView.Platform;
+			if (platform.GetType() == typeof(AppCompat.Platform))
+				MessagingCenter.Subscribe<AppCompat.Platform>(this, AppCompat.Platform.CloseContextActionsSignalName, p => CloseContextAction());
+			else
+				MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextAction());
 		}
 
 		public override int Count
@@ -325,7 +329,13 @@ namespace Xamarin.Forms.Platform.Android
 			if (disposing)
 			{
 				CloseContextAction();
-				MessagingCenter.Unsubscribe<Platform>(this, Platform.CloseContextActionsSignalName);
+
+				var platform = _listView.Platform;
+				if (platform.GetType() == typeof(AppCompat.Platform))
+					MessagingCenter.Unsubscribe<AppCompat.Platform>(this, Platform.CloseContextActionsSignalName);
+				else
+					MessagingCenter.Unsubscribe<Platform>(this, Platform.CloseContextActionsSignalName);
+
 				_realListView.OnItemClickListener = null;
 				_realListView.OnItemLongClickListener = null;
 

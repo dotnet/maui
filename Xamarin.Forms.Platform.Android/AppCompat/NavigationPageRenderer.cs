@@ -573,6 +573,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			Current = view;
 
+			((Platform)Element.Platform).NavAnimationInProgress = true;
 			FragmentTransaction transaction = fm.BeginTransaction();
 
 			if (animated)
@@ -606,6 +607,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						transaction.Show(toShow);
 					else
 						transaction.Add(Id, toShow);
+
+					((Platform)Element.Platform).NavAnimationInProgress = false;
 				}
 				else
 				{
@@ -614,13 +617,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					transaction.Hide(currentToHide);
 					transaction.Add(Id, fragment);
 					fragments.Add(fragment);
+					((Platform)Element.Platform).NavAnimationInProgress = false;
 				}
 			}
 			transaction.Commit();
 
 			// The fragment transitions don't really SUPPORT telling you when they end
 			// There are some hacks you can do, but they actually are worse than just doing this:
-
+			
 			if (animated)
 			{
 				if (!removed)
