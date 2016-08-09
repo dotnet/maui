@@ -98,7 +98,7 @@ namespace Xamarin.Forms
 					return _innerDictionary[index];
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
-				throw new KeyNotFoundException();
+				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
 			{
