@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using static System.String;
 
 namespace Xamarin.Forms
 {
@@ -12,7 +13,7 @@ namespace Xamarin.Forms
 		public void AddEventHandler<TEventArgs>(string eventName, EventHandler<TEventArgs> handler)
 			where TEventArgs : EventArgs
 		{
-			if (eventName == null)
+			if (IsNullOrEmpty(eventName))
 			{
 				throw new ArgumentNullException(nameof(eventName));
 			}
@@ -27,7 +28,7 @@ namespace Xamarin.Forms
 
 		public void AddEventHandler(string eventName, EventHandler handler)
 		{
-			if (eventName == null)
+			if (IsNullOrEmpty(eventName))
 			{
 				throw new ArgumentNullException(nameof(eventName));
 			}
@@ -43,23 +44,37 @@ namespace Xamarin.Forms
 		public void HandleEvent(object sender, object args, string eventName)
 		{
 			var toRaise = new List<Tuple<object, MethodInfo>>();
+			var toRemove = new List<Subscription>();
 
 			List<Subscription> target;
 			if (_eventHandlers.TryGetValue(eventName, out target))
 			{
 				foreach (Subscription subscription in target)
 				{
+					bool isStatic = subscription.Subscriber == null;
+					if (isStatic)
+					{
+						// For a static method, we'll just pass null as the first parameter of MethodInfo.Invoke
+						toRaise.Add(Tuple.Create<object, MethodInfo>(null, subscription.Handler));
+						continue;
+					}
+
 					object subscriber = subscription.Subscriber.Target;
 
 					if (subscriber == null)
 					{
 						// The subscriber was collected, so there's no need to keep this subscription around
-						target.Remove(subscription);
+						toRemove.Add(subscription);
 					}
 					else
 					{
 						toRaise.Add(Tuple.Create(subscriber, subscription.Handler));
 					}
+				}
+
+				foreach (Subscription subscription in toRemove)
+				{
+					target.Remove(subscription);
 				}
 			}
 
@@ -72,7 +87,7 @@ namespace Xamarin.Forms
 		public void RemoveEventHandler<TEventArgs>(string eventName, EventHandler<TEventArgs> handler)
 			where TEventArgs : EventArgs
 		{
-			if (eventName == null)
+			if (IsNullOrEmpty(eventName))
 			{
 				throw new ArgumentNullException(nameof(eventName));
 			}
@@ -87,7 +102,7 @@ namespace Xamarin.Forms
 
 		public void RemoveEventHandler(string eventName, EventHandler handler)
 		{
-			if (eventName == null)
+			if (IsNullOrEmpty(eventName))
 			{
 				throw new ArgumentNullException(nameof(eventName));
 			}
@@ -102,14 +117,21 @@ namespace Xamarin.Forms
 
 		void AddEventHandler(string eventName, object handlerTarget, MethodInfo methodInfo)
 		{
-			List<Subscription> target;
-			if (!_eventHandlers.TryGetValue(eventName, out target))
+			List<Subscription> targets;
+			if (!_eventHandlers.TryGetValue(eventName, out targets))
 			{
-				target = new List<Subscription>();
-				_eventHandlers.Add(eventName, target);
+				targets = new List<Subscription>();
+				_eventHandlers.Add(eventName, targets);
 			}
 
-			target.Add(new Subscription(new WeakReference(handlerTarget), methodInfo));
+			if (handlerTarget == null)
+			{
+				// This event handler is a static method
+				targets.Add(new Subscription(null, methodInfo));
+				return;
+			}
+
+			targets.Add(new Subscription(new WeakReference(handlerTarget), methodInfo));
 		}
 
 		void RemoveEventHandler(string eventName, object handlerTarget, MemberInfo methodInfo)
@@ -138,11 +160,6 @@ namespace Xamarin.Forms
 		{
 			public Subscription(WeakReference subscriber, MethodInfo handler)
 			{
-				if (subscriber == null)
-				{
-					throw new ArgumentNullException(nameof(subscriber));
-				}
-
 				if (handler == null)
 				{
 					throw new ArgumentNullException(nameof(handler));
