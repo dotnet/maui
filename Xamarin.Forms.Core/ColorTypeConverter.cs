@@ -42,6 +42,8 @@ namespace Xamarin.Forms
 							return Color.Navy;
 						case "Olive":
 							return Color.Olive;
+						case "Orange":
+							return Color.Orange;
 						case "Purple":
 							return Color.Purple;
 						case "Pink":

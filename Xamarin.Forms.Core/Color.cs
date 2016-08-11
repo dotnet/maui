@@ -362,6 +362,7 @@ namespace Xamarin.Forms
 		public static readonly Color Maroon = FromRgb(128, 0, 0);
 		public static readonly Color Navy = FromRgb(0, 0, 128);
 		public static readonly Color Olive = FromRgb(128, 128, 0);
+		public static readonly Color Orange = FromRgb(255, 165, 0);
 		public static readonly Color Purple = FromRgb(128, 0, 128);
 		public static readonly Color Pink = FromRgb(255, 102, 255);
 		public static readonly Color Red = FromRgb(255, 0, 0);
