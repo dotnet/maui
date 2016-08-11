@@ -434,14 +434,16 @@ namespace Xamarin.Forms.Xaml
 			((IDataTemplate)dt).LoadTemplate = () =>
 			{
 #pragma warning restore 0612
+				var cnode = node.Clone();
 				var context = new HydratationContext { ParentContext = Context, RootElement = Context.RootElement };
-				node.Accept(new ExpandMarkupsVisitor(context), null);
-				node.Accept(new NamescopingVisitor(context), null);
-				node.Accept(new CreateValuesVisitor(context), null);
-				node.Accept(new RegisterXNamesVisitor(context), null);
-				node.Accept(new FillResourceDictionariesVisitor(context), null);
-				node.Accept(new ApplyPropertiesVisitor(context, true), null);
-				return context.Values[node];
+				cnode.Accept(new XamlNodeVisitor((n, parent) => n.Parent = parent), node.Parent); //set parents for {StaticResource}
+				cnode.Accept(new ExpandMarkupsVisitor(context), null);
+				cnode.Accept(new NamescopingVisitor(context), null);
+				cnode.Accept(new CreateValuesVisitor(context), null);
+				cnode.Accept(new RegisterXNamesVisitor(context), null);
+				cnode.Accept(new FillResourceDictionariesVisitor(context), null);
+				cnode.Accept(new ApplyPropertiesVisitor(context, true), null);
+				return context.Values[cnode];
 			};
 		}
 	}

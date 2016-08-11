@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Xamarin.Forms.Xaml
 		INode Parent { get; set; }
 
 		void Accept(IXamlNodeVisitor visitor, INode parentNode);
+		INode Clone();
 	}
 
 	internal interface IValueNode : INode
@@ -81,6 +83,8 @@ namespace Xamarin.Forms.Xaml
 		public int LineNumber { get; set; }
 
 		public int LinePosition { get; set; }
+
+		public abstract INode Clone();
 	}
 
 	[DebuggerDisplay("{Value}")]
@@ -97,6 +101,13 @@ namespace Xamarin.Forms.Xaml
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
 			visitor.Visit(this, parentNode);
+		}
+
+		public override INode Clone()
+		{
+			return new ValueNode(Value, NamespaceResolver, LineNumber, LinePosition) {
+				IgnorablePrefixes = IgnorablePrefixes
+			};
 		}
 	}
 
@@ -115,6 +126,13 @@ namespace Xamarin.Forms.Xaml
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
 			visitor.Visit(this, parentNode);
+		}
+
+		public override INode Clone()
+		{
+			return new MarkupNode(MarkupString, NamespaceResolver, LineNumber, LinePosition) {
+				IgnorablePrefixes = IgnorablePrefixes
+			};
 		}
 	}
 
@@ -174,6 +192,20 @@ namespace Xamarin.Forms.Xaml
 			var enode = node as ElementNode;
 			return enode.XmlType.Name == "ResourceDictionary";
 		}
+
+		public override INode Clone()
+		{
+			var clone = new ElementNode(XmlType, NamespaceURI, NamespaceResolver, LineNumber, LinePosition) {
+				IgnorablePrefixes = IgnorablePrefixes
+			};
+			foreach (var kvp in Properties)
+				clone.Properties.Add(kvp.Key, kvp.Value.Clone());
+			foreach (var p in SkipProperties)
+				clone.SkipProperties.Add(p);
+			foreach (var p in CollectionItems)
+				clone.CollectionItems.Add(p.Clone());
+			return clone;
+		}
 	}
 
 	internal abstract class RootNode : ElementNode
@@ -219,6 +251,16 @@ namespace Xamarin.Forms.Xaml
 				node.Accept(visitor, this);
 			if (visitor.VisitChildrenFirst)
 				visitor.Visit(this, parentNode);
+		}
+
+		public override INode Clone()
+		{
+			var items = new List<INode>();
+			foreach (var p in CollectionItems)
+				items.Add(p.Clone());
+			return new ListNode(items, NamespaceResolver, LineNumber, LinePosition) {
+				IgnorablePrefixes = IgnorablePrefixes
+			};
 		}
 	}
 
