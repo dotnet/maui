@@ -215,31 +215,33 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				bool isGroupHeader = IsGroupHeader;
 				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
+				object bindingContext = newContext;
 
 				if (template is DataTemplateSelector)
 				{
-					template = ((DataTemplateSelector)template).SelectTemplate(newContext, lv);
+					template = ((DataTemplateSelector)template).SelectTemplate(bindingContext, lv);
 				}
 
 				if (template != null)
 				{
 					cell = template.CreateContent() as Cell;
-					cell.BindingContext = newContext;
 				}
 				else
 				{
 					IListViewController listViewController = lv;
-					var defaultContext = newContext;
 
 					if (isGroupHeader)
-						defaultContext = listViewController.GetDisplayTextFromGroup(newContext);
+						bindingContext = listViewController.GetDisplayTextFromGroup(bindingContext);
 
-					cell = listViewController.CreateDefaultCell(defaultContext);
+					cell = listViewController.CreateDefaultCell(bindingContext);
 				}
 
 				// A TableView cell should already have its parent,
 				// but we need to set the parent for a ListView cell.
 				cell.Parent = lv;
+
+				// Set inherited BindingContext after setting the Parent so it won't be wiped out
+				BindableObject.SetInheritedBindingContext(cell, bindingContext);
 
 				// This provides the Group Header styling (e.g., larger font, etc.) when the
 				// template is loaded later.
