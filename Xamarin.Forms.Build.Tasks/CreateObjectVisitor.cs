@@ -58,8 +58,11 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (node.SkipPrefix((node.NamespaceResolver ?? parentNode.NamespaceResolver).LookupPrefix(node.NamespaceURI)))
+			if (node.SkipPrefix((node.NamespaceResolver ?? parentNode.NamespaceResolver).LookupPrefix(node.NamespaceURI))) {
+				node.Properties.Clear();
+				node.CollectionItems.Clear();
 				return;
+			}
 
 			var typeref = node.XmlType.GetTypeReference(Module, node);
 			TypeDefinition typedef = typeref.Resolve();

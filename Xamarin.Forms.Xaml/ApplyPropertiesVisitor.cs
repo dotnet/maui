@@ -9,7 +9,7 @@ using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal class ApplyPropertiesVisitor : IXamlNodeVisitor
+	class ApplyPropertiesVisitor : IXamlNodeVisitor
 	{
 		public static readonly IList<XmlName> Skips = new List<XmlName>
 		{
