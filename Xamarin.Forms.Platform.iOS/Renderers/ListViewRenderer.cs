@@ -1016,7 +1016,6 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly ListView _list;
 		IListViewController Controller => _list;
 		UIRefreshControl _refresh;
-		bool _refreshingEventSent;
 
 		bool _refreshAdded;
 
@@ -1124,13 +1123,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnRefreshingChanged(object sender, EventArgs eventArgs)
 		{
-			if (_refresh.Refreshing && !_refreshingEventSent)
-			{
+			if (_refresh.Refreshing)
 				Controller.SendRefreshing();
-				_refreshingEventSent = true;
-			}
-			else if (!_refresh.Refreshing)
-				_refreshingEventSent = false;
 		}
 
 		void RemoveRefresh()
