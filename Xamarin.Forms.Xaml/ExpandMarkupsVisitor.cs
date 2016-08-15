@@ -12,6 +12,14 @@ namespace Xamarin.Forms.Xaml
 			Context = context;
 		}
 
+		public static readonly IList<XmlName> Skips = new List<XmlName>
+		{
+			XmlName.xKey,
+			XmlName.xTypeArguments,
+			XmlName.xFactoryMethod,
+			XmlName.xName
+		};
+
 		Dictionary<INode, object> Values
 		{
 			get { return Context.Values; }
@@ -44,7 +52,7 @@ namespace Xamarin.Forms.Xaml
 			XmlName propertyName;
 			if (!ApplyPropertiesVisitor.TryGetPropertyName(markupnode, parentNode, out propertyName))
 				return;
-			if (ApplyPropertiesVisitor.Skips.Contains(propertyName))
+			if (Skips.Contains(propertyName))
 				return;
 			if (parentElement.SkipProperties.Contains(propertyName))
 				return;

@@ -54,5 +54,19 @@
 				</local:MockFactory>
 			</local:MockView.Content>
 		</local:MockView>
+		<local:MockView x:Name="v6">
+			<local:MockView.Content>
+				<local:MockFactory>
+					<x:Arguments>
+						<StaticExtension Member="local:MockxStatic.MockStaticProperty"/>
+					</x:Arguments>
+				</local:MockFactory>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v7">
+			<local:MockView.Content>
+				<local:MockFactory x:Arguments="{x:Static local:MockxStatic.MockStaticProperty}"/>
+			</local:MockView.Content>
+		</local:MockView>
 	</StackLayout>
 </ContentPage>

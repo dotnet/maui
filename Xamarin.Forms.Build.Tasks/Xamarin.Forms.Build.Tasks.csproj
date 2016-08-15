@@ -88,6 +88,8 @@
     <Compile Include="XamlCAssemblyResolver.cs" />
     <Compile Include="FixedCreateCSharpManifestResourceName.cs" />
     <Compile Include="MethodDefinitionExtensions.cs" />
+    <Compile Include="CompiledMarkupExtensions\StaticExtension.cs" />
+    <Compile Include="CompiledMarkupExtensions\ICompiledMarkupExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
@@ -112,6 +114,9 @@
       <Project>{984CC812-9470-4A13-AFF9-CC44068D666C}</Project>
       <Name>ICSharpCode.Decompiler</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CompiledMarkupExtensions\" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

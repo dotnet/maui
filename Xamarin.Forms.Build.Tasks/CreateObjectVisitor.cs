@@ -5,6 +5,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xamarin.Forms.Xaml;
+using System.Xml;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -67,165 +68,161 @@ namespace Xamarin.Forms.Build.Tasks
 			var typeref = node.XmlType.GetTypeReference(Module, node);
 			TypeDefinition typedef = typeref.Resolve();
 
-			if (IsXaml2009LanguagePrimitive(node))
-			{
+			if (IsXaml2009LanguagePrimitive(node)) {
 				var vardef = new VariableDefinition(typeref);
-				Context.Variables[node] = vardef;
+				Context.Variables [node] = vardef;
 				Context.Body.Variables.Add(vardef);
 
 				Context.IL.Append(PushValueFromLanguagePrimitive(typedef, node));
 				Context.IL.Emit(OpCodes.Stloc, vardef);
+				return;
 			}
-			else
-			{
-				MethodDefinition factoryCtorInfo = null;
-				MethodDefinition factoryMethodInfo = null;
-				MethodDefinition parameterizedCtorInfo = null;
-				MethodDefinition ctorInfo = null;
 
-				if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod))
-				{
-					factoryCtorInfo = typedef.AllMethods().FirstOrDefault(md => md.IsConstructor &&
-					                                                            !md.IsStatic &&
-					                                                            md.HasParameters &&
-					                                                            md.MatchXArguments(node, Module));
-					if (factoryCtorInfo == null)
-					{
-						throw new XamlParseException(
-							string.Format("No constructors found for {0} with matching x:Arguments", typedef.FullName), node);
-					}
-					ctorInfo = factoryCtorInfo;
-					if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
-						Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
+			if (typeref.FullName == "Xamarin.Forms.Xaml.StaticExtension") {
+				var markupProvider = new StaticExtension();
+
+				var il = markupProvider.ProvideValue(node, Module, out typeref);
+
+				var vardef = new VariableDefinition(typeref);
+				Context.Variables [node] = vardef;
+				Context.Body.Variables.Add(vardef);
+
+				Context.IL.Append(il);
+				Context.IL.Emit(OpCodes.Stloc, vardef);
+
+				//clean the node as it has been fully exhausted
+				node.Properties.Clear();
+				node.CollectionItems.Clear();
+				return;
+			}
+
+			MethodDefinition factoryCtorInfo = null;
+			MethodDefinition factoryMethodInfo = null;
+			MethodDefinition parameterizedCtorInfo = null;
+			MethodDefinition ctorInfo = null;
+
+			if (node.Properties.ContainsKey(XmlName.xArguments) && !node.Properties.ContainsKey(XmlName.xFactoryMethod)) {
+				factoryCtorInfo = typedef.AllMethods().FirstOrDefault(md => md.IsConstructor &&
+																			!md.IsStatic &&
+																			md.HasParameters &&
+																			md.MatchXArguments(node, Module, Context));
+				if (factoryCtorInfo == null) {
+					throw new XamlParseException(
+						string.Format("No constructors found for {0} with matching x:Arguments", typedef.FullName), node);
 				}
-				else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
-				{
-					var factoryMethod = (string)(node.Properties[XmlName.xFactoryMethod] as ValueNode).Value;
-					factoryMethodInfo = typedef.AllMethods().FirstOrDefault(md => !md.IsConstructor &&
-					                                                              md.Name == factoryMethod &&
-					                                                              md.IsStatic &&
-					                                                              md.MatchXArguments(node, Module));
-					if (factoryMethodInfo == null)
-					{
-						throw new XamlParseException(
-							String.Format("No static method found for {0}::{1} ({2})", typedef.FullName, factoryMethod, null), node);
-					}
-					Context.IL.Append(PushCtorXArguments(factoryMethodInfo, node));
+				ctorInfo = factoryCtorInfo;
+				if (!typedef.IsValueType) //for ctor'ing typedefs, we first have to ldloca before the params
+					Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
+			} else if (node.Properties.ContainsKey(XmlName.xFactoryMethod)) {
+				var factoryMethod = (string)(node.Properties [XmlName.xFactoryMethod] as ValueNode).Value;
+				factoryMethodInfo = typedef.AllMethods().FirstOrDefault(md => !md.IsConstructor &&
+																			  md.Name == factoryMethod &&
+																			  md.IsStatic &&
+																			  md.MatchXArguments(node, Module, Context));
+				if (factoryMethodInfo == null) {
+					throw new XamlParseException(
+						String.Format("No static method found for {0}::{1} ({2})", typedef.FullName, factoryMethod, null), node);
 				}
-				if (ctorInfo == null && factoryMethodInfo == null)
-				{
-					parameterizedCtorInfo = typedef.Methods.FirstOrDefault(md => md.IsConstructor &&
-					                                                             !md.IsStatic &&
-					                                                             md.HasParameters &&
-					                                                             md.Parameters.All(
-						                                                             pd =>
-							                                                             pd.CustomAttributes.Any(
-								                                                             ca =>
-									                                                             ca.AttributeType.FullName ==
-									                                                             "Xamarin.Forms.ParameterAttribute")));
+				Context.IL.Append(PushCtorXArguments(factoryMethodInfo, node));
+			}
+			if (ctorInfo == null && factoryMethodInfo == null) {
+				parameterizedCtorInfo = typedef.Methods.FirstOrDefault(md => md.IsConstructor &&
+																			 !md.IsStatic &&
+																			 md.HasParameters &&
+																			 md.Parameters.All(
+																				 pd =>
+																					 pd.CustomAttributes.Any(
+																						 ca =>
+																							 ca.AttributeType.FullName ==
+																							 "Xamarin.Forms.ParameterAttribute")));
+			}
+			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node)) {
+				ctorInfo = parameterizedCtorInfo;
+				//					IL_0000:  ldstr "foo"
+				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo, node));
+			}
+			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
+
+			var ctorinforef = ctorInfo?.ResolveGenericParameters(typeref, Module);
+			var factorymethodinforef = factoryMethodInfo?.ResolveGenericParameters(typeref, Module);
+			var implicitOperatorref = typedef.Methods.FirstOrDefault(md =>
+				md.IsPublic &&
+				md.IsStatic &&
+				md.IsSpecialName &&
+				md.Name == "op_Implicit" && md.Parameters [0].ParameterType.FullName == "System.String");
+
+			if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType) {
+				VariableDefinition vardef = new VariableDefinition(typeref);
+				Context.Variables [node] = vardef;
+				Context.Body.Variables.Add(vardef);
+
+				ValueNode vnode = null;
+				if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
+					vardef.VariableType.IsValueType) {
+					//<Color>Purple</Color>
+					Context.IL.Append(vnode.PushConvertedValue(Context, typeref, new ICustomAttributeProvider [] { typedef },
+						node.PushServiceProvider(Context), false, true));
+					Context.IL.Emit(OpCodes.Stloc, vardef);
+				} else if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
+						   implicitOperatorref != null) {
+					//<FileImageSource>path.png</FileImageSource>
+					var implicitOperator = Module.Import(implicitOperatorref);
+					Context.IL.Emit(OpCodes.Ldstr, ((ValueNode)(node.CollectionItems.First())).Value as string);
+					Context.IL.Emit(OpCodes.Call, implicitOperator);
+					Context.IL.Emit(OpCodes.Stloc, vardef);
+				} else if (factorymethodinforef != null) {
+					var factory = Module.Import(factorymethodinforef);
+					Context.IL.Emit(OpCodes.Call, factory);
+					Context.IL.Emit(OpCodes.Stloc, vardef);
+				} else if (!typedef.IsValueType) {
+					var ctor = Module.Import(ctorinforef);
+//					IL_0001:  newobj instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::'.ctor'()
+//					IL_0006:  stloc.0 
+					Context.IL.Emit(OpCodes.Newobj, ctor);
+					Context.IL.Emit(OpCodes.Stloc, vardef);
+				} else if (ctorInfo != null && node.Properties.ContainsKey(XmlName.xArguments) &&
+						   !node.Properties.ContainsKey(XmlName.xFactoryMethod) && ctorInfo.MatchXArguments(node, Module, Context)) {
+//					IL_0008:  ldloca.s 1
+//					IL_000a:  ldc.i4.1 
+//					IL_000b:  call instance void valuetype Test/Foo::'.ctor'(bool)
+
+					var ctor = Module.Import(ctorinforef);
+					Context.IL.Emit(OpCodes.Ldloca, vardef);
+					Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
+					Context.IL.Emit(OpCodes.Call, ctor);
+				} else {
+//					IL_0000:  ldloca.s 0
+//					IL_0002:  initobj Test/Foo
+					Context.IL.Emit(OpCodes.Ldloca, vardef);
+					Context.IL.Emit(OpCodes.Initobj, Module.Import(typedef));
 				}
-				if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node))
-				{
-					ctorInfo = parameterizedCtorInfo;
-					//					IL_0000:  ldstr "foo"
-					Context.IL.Append(PushCtorArguments(parameterizedCtorInfo, node));
-				}
-				ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
 
-				var ctorinforef = ctorInfo?.ResolveGenericParameters(typeref, Module);
-				var factorymethodinforef = factoryMethodInfo?.ResolveGenericParameters(typeref, Module);
-				var implicitOperatorref = typedef.Methods.FirstOrDefault(md =>
-					md.IsPublic &&
-					md.IsStatic &&
-					md.IsSpecialName &&
-					md.Name == "op_Implicit" && md.Parameters[0].ParameterType.FullName == "System.String");
+				//if/when we land the compiled converters, those 2 blocks could be greatly simplified
+				if (typeref.FullName == "Xamarin.Forms.Xaml.TypeExtension") {
+					var visitor = new SetPropertiesVisitor(Context);
+					foreach (var cnode in node.Properties.Values.ToList())
+						cnode.Accept(visitor, node);
+					foreach (var cnode in node.CollectionItems)
+						cnode.Accept(visitor, node);
 
-				if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType)
-				{
-					VariableDefinition vardef = new VariableDefinition(typeref);
-					Context.Variables[node] = vardef;
-					Context.Body.Variables.Add(vardef);
+					//As we're stripping the TypeExtension bare, keep the type if we need it later (hint: we do need it)
+					INode ntype;
+					if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out ntype))
+						ntype = node.CollectionItems [0];
 
-					ValueNode vnode = null;
-					if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
-					    vardef.VariableType.IsValueType)
-					{
-						//<Color>Purple</Color>
-						Context.IL.Append(vnode.PushConvertedValue(Context, typeref, new ICustomAttributeProvider[] { typedef },
-							node.PushServiceProvider(Context), false, true));
-						Context.IL.Emit(OpCodes.Stloc, vardef);
-					}
-					else if (node.CollectionItems.Count == 1 && (vnode = node.CollectionItems.First() as ValueNode) != null &&
-					         implicitOperatorref != null)
-					{
-						//<FileImageSource>path.png</FileImageSource>
-						var implicitOperator = Module.Import(implicitOperatorref);
-						Context.IL.Emit(OpCodes.Ldstr, ((ValueNode)(node.CollectionItems.First())).Value as string);
-						Context.IL.Emit(OpCodes.Call, implicitOperator);
-						Context.IL.Emit(OpCodes.Stloc, vardef);
-					}
-					else if (factorymethodinforef != null)
-					{
-						var factory = Module.Import(factorymethodinforef);
-						Context.IL.Emit(OpCodes.Call, factory);
-						Context.IL.Emit(OpCodes.Stloc, vardef);
-					}
-					else if (!typedef.IsValueType)
-					{
-						var ctor = Module.Import(ctorinforef);
-						//						IL_0001:  newobj instance void class [Xamarin.Forms.Core]Xamarin.Forms.Button::'.ctor'()
-						//						IL_0006:  stloc.0 
-						Context.IL.Emit(OpCodes.Newobj, ctor);
-						Context.IL.Emit(OpCodes.Stloc, vardef);
-					}
-					else if (ctorInfo != null && node.Properties.ContainsKey(XmlName.xArguments) &&
-					         !node.Properties.ContainsKey(XmlName.xFactoryMethod) && ctorInfo.MatchXArguments(node, Module))
-					{
-						//						IL_0008:  ldloca.s 1
-						//						IL_000a:  ldc.i4.1 
-						//						IL_000b:  call instance void valuetype Test/Foo::'.ctor'(bool)
+					var type = ((ValueNode)ntype).Value as string;
+					var namespaceuri = type.Contains(":") ? node.NamespaceResolver.LookupNamespace(type.Split(':') [0].Trim()) : "";
+					type = type.Contains(":") ? type.Split(':') [1].Trim() : type;
+					Context.TypeExtensions [node] = new XmlType(namespaceuri, type, null).GetTypeReference(Module, node);
 
-						var ctor = Module.Import(ctorinforef);
-						Context.IL.Emit(OpCodes.Ldloca, vardef);
-						Context.IL.Append(PushCtorXArguments(factoryCtorInfo, node));
-						Context.IL.Emit(OpCodes.Call, ctor);
-					}
-					else
-					{
-						//						IL_0000:  ldloca.s 0
-						//						IL_0002:  initobj Test/Foo
-						Context.IL.Emit(OpCodes.Ldloca, vardef);
-						Context.IL.Emit(OpCodes.Initobj, Module.Import(typedef));
-					}
+					node.Properties.Clear();
+					node.CollectionItems.Clear();
 
-					if (typeref.FullName == "Xamarin.Forms.Xaml.TypeExtension")
-					{
-						var visitor = new SetPropertiesVisitor(Context);
-						foreach (var cnode in node.Properties.Values.ToList())
-							cnode.Accept(visitor, node);
-						foreach (var cnode in node.CollectionItems)
-							cnode.Accept(visitor, node);
-
-						//As we're stripping the TypeExtension bare, keep the type if we need it later (hint: we do need it)
-						INode ntype;
-						if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out ntype))
-							ntype = node.CollectionItems[0];
-
-						var type = ((ValueNode)ntype).Value as string;
-						var namespaceuri = type.Contains(":") ? node.NamespaceResolver.LookupNamespace(type.Split(':')[0].Trim()) : "";
-						type = type.Contains(":") ? type.Split(':')[1].Trim() : type;
-						Context.TypeExtensions[node] = new XmlType(namespaceuri, type, null).GetTypeReference(Module, node);
-
-						node.Properties.Clear();
-						node.CollectionItems.Clear();
-
-						var vardefref = new VariableDefinitionReference(vardef);
-						Context.IL.Append(SetPropertiesVisitor.ProvideValue(vardefref, Context, Module, node));
-						if (vardef != vardefref.VariableDefinition)
-						{
-							Context.Variables[node] = vardefref.VariableDefinition;
-							Context.Body.Variables.Add(vardefref.VariableDefinition);
-						}
+					var vardefref = new VariableDefinitionReference(vardef);
+					Context.IL.Append(SetPropertiesVisitor.ProvideValue(vardefref, Context, Module, node));
+					if (vardef != vardefref.VariableDefinition) {
+						Context.Variables [node] = vardefref.VariableDefinition;
+						Context.Body.Variables.Add(vardefref.VariableDefinition);
 					}
 				}
 			}

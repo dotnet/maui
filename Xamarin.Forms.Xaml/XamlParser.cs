@@ -223,6 +223,9 @@ namespace Xamarin.Forms.Xaml
 						case "x:FactoryMethod":
 							propertyName = XmlName.xFactoryMethod;
 							break;
+						case "x:Arguments":
+							propertyName = XmlName.xArguments;
+						break;
 						default:
 							Debug.WriteLine("Unhandled {0}", reader.Name);
 							continue;

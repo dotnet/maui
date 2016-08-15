@@ -1,5 +1,6 @@
 ﻿using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -16,9 +17,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Content = "default ctor";
 		}
 
-		public MockFactory (string arg0, string arg1)
+		public MockFactory(string arg0, string arg1)
 		{
 			Content = "alternate ctor " + arg0 + arg1;
+		}
+
+		public MockFactory(string arg0)
+		{
+			Content = "alternate ctor " + arg0;
 		}
 
 		public MockFactory (int arg)
@@ -63,6 +69,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
+			public void SetUp()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
 			[TestCase (false)]
 			[TestCase (true)]
 			public void TestDefaultCtor (bool useCompiledXaml)
@@ -109,6 +121,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new FactoryMethods (useCompiledXaml);
 				Assert.AreEqual ("factory 42foo", layout.v5.Content.Content);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithxStatic(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("alternate ctor Property", layout.v6.Content.Content);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithxStaticAttribute(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
 			}
 		}
 	}

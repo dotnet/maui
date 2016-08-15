@@ -124,8 +124,8 @@ namespace Xamarin.Forms.Xaml
 
 			Values[node] = value;
 
-			var typeExtension = value as TypeExtension;
-			if (typeExtension != null)
+			var markup = value as IMarkupExtension;
+			if (markup != null && (value is TypeExtension || value is StaticExtension))
 			{
 				var serviceProvider = new XamlServiceProvider(node, Context);
 
@@ -135,7 +135,7 @@ namespace Xamarin.Forms.Xaml
 				foreach (var cnode in node.CollectionItems)
 					cnode.Accept(visitor, node);
 
-				value = typeExtension.ProvideValue(serviceProvider);
+				value = markup.ProvideValue(serviceProvider);
 
 				node.Properties.Clear();
 				node.CollectionItems.Clear();
