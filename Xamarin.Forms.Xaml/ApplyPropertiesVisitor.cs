@@ -102,21 +102,29 @@ namespace Xamarin.Forms.Xaml
 				value = valueProvider.ProvideValue(serviceProvider);
 			}
 
-			XmlName propertyName;
-			if (TryGetPropertyName(node, parentNode, out propertyName))
-			{
+			XmlName propertyName = XmlName.Empty;
+
+			//Simplify ListNodes with single elements
+			var pList = parentNode as ListNode;
+			if (pList != null && pList.CollectionItems.Count == 1) {
+				propertyName = pList.XmlName;
+				parentNode = parentNode.Parent;
+				parentElement = parentNode as IElementNode;
+			}
+
+			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName)) {
 				if (Skips.Contains(propertyName))
 					return;
 				if (parentElement.SkipProperties.Contains(propertyName))
 					return;
 
-				var source = Values[parentNode];
+				var source = Values [parentNode];
 
 				if (propertyName == XmlName._CreateContent && source is ElementTemplate)
 					SetTemplate(source as ElementTemplate, node);
 				else
 					SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
-			}
+			} 
 			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode)
 			{
 				// Collection element, implicit content, or implicit collection element.

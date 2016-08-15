@@ -207,6 +207,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.stack4.Children[0], Is.TypeOf<Button>());
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void ListsAreSimplified(bool useCompiledXaml)
+			{
+				var page = new SetValue(useCompiledXaml);
+				Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
+			}
 		}
 	}
 }

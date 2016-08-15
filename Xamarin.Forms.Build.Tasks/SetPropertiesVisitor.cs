@@ -79,6 +79,15 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
+			XmlName propertyName = XmlName.Empty;
+
+			//Simplify ListNodes with single elements
+			var pList = parentNode as ListNode;
+			if (pList != null && pList.CollectionItems.Count == 1) {
+				propertyName = pList.XmlName;
+				parentNode = parentNode.Parent;
+			}
+
 			//if this node is an IMarkupExtension, invoke ProvideValue() and replace the variable
 			var vardef = Context.Variables[node];
 			var vardefref = new VariableDefinitionReference(vardef);
@@ -90,8 +99,7 @@ namespace Xamarin.Forms.Build.Tasks
 				Context.Variables[node] = vardef;
 			}
 
-			XmlName propertyName;
-			if (TryGetPropertyName(node, parentNode, out propertyName))
+			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName))
 			{
 				if (skips.Contains(propertyName))
 					return;
