@@ -300,6 +300,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 						rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 						rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
+						rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
 						rootnode.Accept(new CreateObjectVisitor(visitorContext), null);
 						rootnode.Accept(new SetNamescopesAndRegisterNamesVisitor(visitorContext), null);
 						rootnode.Accept(new SetFieldVisitor(visitorContext), null);
@@ -427,7 +428,7 @@ namespace Xamarin.Forms.Build.Tasks
 					}
 
 					XamlParser.ParseXaml(
-						rootnode = new ILRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), typeReference), reader);
+						rootnode = new ILRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), typeReference, reader as IXmlNamespaceResolver), reader);
 					break;
 				}
 			}

@@ -81,6 +81,7 @@
     <Compile Include="ExpandMarkupsVisitor.cs" />
     <Compile Include="XamlCompilationAttribute.cs" />
     <Compile Include="TypeArgumentsParser.cs" />
+    <Compile Include="PruneIgnoredNodesVisitor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

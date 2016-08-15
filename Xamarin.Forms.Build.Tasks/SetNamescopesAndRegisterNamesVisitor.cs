@@ -43,9 +43,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (node.SkipPrefix((node.NamespaceResolver ?? parentNode.NamespaceResolver).LookupPrefix(node.NamespaceURI)))
-				return;
-
 			VariableDefinition ns;
 			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode))
 				ns = CreateNamescope();

@@ -67,15 +67,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (skips.Contains(propertyName))
 				return;
-			if (node.SkipPrefix((node.NamespaceResolver ?? parentNode.NamespaceResolver)?.LookupPrefix(propertyName.NamespaceURI)))
-				return;
 			if (propertyName.NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006" &&
 			    propertyName.LocalName == "Ignorable")
-			{
-				(parentNode.IgnorablePrefixes ?? (parentNode.IgnorablePrefixes = new List<string>())).AddRange(
-					(node.Value as string).Split(','));
 				return;
-			}
 			SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node);
 		}
 
@@ -85,9 +79,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (node.SkipPrefix((node.NamespaceResolver ?? parentNode.NamespaceResolver)?.LookupPrefix(node.NamespaceURI)))
-				return;
-
 			//if this node is an IMarkupExtension, invoke ProvideValue() and replace the variable
 			var vardef = Context.Variables[node];
 			var vardefref = new VariableDefinitionReference(vardef);

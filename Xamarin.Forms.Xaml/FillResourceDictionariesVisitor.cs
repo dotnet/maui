@@ -48,11 +48,8 @@ namespace Xamarin.Forms.Xaml
 				if (parentElement.SkipPrefix(node.NamespaceResolver.LookupPrefix(propertyName.NamespaceURI)))
 					return;
 				if (propertyName.NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006" &&
-					propertyName.LocalName == "Ignorable") {
-					(parentNode.IgnorablePrefixes ?? (parentNode.IgnorablePrefixes = new List<string> ())).AddRange (
-						(value as string).Split (','));
+					propertyName.LocalName == "Ignorable") 
 					return;
-				}
 				if (propertyName.LocalName != "MergedWith")
 					return;
 				ApplyPropertiesVisitor.SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
@@ -66,9 +63,6 @@ namespace Xamarin.Forms.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (node.SkipPrefix(node.NamespaceResolver.LookupPrefix(node.NamespaceURI)))
-				return;
-
 			var value = Values[node];
 			var parentElement = parentNode as IElementNode;
 			var markupExtension = value as IMarkupExtension;

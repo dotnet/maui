@@ -117,6 +117,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			rootnode.Accept (new XamlNodeVisitor ((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
 			rootnode.Accept (new ExpandMarkupsVisitor (visitorContext), null);
+			rootnode.Accept (new PruneIgnoredNodesVisitor(), null);
 			rootnode.Accept (new NamescopingVisitor (visitorContext), null); //set namescopes for {x:Reference}
 			rootnode.Accept (new CreateValuesVisitor (visitorContext), null);
 			rootnode.Accept (new RegisterXNamesVisitor (visitorContext), null);
