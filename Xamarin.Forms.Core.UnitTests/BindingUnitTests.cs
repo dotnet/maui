@@ -5,6 +5,7 @@ using System.Globalization;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using CategoryAttribute=NUnit.Framework.CategoryAttribute;
 using DescriptionAttribute=NUnit.Framework.DescriptionAttribute;
@@ -2589,6 +2590,32 @@ namespace Xamarin.Forms.Core.UnitTests
 			viewmodel.OnPropertyChanged ("Foo");
 
 			Assert.AreEqual (0, viewmodel.InvocationListSize ());
+		}
+
+		[Test]
+		public async Task BindingDoesNotStayAliveForDeadTarget()
+		{
+			TestViewModel viewModel = new TestViewModel();
+			WeakReference bindingRef;
+
+			{ 
+				var binding = new Binding("Foo");
+
+				var button = new Button();
+				button.SetBinding(Button.TextProperty, binding);
+				button.BindingContext = viewModel;
+
+				bindingRef = new WeakReference(binding);
+			}
+
+			Assume.That(viewModel.InvocationListSize(), Is.EqualTo(1));
+
+			//NOTE: this was the only way I could "for sure" get the binding to get GC'd
+			GC.Collect();
+			await Task.Delay(10);
+			GC.Collect();
+
+			Assert.IsFalse(bindingRef.IsAlive, "Binding should not be alive!");
 		}
 
 		[Test]

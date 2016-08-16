@@ -90,9 +90,7 @@ namespace Xamarin.Forms
 						part.TryGetValue(sourceObject, out sourceObject);
 					}
 
-					var inpc = sourceObject as INotifyPropertyChanged;
-					if (inpc != null)
-						inpc.PropertyChanged -= part.ChangeHandler;
+					part.Unsubscribe();
 				}
 			}
 
@@ -147,9 +145,7 @@ namespace Xamarin.Forms
 					var inpc = current as INotifyPropertyChanged;
 					if (inpc != null && !ReferenceEquals(current, previous))
 					{
-						// If we're reapplying, we don't want to double subscribe
-						inpc.PropertyChanged -= part.ChangeHandler;
-						inpc.PropertyChanged += part.ChangeHandler;
+						part.Subscribe(inpc);
 					}
 				}
 
@@ -410,11 +406,57 @@ namespace Xamarin.Forms
 			public object Source { get; private set; }
 		}
 
+		class WeakPropertyChangedProxy
+		{
+			WeakReference _source, _listener;
+
+			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
+			{
+				source.PropertyChanged += OnPropertyChanged;
+				_source = new WeakReference(source);
+				_listener = new WeakReference(listener);
+			}
+
+			public void Unsubscribe()
+			{
+				if (_source != null)
+				{
+					var source = _source.Target as INotifyPropertyChanged;
+					if (source != null)
+					{
+						source.PropertyChanged -= OnPropertyChanged;
+					}
+					_source = null;
+					_listener = null;
+				}
+			}
+
+			private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			{
+				if (_listener != null)
+				{
+					var handler = _listener.Target as PropertyChangedEventHandler;
+					if (handler != null)
+					{
+						handler(sender, e);
+					}
+					else
+					{
+						Unsubscribe();
+					}
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+		}
+
 		class BindingExpressionPart
 		{
 			readonly BindingExpression _expression;
-
-			public readonly PropertyChangedEventHandler ChangeHandler;
+			readonly PropertyChangedEventHandler _changeHandler;
+			WeakPropertyChangedProxy _listener;
 
 			public BindingExpressionPart(BindingExpression expression, string content, bool isIndexer = false)
 			{
@@ -423,7 +465,25 @@ namespace Xamarin.Forms
 				Content = content;
 				IsIndexer = isIndexer;
 
-				ChangeHandler = PropertyChanged;
+				_changeHandler = PropertyChanged;
+			}
+
+			public void Subscribe(INotifyPropertyChanged handler)
+			{
+				// If we're reapplying, we don't want to double subscribe
+				Unsubscribe();
+
+				_listener = new WeakPropertyChangedProxy(handler, _changeHandler);
+			}
+
+			public void Unsubscribe()
+			{
+				var listener = _listener;
+				if (listener != null)
+				{
+					listener.Unsubscribe();
+					_listener = null;
+				}
 			}
 
 			public object[] Arguments { get; set; }
