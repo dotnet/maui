@@ -738,13 +738,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (options.Accept != null)
 			{
 				dialog.Commands.Add(new UICommand(options.Accept));
-				dialog.DefaultCommandIndex = (uint)dialog.Commands.Count - 1;
+				dialog.DefaultCommandIndex = 0;
 			}
 
 			if (options.Cancel != null)
 			{
 				dialog.Commands.Add(new UICommand(options.Cancel));
-				dialog.CancelCommandIndex = 0;
+				dialog.CancelCommandIndex = (uint)dialog.Commands.Count - 1;
 			}
 
 			IUICommand command = await dialog.ShowAsync();
