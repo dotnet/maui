@@ -46,6 +46,32 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void InvalidateMeasureWhenTextChanges ()
+		{
+			var label = new Label();
+
+			bool fired;
+			label.MeasureInvalidated += (sender, args) =>
+			{
+				fired = true;
+			};
+
+			fired = false;
+			label.Text = "Foo";
+			Assert.IsTrue (fired);
+
+			var fs = new FormattedString ();
+
+			fired = false;
+			label.FormattedText = fs;
+			Assert.IsTrue (fired);
+
+			fired = false;
+			fs.Spans.Add (new Span {Text = "bar"});
+			Assert.IsTrue (fired);
+		}
+
+		[Test]
 		public void AssignToFontStructUpdatesFontFamily (
 			[Values (NamedSize.Default, NamedSize.Large, NamedSize.Medium, NamedSize.Small, NamedSize.Micro)] NamedSize size,
 			[Values (FontAttributes.None, FontAttributes.Bold, FontAttributes.Italic, FontAttributes.Bold | FontAttributes.Italic)] FontAttributes attributes)

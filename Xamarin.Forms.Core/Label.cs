@@ -253,6 +253,7 @@ namespace Xamarin.Forms
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			OnPropertyChanged("FormattedText");
 		}
 
