@@ -23,19 +23,19 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		const char ObfuscationCharacter = '●';
 
-		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register("PlaceholderForegroundBrush", typeof(Brush), typeof(FormsTextBox),
+		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register(nameof(PlaceholderForegroundBrush), typeof(Brush), typeof(FormsTextBox),
 			new PropertyMetadata(default(Brush)));
 
-		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty = DependencyProperty.Register("PlaceholderForegroundFocusBrush", typeof(Brush), typeof(FormsTextBox),
+		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty = DependencyProperty.Register(nameof(PlaceholderForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
 			new PropertyMetadata(default(Brush)));
 
-		public static readonly DependencyProperty ForegroundFocusBrushProperty = DependencyProperty.Register("ForegroundFocusBrush", typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ForegroundFocusBrushProperty = DependencyProperty.Register(nameof(ForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
 
-		public static readonly DependencyProperty BackgroundFocusBrushProperty = DependencyProperty.Register("BackgroundFocusBrush", typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty BackgroundFocusBrushProperty = DependencyProperty.Register(nameof(BackgroundFocusBrush), typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
 
-		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register("IsPassword", typeof(bool), typeof(FormsTextBox), new PropertyMetadata(default(bool), OnIsPasswordChanged));
+		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register(nameof(IsPassword), typeof(bool), typeof(FormsTextBox), new PropertyMetadata(default(bool), OnIsPasswordChanged));
 
-		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
+		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
 
 		static InputScope s_passwordInputScope;
 		Border _borderElement;
@@ -120,13 +120,15 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			base.OnGotFocus(e);
 
-			// If we're on the phone, the Visual State Manager crashes if we try to 
+#if !WINDOWS_UWP
+			// If we're on Windows 8.1 phone, the Visual State Manager crashes if we try to 
 			// handle alternate background colors in the focus state; we have to do
 			// it manually here
 			if (Device.Idiom == TargetIdiom.Phone && _borderElement != null)
 			{
 				_borderElement.Background = BackgroundFocusBrush;
 			}
+#endif
 		}
 
 		void DelayObfuscation()

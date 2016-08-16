@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Reflection;
+using Windows.Foundation.Metadata;
 using Windows.System;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -13,10 +16,12 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public class EntryRenderer : ViewRenderer<Entry, FormsTextBox>
 	{
-		Brush _backgroundColorFocusedDefaultBrush;
-
 		bool _fontApplied;
+		Brush _backgroundColorFocusedDefaultBrush;
 		Brush _placeholderDefaultBrush;
+		Brush _textDefaultBrush;
+		Brush _defaultTextColorFocusBrush;
+		Brush _defaultPlaceholderColorFocusBrush;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
@@ -27,7 +32,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (Control == null)
 				{
 					var textBox = new FormsTextBox { Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style };
-					
 					SetNativeControl(textBox);
 
 					textBox.TextChanged += OnNativeTextChanged;
@@ -92,24 +96,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			// By default some platforms have alternate default background colors when focused
-			Color backgroundColor = Element.BackgroundColor;
-			if (backgroundColor.IsDefault)
-			{
-				if (_backgroundColorFocusedDefaultBrush == null)
-				{
-					return;
-				}
-
-				Control.BackgroundFocusBrush = _backgroundColorFocusedDefaultBrush;
-				return;
-			}
-
-			if (_backgroundColorFocusedDefaultBrush == null)
-			{
-				_backgroundColorFocusedDefaultBrush = Control.BackgroundFocusBrush;
-			}
-
-			Control.BackgroundFocusBrush = backgroundColor.ToBrush();
+			BrushHelpers.UpdateColor(Element.BackgroundColor, ref _backgroundColorFocusedDefaultBrush, 
+				() => Control.BackgroundFocusBrush, brush => Control.BackgroundFocusBrush = brush);
 		}
 
 		void OnNativeTextChanged(object sender, Windows.UI.Xaml.Controls.TextChangedEventArgs args)
@@ -190,25 +178,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			Color placeholderColor = Element.PlaceholderColor;
 
-			if (placeholderColor.IsDefault)
-			{
-				if (_placeholderDefaultBrush == null)
-				{
-					return;
-				}
+			BrushHelpers.UpdateColor(placeholderColor, ref _placeholderDefaultBrush, 
+				() => Control.PlaceholderForegroundBrush, brush => Control.PlaceholderForegroundBrush = brush);
 
-				// Use the cached default brush
-				Control.PlaceholderForegroundBrush = _placeholderDefaultBrush;
-				return;
-			}
-
-			if (_placeholderDefaultBrush == null)
-			{
-				// Cache the default brush in case we need to set the color back to default
-				_placeholderDefaultBrush = Control.PlaceholderForegroundBrush;
-			}
-
-			Control.PlaceholderForegroundBrush = placeholderColor.ToBrush();
+			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorFocusBrush, 
+				() => Control.PlaceholderForegroundFocusBrush, brush => Control.PlaceholderForegroundFocusBrush = brush);
 		}
 
 		void UpdateText()
@@ -218,7 +192,13 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateTextColor()
 		{
-			Control.Foreground = Element.TextColor.ToBrush();
+			Color textColor = Element.TextColor;
+
+			BrushHelpers.UpdateColor(textColor, ref _textDefaultBrush, 
+				() => Control.Foreground, brush => Control.Foreground = brush);
+
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush, 
+				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
 	}
 }

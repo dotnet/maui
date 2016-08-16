@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls
 
 		static ContentPage SearchBarPage()
 		{
-			var searchbarTextColorDefaultToggle = new Entry() { Text = "Default SearchBar Text Color" };
+			var searchbarTextColorDefaultToggle = new SearchBar() { Text = "Default SearchBar Text Color" };
 			var searchbarTextColorToggleButton = new Button() { Text = "Toggle SearchBar Color" };
 			searchbarTextColorToggleButton.Clicked += (sender, args) => {
 				if (searchbarTextColorDefaultToggle.TextColor.IsDefault)
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
-			var searchbarPlaceholderColorDefaultToggle = new Entry() { Placeholder = "Default Placeholder Color" };
+			var searchbarPlaceholderColorDefaultToggle = new SearchBar() { Placeholder = "Default Placeholder Color" };
 			var searchbarPlaceholderToggleButton = new Button() { Text = "Toggle Placeholder Color" };
 			searchbarPlaceholderToggleButton.Clicked += (sender, args) => {
 				if (searchbarPlaceholderColorDefaultToggle.PlaceholderColor.IsDefault)

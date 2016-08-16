@@ -117,20 +117,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void UpdatePlaceholderColor()
 		{
-			Color placeholderColor = Element.PlaceholderColor;
-
-			if (placeholderColor.IsDefault)
-			{
-				if (_defaultPlaceholderColorBrush == null)
-					return;
-
-				Control.PlaceholderForegroundBrush = _defaultPlaceholderColorBrush;
-			}
-
-			if (_defaultPlaceholderColorBrush == null)
-				_defaultPlaceholderColorBrush = Control.PlaceholderForegroundBrush;
-
-			Control.PlaceholderForegroundBrush = placeholderColor.ToBrush();
+			BrushHelpers.UpdateColor(Element.PlaceholderColor, ref _defaultPlaceholderColorBrush, 
+				() => Control.PlaceholderForegroundBrush, brush => Control.PlaceholderForegroundBrush = brush);
 		}
 
 		void UpdateText()
@@ -140,20 +128,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void UpdateTextColor()
 		{
-			Color textColor = Element.TextColor;
-
-			if (textColor.IsDefault)
-			{
-				if (_defaultTextColorBrush == null)
-					return;
-
-				Control.Foreground = _defaultTextColorBrush;
-			}
-
-			if (_defaultTextColorBrush == null)
-				_defaultTextColorBrush = Control.Foreground;
-
-			Control.Foreground = textColor.ToBrush();
+			BrushHelpers.UpdateColor(Element.TextColor, ref _defaultTextColorBrush, 
+				() => Control.Foreground, brush => Control.Foreground = brush);
+			
+			// Force the PhoneTextBox control to do some internal bookkeeping
+			// so the colors change immediately and remain changed when the control gets focus
+			Control.OnApplyTemplate();
 		}
 	}
 }
