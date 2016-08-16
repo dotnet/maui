@@ -643,7 +643,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			list.ItemClick += (s, e) =>
 			{
 				_currentActionSheet.IsOpen = false;
-				_currentActionSheet = null;
 				options.SetResult((string)e.ClickedItem);
 			};
 
