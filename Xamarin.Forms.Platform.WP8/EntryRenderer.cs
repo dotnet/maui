@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		bool _fontApplied;
 		bool _ignoreTextChange;
 		Brush _placeholderDefaultBrush;
+		Brush _textDefaultBrush;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -216,23 +217,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (Control == null)
 				return;
 
-			Entry entry = Element;
-			if (entry != null)
-			{
-				if (!IsNullOrEmpty(entry.Text))
-				{
-					if (!entry.TextColor.IsDefault)
-						Control.Foreground = entry.TextColor.ToBrush();
-					else
-						Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsPhoneTextBox)).DefaultValue;
+			BrushHelpers.UpdateColor(Element.TextColor, ref _textDefaultBrush,
+				() => Control.Foreground, brush => Control.Foreground = brush);
 
-					// Force the PhoneTextBox control to do some internal bookkeeping
-					// so the colors change immediately and remain changed when the control gets focus
-					Control.OnApplyTemplate();
-				}
-			}
-			else
-				Control.Foreground = (Brush)WControl.ForegroundProperty.GetMetadata(typeof(FormsPhoneTextBox)).DefaultValue;
+			// Force the PhoneTextBox control to do some internal bookkeeping
+			// so the colors change immediately and remain changed when the control gets focus
+			Control.OnApplyTemplate();
 		}
 
 		void UpdateFont()
@@ -286,25 +276,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void UpdatePlaceholderColor()
 		{
-			Color placeholderColor = Element.PlaceholderColor;
-
-			if (placeholderColor.IsDefault)
-			{
-				if (_placeholderDefaultBrush == null)
-					return;
-
-				// Use the cached default brush
-				Control.PlaceholderForegroundBrush = _placeholderDefaultBrush;
-				return;
-			}
-
-			if (_placeholderDefaultBrush == null)
-			{
-				// Cache the default brush in case we need to set the color back to default
-				_placeholderDefaultBrush = Control.PlaceholderForegroundBrush;
-			}
-
-			Control.PlaceholderForegroundBrush = placeholderColor.ToBrush();
+			BrushHelpers.UpdateColor(Element.PlaceholderColor, ref _placeholderDefaultBrush, 
+				() => Control.PlaceholderForegroundBrush, brush => Control.PlaceholderForegroundBrush = brush);
 		}
 
 		void UpdateText()

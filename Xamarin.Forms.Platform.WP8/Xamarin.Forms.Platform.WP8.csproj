@@ -142,6 +142,7 @@
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="Animatable.cs" />
     <Compile Include="AsyncValue.cs" />
+    <Compile Include="BrushHelpers.cs" />
     <Compile Include="CellControl.cs" />
     <Compile Include="CollapseWhenEmptyConverter.cs" />
     <Compile Include="Deserializer.cs" />

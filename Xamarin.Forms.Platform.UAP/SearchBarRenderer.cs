@@ -155,23 +155,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Color placeholderColor = Element.PlaceholderColor;
 
-			if (placeholderColor.IsDefault)
-			{
-				if (_defaultPlaceholderColorBrush == null)
-					return;
+			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorBrush, 
+				() => _queryTextBox.PlaceholderForegroundBrush, brush => _queryTextBox.PlaceholderForegroundBrush = brush);
 
-				_queryTextBox.PlaceholderForegroundBrush = _defaultPlaceholderColorBrush;
-				_queryTextBox.PlaceholderForegroundBrush = _defaultPlaceholderColorFocusBrush;
-			}
-
-			if (_defaultPlaceholderColorBrush == null)
-			{
-				_defaultPlaceholderColorBrush = _queryTextBox.PlaceholderForegroundBrush;
-				_defaultPlaceholderColorFocusBrush = _queryTextBox.PlaceholderForegroundFocusBrush;
-			}
-
-			_queryTextBox.PlaceholderForegroundBrush = placeholderColor.ToBrush();
-			_queryTextBox.PlaceholderForegroundFocusBrush = placeholderColor.ToBrush();
+			BrushHelpers.UpdateColor(placeholderColor, ref _defaultPlaceholderColorFocusBrush, 
+				() => _queryTextBox.PlaceholderForegroundFocusBrush, brush => _queryTextBox.PlaceholderForegroundFocusBrush = brush);
 		}
 
 		void UpdateText()
@@ -186,23 +174,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Color textColor = Element.TextColor;
 
-			if (textColor.IsDefault)
-			{
-				if (_defaultTextColorBrush == null)
-					return;
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorBrush, 
+				() => _queryTextBox.Foreground, brush => _queryTextBox.Foreground = brush);
 
-				_queryTextBox.Foreground = _defaultTextColorBrush;
-				_queryTextBox.ForegroundFocusBrush = _defaultTextColorFocusBrush;
-			}
-
-			if (_defaultTextColorBrush == null)
-			{
-				_defaultTextColorBrush = _queryTextBox.Foreground;
-				_defaultTextColorFocusBrush = _queryTextBox.ForegroundFocusBrush;
-			}
-
-			_queryTextBox.Foreground = textColor.ToBrush();
-			_queryTextBox.ForegroundFocusBrush = textColor.ToBrush();
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush, 
+				() => _queryTextBox.ForegroundFocusBrush, brush => _queryTextBox.ForegroundFocusBrush = brush);
 		}
 	}
 }

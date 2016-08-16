@@ -131,6 +131,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
       <Link>AlignmentExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BrushHelpers.cs">
+      <Link>BrushHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
       <Link>FormsTextBox.cs</Link>
     </Compile>
@@ -421,6 +424,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="AutoSuggestStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FormsTextBoxStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

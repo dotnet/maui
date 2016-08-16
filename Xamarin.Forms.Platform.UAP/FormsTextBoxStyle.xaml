@@ -8,6 +8,9 @@
 		<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
 		<Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
 		<Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
+		<Setter Property="ForegroundFocusBrush" Value="{ThemeResource SystemControlForegroundChromeBlackHighBrush}" />
+		<Setter Property="PlaceholderForegroundBrush" Value="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
+		<Setter Property="PlaceholderForegroundFocusBrush" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}" />
 		<Setter Property="Background" Value="{ThemeResource SystemControlBackgroundAltHighBrush}" />
 		<Setter Property="BackgroundFocusBrush" Value="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" />
 		<Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeDisabledLowBrush}" />
@@ -15,7 +18,6 @@
 		<Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
 		<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
 		<Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-		<Setter Property="PlaceholderForegroundBrush" Value="{ThemeResource SystemControlPageTextBaseMediumBrush}" />
 		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
 		<Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
@@ -123,7 +125,7 @@
 									<Storyboard>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground"
 										                               Storyboard.TargetName="PlaceholderTextContentPresenter">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}" />
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForegroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
 										</ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background"
 										                               Storyboard.TargetName="BackgroundElement">
@@ -137,7 +139,7 @@
 											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
 										</ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentElement">
-											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlForegroundChromeBlackHighBrush}" />
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding ForegroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
 										</ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="RequestedTheme"
 										                               Storyboard.TargetName="ContentElement">
