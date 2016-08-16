@@ -84,6 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			_isAttached = true;
 			_adapter.IsAttachedToWindow = _isAttached;
+			UpdateIsRefreshing(isInitialValue: true);
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -141,7 +142,6 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeader();
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
-				UpdateIsRefreshing(isInitialValue: true);
 			}
 		}
 
