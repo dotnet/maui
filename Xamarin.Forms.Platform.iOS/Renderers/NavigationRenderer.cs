@@ -109,31 +109,9 @@ namespace Xamarin.Forms.Platform.iOS
 			return OnPopToRoot(page, animated);
 		}
 
-		public override UIViewController[] PopToRootViewController(bool animated)
-		{
-			if (!_ignorePopCall && ViewControllers.Length > 1)
-				RemoveViewControllers(animated);
-
-			return base.PopToRootViewController(animated);
-		}
-
 		public Task<bool> PopViewAsync(Page page, bool animated = true)
 		{
 			return OnPopViewAsync(page, animated);
-		}
-
-#if __UNIFIED__
-		public override UIViewController PopViewController(bool animated)
-#else
-		public override UIViewController PopViewControllerAnimated (bool animated)
-		#endif
-		{
-			RemoveViewControllers(animated);
-#if __UNIFIED__
-			return base.PopViewController(animated);
-#else
-			return base.PopViewControllerAnimated (animated);
-			#endif
 		}
 
 		public Task<bool> PushPageAsync(Page page, bool animated = true)
@@ -330,7 +308,7 @@ namespace Xamarin.Forms.Platform.iOS
 			poppedViewController = base.PopViewController(animated);
 #else
 			poppedViewController = base.PopViewControllerAnimated (animated);
-			#endif
+#endif
 
 			if (poppedViewController == null)
 			{
@@ -514,6 +492,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// In the future we may want to make RemovePageAsync and deprecate RemovePage to handle cases where Push/Pop is called
 			// during a remove cycle. 
+			var parentingVC = target as ParentingViewController;
+			if (parentingVC != null)
+				parentingVC.IgnorePageBeingRemoved = true;
 
 			if (_removeControllers == null)
 			{
@@ -528,36 +509,6 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			var parentingViewController = ViewControllers.Last() as ParentingViewController;
 			UpdateLeftBarButtonItem(parentingViewController, page);
-		}
-
-		void RemoveViewControllers(bool animated)
-		{
-			var controller = TopViewController as ParentingViewController;
-			if (controller == null || controller.Child == null)
-				return;
-
-			// Gesture in progress, lets not be proactive and just wait for it to finish
-			var count = ViewControllers.Length;
-			var task = GetAppearedOrDisappearedTask(controller.Child);
-			task.ContinueWith(async t =>
-			{
-				// task returns true if the user lets go of the page and is not popped
-				// however at this point the renderer is already off the visual stack so we just need to update the NavigationPage
-				// Also worth noting this task returns on the main thread
-				if (t.Result)
-					return;
-				_ignorePopCall = true;
-				// because iOS will just chain multiple animations together...
-				var removed = count - ViewControllers.Length;
-				for (var i = 0; i < removed; i++)
-				{
-					// lets just pop these suckers off, do not await, the true is there to make this fast
-					await ((INavigationPageController)Element).PopAsyncInner(animated, true);
-				}
-				// because we skip the normal pop process we need to dispose ourselves
-				controller.Dispose();
-				_ignorePopCall = false;
-			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
 		void UpdateBackgroundColor()
@@ -799,6 +750,12 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
+			public bool IgnorePageBeingRemoved
+			{
+				get;
+				set;
+			}
+
 			public event EventHandler Appearing;
 
 			public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
@@ -851,6 +808,24 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateNavigationBarVisibility(animated);
 				base.ViewWillAppear(animated);
+			}
+
+			public override async void DidMoveToParentViewController(UIViewController parent)
+			{
+				//If Parent of our child is already null we removed this using our API
+				//If we still have parent and we are removing our render we need to update our navigation
+				if (parent == null && !IgnorePageBeingRemoved)
+				{
+					NavigationRenderer n;
+					if (_navigation.TryGetTarget(out n))
+					{
+						var navController = n.Element as INavigationPageController;
+						await navController?.PopAsyncInner(true, true);
+					}
+
+				}
+				base.DidMoveToParentViewController(parent);
+
 			}
 
 			protected override void Dispose(bool disposing)

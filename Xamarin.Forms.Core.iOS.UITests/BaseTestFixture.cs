@@ -16,22 +16,22 @@ namespace Xamarin.Forms.Core.UITests
 	{
 		// TODO: Landscape tests
 
-	 	public static IApp App { get; private set; }
+		public static IApp App { get; private set; }
 		public string PlatformViewType { get; protected set; }
 		public bool ShouldResetPerFixture { get; protected set; }
 		public AppRect ScreenBounds { get; private set; }
 
-		protected BaseTestFixture ()
+		protected BaseTestFixture()
 		{
 			ShouldResetPerFixture = true;
 		}
 
-		protected abstract void NavigateToGallery ();
+		protected abstract void NavigateToGallery();
 
 #pragma warning disable 618
 		[TestFixtureSetUp]
 #pragma warning restore 618
-		protected virtual void FixtureSetup ()
+		protected virtual void FixtureSetup()
 		{
 			try
 			{
@@ -50,43 +50,33 @@ namespace Xamarin.Forms.Core.UITests
 #pragma warning disable 618
 		[TestFixtureTearDown]
 #pragma warning restore 618
-		protected virtual void FixtureTeardown ()
-		{	
+		protected virtual void FixtureTeardown()
+		{
 		}
 
 		[SetUp]
-		protected virtual void TestSetup () 
+		protected virtual void TestSetup()
 		{
-			if (!ShouldResetPerFixture) {
-				RelaunchApp ();
+			if (!ShouldResetPerFixture)
+			{
+
+				RelaunchApp();
 			}
-			App.Screenshot ("Begin Test");
 		}
 
 		[TearDown]
-		protected virtual void TestTearDown ()
+		protected virtual void TestTearDown()
 		{
-			App.Screenshot ("Test complete");
+
 		}
 
-		void RelaunchApp ()
+		void RelaunchApp()
 		{
 			App = null;
-			RunningApp.App = null;
-
-			try {
-				RunningApp.Restart ();
-			} catch (Exception ex) {
-				// if at first you dont succeed
-				RunningApp.Restart ();
-			}
-
-			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
-			App = new ScreenshotConditionalApp(RunningApp.App);
-
-			App.SetOrientationPortrait ();
-			ScreenBounds = App.RootViewRect ();
-			NavigateToGallery ();
+			App = AppSetup.Setup();
+			App.SetOrientationPortrait();
+			ScreenBounds = App.RootViewRect();
+			NavigateToGallery();
 		}
 	}
 }
