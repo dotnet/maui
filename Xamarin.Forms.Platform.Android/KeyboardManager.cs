@@ -11,6 +11,9 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		internal static void HideKeyboard(this AView inputView, bool overrideValidation = false)
 		{
+			if (Forms.Context == null)
+				throw new InvalidOperationException("Call Forms.Init() before HideKeyboard");
+
 			using (var inputMethodManager = (InputMethodManager)Forms.Context.GetSystemService(Context.InputMethodService))
 			{
 				IBinder windowToken = null;
@@ -26,6 +29,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static void ShowKeyboard(this AView inputView)
 		{
+			if (Forms.Context == null)
+				throw new InvalidOperationException("Call Forms.Init() before ShowKeyboard");
+
 			using (var inputMethodManager = (InputMethodManager)Forms.Context.GetSystemService(Context.InputMethodService))
 			{
 				if (inputView is EditText || inputView is TextView || inputView is SearchView)
