@@ -406,7 +406,7 @@
         <ReturnType>Xamarin.Forms.Easing</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Accelerates in and out.</summary>
+        <summary>Accelerates in and decelerates out.</summary>
         <remarks>
           <para>
             <img href="Easing.SinInOut.gif" />
