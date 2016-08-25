@@ -538,7 +538,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			// This is used for respecting ListView selection changes via keyboard, as the SelectedItem
 			// value is otherwise not set.
-			if (Element.SelectedItem != List.SelectedItem)
+			if (Element.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
 			{
 				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
 			}
