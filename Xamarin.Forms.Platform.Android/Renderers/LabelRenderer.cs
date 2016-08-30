@@ -67,12 +67,17 @@ namespace Xamarin.Forms.Platform.Android
 			return result;
 		}
 
+		protected override TextView CreateNativeControl()
+		{
+			return new FormsTextView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
 			base.OnElementChanged(e);
 			if (_view == null)
 			{
-				_view = new FormsTextView(Context);
+				_view = (FormsTextView)CreateNativeControl();
 				_labelTextColorDefault = _view.TextColors;
 				SetNativeControl(_view);
 			}

@@ -26,13 +26,18 @@ namespace Xamarin.Forms.Platform.Android
 			get { return Element as NavigationMenu; }
 		}
 
+		protected override AView CreateNativeControl()
+		{
+			return new GridView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<View> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				var grid = new GridView(Context);
+				var grid = (GridView)CreateNativeControl();
 				grid.SetVerticalSpacing(20);
 
 				SetNativeControl(grid);

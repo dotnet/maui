@@ -34,13 +34,18 @@ namespace Xamarin.Forms.Platform.Android
 			_dialog = null;
 		}
 
+		protected override EditText CreateNativeControl()
+		{
+			return new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				var textField = new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
+				var textField = CreateNativeControl();
 
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);

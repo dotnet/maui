@@ -17,6 +17,12 @@ namespace Xamarin.Forms.Platform.Android
 			return result ?? base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
+		// not called by the view wrapper renderer
+		protected override global::Android.Views.View CreateNativeControl()
+		{
+			return new global::Android.Views.View(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
 		{
 			base.OnElementChanged(e);

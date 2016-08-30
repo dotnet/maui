@@ -33,6 +33,11 @@ namespace Xamarin.Forms.Platform.Android
 				((IElementController)Element).SetValueFromRenderer(Editor.TextProperty, s.ToString());
 		}
 
+		protected override EditorEditText CreateNativeControl()
+		{
+			return new EditorEditText(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
 		{
 			base.OnElementChanged(e);
@@ -42,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 			EditorEditText edit = Control;
 			if (edit == null)
 			{
-				edit = new EditorEditText(Context);
+				edit = CreateNativeControl();
 
 				SetNativeControl(edit);
 				edit.AddTextChangedListener(this);

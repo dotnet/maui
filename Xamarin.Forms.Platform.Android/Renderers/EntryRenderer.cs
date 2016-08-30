@@ -49,6 +49,11 @@ namespace Xamarin.Forms.Platform.Android
 			((IElementController)Element).SetValueFromRenderer(Entry.TextProperty, s.ToString());
 		}
 
+		protected override EntryEditText CreateNativeControl()
+		{
+			return new EntryEditText(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
 			base.OnElementChanged(e);
@@ -57,7 +62,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.OldElement == null)
 			{
-				_textView = new EntryEditText(Context);
+				_textView = CreateNativeControl();
 				_textView.ImeOptions = ImeAction.Done;
 				_textView.AddTextChangedListener(this);
 				_textView.SetOnEditorActionListener(this);

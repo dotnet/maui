@@ -47,6 +47,11 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		protected override ASwitch CreateNativeControl()
+		{
+			return new ASwitch(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
 		{
 			base.OnElementChanged(e);
@@ -58,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (Control == null)
 				{
-					var aswitch = new ASwitch(Context);
+					var aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
 				}

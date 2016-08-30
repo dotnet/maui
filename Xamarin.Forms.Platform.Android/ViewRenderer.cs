@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.Android
 
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
+		protected abstract TNativeView CreateNativeControl();
+
 		ViewGroup _container;
 
 		bool _disposed;

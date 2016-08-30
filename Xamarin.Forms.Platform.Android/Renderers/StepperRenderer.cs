@@ -16,6 +16,11 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
+		protected override LinearLayout CreateNativeControl()
+		{
+			return new LinearLayout(Context) { Orientation = Orientation.Horizontal };
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Stepper> e)
 		{
 			base.OnElementChanged(e);
@@ -31,7 +36,7 @@ namespace Xamarin.Forms.Platform.Android
 				_upButton.SetOnClickListener(StepperListener.Instance);
 				_upButton.SetHeight((int)Context.ToPixels(10.0));
 
-				var layout = new LinearLayout(Context) { Orientation = Orientation.Horizontal };
+				var layout = CreateNativeControl();
 
 				layout.AddView(_downButton);
 				layout.AddView(_upButton);

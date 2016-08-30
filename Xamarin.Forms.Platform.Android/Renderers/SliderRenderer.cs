@@ -34,13 +34,18 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
+		protected override SeekBar CreateNativeControl()
+		{
+			return new FormsSeekBar(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				var seekBar = new FormsSeekBar(Context);
+				var seekBar = CreateNativeControl();
 				SetNativeControl(seekBar);
 
 				seekBar.Max = 1000;

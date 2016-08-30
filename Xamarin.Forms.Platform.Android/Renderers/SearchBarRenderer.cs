@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content.Res;
@@ -36,6 +37,11 @@ namespace Xamarin.Forms.Platform.Android
 			return true;
 		}
 
+		protected override SearchView CreateNativeControl()
+		{
+			return new SearchView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<SearchBar> e)
 		{
 			base.OnElementChanged(e);
@@ -46,7 +52,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (searchView == null)
 			{
-				searchView = new SearchView(Context);
+				searchView = CreateNativeControl();
 				searchView.SetIconifiedByDefault(false);
 				searchView.Iconified = false;
 				SetNativeControl(searchView);

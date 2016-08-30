@@ -28,6 +28,11 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		protected override GLSurfaceView CreateNativeControl()
+		{
+			return new GLSurfaceView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<OpenGLView> e)
 		{
 			base.OnElementChanged(e);
@@ -40,7 +45,7 @@ namespace Xamarin.Forms.Platform.Android
 				GLSurfaceView surfaceView = Control;
 				if (surfaceView == null)
 				{
-					surfaceView = new GLSurfaceView(Context);
+					surfaceView = CreateNativeControl();
 					surfaceView.SetEGLContextClientVersion(2);
 					SetNativeControl(surfaceView);
 				}

@@ -21,6 +21,11 @@ namespace Xamarin.Forms.Platform.Android
 			return new Size(40, 40);
 		}
 
+		protected override AListView CreateNativeControl()
+		{
+			return new AListView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
 		{
 			base.OnElementChanged(e);
@@ -28,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 			AListView listView = Control;
 			if (listView == null)
 			{
-				listView = new AListView(Context);
+				listView = CreateNativeControl();
 				SetNativeControl(listView);
 			}
 

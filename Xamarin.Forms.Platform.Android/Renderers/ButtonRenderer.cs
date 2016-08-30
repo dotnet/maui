@@ -80,6 +80,11 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		protected override AButton CreateNativeControl()
+		{
+			return new AButton(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
 			base.OnElementChanged(e);
@@ -89,7 +94,7 @@ namespace Xamarin.Forms.Platform.Android
 				AButton button = Control;
 				if (button == null)
 				{
-					button = new AButton(Context);
+					button = CreateNativeControl();
 					button.SetOnClickListener(ButtonClickListener.Instance.Value);
 					button.Tag = this;
 					SetNativeControl(button);

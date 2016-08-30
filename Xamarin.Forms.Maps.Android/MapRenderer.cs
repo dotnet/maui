@@ -15,7 +15,7 @@ using System.Collections;
 
 namespace Xamarin.Forms.Maps.Android
 {
-	public class MapRenderer : ViewRenderer, 
+	public class MapRenderer : ViewRenderer<Map,MapView>, 
 		GoogleMap.IOnCameraChangeListener 
 	{
 		public MapRenderer ()
@@ -41,19 +41,24 @@ namespace Xamarin.Forms.Maps.Android
 			return new SizeRequest (new Size (Context.ToPixels (40), Context.ToPixels (40)));
 		}
 
-		protected override void OnElementChanged (ElementChangedEventArgs<View> e)
+		protected override MapView CreateNativeControl()
+		{
+			return new MapView(Context);
+		}
+
+		protected override void OnElementChanged (ElementChangedEventArgs<Map> e)
 		{
 			base.OnElementChanged (e);
 
 			var oldMapView = (MapView)Control;
 
-			var mapView = new MapView (Context);
+			var mapView = CreateNativeControl();
 			mapView.OnCreate (s_bundle);
 			mapView.OnResume ();
 			SetNativeControl (mapView);
 
 			if (e.OldElement != null) {
-				var oldMapModel = (Map) e.OldElement;
+				var oldMapModel = e.OldElement;
 				((ObservableCollection<Pin>)oldMapModel.Pins).CollectionChanged -= OnCollectionChanged;
 
 				MessagingCenter.Unsubscribe<Map, MapSpan> (this, MoveMessageName);

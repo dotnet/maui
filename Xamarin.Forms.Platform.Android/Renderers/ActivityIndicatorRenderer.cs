@@ -13,6 +13,11 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
+		protected override AProgressBar CreateNativeControl()
+		{
+			return new AProgressBar(Context) { Indeterminate = true };
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
 		{
 			base.OnElementChanged(e);
@@ -20,7 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 			AProgressBar progressBar = Control;
 			if (progressBar == null)
 			{
-				progressBar = new AProgressBar(Context) { Indeterminate = true };
+				progressBar = CreateNativeControl();
 				SetNativeControl(progressBar);
 			}
 

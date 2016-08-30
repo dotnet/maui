@@ -28,13 +28,18 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
+		protected override AImageView CreateNativeControl()
+		{
+			return new FormsImageView(Context);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			base.OnElementChanged(e);
 
 			if (e.OldElement == null)
 			{
-				var view = new FormsImageView(Context);
+				var view = CreateNativeControl();
 				SetNativeControl(view);
 			}
 
