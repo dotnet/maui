@@ -9,7 +9,7 @@ using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
-	internal static class KeyboardExtensions
+	public static class KeyboardExtensions
 	{
 		public static InputScope ToInputScope(this Keyboard self)
 		{

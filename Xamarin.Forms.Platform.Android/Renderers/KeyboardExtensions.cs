@@ -2,7 +2,7 @@ using Android.Text;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal static class KeyboardExtensions
+	public static class KeyboardExtensions
 	{
 		public static InputTypes ToInputType(this Keyboard self)
 		{
