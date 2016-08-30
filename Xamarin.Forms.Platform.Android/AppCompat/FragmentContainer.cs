@@ -127,7 +127,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		
 		public override void OnResume()
 		{
-			PageController?.SendAppearing();
+			if (UserVisibleHint)
+				PageController?.SendAppearing();
 			base.OnResume();
 		}
 	}
