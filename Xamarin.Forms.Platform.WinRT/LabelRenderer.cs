@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					textBlock.TextWrapping = TextWrapping.NoWrap;
 					break;
 				case LineBreakMode.TailTruncation:
-					textBlock.TextTrimming = TextTrimming.WordEllipsis;
+					textBlock.TextTrimming = TextTrimming.CharacterEllipsis;
 					textBlock.TextWrapping = TextWrapping.NoWrap;
 					break;
 				case LineBreakMode.MiddleTruncation:

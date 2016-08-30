@@ -41,6 +41,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				{
 					frameworkElement.Loaded += (sender, args) =>
 					{
+						(_view as Layout)?.ForceLayout();
 						((IVisualElementController)_view).InvalidateMeasure(InvalidationTrigger.MeasureChanged);
 						InvalidateMeasure();
 					};
@@ -61,16 +62,22 @@ namespace Xamarin.Forms.Platform.WinPhone
 			protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize)
 			{
 				var content = Content as FrameworkElement;
-				content?.Measure(availableSize);
 				Size request = _view.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
 
 				System.Windows.Size result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
+				{
 					result = new System.Windows.Size(availableSize.Width, request.Height);
+				}
 				else
+				{
 					result = new System.Windows.Size(request.Width, request.Height);
+				}
 
-				_view.Layout(new Rectangle(0, 0, result.Width, result.Width));
+				_view.Layout(new Rectangle(0, 0, result.Width, result.Height));
+
+				content?.Measure(availableSize);
+
 				return result;
 			}
 		}

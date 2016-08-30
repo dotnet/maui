@@ -417,7 +417,7 @@ namespace Xamarin.Forms
 
 		bool ShouldLayoutChildren()
 		{
-			if (!LogicalChildrenInternal.Any() || Width <= 0 || Height <= 0 || !IsVisible || !IsNativeStateConsistent || DisableLayout)
+			if (Width <= 0 || Height <= 0 || !LogicalChildrenInternal.Any() || !IsVisible || !IsNativeStateConsistent || DisableLayout)
 				return false;
 
 			foreach (Element element in VisibleDescendants())
