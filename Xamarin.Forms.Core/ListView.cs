@@ -87,6 +87,25 @@ namespace Xamarin.Forms
 			set { SetValue(FooterTemplateProperty, value); }
 		}
 
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+
+			object bc = BindingContext;
+
+			var header = Header as Element;
+			if (header != null)
+			{
+				SetChildInheritedBindingContext(header, bc);
+			}
+
+			var footer = Footer as Element;
+			if (footer != null)
+			{
+				SetChildInheritedBindingContext(footer, bc);
+			}
+		}
+
 		public BindingBase GroupDisplayBinding
 		{
 			get { return _groupDisplayBinding; }
