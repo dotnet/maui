@@ -126,13 +126,17 @@ namespace Xamarin.Forms.Platform.iOS
 				try
 				{
 					uiimage = await handler.LoadImageAsync(source);
+
+					if (uiimage == null)
+						throw new InvalidOperationException("AppLinkEntry Thumbnail must be set to a valid source");
+
+					searchableAttributeSet.ThumbnailData = uiimage.AsPNG();
+					uiimage.Dispose();
 				}
 				catch (OperationCanceledException)
 				{
 					uiimage = null;
 				}
-				searchableAttributeSet.ThumbnailData = uiimage.AsPNG();
-				uiimage.Dispose();
 			}
 
 			return searchableAttributeSet;
