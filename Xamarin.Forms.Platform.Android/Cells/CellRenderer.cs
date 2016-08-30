@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
 			Performance.Start();
-
+			
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
 
@@ -33,14 +33,18 @@ namespace Xamarin.Forms.Platform.Android
 			if (convertView != null)
 			{
 				Object tag = convertView.Tag;
-				var renderHolder = tag as RendererHolder;
-				if (renderHolder != null)
+				CellRenderer renderer = (tag as RendererHolder)?.Renderer;
+				
+				Cell oldCell = renderer?.Cell;
+
+				if (oldCell != null)
 				{
-					Cell oldCell = renderHolder.Renderer.Cell;
 					((ICellController)oldCell).SendDisappearing();
 
 					if (Cell != oldCell)
+					{
 						SetRenderer(oldCell, null);
+					}
 				}
 			}
 
@@ -50,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var holder = view.Tag as RendererHolder;
 			if (holder == null)
-				view.Tag = new RendererHolder { Renderer = this };
+				view.Tag = new RendererHolder(this);
 			else
 				holder.Renderer = this;
 
@@ -126,7 +130,22 @@ namespace Xamarin.Forms.Platform.Android
 
 		class RendererHolder : Object
 		{
-			public CellRenderer Renderer;
+			readonly WeakReference<CellRenderer> _rendererRef;
+
+			public RendererHolder(CellRenderer renderer)
+			{
+				_rendererRef = new WeakReference<CellRenderer>(renderer);
+			}
+
+			public CellRenderer Renderer
+			{
+				get
+				{
+					CellRenderer renderer;
+					return _rendererRef.TryGetTarget(out renderer) ? renderer : null;
+				}
+				set { _rendererRef.SetTarget(value); }
+			}
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 		public const double DefaultMinHeight = 44;
 
 		readonly Color _androidDefaultTextColor;
-		readonly Cell _cell;
+		Cell _cell;
 		readonly TextView _detailText;
 		readonly ImageView _imageView;
 		readonly TextView _mainText;
@@ -177,6 +177,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			height = Context.ToPixels(height);
 			LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.MatchParent, (int)(height == -1 ? ViewGroup.LayoutParams.WrapContent : height));
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			base.OnDetachedFromWindow();
+			_cell = null;
 		}
 
 		async void UpdateBitmap(ImageSource source, ImageSource previousSource = null)
