@@ -1,6 +1,6 @@
 <Type Name="NavigationPage" FullName="Xamarin.Forms.NavigationPage">
-  <TypeSignature Language="C#" Value="public class NavigationPage : Xamarin.Forms.Page, Xamarin.Forms.INavigationPageController, Xamarin.Forms.IPageContainer&lt;Xamarin.Forms.Page&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit NavigationPage extends Xamarin.Forms.Page implements class Xamarin.Forms.INavigationPageController, class Xamarin.Forms.IPageContainer`1&lt;class Xamarin.Forms.Page&gt;" />
+  <TypeSignature Language="C#" Value="public class NavigationPage : Xamarin.Forms.Page, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.NavigationPage&gt;, Xamarin.Forms.INavigationPageController, Xamarin.Forms.IPageContainer&lt;Xamarin.Forms.Page&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit NavigationPage extends Xamarin.Forms.Page implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.NavigationPage&gt;, class Xamarin.Forms.INavigationPageController, class Xamarin.Forms.IPageContainer`1&lt;class Xamarin.Forms.Page&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -15,6 +15,9 @@
     <BaseTypeName>Xamarin.Forms.Page</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.NavigationPage&gt;</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.INavigationPageController</InterfaceName>
     </Interface>
@@ -364,6 +367,31 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.NavigationPage&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.NavigationPage&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.NavigationPage&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnBackButtonPressed">
       <MemberSignature Language="C#" Value="protected override bool OnBackButtonPressed ();" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance bool OnBackButtonPressed() cil managed" />
@@ -422,7 +450,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__36))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__38))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -520,7 +548,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__44))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__46))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -577,7 +605,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__46))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__48))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -828,7 +856,7 @@ public class MyPage : NavigationPage
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-PopAsyncInner&gt;d__61))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-PopAsyncInner&gt;d__63))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

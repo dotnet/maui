@@ -5,7 +5,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_WebViewRenderer))]
-	public class WebView : View
+	public class WebView : View, IElementConfiguration<WebView>
 	{
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -31,6 +31,13 @@ namespace Xamarin.Forms
 		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
 
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
+
+		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;
+
+		public WebView()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<WebView>>(() => new PlatformConfigurationRegistry<WebView>(this));
+		}
 
 		public bool CanGoBack
 		{
@@ -121,6 +128,11 @@ namespace Xamarin.Forms
 			EventHandler<WebNavigatingEventArgs> handler = Navigating;
 			if (handler != null)
 				handler(this, args);
+		}
+
+		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

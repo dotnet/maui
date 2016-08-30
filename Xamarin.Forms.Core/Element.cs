@@ -254,6 +254,16 @@ namespace Xamarin.Forms
 			SetValueCore(property, value);
 		}
 
+		bool IElementController.EffectIsAttached(string name)
+		{
+			foreach (var effect in Effects)
+			{
+				if (effect.ResolveId == name)
+					return true;
+			}
+			return false;
+		}
+
 		object INameScope.FindByName(string name)
 		{
 			INameScope namescope = GetNameScope();

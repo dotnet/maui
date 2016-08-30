@@ -7,9 +7,16 @@ namespace Xamarin.Forms
 {
 	// Mark as internal until renderers are ready for release after 1.0
 	[RenderWith(typeof(_NavigationMenuRenderer))]
-	internal class NavigationMenu : View
+	internal class NavigationMenu : View, IElementConfiguration<NavigationMenu>
 	{
 		readonly List<Page> _targets = new List<Page>();
+
+		readonly Lazy<PlatformConfigurationRegistry<NavigationMenu>> _platformConfigurationRegistry;
+
+		public NavigationMenu()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<NavigationMenu>>(() => new PlatformConfigurationRegistry<NavigationMenu>(this));
+		}
 
 		public IEnumerable<Page> Targets
 		{
@@ -50,6 +57,11 @@ namespace Xamarin.Forms
 				if (_targets.Remove(target))
 					OnPropertyChanged("Targets");
 			}
+		}
+
+		public IPlatformElementConfiguration<T, NavigationMenu> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		internal void SendTargetSelected(Page target)

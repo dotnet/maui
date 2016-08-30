@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EditorRenderer))]
-	public class Editor : InputView, IFontElement
+	public class Editor : InputView, IFontElement, IElementConfiguration<Editor>
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue) =>
 		{
@@ -21,6 +21,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create("FontAttributes", typeof(FontAttributes), typeof(Editor), FontAttributes.None);
 
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Editor), Color.Default);
+		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
 		public string Text
 		{
@@ -56,6 +57,16 @@ namespace Xamarin.Forms
 		public event EventHandler Completed;
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
+
+		public Editor()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Editor>>(() => new PlatformConfigurationRegistry<Editor>(this));
+		}
+
+		public IPlatformElementConfiguration<T, Editor> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
+		}
 
 		internal void SendCompleted()
 		{

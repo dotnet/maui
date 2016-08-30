@@ -1,6 +1,6 @@
 <Type Name="Page" FullName="Xamarin.Forms.Page">
-  <TypeSignature Language="C#" Value="public class Page : Xamarin.Forms.VisualElement, Xamarin.Forms.ILayout, Xamarin.Forms.IPageController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Page extends Xamarin.Forms.VisualElement implements class Xamarin.Forms.ILayout, class Xamarin.Forms.IPageController" />
+  <TypeSignature Language="C#" Value="public class Page : Xamarin.Forms.VisualElement, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Page&gt;, Xamarin.Forms.ILayout, Xamarin.Forms.IPageController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Page extends Xamarin.Forms.VisualElement implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Page&gt;, class Xamarin.Forms.ILayout, class Xamarin.Forms.IPageController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -15,6 +15,9 @@
     <BaseTypeName>Xamarin.Forms.VisualElement</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Page&gt;</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.ILayout</InterfaceName>
     </Interface>
@@ -600,6 +603,31 @@ namespace MyFirstFormsApp.WinPhone
         <param name="width">Width of layout area.</param>
         <param name="height">Height of layout area.</param>
         <summary>Lays out children <see cref="T:Xamarin.Forms.Element" />s into the specified area.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Page&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.Page&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

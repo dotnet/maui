@@ -1,6 +1,4 @@
-﻿using System;
-
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -10,14 +8,15 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Github, 1, "Issue Description")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1, "Issue Description")]
 	public class Issue1 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			// Initialize ui here instead of ctor
-			Content = new Label {
+			Content = new Label
+			{
 				AutomationId = "IssuePageLabel",
 				Text = "See if I'm here"
 			};

@@ -6,10 +6,11 @@ using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
-	public class Application : Element, IResourcesProvider, IApplicationController
+	public class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>
 	{
 		static Application s_current;
 		readonly Task<IDictionary<string, object>> _propertiesTask;
+		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
 		IAppIndexingProvider _appIndexProvider;
 		bool _isSaving;
@@ -32,6 +33,7 @@ namespace Xamarin.Forms
 
 			SystemResources = DependencyService.Get<ISystemResourcesProvider>().GetSystemResources();
 			SystemResources.ValuesChanged += OnParentResourcesChanged;
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 		}
 
 		public IAppLinks AppLinks
@@ -144,6 +146,11 @@ namespace Xamarin.Forms
 				Device.BeginInvokeOnMainThread(async () => await SetPropertiesAsync());
 			else
 				await SetPropertiesAsync();
+		}
+
+		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		protected virtual void OnAppLinkRequestReceived(Uri uri)

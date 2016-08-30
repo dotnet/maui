@@ -1,6 +1,6 @@
 <Type Name="Button" FullName="Xamarin.Forms.Button">
-  <TypeSignature Language="C#" Value="public class Button : Xamarin.Forms.View, Xamarin.Forms.IButtonController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Button extends Xamarin.Forms.View implements class Xamarin.Forms.IButtonController, class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
+  <TypeSignature Language="C#" Value="public class Button : Xamarin.Forms.View, Xamarin.Forms.IButtonController, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Button&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Button extends Xamarin.Forms.View implements class Xamarin.Forms.IButtonController, class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Button&gt;, class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,6 +17,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>Xamarin.Forms.IButtonController</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Button&gt;</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>
@@ -592,6 +595,31 @@ namespace FormsGallery
         <summary>Backing store for the Image bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Button&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.Button&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Button&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">

@@ -1,6 +1,6 @@
 <Type Name="ActivityIndicator" FullName="Xamarin.Forms.ActivityIndicator">
-  <TypeSignature Language="C#" Value="public class ActivityIndicator : Xamarin.Forms.View" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ActivityIndicator extends Xamarin.Forms.View" />
+  <TypeSignature Language="C#" Value="public class ActivityIndicator : Xamarin.Forms.View, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.ActivityIndicator&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ActivityIndicator extends Xamarin.Forms.View implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.ActivityIndicator&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>Xamarin.Forms.View</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.ActivityIndicator&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._ActivityIndicatorRenderer))</AttributeName>
@@ -171,6 +175,31 @@ var indicator = new ActivityIndicator {
         <summary>Identifies the Color bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.ActivityIndicator&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.ActivityIndicator&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.ActivityIndicator&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

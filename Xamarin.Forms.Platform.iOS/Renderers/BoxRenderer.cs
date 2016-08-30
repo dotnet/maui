@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Drawing;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 #if __UNIFIED__
 using UIKit;
 using CoreGraphics;
@@ -23,7 +24,6 @@ namespace Xamarin.Forms.Platform.iOS
 	public class BoxRenderer : VisualElementRenderer<BoxView>
 	{
 		UIColor _colorToRenderer;
-
 		SizeF _previousSize;
 
 		public override void Draw(RectangleF rect)

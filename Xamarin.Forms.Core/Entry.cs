@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EntryRenderer))]
-	public class Entry : InputView, IFontElement, IEntryController
+	public class Entry : InputView, IFontElement, IEntryController, IElementConfiguration<Entry>
 	{
 		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create("Placeholder", typeof(string), typeof(Entry), default(string));
 
@@ -24,6 +24,13 @@ namespace Xamarin.Forms
 			defaultValueCreator: bindable => Device.GetNamedSize(NamedSize.Default, (Entry)bindable));
 
 		public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create("FontAttributes", typeof(FontAttributes), typeof(Entry), FontAttributes.None);
+
+		readonly Lazy<PlatformConfigurationRegistry<Entry>> _platformConfigurationRegistry;
+
+		public Entry()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Entry>>(() => new PlatformConfigurationRegistry<Entry>(this));
+		}
 
 		public TextAlignment HorizontalTextAlignment
 		{
@@ -94,6 +101,11 @@ namespace Xamarin.Forms
 			var entry = (Entry)bindable;
 
 			entry.TextChanged?.Invoke(entry, new TextChangedEventArgs((string)oldValue, (string)newValue));
+		}
+
+		public IPlatformElementConfiguration<T, Entry> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

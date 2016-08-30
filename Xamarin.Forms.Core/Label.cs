@@ -7,17 +7,19 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
 	[RenderWith(typeof(_LabelRenderer))]
-	public class Label : View, IFontElement
+	public class Label : View, IFontElement, IElementConfiguration<Label>
 	{
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
 			propertyChanged: OnHorizontalTextAlignmentPropertyChanged);
 
-		[Obsolete("XAlignProperty is obsolete. Please use HorizontalTextAlignmentProperty instead.")] public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
+		[Obsolete("XAlignProperty is obsolete. Please use HorizontalTextAlignmentProperty instead.")]
+		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
 
 		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
 			propertyChanged: OnVerticalTextAlignmentPropertyChanged);
 
-		[Obsolete("YAlignProperty is obsolete. Please use VerticalTextAlignmentProperty instead.")] public static readonly BindableProperty YAlignProperty = VerticalTextAlignmentProperty;
+		[Obsolete("YAlignProperty is obsolete. Please use VerticalTextAlignmentProperty instead.")]
+		public static readonly BindableProperty YAlignProperty = VerticalTextAlignmentProperty;
 
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Label), Color.Default);
 
@@ -49,6 +51,13 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create("LineBreakMode", typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
+		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
+
+		public Label()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Label>>(() => new PlatformConfigurationRegistry<Label>(this));
+		}
 
 		bool _cancelEvents;
 
@@ -283,6 +292,11 @@ namespace Xamarin.Forms
 #pragma warning disable 0618 // retain until YAlign removed
 			label.OnPropertyChanged(nameof(YAlign));
 #pragma warning restore 0618
+		}
+
+		public IPlatformElementConfiguration<T, Label> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

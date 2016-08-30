@@ -147,6 +147,7 @@
     <Compile Include="OnMeasureDelegate.cs" />
     <Compile Include="PanGestureHandler.cs" />
     <Compile Include="PinchGestureHandler.cs" />
+    <Compile Include="PlatformConfigurationExtensions.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />

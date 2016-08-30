@@ -220,6 +220,7 @@ namespace Xamarin.Forms.Controls
 		public CorePageView (Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
 		{
 			var pages = new List<Page> {
+				new PlatformSpecificsGallery() {Title = "Platform Specifics"},
 				new AppLinkPageGallery {Title = "App Link Page Gallery"},
 				new NestedNativeControlGalleryPage {Title = "Nested Native Controls Gallery"},
 				new CellForceUpdateSizeGalleryPage {Title = "Cell Force Update Size Gallery"},

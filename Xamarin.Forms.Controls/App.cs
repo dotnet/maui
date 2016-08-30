@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xamarin.Forms.Controls.Issues;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls
 {
@@ -34,7 +35,6 @@ namespace Xamarin.Forms.Controls
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
-
 			var appDomain = "http://" + AppName.ToLowerInvariant() + "/";
 
 			if (!uri.ToString().ToLowerInvariant().StartsWith(appDomain))

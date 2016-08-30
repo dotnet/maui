@@ -11,7 +11,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_PageRenderer))]
-	public class Page : VisualElement, ILayout, IPageController
+	public class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>
 	{
 		public const string BusySetSignalName = "Xamarin.BusySet";
 
@@ -35,6 +35,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty IconProperty = BindableProperty.Create("Icon", typeof(FileImageSource), typeof(Page), default(FileImageSource));
 
+		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
+
 		bool _allocatedFlag;
 		Rectangle _containerArea;
 
@@ -53,6 +55,7 @@ namespace Xamarin.Forms
 			toolbarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
 			ToolbarItems = toolbarItems;
 			PageController.InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
 		}
 
 		public string BackgroundImage
@@ -400,6 +403,11 @@ namespace Xamarin.Forms
 				}
 			}
 			return !any;
+		}
+
+		public IPlatformElementConfiguration<T, Page> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

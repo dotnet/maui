@@ -14,6 +14,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 using AColor = Android.Graphics.Color;
 using AlertDialog = Android.Support.V7.App.AlertDialog;
@@ -142,7 +143,6 @@ namespace Xamarin.Forms.Platform.Android
 				callback(resultCode, data);
 		}
 
-
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			if (!AllowFragmentRestore)
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			SetSupportActionBar(bar);
 
-			Window.SetSoftInputMode(SoftInput.AdjustPan);
+			SetSoftInputMode();
 
 			_layout = new ARelativeLayout(BaseContext);
 			SetContentView(_layout);
@@ -179,29 +179,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			OnStateChanged();
 
-			_statusBarUnderlay = new global::Android.Views.View(this);
-			var layoutParameters = new ARelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, GetStatusBarHeight()) { AlignWithParent = true };
-			layoutParameters.AddRule(LayoutRules.AlignTop);
-			_statusBarUnderlay.LayoutParameters = layoutParameters;
-			_layout.AddView(_statusBarUnderlay);
-
-			if (Forms.IsLollipopOrNewer)
-			{
-				Window.DecorView.SystemUiVisibility = (StatusBarVisibility)(SystemUiFlags.LayoutFullscreen | SystemUiFlags.LayoutStable);
-				Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-				Window.SetStatusBarColor(AColor.Transparent);
-
-				int primaryColorDark = GetColorPrimaryDark();
-
-				if (primaryColorDark != 0)
-				{
-					int r = AColor.GetRedComponent(primaryColorDark);
-					int g = AColor.GetGreenComponent(primaryColorDark);
-					int b = AColor.GetBlueComponent(primaryColorDark);
-					int a = AColor.GetAlphaComponent(primaryColorDark);
-					SetStatusBarColor(AColor.Argb(a, r, g, b));
-				}
-			}
+			AddStatusBarUnderlay();
 		}
 
 		protected override void OnDestroy()
@@ -302,10 +280,39 @@ namespace Xamarin.Forms.Platform.Android
 			return _statusBarHeight = result;
 		}
 
+		void AddStatusBarUnderlay()
+		{
+			_statusBarUnderlay = new global::Android.Views.View(this);
+
+			var layoutParameters = new ARelativeLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, GetStatusBarHeight()) { AlignWithParent = true };
+			layoutParameters.AddRule(LayoutRules.AlignTop);
+			_statusBarUnderlay.LayoutParameters = layoutParameters;
+			_layout.AddView(_statusBarUnderlay);
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
+				Window.SetStatusBarColor(AColor.Transparent);
+
+				int primaryColorDark = GetColorPrimaryDark();
+
+				if (primaryColorDark != 0)
+				{
+					int r = AColor.GetRedComponent(primaryColorDark);
+					int g = AColor.GetGreenComponent(primaryColorDark);
+					int b = AColor.GetBlueComponent(primaryColorDark);
+					int a = AColor.GetAlphaComponent(primaryColorDark);
+					SetStatusBarColor(AColor.Argb(a, r, g, b));
+				}
+			}
+		}
+
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
 			if (args.PropertyName == "MainPage")
 				InternalSetPage(_application.MainPage);
+			if (args.PropertyName == PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName)
+				SetSoftInputMode();
 		}
 
 		void CheckForAppLink(Intent intent)
@@ -439,6 +446,45 @@ namespace Xamarin.Forms.Platform.Android
 		void SetMainPage()
 		{
 			InternalSetPage(_application.MainPage);
+		}
+
+		void SetSoftInputMode()
+		{
+			SoftInput adjust = SoftInput.AdjustPan;
+
+			if (Xamarin.Forms.Application.Current != null)
+			{
+				var elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
+				switch (elementValue)
+				{
+					default:
+					case WindowSoftInputModeAdjust.Pan:
+						adjust = SoftInput.AdjustPan;
+						break;
+
+					case WindowSoftInputModeAdjust.Resize:
+						adjust = SoftInput.AdjustResize;
+						break;
+				}
+			}
+
+			Window.SetSoftInputMode(adjust);
+			SetStatusBarVisibility(adjust);
+		}
+
+		void SetStatusBarVisibility(SoftInput mode)
+		{
+			if (!Forms.IsLollipopOrNewer)
+				return;
+
+			if (mode == SoftInput.AdjustResize)
+			{
+				Window.DecorView.SystemUiVisibility = (StatusBarVisibility)(SystemUiFlags.Immersive);
+			}
+			else
+				Window.DecorView.SystemUiVisibility = (StatusBarVisibility)(SystemUiFlags.LayoutFullscreen | SystemUiFlags.LayoutStable);
+
+			_layout?.Invalidate();
 		}
 
 		void UpdateProgressBarVisibility(bool isBusy)

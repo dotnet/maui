@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_TimePickerRenderer))]
-	public class TimePicker : View
+	public class TimePicker : View, IElementConfiguration<TimePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");
 
@@ -15,6 +15,13 @@ namespace Xamarin.Forms
 			var time = (TimeSpan)value;
 			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
 		});
+
+		readonly Lazy<PlatformConfigurationRegistry<TimePicker>> _platformConfigurationRegistry;
+
+		public TimePicker()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TimePicker>>(() => new PlatformConfigurationRegistry<TimePicker>(this));
+		}
 
 		public string Format
 		{
@@ -32,6 +39,11 @@ namespace Xamarin.Forms
 		{
 			get { return (TimeSpan)GetValue(TimeProperty); }
 			set { SetValue(TimeProperty, value); }
+		}
+
+		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

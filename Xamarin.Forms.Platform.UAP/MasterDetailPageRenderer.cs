@@ -6,6 +6,8 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -56,7 +58,7 @@ namespace Xamarin.Forms.Platform.UWP
 			set { Control.ToolbarForeground = value; }
 		}
 		
-IPageController PageController => Element as IPageController;
+		IPageController PageController => Element as IPageController;
 
 		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
 
@@ -68,11 +70,9 @@ IPageController PageController => Element as IPageController;
 			{
 				if (_showTitle == value)
 					return;
+
 				_showTitle = value;
-				if (_showTitle)
-					Control.DetailTitleVisibility = Visibility.Visible;
-				else
-					Control.DetailTitleVisibility = Visibility.Collapsed;
+				Control.DetailTitleVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
 			}
 		}
 
@@ -132,7 +132,7 @@ IPageController PageController => Element as IPageController;
 				{
 					Control = new MasterDetailControl();
 					Control.Loaded += OnControlLoaded;
-					Control.Unloaded += OnControlUnlaoded;
+					Control.Unloaded += OnControlUnloaded;
 					Control.SizeChanged += OnNativeSizeChanged;
 
 					Control.RegisterPropertyChangedCallback(MasterDetailControl.IsPaneOpenProperty, OnIsPaneOpenChanged);
@@ -148,7 +148,12 @@ IPageController PageController => Element as IPageController;
 
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
 					Control.SetValue(AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
-			}
+
+#if WINDOWS_UWP
+                UpdateToolbarPlacement();
+#endif
+
+            }
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -159,8 +164,12 @@ IPageController PageController => Element as IPageController;
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
-			else if (e.PropertyName == "ShouldShowSplitMode")
+			else if (e.PropertyName == nameof(MasterDetailControl.ShouldShowSplitMode)
+			         || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
+			         || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
 				UpdateMode();
+			else if(e.PropertyName ==  PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
+				UpdateToolbarPlacement();
 		}
 
 		void ClearDetail()
@@ -202,7 +211,7 @@ IPageController PageController => Element as IPageController;
 			UpdateBounds();
 		}
 
-		void OnControlUnlaoded(object sender, RoutedEventArgs routedEventArgs)
+		void OnControlUnloaded(object sender, RoutedEventArgs routedEventArgs)
 		{
 			PageController?.SendDisappearing();
 		}
@@ -264,6 +273,7 @@ IPageController PageController => Element as IPageController;
 				return;
 
 			Control.DetailTitle = (_detail as NavigationPage)?.CurrentPage?.Title ?? _detail.Title ?? Element?.Title;
+			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle);
 		}
 
 		void UpdateIsPresented()
@@ -291,10 +301,18 @@ IPageController PageController => Element as IPageController;
 
 		void UpdateMode()
 		{
+			Control.CollapseStyle = Element.OnThisPlatform().GetCollapseStyle();
+			Control.CollapsedPaneWidth = Element.OnThisPlatform().CollapsedPaneWidth();
 			Control.ShouldShowSplitMode = MasterDetailPageController.ShouldShowSplitMode;
 		}
 
 #if WINDOWS_UWP
+
+        void UpdateToolbarPlacement()
+		{
+			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
+		}
+
 		public void BindForegroundColor(AppBar appBar)
 		{
 			SetAppBarForegroundBinding(appBar);

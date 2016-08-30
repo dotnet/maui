@@ -8,7 +8,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ButtonRenderer))]
-	public class Button : View, IFontElement, IButtonController
+	public class Button : View, IFontElement, IButtonController, IElementConfiguration<Button>
 	{
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(Button), null, propertyChanged: (bo, o, n) => ((Button)bo).OnCommandChanged());
 
@@ -42,6 +42,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ImageProperty = BindableProperty.Create("Image", typeof(FileImageSource), typeof(Button), default(FileImageSource),
 			propertyChanging: (bindable, oldvalue, newvalue) => ((Button)bindable).OnSourcePropertyChanging((ImageSource)oldvalue, (ImageSource)newvalue),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).OnSourcePropertyChanged((ImageSource)oldvalue, (ImageSource)newvalue));
+
+		readonly Lazy<PlatformConfigurationRegistry<Button>> _platformConfigurationRegistry;
 
 		bool _cancelEvents;
 
@@ -143,6 +145,16 @@ namespace Xamarin.Forms
 		}
 
 		public event EventHandler Clicked;
+
+		public Button()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Button>>(() => new PlatformConfigurationRegistry<Button>(this));
+		}
+
+		public IPlatformElementConfiguration<T, Button> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
+		}
 
 		protected override void OnBindingContextChanged()
 		{

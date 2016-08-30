@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_DatePickerRenderer))]
-	public class DatePicker : View
+	public class DatePicker : View, IElementConfiguration<DatePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
@@ -18,6 +18,13 @@ namespace Xamarin.Forms
 			validateValue: ValidateMaximumDate, coerceValue: CoerceMaximumDate);
 
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(DatePicker), Color.Default);
+
+		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
+
+		public DatePicker()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<DatePicker>>(() => new PlatformConfigurationRegistry<DatePicker>(this));
+		}
 
 		public DateTime Date
 		{
@@ -102,6 +109,11 @@ namespace Xamarin.Forms
 		static bool ValidateMinimumDate(BindableObject bindable, object value)
 		{
 			return (DateTime)value <= ((DatePicker)bindable).MaximumDate;
+		}
+
+		public IPlatformElementConfiguration<T, DatePicker> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

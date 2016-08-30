@@ -5,7 +5,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_SearchBarRenderer))]
-	public class SearchBar : View, IFontElement, ISearchBarController
+	public class SearchBar : View, IFontElement, ISearchBarController, IElementConfiguration<SearchBar>
 	{
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
@@ -36,6 +36,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(SearchBar), Color.Default);
 
 		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create("PlaceholderColor", typeof(Color), typeof(SearchBar), Color.Default);
+
+		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
 
 		public Color CancelButtonColor
 		{
@@ -113,6 +115,11 @@ namespace Xamarin.Forms
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
 
+		public SearchBar()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
+		}
+
 		void ISearchBarController.OnSearchButtonPressed()
 		{
 			ICommand cmd = SearchCommand;
@@ -151,6 +158,11 @@ namespace Xamarin.Forms
 			{
 				self.IsEnabledCore = true;
 			}
+		}
+
+		public IPlatformElementConfiguration<T, SearchBar> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 	}
 }

@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Drawing;
 using System.ComponentModel;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+
 #if __UNIFIED__
 using UIKit;
 #else
@@ -13,6 +15,7 @@ using MonoTouch.UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 using PointF = CoreGraphics.CGPoint;
+using CoreGraphics;
 
 #else
 using nfloat=System.Single;
@@ -43,6 +46,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
+
+		UIVisualEffectView _blur;
+		BlurEffectStyle _previousBlur;
 
 		protected VisualElementRenderer() : base(RectangleF.Empty)
 		{
@@ -180,6 +186,17 @@ namespace Xamarin.Forms.Platform.iOS
 			return new SizeF(0, 0);
 		}
 
+		public override void Draw(RectangleF rect)
+		{
+			base.Draw(rect);
+			if (_blur != null)
+			{
+				_blur.Frame = rect;
+				if (_blur.Superview == null)
+					Superview.Add(_blur);
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if ((_flags & VisualElementRendererFlags.Disposed) != 0)
@@ -220,6 +237,9 @@ namespace Xamarin.Forms.Platform.iOS
 			var changed = ElementChanged;
 			if (changed != null)
 				changed(this, e);
+
+			if (e.NewElement != null)
+				SetBlur((BlurEffectStyle)e.NewElement.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -228,6 +248,8 @@ namespace Xamarin.Forms.Platform.iOS
 				SetBackgroundColor(Element.BackgroundColor);
 			else if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
 				UpdateClipToBounds();
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty.PropertyName)
+				SetBlur((BlurEffectStyle)Element.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -246,6 +268,44 @@ namespace Xamarin.Forms.Platform.iOS
 				BackgroundColor = _defaultColor;
 			else
 				BackgroundColor = color.ToUIColor();
+		}
+
+		protected virtual void SetBlur(BlurEffectStyle blur)
+		{
+			if (_previousBlur == blur)
+				return;
+
+			_previousBlur = blur;
+
+			if (_blur != null)
+			{
+				_blur.RemoveFromSuperview();
+				_blur = null;
+			}
+
+			if (blur == BlurEffectStyle.None)
+			{
+				SetNeedsDisplay();
+				return;
+			}
+
+			UIBlurEffect blurEffect;
+			switch (blur)
+			{
+				default:
+				case BlurEffectStyle.ExtraLight:
+					blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.ExtraLight);
+					break;
+				case BlurEffectStyle.Light:
+					blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.Light);
+					break;
+				case BlurEffectStyle.Dark:
+					blurEffect = UIBlurEffect.FromStyle(UIBlurEffectStyle.Dark);
+					break;
+			}
+
+			_blur = new UIVisualEffectView(blurEffect);
+			SetNeedsDisplay();
 		}
 
 		protected virtual void UpdateNativeWidget()

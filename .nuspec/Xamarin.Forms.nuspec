@@ -236,10 +236,13 @@
 
     <file src="..\Xamarin.Forms.Platform.UAP\Properties\Xamarin.Forms.Platform.UAP.rd.xml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Properties" />
 
-    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
-    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Resources.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
-    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Resources.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	  <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\AutoSuggestStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\MasterDetailControlStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControlStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\TabbedPageStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\uap10.0" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0" />

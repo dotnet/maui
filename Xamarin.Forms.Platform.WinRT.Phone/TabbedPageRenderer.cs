@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					return;
 				_showTitle = value;
 
-				Control.ToolbarVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
+				Control.TitleVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
 			}
 		}
 

@@ -122,6 +122,7 @@
     <Compile Include="PageTests.cs" />
     <Compile Include="PanGestureRecognizerUnitTests.cs" />
     <Compile Include="PinTests.cs" />
+    <Compile Include="PlatformSpecificsTests.cs" />
     <Compile Include="PointTests.cs" />
     <Compile Include="PositionTests.cs" />
     <Compile Include="ProgressBarTests.cs" />

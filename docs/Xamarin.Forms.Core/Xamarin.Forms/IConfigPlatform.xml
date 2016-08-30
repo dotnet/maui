@@ -1,0 +1,14 @@
+<Type Name="IConfigPlatform" FullName="Xamarin.Forms.IConfigPlatform">
+  <TypeSignature Language="C#" Value="public interface IConfigPlatform" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IConfigPlatform" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members />
+</Type>

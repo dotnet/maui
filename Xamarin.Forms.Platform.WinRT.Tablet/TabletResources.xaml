@@ -327,7 +327,8 @@
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
 
-						<Grid Grid.Row="0" Grid.Column="0" Height="79" VerticalAlignment="Center" Background="{TemplateBinding NavigationBarBackground}" Visibility="{Binding ShowNavigationBar,RelativeSource={RelativeSource Mode=TemplatedParent},Converter={StaticResource BoolVisibilityConverter}}">
+						<Grid Grid.Row="0" Grid.Column="0" Height="79" VerticalAlignment="Center" Background="{TemplateBinding NavigationBarBackground}" 
+							  Visibility="{TemplateBinding TitleVisibility}">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" MinWidth="{Binding TitleInset,RelativeSource={RelativeSource TemplatedParent}}" />
 								<ColumnDefinition Width="*" />

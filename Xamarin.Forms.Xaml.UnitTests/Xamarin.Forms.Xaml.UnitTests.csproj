@@ -85,6 +85,9 @@
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
     <Compile Include="LoaderTests.cs" />
+    <Compile Include="PlatformSpecifics.xaml.cs">
+      <DependentUpon>PlatformSpecifics.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewExtensionsTest.cs" />
     <Compile Include="MarkupExpressionParserTests.cs" />
     <Compile Include="MarkupExtensionTests.cs" />
@@ -652,6 +655,11 @@
   </Target>
   <ItemGroup>
     <EmbeddedResource Include="Issues\Bz41296.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="PlatformSpecifics.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

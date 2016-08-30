@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_SliderRenderer))]
-	public class Slider : View
+	public class Slider : View, IElementConfiguration<Slider>
 	{
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create("Minimum", typeof(double), typeof(Slider), 0d, validateValue: (bindable, value) =>
 		{
@@ -40,11 +40,14 @@ namespace Xamarin.Forms
 				eh(slider, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 		});
 
+		readonly Lazy<PlatformConfigurationRegistry<Slider>> _platformConfigurationRegistry;
+
 		public Slider()
 		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Slider>>(() => new PlatformConfigurationRegistry<Slider>(this));
 		}
 
-		public Slider(double min, double max, double val)
+		public Slider(double min, double max, double val) : this()
 		{
 			if (min >= max)
 				throw new ArgumentOutOfRangeException("min");
@@ -81,5 +84,10 @@ namespace Xamarin.Forms
 		}
 
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
+
+		public IPlatformElementConfiguration<T, Slider> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
+		}
 	}
 }

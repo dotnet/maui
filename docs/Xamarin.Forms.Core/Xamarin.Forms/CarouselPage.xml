@@ -1,6 +1,6 @@
 <Type Name="CarouselPage" FullName="Xamarin.Forms.CarouselPage">
-  <TypeSignature Language="C#" Value="public class CarouselPage : Xamarin.Forms.MultiPage&lt;Xamarin.Forms.ContentPage&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit CarouselPage extends Xamarin.Forms.MultiPage`1&lt;class Xamarin.Forms.ContentPage&gt;" />
+  <TypeSignature Language="C#" Value="public class CarouselPage : Xamarin.Forms.MultiPage&lt;Xamarin.Forms.ContentPage&gt;, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.CarouselPage&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit CarouselPage extends Xamarin.Forms.MultiPage`1&lt;class Xamarin.Forms.ContentPage&gt; implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.CarouselPage&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,7 +17,11 @@
       <BaseTypeArgument TypeParamName="T">Xamarin.Forms.ContentPage</BaseTypeArgument>
     </BaseTypeArguments>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.CarouselPage&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._CarouselPageRenderer))</AttributeName>
@@ -128,6 +132,31 @@ MainPage = new CarouselPage {
         <summary>Creates a default page, suitable for display in <c>this</c><see cref="T:Xamarin.Forms.CarouselPage" />, for an object.</summary>
         <returns>A page that is titled with the string value of <paramref name="item" />.</returns>
         <remarks>This returns a new <see cref="T:Xamarin.Forms.Page" /> object that has its <see cref="P:Xamarin.Forms.Page.Title" /> property set to the value of <see cref="M:Object.ToString" /> when called on <paramref name="item" />.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.CarouselPage&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.CarouselPage&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.CarouselPage&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

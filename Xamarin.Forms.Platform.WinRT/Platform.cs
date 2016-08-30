@@ -506,8 +506,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			return _page.BottomAppBar as CommandBar;
 #else
 			IToolbarProvider provider = GetToolbarProvider();
-			var titleProvider = provider as ITitleProvider;
-			if (provider == null || (titleProvider != null && !titleProvider.ShowTitle))
+			//var titleProvider = provider as ITitleProvider; 
+			if (provider == null) // || (titleProvider != null && !titleProvider.ShowTitle))
 				return null;
 
 			return await provider.GetCommandBarAsync();
@@ -521,6 +521,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			_page.BottomAppBar = commandBar;
 			return commandBar;
 #else
+
 			var bar = new FormsCommandBar();
 			if (Device.Idiom != TargetIdiom.Phone)
 				bar.Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TitleToolbar"];

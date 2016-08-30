@@ -9,11 +9,13 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Root")]
 	[RenderWith(typeof(_TableViewRenderer))]
-	public class TableView : View, ITableViewController
+	public class TableView : View, ITableViewController, IElementConfiguration<TableView>
 	{
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
 		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(TableView), false);
+
+		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
 
 		readonly TableSectionModel _tableModel;
 
@@ -29,6 +31,7 @@ namespace Xamarin.Forms
 		{
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
 			Model = _tableModel = new TableSectionModel(this, root);
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TableView>>(() => new PlatformConfigurationRegistry<TableView>(this));
 		}
 
 		public bool HasUnevenRows
@@ -125,6 +128,11 @@ namespace Xamarin.Forms
 		{
 			add { ModelChanged += value; }
 			remove { ModelChanged -= value; }
+		}
+
+		public IPlatformElementConfiguration<T, TableView> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

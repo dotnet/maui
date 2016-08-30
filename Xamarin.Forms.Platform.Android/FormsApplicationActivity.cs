@@ -7,6 +7,7 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -126,6 +127,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			base.OnCreate(savedInstanceState);
 
+			SetSoftInputMode();
+
 			_layout = new LinearLayout(BaseContext);
 			SetContentView(_layout);
 
@@ -221,6 +224,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (args.PropertyName == "MainPage")
 				InternalSetPage(_application.MainPage);
+			if (args.PropertyName == PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName)
+				SetSoftInputMode();
 		}
 
 		void InternalSetPage(Page page)
@@ -305,6 +310,28 @@ namespace Xamarin.Forms.Platform.Android
 		void SetMainPage()
 		{
 			InternalSetPage(_application.MainPage);
+		}
+
+		void SetSoftInputMode()
+		{
+			SoftInput adjust = SoftInput.AdjustPan;
+
+			if (Xamarin.Forms.Application.Current != null)
+			{
+				var elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
+				switch (elementValue)
+				{
+					default:
+					case WindowSoftInputModeAdjust.Pan:
+						adjust = SoftInput.AdjustPan;
+						break;
+					case WindowSoftInputModeAdjust.Resize:
+						adjust = SoftInput.AdjustResize;
+						break;
+				}
+			}
+
+			Window.SetSoftInputMode(adjust);
 		}
 
 		void UpdateProgressBarVisibility(bool isBusy)

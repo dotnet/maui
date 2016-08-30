@@ -1,6 +1,6 @@
 <Type Name="Editor" FullName="Xamarin.Forms.Editor">
-  <TypeSignature Language="C#" Value="public class Editor : Xamarin.Forms.InputView" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Editor extends Xamarin.Forms.InputView" />
+  <TypeSignature Language="C#" Value="public class Editor : Xamarin.Forms.InputView, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Editor&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Editor extends Xamarin.Forms.InputView implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Editor&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>Xamarin.Forms.InputView</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Editor&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Attributes>
     <Attribute>
       <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._EditorRenderer))</AttributeName>
@@ -194,6 +198,31 @@ var editor = new Editor {
       </ReturnValue>
       <Docs>
         <summary>Backing store for the FontSize property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Editor&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.Editor&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Editor&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

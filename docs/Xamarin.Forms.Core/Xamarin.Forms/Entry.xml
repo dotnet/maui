@@ -1,6 +1,6 @@
 <Type Name="Entry" FullName="Xamarin.Forms.Entry">
-  <TypeSignature Language="C#" Value="public class Entry : Xamarin.Forms.InputView, Xamarin.Forms.IEntryController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Entry extends Xamarin.Forms.InputView implements class Xamarin.Forms.IEntryController" />
+  <TypeSignature Language="C#" Value="public class Entry : Xamarin.Forms.InputView, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Entry&gt;, Xamarin.Forms.IEntryController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Entry extends Xamarin.Forms.InputView implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Entry&gt;, class Xamarin.Forms.IEntryController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -15,6 +15,9 @@
     <BaseTypeName>Xamarin.Forms.InputView</BaseTypeName>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Entry&gt;</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IEntryController</InterfaceName>
     </Interface>
@@ -306,6 +309,31 @@ View CreateLoginForm ()
         <summary>Identifies the IsPassword bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Entry&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.Entry&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Entry&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Placeholder">

@@ -164,6 +164,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapperRenderer.cs">
       <Link>NativeViewWrapperRenderer.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformConfigurationExtensions.cs">
+      <Link>PlatformConfigurationExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformEffect.cs">
       <Link>PlatformEffect.cs</Link>
     </Compile>
@@ -183,6 +186,7 @@
     </Compile>
     <Compile Include="StepperControl.cs" />
     <Compile Include="TabbedPageRenderer.cs" />
+    <Compile Include="ToolbarPlacementHelper.cs" />
     <Content Include="Properties\Xamarin.Forms.Platform.UAP.rd.xml" />
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
@@ -432,13 +436,25 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MasterDetailControlStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PageControlStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TabbedPageStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

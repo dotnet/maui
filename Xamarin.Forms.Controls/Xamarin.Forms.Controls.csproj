@@ -99,8 +99,16 @@
       <DependentUpon>ControlTemplateXamlPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="GalleryPages\LayoutPerformanceGallery.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageWindows.cs" />
     <Compile Include="GalleryPages\NavigationPropertiesGallery.cs" />
     <Compile Include="ControlGalleryPages\ListViewSelectionColor.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\ApplicationAndroid.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\VisualElementiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\WindowsPlatformSpecificsGalleryHelpers.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGallery.cs" />
     <Compile Include="LegacyRepro\Page1.xaml.cs">
       <DependentUpon>Page1.xaml</DependentUpon>
     </Compile>

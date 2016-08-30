@@ -69,6 +69,7 @@
     <Compile Include="ContextScrollViewDelegate.cs" />
     <Compile Include="EffectUtilities.cs" />
     <Compile Include="Extensions\CellExtensions.cs" />
+    <Compile Include="Extensions\PlatformConfigurationExtensions.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="GlobalCloseContextGestureRecognizer.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />

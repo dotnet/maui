@@ -1,0 +1,45 @@
+<Type Name="CollapseStyle" FullName="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle">
+  <TypeSignature Language="C#" Value="public enum CollapseStyle" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed CollapseStyle extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Full">
+      <MemberSignature Language="C#" Value="Full" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle Full = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Partial">
+      <MemberSignature Language="C#" Value="Partial" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle Partial = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

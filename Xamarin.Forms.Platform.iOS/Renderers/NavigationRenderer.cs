@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
-
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 #if __UNIFIED__
 using UIKit;
 using CoreGraphics;
@@ -21,9 +21,9 @@ using SizeF = CoreGraphics.CGSize;
 using PointF = CoreGraphics.CGPoint;
 
 #else
-using nfloat=System.Single;
-using nint=System.Int32;
-using nuint=System.UInt32;
+using nfloat = System.Single;
+using nint = System.Int32;
+using nuint = System.UInt32;
 #endif
 
 namespace Xamarin.Forms.Platform.iOS
@@ -49,6 +49,8 @@ namespace Xamarin.Forms.Platform.iOS
 				var parentingViewController = (ParentingViewController)ViewControllers.Last();
 				UpdateLeftBarButtonItem(parentingViewController);
 			});
+
+			
 		}
 
 		Page Current { get; set; }
@@ -181,7 +183,10 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidLoad();
 
 			if (Forms.IsiOS7OrNewer)
-				NavigationBar.Translucent = false;
+			{
+				
+				UpdateTranslucent();
+			}
 			else
 				WantsFullScreenLayout = false;
 
@@ -437,6 +442,18 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateBackgroundColor();
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 				Current = ((NavigationPage)Element).CurrentPage;
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName)
+				UpdateTranslucent();
+		}
+
+		void UpdateTranslucent()
+		{
+			if (!Forms.IsiOS7OrNewer)
+			{
+				return;
+			}
+
+			NavigationBar.Translucent = ((NavigationPage)Element).OnThisPlatform().IsNavigationBarTranslucent();
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -481,7 +498,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (page == null)
 				throw new ArgumentNullException("page");
 			if (page == Current)
-				throw new NotSupportedException(); // should never happen as NavPage protecs against this
+				throw new NotSupportedException(); // should never happen as NavPage protects against this
 
 			var target = Platform.GetRenderer(page).ViewController.ParentViewController;
 
@@ -807,6 +824,7 @@ namespace Xamarin.Forms.Platform.iOS
 			public override void ViewWillAppear(bool animated)
 			{
 				UpdateNavigationBarVisibility(animated);
+				EdgesForExtendedLayout = UIRectEdge.None;
 				base.ViewWillAppear(animated);
 			}
 

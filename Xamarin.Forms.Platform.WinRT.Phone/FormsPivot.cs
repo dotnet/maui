@@ -2,6 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 #if WINDOWS_UWP
 
@@ -12,7 +13,7 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public class FormsPivot : Pivot, IToolbarProvider
 	{
-		public static readonly DependencyProperty ToolbarVisibilityProperty = DependencyProperty.Register(nameof(ToolbarVisibility), typeof(Visibility), typeof(FormsPivot),
+		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(Visibility), typeof(FormsPivot),
 			new PropertyMetadata(Visibility.Collapsed));
 
 		public static readonly DependencyProperty ToolbarForegroundProperty = DependencyProperty.Register(nameof(ToolbarForeground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
@@ -20,10 +21,14 @@ namespace Xamarin.Forms.Platform.WinRT
 		public static readonly DependencyProperty ToolbarBackgroundProperty = DependencyProperty.Register(nameof(ToolbarBackground), typeof(Brush), typeof(FormsPivot), new PropertyMetadata(default(Brush)));
 
 		CommandBar _commandBar;
-
+#if WINDOWS_UWP
+		Border _bottomCommandBarArea;
+		Border _topCommandBarArea;
+#endif
 		TaskCompletionSource<CommandBar> _commandBarTcs;
+	    ToolbarPlacement _toolbarPlacement;
 
-		public Brush ToolbarBackground
+	    public Brush ToolbarBackground
 		{
 			get { return (Brush)GetValue(ToolbarBackgroundProperty); }
 			set { SetValue(ToolbarBackgroundProperty, value); }
@@ -35,11 +40,23 @@ namespace Xamarin.Forms.Platform.WinRT
 			set { SetValue(ToolbarForegroundProperty, value); }
 		}
 
-		public Visibility ToolbarVisibility
+		public Visibility TitleVisibility
 		{
-			get { return (Visibility)GetValue(ToolbarVisibilityProperty); }
-			set { SetValue(ToolbarVisibilityProperty, value); }
+			get { return (Visibility)GetValue(TitleVisibilityProperty); }
+			set { SetValue(TitleVisibilityProperty, value); }
 		}
+
+        public ToolbarPlacement ToolbarPlacement
+	    {
+	        get { return _toolbarPlacement; }
+	        set
+	        {
+	            _toolbarPlacement = value;
+#if WINDOWS_UWP
+	            UpdateToolbarPlacement();
+#endif
+	        }
+	    }
 
 		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
 		{
@@ -54,12 +71,24 @@ namespace Xamarin.Forms.Platform.WinRT
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
+			
 			_commandBar = GetTemplateChild("CommandBar") as CommandBar;
+
+#if WINDOWS_UWP
+			_bottomCommandBarArea = GetTemplateChild("BottomCommandBarArea") as Border;
+			_topCommandBarArea = GetTemplateChild("TopCommandBarArea") as Border;
+			UpdateToolbarPlacement();
+#endif
+
 			TaskCompletionSource<CommandBar> tcs = _commandBarTcs;
-			if (tcs != null)
-			{
-				tcs.SetResult(_commandBar);
-			}
+		    tcs?.SetResult(_commandBar);
 		}
+
+#if WINDOWS_UWP
+		void UpdateToolbarPlacement()
+		{
+			ToolbarPlacementHelper.UpdateToolbarPlacement(_commandBar, ToolbarPlacement, _bottomCommandBarArea, _topCommandBarArea);
+		}
+#endif
 	}
 }
