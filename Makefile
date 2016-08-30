@@ -1,3 +1,12 @@
+UNAME_S:=$(shell sh -c 'uname -s 2>/dev/null || echo not')
+ifeq ($(UNAME_S),Darwin)
+	MONOHOME=/Library/Frameworks/Mono.framework/Libraries/mono
+endif
+ifeq ($(UNAME_S),Linux)
+	MONOHOME=/usr/lib/mono
+endif
+
+DOTNETPCL=$(MONOHOME)/xbuild-frameworks/.NETPortable/v4.5/Profile/Profile259/
 CORE=Xamarin.Forms.Core
 COREASSEMBLY=$(CORE)/bin/Release/$(CORE).dll
 XAML=Xamarin.Forms.Xaml
@@ -10,13 +19,13 @@ MDOC=mdoc
 docs: $(CORE).docs $(MAPS).docs $(XAML).docs
 
 $(CORE).docs: $(COREASSEMBLY)
-	$(MDOC) update --delete -o docs/$(CORE) $(COREASSEMBLY) -L /Library/Frameworks/Mono.framework/Libraries/mono/xbuild-frameworks/.NETPortable/v4.5/Profile/Profile259/
+	$(MDOC) update --delete -o docs/$(CORE) $(COREASSEMBLY) -L $(DOTNETPCL)
 
 $(XAML).docs: $(XAMLASSEMBLY)
-	$(MDOC) update --delete -o docs/$(XAML) $(XAMLASSEMBLY) -L /Library/Frameworks/Mono.framework/Libraries/mono/xbuild-frameworks/.NETPortable/v4.5/Profile/Profile259/
+	$(MDOC) update --delete -o docs/$(XAML) $(XAMLASSEMBLY) -L $(DOTNETPCL)
 
 $(MAPS).docs: $(MAPSASSEMBLY)
-	$(MDOC) update --delete -o docs/$(MAPS) $(MAPSASSEMBLY) -L /Library/Frameworks/Mono.framework/Libraries/mono/xbuild-frameworks/.NETPortable/v4.5/Profile/Profile259/
+	$(MDOC) update --delete -o docs/$(MAPS) $(MAPSASSEMBLY) -L $(DOTNETPCL)
 
 $(COREASSEMBLY): .FORCE
 	xbuild /property:Configuration=Release Xamarin.Forms.Core/Xamarin.Forms.Core.csproj
