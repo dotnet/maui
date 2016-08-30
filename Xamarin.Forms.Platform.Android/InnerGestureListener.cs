@@ -38,10 +38,16 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
-		// which can result in the need to resurect this object if it has already been disposed. We dispose
+		// which can result in the need to resurrect this object if it has already been disposed. We dispose
 		// eagerly to allow easier garbage collection of the renderer
 		internal InnerGestureListener(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
+		}
+
+		internal void OnTouchEvent(MotionEvent e)
+		{
+			if (e.Action == MotionEventActions.Up)
+				EndScrolling();
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTap(MotionEvent e)

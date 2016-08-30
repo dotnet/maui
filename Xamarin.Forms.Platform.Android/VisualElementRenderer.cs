@@ -98,6 +98,9 @@ namespace Xamarin.Forms.Platform.Android
 					ScaleGestureDetectorCompat.SetQuickScaleEnabled(_scaleDetector.Value, true);
 				handled = _scaleDetector.Value.OnTouchEvent(e);
 			}
+
+			_gestureListener?.OnTouchEvent(e);
+
 			return _gestureDetector.Value.OnTouchEvent(e) || handled;
 		}
 
