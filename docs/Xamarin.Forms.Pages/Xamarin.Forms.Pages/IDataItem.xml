@@ -22,8 +22,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the name of the data item.</summary>
-          <value>The name of the data item.</value>
+        <summary>Gets or sets the name of the data item.</summary>
+        <value>The name of the data item.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -38,8 +38,8 @@
         <ReturnType>System.Object</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the value of the data item.</summary>
-          <value>The value of the data item.</value>
+        <summary>Gets or sets the value of the data item.</summary>
+        <value>The value of the data item.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

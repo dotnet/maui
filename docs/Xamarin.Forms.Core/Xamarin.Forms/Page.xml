@@ -383,7 +383,9 @@ namespace MyFirstFormsApp.WinPhone
         <param name="buttons">Text labels for additional buttons. Must not be <see langword="null" />.</param>
         <summary>Displays a native platform action sheet, allowing the application user to choose from several buttons.</summary>
         <returns>An awaitable Task that displays an action sheet and returns the Text of the button pressed by the user.</returns>
-        <remarks><para>Developers should be aware that Windows' line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title.) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</para></remarks>
+        <remarks>
+          <para>Developers should be aware that Windows' line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title.) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="DisplayAlert">

@@ -39,7 +39,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that is <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</summary>
-        <value><see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
+        <value>
+          <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

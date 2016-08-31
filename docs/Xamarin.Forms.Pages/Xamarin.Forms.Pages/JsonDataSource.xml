@@ -39,7 +39,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.JsonDataSource/&lt;GetRawData&gt;c__async0))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.JsonDataSource/&lt;GetRawData&gt;d__9))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -89,8 +89,9 @@
       <Docs>
         <param name="key">The key to add or modify.</param>
         <param name="value">The value to assign.</param>
-        <summary>Assigns the data that is identified by <paramref name="key"/> to <paramref name="value" />, creating it if it does not exist.</summary>
-        <returns><see langword="true" /> if an existing value was modified, or if a new value was assigned to a value other than <parmamref name="null" />. Otherwise, <see langword="false" />.</returns>
+        <summary>Assigns the data that is identified by <paramref name="key" /> to <paramref name="value" />, creating it if it does not exist.</summary>
+        <returns>
+          <see langword="true" /> if an existing value was modified, or if a new value was assigned to a value other than <parmamref name="null" />. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

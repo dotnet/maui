@@ -11,7 +11,9 @@
   <Interfaces />
   <Docs>
     <summary>A collection of styles and properties that can be added to an element at run time.</summary>
-    <remarks><para>Effects are suitable when the developer needs to use platform-specific features to achieve the desired effect. Developers should consider using <see cref="T:Xamarin.Forms.Behavior" /> if they do not need platform-specific implentations to achieve their desired result.</para></remarks>
+    <remarks>
+      <para>Effects are suitable when the developer needs to use platform-specific features to achieve the desired effect. Developers should consider using <see cref="T:Xamarin.Forms.Behavior" /> if they do not need platform-specific implentations to achieve their desired result.</para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="Element">

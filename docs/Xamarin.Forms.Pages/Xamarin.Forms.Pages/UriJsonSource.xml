@@ -39,7 +39,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.UriJsonSource/&lt;GetJson&gt;c__async0))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.UriJsonSource/&lt;GetJson&gt;d__4))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

@@ -41,8 +41,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-          <param name="key">The key for the data item to block from the application.</param>
-          <summary>Prevents the data item that is identified by <paramref name="key" /> from being available to the application.</summary>
+        <param name="key">The key for the data item to block from the application.</param>
+        <summary>Prevents the data item that is identified by <paramref name="key" /> from being available to the application.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -60,8 +60,8 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-          <param name="key">The key for the data item to unblock from the application</param>
-          <summary>Makes the previously masked data item that is identified by <paramref name="key" /> available to the application</summary>
+        <param name="key">The key for the data item to unblock from the application</param>
+        <summary>Makes the previously masked data item that is identified by <paramref name="key" /> available to the application</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

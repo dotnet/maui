@@ -117,7 +117,8 @@
       <Docs>
         <param name="value">The value to check.</param>
         <summary>Returns <see langword="true" /> if <paramref name="value" /> is contained in the compound collection. Otherwise, returns <see langword="false" />.</summary>
-        <returns><see langword="true" /> if <paramref name="value" /> is contained in the compound collection. Otherwise, <see langword="false" />.</returns>
+        <returns>
+          <see langword="true" /> if <paramref name="value" /> is contained in the compound collection. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -165,6 +166,11 @@
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.IteratorStateMachine(typeof(Xamarin.Forms.Pages.CompoundCollection/&lt;GetEnumerator&gt;d__18))</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Collections.IEnumerator</ReturnType>
       </ReturnValue>
@@ -228,7 +234,8 @@
       </ReturnValue>
       <Docs>
         <summary>Returns <see langword="false" />.</summary>
-        <value><see langword="false" />.</value>
+        <value>
+          <see langword="false" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -243,8 +250,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Returns <see langword="true" />.</summary>
-          <value><see langword="true" />.</value>
+        <summary>Returns <see langword="true" />.</summary>
+        <value>
+          <see langword="true" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -259,8 +267,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Returns <see langword="false" />.</summary>
-          <value><see langword="false" />.</value>
+        <summary>Returns <see langword="false" />.</summary>
+        <value>
+          <see langword="false" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -381,7 +390,8 @@
       </ReturnValue>
       <Docs>
         <summary>Returns <see langword="null" />.</summary>
-        <value><see langword="null" />.</value>
+        <value>
+          <see langword="null" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -282,7 +282,8 @@
       </ReturnValue>
       <Docs>
         <summary>A ready to reuse GridLength of GridUnitType.Star with a Value of 1.</summary>
-        <value></value>
+        <value>
+        </value>
         <remarks>If a Value other than 1 is needed with GridUnitType.Star, then use the constructor GridLength (value, GridUnitType.Star).</remarks>
       </Docs>
     </Member>

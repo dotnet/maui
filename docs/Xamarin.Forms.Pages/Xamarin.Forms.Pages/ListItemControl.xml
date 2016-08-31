@@ -38,8 +38,8 @@
         <ReturnType>Xamarin.Forms.Aspect</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the image aspect, which controls clipping and filling when the image size does not match the view size.</summary>
-          <value>The image aspect, which controls clipping and filling when the image size does not match the view size.</value>
+        <summary>Gets or sets the image aspect, which controls clipping and filling when the image size does not match the view size.</summary>
+        <value>The image aspect, which controls clipping and filling when the image size does not match the view size.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -54,7 +54,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-         <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.Aspect" /> property.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.Aspect" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -69,8 +69,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the detailed description of the list item image.</summary>
-          <value>The detailed description of the list item image.</value>
+        <summary>Gets or sets the detailed description of the list item image.</summary>
+        <value>The detailed description of the list item image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -85,7 +85,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-         <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.Detail" /> property.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.Detail" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -100,8 +100,8 @@
         <ReturnType>Xamarin.Forms.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the image source from which to get the list item image.</summary>
-          <value>The image source from which to get the list item image.</value>
+        <summary>Gets or sets the image source from which to get the list item image.</summary>
+        <value>The image source from which to get the list item image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -116,7 +116,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-         <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.ImageSource" /> property.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.ImageSource" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -131,8 +131,8 @@
         <ReturnType>Xamarin.Forms.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the image source from which to get the placeholder image.</summary>
-          <value>The image source from which to get the placeholder image.</value>
+        <summary>Gets or sets the image source from which to get the placeholder image.</summary>
+        <value>The image source from which to get the placeholder image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -147,7 +147,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-         <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.PlaceHolderImageSource" /> property.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Pages.ListItemControl.PlaceHolderImageSource" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -162,8 +162,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the title text for the list item image.</summary>
-          <value>The title text for the list item image.</value>
+        <summary>Gets or sets the title text for the list item image.</summary>
+        <value>The title text for the list item image.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

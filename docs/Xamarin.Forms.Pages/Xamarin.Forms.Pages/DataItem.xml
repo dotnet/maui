@@ -68,7 +68,8 @@
       <Docs>
         <param name="obj">The object to compare to the current object.</param>
         <summary>Returns <see langword="true" /> if <paramref name="obj" /> is the same object as the current data item, or if it is another <see cref="T:Xamarin.Forms.Pages.DataItem" /> that contains the same name and value. Otherwise, returns <see langword="false" />.</summary>
-        <returns><see langword="true" /> if <paramref name="obj" /> is the same object as the current data item, or if it is another <see cref="T:Xamarin.Forms.Pages.DataItem" /> that contains the same name and value. Otherwise, <see langword="false" />.</returns>
+        <returns>
+          <see langword="true" /> if <paramref name="obj" /> is the same object as the current data item, or if it is another <see cref="T:Xamarin.Forms.Pages.DataItem" /> that contains the same name and value. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -88,7 +89,8 @@
       <Docs>
         <param name="other">The <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare to the current object.</param>
         <summary>Returns <see langword="true" /> if <paramref name="other" /> contains the same name and value. Otherwise, returns <see langword="false" />.</summary>
-        <returns><see langword="true" /> if <paramref name="other" /> contains the same name and value. Otherwise, <see langword="false" />.</returns>
+        <returns>
+          <see langword="true" /> if <paramref name="other" /> contains the same name and value. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -168,7 +170,8 @@
         <param name="left">The first <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
         <param name="right">The second <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
         <summary>Returns <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are the same object, or if they have the same name and value. Otherwise, returns <see langword="false" />.</summary>
-        <returns><see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are the same object, or if they have the same name and value. Otherwise, <see langword="false" />.</returns>
+        <returns>
+          <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are the same object, or if they have the same name and value. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -187,10 +190,11 @@
         <Parameter Name="right" Type="Xamarin.Forms.Pages.DataItem" />
       </Parameters>
       <Docs>
-          <param name="left">The first <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
-          <param name="right">The second <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
-          <summary>Returns <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are not the same object, or if they are the same object, but have different names or values. Otherwise, returns <see langword="false" />.</summary>
-          <returns><see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are not the same object, or if they are the same object, but have different names or values. Otherwise, <see langword="false" />.</returns>
+        <param name="left">The first <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
+        <param name="right">The second <see cref="T:Xamarin.Forms.Pages.DataItem" /> to compare.</param>
+        <summary>Returns <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are not the same object, or if they are the same object, but have different names or values. Otherwise, returns <see langword="false" />.</summary>
+        <returns>
+          <see langword="true" /> if <paramref name="left" /> and <paramref name="right" /> are not the same object, or if they are the same object, but have different names or values. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

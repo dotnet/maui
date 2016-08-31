@@ -98,8 +98,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets a value that is <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</summary>
-          <value><see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
+        <summary>Gets a value that is <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</summary>
+        <value>
+          <see langword="true" /> if the data is loading, or <see langword="false" /> if it is finished loading or has not begun to load.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -117,9 +118,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-          <param name="key">The key for the data item to get or set.</param>
-          <summary>Gets or sets the data item that is identified by <paramref nam="key" />.</summary>
-          <value>The data item that is identified by <paramref nam="key" />.</value>>
+        <param name="key">The key for the data item to get or set.</param>
+        <summary>Gets or sets the data item that is identified by <paramref nam="key" />.</summary>
+        <value>The data item that is identified by <paramref nam="key" />.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -166,7 +167,8 @@
         <param name="key">The identifier for the data item to change.</param>
         <param name="value">The new value.</param>
         <summary>Sets the data that is identified by <paramref name="key" /> to <paramref name="value" /> and calls the <see cref="M:Xamarin.Forms.Pages.BaseDataSource.OnPropertyChanged" /> method if <paramref name="value" /> is different from the current value.</summary>
-        <returns><see langword="false" /> if the new value is the same as the old value. Otherwise, <see langword="true" />.</returns>
+        <returns>
+          <see langword="false" /> if the new value is the same as the old value. Otherwise, <see langword="true" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -198,7 +200,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.BaseDataSource/&lt;Xamarin_Forms_Pages_IDataSource_MaskKey&gt;c__async0))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.BaseDataSource/&lt;Xamarin-Forms-Pages-IDataSource-MaskKey&gt;d__13))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -225,7 +227,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.BaseDataSource/&lt;Xamarin_Forms_Pages_IDataSource_UnmaskKey&gt;c__async1))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Pages.BaseDataSource/&lt;Xamarin-Forms-Pages-IDataSource-UnmaskKey&gt;d__14))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
