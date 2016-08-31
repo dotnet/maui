@@ -435,9 +435,8 @@
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
-
-                        <Grid Height="79" Background="{TemplateBinding NavigationBarBackground}" 
-							  Visibility="{TemplateBinding TitleVisibility}">
+						
+						<Grid Height="79" Background="{TemplateBinding ToolbarBackground}"  Visibility="{TemplateBinding TitleVisibility}">
                             <TextBlock Margin="10,0,0,0" Name="title" Foreground="{TemplateBinding TitleBrush}" VerticalAlignment="Center" Style="{ThemeResource HeaderTextBlockStyle}" Text="{Binding Title}" />
                         </Grid>
                    		<ContentPresenter x:Name="presenter" Grid.Row="1" ContentTransitions="{TemplateBinding ContentTransitions}" />
