@@ -36,5 +36,10 @@ namespace Xamarin.Forms.Platform.Android
 			int disabled = defaults.GetColorForState(States[1], color.ToAndroid());
 			return new ColorStateList(States, new[] { color.ToAndroid().ToArgb(), disabled });
 		}
+
+		public static Color ToColor(this AColor color)
+		{
+			return Color.FromUint((uint)color.ToArgb());
+		}
 	}
 }

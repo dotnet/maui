@@ -235,6 +235,7 @@
     <Compile Include="ControlGalleryPages\AppearingGalleryPage.cs" />
     <Compile Include="ControlGalleryPages\AutomationIDGallery.cs" />
     <Compile Include="GalleryPages\AppLinkPageGallery.cs" />
+    <Compile Include="ControlGalleryPages\NativeBindingGalleryPage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.targets" />

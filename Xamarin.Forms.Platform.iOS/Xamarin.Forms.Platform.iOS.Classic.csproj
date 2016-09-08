@@ -76,7 +76,6 @@
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="PlatformEffect.cs" />
-    <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\ExportCellAttribute.cs" />
@@ -84,6 +83,8 @@
     <Compile Include="Renderers\ExportRendererAttribute.cs" />
     <Compile Include="Resources\StringResources.Designer.cs" />
     <Compile Include="ViewInitializedEventArgs.cs" />
+    <Compile Include="NativeViewPropertyListener.cs" />
+    <Compile Include="Extensions\LayoutExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Deserializer.cs" />

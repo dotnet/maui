@@ -128,5 +128,21 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			return foregroundProperty;
 		}
+
+		internal static IEnumerable<T> GetChildren<T>(this DependencyObject parent) where T : DependencyObject
+		{
+			int myChildrenCount = VisualTreeHelper.GetChildrenCount(parent);
+			for (int i = 0; i < myChildrenCount; i++)
+			{
+				var child = VisualTreeHelper.GetChild(parent, i);
+				if (child is T)
+					yield return child as T;
+				else
+				{
+					foreach (var subChild in child.GetChildren<T>())
+						yield return subChild;
+				}
+			}
+		}
 	}
 }

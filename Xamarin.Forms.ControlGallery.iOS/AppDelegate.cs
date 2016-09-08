@@ -8,15 +8,18 @@ using System.IO;
 using UIKit;
 using Foundation;
 using CoreGraphics;
+using AdvancedColorPicker;
 #else
 using MonoTouch.UIKit;
 using MonoTouch.Foundation;
+using MonoTouch.CoreGraphics;
 #endif
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Maps.iOS;
 using Xamarin.Forms.Platform.iOS;
+using System.Globalization;
 
 [assembly: Dependency (typeof (TestCloudService))]
 [assembly: Dependency (typeof (StringProvider))]
@@ -163,6 +166,13 @@ namespace Xamarin.Forms.ControlGallery.iOS
 					if (nncgPage != null) {
 						AddNativeControls (nncgPage);
 					}
+
+					var nncgPage1 = args.Page as NativeBindingGalleryPage;
+
+					if (nncgPage1 != null)
+					{
+						AddNativeBindings(nncgPage1);
+					}
 				};
 			}	
 
@@ -270,6 +280,64 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			// And we'll use the width (which is fine) and substitute our own height
 			return new SizeRequest (new Size (badRect.Width, 20));
+		}
+
+		void AddNativeBindings(NativeBindingGalleryPage page)
+		{
+			if (page.NativeControlsAdded)
+				return;
+
+			StackLayout sl = page.Layout;
+
+			int width = (int)sl.Width;
+			int heightCustomLabelView = 100;
+
+			var uilabel = new UILabel(new RectangleF(0, 0, width, heightCustomLabelView))
+			{
+				MinimumFontSize = 14f,
+				Lines = 0,
+				LineBreakMode = UILineBreakMode.WordWrap,
+				Font = UIFont.FromName("Helvetica", 24f),
+				Text = "DefaultText"
+			};
+
+			var uibuttonColor = new UIButton(UIButtonType.RoundedRect);
+			uibuttonColor.SetTitle("Toggle Text Color Binding", UIControlState.Normal);
+			uibuttonColor.Font = UIFont.FromName("Helvetica", 14f);
+			uibuttonColor.TouchUpInside += (sender, args) => uilabel.TextColor = UIColor.Blue;
+
+			var nativeColorConverter = new ColorConverter();
+
+			uilabel.SetBinding("Text", new Binding("NativeLabel"));
+			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("NativeLabelColor", converter: nativeColorConverter));
+
+			var uiView = new UIView(new RectangleF(0, 0, width, heightCustomLabelView));
+			uiView.Add(uilabel);
+			sl?.Children.Add(uiView);
+			sl?.Children.Add(uibuttonColor.ToView());
+#if !_CLASSIC_
+			var colorPicker = new ColorPickerView(new CGRect(0, 0, width, 300));
+			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
+			sl?.Children.Add(colorPicker);
+#endif
+			page.NativeControlsAdded = true;
+		}
+	}
+
+	public class ColorConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is Color)
+				return ((Color)value).ToUIColor();
+			return value;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is UIColor)
+				return ((UIColor)value).ToColor();
+			return value;
 		}
 	}
 #endif

@@ -1,3 +1,5 @@
+using Android.Views;
+
 namespace Xamarin.Forms.Platform.Android
 {
 	public class NativeViewWrapper : View
@@ -9,6 +11,8 @@ namespace Xamarin.Forms.Platform.Android
 			NativeView = nativeView;
 			OnLayoutDelegate = onLayoutDelegate;
 			OnMeasureDelegate = onMeasureDelegate;
+
+			nativeView.TransferBindablePropertiesToWrapper(this);
 		}
 
 		public GetDesiredSizeDelegate GetDesiredSizeDelegate { get; }
@@ -18,5 +22,11 @@ namespace Xamarin.Forms.Platform.Android
 		public OnLayoutDelegate OnLayoutDelegate { get; }
 
 		public OnMeasureDelegate OnMeasureDelegate { get; }
+
+		protected override void OnBindingContextChanged()
+		{
+			NativeView.SetBindingContext(BindingContext, (view) => (view as ViewGroup)?.GetChildrenOfType<global::Android.Views.View>());
+			base.OnBindingContextChanged();
+		}
 	}
 }

@@ -23,9 +23,11 @@ namespace Xamarin.Forms.Xaml
 
 		public object Source { get; set; }
 
+		public string UpdateSourceEventName { get; set; }
+
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source);
+			return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) { UpdateSourceEventName = UpdateSourceEventName };
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

@@ -17,6 +17,7 @@ namespace Xamarin.Forms
 		BindingExpression _expression;
 		string _path;
 		object _source;
+		string _updateSourceEventName;
 
 		public Binding()
 		{
@@ -81,6 +82,14 @@ namespace Xamarin.Forms
 			}
 		}
 
+		internal string UpdateSourceEventName {
+			get { return _updateSourceEventName; }
+			set {
+				ThrowIfApplied();
+				_updateSourceEventName = value;
+			}
+		}
+
 		public static Binding Create<TSource>(Expression<Func<TSource, object>> propertyGetter, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null,
 											  string stringFormat = null)
 		{
@@ -115,7 +124,7 @@ namespace Xamarin.Forms
 
 		internal override BindingBase Clone()
 		{
-			return new Binding(Path, Mode) { Converter = Converter, ConverterParameter = ConverterParameter, StringFormat = StringFormat, Source = Source };
+			return new Binding(Path, Mode) { Converter = Converter, ConverterParameter = ConverterParameter, StringFormat = StringFormat, Source = Source, UpdateSourceEventName = UpdateSourceEventName };
 		}
 
 		internal override object GetSourceValue(object value, Type targetPropertyType)

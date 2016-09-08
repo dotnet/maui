@@ -1,6 +1,7 @@
 ﻿// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 using System;
+using System.Globalization;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.ViewManagement;
@@ -32,6 +33,12 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 					if (nncgPage != null) {
 						AddNativeControls (nncgPage);
+					}
+
+					var nncgPage1 = args.Page as NativeBindingGalleryPage;
+
+					if (nncgPage1 != null) {
+						AddNativeBindings(nncgPage1);
 					}
 				};
 			} 
@@ -105,5 +112,71 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 
 			page.NativeControlsAdded = true;
 		}
-    }
+
+		void AddNativeBindings(NativeBindingGalleryPage page)
+		{
+			if (page.NativeControlsAdded)
+				return;
+
+			StackLayout sl = page.Layout;
+
+			var txbLabel = new TextBlock {
+				FontSize = 14,
+				FontFamily = new FontFamily("HelveticaNeue")
+			};
+
+			var txbBox = new TextBox {
+				FontSize = 14,
+				FontFamily = new FontFamily("HelveticaNeue")
+			};
+
+			var btnColor = new Windows.UI.Xaml.Controls.Button { Content = "Toggle Label Color", Height = 80 };
+			btnColor.Click += (sender, args) => txbLabel.Foreground = new SolidColorBrush(Windows.UI.Colors.Pink);
+
+			var btnTextBox = new Windows.UI.Xaml.Controls.Button { Content = "Change text textbox", Height = 80 };
+			btnTextBox.Click += (sender, args) => txbBox.Text = "Hello 2 way native";
+
+			txbLabel.SetBinding("Text", new Binding("NativeLabel"));
+			txbBox.SetBinding("Text", new Binding("NativeLabel", BindingMode.TwoWay), "TextChanged");
+			txbLabel.SetBinding("Foreground", new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorToBrushNativeBindingConverter()));
+
+			var grd = new StackPanel();
+			grd.Children.Add(txbLabel);
+			grd.Children.Add(btnColor);
+
+			sl?.Children.Add(grd.ToView());
+
+			sl?.Children.Add(txbBox);
+			sl?.Children.Add(btnTextBox.ToView());
+
+			page.NativeControlsAdded = true;
+		}
+
+		class ColorToBrushNativeBindingConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				if (value is Color)
+					return new SolidColorBrush(ToWindowsColor((Color)value));
+
+				return null;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				if (value is SolidColorBrush)
+					return ToColor(((SolidColorBrush)value).Color);
+
+				return null;
+			}
+			public static Windows.UI.Color ToWindowsColor(Color color)
+			{
+				return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
+			}
+			public static Color ToColor(Windows.UI.Color color)
+			{
+				return Color.FromRgba(color.R, color.G, color.B, color.A);
+			}
+		}
+	}
 }

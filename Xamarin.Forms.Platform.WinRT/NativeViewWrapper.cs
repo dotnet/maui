@@ -1,4 +1,5 @@
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 #if WINDOWS_UWP
 
@@ -17,6 +18,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			ArrangeOverrideDelegate = arrangeOverrideDelegate;
 			MeasureOverrideDelegate = measureOverrideDelegate;
 			NativeElement = nativeElement;
+			nativeElement.TransferbindablePropertiesToWrapper(this);
 		}
 
 		public ArrangeOverrideDelegate ArrangeOverrideDelegate { get; set; }
@@ -26,5 +28,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		public MeasureOverrideDelegate MeasureOverrideDelegate { get; set; }
 
 		public FrameworkElement NativeElement { get; }
+
+		protected override void OnBindingContextChanged()
+		{
+			NativeElement.SetBindingContext(BindingContext,  nv =>  nv.GetChildren<FrameworkElement>());
+			base.OnBindingContextChanged();
+		}
 	}
 }

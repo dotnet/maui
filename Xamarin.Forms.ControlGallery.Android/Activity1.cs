@@ -20,6 +20,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 
 using Droid = Android;
+using System.Globalization;
 
 
 [assembly: Dependency (typeof (CacheService))]
@@ -337,6 +338,14 @@ namespace Xamarin.Forms.ControlGallery.Android
 					if (nncgPage != null) {
 						AddNativeControls (nncgPage);
 					}
+
+					var nncgPage1 = args.Page as NativeBindingGalleryPage;
+
+					if (nncgPage1 != null)
+					{
+						AddNativeBindings(nncgPage1);
+					}
+
 				};
 			}
 
@@ -407,6 +416,58 @@ namespace Xamarin.Forms.ControlGallery.Android
 			nativeView.Measure (widthSpec, heightConstraint);
 			var size = new Size (nativeView.MeasuredWidth, nativeView.MeasuredHeight);
 			return new SizeRequest (size);
+		}
+
+		void AddNativeBindings(NativeBindingGalleryPage page)
+		{
+			if (page.NativeControlsAdded)
+				return;
+
+			StackLayout sl = page.Layout;
+
+			var textView = new TextView(this)
+			{
+				TextSize = 14,
+				Text = "This will be text"
+			};
+
+			var viewGroup = new LinearLayout(this);
+			viewGroup.AddView(textView);
+
+			var buttonColor = new global::Android.Widget.Button(this) { Text = "Change label Color" };
+			buttonColor.Click += (sender, e) => textView.SetTextColor(Color.Blue.ToAndroid());
+
+			var colorPicker = new ColorPickerView(this, 200, 200);
+
+			textView.SetBinding(nameof(textView.Text), new Binding("NativeLabel"));
+			//this doesn't work because there's not TextColor property
+			//textView.SetBinding("TextColor", new Binding("NativeLabelColor", converter: new ColorConverter()));
+			colorPicker.SetBinding(nameof(colorPicker.SelectedColor), new Binding("NativeLabelColor", BindingMode.TwoWay, new ColorConverter()), "ColorPicked");
+
+			sl?.Children.Add(viewGroup);
+			sl?.Children.Add(buttonColor.ToView());
+			sl?.Children.Add(colorPicker);
+
+			page.NativeControlsAdded = true;
+		}
+
+		public class ColorConverter : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				if (value is Color)
+					return ((Color)value).ToAndroid();
+
+				return null;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				if (value is global::Android.Graphics.Color)
+					return ((global::Android.Graphics.Color)value).ToColor();
+
+				return null;
+			}
 		}
 	}
 #endif

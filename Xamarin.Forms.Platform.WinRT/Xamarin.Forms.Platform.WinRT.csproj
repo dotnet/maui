@@ -69,7 +69,10 @@
     <Compile Include="PlatformConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
-	<Compile Include="BrushHelpers.cs" />
+	  <Compile Include="BrushHelpers.cs" />
+    <Compile Include="NativeBindingExtensions.cs" />
+    <Compile Include="NativeEventWrapper.cs" />
+    <Compile Include="NativePropertyListener.cs" />
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="ViewExtensions.cs" />

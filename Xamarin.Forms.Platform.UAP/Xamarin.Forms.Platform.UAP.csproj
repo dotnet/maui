@@ -158,6 +158,15 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\IWrapperAware.cs">
       <Link>IWrapperAware.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeBindingExtensions.cs">
+      <Link>NativeBindingExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeEventWrapper.cs">
+      <Link>NativeEventWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativePropertyListener.cs">
+      <Link>NativePropertyListener.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapper.cs">
       <Link>NativeViewWrapper.cs</Link>
     </Compile>
