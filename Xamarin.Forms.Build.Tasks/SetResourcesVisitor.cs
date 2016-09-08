@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			if (propertyName.LocalName != "MergedWith")
 				return;
-			SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node);
+			Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
@@ -118,10 +118,10 @@ namespace Xamarin.Forms.Build.Tasks
 							Context.Variables[node] = vardef;
 						}
 
-						//						IL_0013:  ldloc.0 
-						//						IL_0014:  ldstr "key"
-						//						IL_0019:  ldstr "foo"
-						//						IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
+//						IL_0013:  ldloc.0 
+//						IL_0014:  ldstr "key"
+//						IL_0019:  ldstr "foo"
+//						IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
 						Context.IL.Emit(OpCodes.Ldloc, parentVar);
 						Context.IL.Emit(OpCodes.Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
 						var varDef = Context.Variables[node];
@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Build.Tasks
 			    (propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) &&
 				(Context.Variables[node].VariableType.FullName == "Xamarin.Forms.ResourceDictionary" ||
 					Context.Variables[node].VariableType.Resolve().BaseType.FullName == "Xamarin.Forms.ResourceDictionary"))
-				SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node);
+				Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
 		}
 
 		public void Visit(RootNode node, INode parentNode)

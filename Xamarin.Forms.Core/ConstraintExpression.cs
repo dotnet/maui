@@ -6,7 +6,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
-	public class ConstraintExpression : IMarkupExtension
+	public class ConstraintExpression : IMarkupExtension<Constraint>
 	{
 		public ConstraintExpression()
 		{
@@ -23,7 +23,12 @@ namespace Xamarin.Forms
 
 		public ConstraintType Type { get; set; }
 
-		public object ProvideValue(IServiceProvider serviceProvider)
+		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+		{
+			return (this as IMarkupExtension<Constraint>).ProvideValue(serviceProvider);
+		}
+
+		public Constraint ProvideValue(IServiceProvider serviceProvider)
 		{
 			MethodInfo minfo;
 			switch (Type)

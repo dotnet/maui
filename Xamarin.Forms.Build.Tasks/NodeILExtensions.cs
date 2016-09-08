@@ -396,7 +396,7 @@ namespace Xamarin.Forms.Build.Tasks
 #if NOSERVICEPROVIDER
 			yield return Instruction.Create (OpCodes.Ldnull);
 			yield break;
-			#endif
+#endif
 
 			var ctorinfo = typeof (XamlServiceProvider).GetConstructor(new Type[] { });
 			var ctor = module.Import(ctorinfo);

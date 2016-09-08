@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage 
 	xmlns="http://xamarin.com/schemas/2014/forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
 	x:Class="Xamarin.Forms.Xaml.UnitTests.SetterOnNonBP"
 	xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests">
-	<local:FakeVisualElement>
-		<local:FakeVisualElement.Style>
-			<Style TargetType="local:FakeVisualElement">
+	<local:FakeView>
+		<local:FakeView.Style>
+			<Style TargetType="local:FakeView">
 				<Setter Property="NonBindable" Value="Should Fail"/>
 			</Style>
-		</local:FakeVisualElement.Style>
-	</local:FakeVisualElement>
+		</local:FakeView.Style>
+	</local:FakeView>
 </ContentPage>

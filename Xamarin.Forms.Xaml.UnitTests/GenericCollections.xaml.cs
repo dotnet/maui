@@ -14,6 +14,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			typeof(GenericCollection),
 			typeof(AttachedBP),
 			null);
+
+		public static GenericCollection GetAttachedBP(BindableObject bindable)
+		{
+			throw new NotImplementedException();
+		}
 	}
 
 	public class GenericCollection : ObservableCollection<object>

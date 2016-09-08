@@ -3,7 +3,7 @@
 using Xamarin.Forms;
 namespace Xamarin.Forms.Xaml.UnitTests
 {	
-	public class FakeVisualElement : VisualElement
+	public class FakeView : View
 	{
 		public string NonBindable { get; set; }
 	}
