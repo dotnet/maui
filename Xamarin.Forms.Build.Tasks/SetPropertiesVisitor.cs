@@ -169,7 +169,9 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Callvirt, adderRef);
 					if (adderRef.ReturnType.FullName != "System.Void")
 						Context.IL.Emit(OpCodes.Pop);
-				}
+				} else
+					throw new XamlParseException(string.Format("Property {0} not found", localname), node);
+
 			}
 		}
 

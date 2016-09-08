@@ -81,6 +81,9 @@
       <Link>MockPlatformServices.cs</Link>
     </Compile>
     <Compile Include="FontConverterTests.cs" />
+    <Compile Include="Issues\Bz43450.xaml.cs">
+      <DependentUpon>Bz43450.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Issues\Bz41296.xaml.cs">
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
@@ -362,6 +365,7 @@
     <Compile Include="NativeViewsAndBindings.xaml.cs">
       <DependentUpon>NativeViewsAndBindings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MockCompiler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -666,6 +670,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="PlatformSpecifics.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Issues\Bz43450.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
