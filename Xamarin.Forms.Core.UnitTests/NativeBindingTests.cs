@@ -52,7 +52,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			NativeView.SetBindingContext(BindingContext, nv => nv.SubViews);
 			base.OnBindingContextChanged();
 		}
-
 	}
 
 	public class MockNativeColor

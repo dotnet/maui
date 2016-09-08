@@ -36,8 +36,9 @@ namespace Xamarin.Forms.Build.Tasks
 				string ns;
 				string typename;
 				string asmstring;
+				string targetPlatform;
 
-				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring);
+				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
 				asmstring = asmstring ?? module.Assembly.Name.Name;
 				lookupAssemblies.Add(new Tuple<string, string>(asmstring, ns));
 			}

@@ -1,5 +1,5 @@
 //
-// InternalExtensions.cs
+// TypeConversionExtensions.cs
 //
 // Author:
 //       Stephane Delcroix <stephane@mi8.be>
@@ -153,9 +153,18 @@ namespace Xamarin.Forms.Xaml
 			if (value != null)
 			{
 				var cast = value.GetType().GetRuntimeMethod("op_Implicit", new[] { value.GetType() });
-				if (cast != null && cast.ReturnType == toType)
-					value = cast.Invoke(null, new[] { value });
+				if (cast != null && cast.ReturnType == toType) {
+					value = cast.Invoke(null, new [] { value });
+					return value;
+				}
 			}
+
+			var nativeValueConverterService = DependencyService.Get<INativeValueConverterService>();
+
+			object nativeValue = null;
+			if (nativeValueConverterService != null && nativeValueConverterService.ConvertTo(value, toType, out nativeValue))
+				return nativeValue;
+
 			return value;
 		}
 	}

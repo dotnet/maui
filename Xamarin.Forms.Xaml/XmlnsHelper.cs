@@ -20,15 +20,16 @@ namespace Xamarin.Forms.Xaml
 			string typeName;
 			string ns;
 			string asm;
+			string targetPlatform;
 
-			ParseXmlns(xmlns, out typeName, out ns, out asm);
+			ParseXmlns(xmlns, out typeName, out ns, out asm, out targetPlatform);
 
 			return ns;
 		}
 
-		public static void ParseXmlns(string xmlns, out string typeName, out string ns, out string asm)
+		public static void ParseXmlns(string xmlns, out string typeName, out string ns, out string asm, out string targetPlatform)
 		{
-			typeName = ns = asm = null;
+			typeName = ns = asm = targetPlatform = null;
 
 			foreach (var decl in xmlns.Split(';'))
 			{
@@ -40,6 +41,10 @@ namespace Xamarin.Forms.Xaml
 				if (decl.StartsWith("assembly=", StringComparison.Ordinal))
 				{
 					asm = decl.Substring(9, decl.Length - 9);
+					continue;
+				}
+				if (decl.StartsWith("targetPlatform=", StringComparison.Ordinal)) {
+					targetPlatform = decl.Substring(15, decl.Length - 15);
 					continue;
 				}
 				var nsind = decl.LastIndexOf(".", StringComparison.Ordinal);

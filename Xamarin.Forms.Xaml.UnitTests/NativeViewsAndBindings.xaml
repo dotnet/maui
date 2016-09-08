@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:ios="clr-namespace:Xamarin.Forms.Xaml.UnitTests;targetPlatform=iOS"
+		xmlns:android="clr-namespace:Xamarin.Forms.Xaml.UnitTests;targetPlatform=Android"
+		x:Class="Xamarin.Forms.Xaml.UnitTests.NativeViewsAndBindings">
+	<StackLayout>
+		<ContentView x:Name="view0">
+			<ios:MockUIView Foo="foo" Bar="42" Baz="{Binding Baz}" View.HorizontalOptions="End" View.VerticalOptions="{Binding VerticalOption}" />
+			<android:MockAndroidView Foo="foo" Bar="42" Baz="{Binding Baz}" View.HorizontalOptions="End" View.VerticalOptions="{Binding VerticalOption}" />
+		</ContentView>
+	</StackLayout>
+</ContentPage>

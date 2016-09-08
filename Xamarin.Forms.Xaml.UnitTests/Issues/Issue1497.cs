@@ -1,11 +1,24 @@
 ﻿using System;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1497
 	{
+		[SetUp]
+		public void Setup()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
+		}
+
 		[Test]
 		public void BPCollectionsWithSingleElement ()
 		{
@@ -24,4 +37,3 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 }
-

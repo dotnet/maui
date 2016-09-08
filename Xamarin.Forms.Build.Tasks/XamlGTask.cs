@@ -90,8 +90,8 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			}
 
-			string rootAsm;
-			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootNs, out rootAsm);
+			string rootAsm, targetPlatform;
+			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootNs, out rootAsm, out targetPlatform);
 			namesAndTypes = GetNamesAndTypes(root, nsmgr);
 
 			var typeArguments = root.Attributes["TypeArguments", "http://schemas.microsoft.com/winfx/2009/xaml"];

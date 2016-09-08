@@ -236,6 +236,9 @@
     <Compile Include="ControlGalleryPages\AutomationIDGallery.cs" />
     <Compile Include="GalleryPages\AppLinkPageGallery.cs" />
     <Compile Include="ControlGalleryPages\NativeBindingGalleryPage.cs" />
+    <Compile Include="GalleryPages\XamlNativeViews.xaml.cs">
+      <DependentUpon>XamlNativeViews.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.targets" />
@@ -255,6 +258,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="GalleryPages\StyleXamlGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalleryPages\XamlNativeViews.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

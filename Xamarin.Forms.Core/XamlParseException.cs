@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		readonly string _unformattedMessage;
 
-		public XamlParseException(string message, IXmlLineInfo xmlInfo) : base(FormatMessage(message, xmlInfo))
+		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null) : base(FormatMessage(message, xmlInfo), innerException)
 		{
 			_unformattedMessage = message;
 			XmlInfo = xmlInfo;

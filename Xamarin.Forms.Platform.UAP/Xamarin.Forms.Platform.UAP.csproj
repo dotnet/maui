@@ -189,6 +189,8 @@
       <Link>LayoutExtensions.cs</Link>
     </Compile>
     <Compile Include="IToolBarForegroundBinder.cs" />
+    <Compile Include="NativeBindingService.cs" />
+    <Compile Include="NativeValueConverterService.cs" />
     <Compile Include="SearchBarRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextAlignmentToHorizontalAlignmentConverter.cs">
       <Link>TextAlignmentToHorizontalAlignmentConverter.cs</Link>

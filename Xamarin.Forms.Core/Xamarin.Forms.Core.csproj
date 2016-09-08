@@ -433,6 +433,8 @@
     <Compile Include="ListStringTypeConverter.cs" />
     <Compile Include="PoppedToRootEventArgs.cs" />
     <Compile Include="NativeBindingHelpers.cs" />
+    <Compile Include="INativeValueConverterService.cs" />
+    <Compile Include="INativeBindingService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
