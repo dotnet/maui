@@ -37,8 +37,8 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					var entry = new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
 
-					entry.Started += OnStarted;
-					entry.Ended += OnEnded;
+					entry.EditingDidBegin += OnStarted;
+					entry.EditingDidEnd += OnEnded;
 
 					_picker = new UIPickerView();
 

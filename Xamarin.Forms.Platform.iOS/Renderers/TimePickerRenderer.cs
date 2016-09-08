@@ -32,8 +32,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (disposing)
 			{
-				Control.Started -= OnStarted;
-				Control.Ended -= OnEnded;
+				Control.EditingDidBegin -= OnStarted;
+				Control.EditingDidEnd -= OnEnded;
 
 				_picker.ValueChanged -= OnValueChanged;
 			}
@@ -49,8 +49,8 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					var entry = new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
 
-					entry.Started += OnStarted;
-					entry.Ended += OnEnded;
+					entry.EditingDidBegin += OnStarted;
+					entry.EditingDidEnd += OnEnded;
 
 					_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 
