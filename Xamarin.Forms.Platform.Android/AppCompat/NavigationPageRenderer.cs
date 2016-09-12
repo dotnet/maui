@@ -670,6 +670,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateMenu()
 		{
+			if (_disposed)
+				return;
+
 			AToolbar bar = _toolbar;
 			Context context = Context;
 			IMenu menu = bar.Menu;
