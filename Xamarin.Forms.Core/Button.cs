@@ -180,7 +180,7 @@ namespace Xamarin.Forms
 		void CommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
 			ICommand cmd = Command;
-			if (cmd != null)
+			if (cmd != null && IsEnabled)
 				IsEnabledCore = cmd.CanExecute(CommandParameter);
 		}
 
@@ -225,8 +225,6 @@ namespace Xamarin.Forms
 				Command.CanExecuteChanged += CommandCanExecuteChanged;
 				CommandCanExecuteChanged(this, EventArgs.Empty);
 			}
-			else
-				IsEnabledCore = true;
 		}
 
 		void OnSourceChanged(object sender, EventArgs eventArgs)
