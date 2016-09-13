@@ -201,7 +201,6 @@ namespace Xamarin.Forms.Platform.Android
 				base.OnReceivedError(view, request, error);
 			}
 
-			[Obsolete]
 			public override bool ShouldOverrideUrlLoading(AWebView view, string url)
 			{
 				if (_renderer.Element == null)
