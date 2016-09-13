@@ -29,6 +29,7 @@ using MonoTouch.CoreLocation;
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(CustomMapView), typeof(CustomIOSMapRenderer))]
 [assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageWithCustomBarColorRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla43161.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
@@ -602,6 +603,22 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			//UITabBar.Appearance.TintColor = UIColor.White;
 			//UITabBar.Appearance.BarTintColor = UIColor.Purple;
+		}
+	}
+
+	public class AccessoryViewCellRenderer : ViewCellRenderer
+	{
+		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+		{
+			var cell = base.GetCell(item, reusableCell, tv);
+
+			// remove highlight on selected cell
+			cell.SelectionStyle = UITableViewCellSelectionStyle.None;
+
+			// iOS right arrow
+			cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+
+			return cell;
 		}
 	}
 }
