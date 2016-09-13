@@ -414,10 +414,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 
-			if (!Forms.SupportsProgress)
-				return;
-
-			SetProgressBarIndeterminate(true);
 			UpdateProgressBarVisibility(_busyCount > 0);
 		}
 
@@ -491,8 +487,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!Forms.SupportsProgress)
 				return;
-
+#pragma warning disable 612, 618
+			SetProgressBarIndeterminate(true);
 			SetProgressBarIndeterminateVisibility(isBusy);
+#pragma warning restore 612, 618
 		}
 
 		internal class DefaultApplication : Application

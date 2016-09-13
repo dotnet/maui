@@ -243,11 +243,6 @@ namespace Xamarin.Forms.Platform.Android
 			MessagingCenter.Subscribe(this, Page.BusySetSignalName, (Page sender, bool enabled) =>
 			{
 				busyCount = Math.Max(0, enabled ? busyCount + 1 : busyCount - 1);
-
-				if (!Forms.SupportsProgress)
-					return;
-
-				SetProgressBarIndeterminate(true);
 				UpdateProgressBarVisibility(busyCount > 0);
 			});
 
@@ -338,7 +333,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (!Forms.SupportsProgress)
 				return;
+#pragma warning disable 612, 618
+			SetProgressBarIndeterminate(true);
 			SetProgressBarIndeterminateVisibility(isBusy);
+#pragma warning restore 612, 618
 		}
 
 		internal class DefaultApplication : Application
