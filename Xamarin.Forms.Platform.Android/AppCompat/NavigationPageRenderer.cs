@@ -607,8 +607,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						transaction.Show(toShow);
 					else
 						transaction.Add(Id, toShow);
-
-					((Platform)Element.Platform).NavAnimationInProgress = false;
 				}
 				else
 				{
@@ -617,7 +615,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					transaction.Hide(currentToHide);
 					transaction.Add(Id, fragment);
 					fragments.Add(fragment);
-					((Platform)Element.Platform).NavAnimationInProgress = false;
 				}
 			}
 			transaction.Commit();
@@ -657,6 +654,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 
 			Context.HideKeyboard(this);
+			((Platform)Element.Platform).NavAnimationInProgress = false;
 
 			// 200ms is how long the animations are, and they are "reversible" in the sense that starting another one slightly before it's done is fine
 
