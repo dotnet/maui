@@ -1,23 +1,9 @@
 using System;
-using System.Drawing;
 using System.Linq;
-#if __UNIFIED__
-using UIKit;
 using Foundation;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-#endif
-#if __UNIFIED__
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
-
-#else
-using nfloat=System.Single;
-using nint=System.Int32;
-using nuint=System.UInt32;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -41,7 +27,8 @@ namespace Xamarin.Forms.Platform.iOS
 					SectionInset = new UIEdgeInsets(margin, margin, bottomMargin, margin),
 					MinimumInteritemSpacing = margin,
 					MinimumLineSpacing = margin
-				}) { DataSource = new DataSource((NavigationMenu)Element), BackgroundColor = UIColor.White };
+				})
+			{ DataSource = new DataSource((NavigationMenu)Element), BackgroundColor = UIColor.White };
 
 			using (var navigationCellId = new NSString("NavigationCell"))
 				_collectionView.RegisterClassForCell(typeof(NavigationCell), navigationCellId);

@@ -3,26 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
-using Xamarin.Forms.Internals;
-#if __UNIFIED__
-using UIKit;
 using Foundation;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-#endif
-#if __UNIFIED__
+using UIKit;
+using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
-
-#else
-using nfloat=System.Single;
-using nint=System.Int32;
-using nuint=System.UInt32;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {

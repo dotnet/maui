@@ -1,16 +1,4 @@
-﻿using System.Collections.Generic;
-#if __UNIFIED__
-using CoreGraphics;
-using UIKit;
-
-#else
-using MonoTouch.UIKit;
-#endif
-
-#if !__UNIFIED__
-	// Save ourselves a ton of ugly ifdefs below
-using CGSize = System.Drawing.SizeF;
-#endif
+﻿using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {

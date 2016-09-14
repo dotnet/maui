@@ -19,13 +19,10 @@
       </group>
     </dependencies>
     <references>
-      <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10">
+      <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10">
         <reference file="Xamarin.Forms.Pages.dll" />
       </group>
       <group targetFramework="Xamarin.iOS10">
-        <reference file="Xamarin.Forms.Pages.dll" />
-      </group>
-      <group targetFramework="MonoTouch10">
         <reference file="Xamarin.Forms.Pages.dll" />
       </group>
       <group targetFramework="MonoAndroid10">
@@ -46,13 +43,11 @@
     </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10" />
 
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\MonoAndroid10" />
 
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\Xamarin.iOS10" />
-
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\MonoTouch10" />
 
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\WP80" />
     

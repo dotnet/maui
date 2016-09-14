@@ -1,22 +1,10 @@
 using System;
-using System.Linq;
 using System.ComponentModel;
 using System.Diagnostics;
-
-#if __UNIFIED__
+using System.Linq;
 using Foundation;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
-#else
-using System.Drawing;
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-using nfloat=System.Single;
-using nint=System.Int32;
-using nuint=System.UInt32;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {

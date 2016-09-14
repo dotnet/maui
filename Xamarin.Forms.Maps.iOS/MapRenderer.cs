@@ -4,31 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using Xamarin.Forms.Platform.iOS;
-#if __UNIFIED__
-using UIKit;
-using MapKit;
 using CoreLocation;
 using Foundation;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-using MonoTouch.CoreLocation;
-using MonoTouch.MapKit;
-using System.Drawing;
-#endif
-#if __UNIFIED__
-using RectangleF = CoreGraphics.CGRect;
-using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
+using MapKit;
 using ObjCRuntime;
-
-#else
-using nfloat=global::System.Single;
-using nint=global::System.Int32;
-using nuint=global::System.UInt32;
-using MonoTouch.ObjCRuntime;
-#endif
+using UIKit;
+using Xamarin.Forms.Platform.iOS;
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Maps.iOS
 {
@@ -44,11 +26,7 @@ namespace Xamarin.Forms.Maps.iOS
 			_map = map;
 		}
 
-#if __UNIFIED__
 		public override MKAnnotationView GetViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
-#else
-		public override MKAnnotationView GetViewForAnnotation (MKMapView mapView, NSObject annotation)
-#endif
 		{
 			MKPinAnnotationView mapPin = null;
 
@@ -71,11 +49,7 @@ namespace Xamarin.Forms.Maps.iOS
 			return mapPin;
 		}
 
-#if __UNIFIED__
 		void AttachGestureToPin(MKPinAnnotationView mapPin, IMKAnnotation annotation)
-#else
-		void AttachGestureToPin (MKPinAnnotationView mapPin, NSObject annotation)
-#endif
 		{
 			UIGestureRecognizer[] recognizers = mapPin.GestureRecognizers;
 
@@ -238,11 +212,7 @@ namespace Xamarin.Forms.Maps.iOS
 				var annotation = new MKPointAnnotation { Title = pin.Label, Subtitle = pin.Address ?? "" };
 
 				pin.Id = annotation;
-#if __UNIFIED__
 				annotation.SetCoordinate(new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude));
-#else
-				annotation.Coordinate = new CLLocationCoordinate2D (pin.Position.Latitude, pin.Position.Longitude);
-#endif
 				((MKMapView)Control).AddAnnotation(annotation);
 			}
 		}
@@ -293,11 +263,7 @@ namespace Xamarin.Forms.Maps.iOS
 		void RemovePins(IList pins)
 		{
 			foreach (object pin in pins)
-#if __UNIFIED__
 				((MKMapView)Control).RemoveAnnotation((IMKAnnotation)((Pin)pin).Id);
-#else
-				((MKMapView)Control).RemoveAnnotation ((NSObject)((Pin)pin).Id);
-#endif
 		}
 
 		void UpdateHasScrollEnabled()

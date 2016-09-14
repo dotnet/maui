@@ -1,11 +1,6 @@
 using System;
 using System.ComponentModel;
-#if __UNIFIED__
 using Foundation;
-
-#else
-using MonoTouch.Foundation;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {

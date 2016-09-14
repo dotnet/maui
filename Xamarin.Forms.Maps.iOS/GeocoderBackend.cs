@@ -1,23 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-#if __UNIFIED__
-using CoreLocation;
 using AddressBookUI;
-#else
-using MonoTouch.AddressBookUI;
-using MonoTouch.CoreLocation;
-#endif
-#if __UNIFIED__
-using RectangleF = CoreGraphics.CGRect;
-using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
-
-#else
-using nfloat=global::System.Single;
-using nint=global::System.Int32;
-using nuint=global::System.UInt32;
-#endif
+using CoreLocation;
 
 namespace Xamarin.Forms.Maps.iOS
 {

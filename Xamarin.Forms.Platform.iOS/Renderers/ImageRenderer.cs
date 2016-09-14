@@ -1,26 +1,11 @@
-using System.Drawing;
+using System;
 using System.ComponentModel;
 using System.IO;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
-#if __UNIFIED__
-using UIKit;
+using System.Threading.Tasks;
 using Foundation;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-#endif
-#if __UNIFIED__
+using UIKit;
 using RectangleF = CoreGraphics.CGRect;
-using SizeF = CoreGraphics.CGSize;
-using PointF = CoreGraphics.CGPoint;
-
-#else
-using nfloat=System.Single;
-using nint=System.Int32;
-using nuint=System.UInt32;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -180,7 +165,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public async Task<UIImage> LoadImageAsync(ImageSource imagesource, CancellationToken cancelationToken = default(CancellationToken), float scale = 1f)
 		{
-			UIImage image = null; 
+			UIImage image = null;
 			var streamsource = imagesource as StreamImageSource;
 			if (streamsource != null && streamsource.Stream != null)
 			{

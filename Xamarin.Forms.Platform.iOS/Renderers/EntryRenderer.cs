@@ -1,13 +1,8 @@
 using System;
-using System.Drawing;
-using System.Runtime.Remoting.Channels;
 using System.ComponentModel;
-#if __UNIFIED__
-using UIKit;
 
-#else
-using MonoTouch.UIKit;
-#endif
+using System.Drawing;
+using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {

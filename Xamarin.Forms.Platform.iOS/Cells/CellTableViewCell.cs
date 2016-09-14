@@ -1,12 +1,6 @@
 using System;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
-#if __UNIFIED__
 using UIKit;
-
-#else
-using MonoTouch.UIKit;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -32,7 +26,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (cellController != null)
 					Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
-				
+
 				_cell = value;
 				cellController = value;
 

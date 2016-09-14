@@ -1,30 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using CoreGraphics;
+using UIKit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-#if __UNIFIED__
-using UIKit;
-using CoreGraphics;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.CoreGraphics;
-#endif
-#if __UNIFIED__
-using RectangleF = CoreGraphics.CGRect;
-using SizeF = CoreGraphics.CGSize;
 using PointF = CoreGraphics.CGPoint;
-
-#else
-using nfloat = System.Single;
-using nint = System.Int32;
-using nuint = System.UInt32;
-#endif
+using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -309,11 +293,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var task = GetAppearedOrDisappearedTask(page);
 
 			UIViewController poppedViewController;
-#if __UNIFIED__
 			poppedViewController = base.PopViewController(animated);
-#else
-			poppedViewController = base.PopViewControllerAnimated (animated);
-#endif
 
 			if (poppedViewController == null)
 			{

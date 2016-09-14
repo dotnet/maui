@@ -1,13 +1,6 @@
 using System;
-using Xamarin.Forms.Internals;
-#if __UNIFIED__
 using UIKit;
-using Foundation;
-
-#else
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
-#endif
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {

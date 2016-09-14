@@ -5,12 +5,7 @@ using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
-#if __UNIFIED__
 using UIKit;
-
-#else
-using MonoTouch.UIKit;
-#endif
 
 [assembly: AssemblyTitle("Xamarin.Forms.Platform.iOS")]
 [assembly: AssemblyDescription("iOS Backend for Xamarin.Forms")]

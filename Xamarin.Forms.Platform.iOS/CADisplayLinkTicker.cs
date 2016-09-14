@@ -1,17 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using Xamarin.Forms.Internals;
-#if __UNIFIED__
-using UIKit;
 using CoreAnimation;
 using Foundation;
-
-#else
-using MonoTouch.UIKit;
-using MonoTouch.CoreAnimation;
-using MonoTouch.Foundation;
-#endif
+using UIKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {

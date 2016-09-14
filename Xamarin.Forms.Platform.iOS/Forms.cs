@@ -11,16 +11,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Forms.Internals;
-#if __UNIFIED__
-using UIKit;
 using CoreFoundation;
 using Foundation;
-#else
-using MonoTouch.UIKit;
-using MonoTouch.CoreFoundation;
-using MonoTouch.Foundation;
-#endif
+using UIKit;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.iOS;
 
 namespace Xamarin.Forms
@@ -241,18 +235,10 @@ namespace Xamarin.Forms
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
 				NSTimer timer = null;
-#if __UNIFIED__
 				timer = NSTimer.CreateRepeatingScheduledTimer(interval, t =>
 				{
-#else
-				timer = NSTimer.CreateRepeatingScheduledTimer (interval, () => {
-				#endif
 					if (!callback())
-#if __UNIFIED__
 						t.Invalidate();
-#else
-						timer.Invalidate ();
-						#endif
 				});
 				NSRunLoop.Main.AddTimer(timer, NSRunLoopMode.Common);
 			}

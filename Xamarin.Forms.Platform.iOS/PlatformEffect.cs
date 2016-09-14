@@ -1,10 +1,4 @@
-﻿using System.ComponentModel;
-#if __UNIFIED__
-using UIKit;
-
-#else
-using MonoTouch.UIKit;
-#endif
+﻿using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {

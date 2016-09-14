@@ -1,10 +1,5 @@
-using Xamarin.Forms.Maps.iOS;
-#if __UNIFIED__
 using UIKit;
-
-#else
-using MonoTouch.UIKit;
-#endif
+using Xamarin.Forms.Maps.iOS;
 
 namespace Xamarin
 {

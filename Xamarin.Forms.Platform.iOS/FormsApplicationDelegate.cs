@@ -1,17 +1,8 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-#if __UNIFIED__
+using CoreSpotlight;
 using Foundation;
 using UIKit;
-using CoreSpotlight;
-
-#else
-using MonoTouch.Foundation;
-using MonoTouch.UIKit;
-using MonoTouch.CoreSpotlight;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {

@@ -1,14 +1,7 @@
-using System;
-using System.ComponentModel;
-using System.Drawing;
 using System.Collections.Generic;
-#if __UNIFIED__
+using System.ComponentModel;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
-
-#else
-using MonoTouch.UIKit;
-#endif
 
 namespace Xamarin.Forms.Platform.iOS
 {
