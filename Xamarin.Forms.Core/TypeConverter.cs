@@ -8,7 +8,7 @@ namespace Xamarin.Forms
 		public virtual bool CanConvertFrom(Type sourceType)
 		{
 			if (sourceType == null)
-				throw new ArgumentNullException("sourceType");
+				throw new ArgumentNullException(nameof(sourceType));
 
 			return sourceType == typeof(string);
 		}

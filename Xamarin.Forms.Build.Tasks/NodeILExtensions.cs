@@ -51,6 +51,21 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = context.Body.Method.Module;
 			var str = (string)node.Value;
 
+			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
+			var compiledConverterName = typeConverter?.GetCustomAttribute (module.Import(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?.First().Value as string;
+			Type compiledConverterType;
+			if (compiledConverterName != null && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
+				var compiledConverter = Activator.CreateInstance (compiledConverterType);
+				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
+				var instructions = (IEnumerable<Instruction>)converter.Invoke (compiledConverter, new object[] {
+					node.Value as string, context.Body.Method.Module, node as BaseNode});
+				foreach (var i in instructions)
+					yield return i;
+				if (targetTypeRef.IsValueType && boxValueTypes)
+					yield return Instruction.Create (OpCodes.Box, module.Import (targetTypeRef));
+				yield break;
+			}
+
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null)
 			{

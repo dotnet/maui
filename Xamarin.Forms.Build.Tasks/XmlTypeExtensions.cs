@@ -10,6 +10,11 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
+ 		public static TypeReference GetTypeReference (string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
+ 		{
+ 			return new XmlType (namespaceURI, typename, null).GetTypeReference (module, xmlInfo);
+ 		}
+
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
 			var namespaceURI = xmlType.NamespaceUri;

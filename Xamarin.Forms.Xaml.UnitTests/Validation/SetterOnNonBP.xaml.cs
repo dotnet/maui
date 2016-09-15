@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public string NonBindable { get; set; }
 	}
 
+	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class SetterOnNonBP : ContentPage
 	{	
 		public SetterOnNonBP ()
@@ -27,7 +28,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase (true)]
 			public void ShouldThrow (bool useCompiledXaml)
 			{
-				Assert.Throws (new XamlParseExceptionConstraint (10, 13), () => new SetterOnNonBP (useCompiledXaml));
+				if (!useCompiledXaml)
+					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => new SetterOnNonBP(useCompiledXaml));
+				else
+					Assert.Throws(new XamlParseExceptionConstraint(10, 13), () => MockCompiler.Compile(typeof(SetterOnNonBP)));
 			}
 		}
 	}

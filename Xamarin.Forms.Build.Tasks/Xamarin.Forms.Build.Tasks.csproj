@@ -91,6 +91,13 @@
     <Compile Include="CompiledMarkupExtensions\StaticExtension.cs" />
     <Compile Include="CompiledMarkupExtensions\ICompiledMarkupExtension.cs" />
     <Compile Include="BindablePropertyReferenceExtensions.cs" />
+    <Compile Include="CompiledConverters\BindablePropertyConverter.cs" />
+    <Compile Include="CompiledConverters\BindingTypeConverter.cs" />
+    <Compile Include="CompiledConverters\BoundsTypeConverter.cs" />
+    <Compile Include="CompiledConverters\ColorTypeConverter.cs" />
+    <Compile Include="CompiledConverters\ICompiledTypeConverter.cs" />
+    <Compile Include="CompiledConverters\LayoutOptionsConverter.cs" />
+    <Compile Include="CompiledConverters\RectangleTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
@@ -126,4 +133,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
+  <ItemGroup>
+    <Folder Include="CompiledConverters\" />
+  </ItemGroup>
 </Project>

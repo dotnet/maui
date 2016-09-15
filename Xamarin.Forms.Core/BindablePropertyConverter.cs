@@ -7,6 +7,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
+	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.BindablePropertyConverter")]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
 		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
@@ -51,10 +52,7 @@ namespace Xamarin.Forms
 					type = (parentValuesProvider.TargetObject as Trigger).TargetType;
 
 				if (type == null)
-				{
-					string msg = string.Format("Can't resolve {0}", parts[0]);
-					throw new XamlParseException(msg, lineinfo);
-				}
+					throw new XamlParseException($"Can't resolve {parts [0]}", lineinfo);
 
 				return ConvertFrom(type, parts[0], lineinfo);
 			}
@@ -67,8 +65,7 @@ namespace Xamarin.Forms
 				}
 				return ConvertFrom(type, parts[1], lineinfo);
 			}
-			string emsg = string.Format("Can't resolve {0}. Syntax is [[ns:]Type.]PropertyName.", value);
-			throw new XamlParseException(emsg, lineinfo);
+			throw new XamlParseException($"Can't resolve {value}. Syntax is [[prefix:]Type.]PropertyName.", lineinfo);
 		}
 
 		public override object ConvertFromInvariantString(string value)
@@ -83,7 +80,7 @@ namespace Xamarin.Forms
 			string[] parts = value.Split('.');
 			if (parts.Length != 2)
 			{
-				Log.Warning(null, "Can't resolve {0}. Accepted syntax is Type.PropertyName.", value);
+				Log.Warning(null, $"Can't resolve {value}. Accepted syntax is Type.PropertyName.");
 				return null;
 			}
 			Type type = Type.GetType("Xamarin.Forms." + parts[0]);
@@ -95,10 +92,10 @@ namespace Xamarin.Forms
 			string name = propertyName + "Property";
 			FieldInfo bpinfo = type.GetField(fi => fi.Name == name && fi.IsStatic && fi.IsPublic && fi.FieldType == typeof(BindableProperty));
 			if (bpinfo == null)
-				throw new XamlParseException(string.Format("Can't resolve {0} on {1}", name, type.Name), lineinfo);
+				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
 			if (bp.PropertyName != propertyName)
-				throw new XamlParseException(string.Format("The PropertyName of {0}.{1} is not {2}", type.Name, name, propertyName), lineinfo);
+				throw new XamlParseException($"The PropertyName of {type.Name}.{name} is not {propertyName}", lineinfo);
 			return bp;
 		}
 	}

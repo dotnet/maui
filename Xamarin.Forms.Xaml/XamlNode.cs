@@ -52,10 +52,9 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public string NamespaceUri { get; }
-
 		public string Name { get; }
-
 		public IList<XmlType> TypeArguments { get; private set; }
+
 	}
 
 	internal abstract class BaseNode : IXmlLineInfo, INode

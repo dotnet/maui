@@ -49,6 +49,8 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			if (skips.Contains(propertyName))
 				return;
+			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
+				return;
 			var markupString = markupnode.MarkupString;
 			var node = ParseExpression(ref markupString, Context, markupnode.NamespaceResolver, markupnode) as IElementNode;
 			if (node != null)

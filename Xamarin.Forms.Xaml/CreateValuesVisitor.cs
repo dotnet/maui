@@ -74,8 +74,7 @@ namespace Xamarin.Forms.Xaml
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
 			         !ValidateCtorArguments(type, node, out ctorargname))
 			{
-				throw new XamlParseException(
-					String.Format("The Property {0} is required to create a {1} object.", ctorargname, type.FullName), node);
+				throw new XamlParseException($"The Property {ctorargname} is required to create a {type.FullName} object.", node);
 			}
 			else
 			{

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Xamarin.Forms.Xaml.UnitTests.CompiledTypeConverter"
+			 RectangleP="0,1,2,4"
+			 RectangleBP="4,8,16,32"
+			 BackgroundColor="Pink">
+	<Label HorizontalOptions="EndAndExpand" />
+</ContentPage>

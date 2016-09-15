@@ -3,7 +3,8 @@ using System.Globalization;
 
 namespace Xamarin.Forms
 {
-	public class BoundsTypeConverter : TypeConverter
+	[Xaml.ProvideCompiled ("Xamarin.Forms.Core.XamlC.BoundsTypeConverter")]
+	public sealed class BoundsTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)
 		{
@@ -36,7 +37,7 @@ namespace Xamarin.Forms
 					return new Rectangle(x, y, w, h);
 			}
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Rectangle)));
+			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Rectangle)}");
 		}
 	}
 }
