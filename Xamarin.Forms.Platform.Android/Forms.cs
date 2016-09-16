@@ -264,9 +264,7 @@ namespace Xamarin.Forms
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				var activity = Context as Activity;
-				if (activity != null)
-					activity.RunOnUiThread(action);
+				new Handler(Looper.MainLooper).Post(action);
 			}
 
 			public Ticker CreateTicker()
