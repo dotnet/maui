@@ -24,10 +24,7 @@ namespace Xamarin.Forms.ControlGallery.WP8
 		/// Constructor for the Application object.
 		/// </summary>
 		public App()
-		{
-			if (!Debugger.IsAttached)
-				Insights.Initialize (Controls.App.InsightsApiKey);
-			
+		{		
 			FormsMaps.Init (Controls.App.Config["WP8AppId"], Controls.App.Config["WP8AuthToken"]);
 			
 			// Global handler for uncaught exceptions.

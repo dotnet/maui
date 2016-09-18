@@ -73,6 +73,11 @@ namespace Xamarin.Forms.Controls
 			_app.EnterText(query, text);
 		}
 
+		public void ClearText(Func<AppQuery, AppWebQuery> query)
+		{
+			_app.ClearText(query);
+		}
+
 		public void ClearText(Func<AppQuery, AppQuery> query)
 		{
 			_app.ClearText(query);

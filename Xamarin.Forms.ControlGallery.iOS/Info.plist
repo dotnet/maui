@@ -15,7 +15,12 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array/>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 	<key>MinimumOSVersion</key>
 	<string>6.1</string>
 	<key>CFBundleDisplayName</key>
@@ -97,5 +102,7 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>CFBundleName</key>
+	<string>XamControl</string>
 </dict>
 </plist>

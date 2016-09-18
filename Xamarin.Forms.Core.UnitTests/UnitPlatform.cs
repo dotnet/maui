@@ -4,7 +4,6 @@ namespace Xamarin.Forms.Core.UnitTests
 {
 	public class UnitPlatform : IPlatform
 	{
-		Page page;
 		Func<VisualElement, double, double, SizeRequest> getNativeSizeFunc;
 		readonly bool useRealisticLabelMeasure;
 

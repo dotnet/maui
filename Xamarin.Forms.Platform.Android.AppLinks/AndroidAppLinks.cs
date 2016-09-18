@@ -91,11 +91,11 @@ namespace Xamarin.Forms.Platform.Android.AppLinks
 							{
 								if (appLink.IsLinkActive)
 								{
-									Statuses resultStartAgain = await AppIndex.AppIndexApi.StartAsync(_client, indexAction);
+									await AppIndex.AppIndexApi.StartAsync(_client, indexAction);
 								}
 								else
 								{
-									Statuses resultEnd = await AppIndex.AppIndexApi.EndAsync(_client, indexAction);
+									await AppIndex.AppIndexApi.EndAsync(_client, indexAction);
 								}
 							}
 						};
