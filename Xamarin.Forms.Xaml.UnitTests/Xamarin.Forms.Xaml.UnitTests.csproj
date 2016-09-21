@@ -96,7 +96,6 @@
     <Compile Include="MarkupExtensionTests.cs" />
     <Compile Include="NameScopeTests.cs" />
     <Compile Include="OnPlatformTests.cs" />
-    <Compile Include="StaticExtensionTests.cs" />
     <Compile Include="NullExtensionTests.cs" />
     <Compile Include="TypeExtensionTests.cs" />
     <Compile Include="FactoryMethodTests.cs" />
@@ -366,6 +365,9 @@
       <DependentUpon>NativeViewsAndBindings.xaml</DependentUpon>
     </Compile>
     <Compile Include="MockCompiler.cs" />
+    <Compile Include="XStaticException.xaml.cs">
+      <DependentUpon>XStaticException.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -646,6 +648,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="NativeViewsAndBindings.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="XStaticException.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
