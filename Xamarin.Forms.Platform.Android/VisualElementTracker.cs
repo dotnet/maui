@@ -45,18 +45,28 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void Dispose()
 		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
 			if (_disposed)
 				return;
+
 			_disposed = true;
 
-			SetElement(_element, null);
-
-			if (_renderer != null)
+			if (disposing)
 			{
-				_renderer.ElementChanged -= RendererOnElementChanged;
-				_renderer.ViewGroup.RemoveOnAttachStateChangeListener(AttachTracker.Instance);
-				_renderer = null;
-				_context = null;
+				SetElement(_element, null);
+
+				if (_renderer != null)
+				{
+					_renderer.ElementChanged -= RendererOnElementChanged;
+					_renderer.ViewGroup.RemoveOnAttachStateChangeListener(AttachTracker.Instance);
+					_renderer = null;
+					_context = null;
+				}
 			}
 		}
 

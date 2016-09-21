@@ -13,7 +13,15 @@ namespace Xamarin.Forms.Platform.WinPhone
 	{
 		public abstract FrameworkElement Child { get; set; }
 
-		public abstract void Dispose();
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+		}
 
 		public event EventHandler Updated;
 
@@ -106,29 +114,35 @@ namespace Xamarin.Forms.Platform.WinPhone
 			}
 		}
 
-		public override void Dispose()
+		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;
+
 			_disposed = true;
 
-			if (_element != null)
+			if (disposing)
 			{
-				_element.Tap -= ElementOnTap;
-				_element.DoubleTap -= ElementOnDoubleTap;
-				_element.ManipulationDelta -= OnManipulationDelta;
-				_element.ManipulationCompleted -= OnManipulationCompleted;
+				if (_element != null)
+				{
+					_element.Tap -= ElementOnTap;
+					_element.DoubleTap -= ElementOnDoubleTap;
+					_element.ManipulationDelta -= OnManipulationDelta;
+					_element.ManipulationCompleted -= OnManipulationCompleted;
+				}
+
+				if (_model != null)
+				{
+					_model.BatchCommitted -= HandleRedrawNeeded;
+					_model.PropertyChanged -= HandlePropertyChanged;
+				}
+
+				Child = null;
+				Model = null;
+				Element = null;
 			}
 
-			if (_model != null)
-			{
-				_model.BatchCommitted -= HandleRedrawNeeded;
-				_model.PropertyChanged -= HandlePropertyChanged;
-			}
-
-			Child = null;
-			Model = null;
-			Element = null;
+			base.Dispose(disposing);
 		}
 
 		protected virtual void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
