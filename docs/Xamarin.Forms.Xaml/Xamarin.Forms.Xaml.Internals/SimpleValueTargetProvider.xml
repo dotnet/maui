@@ -21,13 +21,30 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="objectAndParents" Type="System.Object[]" />
       </Parameters>
       <Docs>
         <param name="objectAndParents">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SimpleValueTargetProvider (object[] objectAndParents, object targetProperty);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(object[] objectAndParents, object targetProperty) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="objectAndParents" Type="System.Object[]" />
+        <Parameter Name="targetProperty" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="objectAndParents">To be added.</param>
+        <param name="targetProperty">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
