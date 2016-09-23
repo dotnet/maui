@@ -13,6 +13,16 @@ namespace Xamarin.Forms.Core.UnitTests
 		public int Bar { get; set; }
 		public string Baz { get; set; }
 
+		string cantBeNull = "";
+		public string CantBeNull {
+			get { return cantBeNull; }
+			set {
+				if (value == null)
+					throw new NullReferenceException();
+				cantBeNull = value;
+			}
+		}
+
 		public void FireBazChanged()
 		{
 			BazChanged?.Invoke(this, new TappedEventArgs(null));
@@ -380,17 +390,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void ThrowsNeedsConverter()
-		{
-			var nativeView = new MockNativeView();
-			Assert.AreEqual(null, nativeView.Foo);
-			Assert.AreEqual(0, nativeView.Bar);
-			var vm = new MockVMForNativeBinding();
-			nativeView.SetBinding("SelectedColor", new Binding("CColor"));
-			Assert.Throws<ArgumentException>(() => nativeView.SetBindingContext(vm));
-		}
-
-		[Test]
 		public void TestConverterDoesNotThrow()
 		{
 			var nativeView = new MockNativeView();
@@ -481,6 +480,17 @@ namespace Xamarin.Forms.Core.UnitTests
 			var vm = new MockVMForNativeBinding { FFoo = "qux" };
 			nativeView.SetBindingContext(vm);
 			Assert.AreEqual("foobar", vm.FFoo);
+		}
+
+		[Test]
+		public void DoNotApplyNull()
+		{
+			var native = new MockNativeView();
+			Assert.NotNull(native.CantBeNull);
+			native.SetBinding("CantBeNull", new Binding("FFoo", BindingMode.TwoWay));
+			Assert.NotNull(native.CantBeNull);
+			native.SetBindingContext(new { FFoo = "foo" });
+			Assert.AreEqual("foo", native.CantBeNull);
 		}
 	}
 }
