@@ -81,10 +81,21 @@ namespace Xamarin.Forms.Build.Tasks
 				parentNode = parentNode.Parent;
 			}
 
+			if ((propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName)) && skips.Contains(propertyName))
+				return;
+
 			//if this node is an IMarkupExtension, invoke ProvideValue() and replace the variable
 			var vardef = Context.Variables[node];
 			var vardefref = new VariableDefinitionReference(vardef);
-			Context.IL.Append(ProvideValue(vardefref, Context, Module, node));
+			var localName = propertyName.LocalName;
+			TypeReference declaringTypeReference = null;
+			FieldReference bpRef = null;
+			PropertyDefinition propertyRef = null;
+			if (parentNode is IElementNode && propertyName != XmlName.Empty) {
+				bpRef = GetBindablePropertyReference(Context.Variables [(IElementNode)parentNode], propertyName.NamespaceURI, ref localName, Context, node);
+				propertyRef = Context.Variables [(IElementNode)parentNode].VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			}
+			Context.IL.Append(ProvideValue(vardefref, Context, Module, node, bpRef:bpRef, propertyRef:propertyRef, propertyDeclaringTypeRef: declaringTypeReference));
 			if (vardef != vardefref.VariableDefinition)
 			{
 				vardef = vardefref.VariableDefinition;
@@ -92,11 +103,8 @@ namespace Xamarin.Forms.Build.Tasks
 				Context.Variables[node] = vardef;
 			}
 
-			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName))
+			if (propertyName != XmlName.Empty)
 			{
-				if (skips.Contains(propertyName))
-					return;
-
 				if (propertyName == XmlName._CreateContent)
 					SetDataTemplate((IElementNode)parentNode, node, Context, node);
 				else
@@ -221,7 +229,7 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ILContext context,
-			ModuleDefinition module, ElementNode node)
+		                                                    ModuleDefinition module, ElementNode node, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference propertyDeclaringTypeRef = null)
 		{
 			GenericInstanceType markupExtension;
 			IList<TypeReference> genericArguments;
@@ -242,7 +250,7 @@ namespace Xamarin.Forms.Build.Tasks
 				else
 					vardefref.VariableDefinition = new VariableDefinition(module.Import(genericArguments.First()));
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables[node]);
-				foreach (var instruction in node.PushServiceProvider(context))
+				foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
 					yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 
@@ -261,7 +269,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				vardefref.VariableDefinition = new VariableDefinition(module.Import(genericArguments.First()));
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables[node]);
-				foreach (var instruction in node.PushServiceProvider(context))
+				foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
 					yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
@@ -274,7 +282,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables[node]);
-				foreach (var instruction in node.PushServiceProvider(context))
+				foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
 					yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
@@ -287,7 +295,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables[node]);
-				foreach (var instruction in node.PushServiceProvider(context))
+				foreach (var instruction in node.PushServiceProvider(context, bpRef, propertyRef, propertyDeclaringTypeRef))
 					yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
 				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
@@ -297,20 +305,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public static IEnumerable<Instruction> SetPropertyValue(VariableDefinition parent, XmlName propertyName, INode valueNode, ILContext context, IXmlLineInfo iXmlLineInfo)
 		{
 			var module = context.Body.Method.Module;
-
 			var localName = propertyName.LocalName;
-			TypeReference declaringTypeReference;
-
-			//If it's an attached BP, update elementType and propertyName
-			var bpOwnerType = parent.VariableType;
-			GetNameAndTypeRef(ref bpOwnerType, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
-			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == localName + "Property" &&
-														fd.IsStatic &&
-														fd.IsPublic, out declaringTypeReference);
-			if (bpRef != null) {
-				bpRef = module.Import(bpRef.ResolveGenericParameters(declaringTypeReference));
-				bpRef.FieldType = module.Import(bpRef.FieldType);
-			}
+			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
 
 			//If the target is an event, connect
 			if (CanConnectEvent(parent, localName))
@@ -337,6 +333,25 @@ namespace Xamarin.Forms.Build.Tasks
 				return Add(parent, localName, valueNode, iXmlLineInfo, context);
 
 			throw new XamlParseException($"No property, bindable property, or event found for '{localName}'", iXmlLineInfo);
+		}
+
+		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, ILContext context, IXmlLineInfo iXmlLineInfo)
+		{
+			var module = context.Body.Method.Module;
+			TypeReference declaringTypeReference;
+
+			//If it's an attached BP, update elementType and propertyName
+			var bpOwnerType = parent.VariableType;
+			GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
+			var name = $"{localName}Property";
+			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == name &&
+														fd.IsStatic &&
+														fd.IsPublic, out declaringTypeReference);
+			if (bpRef != null) {
+				bpRef = module.Import(bpRef.ResolveGenericParameters(declaringTypeReference));
+				bpRef.FieldType = module.Import(bpRef.FieldType);
+			}
+			return bpRef;
 		}
 
 		static bool CanConnectEvent(VariableDefinition parent, string localName)
@@ -448,28 +463,10 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Callvirt, module.Import(setBinding));
 		}
 
-		static TypeReference GetBindablePropertyType(FieldReference bpRef, IXmlLineInfo iXmlLineInfo, ILContext context)
+		static bool CanSetValue(FieldReference bpRef, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
 
-			if (!bpRef.Name.EndsWith("Property", StringComparison.InvariantCulture))
-				throw new XamlParseException($"The name of the bindable property {bpRef.Name} does not ends with \"Property\". This is the kind of convention the world is build upon, a bit like Planck's constant.", iXmlLineInfo);
-			var bpName = bpRef.Name.Substring(0, bpRef.Name.Length - 8);
-			var owner = bpRef.DeclaringType;
-			TypeReference _;
-
-			var getter = owner.GetProperty(pd => pd.Name == bpName, out _)?.GetMethod;
-			if (getter == null || getter.IsStatic || !getter.IsPublic)
-				getter = null;
-			getter = getter ?? owner.GetMethods(md => md.Name == $"Get{bpName}" && md.IsStatic && md.IsPublic && md.Parameters.Count == 1, module).FirstOrDefault()?.Item1;
-
-			if (getter == null)
-				throw new XamlParseException($"Missing a public static Get{bpName} or a public instance property getter for the attached property \"{bpRef.DeclaringType}.{bpRef.Name}\"", iXmlLineInfo);
-			return getter.ReturnType;
-		}
-
-		static bool CanSetValue(FieldReference bpRef, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
-		{
 			if (bpRef == null)
 				return false;
 
@@ -484,7 +481,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!context.Variables.TryGetValue(elementNode, out varValue))
 				return false;
 
-			var bpTypeRef = GetBindablePropertyType(bpRef, iXmlLineInfo, context);
+			var bpTypeRef = bpRef.GetBindablePropertyType(iXmlLineInfo, module);
 			return varValue.VariableType.InheritsFromOrImplements(bpTypeRef);
 		}
 
@@ -504,7 +501,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
 
 			if (valueNode != null) {
-				foreach (var instruction in valueNode.PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context), true, false))
+				foreach (var instruction in valueNode.PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef:bpRef), true, false))
 					yield return instruction;
 			} else if (elementNode != null) {
 				yield return Instruction.Create(OpCodes.Ldloc, context.Variables [elementNode]);
@@ -572,7 +569,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldloc, parent);
 
 			if (valueNode != null) {
-				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider [] { property, propertyType.Resolve() }, valueNode.PushServiceProvider(context), false, true))
+				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider [] { property, propertyType.Resolve() }, valueNode.PushServiceProvider(context, propertyRef:property), false, true))
 					yield return instruction;
 				yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
 			} else if (elementNode != null) {
