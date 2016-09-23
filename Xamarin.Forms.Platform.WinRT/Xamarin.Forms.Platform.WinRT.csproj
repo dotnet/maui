@@ -66,13 +66,6 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.UAP\NativeBindingService.cs">
-      <Link>NativeBindingService.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.UAP\NativeValueConverterService.cs">
-      <Link>NativeValueConverterService.cs</Link>
-    </Compile>
-    <Compile Include="PlatformConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <Compile Include="BrushHelpers.cs" />
@@ -175,6 +168,13 @@
     <Compile Include="HorizontalTextAlignmentConverter.cs" />
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\NativeBindingService.cs">
+      <Link>NativeBindingService.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.UAP\NativeValueConverterService.cs">
+      <Link>NativeValueConverterService.cs</Link>
+    </Compile>
+    <Compile Include="PlatformConfigurationExtensions.cs" />
     <Page Include="PageControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
