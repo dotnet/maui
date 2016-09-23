@@ -1,9 +1,23 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.OnPlatform">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<OnPlatform x:TypeArguments="FontAttributes" x:Key="fontAttributes">
+				<OnPlatform.iOS>Bold</OnPlatform.iOS>
+				<OnPlatform.Android>Italic</OnPlatform.Android>
+			</OnPlatform>
+			<OnPlatform x:Key="phone" x:TypeArguments="x:Double" iOS="20" Android="20" WinPhone="30"/>
+			<OnPlatform x:Key="tablet" x:TypeArguments="x:Double" iOS="40" Android="40" WinPhone="60"/>
+			<OnIdiom x:Key="fontSize" x:TypeArguments="x:Double"
+				Phone="{StaticResource phone}"
+				Tablet="{StaticResource tablet}"/>
+
+		</ResourceDictionary>
+	</ContentPage.Resources>
 	<StackLayout>
-		<Label x:Name="label0">
+		<Label x:Name="label0" FontAttributes="{StaticResource fontAttributes}" FontSize="{StaticResource fontSize}">
 			<Label.IsVisible>
 				<OnPlatform x:TypeArguments="x:Boolean">
 					<OnPlatform.iOS>true</OnPlatform.iOS>

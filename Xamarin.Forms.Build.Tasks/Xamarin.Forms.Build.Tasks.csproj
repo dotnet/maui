@@ -90,6 +90,7 @@
     <Compile Include="MethodDefinitionExtensions.cs" />
     <Compile Include="CompiledMarkupExtensions\StaticExtension.cs" />
     <Compile Include="CompiledMarkupExtensions\ICompiledMarkupExtension.cs" />
+    <Compile Include="BindablePropertyReferenceExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

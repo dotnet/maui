@@ -37,10 +37,8 @@ namespace Xamarin.Forms.Build.Tasks
 			IEnumerable<Instruction> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)
 		{
 			var module = context.Body.Method.Module;
-			var targetTypeRef = GetBPReturnType(context, bpRef, node);
-
-			TypeReference typeConverter;
-			bpRef.HasTypeConverter(module, out typeConverter);
+			var targetTypeRef = bpRef.GetBindablePropertyType(node, module);
+			var typeConverter = bpRef.GetBindablePropertyTypeConverter(module);
 
 			return node.PushConvertedValue(context, targetTypeRef, typeConverter, pushServiceProvider, boxValueTypes,
 				unboxValueTypes);
@@ -186,101 +184,6 @@ namespace Xamarin.Forms.Build.Tasks
 			throw new XamlParseException(string.Format("Enum value not found for {0}", value), lineInfo);
 		}
 
-		static bool HasTypeConverter(this FieldReference bpRef, ModuleDefinition module,
-			out TypeReference typeConverterReference)
-		{
-			typeConverterReference = null;
-
-			var declaringType = bpRef.DeclaringType;
-			var bpName = bpRef.Name;
-			var pName = bpName.EndsWith("Property", StringComparison.Ordinal) ? bpName.Substring(0, bpName.Length - 8) : bpName;
-			var property = declaringType.Resolve().Properties.FirstOrDefault(p => p.Name == pName);
-			CustomAttribute attr = null;
-
-			if (property != null)
-			{
-				if (property.HasCustomAttributes)
-				{
-					attr =
-						property.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
-				}
-				if (attr == null && property.PropertyType.Resolve().HasCustomAttributes)
-				{
-					attr =
-						property.PropertyType.Resolve()
-							.CustomAttributes.FirstOrDefault(
-								cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
-				}
-
-				if (attr == null)
-					return false;
-
-				typeConverterReference = attr.ConstructorArguments[0].Value as TypeReference;
-				return true;
-			}
-
-			var getters = bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + pName && 
-			                                             md.IsStatic && 
-			                                             md.Parameters.Count() == 1 &&
-			                                             md.Parameters[0].ParameterType.FullName == "Xamarin.Forms.BindableObject", module).SingleOrDefault();
-			if (getters != null)
-			{
-				if (getters.Item1.HasCustomAttributes)
-				{
-					attr =
-						getters.Item1.CustomAttributes.FirstOrDefault(
-							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
-				}
-				else if (getters.Item1.ReturnType.Resolve().HasCustomAttributes)
-				{
-					attr =
-						getters.Item1.ReturnType.Resolve()
-							.CustomAttributes.FirstOrDefault(
-								cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName));
-				}
-
-				if (attr == null)
-					return false;
-
-				typeConverterReference = attr.ConstructorArguments[0].Value as TypeReference;
-				return true;
-			}
-
-			return false;
-		}
-
-		static TypeReference GetBPReturnType(ILContext context, FieldReference bpRef, IXmlLineInfo lineInfo)
-		{
-			//Find a property with a matching name
-			var name = bpRef.Name;
-			if (!name.EndsWith("Property", StringComparison.Ordinal))
-				return context.Body.Method.Module.TypeSystem.Object;
-			name = name.Substring(0, name.Length - 8);
-
-			//First, check for a property
-			TypeReference declaringTypeRef;
-			var property = bpRef.DeclaringType.GetProperty(pd => pd.Name == name, out declaringTypeRef);
-			if (property != null)
-				return property.PropertyType;
-
-			//Then check for getter or setter (attached BPs)
-			var getters =
-				bpRef.DeclaringType.GetMethods(md => md.Name == "Get" + name &&
-				                               md.IsStatic &&
-				                               md.Parameters.Count() == 1 &&
-				                               md.Parameters [0].ParameterType.FullName == "Xamarin.Forms.BindableObject", context.Body.Method.Module)
-					.SingleOrDefault();
-			if (getters != null)
-				return getters.Item1.ReturnType;
-
-			//throws
-			throw new XamlParseException(
-				string.Format(
-					"Can not find a Property named \"{0}\" or a static method named \"Get{0}\" for BindableProperty \"{1}\"", name,
-					bpRef.Name), lineInfo);
-		}
-
 		public static IEnumerable<Instruction> PushXmlLineInfo(this INode node, ILContext context)
 		{
 			var module = context.Body.Method.Module;
@@ -389,7 +292,30 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 		}
 
-		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context)
+		static IEnumerable<Instruction> PushTargetProperty(FieldReference bpRef, PropertyReference propertyRef, TypeReference declaringTypeReference, ModuleDefinition module)
+		{
+			if (bpRef != null) {
+				yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
+				yield break;
+			}
+			if (propertyRef != null) {
+//				IL_0000:  ldtoken [mscorlib]System.String
+//				IL_0005:  call class [mscorlib]System.Type class [mscorlib] System.Type::GetTypeFromHandle(valuetype [mscorlib] System.RuntimeTypeHandle)
+//				IL_000a:  ldstr "Foo"
+//				IL_000f:  callvirt instance class [mscorlib] System.Reflection.PropertyInfo class [mscorlib] System.Type::GetProperty(string)
+				var getTypeFromHandle = module.Import(typeof(Type).GetMethod("GetTypeFromHandle", new [] { typeof(RuntimeTypeHandle) }));
+				var getPropertyInfo = module.Import(typeof(Type).GetMethod("GetProperty", new [] { typeof(string) }));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(declaringTypeReference ?? propertyRef.DeclaringType));
+				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+				yield return Instruction.Create(OpCodes.Ldstr, propertyRef.Name);
+				yield return Instruction.Create(OpCodes.Callvirt, module.Import(getPropertyInfo));
+				yield break;
+			}
+			yield return Instruction.Create(OpCodes.Ldnull);
+			yield break;
+		}
+
+		public static IEnumerable<Instruction> PushServiceProvider(this INode node, ILContext context, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference declaringTypeReference = null)
 		{
 			var module = context.Body.Method.Module;
 
@@ -421,8 +347,11 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var instruction in pushParentIl)
 					yield return instruction;
 
+				foreach (var instruction in PushTargetProperty(bpRef, propertyRef, declaringTypeReference, module))
+					yield return instruction;
+
 				var targetProviderCtor =
-					module.Import(typeof (SimpleValueTargetProvider).GetConstructor(new[] { typeof (object[]) }));
+					module.Import(typeof (SimpleValueTargetProvider).GetConstructor(new[] { typeof (object[]), typeof(object) }));
 				yield return Instruction.Create(OpCodes.Newobj, targetProviderCtor);
 				yield return Instruction.Create(OpCodes.Callvirt, addService);
 			}

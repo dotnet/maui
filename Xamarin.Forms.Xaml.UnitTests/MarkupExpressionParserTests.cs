@@ -177,11 +177,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				}
 			}
 
-			public object TargetProperty {
-				get {
-					throw new NotImplementedException ();
-				}
-			}
+			public object TargetProperty { get; } = null;
 		}
 
 		[Test]

@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
-				throw new ArgumentNullException("serviceProvider");
+				throw new ArgumentNullException(nameof(serviceProvider));
 			if (Key == null)
 			{
 				var lineInfoProvider = serviceProvider.GetService(typeof (IXmlLineInfoProvider)) as IXmlLineInfoProvider;
@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Xaml
 				throw new ArgumentException();
 			var xmlLineInfoProvider = serviceProvider.GetService(typeof (IXmlLineInfoProvider)) as IXmlLineInfoProvider;
 			var xmlLineInfo = xmlLineInfoProvider != null ? xmlLineInfoProvider.XmlLineInfo : null;
+			object resource = null;
 
 			foreach (var p in valueProvider.ParentObjects)
 			{
@@ -30,35 +31,27 @@ namespace Xamarin.Forms.Xaml
 				var resDict = ve?.Resources ?? p as ResourceDictionary;
 				if (resDict == null)
 					continue;
-				object res;
-				if (resDict.TryGetValue(Key, out res))
-				{
-					return ConvertCompiledOnPlatform(res);
-				}
+				if (resDict.TryGetValue(Key, out resource))
+					break;
 			}
-			if (Application.Current != null && Application.Current.Resources != null &&
-			    Application.Current.Resources.ContainsKey(Key))
-			{
-				var resource = Application.Current.Resources[Key];
+			if (resource == null && Application.Current != null && Application.Current.Resources != null &&
+				Application.Current.Resources.ContainsKey(Key))
+				resource = Application.Current.Resources [Key];
 
-				return ConvertCompiledOnPlatform(resource);
-			}
+			if (resource == null)
+				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 
-			throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
-		}
-
-		static object ConvertCompiledOnPlatform(object resource)
-		{
-			var actualType = resource.GetType();
-			if (actualType.GetTypeInfo().IsGenericType && actualType.GetGenericTypeDefinition() == typeof(OnPlatform<>))
-			{
-				// If we're accessing OnPlatform via a StaticResource in compiled XAML 
-				// we'll have to handle the cast to the target type manually 
-				// (Normally the compiled XAML handles this by calling `implicit` explicitly,
-				// but it doesn't know to do that when it's using a static resource)
-				var method = actualType.GetRuntimeMethod("op_Implicit", new[] { actualType });
-				resource = method.Invoke(resource, new[] { resource });
-			}
+			var bp = valueProvider.TargetProperty as BindableProperty;
+			var pi = valueProvider.TargetProperty as PropertyInfo;
+			var propertyType = bp?.ReturnType ?? pi?.PropertyType;
+			if (propertyType == null)
+				return resource;
+			if (propertyType.IsAssignableFrom(resource.GetType()))
+				return resource;
+			var implicit_op = resource.GetType().GetRuntimeMethod("op_Implicit", new [] { resource.GetType() });
+			//This will invoke the op_implicit on OnPlatform<>
+			if (implicit_op != null && propertyType.IsAssignableFrom(implicit_op.ReturnType))
+				return implicit_op.Invoke(resource, new [] { resource });
 
 			return resource;
 		}
