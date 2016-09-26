@@ -198,12 +198,27 @@ namespace Xamarin.Forms.Xaml
 
 			var factoryMethod = ((string)((ValueNode)node.Properties[XmlName.xFactoryMethod]).Value);
 			Type[] types = arguments == null ? new Type[0] : arguments.Select(a => a.GetType()).ToArray();
-			var mi = nodeType.GetRuntimeMethod(factoryMethod, types);
-			if (mi == null || !mi.IsStatic)
-			{
-				throw new MissingMemberException(String.Format("No static method found for {0}::{1} ({2})", nodeType.FullName,
-					factoryMethod, string.Join(", ", types.Select(t => t.FullName))));
-			}
+			Func<MethodInfo, bool> isMatch = m => {
+				if (m.Name != factoryMethod)
+					return false;
+				var p = m.GetParameters();
+				if (p.Length != types.Length)
+					return false;
+				if (!m.IsStatic)
+					return false;
+				for (var i = 0; i < p.Length; i++) {
+					if ((p [i].ParameterType.IsAssignableFrom(types [i])))
+						continue;
+					var op_impl = p [i].ParameterType.GetRuntimeMethod("op_Implicit", new [] { types [i]});
+					if (op_impl == null)
+						return false;
+					arguments [i] = op_impl.Invoke(null, new [] { arguments [i]});
+				}
+				return true;
+			};
+			var mi = nodeType.GetRuntimeMethods().FirstOrDefault(isMatch);
+			if (mi == null)
+				throw new MissingMemberException($"No static method found for {nodeType.FullName}::{factoryMethod} ({string.Join(", ", types.Select(t => t.FullName))})");
 			return mi.Invoke(null, arguments);
 		}
 
