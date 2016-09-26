@@ -9,6 +9,6 @@
 	<ContentPage.Content>
 		<ios:UILabel Text="{Binding NativeText}" View.HorizontalOptions="Start"/>
 		<androidWidget:TextView Text="{Binding NativeText}" x:Arguments="{x:Static formsandroid:Forms.Context}" />
-    <win:TextBlock Text="Foo"/>
+    <win:TextBlock Text="{Binding NativeText}"/>
 	</ContentPage.Content>
 </ContentPage>
