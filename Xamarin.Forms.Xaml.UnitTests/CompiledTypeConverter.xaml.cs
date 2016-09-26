@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+
+using Xamarin.Forms;
+using NUnit.Framework;
+
+namespace Xamarin.Forms.Xaml.UnitTests
+{
+	public partial class CompiledTypeConverter : ContentPage
+	{
+		public static readonly BindableProperty RectangleBPProperty =
+			BindableProperty.Create ("RectangleBP", typeof(Rectangle), typeof(CompiledTypeConverter), default(Rectangle));
+
+		public Rectangle RectangleBP {
+			get { return (Rectangle)GetValue (RectangleBPProperty); }
+			set { SetValue (RectangleBPProperty, value); }
+		}
+
+		public Rectangle RectangleP { get; set; }
+
+		public CompiledTypeConverter ()
+		{
+			InitializeComponent ();
+		}
+
+		public CompiledTypeConverter (bool useCompiledXaml)
+		{
+			//this stub will be replaced at compile time
+		}
+
+		[TestFixture]
+		public class Tests
+		{
+			[TestCase (false)]
+			[TestCase (true)]
+			public void CompiledTypeConverterAreInvoked (bool useCompiledXaml)
+			{
+				var p = new CompiledTypeConverter (useCompiledXaml);
+				Assert.AreEqual (new Rectangle (0, 1, 2, 4), p.RectangleP);
+				Assert.AreEqual (new Rectangle (4, 8, 16, 32), p.RectangleBP);
+				Assert.AreEqual (Color.Pink, p.BackgroundColor);
+			}
+		}
+	}
+}

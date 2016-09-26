@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node)) {
 				ctorInfo = parameterizedCtorInfo;
-				//					IL_0000:  ldstr "foo"
+//				IL_0000:  ldstr "foo"
 				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo, node));
 			}
 			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
@@ -198,9 +198,9 @@ namespace Xamarin.Forms.Build.Tasks
 					type = type.Contains(":") ? type.Split(':') [1].Trim() : type;
 					Context.TypeExtensions [node] = new XmlType(namespaceuri, type, null).GetTypeReference(Module, node);
 
-					node.Properties.Clear();
-					node.CollectionItems.Clear();
-
+					if (!node.SkipProperties.Contains(new XmlName("", "TypeName")))
+						node.SkipProperties.Add(new XmlName("", "TypeName"));
+					
 					var vardefref = new VariableDefinitionReference(vardef);
 					Context.IL.Append(SetPropertiesVisitor.ProvideValue(vardefref, Context, Module, node));
 					if (vardef != vardefref.VariableDefinition) {
@@ -213,8 +213,8 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(RootNode node, INode parentNode)
 		{
-			//			IL_0013:  ldarg.0 
-			//			IL_0014:  stloc.3 
+//			IL_0013:  ldarg.0 
+//			IL_0014:  stloc.3 
 
 			var ilnode = (ILRootNode)node;
 			var typeref = ilnode.TypeReference;
@@ -256,7 +256,8 @@ namespace Xamarin.Forms.Build.Tasks
 						.ConstructorArguments.First()
 						.Value as string;
 				var node = enode.Properties[new XmlName("", propname)];
-				enode.Properties.Remove(new XmlName("", propname));
+				if (!enode.SkipProperties.Contains(new XmlName("", propname)))
+					enode.SkipProperties.Add(new XmlName("", propname));
 				VariableDefinition vardef;
 				ValueNode vnode = null;
 
