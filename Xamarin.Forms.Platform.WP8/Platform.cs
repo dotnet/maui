@@ -437,7 +437,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			_navModel.PushModal(newRoot);
 			SetCurrent(newRoot, false, true);
 
-			((Application)newRoot.RealParent).NavigationProxy.Inner = this;
+			Application.Current.NavigationProxy.Inner = this;
 		}
 
 		internal event EventHandler SizeChanged;

@@ -108,6 +108,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31806.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40858.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40824.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40911.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40955.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41078.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40998.cs" />

@@ -238,7 +238,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Page.Platform = this;
 			AddChild(Page, layout);
 
-			((Application)Page.RealParent).NavigationProxy.Inner = this;
+			Application.Current.NavigationProxy.Inner = this;
 		}
 
 		void AddChild(Page page, bool layout = false)

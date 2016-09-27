@@ -413,7 +413,7 @@ namespace Xamarin.Forms.Platform.Android
 			Page.Platform = this;
 			AddChild(Page, layout);
 
-			((Application)Page.RealParent).NavigationProxy.Inner = this;
+			Application.Current.NavigationProxy.Inner = this;
 
 			_toolbarTracker.Target = newRoot;
 

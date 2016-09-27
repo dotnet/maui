@@ -6,6 +6,14 @@ namespace Xamarin.Forms.Controls
 
 		public bool NativeControlsAdded { get; set; }
 
+		public const string ReadyForNativeControlsMessage = "ReadyForNativeControls";
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			MessagingCenter.Send(this, ReadyForNativeControlsMessage);
+		}
+
 		public NestedNativeControlGalleryPage ()
 		{
 			Layout = new StackLayout { Padding = 20, VerticalOptions = LayoutOptions.FillAndExpand };

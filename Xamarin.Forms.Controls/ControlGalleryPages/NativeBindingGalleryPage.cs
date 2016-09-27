@@ -10,6 +10,14 @@ namespace Xamarin.Forms.Controls
 
 		NestedNativeViewModel ViewModel { get; set; }
 
+		public const string ReadyForNativeBindingsMessage = "ReadyForNativeBindings";
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			MessagingCenter.Send(this, ReadyForNativeBindingsMessage);
+		}
+
 		public NativeBindingGalleryPage()
 		{
 
