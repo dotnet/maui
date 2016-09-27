@@ -59,25 +59,30 @@ namespace Xamarin.Forms.Maps.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !_disposed)
+			if (_disposed)
 			{
-				_disposed = true;
+				return;
+			}
 
-				Map mapModel = Element;
-				if (mapModel != null)
+			_disposed = true;
+
+			if (disposing)
+			{
+				if (Element != null)
 				{
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
-					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
+					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnCollectionChanged;
 				}
 
-				GoogleMap gmap = NativeMap;
-				if (gmap == null)
-				{
-					return;
-				}
-				gmap.MyLocationEnabled = false;
-				gmap.InfoWindowClick -= MapOnMarkerClick;
-				gmap.Dispose();
+				if (NativeMap != null)
+ 				{
+ 					NativeMap.MyLocationEnabled = false;
+ 					NativeMap.SetOnCameraChangeListener(null);
+ 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
+ 					NativeMap.Dispose();
+  				}		  				
+
+				Control?.OnDestroy();
 			}
 
 			base.Dispose(disposing);
@@ -265,6 +270,7 @@ namespace Xamarin.Forms.Maps.Android
 			catch (IllegalStateException exc)
 			{
 				System.Diagnostics.Debug.WriteLine("MoveToRegion exception: " + exc);
+				Log.Warning("Xamarin.Forms MapRenderer", $"MoveToRegion exception: {exc}");
 			}
 		}
 

@@ -1,9 +1,9 @@
 using System;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.App;
 using Android.Views;
 using AView = Android.Views.View;
+using Fragment = Android.Support.V4.App.Fragment;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			return null;
 		}
-		
+
 		public override void OnDestroyView()
 		{
 			if (Page != null)
@@ -90,18 +90,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_visualElementRenderer.Dispose();
 				}
 
-				if (_pageContainer != null && _pageContainer.Handle != IntPtr.Zero)
-				{
-					_pageContainer.RemoveFromParent();
-					_pageContainer.Dispose();
-				}
+				// We do *not* eagerly dispose of the _pageContainer here; doing so  causes a memory leak 
+				// if animated fragment transitions are enabled (it removes some info that the animation's 
+				// onAnimationEnd handler requires to properly clean things up)
+				// Instead, we let the garbage collector pick it up later, when we can be sure it's safe
 
 				Page?.ClearValue(Android.Platform.RendererProperty);
 			}
 
 			_onCreateCallback = null;
 			_visualElementRenderer = null;
-			_pageContainer = null;
 
 			base.OnDestroyView();
 		}

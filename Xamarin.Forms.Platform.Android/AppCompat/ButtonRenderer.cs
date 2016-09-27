@@ -71,6 +71,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (disposing)
 			{
+				if (Control != null)
+				{
+					Control.SetOnClickListener(null);
+					Control.RemoveOnAttachStateChangeListener(this);
+					Control.Tag = null;
+					_textColorSwitcher = null;
+				}
 			}
 
 			base.Dispose(disposing);

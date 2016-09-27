@@ -76,7 +76,8 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (Control != null && ManageNativeControlLifetime)
 				{
-					Control.RemoveFromParent();
+					Control.OnFocusChangeListener = null;
+					RemoveView(Control);
 					Control.Dispose();
 					Control = null;
 				}
