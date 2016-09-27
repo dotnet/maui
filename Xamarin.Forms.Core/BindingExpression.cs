@@ -409,6 +409,7 @@ namespace Xamarin.Forms
 		class WeakPropertyChangedProxy
 		{
 			WeakReference _source, _listener;
+			internal WeakReference Source => _source;
 
 			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
 			{
@@ -470,7 +471,13 @@ namespace Xamarin.Forms
 
 			public void Subscribe(INotifyPropertyChanged handler)
 			{
-				// If we're reapplying, we don't want to double subscribe
+				if (ReferenceEquals(handler, _listener?.Source?.Target))
+				{
+					// Already subscribed
+					return;
+				}
+
+				// Clear out the old subscription if necessary
 				Unsubscribe();
 
 				_listener = new WeakPropertyChangedProxy(handler, _changeHandler);
