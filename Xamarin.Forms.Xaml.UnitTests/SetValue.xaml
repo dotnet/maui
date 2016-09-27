@@ -83,5 +83,6 @@
 				<d:IgnorableElement />
 			</ContentView.Content>
 		</ContentView>
+		<local:MockViewWithValues x:Name="mockView0" UShort="32" ADecimal="42" />
 	</StackLayout>
 </ContentPage>

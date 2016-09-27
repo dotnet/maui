@@ -37,6 +37,10 @@
 			<x:TimeSpan x:Key="defaultTimeSpan"/>
 			<x:Uri x:Key="anUri">http://xamarin.com/forms</x:Uri>
 			<x:Uri x:Key="defaultUri"/>
+			<x:SByte x:Key="aSByte">42</x:SByte>
+			<x:UInt16 x:Key="aUInt16">43</x:UInt16>
+			<x:UInt32 x:Key="aUInt32">44</x:UInt32>
+			<x:UInt64 x:Key="aUInt64">45</x:UInt64>
 		</ResourceDictionary>
 	</ContentPage.Resources>
 </ContentPage>

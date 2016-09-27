@@ -130,23 +130,43 @@ namespace Xamarin.Forms.Xaml
 				//Obvious Built-in conversions
 				if (toType.GetTypeInfo().IsEnum)
 					return Enum.Parse(toType, str);
-				//TODO supports Int16, 64, Byte, Char, ...
-				if (toType == typeof (Int32))
+				if (toType == typeof(SByte))
+					return SByte.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(Int16))
+					return Int16.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(Int32))
 					return Int32.Parse(str, CultureInfo.InvariantCulture);
-				if (toType == typeof (float))
+				if (toType == typeof(Int64))
+					return Int64.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(Byte))
+					return Byte.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(UInt16))
+					return UInt16.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(UInt32))
+					return UInt32.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof(UInt64))
+					return UInt64.Parse(str, CultureInfo.InvariantCulture);
+				if (toType == typeof (Single))
 					return Single.Parse(str, CultureInfo.InvariantCulture);
-				if (toType == typeof (double))
+				if (toType == typeof (Double))
 					return Double.Parse(str, CultureInfo.InvariantCulture);
-				if (toType == typeof (bool))
+				if (toType == typeof (Boolean))
 					return Boolean.Parse(str);
 				if (toType == typeof (TimeSpan))
 					return TimeSpan.Parse(str, CultureInfo.InvariantCulture);
 				if (toType == typeof (DateTime))
 					return DateTime.Parse(str, CultureInfo.InvariantCulture);
-				if (toType == typeof (string) && str.StartsWith("{}", StringComparison.Ordinal))
+				if (toType == typeof(Char)) {
+					char c = '\0';
+					Char.TryParse(str, out c);
+					return c;
+				}
+				if (toType == typeof (String) && str.StartsWith("{}", StringComparison.Ordinal))
 					return str.Substring(2);
-				if (toType == typeof (string))
+				if (toType == typeof (String))
 					return value;
+				if (toType == typeof(Decimal))
+					return Decimal.Parse(str, CultureInfo.InvariantCulture);
 			}
 
 			//if there's an implicit conversion, convert

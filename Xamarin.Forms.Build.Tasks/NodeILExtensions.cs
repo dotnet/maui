@@ -114,58 +114,100 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Ldc_I4, ParseEnum(targetTypeRef, str, node));
 			else if (targetTypeRef.FullName == "System.Char")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Char.Parse(str));
-			else if (targetTypeRef.FullName == "System.Byte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, Byte.Parse(str, CultureInfo.InvariantCulture));
+			else if (targetTypeRef.FullName == "System.SByte")
+				yield return Instruction.Create(OpCodes.Ldc_I4, SByte.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Int16")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Int16.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Int32")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Int32.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Int64")
 				yield return Instruction.Create(OpCodes.Ldc_I8, Int64.Parse(str, CultureInfo.InvariantCulture));
+			else if (targetTypeRef.FullName == "System.Byte")
+				yield return Instruction.Create(OpCodes.Ldc_I4, Byte.Parse(str, CultureInfo.InvariantCulture));
+			else if (targetTypeRef.FullName == "System.UInt16")
+				yield return Instruction.Create(OpCodes.Ldc_I4, UInt16.Parse(str, CultureInfo.InvariantCulture));
+			else if (targetTypeRef.FullName == "System.UInt32")
+				yield return Instruction.Create(OpCodes.Ldc_I4, UInt32.Parse(str, CultureInfo.InvariantCulture));
+			else if (targetTypeRef.FullName == "System.UInt64")
+				yield return Instruction.Create(OpCodes.Ldc_I8, UInt64.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Single")
 				yield return Instruction.Create(OpCodes.Ldc_R4, Single.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Double")
 				yield return Instruction.Create(OpCodes.Ldc_R8, Double.Parse(str, CultureInfo.InvariantCulture));
-			else if (targetTypeRef.FullName == "System.Boolean")
-			{
+			else if (targetTypeRef.FullName == "System.Boolean") {
 				if (Boolean.Parse(str))
 					yield return Instruction.Create(OpCodes.Ldc_I4_1);
 				else
 					yield return Instruction.Create(OpCodes.Ldc_I4_0);
-			}
-			else if (targetTypeRef.FullName == "System.TimeSpan")
-			{
+			} else if (targetTypeRef.FullName == "System.TimeSpan") {
 				var ts = TimeSpan.Parse(str, CultureInfo.InvariantCulture);
 				var ticks = ts.Ticks;
 				var timeSpanCtor =
-					module.Import(typeof (TimeSpan))
+					module.Import(typeof(TimeSpan))
 						.Resolve()
 						.Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 1);
 				var timeSpanCtorRef = module.Import(timeSpanCtor);
 
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, timeSpanCtorRef);
-			}
-			else if (targetTypeRef.FullName == "System.DateTime")
-			{
+			} else if (targetTypeRef.FullName == "System.DateTime") {
 				var dt = DateTime.Parse(str, CultureInfo.InvariantCulture);
 				var ticks = dt.Ticks;
 				var dateTimeCtor =
-					module.Import(typeof (DateTime))
+					module.Import(typeof(DateTime))
 						.Resolve()
 						.Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 1);
 				var dateTimeCtorRef = module.Import(dateTimeCtor);
 
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, dateTimeCtorRef);
-			}
-			else if (targetTypeRef.FullName == "System.String" && str.StartsWith("{}", StringComparison.Ordinal))
+			} else if (targetTypeRef.FullName == "System.String" && str.StartsWith("{}", StringComparison.Ordinal))
 				yield return Instruction.Create(OpCodes.Ldstr, str.Substring(2));
 			else if (targetTypeRef.FullName == "System.String")
 				yield return Instruction.Create(OpCodes.Ldstr, str);
 			else if (targetTypeRef.FullName == "System.Object")
 				yield return Instruction.Create(OpCodes.Ldstr, str);
-			else
+			else if (targetTypeRef.FullName == "System.Decimal") {
+				decimal outdecimal;
+				if (decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal)) {
+					var vardef = new VariableDefinition(context.Body.Method.Module.Import(typeof(decimal)));
+					context.Body.Variables.Add(vardef);
+					//Use an extra temp var so we can push the value to the stack, just like other cases
+					//					IL_0003:  ldstr "adecimal"
+					//					IL_0008:  ldc.i4.s 0x6f
+					//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
+					//					IL_000f:  ldloca.s 0
+					//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&)
+					//					IL_0016:  pop
+					yield return Instruction.Create(OpCodes.Ldstr, str);
+					yield return Instruction.Create(OpCodes.Ldc_I4, 0x6f); //NumberStyles.Number
+					var getInvariantInfo =
+						context.Body.Method.Module.Import(typeof(CultureInfo))
+							.Resolve()
+							.Properties.FirstOrDefault(pd => pd.Name == "InvariantCulture")
+							.GetMethod;
+					var getInvariant = context.Body.Method.Module.Import(getInvariantInfo);
+					yield return Instruction.Create(OpCodes.Call, getInvariant);
+					yield return Instruction.Create(OpCodes.Ldloca, vardef);
+					var tryParseInfo =
+						context.Body.Method.Module.Import(typeof(decimal))
+							.Resolve()
+							.Methods.FirstOrDefault(md => md.Name == "TryParse" && md.Parameters.Count == 4);
+					var tryParse = context.Body.Method.Module.Import(tryParseInfo);
+					yield return Instruction.Create(OpCodes.Call, tryParse);
+					yield return Instruction.Create(OpCodes.Pop);
+					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+				} else {
+					yield return Instruction.Create(OpCodes.Ldc_I4_0);
+					var decimalctorinfo =
+						context.Body.Method.Module.Import(typeof(decimal))
+							.Resolve()
+							.Methods.FirstOrDefault(
+								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters [0].ParameterType.FullName == "System.Int32");
+					var decimalctor = context.Body.Method.Module.Import(decimalctorinfo);
+					yield return Instruction.Create(OpCodes.Newobj, decimalctor);
+				}
+			} else
 				yield return Instruction.Create(OpCodes.Ldnull);
 
 			if (isNullable)

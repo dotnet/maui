@@ -296,73 +296,87 @@ namespace Xamarin.Forms.Xaml
 			{
 				var valuestring = ((ValueNode)node.CollectionItems[0]).Value as string;
 
-				if (nodeType == typeof (bool))
+				if (nodeType == typeof(SByte)) {
+					sbyte retval;
+					if (sbyte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Int16)) {
+					short retval;
+					if (short.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Int32)) {
+					int retval;
+					if (int.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Int64)) {
+					long retval;
+					if (long.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Byte)) {
+					byte retval;
+					if (byte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(UInt16)) {
+					ushort retval;
+					if (ushort.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(UInt32)) {
+					uint retval;
+					if (uint.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(UInt64)) {
+					ulong retval;
+					if (ulong.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Single)) {
+					float retval;
+					if (float.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof(Double)) {
+					double retval;
+					if (double.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof (Boolean))
 				{
 					bool outbool;
 					if (bool.TryParse(valuestring, out outbool))
-						value = outbool;
+						return outbool;
 				}
-				else if (nodeType == typeof (char))
+				if (nodeType == typeof(TimeSpan)) {
+					TimeSpan retval;
+					if (TimeSpan.TryParse(valuestring, CultureInfo.InvariantCulture, out retval))
+						return retval;
+				}
+				if (nodeType == typeof (char))
 				{
 					char retval;
 					if (char.TryParse(valuestring, out retval))
-						value = retval;
+						return retval;
 				}
-				else if (nodeType == typeof (string))
-					value = valuestring;
-				else if (nodeType == typeof (decimal))
+				if (nodeType == typeof (string))
+					return valuestring;
+				if (nodeType == typeof (decimal))
 				{
 					decimal retval;
 					if (decimal.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
+						return retval;
 				}
-				else if (nodeType == typeof (float))
-				{
-					float retval;
-					if (float.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (double))
-				{
-					double retval;
-					if (double.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (byte))
-				{
-					byte retval;
-					if (byte.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (short))
-				{
-					short retval;
-					if (short.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (int))
-				{
-					int retval;
-					if (int.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (long))
-				{
-					long retval;
-					if (long.TryParse(valuestring, NumberStyles.Number, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
-				else if (nodeType == typeof (TimeSpan))
-				{
-					TimeSpan retval;
-					if (TimeSpan.TryParse(valuestring, CultureInfo.InvariantCulture, out retval))
-						value = retval;
-				}
+
 				else if (nodeType == typeof (Uri))
 				{
 					Uri retval;
 					if (Uri.TryCreate(valuestring, UriKind.RelativeOrAbsolute, out retval))
-						value = retval;
+						return retval;
 				}
 			}
 			return value;

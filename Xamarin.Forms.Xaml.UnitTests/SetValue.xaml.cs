@@ -2,6 +2,7 @@
 using System.Linq;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -11,6 +12,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			return new Button();
 		}
+	}
+
+	public class MockViewWithValues : View
+	{ 
+		public UInt16 UShort { get; set; }
+		public decimal ADecimal { get; set; }
 	}
 
 	public partial class SetValue : ContentPage
@@ -34,6 +41,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
+			public void Setup()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
 			[TestCase (false)]
 			[TestCase (true)]
 			public void SetValueToBP (bool useCompiledXaml)
@@ -214,6 +233,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void MorePrimitiveTypes(bool useCompiledXaml)
+			{ 
+				var page = new SetValue(useCompiledXaml);
+				Assert.AreEqual((ushort)32, page.mockView0.UShort);
+				Assert.AreEqual((decimal)42, page.mockView0.ADecimal);
 			}
 		}
 	}

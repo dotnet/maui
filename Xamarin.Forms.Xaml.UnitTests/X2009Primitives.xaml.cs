@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {	
@@ -22,6 +23,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
+			public void Setup()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
 			[TestCase (false)]
 			[TestCase (true)]
 			public void SupportsXString (bool useCompiledXaml)
@@ -144,11 +157,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That (defaultDouble, Is.TypeOf<double> ());
 				Assert.AreEqual (default(double), (double)defaultDouble, .0001d);
 
-				Assert.True (layout.Resources.ContainsKey ("aByte")); 
+				Assert.True(layout.Resources.ContainsKey("aByte"));
 				var aByte = layout.Resources ["aByte"];
-				Assert.NotNull (aByte);
-				Assert.That (aByte, Is.TypeOf<byte> ());
-				Assert.AreEqual (54, (byte)aByte);
+				Assert.NotNull(aByte);
+				Assert.That(aByte, Is.TypeOf<byte>());
+				Assert.AreEqual(54, (byte)aByte);
+
+				Assert.True(layout.Resources.ContainsKey("aSByte"));
+				var aSByte = layout.Resources ["aSByte"];
+				Assert.NotNull(aSByte);
+				Assert.That(aSByte, Is.TypeOf<sbyte>());
+				Assert.AreEqual(42, (sbyte)aSByte);
 
 				Assert.True (layout.Resources.ContainsKey ("defaultByte")); 
 				var defaultByte = layout.Resources ["defaultByte"];
@@ -156,11 +175,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That (defaultByte, Is.TypeOf<byte> ());
 				Assert.AreEqual (default(byte), (byte)defaultByte);
 
-				Assert.True (layout.Resources.ContainsKey ("anInt16")); 
+				Assert.True(layout.Resources.ContainsKey("anInt16"));
 				var anInt16 = layout.Resources ["anInt16"];
-				Assert.NotNull (anInt16);
-				Assert.That (anInt16, Is.TypeOf<short> ());
-				Assert.AreEqual (43, (short)anInt16);
+				Assert.NotNull(anInt16);
+				Assert.That(anInt16, Is.TypeOf<short>());
+				Assert.AreEqual(43, (short)anInt16);
+
+				Assert.True(layout.Resources.ContainsKey("aUInt16"));
+				var aUInt16 = layout.Resources ["aUInt16"];
+				Assert.NotNull(aUInt16);
+				Assert.That(aUInt16, Is.TypeOf<ushort>());
+				Assert.AreEqual(43, (ushort)aUInt16);
 
 				Assert.True (layout.Resources.ContainsKey ("defaultInt16")); 
 				var defaultInt16 = layout.Resources ["defaultInt16"];
@@ -168,11 +193,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That (defaultInt16, Is.TypeOf<short> ());
 				Assert.AreEqual (default(short), (short)defaultInt16);
 
-				Assert.True (layout.Resources.ContainsKey ("anInt32")); 
+				Assert.True(layout.Resources.ContainsKey("anInt32"));
 				var anInt32 = layout.Resources ["anInt32"];
-				Assert.NotNull (anInt32);
-				Assert.That (anInt32, Is.TypeOf<int> ());
-				Assert.AreEqual (44, (int)anInt32);
+				Assert.NotNull(anInt32);
+				Assert.That(anInt32, Is.TypeOf<int>());
+				Assert.AreEqual(44, (int)anInt32);
+
+				Assert.True(layout.Resources.ContainsKey("aUInt32"));
+				var aUInt32 = layout.Resources ["aUInt32"];
+				Assert.NotNull(aUInt32);
+				Assert.That(aUInt32, Is.TypeOf<uint>());
+				Assert.AreEqual(44, (uint)aUInt32);
 
 				Assert.True (layout.Resources.ContainsKey ("defaultInt32")); 
 				var defaultInt32 = layout.Resources ["defaultInt32"];
@@ -180,11 +211,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That (defaultInt32, Is.TypeOf<int> ());
 				Assert.AreEqual (default(int), (int)defaultInt32);
 
-				Assert.True (layout.Resources.ContainsKey ("anInt64")); 
+				Assert.True(layout.Resources.ContainsKey("anInt64"));
 				var anInt64 = layout.Resources ["anInt64"];
-				Assert.NotNull (anInt64);
-				Assert.That (anInt64, Is.TypeOf<long> ());
-				Assert.AreEqual (45, (long)anInt64);
+				Assert.NotNull(anInt64);
+				Assert.That(anInt64, Is.TypeOf<long>());
+				Assert.AreEqual(45, (long)anInt64);
+
+				Assert.True(layout.Resources.ContainsKey("aUInt64"));
+				var aUInt64 = layout.Resources ["aUInt64"];
+				Assert.NotNull(aUInt64);
+				Assert.That(aUInt64, Is.TypeOf<ulong>());
+				Assert.AreEqual(45, (ulong)aUInt64);
 
 				Assert.True (layout.Resources.ContainsKey ("defaultInt64")); 
 				var defaultInt64 = layout.Resources ["defaultInt64"];
