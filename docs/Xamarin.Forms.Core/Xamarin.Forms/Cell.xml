@@ -195,6 +195,22 @@ Content = new TableView
         <remarks>The context gesture on the iOS platform is a left swipe. For Android and Windows Phone operating systems, the context gesture is a press and hold.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="DefaultCellHeight">
+      <MemberSignature Language="C#" Value="public const int DefaultCellHeight = 40;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal int32 DefaultCellHeight = (40)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <MemberValue>40</MemberValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Disappearing">
       <MemberSignature Language="C#" Value="public event EventHandler Disappearing;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler Disappearing" />

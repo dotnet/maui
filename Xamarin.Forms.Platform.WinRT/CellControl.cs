@@ -97,7 +97,9 @@ namespace Xamarin.Forms.Platform.WinRT
 					}
 				}
 
-				return new Windows.Foundation.Size(0, 0);
+				// This needs to return a size with a non-zero height; 
+				// otherwise, it kills virtualization.
+				return new Windows.Foundation.Size(0, Cell.DefaultCellHeight);
 			}
 
 			// Children still need measure called on them

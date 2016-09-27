@@ -9,6 +9,7 @@ namespace Xamarin.Forms
 {
 	public abstract class Cell : Element, ICellController
 	{
+		public const int DefaultCellHeight = 40;
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
@@ -70,7 +71,7 @@ namespace Xamarin.Forms
 				if (list != null)
 					return list.HasUnevenRows && Height > 0 ? Height : list.RowHeight;
 
-				return 40;
+				return DefaultCellHeight;
 			}
 		}
 
