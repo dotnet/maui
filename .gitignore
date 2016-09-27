@@ -46,3 +46,4 @@ Xamarin.Forms.Controls/secrets.txt
 Xamarin.Forms.Controls/controlgallery.config
 Xamarin.Forms.ControlGallery.Android/Properties/MapsKey.cs
 *.tss
+*.bak
