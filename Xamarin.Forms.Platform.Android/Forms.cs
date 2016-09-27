@@ -262,11 +262,16 @@ namespace Xamarin.Forms
 			double _microSize;
 			double _smallSize;
 
+			static Handler s_handler;
+
 			public void BeginInvokeOnMainThread(Action action)
 			{
-				var activity = Context as Activity;
-				if (activity != null)
-					activity.RunOnUiThread(action);
+				if (s_handler == null || s_handler.Looper != Looper.MainLooper)
+				{
+					s_handler = new Handler(Looper.MainLooper);
+				}
+
+				s_handler.Post(action);
 			}
 
 			public Ticker CreateTicker()
