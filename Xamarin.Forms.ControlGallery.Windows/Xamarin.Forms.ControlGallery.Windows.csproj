@@ -141,6 +141,7 @@
     </Compile>
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="BrokenNativeControl.cs" />
+    <Compile Include="CustomRenderers.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

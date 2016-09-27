@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -27,6 +28,8 @@ namespace Xamarin.Forms.Platform.WinRT
 		protected bool AutoPackage { get; set; } = true;
 
 		protected bool AutoTrack { get; set; } = true;
+
+		protected bool ArrangeNativeChildren { get; set; }
 
 		IElementController ElementController => Element as IElementController;
 
@@ -160,11 +163,14 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			Element.IsInNativeLayout = true;
 
+			var myRect = new Rect(0, 0, finalSize.Width, finalSize.Height);
+
 			if (Control != null)
 			{
-				Control.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
+				Control.Arrange(myRect);
 			}
 
+			List<UIElement> arrangedChildren = null;
 			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
 			{
 				var child = ElementController.LogicalChildren[i] as VisualElement;
@@ -176,6 +182,30 @@ namespace Xamarin.Forms.Platform.WinRT
 				Rectangle bounds = child.Bounds;
 
 				renderer.ContainerElement.Arrange(new Rect(bounds.X, bounds.Y, Math.Max(0, bounds.Width), Math.Max(0, bounds.Height)));
+
+				if (ArrangeNativeChildren)
+				{
+					if (arrangedChildren == null)
+						arrangedChildren = new List<UIElement>();
+					arrangedChildren.Add(renderer.ContainerElement);
+				}
+			}
+
+			if (ArrangeNativeChildren)
+			{
+				// in the event that a custom renderer has added native controls,
+				// we need to be sure to arrange them so that they are laid out.
+				var nativeChildren = Children;
+				for (int i = 0; i < nativeChildren.Count; i++)
+				{
+					var nativeChild = nativeChildren[i];
+					if (arrangedChildren?.Contains(nativeChild) == true)
+						// don't try to rearrange renderers that were just arranged, 
+						// lest you suffer a layout cycle
+						continue;
+					else
+						nativeChild.Arrange(myRect);
+				}
 			}
 
 			Element.IsInNativeLayout = false;
