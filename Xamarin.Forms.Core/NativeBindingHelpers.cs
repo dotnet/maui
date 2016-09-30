@@ -43,8 +43,10 @@ namespace Xamarin.Forms
 				propertyChanged.PropertyChanged += (sender, e) => {
 					if (e.PropertyName != targetProperty)
 						return;
-				SetValueFromNative<TNativeView>(sender as TNativeView, targetProperty, bindableProperty);
-			};
+					SetValueFromNative<TNativeView>(sender as TNativeView, targetProperty, bindableProperty);
+					//we need to keep the listener around he same time we have the proxy
+					proxy.NativeINPCListener = propertyChanged;
+				};
 
 			if (binding != null && binding.Mode != BindingMode.OneWay)
 				SetValueFromNative(target, targetProperty, bindableProperty);
@@ -178,6 +180,7 @@ namespace Xamarin.Forms
 			public WeakReference<TNativeView> TargetReference { get; set; }
 			public IList<KeyValuePair<BindableProperty, BindingBase>> BindingsBackpack { get; } = new List<KeyValuePair<BindableProperty, BindingBase>>();
 			public IList<KeyValuePair<BindableProperty, object>> ValuesBackpack { get; } = new List<KeyValuePair<BindableProperty, object>>();
+			public INotifyPropertyChanged NativeINPCListener;
 
 			public BindableObjectProxy(TNativeView target)
 			{
