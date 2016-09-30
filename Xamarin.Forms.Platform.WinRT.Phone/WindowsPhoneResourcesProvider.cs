@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,6 +27,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		Style GetStyle (object nativeKey)
 		{
 			var style = (Windows.UI.Xaml.Style) Windows.UI.Xaml.Application.Current.Resources[nativeKey];
+			style = GetAncestorSetters(style);
 
 			var formsStyle = new Style (typeof (Label));
 			foreach (var b in style.Setters) {
@@ -45,6 +48,48 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			return formsStyle;
+		}
+
+		static Windows.UI.Xaml.Style GetAncestorSetters (Windows.UI.Xaml.Style value)
+		{
+			var style = new Windows.UI.Xaml.Style (value.TargetType)
+			{
+				BasedOn = value.BasedOn
+			};
+			foreach (var valSetter in value.Setters)
+			{
+				style.Setters.Add(valSetter);
+			}
+
+			var ancestorStyles = new List<Windows.UI.Xaml.Style> ();
+
+			Windows.UI.Xaml.Style currStyle = style;
+			while (currStyle.BasedOn != null)
+			{
+				ancestorStyles.Add(currStyle.BasedOn);
+				currStyle = currStyle.BasedOn;
+			}
+
+			foreach (var styleParent in ancestorStyles)
+			{
+				foreach (var b in styleParent.Setters)
+				{
+					var parentSetter = b as Windows.UI.Xaml.Setter;
+					if (parentSetter == null)
+						continue;
+
+					var derviedSetter = style.Setters
+						.OfType<Windows.UI.Xaml.Setter> ()
+						.FirstOrDefault (x => x.Property == parentSetter.Property);
+
+					//Ignore any ancestor setters which a child setter has already overridden
+					if (derviedSetter != null)
+						continue;
+					else
+						style.Setters.Add (parentSetter);
+				}
+			}
+			return style;
 		}
 
 		static LineBreakMode ToLineBreakMode (TextWrapping value)
