@@ -16,7 +16,6 @@ namespace Xamarin.Forms.Platform.Android
 		readonly Lazy<GestureDetector> _gestureDetector;
 		readonly PanGestureHandler _panGestureHandler;
 		readonly PinchGestureHandler _pinchGestureHandler;
-
 		readonly TapGestureHandler _tapGestureHandler;
 
 		NotifyCollectionChangedEventHandler _collectionChangeHandler;
@@ -72,10 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		View View
-		{
-			get { return Element as View; }
-		}
+		View View => Element as View;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -87,6 +83,14 @@ namespace Xamarin.Forms.Platform.Android
 		void IOnClickListener.OnClick(AView v)
 		{
 			_tapGestureHandler.OnSingleClick();
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent ev)
+		{
+			if (Element.InputTransparent && Element.IsEnabled)
+				return false;
+
+			return base.OnInterceptTouchEvent(ev);
 		}
 
 		bool IOnTouchListener.OnTouch(AView v, MotionEvent e)
@@ -104,10 +108,7 @@ namespace Xamarin.Forms.Platform.Android
 			return _gestureDetector.Value.OnTouchEvent(e) || handled;
 		}
 
-		VisualElement IVisualElementRenderer.Element
-		{
-			get { return Element; }
-		}
+		VisualElement IVisualElementRenderer.Element => Element;
 
 		event EventHandler<VisualElementChangedEventArgs> IVisualElementRenderer.ElementChanged
 		{
@@ -124,7 +125,7 @@ namespace Xamarin.Forms.Platform.Android
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
 			if (!(element is TElement))
-				throw new ArgumentException("element is not of type " + typeof(TElement), "element");
+				throw new ArgumentException("element is not of type " + typeof(TElement), nameof(element));
 
 			SetElement((TElement)element);
 		}
@@ -134,23 +135,18 @@ namespace Xamarin.Forms.Platform.Android
 		public void UpdateLayout()
 		{
 			Performance.Start();
-			if (Tracker != null)
-				Tracker.UpdateLayout();
-
+			Tracker?.UpdateLayout();
 			Performance.Stop();
 		}
 
-		public ViewGroup ViewGroup
-		{
-			get { return this; }
-		}
+		public ViewGroup ViewGroup => this;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
 		public void SetElement(TElement element)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
 			TElement oldElement = Element;
 			Element = element;
@@ -293,12 +289,10 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
-			for (var i = 0; i < _elementChangedHandlers.Count; i++)
-				_elementChangedHandlers[i](this, args);
+			foreach (EventHandler<VisualElementChangedEventArgs> handler in _elementChangedHandlers)
+				handler(this, args);
 
-			EventHandler<ElementChangedEventArgs<TElement>> changed = ElementChanged;
-			if (changed != null)
-				changed(this, e);
+			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -315,9 +309,9 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
-			for (var i = 0; i < children.Count; i++)
+			foreach (Element element in children)
 			{
-				var visualElement = children[i] as VisualElement;
+				var visualElement = element as VisualElement;
 				if (visualElement == null)
 					continue;
 
