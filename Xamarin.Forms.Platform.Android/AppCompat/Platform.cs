@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void IPlatformLayout.OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (changed)
-				LayoutRootPage(Page, r - l, b - t);
+				LayoutRootPage((FormsAppCompatActivity)_context, Page, r - l, b - t);
 
 			Android.Platform.GetRenderer(Page).UpdateLayout();
 
@@ -251,7 +251,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Android.Platform.SetRenderer(page, renderView);
 
 			if (layout)
-				LayoutRootPage(page, _renderer.Width, _renderer.Height);
+				LayoutRootPage((FormsAppCompatActivity)_context, page, _renderer.Width, _renderer.Height);
 
 			_renderer.AddView(renderView.ViewGroup);
 		}
@@ -267,16 +267,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return handled;
 		}
 
-		void LayoutRootPage(Page page, int width, int height)
+		internal static void LayoutRootPage(FormsAppCompatActivity activity, Page page, int width, int height)
 		{
-			var activity = (FormsAppCompatActivity)_context;
 			int statusBarHeight = Forms.IsLollipopOrNewer ? activity.GetStatusBarHeight() : 0;
+			statusBarHeight = activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen) || Forms.TitleBarVisibility == AndroidTitleBarVisibility.Never ? 0 : statusBarHeight;
 
 			if (page is MasterDetailPage)
-				page.Layout(new Rectangle(0, 0, _context.FromPixels(width), _context.FromPixels(height)));
+				page.Layout(new Rectangle(0, 0, activity.FromPixels(width), activity.FromPixels(height)));
 			else
 			{
-				page.Layout(new Rectangle(0, _context.FromPixels(statusBarHeight), _context.FromPixels(width), _context.FromPixels(height - statusBarHeight)));
+				page.Layout(new Rectangle(0, activity.FromPixels(statusBarHeight), activity.FromPixels(width), activity.FromPixels(height - statusBarHeight)));
 			}
 		}
 

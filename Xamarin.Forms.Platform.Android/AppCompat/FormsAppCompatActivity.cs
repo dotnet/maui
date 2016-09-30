@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		AndroidApplicationLifecycleState _previousState;
 
-		bool _renderersAdded;
+		bool _renderersAdded, _isFullScreen;
 		int _statusBarHeight = -1;
 		global::Android.Views.View _statusBarUnderlay;
 
@@ -466,6 +466,38 @@ namespace Xamarin.Forms.Platform.Android
 
 			Window.SetSoftInputMode(adjust);
 			SetStatusBarVisibility(adjust);
+		}
+
+		public override void OnWindowAttributesChanged(WindowManagerLayoutParams @params)
+		{
+			base.OnWindowAttributesChanged(@params);
+
+			if (Xamarin.Forms.Application.Current == null || Xamarin.Forms.Application.Current.MainPage == null)
+				return;
+
+			if (@params.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+			{
+				if (Forms.TitleBarVisibility != AndroidTitleBarVisibility.Never)
+					Forms.TitleBarVisibility = AndroidTitleBarVisibility.Never;
+
+				if (_isFullScreen)
+					return;
+			}
+			else
+			{
+				if (Forms.TitleBarVisibility != AndroidTitleBarVisibility.Default)
+					Forms.TitleBarVisibility = AndroidTitleBarVisibility.Default;
+
+				if (!_isFullScreen)
+					return;
+			}
+
+			_isFullScreen = !_isFullScreen;
+
+			var displayMetrics = Resources.DisplayMetrics;
+			var width = displayMetrics.WidthPixels;
+			var height = displayMetrics.HeightPixels;
+			AppCompat.Platform.LayoutRootPage(this, Xamarin.Forms.Application.Current.MainPage, width, height);
 		}
 
 		void SetStatusBarVisibility(SoftInput mode)
