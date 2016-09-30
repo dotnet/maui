@@ -511,7 +511,12 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnKeyPressed(object sender, KeyRoutedEventArgs e)
 		{
 			if (e.Key == VirtualKey.Enter)
-				OnListItemClicked(List.SelectedIndex);
+			{
+				if (Element.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
+				{
+					((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+				}
+			}
 		}
 
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -535,13 +540,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 			}
 #endif
-
-			// This is used for respecting ListView selection changes via keyboard, as the SelectedItem
-			// value is otherwise not set.
-			if (Element.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
-			{
-				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
-			}
 		}
 
 		FrameworkElement FindElement(object cell)
