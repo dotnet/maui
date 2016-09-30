@@ -37,9 +37,31 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			NativeViewPropertyListener nativePropertyListener = null;
-			if (bindingBase.Mode == BindingMode.TwoWay) {
+			if (bindingBase.Mode == BindingMode.TwoWay)
+			{
 				nativePropertyListener = new NativeViewPropertyListener(propertyName);
-				view.AddObserver(nativePropertyListener, propertyName, 0, IntPtr.Zero);
+				try
+				{
+					//TODO: We need to figure a way to map the value back to the real objectiveC property.
+					//the X.IOS camelcase property name won't work
+					var key = new Foundation.NSString(propertyName.ToLower());
+					var valueKey = view.ValueForKey(key);
+					if (valueKey != null)
+					{
+						view.AddObserver(nativePropertyListener, key, Foundation.NSKeyValueObservingOptions.New, IntPtr.Zero);
+					}
+				}
+				catch (Foundation.MonoTouchException ex)
+				{
+					nativePropertyListener = null;
+					if (ex.Name == "NSUnknownKeyException")
+					{
+						System.Diagnostics.Debug.WriteLine("KVO not supported, try specify a UpdateSourceEventName instead.");
+						return;
+					}
+					throw ex;
+				}
+
 			}
 
 			NativeBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener);

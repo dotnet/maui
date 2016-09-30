@@ -312,6 +312,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			uilabel.SetBinding("Text", new Binding("NativeLabel"));
 			uilabel.SetBinding(nameof(uilabel.TextColor), new Binding("NativeLabelColor", converter: nativeColorConverter));
 
+			var kvoSlider = new KVOUISlider();
+			kvoSlider.MaxValue = 100;
+			kvoSlider.MinValue = 0;
+			kvoSlider.SetBinding(nameof(kvoSlider.KVOValue), new Binding("Age", BindingMode.TwoWay));
+			sl?.Children.Add(kvoSlider);
+
 			var uiView = new UIView(new RectangleF(0, 0, width, heightCustomLabelView));
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
@@ -320,6 +326,34 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
 			sl?.Children.Add(colorPicker);
 			page.NativeControlsAdded = true;
+		}
+	}
+
+	[Register("KVOUISlider")]
+	public class KVOUISlider : UISlider
+	{
+
+		public KVOUISlider()
+		{
+			ValueChanged += (s, e) => KVOValue = Value;
+		}
+
+		float _kVOValue;
+		[Export("kvovalue")]
+		public float KVOValue
+		{
+			get
+			{
+
+				return _kVOValue;
+			}
+			set
+			{
+
+				WillChangeValue(nameof(KVOValue).ToLower());
+				_kVOValue = Value = value;
+				DidChangeValue(nameof(KVOValue).ToLower());
+			}
 		}
 	}
 
