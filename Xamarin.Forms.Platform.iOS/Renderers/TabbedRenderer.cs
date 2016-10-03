@@ -375,7 +375,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var originalIndex = -1;
 				if (int.TryParse(viewControllers[i].TabBarItem.Tag.ToString(), out originalIndex))
 				{
-					var page = (TabbedPage)((IPageController)Tabbed).InternalChildren[originalIndex];
+					var page = (Page)((IPageController)Tabbed).InternalChildren[originalIndex];
 					TabbedPage.SetIndex(page, i);
 				}
 			}
