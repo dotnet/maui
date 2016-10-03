@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[Test]
-		public async void Bugzilla32615Test ()
+		public async Task Bugzilla32615Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("btnModal"));
 			RunningApp.Tap (q => q.Marked ("btnPop"));
