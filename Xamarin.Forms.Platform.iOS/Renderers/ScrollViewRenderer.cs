@@ -196,6 +196,10 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				var positionOnScroll = Controller.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
+
+				positionOnScroll.X = positionOnScroll.X.Clamp(0, ContentSize.Width - Bounds.Size.Width);
+				positionOnScroll.Y = positionOnScroll.Y.Clamp(0, ContentSize.Height - Bounds.Size.Height);
+
 				switch (ScrollView.Orientation)
 				{
 					case ScrollOrientation.Horizontal:
