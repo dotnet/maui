@@ -11,8 +11,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		PageContainer _pageContainer;
 		FragmentManager _fragmentManager;
 		readonly bool _isMaster;
-		readonly MasterDetailPage _parent;
+		MasterDetailPage _parent;
 		Fragment _currentFragment;
+		bool _disposed;
 
 		public MasterDetailContainer(MasterDetailPage parent, bool isMaster, Context context) : base(parent, isMaster, context)
 		{
@@ -104,6 +105,37 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				_currentFragment = fragment;
 			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				if (_currentFragment != null)
+				{
+					FragmentTransaction transaction = FragmentManager.BeginTransaction();
+					transaction.DisallowAddToBackStack();
+					transaction.Remove(_currentFragment);
+					transaction.SetTransition((int)FragmentTransit.None);
+					transaction.CommitAllowingStateLoss();
+					FragmentManager.ExecutePendingTransactions();
+
+					_currentFragment = null;
+				}
+
+				_parent = null;
+				_pageContainer = null;
+				_fragmentManager = null;
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public void SetFragmentManager(FragmentManager fragmentManager)
