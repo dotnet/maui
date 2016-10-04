@@ -9,7 +9,10 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class InnerGestureListener : Object, GestureDetector.IOnGestureListener, GestureDetector.IOnDoubleTapListener
 	{
-		bool _isScrolling;
+		bool _isScrolling;		
+		float _lastX;
+		float _lastY;
+
 		Func<bool> _scrollCompleteDelegate;
 		Func<float, float, int, bool> _scrollDelegate;
 		Func<int, bool> _scrollStartedDelegate;
@@ -48,6 +51,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (e.Action == MotionEventActions.Up)
 				EndScrolling();
+			else if (e.Action == MotionEventActions.Down)
+				SetStartingPosition(e);
+			else if (e.Action == MotionEventActions.Move)
+				StartScrolling(e);
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTap(MotionEvent e)
@@ -76,6 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool GestureDetector.IOnGestureListener.OnDown(MotionEvent e)
 		{
+			SetStartingPosition(e);
 			return false;
 		}
 
@@ -88,22 +96,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void GestureDetector.IOnGestureListener.OnLongPress(MotionEvent e)
 		{
+			SetStartingPosition(e);
 		}
 
 		bool GestureDetector.IOnGestureListener.OnScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
 		{
-			if (_scrollDelegate == null || e1 == null || e2 == null)
+			if (e1 == null || e2 == null)
 				return false;
 
-			if (!_isScrolling && _scrollStartedDelegate != null)
-				_scrollStartedDelegate(e2.PointerCount);
+			SetStartingPosition(e1);
 
-			_isScrolling = true;
-
-			float totalX = e2.GetX() - e1.GetX();
-			float totalY = e2.GetY() - e1.GetY();
-
-			return _scrollDelegate(totalX, totalY, e2.PointerCount);
+			return StartScrolling(e2);
 		}
 
 		void GestureDetector.IOnGestureListener.OnShowPress(MotionEvent e)
@@ -134,6 +137,28 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			base.Dispose(disposing);
+		}
+
+		void SetStartingPosition(MotionEvent e1)
+		{
+			_lastX = e1.GetX();
+			_lastY = e1.GetY();
+		}
+
+		bool StartScrolling(MotionEvent e2)
+		{
+			if (_scrollDelegate == null)
+				return false;
+
+			if (!_isScrolling && _scrollStartedDelegate != null)
+				_scrollStartedDelegate(e2.PointerCount);
+
+			_isScrolling = true;
+
+			float totalX = e2.GetX() - _lastX;
+			float totalY = e2.GetY() - _lastY;
+
+			return _scrollDelegate(totalX, totalY, e2.PointerCount);
 		}
 
 		void EndScrolling()
