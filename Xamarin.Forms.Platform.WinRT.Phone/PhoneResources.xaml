@@ -277,7 +277,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid x:Name="grdToolbar" Background="{TemplateBinding ToolbarBackground}" >
-                            <TextBlock Padding="10,0,0,0" Text="{TemplateBinding Title}" VerticalAlignment="Center" Style="{ThemeResource HeaderTextBlockStyle}" Foreground="{TemplateBinding ToolbarForeground}" Visibility="{TemplateBinding ToolbarVisibility}"  Height="79"/>
+							<TextBlock Padding="10,0,0,0" Text="{TemplateBinding Title}" VerticalAlignment="Center" Style="{ThemeResource HeaderTextBlockStyle}" Foreground="{TemplateBinding ToolbarForeground}" Visibility="{TemplateBinding TitleVisibility}"  Height="79"/>
                         </Grid>
                         <ScrollViewer x:Name="ScrollViewer" HorizontalSnapPointsAlignment="Center" HorizontalSnapPointsType="MandatorySingle" HorizontalScrollBarVisibility="Hidden" Margin="{TemplateBinding Padding}" Grid.Row="1" Template="{StaticResource ScrollViewerScrollBarlessTemplate}" VerticalSnapPointsType="None" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled" VerticalContentAlignment="Stretch" ZoomMode="Disabled">
                             <PivotPanel x:Name="Panel" VerticalAlignment="Stretch">
