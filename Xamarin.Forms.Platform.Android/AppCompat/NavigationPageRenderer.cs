@@ -173,6 +173,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (_drawerLayout != null && _drawerListener != null)
 				{
 					_drawerLayout.RemoveDrawerListener(_drawerListener);
+					_drawerListener = null;
 				}
 
 				_drawerToggle = null;

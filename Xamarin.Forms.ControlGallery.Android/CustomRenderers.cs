@@ -34,6 +34,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 	public class NativeDroidMasterDetail : Xamarin.Forms.Platform.Android.AppCompat.MasterDetailPageRenderer
 	{
 		MasterDetailPage _page;
+		bool _disposed;
 
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)
 		{
@@ -61,10 +62,18 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			if (disposing && _page != null)
 			{
 				_page.LayoutChanged -= Page_LayoutChanged;
 				_page.PropertyChanged -= Page_PropertyChanged;
+				_page = null;
 			}
 
 			base.Dispose(disposing);
