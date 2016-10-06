@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
@@ -82,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				// The renderers for NavigationPage and TabbedPage both host fragments, so they need to be wrapped in a 
 				// FragmentContainer in order to get isolated fragment management
 				Fragment fragment = FragmentContainer.CreateInstance(page);
-				
+
 				var fc = fragment as FragmentContainer;
 
 				fc?.SetOnCreateCallback(pc =>
@@ -100,10 +101,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 
 				transaction.Add(Id, fragment);
-				transaction.SetTransition((int)FragmentTransit.FragmentOpen);
+				transaction.SetTransition((int)FragmentTransit.None);
 				transaction.Commit();
 
 				_currentFragment = fragment;
+
+				new Handler(Looper.MainLooper).PostAtFrontOfQueue(() => FragmentManager.ExecutePendingTransactions());
 			}
 		}
 
