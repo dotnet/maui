@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[Test]
-		public async Task Bugzilla39458Test()
+		public async Task Bugzilla39489Test()
 		{
 			// Original bug report (https://bugzilla.xamarin.com/show_bug.cgi?id=39489) had a crash (OOM) after 25-30
 			// page loads. Obviously it's going to depend heavily on the device and amount of available memory, but
