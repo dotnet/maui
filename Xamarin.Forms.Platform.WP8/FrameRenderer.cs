@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			PackChild();
 			UpdateBorder();
+			UpdateCornerRadius();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -29,6 +30,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 				PackChild();
 			else if (e.PropertyName == Frame.OutlineColorProperty.PropertyName || e.PropertyName == Frame.HasShadowProperty.PropertyName)
 				UpdateBorder();
+			else if (e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
+				UpdateCornerRadius();
 		}
 
 		void PackChild()
@@ -44,7 +47,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void UpdateBorder()
 		{
-			Control.CornerRadius = new CornerRadius(5);
 			if (Element.OutlineColor != Color.Default)
 			{
 				Control.BorderBrush = Element.OutlineColor.ToBrush();
@@ -52,6 +54,16 @@ namespace Xamarin.Forms.Platform.WinPhone
 			}
 			else
 				Control.BorderBrush = new Color(0, 0, 0, 0).ToBrush();
+		}
+
+		void UpdateCornerRadius()
+		{
+			float cornerRadius = Element.CornerRadius;
+
+			if (cornerRadius == -1f)
+				cornerRadius = 5f; // default corner radius
+
+			Control.CornerRadius = new CornerRadius(cornerRadius);
 		}
 	}
 }

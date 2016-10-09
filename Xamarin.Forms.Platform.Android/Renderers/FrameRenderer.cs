@@ -27,10 +27,18 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementChanged(e);
 
 			if (e.NewElement != null && e.OldElement == null)
+			{
 				UpdateBackground();
+				UpdateCornerRadius();
+			}
 		}
 
 		void UpdateBackground()
+		{
+			this.SetBackground(new FrameDrawable(Element));
+		}
+
+		void UpdateCornerRadius()
 		{
 			this.SetBackground(new FrameDrawable(Element));
 		}
@@ -127,14 +135,13 @@ namespace Xamarin.Forms.Platform.Android
 
 				using (var canvas = new ACanvas(bitmap))
 				{
-					DrawBackground(canvas, width, height, pressed);
-					DrawOutline(canvas, width, height);
+					DrawCanvas(canvas, width, height, pressed);
 				}
 
 				return bitmap;
 			}
 
-			void DrawBackground(ACanvas canvas, int width, int height, bool pressed)
+			void DrawBackground(ACanvas canvas, int width, int height, float cornerRadius, bool pressed)
 			{
 				using (var paint = new Paint { AntiAlias = true })
 				using (var path = new Path())
@@ -142,8 +149,8 @@ namespace Xamarin.Forms.Platform.Android
 				using (Paint.Style style = Paint.Style.Fill)
 				using (var rect = new RectF(0, 0, width, height))
 				{
-					float rx = Forms.Context.ToPixels(5);
-					float ry = Forms.Context.ToPixels(5);
+					float rx = Forms.Context.ToPixels(cornerRadius);
+					float ry = Forms.Context.ToPixels(cornerRadius);
 					path.AddRoundRect(rect, rx, ry, direction);
 
 					global::Android.Graphics.Color color = _frame.BackgroundColor.ToAndroid();
@@ -155,7 +162,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 
-			void DrawOutline(ACanvas canvas, int width, int height)
+			void DrawOutline(ACanvas canvas, int width, int height, float cornerRadius)
 			{
 				using (var paint = new Paint { AntiAlias = true })
 				using (var path = new Path())
@@ -163,8 +170,8 @@ namespace Xamarin.Forms.Platform.Android
 				using (Paint.Style style = Paint.Style.Stroke)
 				using (var rect = new RectF(0, 0, width, height))
 				{
-					float rx = Forms.Context.ToPixels(5);
-					float ry = Forms.Context.ToPixels(5);
+					float rx = Forms.Context.ToPixels(cornerRadius);
+					float ry = Forms.Context.ToPixels(cornerRadius);
 					path.AddRoundRect(rect, rx, ry, direction);
 
 					paint.StrokeWidth = 1;
@@ -177,18 +184,32 @@ namespace Xamarin.Forms.Platform.Android
 
 			void FrameOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Frame.OutlineColorProperty.PropertyName)
+				if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+					e.PropertyName == Frame.OutlineColorProperty.PropertyName ||
+					e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				{
 					using (var canvas = new ACanvas(_normalBitmap))
 					{
 						int width = Bounds.Width();
 						int height = Bounds.Height();
 						canvas.DrawColor(global::Android.Graphics.Color.Black, PorterDuff.Mode.Clear);
-						DrawBackground(canvas, width, height, false);
-						DrawOutline(canvas, width, height);
+						DrawCanvas(canvas, width, height, false);
 					}
 					InvalidateSelf();
 				}
+			}
+
+			void DrawCanvas(ACanvas canvas, int width, int height, bool pressed)
+			{
+				float cornerRadius = _frame.CornerRadius;
+
+				if (cornerRadius == -1f)
+					cornerRadius = 5f; // default corner radius
+				else
+					cornerRadius = Forms.Context.ToPixels(cornerRadius);
+
+				DrawBackground(canvas, width, height, cornerRadius, pressed);
+				DrawOutline(canvas, width, height, cornerRadius);
 			}
 		}
 	}

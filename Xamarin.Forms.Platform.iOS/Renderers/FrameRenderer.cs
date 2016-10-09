@@ -25,7 +25,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void SetupLayer()
 		{
-			Layer.CornerRadius = 5;
+			float cornerRadius = Element.CornerRadius;
+
+			if (cornerRadius == -1f)
+				cornerRadius = 5f; // default corner radius
+
+			Layer.CornerRadius = cornerRadius;
+
 			if (Element.BackgroundColor == Color.Default)
 				Layer.BackgroundColor = UIColor.White.CGColor;
 			else

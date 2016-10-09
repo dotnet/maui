@@ -11,6 +11,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
 
+		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f);
+
 		readonly Lazy<PlatformConfigurationRegistry<Frame>> _platformConfigurationRegistry;
 
 		public Frame()
@@ -29,6 +31,12 @@ namespace Xamarin.Forms
 		{
 			get { return (Color)GetValue(OutlineColorProperty); }
 			set { SetValue(OutlineColorProperty, value); }
+		}
+
+		public float CornerRadius
+		{
+			get { return (float)GetValue(CornerRadiusProperty); }
+			set { SetValue(CornerRadiusProperty, value); }
 		}
 
 		public IPlatformElementConfiguration<T, Frame> On<T>() where T : IConfigPlatform
