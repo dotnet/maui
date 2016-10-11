@@ -143,6 +143,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			_disposed = true;
 
+			PageController?.SendDisappearing();
 			SetElement(null);
 		}
 

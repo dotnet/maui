@@ -155,6 +155,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				return;
 
 			_disposed = true;
+
+			PageController?.SendDisappearing();
 			SetElement(null);
 			Tracker = null;
 		}
