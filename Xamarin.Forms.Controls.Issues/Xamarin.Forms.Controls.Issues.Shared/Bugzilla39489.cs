@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Controls
 		}
 
 #if UITEST
+#if !__IOS__ // Temporarily disabling this test on iOS
 		[Test]
 		public async Task Bugzilla39489Test()
 		{
@@ -39,6 +40,7 @@ namespace Xamarin.Forms.Controls
 				RunningApp.Back();
 			}
 		}
+#endif
 #endif
 	}
 
