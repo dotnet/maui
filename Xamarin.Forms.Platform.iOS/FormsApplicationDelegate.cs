@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using CoreSpotlight;
 using Foundation;
 using UIKit;
@@ -54,6 +55,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_application != null && _isSuspended)
 			{
 				_isSuspended = false;
+				CultureInfo.CurrentCulture.ClearCachedData();
+				TimeZoneInfo.ClearCachedData();
 				_application.SendResume();
 			}
 		}
