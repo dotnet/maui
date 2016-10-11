@@ -5,6 +5,8 @@
 		public T Phone { get; set; }
 
 		public T Tablet { get; set; }
+		
+		public T Desktop { get; set; }
 
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
@@ -15,6 +17,8 @@
 					return onIdiom.Phone;
 				case TargetIdiom.Tablet:
 					return onIdiom.Tablet;
+				case TargetIdiom.Desktop:
+					return onIdiom.Desktop;
 			}
 		}
 	}
