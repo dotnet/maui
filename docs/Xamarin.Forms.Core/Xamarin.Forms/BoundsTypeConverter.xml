@@ -1,6 +1,6 @@
 <Type Name="BoundsTypeConverter" FullName="Xamarin.Forms.BoundsTypeConverter">
-  <TypeSignature Language="C#" Value="public class BoundsTypeConverter : Xamarin.Forms.TypeConverter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BoundsTypeConverter extends Xamarin.Forms.TypeConverter" />
+  <TypeSignature Language="C#" Value="public sealed class BoundsTypeConverter : Xamarin.Forms.TypeConverter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit BoundsTypeConverter extends Xamarin.Forms.TypeConverter" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
