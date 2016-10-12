@@ -113,10 +113,6 @@ namespace Xamarin.Forms.Build.Tasks
 			var declNs = new CodeNamespace(rootNs);
 			ccu.Namespaces.Add(declNs);
 
-			declNs.Imports.Add(new CodeNamespaceImport("System"));
-			declNs.Imports.Add(new CodeNamespaceImport("Xamarin.Forms"));
-			declNs.Imports.Add(new CodeNamespaceImport("Xamarin.Forms.Xaml"));
-
 			var declType = new CodeTypeDeclaration(rootType);
 			declType.IsPartial = true;
 			declType.BaseTypes.Add(baseType);
@@ -136,8 +132,8 @@ namespace Xamarin.Forms.Build.Tasks
 			declType.Members.Add(initcomp);
 
 			initcomp.Statements.Add(new CodeMethodInvokeExpression(
-				new CodeThisReferenceExpression(),
-				"LoadFromXaml", new CodeTypeOfExpression(declType.Name)));
+				new CodeTypeReferenceExpression(new CodeTypeReference("global::Xamarin.Forms.Xaml.Extensions")),
+				"LoadFromXaml", new CodeThisReferenceExpression(), new CodeTypeOfExpression(declType.Name)));
 
 			foreach (var entry in namesAndTypes)
 			{
@@ -160,8 +156,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 				var find_invoke = new CodeMethodInvokeExpression(
 					new CodeMethodReferenceExpression(
-						new CodeThisReferenceExpression(),
-						"FindByName", type), new CodePrimitiveExpression(name));
+						new CodeTypeReferenceExpression(new CodeTypeReference("global::Xamarin.Forms.NameScopeExtensions")),
+						"FindByName", type),
+					new CodeThisReferenceExpression(), new CodePrimitiveExpression(name));
 
 				//CodeCastExpression cast = new CodeCastExpression (type, find_invoke);
 
