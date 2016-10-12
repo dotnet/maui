@@ -831,7 +831,13 @@ namespace Xamarin.Forms.Platform.iOS
 				if (disposing)
 				{
 					((IPageController)Child).SendDisappearing();
-					Child = null;
+
+					if (Child != null)
+					{
+						Child.PropertyChanged -= HandleChildPropertyChanged;
+						Child = null;
+					}
+
 					_tracker.Target = null;
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;
 					_tracker = null;
