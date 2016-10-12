@@ -2,6 +2,7 @@ using System;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AView = Android.Views.View;
 using Fragment = Android.Support.V4.App.Fragment;
 
@@ -119,18 +120,26 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public override void OnPause()
 		{
-			Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
-			if (currentPage == null || currentPage == PageController)
-				PageController?.SendDisappearing();
+			var shouldSendEvent = Application.Current.OnThisPlatform().GetSendDisappearingEventOnPause();
+			if (shouldSendEvent)
+			{
+				Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
+				if (currentPage == null || currentPage == PageController)
+					PageController?.SendDisappearing();
+			}
 
 			base.OnPause();
 		}
-		
+
 		public override void OnResume()
 		{
-			Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
-			if (UserVisibleHint && (currentPage == null || currentPage == PageController))
-				PageController?.SendAppearing();
+			var shouldSendEvent = Application.Current.OnThisPlatform().GetSendAppearingEventOnResume();
+			if (shouldSendEvent)
+			{
+				Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
+				if (UserVisibleHint && (currentPage == null || currentPage == PageController))
+					PageController?.SendAppearing();
+			}
 
 			base.OnResume();
 		}
