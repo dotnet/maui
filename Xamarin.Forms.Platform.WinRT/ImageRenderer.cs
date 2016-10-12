@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			_measured = true;
 
-			var result = new Size { Width = ((BitmapImage)Control.Source).PixelWidth, Height = ((BitmapImage)Control.Source).PixelHeight };
+			var result = new Size { Width = ((BitmapSource)Control.Source).PixelWidth, Height = ((BitmapSource)Control.Source).PixelHeight };
 
 			return new SizeRequest(result);
 		}
