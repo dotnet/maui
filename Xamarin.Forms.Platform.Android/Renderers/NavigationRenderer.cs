@@ -74,13 +74,13 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
-			PageController.SendAppearing();
+			PageController?.SendAppearing();
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			PageController.SendDisappearing();
+			PageController?.SendDisappearing();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Platform.Android
 		void InsertPageBefore(Page page, Page before)
 		{
 
-			int index = ((IPageController)Element).InternalChildren.IndexOf(before);
+			int index = PageController.InternalChildren.IndexOf(before);
 			if (index == -1)
 				throw new InvalidOperationException("This should never happen, please file a bug");
 
