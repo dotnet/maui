@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-		#if UITEST
+#if UITEST
 		[Test]
 		public void Bugzilla44166Test()
 		{
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Controls
 			RunningApp.WaitForElement(q => q.Marked("Back"));
 			RunningApp.Tap(q => q.Marked("Back"));
 
-			for(int n = 0; n < 10; n++)
+			for (var n = 0; n < 10; n++)
 			{
 				RunningApp.WaitForElement(q => q.Marked("GC"));
 				RunningApp.Tap(q => q.Marked("GC"));
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Controls
 				}
 			}
 
-			var pageStats = string.Empty;
+			string pageStats = string.Empty;
 
 			if (_44166MDP.Counter > 0)
 			{
@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Controls
 
 			Assert.Fail($"At least one of the pages was not collected: {pageStats}");
 		}
-		#endif
+#endif
 	}
 
 	[Preserve(AllMembers = true)]
@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Controls
 
 			Master = new _44166Master();
 			Detail = new _44166Detail();
-		}
+        }
 
 		~_44166MDP()
 		{

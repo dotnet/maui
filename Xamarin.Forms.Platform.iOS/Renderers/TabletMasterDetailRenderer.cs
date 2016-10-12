@@ -57,10 +57,7 @@ namespace Xamarin.Forms.Platform.iOS
 		IPageController PageController => Element as IPageController;
 		IElementController ElementController => Element as IElementController;
 
-		protected MasterDetailPage MasterDetailPage
-		{
-			get { return _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element); }
-		}
+		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);
 
 		IMasterDetailPageController MasterDetailPageController => MasterDetailPage as IMasterDetailPageController;
 
@@ -71,36 +68,50 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
-		    if (!_disposed && disposing)
-		    {
-		        if (Element != null)
-		        {
-		            PageController.SendDisappearing();
-		            Element.PropertyChanged -= HandlePropertyChanged;
-		            Element = null;
-		        }
+			if (_disposed)
+			{
+				return;
+			}
 
-		        if (_tracker != null)
-		        {
-		            _tracker.Dispose();
-		            _tracker = null;
-		        }
+			_disposed = true;
 
-		        if (_events != null)
-		        {
-		            _events.Dispose();
-		            _events = null;
-		        }
+			if (disposing)
+			{
+				if (Element != null)
+				{
+					PageController.SendDisappearing();
+					Element.PropertyChanged -= HandlePropertyChanged;
 
-		        if (_masterController != null)
-		        {
-		            _masterController.WillAppear -= MasterControllerWillAppear;
-		            _masterController.WillDisappear -= MasterControllerWillDisappear;
-		        }
+					if (MasterDetailPage?.Master != null)
+					{
+						MasterDetailPage.Master.PropertyChanged -= HandleMasterPropertyChanged;
+					}
 
-		        _disposed = true;
-		    }
-		    base.Dispose(disposing);
+					Element = null;
+				}
+
+				if (_tracker != null)
+				{
+					_tracker.Dispose();
+					_tracker = null;
+				}
+
+				if (_events != null)
+				{
+					_events.Dispose();
+					_events = null;
+				}
+
+				if (_masterController != null)
+				{
+					_masterController.WillAppear -= MasterControllerWillAppear;
+					_masterController.WillDisappear -= MasterControllerWillDisappear;
+				}
+
+				ClearControllers();
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public VisualElement Element { get; private set; }
