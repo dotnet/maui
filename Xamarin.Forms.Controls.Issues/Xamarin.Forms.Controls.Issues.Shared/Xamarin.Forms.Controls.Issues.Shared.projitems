@@ -190,6 +190,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39768.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41271.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41153.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44129.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1075.cs" />

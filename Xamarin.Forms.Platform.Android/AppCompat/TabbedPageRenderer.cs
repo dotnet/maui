@@ -252,7 +252,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			TabLayout tabs = _tabLayout;
 
 			((FormsFragmentPagerAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-			pager.Adapter.NotifyDataSetChanged();
+			
 
 			if (Element.Children.Count == 0)
 				tabs.RemoveAllTabs();
@@ -262,6 +262,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateTabIcons();
 				tabs.SetOnTabSelectedListener(this);
 			}
+
+			pager.Adapter.NotifyDataSetChanged();
 
 			UpdateIgnoreContainerAreas();
 		}
