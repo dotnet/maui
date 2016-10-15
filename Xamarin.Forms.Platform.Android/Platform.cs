@@ -1020,7 +1020,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			foreach (IVisualElementRenderer view in _navModel.Roots.Select(GetRenderer))
-				view.UpdateLayout();
+				view?.UpdateLayout();
 		}
 
 		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
