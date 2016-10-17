@@ -210,13 +210,6 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				cell = (Cell)boxedCell.Element;
 
-				if (ActionModeContext == cell)
-				{
-					// This appears to never happen, the theory is android keeps all views alive that are currently selected for long-press (preventing them from being recycled).
-					// This is convenient since we wont have to worry about the user scrolling the cell offscreen and us losing our context actions.
-					ActionModeContext = null;
-					ContextView = null;
-				}
 				// We are going to re-set the Platform here because in some cases (headers mostly) its possible this is unset and
 				// when the binding context gets updated the measure passes will all fail. By applying this here the Update call
 				// further down will result in correct layouts.
