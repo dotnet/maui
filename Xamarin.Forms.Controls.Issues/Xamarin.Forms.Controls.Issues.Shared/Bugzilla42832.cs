@@ -45,11 +45,10 @@ namespace Xamarin.Forms.Controls.Issues
             }
         }
 
-#if UITEST
+#if UITEST && __ANDROID__
         [Test]
         public void ContextActionsScrollNRE()
         {
-            // mark is an icon on android
             RunningApp.TouchAndHold(q => q.Marked("Item #0"));
             RunningApp.WaitForElement(q => q.Marked("Test Item"));
 
