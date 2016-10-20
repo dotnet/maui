@@ -495,7 +495,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			UpdateTitleOnParents();
 
 			bool showing = _container.TitleVisibility == Visibility.Visible;
-			bool newValue = GetIsNavBarPossible() && NavigationPage.GetHasNavigationBar(_currentPage) && !string.IsNullOrEmpty(_currentPage.Title);
+			bool newValue = GetIsNavBarPossible() && NavigationPage.GetHasNavigationBar(_currentPage);
 			if (showing == newValue)
 				return;
 
