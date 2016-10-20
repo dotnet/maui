@@ -427,6 +427,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void UpdateActionBar()
 		{
+			if (ActionBar == null) //Fullscreen theme doesn't have action bar
+			{
+				return;
+			}
 			List<Page> relevantAncestors = AncestorPagesOfPage(_navModel.CurrentPage);
 
 			IEnumerable<NavigationPage> navPages = relevantAncestors.OfType<NavigationPage>();
