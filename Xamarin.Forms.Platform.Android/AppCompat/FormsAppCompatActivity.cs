@@ -126,6 +126,8 @@ namespace Xamarin.Forms.Platform.Android
 			(application as IApplicationController)?.SetAppIndexingProvider(new AndroidAppIndexProvider(this));
 			Xamarin.Forms.Application.Current = application;
 
+			SetSoftInputMode();
+
 			CheckForAppLink(Intent);
 
 			application.PropertyChanged += AppOnPropertyChanged;
@@ -166,8 +168,6 @@ namespace Xamarin.Forms.Platform.Android
 				bar = new AToolbar(this);
 
 			SetSupportActionBar(bar);
-
-			SetSoftInputMode();
 
 			_layout = new ARelativeLayout(BaseContext);
 			SetContentView(_layout);
