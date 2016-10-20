@@ -188,7 +188,7 @@ namespace Xamarin.Forms
 				if (weakView.TryGetTarget(out v))
 					v.TranslationY = f;
 			};
-			new Animation { { 0, 1, new Animation(translateX, view.TranslationX, x) }, { 0, 1, new Animation(translateY, view.TranslationY, y) } }.Commit(view, "TranslateTo", 16, length, easing,
+			new Animation { { 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) }, { 0, 1, new Animation(translateY, view.TranslationY, y, easing:easing) } }.Commit(view, "TranslateTo", 16, length, null,
 				(f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
