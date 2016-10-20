@@ -106,6 +106,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnEditingEnded(object sender, EventArgs e)
 		{
+			// Typing aid changes don't always raise EditingChanged event
+			if (Control.Text != Element.Text)
+			{
+				ElementController.SetValueFromRenderer(Entry.TextProperty, Control.Text);
+			}
+
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 
