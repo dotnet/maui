@@ -106,6 +106,7 @@
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageWindows.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\ApplicationAndroid.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageAndroid.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageWindows.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\VisualElementiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\WindowsPlatformSpecificsGalleryHelpers.cs" />

@@ -11,6 +11,7 @@ using Android.Support.Design.Widget;
 using Android.Support.V4.App;
 using Android.Support.V4.View;
 using Android.Views;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -182,6 +183,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
 				UpdateBarBackgroundColor();
 				UpdateBarTextColor();
+				UpdateSwipePaging();
+				UpdateOffscreenPageLimit();
 			}
 		}
 
@@ -190,12 +193,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
-				if(Element.CurrentPage != null)
+			{
+				if (Element.CurrentPage != null)
 					ScrollToCurrentPage();
+			}
 			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
+			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabledProperty.PropertyName)
+				UpdateSwipePaging();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -281,6 +288,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			foreach (IPageController child in Element.Children)
 				child.IgnoresContainerArea = child is NavigationPage;
+		}
+
+		void UpdateOffscreenPageLimit()
+		{
+			_viewPager.OffscreenPageLimit = Element.OnThisPlatform().OffscreenPageLimit();
+		}
+
+		void UpdateSwipePaging()
+		{
+			_viewPager.EnableGesture = Element.OnThisPlatform().IsSwipePagingEnabled();
 		}
 
 		void UpdateTabBarTranslation(int position, float offset)
