@@ -311,7 +311,7 @@ namespace Xamarin.Forms
 					hex = string.Format("ff{0}", hex);
 					break;
 			}
-			return FromUint(Convert.ToUInt32(hex.Replace("#", ""), 16));
+			return FromUint(Convert.ToUInt32(hex, 16));
 		}
 
 		public static Color FromUint(uint argb)
