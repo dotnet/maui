@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (Device.Idiom == TargetIdiom.Phone)
 			{
 				// If we're on the phone, we need to grab this from the template
-				// so we can manually handle it's background when focused
+				// so we can manually handle its background when focused
 				_borderElement = (Border)GetTemplateChild("BorderElement");
 			}
 		}
