@@ -106,6 +106,8 @@ namespace Xamarin.Forms.Platform.Android
 			_application = application;
 			Xamarin.Forms.Application.Current = application;
 
+			SetSoftInputMode();
+
 			application.PropertyChanged += AppOnPropertyChanged;
 
 			SetMainPage();
@@ -126,8 +128,6 @@ namespace Xamarin.Forms.Platform.Android
 			Window.RequestFeature(WindowFeatures.IndeterminateProgress);
 
 			base.OnCreate(savedInstanceState);
-
-			SetSoftInputMode();
 
 			_layout = new LinearLayout(BaseContext);
 			SetContentView(_layout);
