@@ -19,14 +19,16 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnElementChanged(e);
 
-			if (e.OldElement == null)
+			if (e.NewElement != null)
 			{
-				var progressBar = CreateNativeControl();
+				if (Control == null)
+				{
+					var progressBar = CreateNativeControl();
 
-				SetNativeControl(progressBar);
+					SetNativeControl(progressBar);
+				}
+				UpdateProgress();
 			}
-
-			UpdateProgress();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
