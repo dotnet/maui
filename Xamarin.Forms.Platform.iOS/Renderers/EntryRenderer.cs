@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 using System.Drawing;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -62,6 +63,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 				UpdateKeyboard();
 				UpdateAlignment();
+				UpdateAdjustsFontSizeToFitWidth();
 			}
 		}
 
@@ -90,6 +92,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateColor();
 				UpdatePlaceholder();
 			}
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName)
+				UpdateAdjustsFontSizeToFitWidth();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -135,6 +139,11 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TextColor = _defaultTextColor;
 			else
 				Control.TextColor = textColor.ToUIColor();
+		}
+
+		void UpdateAdjustsFontSizeToFitWidth()
+		{
+			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
 
 		void UpdateFont()

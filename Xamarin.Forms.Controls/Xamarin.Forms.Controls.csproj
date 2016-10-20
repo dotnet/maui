@@ -100,6 +100,7 @@
       <DependentUpon>ControlTemplateXamlPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="GalleryPages\LayoutPerformanceGallery.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\EntryPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageWindows.cs" />
     <Compile Include="GalleryPages\NavigationPropertiesGallery.cs" />
     <Compile Include="ControlGalleryPages\ListViewSelectionColor.cs" />
