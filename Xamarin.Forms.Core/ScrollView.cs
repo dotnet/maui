@@ -268,7 +268,7 @@ namespace Xamarin.Forms
 
 		double GetMaxHeight(double height)
 		{
-			return Math.Max(height, _content.Bounds.Bottom + Padding.Bottom);
+			return Math.Max(height, _content.Bounds.Top + Padding.Top + _content.Bounds.Bottom + Padding.Bottom);
 		}
 
 		static double GetMaxHeight(double height, SizeRequest size)
@@ -278,7 +278,7 @@ namespace Xamarin.Forms
 
 		double GetMaxWidth(double width)
 		{
-			return Math.Max(width, _content.Bounds.Right + Padding.Right);
+			return Math.Max(width, _content.Bounds.Left + Padding.Left + _content.Bounds.Right + Padding.Right);
 		}
 
 		static double GetMaxWidth(double width, SizeRequest size)
