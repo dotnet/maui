@@ -210,7 +210,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void ClearCloserRecognizer(UIScrollView scrollView)
 		{
-			if (_globalCloser == null)
+			if (_globalCloser == null || _globalCloser.State == UIGestureRecognizerState.Cancelled)
 				return;
 
 			var cell = GetContextCell(scrollView);
