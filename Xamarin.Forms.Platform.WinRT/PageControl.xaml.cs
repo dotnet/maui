@@ -150,7 +150,13 @@ namespace Xamarin.Forms.Platform.WinRT
 #if WINDOWS_UWP
 			_bottomCommandBarArea = GetTemplateChild("BottomCommandBarArea") as Border;
 			_topCommandBarArea = GetTemplateChild("TopCommandBarArea") as Border;
-			UpdateToolbarPlacement();
+
+			if (_commandBar != null && _bottomCommandBarArea != null && _topCommandBarArea != null)
+			{
+				// We have to wait for the command bar to load so that it'll be in the control hierarchy
+				// otherwise we can't properly move it to wherever the toolbar is supposed to be
+				_commandBar.Loaded += (sender, args) => UpdateToolbarPlacement();
+			} 
 #endif
 
 			TaskCompletionSource<CommandBar> tcs = _commandBarTcs;
