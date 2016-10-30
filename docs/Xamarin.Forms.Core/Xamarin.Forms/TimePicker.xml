@@ -126,7 +126,7 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Parameters />
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <summary>To be added.</summary>
+        <summary>Returns the platform-specific instance of this <see cref="T:Xamarin.Forms.TimePicker" />, on which a platform-specific method may be called.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

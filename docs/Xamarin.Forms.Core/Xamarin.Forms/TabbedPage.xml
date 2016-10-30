@@ -271,7 +271,7 @@ class TabbedPageDemoPage2 : TabbedPage
       <Parameters />
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <summary>To be added.</summary>
+        <summary>Returns the platform-specific instance of this <see cref="T:Xamarin.Forms.TabbedPage" />, on which a platform-specific method may be called.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
