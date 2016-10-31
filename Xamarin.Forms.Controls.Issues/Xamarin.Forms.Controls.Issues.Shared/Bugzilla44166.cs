@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Threading;
+using System.Diagnostics;
 
 #if UITEST
 using Xamarin.UITest;
@@ -20,10 +20,10 @@ namespace Xamarin.Forms.Controls
 		{
 			var label = new Label() { Text = "Testing..." };
 
-			var goButton = new Button { Text = "Go" };
+			var goButton = new Button { Text = "Go", AutomationId = "Go" };
 			goButton.Clicked += (sender, args) => Application.Current.MainPage = new _44166MDP();
 
-			var gcButton = new Button { Text = "GC" };
+			var gcButton = new Button { Text = "GC", AutomationId = "GC" };
 			gcButton.Clicked += (sender, args) =>
 			{
 				GC.Collect();
@@ -68,12 +68,13 @@ namespace Xamarin.Forms.Controls
 			RunningApp.WaitForElement(q => q.Marked("Go"));
 			RunningApp.Tap(q => q.Marked("Go"));
 
-			RunningApp.WaitForElement(q => q.Marked("Back"));
-			RunningApp.Tap(q => q.Marked("Back"));
+			RunningApp.WaitForElement(q => q.Marked("Previous"));
+			RunningApp.Tap(q => q.Marked("Previous"));
+
+			RunningApp.WaitForElement(q => q.Marked("GC"));
 
 			for (var n = 0; n < 10; n++)
 			{
-				RunningApp.WaitForElement(q => q.Marked("GC"));
 				RunningApp.Tap(q => q.Marked("GC"));
 
 				if (RunningApp.Query(q => q.Marked("Success")).Length > 0)
@@ -141,7 +142,7 @@ namespace Xamarin.Forms.Controls
 			Debug.WriteLine($"++++++++ {nameof(_44166Master)} constructor, {Counter} allocated");
 
 			Title = "Master";
-			var goButton = new Button { Text = "Back" };
+			var goButton = new Button { Text = "Return", AutomationId = "Return"};
 			goButton.Clicked += (sender, args) => Application.Current.MainPage = new Bugzilla44166();
 
 			Content = new StackLayout
@@ -188,7 +189,7 @@ namespace Xamarin.Forms.Controls
 			Interlocked.Increment(ref Counter);
 			Debug.WriteLine($"++++++++ {nameof(_44166NavContent)} constructor, {Counter} allocated");
 
-			var goButton = new Button { Text = "Back" };
+			var goButton = new Button { Text = "Previous", AutomationId = "Previous" };
 			goButton.Clicked += (sender, args) => Application.Current.MainPage = new Bugzilla44166();
 
 			Content = new StackLayout
