@@ -31,6 +31,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
+			// If the touch is caught by the horizontal scrollview, forward it to the parent so custom renderers can be notified of the touch.
+			var verticalScrollViewerRenderer = Parent as ScrollViewRenderer;
+			if (verticalScrollViewerRenderer != null)
+			{
+				verticalScrollViewerRenderer.ShouldSkipOnTouch = true;
+				verticalScrollViewerRenderer.OnTouchEvent(ev);
+			}
+
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
 			// We'll fall through to the base event so we still get the fling from the ScrollViews.
@@ -49,6 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 					ScrollBy((int)dX, 0);
 				}
 			}
+
 			return base.OnTouchEvent(ev);
 		}
 

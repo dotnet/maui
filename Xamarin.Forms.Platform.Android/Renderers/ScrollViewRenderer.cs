@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Android
 		ScrollViewContainer _container;
 		HorizontalScrollView _hScrollView;
 		bool _isAttached;
-
+		internal bool ShouldSkipOnTouch;
 		bool _isBidirectional;
 		ScrollView _view;
 
@@ -118,6 +118,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
+			if (ShouldSkipOnTouch)
+			{
+				ShouldSkipOnTouch = false;
+				return false;
+			}
+
 			// The nested ScrollViews will allow us to scroll EITHER vertically OR horizontally in a single gesture.
 			// This will allow us to also scroll diagonally.
 			// We'll fall through to the base event so we still get the fling from the ScrollViews.
