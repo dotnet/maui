@@ -11,7 +11,9 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
 
-		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f);
+		public static readonly BindableProperty CornerRadiusProperty =
+			BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,
+									validateValue: (bindable, value) => ((float)value) == -1.0f || ((float)value) >= 0f);
 
 		readonly Lazy<PlatformConfigurationRegistry<Frame>> _platformConfigurationRegistry;
 
