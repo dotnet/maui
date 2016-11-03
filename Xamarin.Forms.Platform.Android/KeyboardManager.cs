@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 					throw new ArgumentException("inputView should be of type EditText, SearchView, or TextView");
 
 				IBinder windowToken = inputView.WindowToken;
-				if (windowToken != null)
+				if (windowToken != null && inputMethodManager != null)
 					inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
 		}
@@ -40,8 +40,10 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (inputView is EditText || inputView is TextView || inputView is SearchView)
 				{
-					inputMethodManager.ShowSoftInput(inputView, ShowFlags.Forced);
-					inputMethodManager.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
+					if (inputMethodManager != null) {
+						inputMethodManager.ShowSoftInput(inputView, ShowFlags.Forced);
+						inputMethodManager.ToggleSoftInput(ShowFlags.Forced, HideSoftInputFlags.ImplicitOnly);
+					}
 				}
 				else
 					throw new ArgumentException("inputView should be of type EditText, SearchView, or TextView");
