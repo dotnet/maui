@@ -115,14 +115,6 @@
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
-    <Reference Include="PCLStorage, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\PCLStorage.1.0.2\lib\monoandroid\PCLStorage.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="PCLStorage.Abstractions, Version=1.0.2.0, Culture=neutral, PublicKeyToken=286fe515a2c35b64, processorArchitecture=MSIL">
-      <HintPath>..\packages\PCLStorage.1.0.2\lib\monoandroid\PCLStorage.Abstractions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
