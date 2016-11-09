@@ -27,9 +27,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
-				((ObservableList<string>)Element.Items).CollectionChanged -= ItemsCollectionChanged;
+				((INotifyCollectionChanged)Element.Items).CollectionChanged -= ItemsCollectionChanged;
 
-			((ObservableList<string>)Element.Items).CollectionChanged += ItemsCollectionChanged;
+			((INotifyCollectionChanged)Element.Items).CollectionChanged += ItemsCollectionChanged;
 
 			_listPicker.ItemTemplate = (System.Windows.DataTemplate)System.Windows.Application.Current.Resources["PickerItemTemplate"];
 			_listPicker.FullModeItemTemplate = (System.Windows.DataTemplate)System.Windows.Application.Current.Resources["PickerFullItemTemplate"];

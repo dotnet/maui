@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -15,7 +16,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
 			if (e.OldElement != null)
-				((ObservableList<string>)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
+				((INotifyCollectionChanged)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
 
 			if (e.NewElement != null)
 			{
@@ -55,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdatePicker();
 				UpdateTextColor();
 
-				((ObservableList<string>)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
+				((INotifyCollectionChanged)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
 			}
 
 			base.OnElementChanged(e);

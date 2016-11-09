@@ -5,57 +5,57 @@ using System.Globalization;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
-	internal class ContextFixture
-	{
-		public class NestedClass
-		{
-			public string Nested { get; set; }
-		}
-
-		public NestedClass Nested { get; set; }
-
-		public string DisplayName { get; set; }
-
-		public string ComplexName { get; set; }
-
-		public ContextFixture(string displayName, string complexName)
-		{
-			DisplayName = displayName;
-			ComplexName = complexName;
-		}
-
-		public ContextFixture()
-		{
-		}
-	}
-
-	internal class BindingContext
-	{
-		public ObservableCollection<object> Items { get; set; }
-
-		public object SelectedItem { get; set; }
-	}
-
-	internal class PickerTestValueConverter : IValueConverter
-	{
-		public bool ConvertCalled { get; private set; }
-
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			ConvertCalled = true;
-			var cf = (ContextFixture)value;
-			return cf.DisplayName;
-		}
-
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
 	[TestFixture]
 	public class PickerTests : BaseTestFixture
 	{
+		class PickerTestsContextFixture
+		{
+			public class PickerTestsNestedClass
+			{
+				public string Nested { get; set; }
+			}
+
+			public PickerTestsNestedClass Nested { get; set; }
+
+			public string DisplayName { get; set; }
+
+			public string ComplexName { get; set; }
+
+			public PickerTestsContextFixture(string displayName, string complexName)
+			{
+				DisplayName = displayName;
+				ComplexName = complexName;
+			}
+
+			public PickerTestsContextFixture()
+			{
+			}
+		}
+
+		class PickerTestsBindingContext
+		{
+			public ObservableCollection<object> Items { get; set; }
+
+			public object SelectedItem { get; set; }
+		}
+
+		class PickerTestValueConverter : IValueConverter
+		{
+			public bool ConvertCalled { get; private set; }
+
+			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				ConvertCalled = true;
+				var cf = (PickerTestsContextFixture)value;
+				return cf.DisplayName;
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+			{
+				throw new NotImplementedException();
+			}
+		}
+
 		[Test]
 		public void TestSetSelectedIndexOnNullRows()
 		{
@@ -186,28 +186,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestDisplayFunc()
-		{
-			Func<object, string> customDisplayFunc = o =>
-			{
-				var f = (ContextFixture)o;
-				return $"{f.DisplayName} ({f.ComplexName})";
-			};
-			var obj = new ContextFixture("Monkey", "Complex Monkey");
-			var picker = new Picker
-			{
-				DisplayMemberPath = "Name",
-				DisplayFunc = customDisplayFunc,
-				ItemsSource = new ObservableCollection<object>
-				{
-					obj
-				},
-				SelectedIndex = 1
-			};
-			Assert.AreEqual("Monkey (Complex Monkey)", picker.Items[0]);
-		}
-
-		[Test]
 		public void TestSetItemsSourceProperty()
 		{
 			var items = new ObservableCollection<object>
@@ -220,22 +198,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items
 			};
 			Assert.AreEqual(5, picker.Items.Count);
 			Assert.AreEqual("John", picker.Items[0]);
-			Assert.AreEqual("0", picker.Items[3]);
+			Assert.AreEqual(null, picker.Items[3]);
 		}
 
 		[Test]
 		public void TestDisplayConverter()
 		{
-			var obj = new ContextFixture("John", "John Doe");
+			var obj = new PickerTestsContextFixture("John", "John Doe");
 			var converter = new PickerTestValueConverter();
 			var picker = new Picker
 			{
-				DisplayConverter = converter,
+				ItemDisplayBinding = new Binding (Binding.SelfPath, converter:converter),
 				ItemsSource = new ObservableCollection<object>
 				{
 					obj
@@ -243,22 +221,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			Assert.IsTrue(converter.ConvertCalled);
 			Assert.AreEqual("John", picker.Items[0]);
-		}
-
-		[Test]
-		public void TestDisplayMemberPathShouldThrowArgumentExceptionInvalidPath()
-		{
-			var obj = new ContextFixture("Monkey", "Complex Monkey");
-			Func<Picker> picker = () => new Picker
-			{
-				DisplayMemberPath = "Name",
-				ItemsSource = new ObservableCollection<object>
-				{
-					obj
-				},
-				SelectedIndex = 1
-			};
-			Assert.Throws<ArgumentException>(() => picker());
 		}
 
 		[Test]
@@ -272,7 +234,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
@@ -294,7 +256,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
@@ -314,7 +276,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
@@ -337,7 +299,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var bindingContext = new { Items = items };
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				BindingContext = bindingContext
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
@@ -348,6 +310,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				"Orange"
 			};
 			picker.BindingContext = new { Items = items };
+			picker.ItemDisplayBinding = null;
 			Assert.AreEqual(2, picker.Items.Count);
 			Assert.AreEqual("Peach", picker.Items[0]);
 		}
@@ -358,12 +321,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			var items = new ObservableCollection<object>
 			{
 				new { Name = "John" },
-				"Paul",
-				"Ringo"
+				new { Name = "Paul" },
+				new { Name = "Ringo"},
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Name",
+				ItemDisplayBinding = new Binding("Name"),
 				ItemsSource = items,
 				SelectedIndex = 0
 			};
@@ -395,11 +358,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSelectedItemDefault()
 		{
-			var bindingContext = new BindingContext
+			var bindingContext = new PickerTestsBindingContext
 			{
 				Items = new ObservableCollection<object>
 				{
-					new ContextFixture("John", "John")
+					new PickerTestsContextFixture("John", "John")
 				}
 			};
 			var picker = new Picker
@@ -414,18 +377,27 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void ThrowsWhenModifyingItemsIfItemsSourceIsSet()
+		{
+			var picker = new Picker {
+				ItemsSource = new System.Collections.Generic.List<object> ()
+			};
+			Assert.Throws<InvalidOperationException>(() => picker.Items.Add("foo"));
+		}
+
+		[Test]
 		public void TestNestedDisplayMemberPathExpression()
 		{
-			var obj = new ContextFixture
+			var obj = new PickerTestsContextFixture
 			{
-				Nested = new ContextFixture.NestedClass
+				Nested = new PickerTestsContextFixture.PickerTestsNestedClass
 				{
 					Nested = "NestedProperty"
 				}
 			};
 			var picker = new Picker
 			{
-				DisplayMemberPath = "Nested.Nested",
+				ItemDisplayBinding = new Binding("Nested.Nested"),
 				ItemsSource = new ObservableCollection<object>
 				{
 					obj
@@ -454,8 +426,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSelectedItemSet()
 		{
-			var obj = new ContextFixture("John", "John");
-			var bindingContext = new BindingContext
+			var obj = new PickerTestsContextFixture("John", "John");
+			var bindingContext = new PickerTestsBindingContext
 			{
 				Items = new ObservableCollection<object>
 				{
@@ -466,7 +438,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var picker = new Picker
 			{
 				BindingContext = bindingContext,
-				DisplayMemberPath = "DisplayName"
+				ItemDisplayBinding = new Binding("DisplayName"),
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
@@ -478,8 +450,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSelectedItemChangeSelectedIndex()
 		{
-			var obj = new ContextFixture("John", "John");
-			var bindingContext = new BindingContext
+			var obj = new PickerTestsContextFixture("John", "John");
+			var bindingContext = new PickerTestsBindingContext
 			{
 				Items = new ObservableCollection<object>
 				{
@@ -489,7 +461,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var picker = new Picker
 			{
 				BindingContext = bindingContext,
-				DisplayMemberPath = "DisplayName"
+				ItemDisplayBinding = new Binding("DisplayName"),
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
