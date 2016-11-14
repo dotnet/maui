@@ -14,7 +14,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>Contains methods that set values from renderers on bound properties without breaking the binding.</summary>
+    <summary>This interface is for internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members />

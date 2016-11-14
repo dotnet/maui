@@ -12,7 +12,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>A view controller for displaying OpenGL content.</summary>
+    <summary>This interface is for internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Event that is raised when an OpenGL display is requested.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -10,7 +10,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>Class that renderers implement in order participate in the layout cycle.</summary>
+    <summary>This interface is for internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
         <ReturnType>System.Collections.Generic.IReadOnlyList&lt;Xamarin.Forms.Element&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets a read-only list of the immediate children of the renderer that implements the interface.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

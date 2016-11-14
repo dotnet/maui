@@ -13,7 +13,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>Interface for a scrollview controller.</summary>
+    <summary>This interface is for internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -36,7 +36,7 @@
       <Docs>
         <param name="item">To be added.</param>
         <param name="position">To be added.</param>
-        <summary>Calculates and returns a point that represents the scroll position that results in <paramref name="item" /> being displayed at <paramref name="position" /> in the scroll view.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -54,7 +54,7 @@
         <ReturnType>System.EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Event that is raised when a request has been made to scroll the scroll view.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -72,7 +72,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Attempts to set the scroll task completion source state to <c>RanToCompletion</c>.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -95,8 +95,7 @@
       <Docs>
         <param name="x">To be added.</param>
         <param name="y">To be added.</param>
-        <summary>Sets the scroll position to (<paramref name="x" />,
-        <paramref name="y" />).</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
