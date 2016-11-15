@@ -54,9 +54,8 @@ namespace Xamarin.Forms.Platform.iOS
 					alert.AddAction(UIAlertAction.Create(arguments.Cancel, UIAlertActionStyle.Cancel, a => arguments.SetResult(false)));
 					if (arguments.Accept != null)
 						alert.AddAction(UIAlertAction.Create(arguments.Accept, UIAlertActionStyle.Default, a => arguments.SetResult(true)));
-					var page = _modals.Any() ? _modals.Last() : Page;
-					var vc = GetRenderer(page).ViewController;
-					vc.PresentViewController(alert, true, null);
+
+					PresentAlert(alert);
 				}
 				else
 				{
@@ -121,7 +120,7 @@ namespace Xamarin.Forms.Platform.iOS
 						alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 					}
 
-					pageRenderer.ViewController.PresentViewController(alert, true, null);
+					PresentAlert(alert);
 				}
 				else
 				{
@@ -429,6 +428,15 @@ namespace Xamarin.Forms.Platform.iOS
 				page = (Page)page.RealParent;
 
 			return Page == page || _modals.Contains(page);
+		}
+
+		void PresentAlert(UIAlertController alert)
+		{
+			var window = new UIWindow { BackgroundColor = Color.Transparent.ToUIColor() };
+			window.RootViewController = new UIViewController();
+			window.RootViewController.View.BackgroundColor = Color.Transparent.ToUIColor();
+			window.MakeKeyAndVisible();
+			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
 		async Task PresentModal(Page modal, bool animated)
