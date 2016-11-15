@@ -7,6 +7,9 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -76,8 +79,21 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
                 // parameter
                 rootFrame.Navigate(typeof(MainPage), e.Arguments);
             }
-            // Ensure the current window is active
-            Window.Current.Activate();
+
+			//// Uncomment to test overriding the status bar color
+			//if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+			//{
+			//	var statusBar = StatusBar.GetForCurrentView();
+			//	if (statusBar != null)
+			//	{
+			//		statusBar.BackgroundOpacity = 1;
+			//		statusBar.BackgroundColor = Colors.Black;
+			//		statusBar.ForegroundColor = Colors.White;
+			//	}
+			//}
+
+			// Ensure the current window is active
+			Window.Current.Activate();
         }
 
         /// <summary>

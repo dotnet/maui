@@ -32,6 +32,10 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer));
 
+#if WINDOWS_UWP
+		internal static StatusBar MobileStatusBar => ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar") ? StatusBar.GetForCurrentView() : null;
+#endif
+
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
 			return (IVisualElementRenderer)element.GetValue(RendererProperty);
@@ -79,13 +83,26 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			UpdateBounds();
 
-
 #if WINDOWS_UWP
-			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+			StatusBar statusBar = MobileStatusBar;
+			if (statusBar != null)
 			{
-				StatusBar statusBar = StatusBar.GetForCurrentView();
 				statusBar.Showing += (sender, args) => UpdateBounds();
 				statusBar.Hiding += (sender, args) => UpdateBounds();
+
+				// UWP 14393 Bug: If RequestedTheme is Light (which it is by default), then the 
+				// status bar uses White Foreground with White Background. 
+				// UWP 10586 Bug: If RequestedTheme is Light (which it is by default), then the 
+				// status bar uses Black Foreground with Black Background. 
+				// Since the Light theme should have a Black on White status bar, we will set it explicitly. 
+				// This can be overriden by setting the status bar colors in App.xaml.cs OnLaunched.
+
+				if (statusBar.BackgroundColor == null && statusBar.ForegroundColor == null && Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Light)
+				{
+					statusBar.BackgroundColor = Colors.White;
+					statusBar.ForegroundColor = Colors.Black;
+					statusBar.BackgroundOpacity = 1;
+				}
 			}
 #endif
 		}
@@ -420,10 +437,9 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			_bounds = new Rectangle(0, 0, _page.ActualWidth, _page.ActualHeight);
 #if WINDOWS_UWP
-			if (ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+			StatusBar statusBar = MobileStatusBar;
+			if (statusBar != null)
 			{
-				StatusBar statusBar = StatusBar.GetForCurrentView();
-
 				bool landscape = Device.Info.CurrentOrientation.IsLandscape();
 				bool titleBar = CoreApplication.GetCurrentView().TitleBar.IsVisible;
 				double offset = landscape ? statusBar.OccludedRect.Width : statusBar.OccludedRect.Height;
