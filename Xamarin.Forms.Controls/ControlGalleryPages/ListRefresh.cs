@@ -57,8 +57,8 @@ namespace Xamarin.Forms.Controls
 			stack.Children.Add (lbl);
 			lv.Header =  new ContentView { HeightRequest = 300, HorizontalOptions = LayoutOptions.FillAndExpand, Content = stack };
 
-			lv.SetBinding<FooViewModel> (ListView.ItemsSourceProperty, m => m.Things);
-			lv.SetBinding<FooViewModel> (ListView.RefreshCommandProperty, m => m.RefreshThingsCommand);
+			lv.SetBinding (ListView.ItemsSourceProperty, "Things");
+			lv.SetBinding (ListView.RefreshCommandProperty, "RefreshThingsCommand");
 			grid.Children.Add (lv, 0, 0);
 
 			Content = grid;

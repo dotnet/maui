@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Controls
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 			};
-			_list.SetBinding (ListView.ItemsSourceProperty, Binding.Create<TestListViewModel> (r => r.Items));
-			_list.SetBinding (ListView.RefreshCommandProperty, Binding.Create<TestListViewModel> (r => r.RefreshCommand));
-			_list.SetBinding (ListView.IsRefreshingProperty, Binding.Create<TestListViewModel> (r => r.IsRefreshing));
+			_list.SetBinding (ListView.ItemsSourceProperty, "Items");
+			_list.SetBinding (ListView.RefreshCommandProperty, "RefreshCommand");
+			_list.SetBinding (ListView.IsRefreshingProperty, "IsRefreshing");
 
 			var listViewModel = new TestListViewModel ();
 			listViewModel.AddTestData ();
@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Controls
 						HorizontalOptions = LayoutOptions.StartAndExpand
 					};
 					Grid.SetColumnSpan (materialNumber, 2);
-					materialNumber.SetBinding (Label.TextProperty, Binding.Create<TestViewModel> (vm => vm.Number));
+					materialNumber.SetBinding (Label.TextProperty, "Number");
 					grid.Children.Add (materialNumber);
 
 					//2 Description
@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Controls
 					};
 					Grid.SetColumnSpan (materialDescription, 2);
 					Grid.SetRow (materialDescription, 1);
-					materialDescription.SetBinding (Label.TextProperty, Binding.Create<TestViewModel> (vm => vm.Description));
+					materialDescription.SetBinding (Label.TextProperty, "Description");
 					//grid.Children.Add (materialDescription);
 
 					//3 Approve Label
@@ -170,7 +170,7 @@ namespace Xamarin.Forms.Controls
 					};
 					Grid.SetColumn (canApprove, 1);
 					Grid.SetRow (canApprove, 1);
-					canApprove.SetBinding (Label.TextProperty, Binding.Create<TestViewModel> (vm => vm.CanApprove, stringFormat: "Can Approve: {0}"));
+					canApprove.SetBinding (Label.TextProperty, new Binding ("CanApprove", stringFormat: "Can Approve: {0}"));
 					grid.Children.Add (canApprove);
 
 					//3 Approve Label
@@ -180,7 +180,7 @@ namespace Xamarin.Forms.Controls
 					};
 					Grid.SetColumn (canDeny, 0);
 					Grid.SetRow (canDeny, 1);
-					canDeny.SetBinding (Label.TextProperty, Binding.Create<TestViewModel> (vm => vm.CanDeny, stringFormat: "Can Deny: {0}"));
+					canDeny.SetBinding (Label.TextProperty, new Binding ("CanDeny", stringFormat: "Can Deny: {0}"));
 					grid.Children.Add (canDeny);
 
 					Content = grid;
@@ -218,7 +218,7 @@ namespace Xamarin.Forms.Controls
 						VerticalOptions = LayoutOptions.FillAndExpand
 					};
 
-					denyBtn.SetBinding (Button.CommandProperty, Binding.Create<TestViewModel> (r => r.DenyCommand));
+					denyBtn.SetBinding(Button.CommandProperty, "DenyCommand");
 
 					grid.Children.Add (denyBtn);
 
@@ -231,7 +231,7 @@ namespace Xamarin.Forms.Controls
 
 					};
 					Grid.SetColumn (approveBtn, 1);
-					approveBtn.SetBinding (Button.CommandProperty, Binding.Create<TestViewModel> (r => r.ApproveCommand));
+					approveBtn.SetBinding (Button.CommandProperty, "ApproveCommand");
 					grid.Children.Add (approveBtn);
 
 
@@ -239,10 +239,7 @@ namespace Xamarin.Forms.Controls
 					overallGrid.Children.Add (grid);
 					Content = overallGrid;
 				}
-
 			}
-
-
 		}
 
 		[Preserve (AllMembers = true)]

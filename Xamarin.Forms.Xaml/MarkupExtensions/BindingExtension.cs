@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -25,9 +26,20 @@ namespace Xamarin.Forms.Xaml
 
 		public string UpdateSourceEventName { get; set; }
 
+		public TypedBindingBase TypedBinding { get; set; }
+
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
-			return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) { UpdateSourceEventName = UpdateSourceEventName };
+			if (TypedBinding == null)
+				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) { UpdateSourceEventName = UpdateSourceEventName };
+
+			TypedBinding.Mode = Mode;
+			TypedBinding.Converter = Converter;
+			TypedBinding.ConverterParameter = ConverterParameter;
+			TypedBinding.StringFormat = StringFormat;
+			TypedBinding.Source = Source;
+			TypedBinding.UpdateSourceEventName = UpdateSourceEventName;
+			return TypedBinding;
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

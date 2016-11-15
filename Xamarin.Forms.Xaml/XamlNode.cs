@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Xaml
 	}
 
 	[DebuggerDisplay("{NamespaceUri}:{Name}")]
-	internal class XmlType
+	class XmlType
 	{
 		public XmlType(string namespaceUri, string name, IList<XmlType> typeArguments)
 		{
@@ -53,8 +53,7 @@ namespace Xamarin.Forms.Xaml
 
 		public string NamespaceUri { get; }
 		public string Name { get; }
-		public IList<XmlType> TypeArguments { get; private set; }
-
+		public IList<XmlType> TypeArguments { get; }
 	}
 
 	internal abstract class BaseNode : IXmlLineInfo, INode

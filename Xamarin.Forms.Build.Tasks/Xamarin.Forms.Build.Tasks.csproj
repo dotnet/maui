@@ -98,6 +98,8 @@
     <Compile Include="CompiledConverters\ICompiledTypeConverter.cs" />
     <Compile Include="CompiledConverters\LayoutOptionsConverter.cs" />
     <Compile Include="CompiledConverters\RectangleTypeConverter.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="XamlTask.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

@@ -197,47 +197,48 @@ namespace Xamarin.Forms.Xaml
 
 				if (reader.NamespaceURI == "http://schemas.microsoft.com/winfx/2006/xaml")
 				{
-					switch (reader.Name)
-					{
-						case "x:Key":
-							propertyName = XmlName.xKey;
-							break;
-						case "x:Name":
-							propertyName = XmlName.xName;
-							break;
-						case "x:Class":
-							continue;
-						default:
-							Debug.WriteLine("Unhandled {0}", reader.Name);
-							continue;
+					switch (reader.Name) {
+					case "x:Key":
+						propertyName = XmlName.xKey;
+						break;
+					case "x:Name":
+						propertyName = XmlName.xName;
+						break;
+					case "x:Class":
+						continue;
+					default:
+						Debug.WriteLine("Unhandled attribute {0}", reader.Name);
+						continue;
 					}
 				}
 
 				if (reader.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml")
 				{
-					switch (reader.Name)
-					{
-						case "x:Key":
-							propertyName = XmlName.xKey;
-							break;
-						case "x:Name":
-							propertyName = XmlName.xName;
-							break;
-						case "x:TypeArguments":
-							propertyName = XmlName.xTypeArguments;
-							value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
-							break;
-						case "x:Class":
-							continue;
-						case "x:FactoryMethod":
-							propertyName = XmlName.xFactoryMethod;
-							break;
-						case "x:Arguments":
-							propertyName = XmlName.xArguments;
+					switch (reader.Name) {
+					case "x:Key":
+						propertyName = XmlName.xKey;
 						break;
-						default:
-							Debug.WriteLine("Unhandled {0}", reader.Name);
-							continue;
+					case "x:Name":
+						propertyName = XmlName.xName;
+						break;
+					case "x:TypeArguments":
+						propertyName = XmlName.xTypeArguments;
+						value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
+						break;
+					case "x:DataType":
+						propertyName = XmlName.xDataType;
+						break;
+					case "x:Class":
+						continue;
+					case "x:FactoryMethod":
+						propertyName = XmlName.xFactoryMethod;
+						break;
+					case "x:Arguments":
+						propertyName = XmlName.xArguments;
+						break;
+					default:
+						Debug.WriteLine("Unhandled attribute {0}", reader.Name);
+						continue;
 					}
 				}
 

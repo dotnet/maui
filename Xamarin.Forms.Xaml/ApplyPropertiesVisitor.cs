@@ -19,7 +19,8 @@ namespace Xamarin.Forms.Xaml
 			XmlName.xTypeArguments,
 			XmlName.xArguments,
 			XmlName.xFactoryMethod,
-			XmlName.xName
+			XmlName.xName,
+			XmlName.xDataType
 		};
 
 		public ApplyPropertiesVisitor(HydratationContext context, bool stopOnResourceDictionary = false)

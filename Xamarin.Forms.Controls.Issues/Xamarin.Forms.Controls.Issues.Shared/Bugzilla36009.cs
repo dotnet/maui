@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls
 				Content = boxview
 			};
 
-			contentView.SetBinding (IsVisibleProperty, Binding.Create<SampleViewModel> (t => t.IsContentVisible));
+			contentView.SetBinding (IsVisibleProperty, "IsContentVisible");
 
 			var layout = new AbsoluteLayout {
 				Children = { contentView }

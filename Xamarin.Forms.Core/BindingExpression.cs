@@ -406,50 +406,46 @@ namespace Xamarin.Forms
 			public object Source { get; private set; }
 		}
 
-		class WeakPropertyChangedProxy
+		internal class WeakPropertyChangedProxy
 		{
-			WeakReference _source, _listener;
-			internal WeakReference Source => _source;
+			readonly WeakReference<INotifyPropertyChanged> _source = new WeakReference<INotifyPropertyChanged>(null);
+			readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
+			readonly PropertyChangedEventHandler _handler;
+			internal WeakReference<INotifyPropertyChanged> Source => _source;
 
-			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
+			public WeakPropertyChangedProxy()
 			{
-				source.PropertyChanged += OnPropertyChanged;
-				_source = new WeakReference(source);
-				_listener = new WeakReference(listener);
+				_handler = new PropertyChangedEventHandler(OnPropertyChanged);
+			}
+
+			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener) : this()
+			{
+				SubscribeTo(source, listener);
+			}
+
+			public void SubscribeTo(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
+			{ 
+				source.PropertyChanged += _handler;
+				_source.SetTarget(source);
+				_listener.SetTarget(listener);
 			}
 
 			public void Unsubscribe()
 			{
-				if (_source != null)
-				{
-					var source = _source.Target as INotifyPropertyChanged;
-					if (source != null)
-					{
-						source.PropertyChanged -= OnPropertyChanged;
-					}
-					_source = null;
-					_listener = null;
-				}
+				INotifyPropertyChanged source;
+				if (_source.TryGetTarget(out source) && source!=null)
+					source.PropertyChanged -= _handler;
+				_source.SetTarget(null);
+				_listener.SetTarget(null);
 			}
 
-			private void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (_listener != null)
-				{
-					var handler = _listener.Target as PropertyChangedEventHandler;
-					if (handler != null)
-					{
-						handler(sender, e);
-					}
-					else
-					{
-						Unsubscribe();
-					}
-				}
+				PropertyChangedEventHandler handler;
+				if (_listener.TryGetTarget(out handler) && handler != null)
+					handler(sender, e);
 				else
-				{
 					Unsubscribe();
-				}
 			}
 		}
 
@@ -471,7 +467,8 @@ namespace Xamarin.Forms
 
 			public void Subscribe(INotifyPropertyChanged handler)
 			{
-				if (ReferenceEquals(handler, _listener?.Source?.Target))
+				INotifyPropertyChanged source;
+				if (_listener != null && _listener.Source.TryGetTarget(out source) && ReferenceEquals(handler, source))
 				{
 					// Already subscribed
 					return;

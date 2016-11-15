@@ -368,12 +368,15 @@
     <Compile Include="XStaticException.xaml.cs">
       <DependentUpon>XStaticException.xaml</DependentUpon>
     </Compile>
-     <Compile Include="CompiledTypeConverter.xaml.cs">
-       <DependentUpon>CompiledTypeConverter.xaml</DependentUpon>
+    <Compile Include="CompiledTypeConverter.xaml.cs">
+      <DependentUpon>CompiledTypeConverter.xaml</DependentUpon>
     </Compile>
-     <Compile Include="Issues\Bz43301.xaml.cs">
-       <DependentUpon>Bz43301.xaml</DependentUpon>
-     </Compile>
+    <Compile Include="Issues\Bz43301.xaml.cs">
+      <DependentUpon>Bz43301.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BindingsCompiler.xaml.cs">
+      <DependentUpon>BindingsCompiler.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -663,6 +666,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz43301.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BindingsCompiler.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

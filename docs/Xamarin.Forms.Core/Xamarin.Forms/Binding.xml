@@ -232,6 +232,11 @@ Debug.WriteLine (person.Name); //prints "Foo". ReverseConverter.ConvertBack () i
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>Xamarin.Forms.Binding</ReturnType>
       </ReturnValue>

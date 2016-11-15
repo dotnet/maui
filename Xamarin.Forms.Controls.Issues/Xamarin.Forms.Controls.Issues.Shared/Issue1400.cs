@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Controls
             Editfield = new Entry();
             Editfield.HorizontalOptions = LayoutOptions.FillAndExpand;
             Editfield.BindingContext = Data.First().First();
-            Editfield.SetBinding<MyData>(Entry.TextProperty, f => f.Title);
+            Editfield.SetBinding(Entry.TextProperty, "Title");
 
             Editfield.TextChanged += (sender, args) =>
             {
@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Controls
         public VCTest()
         {
             var label = new Label();
-            label.SetBinding<MyData>(Label.TextProperty, f => f.Title);
+            label.SetBinding(Label.TextProperty, "Title");
             View = label;
         }
     }
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Controls
         public VCHeader()
         {
             var label = new Label();
-            label.SetBinding<MyGroup>(Label.TextProperty, f => f.Headertitle);
+            label.SetBinding(Label.TextProperty, "Headertitle");
             View = label;
         }
     }

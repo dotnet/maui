@@ -13,7 +13,8 @@ namespace Xamarin.Forms.Build.Tasks
 			XmlName.xKey,
 			XmlName.xTypeArguments,
 			XmlName.xFactoryMethod,
-			XmlName.xName
+			XmlName.xName,
+			XmlName.xDataType
 		};
 
 		public ExpandMarkupsVisitor(ILContext context)
@@ -165,7 +166,7 @@ namespace Xamarin.Forms.Build.Tasks
 				try
 				{
 					type = new XmlType(namespaceuri, name + "Extension", null);
-					type.GetTypeReference(contextProvider.Context.Body.Method.Module, null);
+					type.GetTypeReference(contextProvider.Context.Module, null);
 				}
 				catch (XamlParseException)
 				{

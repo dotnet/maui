@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	class ILContext
 	{
-		public ILContext(ILProcessor il, MethodBody body, FieldDefinition parentContextValues = null)
+		public ILContext(ILProcessor il, MethodBody body, ModuleDefinition module, FieldDefinition parentContextValues = null)
 		{
 			IL = il;
 			Body = body;
@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Build.Tasks
 			Scopes = new Dictionary<INode, VariableDefinition>();
 			TypeExtensions = new Dictionary<INode, TypeReference>();
 			ParentContextValues = parentContextValues;
+			Module = module;
 		}
 
 		public Dictionary<IValueNode, object> Values { get; private set; }
@@ -33,5 +34,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public ILProcessor IL { get; private set; }
 
 		public MethodBody Body { get; private set; }
+
+		public ModuleDefinition Module { get; private set; }
 	}
 }

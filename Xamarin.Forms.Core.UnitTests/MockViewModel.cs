@@ -3,28 +3,30 @@ using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
-	internal class MockViewModel
-		: INotifyPropertyChanged
+	class MockViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		string text;
+		public MockViewModel(string text=null)
+		{
+			_text = text;
+		}
+
+		string _text;
 		public virtual string Text {
-			get { return text; }
+			get { return _text; }
 			set {
-				if (text == value)
+				if (_text == value)
 					return;
 
-				text = value;
+				_text = value;
 				OnPropertyChanged ("Text");
 			}
 		}
 
 		protected void OnPropertyChanged ([CallerMemberName] string propertyName = null)
 		{
-			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null)
-				handler (this, new PropertyChangedEventArgs (propertyName));
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs (propertyName));
 		}
 	}
 }

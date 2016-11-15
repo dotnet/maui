@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Xaml
 			bool decompile = false;
 			string paths = null;
 			string refs = null;
+			List<string> extra = null;
+
 			var p = new OptionSet
 			{
 				{ "h|?|help", "Print this help message", v => help = true },
@@ -35,7 +37,6 @@ namespace Xamarin.Forms.Xaml
 				ShowHelp(p);
 				Environment.Exit(0);
 			}
-			List<string> extra = null;
 			try
 			{
 				extra = p.Parse(args);
@@ -57,7 +58,16 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			var assembly = extra[0];
-			XamlCTask.Compile(assembly, verbosity, keep, optimize, paths, refs, decompile);
+			var xamlc = new XamlCTask {
+				Assembly = assembly,
+				Verbosity = verbosity,
+				KeepXamlResources = keep,
+				OptimizeIL = optimize,
+				DependencyPaths = paths,
+				ReferencePath = refs,
+				OutputGeneratedILAsCode=decompile,
+			};
+			xamlc.Execute(null);
 		}
 
 		static void ShowHelp(OptionSet ops)

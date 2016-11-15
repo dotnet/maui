@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.ComponentModel;
 using System.Linq;
@@ -16,24 +15,6 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class BindingUnitTests
 		: BindingBaseUnitTests
 	{
-		class Logger
-			: LogListener
-		{
-			public IReadOnlyList<string> Messages
-			{
-				get { return messages; }
-			}
-
-			public override void Warning (string category, string message)
-			{
-				messages.Add ("[" + category + "] " + message);
-			}
-
-			readonly List<string> messages = new List<string>();
-		}
-
-		Logger log;
-
 		[SetUp]
 		public override void Setup()
 		{
@@ -52,7 +33,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Log.Listeners.Remove (log);
 		}
 
-		protected override BindingBase CreateBinding (BindingMode mode, string stringFormat = null)
+		protected override BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null)
 		{
 			return new Binding ("Text", mode, stringFormat: stringFormat);
 		}
@@ -87,9 +68,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Description ("You should get an exception when trying to change a binding after it's been applied")]
 		public void ChangeBindingAfterApply()
 		{
-			var property = BindableProperty.Create<MockBindable, string> (w => w.Foo, null);
-
-			var binding = new Binding { Path = "Text" };
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
+			var binding = (Binding)CreateBinding(BindingMode.Default, "Foo {0}");
 
 			var vm = new MockViewModel { Text = "Bar" };
 			var bo = new MockBindable { BindingContext = vm };
@@ -103,59 +83,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void NullPathIsSelf()
 		{
-			var property = BindableProperty.Create<MockBindable, string> (w => w.Foo, null);
-
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
 			var binding = new Binding();
 
 			var bo = new MockBindable { BindingContext = "Foo" };
-			bo.SetBinding (property, binding);
+			bo.SetBinding(property, binding);
 
-			Assert.That (bo.GetValue (property), Is.EqualTo ("Foo"));
-		}
-
-		class DoubleViewModel
-			: MockViewModel
-		{
-			public double Value
-			{
-				get;
-				set;
-			}
-		}
-
-		[Test]
-		public void StringFormatNonStringType()
-		{
-			var property = BindableProperty.Create<MockBindable, string> (w => w.Foo, null);
-
-			var binding = new Binding ("Value", stringFormat: "{0:P2}");
-			
-			var vm = new DoubleViewModel { Value = 0.95 };
-			var bo = new MockBindable { BindingContext = vm };
-			bo.SetBinding (property, binding);
-
-			if (System.Threading.Thread.CurrentThread.CurrentCulture.Name == "tr-TR")
-				Assert.That (bo.GetValue (property), Is.EqualTo ("%95,00"));
-			else
-				Assert.That (bo.GetValue (property), Is.EqualTo ("95.00 %"));
-		}
-
-		[Test]
-		public void ReuseBindingInstance()
-		{
-			var vm = new MockViewModel();
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = vm;
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, null);
-			var binding = new Binding ("Text");
-			bindable.SetBinding (property, binding);
-
-			var bindable2 = new MockBindable();
-			bindable2.BindingContext = new MockViewModel();
-			Assert.Throws<InvalidOperationException> (() => bindable2.SetBinding (property, binding),
-				"Binding allowed reapplication with a different context");
+			Assert.That(bo.GetValue(property), Is.EqualTo("Foo"));
 		}
 
 		class ComplexPropertyNamesViewModel
@@ -204,118 +138,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (bindable.Text, Is.EqualTo ("Value"));
 		}
 
-		[Test, Category ("[Binding] Simple paths")]
-		public void ValueSetOnOneWayWithSimplePathBinding (
-			[Values (true, false)] bool setContextFirst,
-			[Values (true, false)] bool isDefault)
-		{
-			const string value = "Foo";
-			var viewmodel = new MockViewModel {
-				Text = value
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, null, propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			if (setContextFirst) {
-				bindable.BindingContext = viewmodel;
-				bindable.SetBinding (property, binding);
-			} else {
-				bindable.SetBinding (property, binding);
-				bindable.BindingContext = viewmodel;
-			}
-
-			Assert.AreEqual (value, viewmodel.Text,
-				"BindingContext property changed");
-			Assert.AreEqual (value, bindable.GetValue (property),
-				"Target property did not change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Test, Category ("[Binding] Simple paths")]
-		public void ValueSetOnOneWayToSourceWithSimplePathBinding (
-			[Values (true, false)] bool setContextFirst,
-			[Values (true, false)] bool isDefault)
-		{
-			const string value = "Foo";
-			var viewmodel = new MockViewModel();
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWayToSource;
-				bindingMode = BindingMode.Default;
-			}
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, 
-				defaultValue: value, defaultBindingMode: propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			if (setContextFirst) {
-				bindable.BindingContext = viewmodel;
-				bindable.SetBinding (property, binding);
-			} else {
-				bindable.SetBinding (property, binding);
-				bindable.BindingContext = viewmodel;
-			}
-
-			Assert.AreEqual (value, bindable.GetValue (property),
-				"Target property changed");
-			Assert.AreEqual (value, viewmodel.Text,
-				"BindingContext property did not change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Test, Category ("[Binding] Simple paths")]
-		public void ValueSetOnTwoWayWithSimplePathBinding (
-			[Values (true, false)] bool setContextFirst,
-			[Values (true, false)] bool isDefault)
-		{
-			const string value = "Foo";
-			var viewmodel = new MockViewModel {
-				Text = value
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.TwoWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			if (setContextFirst) {
-				bindable.BindingContext = viewmodel;
-				bindable.SetBinding (property, binding);
-			} else {
-				bindable.SetBinding (property, binding);
-				bindable.BindingContext = viewmodel;
-			}
-
-			Assert.AreEqual (value, viewmodel.Text,
-				"BindingContext property changed");
-			Assert.AreEqual (value, bindable.GetValue (property),
-				"Target property did not change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
 		[Test]
 		[Category ("[Binding] Complex paths")]
 		public void ValueSetOnOneWayWithComplexPathBinding (
@@ -338,9 +160,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, null, propertyDefault);
-
-			var binding = new Binding ("Model.Model.Text", bindingMode);
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), null, propertyDefault);
+			var binding = new Binding("Model.Model.Text", bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst) {
@@ -379,10 +200,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, 
-				defaultValue: value, defaultBindingMode: propertyDefault);
-
-			var binding = new Binding ("Model.Model.Text", bindingMode);
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), value, propertyDefault);
+			var binding = new Binding("Model.Model.Text", bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst) {
@@ -422,9 +241,8 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var binding = new Binding ("Model.Model.Text", bindingMode);
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default value", propertyDefault);
+			var binding = new Binding("Model.Model.Text", bindingMode);
 
 			var bindable = new MockBindable();
 			if (setContextFirst) {
@@ -470,10 +288,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			[Values (true, false)] bool usePrivateSetter)
 		{
 			var value = "FooBar";
-			var property = BindableProperty.Create<MockBindable, string> (w => w.Text, "default value", BindingMode.Default);
-			var binding = new Binding (usePrivateSetter? "PropertyWithPrivateSetter.GetSetProperty": "PropertyWithPublicSetter.GetSetProperty", bindingmode);
-			var viewmodel = new Outer (new Inner (value));
-			var bindable = new MockBindable ();
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", BindingMode.Default);
+			var binding = new Binding(usePrivateSetter ? "PropertyWithPrivateSetter.GetSetProperty" : "PropertyWithPublicSetter.GetSetProperty", bindingmode);
+			var viewmodel = new Outer(new Inner(value));
+			var bindable = new MockBindable();
 
 			if (setContextFirst) {
 				bindable.BindingContext = viewmodel;
@@ -884,142 +702,32 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "default value", propertyDefault);
 
-			var binding = new Binding (".", bindingMode);
+			var binding = new Binding(".", bindingMode);
 
 			const string value = "Foo";
 			var bindable = new MockBindable();
 			if (setContextFirst) {
 				bindable.BindingContext = value;
-				bindable.SetBinding (property, binding);
+				bindable.SetBinding(property, binding);
 			} else {
-				bindable.SetBinding (property, binding);
+				bindable.SetBinding(property, binding);
 				bindable.BindingContext = value;
 			}
 
-			Assert.AreEqual (value, bindable.BindingContext,
+			Assert.AreEqual(value, bindable.BindingContext,
 				"BindingContext property changed");
-			Assert.AreEqual (value, bindable.GetValue (property),
+			Assert.AreEqual(value, bindable.GetValue(property),
 				"Target property did not change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
+			Assert.That(log.Messages.Count, Is.EqualTo(0),
 				"An error was logged: " + log.Messages.FirstOrDefault());
 		}
 
-		[Category ("[Binding] Simple paths")]
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithSimplePathOnOneWayBinding (bool isDefault)
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, new Binding ("Text", bindingMode));
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (newvalue, bindable.GetValue (property),
-				"Bindable did not update on binding context property change");
-			Assert.AreEqual (newvalue, viewmodel.Text,
-				"Source property changed when it shouldn't");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Category ("[Binding] Simple paths")]
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithSimplePathOnOneWayToSourceBinding (bool isDefault)
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWayToSource;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, new Binding ("Text", bindingMode));
-
-			string original = (string)bindable.GetValue (property);
-			const string value = "value";
-			viewmodel.Text = value;
-			Assert.AreEqual (original, bindable.GetValue (property),
-				"Target updated from Source on OneWayToSource");
-
-			bindable.SetValue (property, newvalue);
-			Assert.AreEqual (newvalue, bindable.GetValue (property),
-				"Bindable did not update on binding context property change");
-			Assert.AreEqual (newvalue, viewmodel.Text,
-				"Source property changed when it shouldn't");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Category ("[Binding] Simple paths")]
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithSimplePathOnTwoWayBinding (bool isDefault)
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.TwoWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, new Binding ("Text", bindingMode));
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (newvalue, bindable.GetValue (property),
-				"Target property did not update change");
-			Assert.AreEqual (newvalue, viewmodel.Text,
-				"Source property changed from what it was set to");
-
-			const string newvalue2 = "New Value in the other direction";
-
-			bindable.SetValue (property, newvalue2);
-			Assert.AreEqual (newvalue2, viewmodel.Text,
-				"Source property did not update with Target's change");
-			Assert.AreEqual (newvalue2, bindable.GetValue (property),
-				"Target property changed from what it was set to");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Category ("[Binding] Complex paths")]
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithComplexPathOnOneWayBinding (bool isDefault)
+		[Category("[Binding] Complex paths")]
+		[TestCase(true)]
+		[TestCase(false)]
+		public void ValueUpdatedWithComplexPathOnOneWayBinding(bool isDefault)
 		{
 			const string newvalue = "New Value";
 			var viewmodel = new ComplexMockViewModel {
@@ -1373,316 +1081,68 @@ namespace Xamarin.Forms.Core.UnitTests
 				bindingMode = BindingMode.Default;
 			}
 
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
+			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value", propertyDefault);
 
-			var binding = new Binding (".", bindingMode);
+			var binding = new Binding(".", bindingMode);
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = "value";
-			bindable.SetBinding (property, binding);
+			bindable.SetBinding(property, binding);
 
 			const string newvalue = "New Value";
 			bindable.BindingContext = newvalue;
-			Assert.AreEqual (newvalue, bindable.GetValue (property),
+			Assert.AreEqual(newvalue, bindable.GetValue(property),
 				"Target property did not update change");
-			Assert.AreEqual (newvalue, bindable.BindingContext,
+			Assert.AreEqual(newvalue, bindable.BindingContext,
 				"Source property changed from what it was set to");
 
 			const string newvalue2 = "New Value in the other direction";
 
-			bindable.SetValue (property, newvalue2);
-			Assert.AreEqual (newvalue, bindable.BindingContext,
+			bindable.SetValue(property, newvalue2);
+			Assert.AreEqual(newvalue, bindable.BindingContext,
 				"Self-path Source changed with Target's change");
-			Assert.AreEqual (newvalue2, bindable.GetValue (property),
+			Assert.AreEqual(newvalue2, bindable.GetValue(property),
 				"Target property changed from what it was set to");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
+			Assert.That(log.Messages.Count, Is.EqualTo(0),
 				"An error was logged: " + log.Messages.FirstOrDefault());
 		}
 
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithOldContextDoesNotUpdateWithOneWayBinding (bool isDefault)
+		[Category("[Binding] Complex paths")]
+		[TestCase(BindingMode.OneWay)]
+		[TestCase(BindingMode.OneWayToSource)]
+		[TestCase(BindingMode.TwoWay)]
+		public void SourceAndTargetAreWeakComplexPath(BindingMode mode)
 		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
+			var property = BindableProperty.Create<MockBindable, string>(w => w.Text, "default value");
 
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, binding);
-
-			bindable.BindingContext = new MockViewModel();
-			Assert.AreEqual (null, bindable.GetValue (property));
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (null, bindable.GetValue (property),
-				"Target updated from old Source property change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithOldContextDoesNotUpdateWithTwoWayBinding (bool isDefault)
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.TwoWay;
-			if (isDefault) {
-				propertyDefault = BindingMode.TwoWay;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, binding);
-
-			bindable.BindingContext = new MockViewModel();
-			Assert.AreEqual (null, bindable.GetValue (property));
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (null, bindable.GetValue (property),
-				"Target updated from old Source property change");
-
-			string original = viewmodel.Text;
-
-			bindable.SetValue (property, newvalue);
-			Assert.AreEqual (original, viewmodel.Text,
-				"Source updated from old Target property change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[TestCase (true)]
-		[TestCase (false)]
-		public void ValueUpdatedWithOldContextDoesNotUpdateWithOneWayToSourceBinding (bool isDefault)
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			BindingMode propertyDefault = BindingMode.OneWay;
-			BindingMode bindingMode = BindingMode.OneWayToSource;
-			if (isDefault) {
-				propertyDefault = BindingMode.OneWayToSource;
-				bindingMode = BindingMode.Default;
-			}
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", propertyDefault);
-
-			var binding = new Binding ("Text", bindingMode);
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, binding);
-
-			bindable.BindingContext = new MockViewModel();
-			Assert.AreEqual (property.DefaultValue, bindable.GetValue (property));
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (property.DefaultValue, bindable.GetValue (property),
-				"Target updated from old Source property change");
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Test]
-		public void BindingStaysOnUpdateValueFromBinding()
-		{
-			const string newvalue = "New Value";
-			var viewmodel = new MockViewModel {
-				Text = "Foo"
-			};
-
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, null);
-
-			var binding = new Binding ("Text");
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = viewmodel;
-			bindable.SetBinding (property, binding);
-
-			viewmodel.Text = newvalue;
-			Assert.AreEqual (newvalue, bindable.GetValue (property));
-
-			const string newValue2 = "new value 2";
-			viewmodel.Text = newValue2;
-			Assert.AreEqual (newValue2, bindable.GetValue (property));
-
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
-				"An error was logged: " + log.Messages.FirstOrDefault());
-		}
-
-		[Test]
-		public void OneWayToSourceContextSetToNull()
-		{
-			var binding = new Binding ("Text", BindingMode.OneWayToSource);
-
-			MockBindable bindable = new MockBindable {
-				BindingContext = new MockViewModel()
-			};
-			bindable.SetBinding (MockBindable.TextProperty, binding);
-
-			Assert.That (() => bindable.BindingContext = null, Throws.Nothing);
-		}
-
-		[Category ("[Binding] Simple paths")]
-		[TestCase (BindingMode.OneWay)]
-		[TestCase (BindingMode.OneWayToSource)]
-		[TestCase (BindingMode.TwoWay)]
-		public void SourceAndTargetAreWeakWeakSimplePath (BindingMode mode)
-		{
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value", BindingMode.OneWay);
-
-			var binding = new Binding ("Text", mode);
+			var binding = new Binding("Model.Model[1]");
 
 			WeakReference weakViewModel = null, weakBindable = null;
 
-			int i = 0;
-			Action create = null;
-			create = () => {
-				if (i++ < 1024) {
-					create();
-					return;
-				}
-
-				MockBindable bindable = new MockBindable();
-				weakBindable = new WeakReference (bindable);
-
-				MockViewModel viewmodel = new MockViewModel();
-				weakViewModel = new WeakReference (viewmodel);
-
-				bindable.BindingContext = viewmodel;
-				bindable.SetBinding (property, binding);
-
-				Assume.That (() => bindable.BindingContext = null, Throws.Nothing);
-			};
-
-			create();
+			HackAroundMonoSucking(0, property, binding, out weakViewModel, out weakBindable);
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
-				Assert.IsFalse (weakViewModel.IsAlive, "ViewModel wasn't collected");
-			
+				Assert.IsFalse(weakViewModel.IsAlive, "ViewModel wasn't collected");
+
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource)
-				Assert.IsFalse (weakBindable.IsAlive, "Bindable wasn't collected");
-		}
-
-		internal class ComplexMockViewModel
-			: MockViewModel
-		{
-			public ComplexMockViewModel Model
-			{
-				get { return model; }
-				set
-				{
-					if (model == value)
-						return;
-
-					model = value;
-					OnPropertyChanged ("Model");
-				}
-			}
-
-			internal int count;
-			public int QueryCount
-			{
-				get { return count++; }
-			}
-
-			[IndexerName ("Indexer")]
-			public string this [int v]
-			{
-				get { return values[v]; }
-				set
-				{
-					if (values[v] == value)
-						return;
-
-					values[v] = value;
-					OnPropertyChanged ("Indexer[" + v + "]");
-				}
-			}
-
-			public string[] Array
-			{
-				get;
-				set;
-			}
-
-			public object DoStuff()
-			{
-				return null;
-			}
-
-			public object DoStuff (object argument)
-			{
-				return null;
-			}
-
-			string[] values = new string[5];
-			ComplexMockViewModel model;
-		}
-
-		[Category ("[Binding] Complex paths")]
-		[TestCase (BindingMode.OneWay)]
-		[TestCase (BindingMode.OneWayToSource)]
-		[TestCase (BindingMode.TwoWay)]
-		public void SourceAndTargetAreWeakComplexPath (BindingMode mode)
-		{
-			var property = BindableProperty.Create<MockBindable, string> (w=>w.Text, "default value");
-
-			var binding = new Binding ("Model.Model[1]");
-
-			WeakReference weakViewModel = null, weakBindable = null;
-
-			HackAroundMonoSucking (0, property, binding, out weakViewModel, out weakBindable);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
-				Assert.IsFalse (weakViewModel.IsAlive, "ViewModel wasn't collected");
-			
-			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource)
-				Assert.IsFalse (weakBindable.IsAlive, "Bindable wasn't collected");
+				Assert.IsFalse(weakBindable.IsAlive, "Bindable wasn't collected");
 		}
 
 		// Mono doesn't handle the GC properly until the stack frame where the object is created is popped.
 		// This means calling another method and not just using lambda as works in real .NET
-		void HackAroundMonoSucking (int i, BindableProperty property, Binding binding, out WeakReference weakViewModel, out WeakReference weakBindable)
+		void HackAroundMonoSucking(int i, BindableProperty property, Binding binding, out WeakReference weakViewModel, out WeakReference weakBindable)
 		{
 			if (i++ < 1024) {
-				HackAroundMonoSucking (i, property, binding, out weakViewModel, out weakBindable);
+				HackAroundMonoSucking(i, property, binding, out weakViewModel, out weakBindable);
 				return;
 			}
 
 			MockBindable bindable = new MockBindable();
 
-			weakBindable = new WeakReference (bindable);
+			weakBindable = new WeakReference(bindable);
 
 			ComplexMockViewModel viewmodel = new ComplexMockViewModel {
 				Model = new ComplexMockViewModel {
@@ -1719,16 +1179,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var converter = new TestConverter<string, int>();
 
-			var vm = new MockViewModel { Text = "1" };
-			var property = BindableProperty.Create<MockBindable, int> (w=>w.TargetInt, 0);
+			var vm = new MockViewModel ("1");
+			var property = BindableProperty.Create("TargetInt", typeof(int), typeof(MockBindable), 0);
+			var binding = CreateBinding();
+			((Binding)binding).Converter = converter;
 
 			var bindable = new MockBindable();
-			bindable.SetBinding (property, new Binding ("Text", converter: converter));
+			bindable.SetBinding(property, binding);
 			bindable.BindingContext = vm;
 
-			Assert.AreEqual (1, bindable.GetValue (property));
+			Assert.AreEqual(1, bindable.GetValue(property));
 
-			Assert.That (log.Messages.Count, Is.EqualTo (0),
+			Assert.That(log.Messages.Count, Is.EqualTo(0),
 				"An error was logged: " + log.Messages.FirstOrDefault());
 		}
 
@@ -2035,71 +1497,50 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			string text = "foo";
 
-			public string Text
-			{
+			public string Text {
 				get { return text; }
 			}
 
-			public string Text2
-			{
+			public string Text2 {
 				set { text = value; }
 			}
 
-			public string PrivateSetter
-			{
+			public string PrivateSetter {
 				get;
 				private set;
 			}
 		}
 
 		[Test]
-		[Description ("Paths should not distinguish types, a context change to a completely different type should work.")]
+		[Description("Paths should not distinguish types, a context change to a completely different type should work.")]
 		public void DifferentContextTypeAccessedCorrectlyWithSamePath()
 		{
 			var vm = new MockViewModel { Text = "text" };
 
 			var bindable = new MockBindable();
 			bindable.BindingContext = vm;
-			bindable.SetBinding (MockBindable.TextProperty, new Binding ("Text"));
+			bindable.SetBinding(MockBindable.TextProperty, new Binding("Text"));
 
-			Assert.AreEqual (vm.Text, bindable.GetValue (MockBindable.TextProperty));
+			Assert.AreEqual(vm.Text, bindable.GetValue(MockBindable.TextProperty));
 
 			var dvm = new DifferentViewModel();
 			bindable.BindingContext = dvm;
 
-			Assert.AreEqual (dvm.Text, bindable.GetValue (MockBindable.TextProperty));
-		}
-
-		[Test]
-		public void PropertyChangeBindingsOccurThroughMainThread()
-		{
-			var vm = new MockViewModel { Text = "text" };
-
-			var bindable = new MockBindable();
-			bindable.BindingContext = vm;
-			bindable.SetBinding (MockBindable.TextProperty, new Binding ("Text"));
-			
-			bool mainThread = false;
-			Device.PlatformServices = new MockPlatformServices (invokeOnMainThread: a => mainThread = true);
-
-			vm.Text = "updated";
-
-			Assert.IsTrue (mainThread, "Binding did not occur on main thread");
-			Assert.AreNotEqual (vm.Text, bindable.GetValue (MockBindable.TextProperty), "Binding was applied anyway through other means");
+			Assert.AreEqual(dvm.Text, bindable.GetValue(MockBindable.TextProperty));
 		}
 
 		[Test]
 		public void Clone()
 		{
 			object param = new object();
-			var binding = new Binding (".", converter: new TestConverter<string, int>(), converterParameter: param, stringFormat: "{0}");
+			var binding = new Binding(".", converter: new TestConverter<string, int>(), converterParameter: param, stringFormat: "{0}");
 			var clone = (Binding)binding.Clone();
 
-			Assert.AreSame (binding.Converter, clone.Converter);
-			Assert.AreSame (binding.ConverterParameter, clone.ConverterParameter);
-			Assert.AreEqual (binding.Mode, clone.Mode);
-			Assert.AreEqual (binding.Path, clone.Path);
-			Assert.AreEqual (binding.StringFormat, clone.StringFormat);
+			Assert.AreSame(binding.Converter, clone.Converter);
+			Assert.AreSame(binding.ConverterParameter, clone.ConverterParameter);
+			Assert.AreEqual(binding.Mode, clone.Mode);
+			Assert.AreEqual(binding.Path, clone.Path);
+			Assert.AreEqual(binding.StringFormat, clone.StringFormat);
 		}
 
 		[Test]
@@ -2247,7 +1688,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (log.Messages.Count, Is.EqualTo (1), "An error was not logged");
 			Assert.That (log.Messages[0], Is.StringContaining (String.Format (BindingExpression.PropertyNotFoundErrorMessage,
 				"MissingProperty",
-				"Xamarin.Forms.Core.UnitTests.BindingUnitTests+ComplexMockViewModel",
+				"Xamarin.Forms.Core.UnitTests.BindingBaseUnitTests+ComplexMockViewModel",
 				"Xamarin.Forms.Core.UnitTests.MockBindable",
 				"Text")));
 

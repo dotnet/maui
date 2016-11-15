@@ -28,8 +28,8 @@ namespace Xamarin.Forms.Controls
 				ItemsSource = Objs,
 				ItemTemplate = new DataTemplate (() => {
 					SwitchCell cell = new SwitchCell ();
-					cell.SetBinding<MyObj> (SwitchCell.TextProperty, m => m.DisplayText);
-					cell.SetBinding<MyObj> (SwitchCell.OnProperty, m => m.IsSelected);
+					cell.SetBinding (SwitchCell.TextProperty, "DisplayText");
+					cell.SetBinding (SwitchCell.OnProperty, "IsSelected");
 					return cell;
 				}),
 				IsGroupingEnabled = true,

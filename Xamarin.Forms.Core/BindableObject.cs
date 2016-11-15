@@ -9,13 +9,13 @@ namespace Xamarin.Forms
 {
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
-		public static readonly BindableProperty BindingContextProperty = BindableProperty.Create("BindingContext", typeof(object), typeof(BindableObject), default(object), BindingMode.OneWay, null,
-			BindingContextPropertyBindingPropertyChanged, null, null, BindingContextPropertyBindingChanging);
+		public static readonly BindableProperty BindingContextProperty =
+			BindableProperty.Create("BindingContext", typeof(object), typeof(BindableObject), default(object),
+									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
 
 		readonly List<BindablePropertyContext> _properties = new List<BindablePropertyContext>(4);
 
 		bool _applying;
-
 		object _inheritedContext;
 
 		public object BindingContext
@@ -114,20 +114,18 @@ namespace Xamarin.Forms
 				bindable._inheritedContext = value;
 			}
 
-			bindable.ApplyBindings(oldContext);
+			bindable.ApplyBindings();
 			bindable.OnBindingContextChanged();
 		}
 
-		protected void ApplyBindings(object oldContext = null)
+		protected void ApplyBindings()
 		{
-			ApplyBindings(oldContext, false);
+			ApplyBindings(false);
 		}
 
 		protected virtual void OnBindingContextChanged()
 		{
-			EventHandler change = BindingContextChanged;
-			if (change != null)
-				change(this, EventArgs.Empty);
+			BindingContextChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -146,8 +144,8 @@ namespace Xamarin.Forms
 
 		protected void UnapplyBindings()
 		{
-			foreach (BindablePropertyContext context in _properties)
-			{
+			for (int i = 0, _propertiesCount = _properties.Count; i < _propertiesCount; i++) {
+				BindablePropertyContext context = _properties [i];
 				if (context.Binding == null)
 					continue;
 
@@ -393,15 +391,16 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void ApplyBindings(object oldContext, bool skipBindingContext)
+		void ApplyBindings(bool skipBindingContext)
 		{
-			foreach (BindablePropertyContext context in _properties.ToArray())
-			{
+			var prop = _properties.ToArray();
+			for (int i = 0, propLength = prop.Length; i < propLength; i++) {
+				BindablePropertyContext context = prop [i];
 				BindingBase binding = context.Binding;
 				if (binding == null)
 					continue;
 
-				if (skipBindingContext && context.Property == BindingContextProperty)
+				if (skipBindingContext && ReferenceEquals(context.Property, BindingContextProperty))
 					continue;
 
 				binding.Unapply();
@@ -421,11 +420,10 @@ namespace Xamarin.Forms
 				newBinding.Context = context;
 		}
 
-		static void BindingContextPropertyBindingPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
+		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			object oldInheritedContext = bindable._inheritedContext;
 			bindable._inheritedContext = null;
-			bindable.ApplyBindings(oldInheritedContext ?? oldvalue, true);
+			bindable.ApplyBindings(true);
 			bindable.OnBindingContextChanged();
 		}
 

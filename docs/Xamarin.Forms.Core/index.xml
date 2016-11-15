@@ -454,6 +454,8 @@
       <Type Name="PreserveAttribute" Kind="Class" />
       <Type Name="Ticker" Kind="Class" />
       <Type Name="ToolbarTracker" Kind="Class" />
+      <Type Name="TypedBinding`2" DisplayName="TypedBinding&lt;TSource,TProperty&gt;" Kind="Class" />
+      <Type Name="TypedBindingBase" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.PlatformConfiguration">
       <Type Name="Android" Kind="Class" />

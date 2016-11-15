@@ -148,6 +148,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="TypedBinding">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Internals.TypedBindingBase TypedBinding { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Internals.TypedBindingBase TypedBinding" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.TypedBindingBase</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="UpdateSourceEventName">
       <MemberSignature Language="C#" Value="public string UpdateSourceEventName { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string UpdateSourceEventName" />

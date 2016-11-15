@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			};
 
 			var exceptions = new List<Exception>();
-			if (!xamlc.Compile(exceptions) && exceptions.Any())
+			if (!xamlc.Execute(exceptions) && exceptions.Any())
 				throw exceptions [0];
 		}
 	}

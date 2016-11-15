@@ -17,6 +17,7 @@ namespace Xamarin.Forms
 			self.SetBinding(targetProperty, binding);
 		}
 
+		[Obsolete]
 		public static void SetBinding<TSource>(this BindableObject self, BindableProperty targetProperty, Expression<Func<TSource, object>> sourceProperty, BindingMode mode = BindingMode.Default,
 											   IValueConverter converter = null, string stringFormat = null)
 		{

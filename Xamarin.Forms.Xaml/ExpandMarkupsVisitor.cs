@@ -17,7 +17,8 @@ namespace Xamarin.Forms.Xaml
 			XmlName.xKey,
 			XmlName.xTypeArguments,
 			XmlName.xFactoryMethod,
-			XmlName.xName
+			XmlName.xName,
+			XmlName.xDataType
 		};
 
 		Dictionary<INode, object> Values

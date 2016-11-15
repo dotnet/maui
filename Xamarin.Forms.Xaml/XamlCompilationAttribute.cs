@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Xaml
 		public XamlCompilationOptions XamlCompilationOptions { get; set; }
 	}
 
-	internal static class XamlCExtensions
+	static class XamlCExtensions
 	{
 		public static bool IsCompiled(this Type type)
 		{

@@ -135,6 +135,22 @@ public static void OneWayDemo ()
       </Docs>
     </Member>
     <Member MemberName="ApplyBindings">
+      <MemberSignature Language="C#" Value="protected void ApplyBindings ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig instance void ApplyBindings() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ApplyBindings">
       <MemberSignature Language="C#" Value="protected void ApplyBindings (object oldContext = null);" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig instance void ApplyBindings(object oldContext) cil managed" />
       <MemberType>Method</MemberType>

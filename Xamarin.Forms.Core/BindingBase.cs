@@ -49,7 +49,7 @@ namespace Xamarin.Forms
 		public static void DisableCollectionSynchronization(IEnumerable collection)
 		{
 			if (collection == null)
-				throw new ArgumentNullException("collection");
+				throw new ArgumentNullException(nameof(collection));
 
 			SynchronizedCollections.Remove(collection);
 		}
@@ -57,9 +57,9 @@ namespace Xamarin.Forms
 		public static void EnableCollectionSynchronization(IEnumerable collection, object context, CollectionSynchronizationCallback callback)
 		{
 			if (collection == null)
-				throw new ArgumentNullException("collection");
+				throw new ArgumentNullException(nameof(collection));
 			if (callback == null)
-				throw new ArgumentNullException("callback");
+				throw new ArgumentNullException(nameof(callback));
 
 			SynchronizedCollections.Add(collection, new CollectionSynchronizationContext(context, callback));
 		}
@@ -98,7 +98,7 @@ namespace Xamarin.Forms
 		internal static bool TryGetSynchronizedCollection(IEnumerable collection, out CollectionSynchronizationContext synchronizationContext)
 		{
 			if (collection == null)
-				throw new ArgumentNullException("collection");
+				throw new ArgumentNullException(nameof(collection));
 
 			return SynchronizedCollections.TryGetValue(collection, out synchronizationContext);
 		}
