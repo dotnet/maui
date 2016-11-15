@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Controls
 				Spacing = 8
 			};
 
-			var longString = "Very long text in single line to be truncated at tail.  Adding extra text to make sure it gets truncated.";
+			var longString = "Very long text in single line to be truncated at tail. Adding extra text to make sure it gets truncated. And even more extra text because otherwise the test might fail if we're in, say, landscape orientation rather than portrait.";
 
 			var contentView = new ContentView {
 				Padding = 16,
