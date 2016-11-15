@@ -98,7 +98,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			_navModel.Clear();
 
 			_navModel.Push(newRoot, null);
-			newRoot.NavigationProxy.Inner = this;
 			SetCurrent(newRoot, false, true);
 			Application.Current.NavigationProxy.Inner = this;
 		}
@@ -171,7 +170,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			var tcs = new TaskCompletionSource<bool>();
 			_navModel.PushModal(page);
 			SetCurrent(page, animated, completedCallback: () => tcs.SetResult(true));
-			page.NavigationProxy.Inner = this;
 			return tcs.Task;
 		}
 
