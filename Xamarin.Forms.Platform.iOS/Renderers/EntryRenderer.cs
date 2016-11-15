@@ -45,6 +45,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				_defaultTextColor = textField.TextColor;
 				textField.BorderStyle = UITextBorderStyle.RoundedRect;
+				textField.ClipsToBounds = true;
 
 				textField.EditingChanged += OnEditingChanged;
 
