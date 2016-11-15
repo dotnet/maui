@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Windows.UI.Xaml;
 
 #if WINDOWS_UWP
@@ -11,6 +12,9 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, Windows.UI.Xaml.Controls.ProgressBar>
 	{
+#if !WINDOWS_UWP
+		Windows.UI.Xaml.Media.SolidColorBrush _resourceBrush;
+#endif
 		object _foregroundDefault;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<ActivityIndicator> e)
@@ -43,20 +47,34 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
 		{
+#if !WINDOWS_UWP
+			_resourceBrush = (Control.Resources["ProgressBarIndeterminateForegroundThemeBrush"] as Windows.UI.Xaml.Media.SolidColorBrush);
+			_foregroundDefault = _resourceBrush.Color;
+#else
 			_foregroundDefault = Control.GetForegroundCache();
+#endif
 			UpdateColor();
 		}
 
 		void UpdateColor()
 		{
 			Color color = Element.Color;
+
 			if (color.IsDefault)
 			{
+#if !WINDOWS_UWP
+				_resourceBrush.Color = (Windows.UI.Color) _foregroundDefault;
+#else
 				Control.RestoreForegroundCache(_foregroundDefault);
+#endif
 			}
 			else
 			{
+#if !WINDOWS_UWP
+				_resourceBrush.Color = color.ToWindowsColor();
+#else
 				Control.Foreground = color.ToBrush();
+#endif
 			}
 		}
 
