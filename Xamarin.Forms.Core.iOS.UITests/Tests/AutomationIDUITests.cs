@@ -18,8 +18,8 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		public void Test1 ()
 		{
+			App.WaitForElement(c => c.Marked("btnTest1"));
 			App.Tap (c => c.Marked ("btnTest1"));
-			App.WaitForElement (c => c.Marked ("scrollMain"));
 			App.WaitForElement (c => c.Marked ("stckMain"));
 			App.WaitForElement (c => c.Marked ("actHello"));
 			App.WaitForElement (c => c.Marked ("bxvHello"));
@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Core.UITests
 		[Test]
 		public void Test2 ()
 		{
+			App.WaitForElement(c => c.Marked("btnTest2"));
 			App.Tap (c => c.Marked ("btnTest2"));
 			App.WaitForElement (c => c.Marked ("imgHello"));
 			App.WaitForElement (c => c.Marked ("lstView"));
