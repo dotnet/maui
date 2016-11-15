@@ -4,9 +4,7 @@
 
 	public static class Application
 	{
-		public static readonly BindableProperty SendDisappearingEventOnPauseProperty =
-			BindableProperty.Create("SendDisappearingEventOnPause", typeof(bool),
-			typeof(Application), true);
+		public static readonly BindableProperty SendDisappearingEventOnPauseProperty = BindableProperty.Create(nameof(SendDisappearingEventOnPause), typeof(bool), typeof(Application), true);
 
 		public static bool GetSendDisappearingEventOnPause(BindableObject element)
 		{
@@ -29,9 +27,7 @@
 			return config;
 		}
 
-		public static readonly BindableProperty SendAppearingEventOnResumeProperty =
-			BindableProperty.Create("SendAppearingEventOnResume", typeof(bool),
-			typeof(Application), true);
+		public static readonly BindableProperty SendAppearingEventOnResumeProperty = BindableProperty.Create(nameof(SendAppearingEventOnResume), typeof(bool), typeof(Application), true);
 
 		public static bool GetSendAppearingEventOnResume(BindableObject element)
 		{
@@ -51,6 +47,29 @@
 		public static IPlatformElementConfiguration<Android, FormsElement> SendAppearingEventOnResume(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
 			SetSendAppearingEventOnResume(config.Element, value);
+			return config;
+		}
+
+		public static readonly BindableProperty ShouldPreserveKeyboardOnResumeProperty = BindableProperty.Create(nameof(ShouldPreserveKeyboardOnResume), typeof(bool), typeof(Application), false);
+
+		public static bool GetShouldPreserveKeyboardOnResume(BindableObject element)
+		{
+			return (bool)element.GetValue(ShouldPreserveKeyboardOnResumeProperty);
+		}
+
+		public static void SetShouldPreserveKeyboardOnResume(BindableObject element, bool value)
+		{
+			element.SetValue(ShouldPreserveKeyboardOnResumeProperty, value);
+		}
+
+		public static bool GetShouldPreserveKeyboardOnResume(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetShouldPreserveKeyboardOnResume(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> ShouldPreserveKeyboardOnResume(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetShouldPreserveKeyboardOnResume(config.Element, value);
 			return config;
 		}
 	}

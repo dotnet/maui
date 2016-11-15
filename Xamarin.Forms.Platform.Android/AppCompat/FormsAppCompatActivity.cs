@@ -15,6 +15,7 @@ using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 using AColor = Android.Graphics.Color;
 using AlertDialog = Android.Support.V7.App.AlertDialog;
@@ -231,6 +232,14 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			// counterpart to OnPause
 			base.OnResume();
+
+			if (_application.OnThisPlatform().GetShouldPreserveKeyboardOnResume())
+			{
+				if (CurrentFocus != null && (CurrentFocus is EditText || CurrentFocus is TextView || CurrentFocus is SearchView))
+				{
+					CurrentFocus.ShowKeyboard();
+				}
+			}
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
