@@ -185,15 +185,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnDestroy()
 		{
-			// may never be called
-			base.OnDestroy();
-
 			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
 			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
 			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName);
 
-			if (_platform != null)
-				_platform.Dispose();
+			_platform?.Dispose();
+
+			// call at the end to avoid race conditions with Platform dispose
+			base.OnDestroy();
 		}
 
 		protected override void OnNewIntent(Intent intent)
