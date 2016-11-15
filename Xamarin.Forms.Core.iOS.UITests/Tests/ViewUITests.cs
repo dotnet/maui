@@ -213,7 +213,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest (typeof (VisualElement), "TranslationX")]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		public virtual void _TranslationX ()
 		{
 			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationX, PlatformViewType);
@@ -222,7 +222,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest (typeof (VisualElement), "TranslationY")]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		public virtual void _TranslationY ()
 		{
 			var remote = new ViewContainerRemote (App, Test.VisualElement.TranslationY, PlatformViewType);

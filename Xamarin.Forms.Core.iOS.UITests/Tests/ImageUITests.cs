@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Image")]
+	[Category(UITestCategories.Image)]
 	internal class ImageUITests : _ViewUITests
 	{
 		public ImageUITests ()

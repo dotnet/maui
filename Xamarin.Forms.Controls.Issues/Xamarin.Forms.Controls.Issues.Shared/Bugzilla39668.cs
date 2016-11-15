@@ -1,15 +1,20 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using System.Linq;
+
 using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 39668, "Overriding ListView.CreateDefault Does Not Work on Windows", PlatformAffected.WinRT)]
 	public class Bugzilla39668 : TestContentPage

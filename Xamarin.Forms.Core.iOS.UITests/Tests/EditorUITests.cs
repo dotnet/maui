@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Editor")]
+	[Category(UITestCategories.Editor)]
 	internal class EditorUITests : _ViewUITests
 	{
 		public EditorUITests ()

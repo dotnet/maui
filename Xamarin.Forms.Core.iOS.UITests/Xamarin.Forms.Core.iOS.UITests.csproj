@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseTestFixture.cs" />
+    <Compile Include="UITestCategories.cs" />
     <Compile Include="PlatformQueries.cs" />
     <Compile Include="Remotes\BaseViewContainerRemote.cs" />
     <Compile Include="Remotes\EventViewContainerRemote.cs" />

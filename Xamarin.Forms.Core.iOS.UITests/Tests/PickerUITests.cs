@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Picker")]
+	[Category(UITestCategories.Picker)]
 	internal class PickerUITests : _ViewUITests
 	{
 		public PickerUITests ()

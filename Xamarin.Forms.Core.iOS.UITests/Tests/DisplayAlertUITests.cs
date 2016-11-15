@@ -6,7 +6,7 @@ using System.Threading;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("DisplayAlert")]
+	[Category(UITestCategories.DisplayAlert)]
 	internal class DisplayAlertUITests : BaseTestFixture
 	{
 

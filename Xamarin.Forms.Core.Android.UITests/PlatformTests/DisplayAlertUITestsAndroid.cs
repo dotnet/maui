@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("DisplayAlert")]
+	[Category(UITestCategories.DisplayAlert)]
 	internal class DisplayAlertUITestsAndroid : BaseTestFixture
 	{
 

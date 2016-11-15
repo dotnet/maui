@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
-
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		public void Issue764TestsKeyboardDismissedForEnter ()
 		{
 			Assert.Inconclusive ("Needs test");

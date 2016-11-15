@@ -156,6 +156,9 @@
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Tests\WebViewUITests.cs">
       <Link>Tests\WebViewUITests.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\UITestCategories.cs">
+      <Link>UITestCategories.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Core.iOS.UITests\Utilities\AppExtensions.cs">
       <Link>Utilities\AppExtensions.cs</Link>
     </Compile>

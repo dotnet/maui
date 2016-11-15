@@ -7,7 +7,7 @@ using Xamarin.UITest.Queries;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("ActionSheet")]
+	[Category(UITestCategories.ActionSheet)]
 	internal class ActionSheetUITests : BaseTestFixture
 	{
 		AppRect screenSize;

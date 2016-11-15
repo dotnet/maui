@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("BoxView")]
+	[Category(UITestCategories.BoxView)]
 	internal class BoxViewUITests : _ViewUITests
 	{
 		public BoxViewUITests ()

@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Frame")]
+	[Category(UITestCategories.Frame)]
 	internal class FrameUITests : _ViewUITests
 	{
 		public FrameUITests ()

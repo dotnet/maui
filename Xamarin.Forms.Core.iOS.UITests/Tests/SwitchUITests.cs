@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Switch")]
+	[Category(UITestCategories.Switch)]
 	internal class SwitchUITests : _ViewUITests
 	{
 		public SwitchUITests ()

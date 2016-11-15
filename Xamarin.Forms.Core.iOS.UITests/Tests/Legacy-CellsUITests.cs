@@ -13,7 +13,7 @@ using Xamarin.UITest.Queries;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category("Cells")]
+	[Category(UITestCategories.Cells)]
 	internal class CellsGalleryTests : BaseTestFixture
 	{
 		// TODO find a way to test individula elements of cells

@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("Button")]
+	[Category(UITestCategories.Button)]
 	internal class ButtonUITests : _ViewUITests
 	{
 		public ButtonUITests ()

@@ -7,7 +7,7 @@ using Xamarin.UITest.Queries;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("AutomationID")]
+	[Category(UITestCategories.AutomationId)]
 	internal class AutomationIDUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery ()

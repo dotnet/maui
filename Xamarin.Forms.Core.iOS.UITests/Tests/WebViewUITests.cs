@@ -17,7 +17,7 @@ using Xamarin.UITest.iOS;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("WebView")]
+	[Category(UITestCategories.WebView)]
 	internal class WebViewUITests : _ViewUITests
 	{
 		public WebViewUITests ()
@@ -29,15 +29,15 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			App.NavigateToGallery (GalleryQueries.WebViewGallery);
 		}
-			
-		[Category ("ManualReview")]
+
+		[Category(UITestCategories.ManualReview)]
 		public override void _IsEnabled ()
 		{
 			Assert.Inconclusive ("Does not make sense for WebView");
 		}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _IsVisible () {}
 
@@ -51,38 +51,38 @@ namespace Xamarin.Forms.Core.UITests
 		public override void _IsFocused () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Opacity () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Rotation () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _RotationX () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _RotationY () {}
 
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _TranslationX () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category(UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _TranslationY () {}
 
 		[Test]
-		[Category ("ManualReview")]
+		[Category (UITestCategories.ManualReview)]
 		[Ignore("Keep empty test from failing in Test Cloud")]
 		public override void _Scale () {}
 

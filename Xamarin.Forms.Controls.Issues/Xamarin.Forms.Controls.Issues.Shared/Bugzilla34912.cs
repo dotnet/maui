@@ -1,17 +1,21 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Xamarin.Forms.Internals;
 
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34912, "ListView.IsEnabled has no effect on iOS")]
 	public class Bugzilla34912 : TestContentPage // or TestMasterDetailPage, etc ...

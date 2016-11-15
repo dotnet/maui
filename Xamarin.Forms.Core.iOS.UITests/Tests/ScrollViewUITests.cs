@@ -4,7 +4,7 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
-	[Category ("ScrollView")]
+	[Category(UITestCategories.ScrollView)]
 	internal class ScrollViewGalleryTests : BaseTestFixture
 	{
 		public ScrollViewGalleryTests ()

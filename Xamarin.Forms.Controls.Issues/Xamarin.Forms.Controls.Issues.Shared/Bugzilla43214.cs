@@ -3,9 +3,17 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+#if UITEST
+using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
+#endif
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 43214, "Setting Listview.IsRefreshing to false does not work on second \"pull\"")]
 	public class Bugzilla43214 : TestContentPage

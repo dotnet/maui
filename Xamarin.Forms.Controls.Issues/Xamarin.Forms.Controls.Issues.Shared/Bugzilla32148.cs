@@ -1,19 +1,24 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Collections.Generic;
+
 using Xamarin.Forms.Internals;
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 32148, " Pull to refresh hides the first item on a list view")]
 	public class Bugzilla32148 : TestContentPage // or TestMasterDetailPage, etc ...

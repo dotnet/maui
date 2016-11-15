@@ -1,18 +1,22 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Collections.Generic;
 
 #if UITEST
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
     [Preserve(AllMembers = true)]
-    [Issue(IssueTracker.Bugzilla, 42364, "ListView item's contextual action menu not being closed upon swiping a TabbedPage in AppCompat")]
+	[Issue(IssueTracker.Bugzilla, 42364, "ListView item's contextual action menu not being closed upon swiping a TabbedPage in AppCompat")]
     public class Bugzilla42354 : TestTabbedPage
     {
         protected override void Init()

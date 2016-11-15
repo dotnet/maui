@@ -1,9 +1,10 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
 using Xamarin.Forms.Internals;
+
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
@@ -11,6 +12,10 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 31114, "iOS ContextAction leaves blank line after swiping in ListView")]
 	public class Bugzilla31114 : TestContentPage 
