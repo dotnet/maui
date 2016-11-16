@@ -193,22 +193,12 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var page = (Page)sender;
 
-				var renderer = Platform.GetRenderer(page);
-				if (renderer == null)
+				IVisualElementRenderer renderer = Platform.GetRenderer(page);
+
+				if (renderer?.ViewController.TabBarItem == null)
 					return;
 
-				if (renderer.ViewController.TabBarItem == null)
-					return;
-
-				UIImage image = null;
-				if (!string.IsNullOrEmpty(page.Icon))
-					image = new UIImage(page.Icon);
-
-				// the new UITabBarItem forces redraw, setting the UITabBarItem.Image does not
-				renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, image, 0);
-
-				if (image != null)
-					image.Dispose();
+				SetTabBarItem(renderer);
 			}
 		}
 
@@ -292,7 +282,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void SetupPage(Page page, int index)
 		{
-			var renderer = Platform.GetRenderer(page);
+			IVisualElementRenderer renderer = Platform.GetRenderer(page);
 			if (renderer == null)
 			{
 				renderer = Platform.CreateRenderer(page);
@@ -301,15 +291,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			page.PropertyChanged += OnPagePropertyChanged;
 
-			UIImage icon = null;
-			if (page.Icon != null)
-				icon = new UIImage(page.Icon);
-
-			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icon, 0);
-			if (icon != null)
-				icon.Dispose();
-
-			renderer.ViewController.TabBarItem.Tag = index;
+			SetTabBarItem(renderer);
 		}
 
 		void TeardownPage(Page page, int index)
@@ -417,6 +399,25 @@ namespace Xamarin.Forms.Platform.iOS
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
 				platformEffect.Container = View;
+		}
+
+		void SetTabBarItem(IVisualElementRenderer renderer)
+		{
+			var page = renderer.Element as Page;
+			if(page == null)
+				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
+
+			UIImage icon = null;
+			if (!string.IsNullOrEmpty(page.Icon))
+				icon = new UIImage(page.Icon);
+
+			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icon, 0)
+			{
+				Tag = Tabbed.Children.IndexOf(page),
+				AccessibilityIdentifier = page.AutomationId
+			};
+
+			icon?.Dispose();
 		}
 	}
 }
