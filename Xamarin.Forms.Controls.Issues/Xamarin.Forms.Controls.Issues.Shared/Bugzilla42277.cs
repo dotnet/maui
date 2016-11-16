@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 42277, "DataTemplate System.InvalidCastException crash in 2.3.1-pre1")]

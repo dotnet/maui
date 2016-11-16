@@ -5,7 +5,7 @@ using Xamarin.Forms.Internals;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue(IssueTracker.Github, 2983, "ListView.Footer can cause NullReferenceException", PlatformAffected.iOS)]

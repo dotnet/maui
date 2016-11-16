@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Ignore("This test is looking for an invalid behavior; the second tap *should* keep the drawer open.")] 

@@ -12,7 +12,7 @@ using NUnit.Framework;
 #endif
 
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2951, "On Android, button background is not updated when color changes ")]
@@ -113,32 +113,32 @@ namespace Xamarin.Forms.Controls
 	
 		#endif
 	}
+}
 
-
-	
-
-	[Preserve (AllMembers = true)]
+namespace Xamarin.Forms.Controls
+{
+	[Preserve(AllMembers = true)]
 	public class ButtonExtensions
 	{
 #pragma warning disable 618
-		public static readonly BindableProperty IsPrimaryProperty = BindableProperty.CreateAttached<ButtonExtensions, bool> (
+		public static readonly BindableProperty IsPrimaryProperty = BindableProperty.CreateAttached<ButtonExtensions, bool>(
 #pragma warning restore 618
-			                                                            bindable => GetIsPrimary (bindable),
-			                                                            false,
-			                                                            BindingMode.TwoWay,
-			                                                            null,
-			                                                            null,
-			                                                            null,
-			                                                            null);
+																		bindable => GetIsPrimary(bindable),
+																		false,
+																		BindingMode.TwoWay,
+																		null,
+																		null,
+																		null,
+																		null);
 
-		public static bool GetIsPrimary (BindableObject bo)
+		public static bool GetIsPrimary(BindableObject bo)
 		{
-			return (bool)bo.GetValue (IsPrimaryProperty);
+			return (bool)bo.GetValue(IsPrimaryProperty);
 		}
 
-		public static void SetIsPrimary (BindableObject bo, bool value)
+		public static void SetIsPrimary(BindableObject bo, bool value)
 		{
-			bo.SetValue (IsPrimaryProperty, value);
+			bo.SetValue(IsPrimaryProperty, value);
 		}
 	}
 }

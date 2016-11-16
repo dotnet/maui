@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 30353, "MasterDetailPage.IsPresentedChanged is not raised")]
@@ -99,6 +99,12 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Screenshot ("Portrait Invisible");
 			RunningApp.WaitForElement (q => q.Marked ("The Master is now invisible"));
 			RunningApp.SetOrientationLandscape ();
+		}
+
+		[TearDown]
+		public void TearDown() 
+		{
+			RunningApp.SetOrientationPortrait ();
 		}
 
 		void Back()

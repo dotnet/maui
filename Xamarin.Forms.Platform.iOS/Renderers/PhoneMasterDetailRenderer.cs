@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			PageController.SendDisappearing();
+			PageController?.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()

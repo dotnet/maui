@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 530, "ListView does not render if source is async", PlatformAffected.iOS)]

@@ -7,6 +7,7 @@ using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.iOS;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.iOS;
 using RectangleF = CoreGraphics.CGRect;
 

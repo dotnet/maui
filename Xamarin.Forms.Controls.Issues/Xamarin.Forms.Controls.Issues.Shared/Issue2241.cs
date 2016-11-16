@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.Android;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2241, "ScrollView content can become stuck on orientation change (iOS)", PlatformAffected.iOS)]

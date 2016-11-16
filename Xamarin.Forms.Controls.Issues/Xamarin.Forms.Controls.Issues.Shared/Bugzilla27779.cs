@@ -2,6 +2,7 @@
 
 using Xamarin.Forms.CustomAttributes;
 using System.Collections.Generic;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;

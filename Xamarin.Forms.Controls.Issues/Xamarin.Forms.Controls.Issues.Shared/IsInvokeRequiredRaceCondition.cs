@@ -9,7 +9,7 @@ using NUnit.Framework;
 #endif
 
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Device.IsInvokeRequired race condition causes crash")]

@@ -13,7 +13,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2411, "ListView.ScrollTo not working in TabbedPage", PlatformAffected.Android)]

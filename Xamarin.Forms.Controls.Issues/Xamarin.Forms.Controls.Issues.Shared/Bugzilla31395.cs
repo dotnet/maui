@@ -8,9 +8,8 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
-	// don't forget to update C:\Users\chrisk\Documents\git\DuploBuddy\Xamarin.Forms.ControlGallery.Android\LinkerRoots.cs
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 31395, "Crash when switching MainPage and using a Custom Render")]
 	public class Bugzilla31395 : TestContentPage // or TestMasterDetailPage, etc ...

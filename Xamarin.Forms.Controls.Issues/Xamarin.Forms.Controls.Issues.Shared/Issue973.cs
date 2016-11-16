@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	internal class PageNameObject
 	{

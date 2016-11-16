@@ -10,7 +10,7 @@ using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ListView)]

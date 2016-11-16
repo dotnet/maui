@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue(IssueTracker.Github, 1146, "Disabled Switch in Button Gallery not rendering on all devices", PlatformAffected.Android)]

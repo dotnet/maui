@@ -70,13 +70,5 @@ namespace Xamarin.Forms.Controls
 		{
 			_lbl.Text = "Click " + DateTime.Now.ToLocalTime ();
 		}
-
-#if UITEST
-		[Test]
-		public void Issue1Test ()
-		{
-
-		}
-#endif
 	}
 }

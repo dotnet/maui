@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using Xamarin.Forms.Core.UITests;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 181, "Color not initialized for Label", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]

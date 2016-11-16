@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Xamarin.UITest.Queries;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36171, "WinRT Entry UI not updating on TextChanged",

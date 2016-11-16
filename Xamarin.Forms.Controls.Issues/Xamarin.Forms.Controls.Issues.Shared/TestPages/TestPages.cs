@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Controls
 		{
 			IApp app = null;
 #if __ANDROID__
-			app = ConfigureApp.Android.ApkFile (AppPaths.ApkPath).Debug ().StartApp ();
-#elif __IOS__ 
-			app = ConfigureApp.iOS.InstalledApp (AppPaths.BundleId).Debug ()
-				//Uncomment to run from a specific iOS SIM, get the ID from XCode -> Devices
-				//.DeviceIdentifier("55555555-5555-5555-5555-555555555555")
-				.StartApp ();
+
+			app = InitializeAndroidApp();
+
+#elif __IOS__
+
+			app = InitializeiOSApp();
 #endif
 			if (app == null)
 				throw new NullReferenceException ("App was not initialized.");
@@ -43,7 +43,33 @@ namespace Xamarin.Forms.Controls
 			return new ScreenshotConditionalApp(app);
 		}
 
-		static void NavigateToIssue (Type type, IApp app)
+#if __ANDROID__
+		static IApp InitializeAndroidApp()
+		{
+			return ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+		}
+#endif
+
+#if __IOS__
+		static IApp InitializeiOSApp() 
+		{ 
+			// Running on a device
+			var app = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug()
+				//Uncomment to run from a specific iOS SIM, get the ID from XCode -> Devices
+				.StartApp();
+
+			// Running on the simulator
+			//var app = ConfigureApp.iOS
+			//				  .PreferIdeSettings()
+			//		  		  .AppBundle("../../../Xamarin.Forms.ControlGallery.iOS/bin/iPhoneSimulator/Debug/XamarinFormsControlGalleryiOS.app")
+			//				  .Debug()
+			//				  .StartApp();
+
+			return app;
+		}
+#endif
+
+		public static void NavigateToIssue (Type type, IApp app)
 		{
 			var typeIssueAttribute = type.GetTypeInfo ().GetCustomAttribute <IssueAttribute> ();
 
@@ -56,6 +82,29 @@ namespace Xamarin.Forms.Controls
 				cellName = typeIssueAttribute.Description;
 			}
 
+			try
+			{
+				// Attempt the direct way of navigating to the test page
+#if __ANDROID__
+
+				if (bool.Parse((string)app.Invoke("NavigateToTest", cellName)))
+				{
+					return;
+				}
+#endif
+#if __IOS__
+				if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
+				{
+					return;
+				}
+#endif
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Could not directly invoke test, using UI navigation. {ex}");
+			}
+			
+			// Fall back to the "manual" navigation method
 			app.Tap (q => q.Button ("Go to Test Cases"));
 			app.WaitForElement (q => q.Raw ("* marked:'TestCasesIssueList'"));
 
@@ -79,13 +128,71 @@ namespace Xamarin.Forms.Controls
 
 			return runningApp;
 		}
+
+		// Make sure the server on the device is still up and running;
+		// if not, restart the app
+		public static void EnsureConnection()
+		{
+			if (RunningApp != null)
+			{
+				try
+				{
+					RunningApp.TestServer.Get("version");
+					return;
+				}
+				catch (Exception ex)
+				{
+				}
+
+				RunningApp = InitializeApp();
+			}
+		}
+
+		static int s_testsrun;
+		const int ConsecutiveTestLimit = 40;
+
+		// Until we get more of our memory leak issues worked out, restart the app 
+		// after a specified number of tests so we don't get bogged down in GC
+		public static void EnsureMemory()
+		{
+			if (RunningApp != null)
+			{
+				s_testsrun += 1;
+
+				if (s_testsrun >= ConsecutiveTestLimit)
+				{
+					s_testsrun = 0;
+					RunningApp = InitializeApp();
+				}
+			}
+		}
+
+		// For tests which just don't play well with others, we can ensure
+		// that they run in their own instance of the application
+		public static void BeginIsolate()
+		{
+			if (RunningApp != null && s_testsrun > 0)
+			{
+				s_testsrun = 0;
+				RunningApp = InitializeApp();
+			}
+		}
+
+		public static void EndIsolate()
+		{
+			s_testsrun = ConsecutiveTestLimit;
+		}
+
+		public static IApp RunningApp { get; set; }
 	}
 #endif
 
 	public abstract class TestPage : Page
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestPage ()
@@ -97,9 +204,28 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
@@ -110,7 +236,9 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestContentPage : ContentPage
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestContentPage ()
@@ -124,7 +252,26 @@ namespace Xamarin.Forms.Controls
 		[SetUp]
 		public void Setup ()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
@@ -134,7 +281,9 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestCarouselPage : CarouselPage
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestCarouselPage ()
@@ -146,9 +295,28 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
@@ -158,7 +326,9 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestMasterDetailPage : MasterDetailPage
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestMasterDetailPage ()
@@ -170,9 +340,28 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
@@ -182,7 +371,9 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestNavigationPage : NavigationPage
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestNavigationPage ()
@@ -194,9 +385,28 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
@@ -206,7 +416,9 @@ namespace Xamarin.Forms.Controls
 	public abstract class TestTabbedPage : TabbedPage
 	{
 #if UITEST
-		public IApp RunningApp { get; private set; }
+		public IApp RunningApp => AppSetup.RunningApp;
+
+		protected virtual bool Isolate => false;
 #endif
 
 		protected TestTabbedPage ()
@@ -218,12 +430,51 @@ namespace Xamarin.Forms.Controls
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
-			RunningApp = AppSetup.Setup (GetType ());
+			if (Isolate)
+			{
+				AppSetup.BeginIsolate();
+			}
+			else
+			{
+				AppSetup.EnsureMemory();
+				AppSetup.EnsureConnection();
+			}
+
+			AppSetup.NavigateToIssue(GetType(), RunningApp);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			if (Isolate)
+			{
+				AppSetup.EndIsolate();
+			}
 		}
 #endif
 
 		protected abstract void Init ();
 	}
 }
+
+#if UITEST
+namespace Xamarin.Forms.Controls.Issues
+{
+	using System;
+	using NUnit.Framework;
+
+	// Run setup once for all tests in the Xamarin.Forms.Controls.Issues namespace
+	// (instead of once for each test)
+	[SetUpFixture]
+	public class IssuesSetup
+	{
+		[SetUp]
+		public void RunBeforeAnyTests()
+		{
+			AppSetup.RunningApp = AppSetup.Setup(null);
+		}
+	}
+}
+#endif

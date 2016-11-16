@@ -12,7 +12,7 @@ using Xamarin.UITest.Android;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2948, "MasterDetailPage Detail is interactive even when Master is open when in Landscape")]
@@ -215,6 +215,12 @@ namespace Xamarin.Forms.Controls
 				}
 				RunningApp.WaitForNoElement (c => c.Marked ("Clicked"),"Time out",new TimeSpan(0,0,1));
 			}
+		}
+
+		[TearDown]
+		public void TestTearDown()
+		{
+			RunningApp.SetOrientationPortrait();
 		}
 
 		public bool ShouldRunTest() {

@@ -9,7 +9,7 @@ using Xamarin.UITest.Android;
 using System.Collections.Generic;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 30317, "https://bugzilla.xamarin.com/show_bug.cgi?id=30137")]

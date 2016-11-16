@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 774, "ActionSheet won't dismiss after rotation to landscape", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
@@ -54,6 +54,7 @@ namespace Xamarin.Forms.Controls
 					RunningApp.WaitForNoElement (q => q.Marked ("Destroy"));
 				else
 					RunningApp.WaitForNoElement (q => q.Marked ("Dismiss"));
+
 				RunningApp.Screenshot ("Dismiss ActionSheet");
 
 //				App.SetOrientationPortrait ();
@@ -71,6 +72,16 @@ namespace Xamarin.Forms.Controls
 //					App.WaitForNoElement (q => q.Marked ("Dismiss"));
 			
 			} 
+			else
+			{
+				RunningApp.Tap(q => q.Marked("Dismiss"));
+			}
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			RunningApp.SetOrientationPortrait();
 		}
 #endif
 

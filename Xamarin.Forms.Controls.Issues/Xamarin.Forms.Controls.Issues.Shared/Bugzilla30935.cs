@@ -1,14 +1,15 @@
 ﻿using System;
 
 using Xamarin.Forms.CustomAttributes;
-
+using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
+	[Preserve(AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 30935, "NullReferenceException in ViewRenderer<TView, TNativeView> (Xamarin.Forms.Platform.Android)")]
 	public class Bugzilla30935 : TestContentPage
 	{

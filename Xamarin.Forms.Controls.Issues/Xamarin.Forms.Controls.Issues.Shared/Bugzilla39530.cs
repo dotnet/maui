@@ -59,6 +59,9 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Bugzilla39530PanTest()
 		{
+			// Got to wait for the element to be visible to the UI test framework, otherwise we get occasional 
+			// index out of bounds exceptions if the query for the frame and its Rect run quickly enough
+			RunningApp.WaitForElement(q => q.Marked("frame"));
 			AppRect frameBounds = RunningApp.Query (q => q.Marked ("frame"))[0].Rect;
 			RunningApp.Pan (new Drag (frameBounds, frameBounds.X + 10, frameBounds.Y + 10, frameBounds.X + 100, frameBounds.Y + 100, Drag.Direction.LeftToRight));
 

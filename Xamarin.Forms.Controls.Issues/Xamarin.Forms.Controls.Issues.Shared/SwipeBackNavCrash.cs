@@ -12,7 +12,7 @@ using Xamarin.UITest.iOS;
 #endif
 
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.None, 0, "Swipe back nav crash", PlatformAffected.iOS)]

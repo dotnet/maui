@@ -12,7 +12,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 1, "Issue Description", PlatformAffected.Default)]

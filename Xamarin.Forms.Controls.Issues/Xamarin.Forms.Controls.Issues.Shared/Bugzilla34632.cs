@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34632, "Can't change IsPresented when setting SplitOnLandscape ")]
@@ -74,6 +74,12 @@ namespace Xamarin.Forms.Controls
 				RunningApp.Tap (q => q.Marked ("btnDismissModal"));
 				RunningApp.Tap (q => q.Marked ("btnMaster"));
 			}
+		}
+
+		[TearDown]
+		public void TearDown() 
+		{
+			RunningApp.SetOrientationPortrait ();
 		}
 		#endif
 	}

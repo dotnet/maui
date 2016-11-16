@@ -10,7 +10,7 @@ using Xamarin.UITest;
 
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 35472, "PopAsync during ScrollToAsync throws NullReferenceException")]

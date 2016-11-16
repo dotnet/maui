@@ -28,9 +28,5 @@ namespace Xamarin.Forms.Controls
 				
 			Content = tableview;
 		}
-
-#if UITEST
-		
-#endif
 	}
 }

@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38112, "Switch becomes reenabled when previous ViewCell is removed from TableView", PlatformAffected.Android)]

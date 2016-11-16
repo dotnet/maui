@@ -8,7 +8,7 @@ using Xamarin.UITest;
 
 #endif
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 31366, "Pushing and then popping a page modally causes ArgumentOutOfRangeException",

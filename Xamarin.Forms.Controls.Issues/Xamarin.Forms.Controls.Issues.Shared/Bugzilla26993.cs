@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 26993, "https://bugzilla.xamarin.com/show_bug.cgi?id=26993")]
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls
 		[Preserve (AllMembers = true)]
 		public class Bz26993ViewCell : ViewCell 
 		{
-			static int s_id = 0;
+			public static int s_id = 0;
 
 			public Bz26993ViewCell ()
 			{
@@ -33,6 +33,8 @@ namespace Xamarin.Forms.Controls
 
 		protected override void Init ()
 		{
+			Bz26993ViewCell.s_id = 0;
+
 			var itemSource = new List<string> {
 				"",
 				"",

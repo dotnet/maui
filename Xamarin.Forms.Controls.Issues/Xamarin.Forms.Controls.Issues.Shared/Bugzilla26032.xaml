@@ -2,7 +2,7 @@
 <local:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
  				 xmlns:local="clr-namespace:Xamarin.Forms.Controls"
-				 x:Class="Xamarin.Forms.Controls.Bugzilla26032">
+				 x:Class="Xamarin.Forms.Controls.Issues.Bugzilla26032">
 	<RelativeLayout>
 		<ListView x:Name="List1"
 				  RelativeLayout.XConstraint="{ConstraintExpression Type=Constant, Constant=0}"

@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 38658, "Rotation causes app containing CarouselPage to freeze", PlatformAffected.iOS)]
@@ -68,6 +68,12 @@ namespace Xamarin.Forms.Controls
 			RunningApp.SetOrientationPortrait ();
 			RunningApp.Back ();
 			RunningApp.WaitForElement (q => q.Marked ("btn"));
+		}
+
+		[TearDown]
+		public void TearDown() 
+		{
+			RunningApp.SetOrientationPortrait ();
 		}
 #endif
 	}

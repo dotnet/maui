@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2289, "TextCell IsEnabled property not disabling element in TableView", PlatformAffected.iOS)]

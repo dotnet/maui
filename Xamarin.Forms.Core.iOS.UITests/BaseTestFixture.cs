@@ -16,14 +16,43 @@ namespace Xamarin.Forms.Core.UITests
 	{
 		// TODO: Landscape tests
 
-		public static IApp App { get; private set; }
+		public static IApp App { get; set; }
 		public string PlatformViewType { get; protected set; }
-		public bool ShouldResetPerFixture { get; protected set; }
-		public AppRect ScreenBounds { get; private set; }
+		public static AppRect ScreenBounds { get; set; }
 
-		protected BaseTestFixture()
+		[TestFixtureTearDown]
+		protected virtual void FixtureTeardown()
 		{
-			ShouldResetPerFixture = true;
+		}
+
+		static int s_testsrun;
+		const int ConsecutiveTestLimit = 40;
+
+		// Until we get more of our memory leak issues worked out, restart the app 
+		// after a specified number of tests so we don't get bogged down in GC
+		public void EnsureMemory()
+		{
+			s_testsrun += 1;
+
+			if (s_testsrun >= ConsecutiveTestLimit)
+			{
+				s_testsrun = 0;
+
+				CoreUITestsSetup.LaunchApp();
+
+				FixtureSetup();
+			}
+		}
+
+		[SetUp]
+		protected virtual void TestSetup()
+		{
+			EnsureMemory();
+		}
+
+		[TearDown]
+		protected virtual void TestTearDown()
+		{
 		}
 
 		protected abstract void NavigateToGallery();
@@ -33,50 +62,44 @@ namespace Xamarin.Forms.Core.UITests
 #pragma warning restore 618
 		protected virtual void FixtureSetup()
 		{
-			try
-			{
-				if (ShouldResetPerFixture)
-				{
-					RelaunchApp();
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex);
-				throw;
-			}
-		}
-
-#pragma warning disable 618
-		[TestFixtureTearDown]
-#pragma warning restore 618
-		protected virtual void FixtureTeardown()
-		{
-		}
-
-		[SetUp]
-		protected virtual void TestSetup()
-		{
-			if (!ShouldResetPerFixture)
-			{
-
-				RelaunchApp();
-			}
-		}
-
-		[TearDown]
-		protected virtual void TestTearDown()
-		{
-
-		}
-
-		void RelaunchApp()
-		{
-			App = null;
-			App = AppSetup.Setup();
-			App.SetOrientationPortrait();
-			ScreenBounds = App.RootViewRect();
+			ResetApp();
 			NavigateToGallery();
+		}
+
+		protected void ResetApp()
+		{
+#if __IOS__
+			App.Invoke("reset:", string.Empty);
+#endif
+#if __ANDROID__
+			App.Invoke("Reset");
+#endif
 		}
 	}
 }
+
+#if UITEST
+namespace Xamarin.Forms.Core.UITests
+{
+	using NUnit.Framework;
+
+	[SetUpFixture]
+	public class CoreUITestsSetup
+	{
+		[SetUp]
+		public void RunBeforeAnyTests()
+		{
+			LaunchApp();
+		}
+
+		public static void LaunchApp()
+		{
+			BaseTestFixture.App = null;
+			BaseTestFixture.App = AppSetup.Setup();
+
+			BaseTestFixture.App.SetOrientationPortrait();
+			BaseTestFixture.ScreenBounds = BaseTestFixture.App.RootViewRect();
+		}
+	}
+}
+#endif

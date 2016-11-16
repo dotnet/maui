@@ -10,7 +10,6 @@ namespace Xamarin.Forms.Core.UITests
 	{
 		public UnevenListTests ()
 		{
-			ShouldResetPerFixture = false;
 		}
 
 		protected override void NavigateToGallery ()

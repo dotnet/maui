@@ -11,7 +11,7 @@ using Xamarin.UITest.iOS;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.MasterDetailPage)]
@@ -128,6 +128,12 @@ namespace Xamarin.Forms.Controls
 				RunningApp.Tap (q => q.Marked ("Sidemenu Opener"));
 				RunningApp.WaitForElement (q => q.Marked ("SideMenu"));
 			}
+		}
+
+		[TearDown]
+		public void TearDown() 
+		{
+			RunningApp.SetOrientationPortrait ();
 		}
 #endif
 	}

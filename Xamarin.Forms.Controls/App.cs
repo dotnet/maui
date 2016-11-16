@@ -22,16 +22,14 @@ namespace Xamarin.Forms.Controls
 		static Dictionary<string, string> s_config;
 		readonly ITestCloudService _testCloudService;
 
+		public const string DefaultMainPageId = "ControlGalleryMainPage";
+
 		public App()
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
 			InitInsights();
 
-			MainPage = new MasterDetailPage
-			{
-				Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
-				Detail = CoreGallery.GetMainPage()
-			};
+			SetMainPage(CreateDefaultMainPage());
 
 			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
 			//MainPage = new Bugzilla44596SplashPage(() =>
@@ -44,6 +42,16 @@ namespace Xamarin.Forms.Controls
 			//		Detail = newTabbedPage
 			//	};
 			//});
+		}
+
+		public Page CreateDefaultMainPage()
+		{
+			return new MasterDetailPage
+			{
+				AutomationId = DefaultMainPageId,
+				Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
+				Detail = CoreGallery.GetMainPage()
+			};
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
@@ -153,6 +161,44 @@ namespace Xamarin.Forms.Controls
 			using (var reader = new StreamReader(stream))
 				text = await reader.ReadToEndAsync();
 			return text;
+		}
+
+		public bool NavigateToTestPage(string test)
+		{
+			try
+			{
+				// Create an instance of the main page
+				var root = CreateDefaultMainPage();
+
+				// Set up a delegate to handle the navigation to the test page
+				EventHandler toTestPage = null;
+
+				toTestPage = delegate(object sender, EventArgs e) 
+				{
+					Current.MainPage.Navigation.PushModalAsync(TestCases.GetTestCases());
+					TestCases.TestCaseScreen.PageToAction[test]();
+					Current.MainPage.Appearing -= toTestPage;
+				};
+
+				// And set that delegate to run once the main page appears
+				root.Appearing += toTestPage;
+
+				SetMainPage(root);
+
+				return true;
+			}
+			catch (Exception ex) 
+			{
+				Log.Warning("UITests", $"Error attempting to navigate directly to {test}: {ex}");
+
+			}
+
+			return false;
+		}
+		
+		public void Reset()
+		{
+			SetMainPage(CreateDefaultMainPage());
 		}
 	}
 }

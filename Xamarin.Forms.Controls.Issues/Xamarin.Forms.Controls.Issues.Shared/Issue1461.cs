@@ -12,7 +12,7 @@ using Xamarin.UITest;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 
 #if UITEST

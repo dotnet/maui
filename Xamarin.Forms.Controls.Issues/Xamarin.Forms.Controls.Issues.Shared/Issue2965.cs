@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2965, "CarouselPage Disappearing event does not fire on Android")]

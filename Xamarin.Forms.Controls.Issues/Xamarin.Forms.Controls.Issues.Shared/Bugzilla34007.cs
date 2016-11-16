@@ -9,7 +9,7 @@ using Xamarin.UITest;
 
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34007, "Z order drawing of children views are different on Android, iOS, Win", PlatformAffected.Android | PlatformAffected.iOS)]

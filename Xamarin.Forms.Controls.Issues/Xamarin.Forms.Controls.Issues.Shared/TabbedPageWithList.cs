@@ -7,7 +7,7 @@ using Xamarin.UITest;
 #endif
 
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	public class TabbedPageWithListName {

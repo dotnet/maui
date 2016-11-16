@@ -16,7 +16,6 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls
 {
-
 	public class PropertyChangedBase : INotifyPropertyChanged
 	{
 		Dictionary<string, object> _properties = new Dictionary<string, object>();
@@ -312,11 +311,16 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.None, 0, "Adding Multiple Items to a ListView", PlatformAffected.All)]
+	
+}
+
+namespace Xamarin.Forms.Controls.Issues
+{
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.None, 0, "Adding Multiple Items to a ListView", PlatformAffected.All)]
 	public class AddingMultipleItemsListView : TestContentPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
 			Title = "Hours";
 			var exampleViewModel = new ExampleViewModel();
@@ -351,18 +355,19 @@ namespace Xamarin.Forms.Controls
 				Children = {
 					listView,
 					addOneJobButton,
-					addTwoJobsButton 
+					addTwoJobsButton
 				}
 			};
 			Content = layout;
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class CustomViewCell : ViewCell
 		{
-			public CustomViewCell ()
+			public CustomViewCell()
 			{
-				var jobId = new Label {
+				var jobId = new Label
+				{
 #pragma warning disable 618
 					Font = Font.SystemFontOfSize(20),
 #pragma warning restore 618
@@ -370,17 +375,19 @@ namespace Xamarin.Forms.Controls
 					VerticalOptions = LayoutOptions.Center,
 
 					HorizontalOptions = LayoutOptions.StartAndExpand
-				};                    
+				};
 				jobId.SetBinding(Label.TextProperty, "JobId");
 
-				var jobName = new Label {
+				var jobName = new Label
+				{
 					VerticalOptions = LayoutOptions.Center,
 					WidthRequest = 175,
 					HorizontalOptions = LayoutOptions.CenterAndExpand,
 				};
 				jobName.SetBinding(Label.TextProperty, "JobName");
 
-				var hours = new Label {
+				var hours = new Label
+				{
 					WidthRequest = 45,
 					VerticalOptions = LayoutOptions.Center,
 #pragma warning disable 618
@@ -391,8 +398,9 @@ namespace Xamarin.Forms.Controls
 				};
 				hours.SetBinding(Label.TextProperty, new Binding("Hours", BindingMode.OneWay, new DoubleStringConverter()));
 
-				var hlayout = new StackLayout {
-					Children  = {
+				var hlayout = new StackLayout
+				{
+					Children = {
 						jobId,
 						jobName,
 						hours
@@ -403,44 +411,44 @@ namespace Xamarin.Forms.Controls
 				View = hlayout;
 			}
 		}
-	
+
 #if UITEST
 		[Test]
-		public void AddingMultipleListViewTests1AllElementsPresent ()
+		public void AddingMultipleListViewTests1AllElementsPresent()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("Big Job"));
-			RunningApp.WaitForElement (q => q.Marked ("Smaller Job"));
-			RunningApp.WaitForElement (q => q.Marked ("Add On Job"));
-			RunningApp.WaitForElement (q => q.Marked ("Add One"));
-			RunningApp.WaitForElement (q => q.Marked ("Add Two"));
-			RunningApp.WaitForElement (q => q.Marked ("3672"));
-			RunningApp.WaitForElement (q => q.Marked ("6289"));
-			RunningApp.WaitForElement (q => q.Marked ("3672-41"));
-			RunningApp.WaitForElement (q => q.Marked ("2"));
-			RunningApp.WaitForElement (q => q.Marked ("2"));
-			RunningApp.WaitForElement (q => q.Marked ("23"));
+			RunningApp.WaitForElement(q => q.Marked("Big Job"));
+			RunningApp.WaitForElement(q => q.Marked("Smaller Job"));
+			RunningApp.WaitForElement(q => q.Marked("Add On Job"));
+			RunningApp.WaitForElement(q => q.Marked("Add One"));
+			RunningApp.WaitForElement(q => q.Marked("Add Two"));
+			RunningApp.WaitForElement(q => q.Marked("3672"));
+			RunningApp.WaitForElement(q => q.Marked("6289"));
+			RunningApp.WaitForElement(q => q.Marked("3672-41"));
+			RunningApp.WaitForElement(q => q.Marked("2"));
+			RunningApp.WaitForElement(q => q.Marked("2"));
+			RunningApp.WaitForElement(q => q.Marked("23"));
 
-			RunningApp.Screenshot ("All elements are present");
+			RunningApp.Screenshot("All elements are present");
 		}
 
 		[Test]
-		public void AddingMultipleListViewTests2AddOneElementToList ()
+		public void AddingMultipleListViewTests2AddOneElementToList()
 		{
-			RunningApp.Tap (q => q.Marked ("Add One"));
+			RunningApp.Tap(q => q.Marked("Add One"));
 
-			RunningApp.WaitForElement (q => q.Marked ("1234"), timeout: TimeSpan.FromSeconds (2));
-			RunningApp.Screenshot ("One more element exists");
+			RunningApp.WaitForElement(q => q.Marked("1234"), timeout: TimeSpan.FromSeconds(2));
+			RunningApp.Screenshot("One more element exists");
 		}
 
 		[Test]
-		public void AddingMultipleListViewTests3AddTwoElementToList ()
+		public void AddingMultipleListViewTests3AddTwoElementToList()
 		{
-			RunningApp.Screenshot ("Click 'Add Two'");
-			RunningApp.Tap (q => q.Marked ("Add Two"));
+			RunningApp.Screenshot("Click 'Add Two'");
+			RunningApp.Tap(q => q.Marked("Add Two"));
 
-			RunningApp.WaitForElement (q => q.Marked ("9999"), timeout: TimeSpan.FromSeconds (2));
-			RunningApp.WaitForElement (q => q.Marked ("8888"), timeout: TimeSpan.FromSeconds (2));
-			RunningApp.Screenshot ("Two more element exist");
+			RunningApp.WaitForElement(q => q.Marked("9999"), timeout: TimeSpan.FromSeconds(2));
+			RunningApp.WaitForElement(q => q.Marked("8888"), timeout: TimeSpan.FromSeconds(2));
+			RunningApp.Screenshot("Two more element exist");
 		}
 #endif
 	}

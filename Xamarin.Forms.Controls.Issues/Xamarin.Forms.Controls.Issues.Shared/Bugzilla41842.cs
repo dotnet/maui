@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 41842, "Set MasterDetailPage.Detail = New Page() twice will crash the application when set MasterBehavior = MasterBehavior.Split", PlatformAffected.WinRT)]

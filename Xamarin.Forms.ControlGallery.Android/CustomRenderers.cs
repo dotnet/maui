@@ -19,6 +19,7 @@ using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using Android.OS;
 using System.Reflection;
+using Xamarin.Forms.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]

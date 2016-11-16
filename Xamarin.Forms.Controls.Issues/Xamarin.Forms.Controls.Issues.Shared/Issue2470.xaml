@@ -2,7 +2,7 @@
 <local:TestTabbedPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Xamarin.Forms.Controls"
-             x:Class="Xamarin.Forms.Controls.Issue2470">
+             x:Class="Xamarin.Forms.Controls.Issues.Issue2470">
   <local:TestTabbedPage.Children>
     <ContentPage Title="Generate">
       <StackLayout>

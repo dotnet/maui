@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url",PlatformAffected.iOS | PlatformAffected.Android)]

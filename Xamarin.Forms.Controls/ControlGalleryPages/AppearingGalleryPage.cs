@@ -69,13 +69,13 @@ namespace Xamarin.Forms.Controls
 			{
 				page.Appearing += (object sender, EventArgs e) => {
 					_isAppearingFired++;
-					App.AppearingMessages.Add ($"Appearing {page.Title}");
+					App.AppearingMessages.Insert (0, $"Appearing {page.Title}");
 					Debug.WriteLine ($"Appearing {page.Title}");
 				};
 
 				page.Disappearing += (object sender, EventArgs e) => {
 					_isDisappearingFired++;
-					App.AppearingMessages.Add ($"Disappearing {page.Title}");
+					App.AppearingMessages.Insert (0, $"Disappearing {page.Title}");
 					Debug.WriteLine( $"Disappearing {page.Title}");
 				};
 			}

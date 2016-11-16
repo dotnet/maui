@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 198, "TabbedPage shouldn't proxy content of NavigationPage", PlatformAffected.iOS)]
@@ -64,6 +64,10 @@ namespace Xamarin.Forms.Controls
 			RunningApp.Screenshot ("Clicked Leave");
 
 			RunningApp.WaitForElement (q => q.Marked ("Bug Repro's"));
+
+			RunningApp.ClearText(q => q.Raw("* marked:'SearchBarGo'"));
+			RunningApp.EnterText(q => q.Raw("* marked:'SearchBarGo'"), "G198");
+
 			RunningApp.Tap (q => q.Marked ("SearchButton"));
 			RunningApp.Screenshot ("Navigate into gallery again");
 
