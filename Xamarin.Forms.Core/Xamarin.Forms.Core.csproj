@@ -94,6 +94,7 @@
     <Compile Include="PlatformConfiguration\iOSSpecific\BlurEffectStyle.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Entry.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\NavigationPage.cs" />
+    <Compile Include="PlatformConfiguration\iOSSpecific\StatusBarTextColorMode.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Page.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\StatusBarHiddenMode.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\UIStatusBarAnimation.cs" />

@@ -418,7 +418,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTint();
 			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
-			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
+			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName || e.PropertyName == PlatformConfiguration.iOSSpecific.NavigationPage.StatusBarTextColorModeProperty.PropertyName)
 				UpdateBarTextColor();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
@@ -572,23 +572,25 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationBar.TitleTextAttributes = titleAttributes;
 			}
 
+			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();
+
 			// set Tint color (i. e. Back Button arrow and Text)
 			if (Forms.IsiOS7OrNewer)
 			{
-				NavigationBar.TintColor = barTextColor == Color.Default
+				NavigationBar.TintColor = barTextColor == Color.Default || statusBarColorMode == StatusBarTextColorMode.DoNotAdjust
 					? UINavigationBar.Appearance.TintColor
 					: barTextColor.ToUIColor();
 			}
 
-			if (barTextColor.Luminosity > 0.5)
-			{
-				// Use light text color for status bar
-				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
-			}
-			else
+			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
 				// Use dark text color for status bar
 				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.Default;
+			}
+			else
+			{
+				// Use light text color for status bar
+				UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
 			}
 		}
 
