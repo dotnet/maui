@@ -71,7 +71,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					transaction.DisallowAddToBackStack();
 					transaction.Remove(_currentFragment);
 					transaction.SetTransition((int)FragmentTransit.None);
-					transaction.Commit();
+
+					// This is a removal of a fragment that's not going on the back stack; there's no reason to care
+					// whether its state gets successfully saved, since we'll never restore it. Ergo, CommitAllowingStateLoss
+					transaction.CommitAllowingStateLoss();
 
 					_currentFragment = null;
 				}
@@ -102,7 +105,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				transaction.Add(Id, fragment);
 				transaction.SetTransition((int)FragmentTransit.None);
-				transaction.Commit();
+
+				// We don't currently support fragment restoration 
+				// So we don't need to worry about loss of this fragment's state
+				transaction.CommitAllowingStateLoss();
 
 				_currentFragment = fragment;
 
