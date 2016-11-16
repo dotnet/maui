@@ -82,6 +82,7 @@
     <Compile Include="XamlCompilationAttribute.cs" />
     <Compile Include="TypeArgumentsParser.cs" />
     <Compile Include="PruneIgnoredNodesVisitor.cs" />
+    <Compile Include="XamlFilePathAttribute.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Xaml
 {

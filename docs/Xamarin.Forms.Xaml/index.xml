@@ -69,6 +69,7 @@
       <Type Name="TypeExtension" Kind="Class" />
       <Type Name="XamlCompilationAttribute" Kind="Class" />
       <Type Name="XamlCompilationOptions" Kind="Enumeration" />
+      <Type Name="XamlFilePathAttribute" Kind="Class" />
       <Type Name="XamlParseException" Kind="Class" />
       <Type Name="XmlLineInfo" Kind="Class" />
     </Namespace>
