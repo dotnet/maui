@@ -432,23 +432,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
 		{
-			PageUIStatusBarAnimation animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
-			Current.OnThisPlatform().SetPreferredStatusBarUpdateAnimation(animation);
-		}
-
-		UIKit.UIStatusBarAnimation GetPreferredStatusBarUpdateAnimation()
-		{
-			var animation = Current.OnThisPlatform().PreferredStatusBarUpdateAnimation();
-			switch (animation)
-			{
-				case (PageUIStatusBarAnimation.Fade):
-					return UIKit.UIStatusBarAnimation.Fade;
-				case (PageUIStatusBarAnimation.Slide):
-					return UIKit.UIStatusBarAnimation.Slide;
-				case (PageUIStatusBarAnimation.None):
-				default:
-					return UIKit.UIStatusBarAnimation.None;
-			}
+			// Not using the extension method syntax here because for some reason it confuses the mono compiler
+			// and throws a CS0121 error
+			PageUIStatusBarAnimation animation = PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimation(((Page)Element).OnThisPlatform());
+			PlatformConfiguration.iOSSpecific.Page.SetPreferredStatusBarUpdateAnimation(Current.OnThisPlatform(), animation);
 		}
 
 		void UpdateTranslucent()
