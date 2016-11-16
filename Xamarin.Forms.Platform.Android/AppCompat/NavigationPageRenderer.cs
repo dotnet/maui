@@ -541,6 +541,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void ResetToolbar()
 		{
+			AToolbar oldToolbar = _toolbar;
+
 			_toolbar.RemoveFromParent();
 			_toolbar.NavigationClick -= BarOnNavigationClick;
 			_toolbar = null;
@@ -549,6 +551,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			RegisterToolbar();
 			UpdateToolbar();
 			UpdateMenu();
+
+			// Preserve old values that can't be replicated by calling methods above
+			if (_toolbar != null)
+				_toolbar.Subtitle = oldToolbar.Subtitle;
 		}
 
 		void SetupToolbar()
