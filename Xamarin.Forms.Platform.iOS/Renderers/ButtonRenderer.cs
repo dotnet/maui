@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (button.BorderColor != Color.Default)
 				uiButton.Layer.BorderColor = button.BorderColor.ToCGColor();
 
-			uiButton.Layer.BorderWidth = (float)button.BorderWidth;
+			uiButton.Layer.BorderWidth = Math.Max(0f, (float)button.BorderWidth);
 			uiButton.Layer.CornerRadius = button.BorderRadius;
 
 			UpdateBackgroundVisibility();
