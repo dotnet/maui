@@ -35,7 +35,7 @@
 		<string>Default-568h@2x.png</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
+	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We are using your location</string>
 	<key>NSLocationAlwaysUsageDescription</key>

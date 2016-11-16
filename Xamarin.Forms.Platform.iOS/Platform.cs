@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Platform.iOS
 			get { return _renderer; }
 		}
 
-		Page Page { get; set; }
+		internal Page Page { get; set; }
 
 		void IDisposable.Dispose()
 		{

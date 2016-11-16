@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using UIKit;
+using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -75,6 +77,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_appeared = true;
 			PageController.SendAppearing();
+			UpdateStatusBarPrefersHidden();
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -176,6 +179,36 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateBackground();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitle();
+			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
+				UpdateStatusBarPrefersHidden();
+		}
+
+		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
+		{
+			get
+			{
+				var animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
+				switch (animation)
+				{
+					case (PageUIStatusBarAnimation.Fade):
+						return UIKit.UIStatusBarAnimation.Fade;
+					case (PageUIStatusBarAnimation.Slide):
+						return UIKit.UIStatusBarAnimation.Slide;
+					case (PageUIStatusBarAnimation.None):
+					default:
+						return UIKit.UIStatusBarAnimation.None;
+				}
+			}
+		}
+
+		void UpdateStatusBarPrefersHidden()
+		{
+			var animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
+			if (animation == PageUIStatusBarAnimation.Fade || animation == PageUIStatusBarAnimation.Slide)
+				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
+			else
+				SetNeedsStatusBarAppearanceUpdate();
+			View.SetNeedsLayout();
 		}
 
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
@@ -186,6 +219,26 @@ namespace Xamarin.Forms.Platform.iOS
 					return false;
 			}
 			return true;
+		}
+
+		public override bool PrefersStatusBarHidden()
+		{
+			var mode = ((Page)Element).OnThisPlatform().PrefersStatusBarHidden();
+			switch (mode)
+			{
+				case (StatusBarHiddenMode.True):
+					return true;
+				case (StatusBarHiddenMode.False):
+					return false;
+				case (StatusBarHiddenMode.Default):
+				default:
+					{
+						if (Device.info.CurrentOrientation.IsLandscape())
+							return true;
+						else
+							return false;
+					}
+			}
 		}
 
 		void UpdateBackground()

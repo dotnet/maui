@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -318,8 +319,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_detailController.View.AddSubview(detailRenderer.NativeView);
 			_detailController.AddChildViewController(detailRenderer.ViewController);
+
+			SetNeedsStatusBarAppearanceUpdate();
 		}
 
+		public override UIViewController ChildViewControllerForStatusBarHidden()
+		{
+			if (((MasterDetailPage)Element).Detail != null)
+				return (UIViewController)Platform.GetRenderer(((MasterDetailPage)Element).Detail);
+			else
+				return base.ChildViewControllerForStatusBarHidden();
+		}
+		
 		void UpdatePanGesture()
 		{
 			var model = (MasterDetailPage)Element;
