@@ -87,13 +87,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.LayoutSubviews();
 
-			if (_scroller == null || (_scroller != null && _scroller.Frame == Bounds))
+			if (_scroller == null || (_scroller != null && _scroller.Frame.Width == ContentView.Bounds.Width))
 				return;
 
 			Update(_tableView, _cell, ContentCell);
-
-			_scroller.Frame = Bounds;
-			ContentCell.Frame = Bounds;
 
 			if (ContentCell is ViewCellRenderer.ViewTableCell && ContentCell.Subviews.Length > 0 && Math.Abs(ContentCell.Subviews[0].Frame.Height - Bounds.Height) > 1)
 			{
@@ -130,7 +127,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var height = Frame.Height;
-			var width = tableView.Frame.Width;
+			var width = ContentView.Frame.Width;
 
 			nativeCell.Frame = new RectangleF(0, 0, width, height);
 			nativeCell.SetNeedsLayout();
