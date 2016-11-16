@@ -98,6 +98,10 @@ namespace Xamarin.Forms
 				return;
 
 			object oldContext = bindable._inheritedContext;
+
+			if (ReferenceEquals(oldContext, value))
+				return;
+
 			if (bpContext != null && oldContext == null)
 				oldContext = bpContext.Value;
 
@@ -108,9 +112,6 @@ namespace Xamarin.Forms
 			}
 			else
 			{
-				if (ReferenceEquals(oldContext, value))
-					return;
-
 				bindable._inheritedContext = value;
 			}
 
