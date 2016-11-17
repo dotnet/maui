@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Indicates that the image will appear at the reght edge of the button.</summary>
+        <summary>Indicates that the image will appear at the right edge of the button.</summary>
       </Docs>
     </Member>
     <Member MemberName="Top">
