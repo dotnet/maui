@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates image locations within a button.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the image will appear at the bottom edge of the button.</summary>
       </Docs>
     </Member>
     <Member MemberName="Left">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the image will appear at the left edge of the button.</summary>
       </Docs>
     </Member>
     <Member MemberName="Right">
@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the image will appear at the reght edge of the button.</summary>
       </Docs>
     </Member>
     <Member MemberName="Top">
@@ -66,7 +66,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the image will appear at the top edge of the button.</summary>
       </Docs>
     </Member>
   </Members>

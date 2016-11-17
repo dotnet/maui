@@ -207,7 +207,7 @@ Content = new TableView
       </ReturnValue>
       <MemberValue>40</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>The default height of cells.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -538,7 +538,7 @@ Content = new TableView
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -554,7 +554,7 @@ Content = new TableView
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

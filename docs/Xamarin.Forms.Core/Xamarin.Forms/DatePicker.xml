@@ -355,7 +355,7 @@ DatePicker datePicker = new DatePicker
         <ReturnType>Xamarin.Forms.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets or sets the text color for the date picker.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -371,7 +371,7 @@ DatePicker datePicker = new DatePicker
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.DatePicker.TextColor" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

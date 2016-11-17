@@ -209,9 +209,9 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="serviceProvider">A service provider helper that can provide services for the markup extension.</param>
+        <summary>When implemented in a derived class, returns an object that is provided as the value of the target property for this markup extension. </summary>
+        <returns>The object value to set on the property where the extension is applied. </returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -252,7 +252,7 @@
       </Parameters>
       <Docs>
         <param name="serviceProvider">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use only.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
