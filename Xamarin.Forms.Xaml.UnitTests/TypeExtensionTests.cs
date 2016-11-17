@@ -19,9 +19,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			base.Setup ();
 			var nsManager = new XmlNamespaceManager (new NameTable ());
-			nsManager.AddNamespace ("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
-			nsManager.AddNamespace ("sys", "clr-namespace:System;assembly=mscorlib");
-			nsManager.AddNamespace ("x", "http://schemas.microsoft.com/winfx/2006/xaml");
+			nsManager.AddNamespace("", "http://xamarin.com/schemas/2014/forms");
+			nsManager.AddNamespace("local", "clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests");
+			nsManager.AddNamespace("sys", "clr-namespace:System;assembly=mscorlib");
+			nsManager.AddNamespace("x", "http://schemas.microsoft.com/winfx/2006/xaml");
 
 			typeResolver = new Internals.XamlTypeResolver (nsManager, XamlParser.GetElementType, Assembly.GetCallingAssembly ());
 

@@ -34,7 +34,7 @@ using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal static class XamlParser
+	static class XamlParser
 	{
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{
@@ -83,16 +83,16 @@ namespace Xamarin.Forms.Xaml
 							var prop = ReadNode(reader);
 							if (prop != null)
 								node.Properties.Add(XmlName.xArguments, prop);
-							// 3. DataTemplate (should be handled by 4.)
 						}
+						// 3. DataTemplate (should be handled by 4.)
 						else if (node.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
 						         (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							var prop = ReadNode(reader, true);
 							if (prop != null)
 								node.Properties.Add(XmlName._CreateContent, prop);
-							// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.
 						}
+						// 4. Implicit content, implicit collection, or collection syntax. Add to CollectionItems, resolve case later.
 						else
 						{
 							var item = ReadNode(reader, true);
@@ -191,7 +191,10 @@ namespace Xamarin.Forms.Xaml
 					continue;
 				}
 
-				var propertyName = new XmlName(reader.NamespaceURI, reader.LocalName);
+				var namespaceUri = reader.NamespaceURI;
+				if (reader.LocalName.Contains(".") && namespaceUri == "")
+					namespaceUri = ((IXmlNamespaceResolver)reader).LookupNamespace("");
+				var propertyName = new XmlName(namespaceUri, reader.LocalName);
 
 				object value = reader.Value;
 
@@ -283,39 +286,56 @@ namespace Xamarin.Forms.Xaml
 				((IXmlLineInfo)reader).LinePosition);
 		}
 
+		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+
+		static void GatherXmlnsDefinitionAttributes()
+		{
+			//this could be extended to look for [XmlnsDefinition] in all assemblies
+			var assemblies = new [] {
+				typeof(View).GetTypeInfo().Assembly,
+				typeof(XamlLoader).GetTypeInfo().Assembly,
+			};
+
+			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+
+			foreach (var assembly in assemblies)
+				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute))) {
+					s_xmlnsDefinitions.Add(attribute);
+					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+				}
+		}
+
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
+			if (s_xmlnsDefinitions == null)
+				GatherXmlnsDefinitionAttributes();
+
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-			var lookupAssemblies = new List<Tuple<string, string>>(); //namespace, assemblyqualifiednamed
+			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
 			var lookupNames = new List<string>();
 
-			if (!XmlnsHelper.IsCustom(namespaceURI))
-			{
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms", typeof (View).GetTypeInfo().Assembly.FullName));
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms.Xaml", typeof (XamlLoader).GetTypeInfo().Assembly.FullName));
+			foreach (var xmlnsDef in s_xmlnsDefinitions) {
+				if (xmlnsDef.XmlNamespace != namespaceURI)
+					continue;
+				lookupAssemblies.Add(xmlnsDef);
 			}
-			else if (namespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml" ||
-			         namespaceURI == "http://schemas.microsoft.com/winfx/2006/xaml")
-			{
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms.Xaml", typeof (XamlLoader).GetTypeInfo().Assembly.FullName));
-				lookupAssemblies.Add(new Tuple<string, string>("System", typeof (object).GetTypeInfo().Assembly.FullName)); //mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
-				lookupAssemblies.Add(new Tuple<string, string>("System", typeof (Uri).GetTypeInfo().Assembly.FullName)); //System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
-			}
-			else
-			{
+
+			if (lookupAssemblies.Count == 0) {
 				string ns, asmstring, _;
 				XmlnsHelper.ParseXmlns(namespaceURI, out _, out ns, out asmstring, out _);
-				lookupAssemblies.Add(new Tuple<string, string>(ns, asmstring ?? currentAssembly.FullName));
+				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
+					AssemblyName = asmstring ?? currentAssembly.FullName
+				});
 			}
 
 			lookupNames.Add(elementName);
-			if (namespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml")
-				lookupNames.Add(elementName + "Extension");
+			lookupNames.Add(elementName + "Extension");
+
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
 				var name = lookupNames[i];
@@ -329,7 +349,7 @@ namespace Xamarin.Forms.Xaml
 			Type type = null;
 			foreach (var asm in lookupAssemblies) {
 				foreach (var name in lookupNames)
-					if ((type = Type.GetType($"{asm.Item1}.{name}, {asm.Item2}")) != null)
+					if ((type = Type.GetType($"{asm.ClrNamespace}.{name}, {asm.AssemblyName}")) != null)
 						break;
 				if (type != null)
 					break;

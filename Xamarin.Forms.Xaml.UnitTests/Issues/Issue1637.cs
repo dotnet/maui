@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void ImplicitCollectionWithSingleElement ()
 		{
 			var xaml = @"
-				<Grid>
+				<Grid xmlns=""http://xamarin.com/schemas/2014/forms"">
 					<Grid.RowDefinitions>
 						<RowDefinition Height=""*"" />
 			        </Grid.RowDefinitions>

@@ -381,9 +381,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[Test]
 		public void MissingStaticResourceShouldThrow ()
 		{
-			var xaml = @"<Label Text=""{StaticResource foo}""/>";
+			var xaml = @"<Label xmlns=""http://xamarin.com/schemas/2014/forms"" Text=""{StaticResource foo}""/>";
 			var label = new Label ();
-			Assert.Throws (new XamlParseExceptionConstraint (1, 8), () => label.LoadFromXaml (xaml));
+			Assert.Throws (new XamlParseExceptionConstraint (1, 54), () => label.LoadFromXaml (xaml));
 		}
 
 		public class CustView : Button
@@ -605,7 +605,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void TestCollectionContentProperties ()
 		{
 			var xaml = @"
-				<StackLayout>
+				<StackLayout xmlns=""http://xamarin.com/schemas/2014/forms"">
 					<Label Text=""Foo""/>
 					<Label Text=""Bar""/>
 				</StackLayout>";
@@ -619,7 +619,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void TestCollectionContentPropertiesWithSingleElement ()
 		{
 			var xaml = @"
-				<StackLayout>
+				<StackLayout xmlns=""http://xamarin.com/schemas/2014/forms"">
 					<Label Text=""Foo""/>
 				</StackLayout>";
 			var layout = new StackLayout ().LoadFromXaml (xaml);
@@ -796,7 +796,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void StyleWithoutTargetTypeThrows ()
 		{
 			var xaml = @"
-				<Label>
+				<Label xmlns=""http://xamarin.com/schemas/2014/forms"">
 					<Label.Style>
 						<Style>
 							<Setter Property=""Text"" Value=""Foo"" />

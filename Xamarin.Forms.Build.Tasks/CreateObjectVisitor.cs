@@ -194,8 +194,12 @@ namespace Xamarin.Forms.Build.Tasks
 						ntype = node.CollectionItems [0];
 
 					var type = ((ValueNode)ntype).Value as string;
-					var namespaceuri = type.Contains(":") ? node.NamespaceResolver.LookupNamespace(type.Split(':') [0].Trim()) : "";
-					type = type.Contains(":") ? type.Split(':') [1].Trim() : type;
+					var prefix = "";
+					if (type.Contains(":")) {
+						prefix = type.Split(':') [0].Trim();
+						type = type.Split(':') [1].Trim();
+					}
+					var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix);
 					Context.TypeExtensions [node] = new XmlType(namespaceuri, type, null).GetTypeReference(Module, node);
 
 					if (!node.SkipProperties.Contains(new XmlName("", "TypeName")))

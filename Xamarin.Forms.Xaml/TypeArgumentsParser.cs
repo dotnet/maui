@@ -47,8 +47,22 @@ namespace Xamarin.Forms.Xaml
 					type.Substring(type.IndexOf('(') + 1, type.LastIndexOf(')') - type.IndexOf('(') - 1), resolver, lineinfo);
 				type = type.Substring(0, type.IndexOf('('));
 			}
-			var namespaceuri = type.Contains(":") ? resolver.LookupNamespace(type.Split(':')[0].Trim()) : "";
-			return new XmlType(namespaceuri, type, typeArguments);
+
+			var split = type.Split(':');
+			if (split.Length > 2)
+				return null;
+
+			string prefix, name;
+			if (split.Length == 2) {
+				prefix = split [0];
+				name = split [1];
+			} else {
+				prefix = "";
+				name = split [0];
+			}
+
+			var namespaceuri = resolver.LookupNamespace(prefix);
+			return new XmlType(namespaceuri, name, typeArguments);
 		}
 	}
 }

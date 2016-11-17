@@ -2,19 +2,8 @@ using System;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal static class XmlnsHelper
+	static class XmlnsHelper
 	{
-		public static bool IsCustom(string ns)
-		{
-			switch (ns)
-			{
-				case "":
-				case "http://xamarin.com/schemas/2014/forms":
-					return false;
-			}
-			return true;
-		}
-
 		public static string ParseNamespaceFromXmlns(string xmlns)
 		{
 			string typeName;

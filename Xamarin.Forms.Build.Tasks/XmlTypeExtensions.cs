@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -15,29 +14,45 @@ namespace Xamarin.Forms.Build.Tasks
  			return new XmlType (namespaceURI, typename, null).GetTypeReference (module, xmlInfo);
  		}
 
+		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+
+		static void GatherXmlnsDefinitionAttributes()
+		{
+			//this could be extended to look for [XmlnsDefinition] in all assemblies
+			var assemblies = new [] {
+				typeof(View).Assembly,
+				typeof(XamlLoader).Assembly,
+			};
+
+			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+
+			foreach (var assembly in assemblies)
+				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
+					s_xmlnsDefinitions.Add(attribute);
+					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+				}
+		}
+
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
+			if (s_xmlnsDefinitions == null)
+				GatherXmlnsDefinitionAttributes();
+
 			var namespaceURI = xmlType.NamespaceUri;
 			var elementName = xmlType.Name;
 			var typeArguments = xmlType.TypeArguments;
 
-			List<Tuple<string, string>> lookupAssemblies = new List<Tuple<string, string>>(); //assembly, namespace
-			List<string> lookupNames = new List<string>();
+			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
 
-			if (!XmlnsHelper.IsCustom(namespaceURI))
-			{
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms.Core", "Xamarin.Forms"));
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml"));
+			var lookupNames = new List<string>();
+
+			foreach (var xmlnsDef in s_xmlnsDefinitions) {
+				if (xmlnsDef.XmlNamespace != namespaceURI)
+					continue;
+				lookupAssemblies.Add(xmlnsDef);
 			}
-			else if (namespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml" ||
-			         namespaceURI == "http://schemas.microsoft.com/winfx/2006/xaml")
-			{
-				lookupAssemblies.Add(new Tuple<string, string>("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml"));
-				lookupAssemblies.Add(new Tuple<string, string>("mscorlib", "System"));
-				lookupAssemblies.Add(new Tuple<string, string>("System", "System"));
-			}
-			else
-			{
+
+			if (lookupAssemblies.Count == 0) {
 				string ns;
 				string typename;
 				string asmstring;
@@ -45,12 +60,14 @@ namespace Xamarin.Forms.Build.Tasks
 
 				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
 				asmstring = asmstring ?? module.Assembly.Name.Name;
-				lookupAssemblies.Add(new Tuple<string, string>(asmstring, ns));
+				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
+					AssemblyName = asmstring
+				});
 			}
 
 			lookupNames.Add(elementName);
-			if (namespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml")
-				lookupNames.Add(elementName + "Extension");
+			lookupNames.Add(elementName + "Extension");
+
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
 				var name = lookupNames[i];
@@ -71,15 +88,16 @@ namespace Xamarin.Forms.Build.Tasks
 					if (type != null)
 						break;
 
-					var assemblydefinition = module.Assembly.Name.Name == asm.Item1
-						? module.Assembly
-						: module.AssemblyResolver.Resolve(asm.Item1);
-					type = assemblydefinition.MainModule.GetType(asm.Item2, name);
+					var assemblydefinition = module.Assembly.Name.Name == asm.AssemblyName ?
+												module.Assembly :
+												module.AssemblyResolver.Resolve(asm.AssemblyName);
+
+					type = assemblydefinition.MainModule.GetType(asm.ClrNamespace, name);
 					if (type == null)
 					{
 						var exportedtype =
 							assemblydefinition.MainModule.ExportedTypes.FirstOrDefault(
-								(ExportedType arg) => arg.IsForwarder && arg.Namespace == asm.Item2 && arg.Name == name);
+								(ExportedType arg) => arg.IsForwarder && arg.Namespace == asm.ClrNamespace && arg.Name == name);
 						if (exportedtype != null)
 							type = exportedtype.Resolve();
 					}

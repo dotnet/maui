@@ -235,14 +235,14 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				foreach (var typeArg in typeArguments)
 				{
-					var ns_uri = "";
+					var prefix = "";
 					var _type = typeArg;
 					if (typeArg.Contains(":"))
 					{
-						var prefix = typeArg.Split(':')[0].Trim();
-						ns_uri = getNamespaceOfPrefix(prefix);
+						prefix = typeArg.Split(':')[0].Trim();
 						_type = typeArg.Split(':')[1].Trim();
 					}
+					var ns_uri = getNamespaceOfPrefix(prefix);
 					returnType.TypeArguments.Add(GetType(ns_uri, _type, null, getNamespaceOfPrefix));
 				}
 			}
@@ -252,7 +252,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static string GetNamespace(string namespaceuri)
 		{
-			if (!XmlnsHelper.IsCustom(namespaceuri))
+			if (namespaceuri == "http://xamarin.com/schemas/2014/forms")
 				return "Xamarin.Forms";
 			if (namespaceuri == "http://schemas.microsoft.com/winfx/2009/xaml")
 				return "System";
