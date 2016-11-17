@@ -42,7 +42,7 @@
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>Conerts <paramref name="value" /> into a <see cref="T:Xamarin.Forms.Button+ButtonContentLayout" /> object.</summary>
+        <summary>Converts <paramref name="value" /> into a <see cref="T:Xamarin.Forms.Button+ButtonContentLayout" /> object.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
