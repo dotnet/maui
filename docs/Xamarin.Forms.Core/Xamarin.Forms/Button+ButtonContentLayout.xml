@@ -18,7 +18,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Controls the relative positioning of, and spacing between, text and an image on a <see cref="T:Xamarin.Forms.Button" />.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -34,9 +34,9 @@
         <Parameter Name="spacing" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="position">To be added.</param>
-        <param name="spacing">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="position">An enumeration value that controls where the image is displayed in the button.</param>
+        <param name="spacing">The spacing to use between the image and text.</param>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.Button+ButtonContentLayout" /> with the specified <paramref name="position" /> and <paramref name="spacing" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -51,7 +51,7 @@
         <ReturnType>Xamarin.Forms.Button+ButtonContentLayout+ImagePosition</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets an enumeration value that tells where the image is displayed in the button.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -67,7 +67,7 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets the spacing to use between the image and text.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -84,7 +84,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Returns a string represention of this <see cref="T:Xamarin.Forms.Button+ButtonContentLayout" /> object.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
