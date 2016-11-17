@@ -2,13 +2,13 @@
 using Xamarin.Forms.Internals;
 using System.Linq;
 using System.Collections.ObjectModel;
-
+using Xamarin.Forms.Core.UITests;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 
     [Preserve(AllMembers = true)]
@@ -70,6 +70,7 @@ namespace Xamarin.Forms.Controls
 
 #if (UITEST && __IOS__)
         [Test]
+		[Category(UITestCategories.ManualReview)]
         public void Bugzilla36802Test()
         {
             RunningApp.Screenshot("AccessoryView partially hidden test");
