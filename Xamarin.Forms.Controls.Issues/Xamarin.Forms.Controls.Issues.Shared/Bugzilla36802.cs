@@ -2,8 +2,9 @@
 using Xamarin.Forms.Internals;
 using System.Linq;
 using System.Collections.ObjectModel;
-using Xamarin.Forms.Core.UITests;
+
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
