@@ -3,7 +3,7 @@ using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
-using Xamarin.Forms.Core.UITests
+using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 #endif
 
