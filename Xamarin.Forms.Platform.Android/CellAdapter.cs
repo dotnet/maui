@@ -214,6 +214,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool HandleContextMode(AView view, int position)
 		{
+			if (view is EditText || view is TextView || view is SearchView)
+				return false;
+
 			Cell cell = GetCellForPosition(position);
 
 			if (cell == null)
