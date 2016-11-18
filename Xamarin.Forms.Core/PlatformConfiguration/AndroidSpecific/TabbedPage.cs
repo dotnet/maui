@@ -45,24 +45,24 @@
 			BindableProperty.Create("OffscreenPageLimit", typeof(int),
 			typeof(TabbedPage), 3, validateValue: (binding, value) => (int)value >= 0);
 
-		public static int GetOffscreenPageLimitProperty(BindableObject element)
+		public static int GetOffscreenPageLimit(BindableObject element)
 		{
 			return (int)element.GetValue(OffscreenPageLimitProperty);
 		}
 
-		public static void SetOffscreenPageLimitProperty(BindableObject element, int value)
+		public static void SetOffscreenPageLimit(BindableObject element, int value)
 		{
 			element.SetValue(OffscreenPageLimitProperty, value);
 		}
 
 		public static int OffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
-			return GetOffscreenPageLimitProperty(config.Element);
+			return GetOffscreenPageLimit(config.Element);
 		}
 
-		public static IPlatformElementConfiguration<Android, FormsElement> SetOffscreenPageLimitProperty(this IPlatformElementConfiguration<Android, FormsElement> config, int value)
+		public static IPlatformElementConfiguration<Android, FormsElement> SetOffscreenPageLimit(this IPlatformElementConfiguration<Android, FormsElement> config, int value)
 		{
-			SetOffscreenPageLimitProperty(config.Element, value);
+			SetOffscreenPageLimit(config.Element, value);
 			return config;
 		}
 	}

@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateAdjustsFontSizeToFitWidth()
 		{
-			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().AdjustsFontSizeToFitWidth();
+			Control.AdjustsFontSizeToFitWidth = Element.OnThisPlatform().IsAdjustsFontSizeToFitWidthEnabled();
 		}
 
 		void UpdateFont()

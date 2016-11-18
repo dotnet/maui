@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			Children.Add(CreateAdditonalPage());
 			Children.Add(CreateAdditonalPage());
 			Children.Add(CreateAdditonalPage());
-			On<Android>().SetOffscreenPageLimitProperty(2);
+			On<Android>().SetOffscreenPageLimit(2);
 		}
 
 		ContentPage CreateFirstPage(ICommand restore)

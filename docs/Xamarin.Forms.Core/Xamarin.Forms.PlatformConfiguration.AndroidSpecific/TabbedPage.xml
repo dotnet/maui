@@ -74,9 +74,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetOffscreenPageLimitProperty">
-      <MemberSignature Language="C#" Value="public static int GetOffscreenPageLimitProperty (Xamarin.Forms.BindableObject element);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 GetOffscreenPageLimitProperty(class Xamarin.Forms.BindableObject element) cil managed" />
+    <Member MemberName="GetOffscreenPageLimit">
+      <MemberSignature Language="C#" Value="public static int GetOffscreenPageLimit (Xamarin.Forms.BindableObject element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 GetOffscreenPageLimit(class Xamarin.Forms.BindableObject element) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -207,9 +207,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetOffscreenPageLimitProperty">
-      <MemberSignature Language="C#" Value="public static void SetOffscreenPageLimitProperty (Xamarin.Forms.BindableObject element, int value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetOffscreenPageLimitProperty(class Xamarin.Forms.BindableObject element, int32 value) cil managed" />
+    <Member MemberName="SetOffscreenPageLimit">
+      <MemberSignature Language="C#" Value="public static void SetOffscreenPageLimit (Xamarin.Forms.BindableObject element, int value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetOffscreenPageLimit(class Xamarin.Forms.BindableObject element, int32 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -228,9 +228,9 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetOffscreenPageLimitProperty">
-      <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimitProperty (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; config, int value);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimitProperty(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; config, int32 value) cil managed" />
+    <Member MemberName="SetOffscreenPageLimit">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimit (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; config, int value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimit(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; config, int32 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
