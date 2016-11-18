@@ -3,6 +3,7 @@ using Xamarin.Forms.Internals;
 
 #if UITEST
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests
 using NUnit.Framework;
 #endif
 
@@ -43,6 +44,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Category(UITestCategories.ManualReview)]
+		[Ignore]
 		public void Bugzilla35736Test() 
 		{
 			RunningApp.WaitForElement(q => q.Marked("Bugzilla35736Editor"));

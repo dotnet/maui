@@ -79,7 +79,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue342DelayedLoadTestsImageLoads ()
 		{
 			RunningApp.Screenshot ("Should not crash");
-			Assert.Inconclusive ("Manual review");
 		}
 #endif
 	}
