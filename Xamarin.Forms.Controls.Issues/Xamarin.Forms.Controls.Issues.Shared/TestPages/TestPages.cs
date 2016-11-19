@@ -82,15 +82,22 @@ namespace Xamarin.Forms.Controls
 				cellName = typeIssueAttribute.Description;
 			}
 
-			try
+			int maxAttempts = 2;
+			int attempts = 0;
+			
+			while (attempts < maxAttempts)
 			{
-				// Attempt the direct way of navigating to the test page
+				attempts += 1;
+
+				try
+				{
+					// Attempt the direct way of navigating to the test page
 #if __ANDROID__
 
-				if (bool.Parse((string)app.Invoke("NavigateToTest", cellName)))
-				{
-					return;
-				}
+					if (bool.Parse((string)app.Invoke("NavigateToTest", cellName)))
+					{
+						return;
+					}
 #endif
 #if __IOS__
 				if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
@@ -98,20 +105,50 @@ namespace Xamarin.Forms.Controls
 					return;
 				}
 #endif
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine($"Could not directly invoke test, using UI navigation. {ex}");
-			}
-			
-			// Fall back to the "manual" navigation method
-			app.Tap (q => q.Button ("Go to Test Cases"));
-			app.WaitForElement (q => q.Raw ("* marked:'TestCasesIssueList'"));
+				}
+				catch (Exception ex)
+				{
+					var debugMessage = $"Could not directly invoke test; using UI navigation instead. {ex}";
 
-			app.EnterText (q => q.Raw ("* marked:'SearchBarGo'"), cellName);
+					System.Diagnostics.Debug.WriteLine(debugMessage);
+					Console.WriteLine(debugMessage);
+				}
 
-			app.WaitForElement (q => q.Raw ("* marked:'SearchButton'"));
-			app.Tap (q => q.Raw ("* marked:'SearchButton'"));
+				try
+				{
+					// Fall back to the "manual" navigation method
+					app.Tap(q => q.Button("Go to Test Cases"));
+					app.WaitForElement(q => q.Raw("* marked:'TestCasesIssueList'"));
+
+					app.EnterText(q => q.Raw("* marked:'SearchBarGo'"), cellName);
+
+					app.WaitForElement(q => q.Raw("* marked:'SearchButton'"));
+					app.Tap(q => q.Raw("* marked:'SearchButton'"));
+
+					return;
+				}
+				catch (Exception ex)
+				{
+					var debugMessage = $"Both navigation methods failed. {ex}";
+
+					System.Diagnostics.Debug.WriteLine(debugMessage);
+					Console.WriteLine(debugMessage);
+
+					if (attempts < maxAttempts)
+					{
+						// Something has failed and we're stuck in a place where we can't navigate
+						// to the test. Usually this is because we're getting network/HTTP errors 
+						// communicating with the server on the device. So we'll try restarting the app.
+						RunningApp = InitializeApp();
+					}
+					else
+					{
+						// But if it's still not working after [maxAttempts], we've got assume this is a legit
+						// problem that restarting won't fix
+						throw;
+					}
+				}
+			}
 		}
 
 		public static IApp Setup (Type pageType = null)
