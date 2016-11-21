@@ -26,10 +26,11 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		static int s_testsrun;
-		const int ConsecutiveTestLimit = 40;
+		const int ConsecutiveTestLimit = 30;
 
 		// Until we get more of our memory leak issues worked out, restart the app 
-		// after a specified number of tests so we don't get bogged down in GC
+		// after a specified number of tests so we don't get bogged down in GC 
+		// (or booted by jetsam)
 		public void EnsureMemory()
 		{
 			s_testsrun += 1;
