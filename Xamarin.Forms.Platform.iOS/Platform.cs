@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (Forms.IsiOS8OrNewer)
 				{
-					PresentAlert(arguments, pageRenderer);
+					PresentAlert(arguments);
 				}
 				else
 				{
@@ -419,7 +419,7 @@ namespace Xamarin.Forms.Platform.iOS
 			PresentAlert(window, alert);
 		}
 
-		void PresentAlert(ActionSheetArguments arguments, IVisualElementRenderer pageRenderer)
+		void PresentAlert(ActionSheetArguments arguments)
 		{
 			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
 			var window = new UIWindow { BackgroundColor = Color.Transparent.ToUIColor() };
@@ -444,11 +444,21 @@ namespace Xamarin.Forms.Platform.iOS
 				alert.AddAction(CreateActionWithWindowHide(blabel, UIAlertActionStyle.Default, () => arguments.SetResult(blabel), window));
 			}
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+			PresentAlert(window, alert, arguments);
+		}
+
+		static void PresentAlert(UIWindow window, UIAlertController alert, ActionSheetArguments arguments = null)
+		{
+			window.RootViewController = new UIViewController();
+			window.RootViewController.View.BackgroundColor = Color.Transparent.ToUIColor();
+			window.WindowLevel = UIWindowLevel.Alert + 1;
+			window.MakeKeyAndVisible();
+
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
 			{
 				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-					n => { alert.PopoverPresentationController.SourceRect = pageRenderer.ViewController.View.Bounds; });
+					n => { alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds; });
 
 				arguments.Result.Task.ContinueWith(t =>
 				{
@@ -456,20 +466,11 @@ namespace Xamarin.Forms.Platform.iOS
 					UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
 				}, TaskScheduler.FromCurrentSynchronizationContext());
 
-				alert.PopoverPresentationController.SourceView = pageRenderer.ViewController.View;
-				alert.PopoverPresentationController.SourceRect = pageRenderer.ViewController.View.Bounds;
+				alert.PopoverPresentationController.SourceView = window.RootViewController.View;
+				alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			PresentAlert(window, alert);
-		}
-
-		static void PresentAlert(UIWindow window, UIAlertController alert)
-		{
-			window.RootViewController = new UIViewController();
-			window.RootViewController.View.BackgroundColor = Color.Transparent.ToUIColor();
-			window.WindowLevel = UIWindowLevel.Alert + 1;
-			window.MakeKeyAndVisible();
 			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
