@@ -13,8 +13,7 @@ XAML=Xamarin.Forms.Xaml
 XAMLASSEMBLY=$(XAML)/bin/Release/$(XAML).dll
 MAPS=Xamarin.Forms.Maps
 MAPSASSEMBLY=$(MAPS)/bin/Release/$(MAPS).dll
-# MDOC=/Library/Frameworks/Mono.framework/Versions/2.10.12/bin/mdoc
-MDOC=mdoc
+MDOC=mono tools/mdoc/mdoc.exe
 
 docs: $(CORE).docs $(MAPS).docs $(XAML).docs
 
