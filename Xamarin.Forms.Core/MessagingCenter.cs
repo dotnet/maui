@@ -91,7 +91,7 @@ namespace Xamarin.Forms
 			List<Tuple<WeakReference, Action<object, object>>> actionsCopy = actions.ToList();
 			foreach (Tuple<WeakReference, Action<object, object>> action in actionsCopy)
 			{
-				if (action.Item1.IsAlive && actions.Contains(action))
+				if (action.Item1.Target != null && actions.Contains(action))
 					action.Item2(sender, args);
 			}
 		}

@@ -120,11 +120,8 @@ namespace Xamarin.Forms.Pages
 		{
 			base.Unapply();
 
-			if (_dataSourceRef != null && _dataSourceRef.IsAlive)
-			{
-				var dataSourceProviderer = (IDataSourceProvider)_dataSourceRef.Target;
-				dataSourceProviderer?.UnmaskKey(_path);
-			}
+			var dataSourceProviderer = (IDataSourceProvider)_dataSourceRef?.Target;
+			dataSourceProviderer?.UnmaskKey(_path);
 
 			_expression?.Unapply();
 		}
