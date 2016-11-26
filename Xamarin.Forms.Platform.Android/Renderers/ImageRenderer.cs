@@ -71,7 +71,6 @@ namespace Xamarin.Forms.Platform.Android
 			Bitmap bitmap = null;
 
 			ImageSource source = Element.Source;
-			IImageSourceHandler handler;
 
 			if (previous != null && Equals(previous.Source, Element.Source))
 				return;
@@ -79,32 +78,45 @@ namespace Xamarin.Forms.Platform.Android
 			((IImageController)Element).SetIsLoading(true);
 
 			var formsImageView = Control as FormsImageView;
-			if (formsImageView != null)
-				formsImageView.SkipInvalidate();
+			formsImageView?.SkipInvalidate();
 
 			Control.SetImageResource(global::Android.Resource.Color.Transparent);
 
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null)
 			{
-				try
+				IImageSourceHandler handler;
+				if ((handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 				{
-					bitmap = await handler.LoadImageAsync(source, Context);
+					try
+					{
+						bitmap = await handler.LoadImageAsync(source, Context);
+					}
+					catch (TaskCanceledException)
+					{
+					}
+					catch (IOException ex)
+					{
+						Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
+					}
 				}
-				catch (TaskCanceledException)
+
+				if (bitmap == null && source is FileImageSource)
 				{
-				}
-				catch (IOException ex)
-				{
-					Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
+					Control.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)Element.Source).File));
 				}
 			}
 
 			if (Element == null || !Equals(Element.Source, source))
+			{
+				bitmap?.Dispose();
 				return;
+			}
 
 			if (!_isDisposed)
 			{
-				Control.SetImageBitmap(bitmap);
+				if (bitmap != null)
+					Control.SetImageBitmap(bitmap);
+
 				bitmap?.Dispose();
 
 				((IImageController)Element).SetIsLoading(false);
