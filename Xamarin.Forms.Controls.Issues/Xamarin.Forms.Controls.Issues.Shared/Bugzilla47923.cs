@@ -68,6 +68,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Orientation = StackOrientation.Vertical,
 				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
 				Spacing = 10
 			};
 
