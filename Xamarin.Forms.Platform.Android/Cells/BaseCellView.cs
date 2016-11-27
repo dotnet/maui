@@ -193,7 +193,6 @@ namespace Xamarin.Forms.Platform.Android
 			_imageView.SetImageResource(global::Android.Resource.Color.Transparent);
 
 			Bitmap bitmap = null;
-
 			IImageSourceHandler handler;
 
 			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
@@ -211,9 +210,12 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 
-			_imageView.SetImageBitmap(bitmap);
-			if (bitmap != null)
-				bitmap.Dispose();
+			if (bitmap == null && source is FileImageSource)
+				_imageView.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)source).File));
+			else
+				_imageView.SetImageBitmap(bitmap);
+
+			bitmap?.Dispose();
 		}
 	}
 }

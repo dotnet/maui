@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Collections.Generic;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -59,6 +60,24 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
+	public class CellViewPage : ContentPage
+	{
+		public CellViewPage()
+		{
+			var list = new List<int>();
+			for (var i = 0; i < 50; i++)
+				list.Add(i);
+
+			var listView = new ListView
+			{
+				ItemsSource = list,
+				ItemTemplate = new DataTemplate(() => new ImageCell { ImageSource = "cartman" })
+			};
+
+			Content = listView;
+		}
+	}
+
 	public class LandingPage : ContentPage
 	{
 		public LandingPage()
@@ -95,6 +114,14 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Center
 			};
 			stackLayout.Children.Add(button3);
+
+			var button4 = new Button
+			{
+				Text = "Test cell views",
+				Command = new Command(() => { Navigation.PushAsync(new CellViewPage()); }),
+				HorizontalOptions = LayoutOptions.Center
+			};
+			stackLayout.Children.Add(button4);
 
 			scrollView.Content = stackLayout;
 			Content = scrollView;

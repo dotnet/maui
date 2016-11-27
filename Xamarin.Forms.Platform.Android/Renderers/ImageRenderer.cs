@@ -68,10 +68,6 @@ namespace Xamarin.Forms.Platform.Android
 			if (Device.IsInvokeRequired)
 				throw new InvalidOperationException("Image Bitmap must not be updated from background thread");
 
-			Bitmap bitmap = null;
-
-			ImageSource source = Element.Source;
-
 			if (previous != null && Equals(previous.Source, Element.Source))
 				return;
 
@@ -82,27 +78,22 @@ namespace Xamarin.Forms.Platform.Android
 
 			Control.SetImageResource(global::Android.Resource.Color.Transparent);
 
-			if (source != null)
-			{
-				IImageSourceHandler handler;
-				if ((handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
-				{
-					try
-					{
-						bitmap = await handler.LoadImageAsync(source, Context);
-					}
-					catch (TaskCanceledException)
-					{
-					}
-					catch (IOException ex)
-					{
-						Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
-					}
-				}
+			ImageSource source = Element.Source;
+			Bitmap bitmap = null;
+			IImageSourceHandler handler;
 
-				if (bitmap == null && source is FileImageSource)
+			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			{
+				try
 				{
-					Control.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)Element.Source).File));
+					bitmap = await handler.LoadImageAsync(source, Context);
+				}
+				catch (TaskCanceledException)
+				{
+				}
+				catch (IOException ex)
+				{
+					Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
 				}
 			}
 
@@ -114,7 +105,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (!_isDisposed)
 			{
-				if (bitmap != null)
+				if (bitmap == null && source is FileImageSource)
+					Control.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)source).File));
+				else
 					Control.SetImageBitmap(bitmap);
 
 				bitmap?.Dispose();
