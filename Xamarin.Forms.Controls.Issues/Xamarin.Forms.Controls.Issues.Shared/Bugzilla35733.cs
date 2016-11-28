@@ -34,7 +34,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 		async Task ShowLocation(string locationString) 
 		{
-			var stringUri = string.Format("http://m.liu.se/karta/karta?l=en&px_location={0}", Uri.EscapeDataString(locationString));
+			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";
+
 			var uri = new Uri(stringUri);
 			var webPage = new ContentPage {
 				Title = "WebViewTest",
