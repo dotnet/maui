@@ -34,48 +34,25 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue774TestsDismissActionSheetAfterRotation ()
 		{
+			RunningApp.Tap(q => q.Button("Show ActionSheet"));
+			RunningApp.Screenshot("Show ActionSheet");
 
-			RunningApp.Tap (q => q.Button ("Show ActionSheet"));
-			RunningApp.Screenshot ("Show ActionSheet");
+			RunningApp.SetOrientationLandscape();
+			RunningApp.Screenshot("Rotate Device");
 
-			RunningApp.SetOrientationLandscape ();
-			RunningApp.Screenshot ("Rotate Device");
-		
-			var app = (RunningApp as iOSApp);
+			// Wait for the action sheet element to show up
+			RunningApp.WaitForElement(q => q.Marked("What's up"));
 
-			if (app != null) {
+			var dismiss = RunningApp.Query("Dismiss");
 
-				if (!app.Device.IsTablet)
-					RunningApp.Tap (q => q.Marked ("Dismiss"));
-				else // iPad does not have dismiss option
-					RunningApp.Tap (q => q.Marked ("Destroy"));
+			var target = dismiss.Length > 0 ? "Dismiss" : "Destroy";
 
-				if(app.Device.IsTablet)
-					RunningApp.WaitForNoElement (q => q.Marked ("Destroy"));
-				else
-					RunningApp.WaitForNoElement (q => q.Marked ("Dismiss"));
 
-				RunningApp.Screenshot ("Dismiss ActionSheet");
+			RunningApp.Tap(q => q.Marked(target));
+			RunningApp.WaitForNoElement(q => q.Marked(target));
 
-//				App.SetOrientationPortrait ();
-//				App.Tap (q => q.Button ("Show ActionSheet"));
-//				App.Screenshot ("Rotate and show ActionSheet");
-//
-//				if (!app.Device.IsTablet)
-//					App.Tap (q => q.Button ("Dismiss"));
-//				else // iPad does not have dismiss option
-//					App.Tap (q => q.Marked ("Destroy"));
-//
-//				if (app.Device.IsTablet)
-//					App.WaitForNoElement (q => q.Marked ("Destroy"));
-//				else // iPad does not have dismiss option
-//					App.WaitForNoElement (q => q.Marked ("Dismiss"));
-			
-			} 
-			else
-			{
-				RunningApp.Tap(q => q.Marked("Dismiss"));
-			}
+			RunningApp.Screenshot("Dismiss ActionSheet");
+
 		}
 
 		[TearDown]
