@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked("#1"));
 			RunningApp.Tap(q => q.Marked("#1"));
 			RunningApp.WaitForElement(q => q.Marked("Success"));
+			RunningApp.Tap(q => q.Marked("Cancel"));
 		}
 #endif
 	}
