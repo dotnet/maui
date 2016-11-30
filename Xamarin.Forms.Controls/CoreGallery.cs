@@ -215,136 +215,156 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
+	
+
 	internal class CorePageView : ListView
 	{
-		public CorePageView (Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
+		internal class GalleryPageFactory
 		{
-			var pages = new List<Page> {
-				new PlatformSpecificsGallery() {Title = "Platform Specifics"},
-				new NativeBindingGalleryPage {Title = "Native Binding Controls Gallery"},
-				new XamlNativeViews {Title = "Xaml Native Views Gallery"},
-				new AppLinkPageGallery {Title = "App Link Page Gallery"},
-				new NestedNativeControlGalleryPage {Title = "Nested Native Controls Gallery"},
-				new CellForceUpdateSizeGalleryPage {Title = "Cell Force Update Size Gallery"},
-				new AppearingGalleryPage {Title = "Appearing Gallery"},
-				new EntryCoreGalleryPage { Title = "Entry Gallery" },
-				new NavBarTitleTestPage {Title = "Titles And Navbar Windows"},
-				new PanGestureGalleryPage {Title = "Pan gesture Gallery"},
-				new PinchGestureTestPage {Title = "Pinch gesture Gallery"},
-				new AutomationIdGallery { Title ="AutomationID Gallery" },
-				new LayoutPerformanceGallery {Title = "Layout Perf Gallery"},
-				new ListViewSelectionColor { Title = "ListView SelectionColor Gallery" },
-				new AlertGallery { Title = "DisplayAlert Gallery" },
-				new ToolbarItems { Title = "ToolbarItems Gallery" },
-				new ActionSheetGallery { Title = "ActionSheet Gallery" }, 
-				new ActivityIndicatorCoreGalleryPage { Title = "ActivityIndicator Gallery" },
-				new BehaviorsAndTriggers { Title = "BehaviorsTriggers Gallery" },
-				new ContextActionsGallery { Title = "ContextActions List Gallery"},
-				new ContextActionsGallery (tableView: true) { Title = "ContextActions Table Gallery"},
-				new CoreBoxViewGalleryPage { Title = "BoxView Gallery" },
-				new ButtonCoreGalleryPage { Title = "Button Gallery" },
-				new DatePickerCoreGalleryPage { Title = "DatePicker Gallery" },
-				new EditorCoreGalleryPage { Title = "Editor Gallery" },
-				new FrameCoreGalleryPage { Title = "Frame Gallery" },
-				new ImageCoreGalleryPage { Title = "Image Gallery" },
-				new KeyboardCoreGallery { Title = "Keyboard Gallery" },
-				new LabelCoreGalleryPage { Title = "Label Gallery" },
-				new ListViewCoreGalleryPage { Title = "ListView Gallery" },
-				new OpenGLViewCoreGalleryPage { Title = "OpenGLView Gallery" },
-				new PickerCoreGalleryPage { Title = "Picker Gallery" },
-				new ProgressBarCoreGalleryPage { Title = "ProgressBar Gallery" },
-				new ScrollGallery { Title = "ScrollView Gallery" }, 
-				new ScrollGallery(ScrollOrientation.Horizontal) { Title = "ScrollView Gallery Horizontal" },
-				new ScrollGallery(ScrollOrientation.Both) { Title = "ScrollView Gallery 2D" },
-				new SearchBarCoreGalleryPage { Title = "SearchBar Gallery" },
-				new SliderCoreGalleryPage { Title = "Slider Gallery" },
-				new StepperCoreGalleryPage { Title = "Stepper Gallery" },
-				new SwitchCoreGalleryPage { Title = "Switch Gallery" },
-				new TableViewCoreGalleryPage { Title = "TableView Gallery" },
-				new TimePickerCoreGalleryPage { Title = "TimePicker Gallery" },
-				new WebViewCoreGalleryPage { Title = "WebView Gallery" },
+			public GalleryPageFactory(Func<Page> create, string title)
+			{
+				Realize = () =>
+				{
+					var p = create();
+					p.Title = title;
+					return p;
+				};
+			
+				Title = title;
+			}
+
+			public Func<Page> Realize { get; set; }
+			public string Title { get; set; }
+		}
+
+		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
+				new GalleryPageFactory(() => new PlatformSpecificsGallery(), "Platform Specifics"),
+				new GalleryPageFactory(() => new NativeBindingGalleryPage(), "Native Binding Controls Gallery"),
+				new GalleryPageFactory(() => new XamlNativeViews(), "Xaml Native Views Gallery"),
+				new GalleryPageFactory(() => new AppLinkPageGallery(), "App Link Page Gallery"),
+				new GalleryPageFactory(() => new NestedNativeControlGalleryPage(), "Nested Native Controls Gallery"),
+				new GalleryPageFactory(() => new CellForceUpdateSizeGalleryPage(), "Cell Force Update Size Gallery"),
+				new GalleryPageFactory(() => new AppearingGalleryPage(), "Appearing Gallery"),
+				new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
+				new GalleryPageFactory(() => new NavBarTitleTestPage(), "Titles And Navbar Windows"),
+				new GalleryPageFactory(() => new PanGestureGalleryPage(), "Pan gesture Gallery"),
+				new GalleryPageFactory(() => new PinchGestureTestPage(), "Pinch gesture Gallery"),
+				new GalleryPageFactory(() => new AutomationIdGallery(), "AutomationID Gallery"),
+				new GalleryPageFactory(() => new LayoutPerformanceGallery(), "Layout Perf Gallery"),
+				new GalleryPageFactory(() => new ListViewSelectionColor(), "ListView SelectionColor Gallery"),
+				new GalleryPageFactory(() => new AlertGallery(), "DisplayAlert Gallery"),
+				new GalleryPageFactory(() => new ToolbarItems(), "ToolbarItems Gallery"),
+				new GalleryPageFactory(() => new ActionSheetGallery(), "ActionSheet Gallery"),
+				new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
+				new GalleryPageFactory(() => new BehaviorsAndTriggers(), "BehaviorsTriggers Gallery"),
+				new GalleryPageFactory(() => new ContextActionsGallery(), "ContextActions List Gallery"),
+				new GalleryPageFactory(() => new ContextActionsGallery (tableView: true), "ContextActions Table Gallery"),
+				new GalleryPageFactory(() => new CoreBoxViewGalleryPage(), "BoxView Gallery"),
+				new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
+				new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "DatePicker Gallery"),
+				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
+				new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),
+				new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
+				new GalleryPageFactory(() => new KeyboardCoreGallery(), "Keyboard Gallery"),
+				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
+				new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
+				new GalleryPageFactory(() => new OpenGLViewCoreGalleryPage(), "OpenGLView Gallery"),
+				new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
+				new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "ProgressBar Gallery"),
+				new GalleryPageFactory(() => new ScrollGallery(), "ScrollView Gallery"),
+				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Horizontal), "ScrollView Gallery Horizontal"),
+				new GalleryPageFactory(() => new ScrollGallery(ScrollOrientation.Both), "ScrollView Gallery 2D"),
+				new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "SearchBar Gallery"),
+				new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
+				new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
+				new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
+				new GalleryPageFactory(() => new TableViewCoreGalleryPage(), "TableView Gallery"),
+				new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "TimePicker Gallery"),
+				new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 				//pages
- 				new RootContentPage ("Content") { Title = "RootPages Gallery" },
-				new MasterDetailPageTabletPage { Title = "MasterDetailPage Tablet Page" },
+ 				new GalleryPageFactory(() => new RootContentPage ("Content"), "RootPages Gallery"),
+				new GalleryPageFactory(() => new MasterDetailPageTabletPage(), "MasterDetailPage Tablet Page"),
 				// legacy galleries
-				new AbsoluteLayoutGallery { Title = "AbsoluteLayout Gallery - Legacy" }, 
-				new BoundContentPage { Title = "BoundPage Gallery - Legacy" }, 
-				new BackgroundImageGallery { Title = "BackgroundImage gallery" },
-				new ButtonGallery { Title = "Button Gallery - Legacy" }, 
-				new CarouselPageGallery { Title = "CarouselPage Gallery - Legacy" },
-				new CellTypesListPage { Title = "Cells Gallery - Legacy" },
-				new ClipToBoundsGallery { Title = "ClipToBounds Gallery - Legacy" }, 
-				new ControlTemplatePage { Title = "ControlTemplated Gallery - Legacy" },
-				new ControlTemplateXamlPage { Title = "ControlTemplated XAML Gallery - Legacy" },
-				new DisposeGallery { Title = "Dispose Gallery - Legacy" }, 
-				new EditorGallery { Title = "Editor Gallery - Legacy" },
-				new EntryGallery { Title = "Entry Gallery - Legacy" }, 
-				new FrameGallery  { Title = "Frame Gallery - Legacy" }, 
-				new GridGallery { Title = "Grid Gallery - Legacy" }, 
-				new GroupedListActionsGallery { Title = "GroupedListActions Gallery - Legacy" }, 
-				new GroupedListContactsGallery { Title = "GroupedList Gallery - Legacy" },
-				new ImageGallery  { Title = "Image Gallery - Legacy" },
-				new ImageLoadingGallery  { Title = "ImageLoading Gallery - Legacy" },
-				new InputIntentGallery { Title = "InputIntent Gallery - Legacy" },
-				new LabelGallery { Title = "Label Gallery - Legacy" },
-				new LayoutAddPerformance { Title = "Layout Add Performance - Legacy" },
-				new LayoutOptionsGallery { Title = "LayoutOptions Gallery - Legacy" },
-				new LineBreakModeGallery { Title = "LineBreakMode Gallery - Legacy" },
-				new ListPage { Title = "ListView Gallery - Legacy" },
-				new ListScrollTo { Title = "ListView.ScrollTo" },
-				new ListRefresh { Title = "ListView.PullToRefresh" },
-				new ListViewDemoPage { Title = "ListView Demo Gallery - Legacy" },
-				new MapGallery { Title = "Map Gallery - Legacy" }, 
-				new MinimumSizeGallery { Title = "MinimumSize Gallery - Legacy" },
-				new MultiGallery { Title = "Multi Gallery - Legacy" },
-				new NavigationMenuGallery { Title = "NavigationMenu Gallery - Legacy" },
-				new NavigationPropertiesGallery { Title = "Navigation Properties" },
+				new GalleryPageFactory(() => new AbsoluteLayoutGallery(), "AbsoluteLayout Gallery - Legacy"),
+				new GalleryPageFactory(() => new BoundContentPage(), "BoundPage Gallery - Legacy"),
+				new GalleryPageFactory(() => new BackgroundImageGallery(), "BackgroundImage gallery"),
+				new GalleryPageFactory(() => new ButtonGallery(), "Button Gallery - Legacy"),
+				new GalleryPageFactory(() => new CarouselPageGallery(), "CarouselPage Gallery - Legacy"),
+				new GalleryPageFactory(() => new CellTypesListPage(), "Cells Gallery - Legacy"),
+				new GalleryPageFactory(() => new ClipToBoundsGallery(), "ClipToBounds Gallery - Legacy"),
+				new GalleryPageFactory(() => new ControlTemplatePage(), "ControlTemplated Gallery - Legacy"),
+				new GalleryPageFactory(() => new ControlTemplateXamlPage(), "ControlTemplated XAML Gallery - Legacy"),
+				new GalleryPageFactory(() => new DisposeGallery(), "Dispose Gallery - Legacy"),
+				new GalleryPageFactory(() => new EditorGallery(), "Editor Gallery - Legacy"),
+				new GalleryPageFactory(() => new EntryGallery(), "Entry Gallery - Legacy"),
+				new GalleryPageFactory(() => new FrameGallery (), "Frame Gallery - Legacy"),
+				new GalleryPageFactory(() => new GridGallery(), "Grid Gallery - Legacy"),
+				new GalleryPageFactory(() => new GroupedListActionsGallery(), "GroupedListActions Gallery - Legacy"),
+				new GalleryPageFactory(() => new GroupedListContactsGallery(), "GroupedList Gallery - Legacy"),
+				new GalleryPageFactory(() => new ImageGallery (), "Image Gallery - Legacy"),
+				new GalleryPageFactory(() => new ImageLoadingGallery (), "ImageLoading Gallery - Legacy"),
+				new GalleryPageFactory(() => new InputIntentGallery(), "InputIntent Gallery - Legacy"),
+				new GalleryPageFactory(() => new LabelGallery(), "Label Gallery - Legacy"),
+				new GalleryPageFactory(() => new LayoutAddPerformance(), "Layout Add Performance - Legacy"),
+				new GalleryPageFactory(() => new LayoutOptionsGallery(), "LayoutOptions Gallery - Legacy"),
+				new GalleryPageFactory(() => new LineBreakModeGallery(), "LineBreakMode Gallery - Legacy"),
+				new GalleryPageFactory(() => new ListPage(), "ListView Gallery - Legacy"),
+				new GalleryPageFactory(() => new ListScrollTo(), "ListView.ScrollTo"),
+				new GalleryPageFactory(() => new ListRefresh(), "ListView.PullToRefresh"),
+				new GalleryPageFactory(() => new ListViewDemoPage(), "ListView Demo Gallery - Legacy"),
+				new GalleryPageFactory(() => new MapGallery(), "Map Gallery - Legacy"),
+				new GalleryPageFactory(() => new MinimumSizeGallery(), "MinimumSize Gallery - Legacy"),
+				new GalleryPageFactory(() => new MultiGallery(), "Multi Gallery - Legacy"),
+				new GalleryPageFactory(() => new NavigationMenuGallery(), "NavigationMenu Gallery - Legacy"),
+				new GalleryPageFactory(() => new NavigationPropertiesGallery(), "Navigation Properties"),
 #if HAVE_OPENTK
-				new OpenGLGallery { Title = "OpenGLGallery - Legacy" },
+				new GalleryPageFactory(() => new OpenGLGallery(), "OpenGLGallery - Legacy"),
 #endif
-				new PickerGallery {Title = "Picker Gallery - Legacy"}, 
-				new ProgressBarGallery { Title = "ProgressBar Gallery - Legacy" }, 
-				new RelativeLayoutGallery { Title = "RelativeLayout Gallery - Legacy" },
-				new ScaleRotate { Title = "Scale Rotate Gallery - Legacy" }, 
-				new SearchBarGallery { Title = "SearchBar Gallery - Legacy" },
-				new SettingsPage { Title = "Settings Page - Legacy" }, 
-				new SliderGallery { Title = "Slider Gallery - Legacy" },
-				new StackLayoutGallery { Title = "StackLayout Gallery - Legacy" }, 
-				new StepperGallery { Title = "Stepper Gallery - Legacy" },
-				new StyleGallery {Title = "Style Gallery"},
-				new StyleXamlGallery {Title = "Style Gallery in Xaml"},
-				new SwitchGallery { Title = "Switch Gallery - Legacy" }, 
-				new TableViewGallery { Title = "TableView Gallery - Legacy" }, 
-				new TemplatedCarouselGallery { Title = "TemplatedCarouselPage Gallery - Legacy" }, 
-				new TemplatedTabbedGallery { Title = "TemplatedTabbedPage Gallery - Legacy" }, 
- 				new UnevenViewCellGallery { Title = "UnevenViewCell Gallery - Legacy" }, 
-				new UnevenListGallery { Title = "UnevenList Gallery - Legacy" }, 
-				new ViewCellGallery { Title = "ViewCell Gallery - Legacy" }, 
-				new WebViewGallery {Title = "WebView Gallery - Legacy"},
+				new GalleryPageFactory(() => new PickerGallery(), "Picker Gallery - Legacy"),
+				new GalleryPageFactory(() => new ProgressBarGallery(), "ProgressBar Gallery - Legacy"),
+				new GalleryPageFactory(() => new RelativeLayoutGallery(), "RelativeLayout Gallery - Legacy"),
+				new GalleryPageFactory(() => new ScaleRotate(), "Scale Rotate Gallery - Legacy"),
+				new GalleryPageFactory(() => new SearchBarGallery(), "SearchBar Gallery - Legacy"),
+				new GalleryPageFactory(() => new SettingsPage(), "Settings Page - Legacy"),
+				new GalleryPageFactory(() => new SliderGallery(), "Slider Gallery - Legacy"),
+				new GalleryPageFactory(() => new StackLayoutGallery(), "StackLayout Gallery - Legacy"),
+				new GalleryPageFactory(() => new StepperGallery(), "Stepper Gallery - Legacy"),
+				new GalleryPageFactory(() => new StyleGallery(), "Style Gallery"),
+				new GalleryPageFactory(() => new StyleXamlGallery(), "Style Gallery in Xaml"),
+				new GalleryPageFactory(() => new SwitchGallery(), "Switch Gallery - Legacy"),
+				new GalleryPageFactory(() => new TableViewGallery(), "TableView Gallery - Legacy"),
+				new GalleryPageFactory(() => new TemplatedCarouselGallery(), "TemplatedCarouselPage Gallery - Legacy"),
+				new GalleryPageFactory(() => new TemplatedTabbedGallery(), "TemplatedTabbedPage Gallery - Legacy"),
+				 new GalleryPageFactory(() => new UnevenViewCellGallery(), "UnevenViewCell Gallery - Legacy"),
+				new GalleryPageFactory(() => new UnevenListGallery(), "UnevenList Gallery - Legacy"),
+				new GalleryPageFactory(() => new ViewCellGallery(), "ViewCell Gallery - Legacy"),
+				new GalleryPageFactory(() => new WebViewGallery(), "WebView Gallery - Legacy"),
 			};
 
-			titleToPage = pages.ToDictionary (o => o.Title);
+		public CorePageView (Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
+		{
+			_titleToPage = _pages.ToDictionary (o => o.Title);
 
 			// avoid NRE for root pages without NavigationBar
 			if (navigationBehavior == NavigationBehavior.PushAsync && rootPage.GetType () == typeof (CoreNavigationPage)) {
-				pages.Add (new NavigationBarGallery ((NavigationPage)rootPage) { Title = "NavigationBar Gallery - Legacy" });
+				_pages.Add (new GalleryPageFactory(() => new NavigationBarGallery((NavigationPage)rootPage), "NavigationBar Gallery - Legacy"));
 			}
 
 			var template = new DataTemplate (typeof(TextCell));
 			template.SetBinding (TextCell.TextProperty, "Title");
 
-			BindingContext = pages;
+			BindingContext = _pages;
 			ItemTemplate = template;
-			ItemsSource = pages;
+			ItemsSource = _pages;
 
 			ItemSelected += async (sender, args) => {
 				if (SelectedItem == null)
 					return;
 
 				var item = args.SelectedItem;
-				var page = item as Page;
+				var page = item as GalleryPageFactory;
 				if (page != null)
-					await PushPage (page);
+					await PushPage (page.Realize());
 
 				SelectedItem = null;
 			};
@@ -367,13 +387,15 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		Dictionary<string, Page> titleToPage = new Dictionary<string, Page>();
+		readonly Dictionary<string, GalleryPageFactory> _titleToPage;
 		public async Task PushPage (string pageTitle)
 		{
 
-			Page page = null;
-			if (!titleToPage.TryGetValue (pageTitle, out page))
+			GalleryPageFactory pageFactory = null;
+			if (!_titleToPage.TryGetValue (pageTitle, out pageFactory))
 				return;
+
+			var page = pageFactory.Realize();
 
 			if (Insights.IsInitialized) {
 				Insights.Track ("Navigation", new Dictionary<string, string> {
