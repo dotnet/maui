@@ -26,6 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (_previousSize != Bounds.Size)
 				SetNeedsDisplay();
+
+			base.LayoutSubviews();
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
