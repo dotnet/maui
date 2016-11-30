@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
-  <Identity Name="a4530307-5452-466a-8944-7925f27ddc21" Publisher="CN=Eric" Version="1.0.0.0" />
+  <Identity Name="a4530307-5452-466a-8944-7925f27ddc21" Publisher="CN=xamarinforms" Version="1.0.0.0" />
   <Properties>
     <DisplayName>Xamarin.Forms.ControlGallery.Windows</DisplayName>
     <PublisherDisplayName>Xamarin Inc</PublisherDisplayName>
