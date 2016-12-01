@@ -3,8 +3,7 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP">
 	<Style TargetType="uwp:MasterDetailControl">
-        <Setter Property="ToolbarBackground" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"/>
-        <Setter Property="ToolbarForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+		<Setter Property="ToolbarForeground" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:MasterDetailControl">
@@ -48,7 +47,7 @@
 									</StackPanel>
 
 									<Border x:Name="TopCommandBarArea" Grid.Column="1" HorizontalAlignment="Stretch">
-										<uwp:FormsCommandBar x:Name="CommandBar" VerticalContentAlignment="Top" Background="{TemplateBinding ToolbarBackground}" />
+										<uwp:FormsCommandBar x:Name="CommandBar" VerticalContentAlignment="Top" Background="{TemplateBinding ToolbarBackground}" Height="{ThemeResource TitleBarHeight}" />
 									</Border>
 								</Grid>
 

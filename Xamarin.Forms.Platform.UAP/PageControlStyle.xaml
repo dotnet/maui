@@ -4,8 +4,7 @@
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP">
 	<Style TargetType="uwp:PageControl">
 		<Setter Property="ContentMargin" Value="0" />
-        <Setter Property="ToolbarBackground" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"/>
-        <Setter Property="TitleBrush" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
+		<Setter Property="TitleBrush" Value="{ThemeResource DefaultTextForegroundThemeBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:PageControl">
@@ -28,7 +27,7 @@
 							</Border>
 							
 							<Border x:Name="TopCommandBarArea" Grid.Column="1" HorizontalAlignment="Stretch">
-								<uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" />
+								<uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" Height="{ThemeResource TitleBarHeight}" />
 							</Border>
 						</Grid>
 
