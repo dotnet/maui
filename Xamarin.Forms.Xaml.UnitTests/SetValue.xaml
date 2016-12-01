@@ -83,5 +83,6 @@
 				<d:IgnorableElement />
 			</ContentView.Content>
 		</ContentView>
+		<local:ViewWithEnums x:Name="enums" IntEnum="Foo" ByteEnum="Bar" />
 	</StackLayout>
 </ContentPage>

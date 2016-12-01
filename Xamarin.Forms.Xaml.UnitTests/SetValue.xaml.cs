@@ -13,6 +13,32 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 
+	public class MockViewWithValues : View
+	{ 
+		public UInt16 UShort { get; set; }
+		public decimal ADecimal { get; set; }
+	}
+
+	public enum IntEnum
+	{
+		Foo,
+		Bar,
+		Baz
+	}
+
+	public enum ByteEnum : byte
+	{
+		Foo,
+		Bar,
+		Baz
+	}
+
+	public class ViewWithEnums : View
+	{
+		public IntEnum IntEnum { get; set; }
+		public ByteEnum ByteEnum { get; set; }
+	}
+
 	public partial class SetValue : ContentPage
 	{	
 		public SetValue ()
@@ -214,6 +240,19 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var page = new SetValue(useCompiledXaml);
 				Assert.That(page.contentview2.Content, Is.TypeOf<Label>());
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void NonIntEnums(bool useCompiledXaml)
+			{
+				if (useCompiledXaml) {
+					MockCompiler.Compile(typeof(SetValue));
+					return;
+				}
+				var page = new SetValue(useCompiledXaml);
+				Assert.AreEqual(IntEnum.Foo, page.enums.IntEnum);
+				Assert.AreEqual(ByteEnum.Bar, page.enums.ByteEnum);
 			}
 		}
 	}

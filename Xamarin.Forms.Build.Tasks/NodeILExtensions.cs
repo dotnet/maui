@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			//Obvious Built-in conversions
 			if (targetTypeRef.Resolve().BaseType != null && targetTypeRef.Resolve().BaseType.FullName == "System.Enum")
-				yield return Instruction.Create(OpCodes.Ldc_I4, ParseEnum(targetTypeRef, str, node));
+				yield return PushParsedEnum(targetTypeRef, str, node);
 			else if (targetTypeRef.FullName == "System.Char")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Char.Parse(str));
 			else if (targetTypeRef.FullName == "System.Byte")
@@ -174,29 +174,87 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Box, module.Import(originalTypeRef));
 		}
 
-		static int ParseEnum(TypeReference enumRef, string value, IXmlLineInfo lineInfo)
+		static Instruction PushParsedEnum(TypeReference enumRef, string value, IXmlLineInfo lineInfo)
 		{
 			var enumDef = enumRef.Resolve();
 			if (!enumDef.IsEnum)
 				throw new InvalidOperationException();
 
-			int? result = null;
+			// The approved types for an enum are byte, sbyte, short, ushort, int, uint, long, or ulong.
+			// https://msdn.microsoft.com/en-us/library/sbbt4032.aspx
+			byte b = 0; sbyte sb = 0; short s = 0; ushort us = 0;
+			int i = 0; uint ui = 0; long l = 0; ulong ul = 0;
+			bool found = false;
+			TypeReference typeRef = null;
 
-			foreach (var v in value.Split(','))
-			{
-				foreach (var field in enumDef.Fields)
-				{
+			foreach (var field in enumDef.Fields)
+				if (field.Name == "value__")
+					typeRef = field.FieldType;
+
+			if (typeRef == null)
+				throw new ArgumentException();
+
+			foreach (var v in value.Split(',')) {
+				foreach (var field in enumDef.Fields) {
 					if (field.Name == "value__")
 						continue;
-					if (field.Name == v.Trim())
-						result = (result ?? 0) | (int)field.Constant;
+					if (field.Name == v.Trim()) {
+						switch (typeRef.FullName) {
+						case "System.Byte":
+							b |= (byte)field.Constant;
+							break;
+						case "System.SByte":
+							if (found)
+								throw new XamlParseException($"Multi-valued enums are not valid on sbyte enum types", lineInfo);
+							sb = (sbyte)field.Constant;
+							break;
+						case "System.Int16":
+							s |= (short)field.Constant;
+							break;
+						case "System.UInt16":
+							us |= (ushort)field.Constant;
+							break;
+						case "System.Int32":
+							i |= (int)field.Constant;
+							break;
+						case "System.UInt32":
+							ui |= (uint)field.Constant;
+							break;
+						case "System.Int64":
+							l |= (long)field.Constant;
+							break;
+						case "System.UInt64":
+							ul |= (ulong)field.Constant;
+							break;
+						}
+						found = true;
+					}
 				}
 			}
 
-			if (result.HasValue)
-				return result.Value;
-
-			throw new XamlParseException(string.Format("Enum value not found for {0}", value), lineInfo);
+			if (!found)
+				throw new XamlParseException($"Enum value not found for {value}", lineInfo);
+				
+			switch (typeRef.FullName) {
+			case "System.Byte":
+				return Instruction.Create(OpCodes.Ldc_I4, (int)b);
+			case "System.SByte":
+				return Instruction.Create(OpCodes.Ldc_I4, (int)sb);
+			case "System.Int16":
+				return Instruction.Create(OpCodes.Ldc_I4, (int)s);
+			case "System.UInt16":
+				return Instruction.Create(OpCodes.Ldc_I4, (int)us);
+			case "System.Int32":
+				return Instruction.Create(OpCodes.Ldc_I4, (int)i);
+			case "System.UInt32":
+				return Instruction.Create(OpCodes.Ldc_I4, (uint)ui);
+			case "System.Int64":
+				return Instruction.Create(OpCodes.Ldc_I4, (long)l);
+			case "System.UInt64":
+				return Instruction.Create(OpCodes.Ldc_I4, (ulong)ul);
+			default:
+				throw new XamlParseException($"Enum value not found for {value}", lineInfo);
+			}
 		}
 
 		public static IEnumerable<Instruction> PushXmlLineInfo(this INode node, ILContext context)
