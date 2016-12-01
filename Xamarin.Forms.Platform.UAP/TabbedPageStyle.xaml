@@ -3,7 +3,9 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:uwp="using:Xamarin.Forms.Platform.UWP">
 	<Style x:Key="TabbedPageStyle" TargetType="uwp:FormsPivot">
-		<Setter Property="HeaderTemplate">
+        <Setter Property="ToolbarBackground" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"/>
+
+        <Setter Property="HeaderTemplate">
 			<Setter.Value>
 				<DataTemplate>
 					<TextBlock Name="TabbedPageHeaderTextBlock" Text="{Binding Title}" Style="{ThemeResource BodyTextBlockStyle}" />
@@ -75,7 +77,7 @@
 							</Border>
 							
 							<Border x:Name="TopCommandBarArea" Grid.Column="1" HorizontalAlignment="Stretch">
-								<uwp:FormsCommandBar x:Name="CommandBar" VerticalContentAlignment="Top" Background="{TemplateBinding ToolbarBackground}" Height="{ThemeResource TitleBarHeight}" />
+								<uwp:FormsCommandBar x:Name="CommandBar" VerticalContentAlignment="Top" Background="{TemplateBinding ToolbarBackground}" />
 							</Border>
 						</Grid>
 						
