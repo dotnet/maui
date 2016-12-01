@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void MultipleGetMethodsAllowed(bool useCompiledXaml)
 			{
-				var page = new Unreported004();
+				var page = new Unreported004(useCompiledXaml);
 				Assert.NotNull(page.label);
 				Assert.AreEqual("foo", GetSomeProperty(page.label));
 			}
