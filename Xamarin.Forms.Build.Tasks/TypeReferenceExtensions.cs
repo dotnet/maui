@@ -204,9 +204,10 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		public static MethodReference GetImplicitOperatorTo(this TypeReference fromType, TypeReference toType, ModuleDefinition module)
-		{ 
-			var implicitOperators = fromType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit",
-												module).ToList();
+		{
+			var implicitOperatorsOnFromType = fromType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit", module);
+			var implicitOperatorsOnToType = toType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit", module);
+			var implicitOperators = implicitOperatorsOnFromType.Concat(implicitOperatorsOnToType).ToList();
 			if (implicitOperators.Any()) {
 				foreach (var op in implicitOperators) {
 					var cast = op.Item1;

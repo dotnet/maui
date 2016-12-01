@@ -3,6 +3,9 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.XStatic">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Icon="{x:Static local:MockxStatic.MockFieldRef}" />
+	</ContentPage.ToolbarItems>
 	<StackLayout>
 		<Label x:Name="staticproperty"
 			   Text="{x:Static Member=local:MockxStatic.MockStaticProperty}" />
@@ -16,5 +19,7 @@
 				Text="{x:Static local:MockxStatic.MockField}"/>
 		<ScrollView x:Name="enuM"
 				Orientation="{x:Static ScrollOrientation.Both}"/>
+		<Label x:Name="field2"
+				Text="{x:Static local:MockxStatic.MockFieldRef}" />
 	</StackLayout>
 </ContentPage>

@@ -3,11 +3,18 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
+
+	public class Icons
+	{
+		public const string CLOSE = "ic_close.png";
+	}
+
 	public class MockxStatic
 	{
 		public static string MockStaticProperty { get { return "Property"; } }
 		public const string MockConstant = "Constant";
 		public static string MockField = "Field";
+		public static string MockFieldRef = Icons.CLOSE;
 		public string InstanceProperty { get { return "InstanceProperty"; } }
 		public static readonly Color BackgroundColor = Color.Fuchsia;
 	}
@@ -101,6 +108,23 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new XStatic(useCompiledXaml);
 				Assert.AreEqual(ScrollOrientation.Both, layout.enuM.Orientation);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void FieldRef(bool useCompiledXaml)
+			{
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual("ic_close.png", layout.field2.Text);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			// https://bugzilla.xamarin.com/show_bug.cgi?id=48242
+			public void xStaticAndImplicitOperators(bool useCompiledXaml)
+			{
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual("ic_close.png", layout.ToolbarItems[0].Icon.File);
 			}
 		}
 	}
