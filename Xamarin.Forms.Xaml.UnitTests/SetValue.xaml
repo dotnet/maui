@@ -84,5 +84,6 @@
 			</ContentView.Content>
 		</ContentView>
 		<local:MockViewWithValues x:Name="mockView0" UShort="32" ADecimal="42" />
+		<local:ViewWithEnums x:Name="enums" IntEnum="Foo" ByteEnum="Bar" />
 	</StackLayout>
 </ContentPage>
