@@ -94,9 +94,10 @@ namespace Xamarin.Forms.Build.Tasks
 			var localName = propertyName.LocalName;
 			TypeReference declaringTypeReference = null;
 			FieldReference bpRef = null;
+			var _ = false;
 			PropertyDefinition propertyRef = null;
 			if (parentNode is IElementNode && propertyName != XmlName.Empty) {
-				bpRef = GetBindablePropertyReference(Context.Variables [(IElementNode)parentNode], propertyName.NamespaceURI, ref localName, Context, node);
+				bpRef = GetBindablePropertyReference(Context.Variables [(IElementNode)parentNode], propertyName.NamespaceURI, ref localName, out _, Context, node);
 				propertyRef = Context.Variables [(IElementNode)parentNode].VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
 			}
 			Context.IL.Append(ProvideValue(vardefref, Context, Module, node, bpRef:bpRef, propertyRef:propertyRef, propertyDeclaringTypeRef: declaringTypeReference));
@@ -675,7 +676,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var localName = propertyName.LocalName;
-			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, context, iXmlLineInfo);
+			bool attached;
+			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out attached, context, iXmlLineInfo);
 
 			//If the target is an event, connect
 			if (CanConnectEvent(parent, localName))
@@ -690,7 +692,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return SetBinding(parent, bpRef, valueNode as IElementNode, iXmlLineInfo, context);
 
 			//If it's a BP, SetValue ()
-			if (CanSetValue(bpRef, valueNode, iXmlLineInfo, context))
+			if (CanSetValue(bpRef, attached, valueNode, iXmlLineInfo, context))
 				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context);
 
 			//If it's a property, set it
@@ -704,14 +706,14 @@ namespace Xamarin.Forms.Build.Tasks
 			throw new XamlParseException($"No property, bindable property, or event found for '{localName}'", iXmlLineInfo);
 		}
 
-		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, ILContext context, IXmlLineInfo iXmlLineInfo)
+		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
 		{
 			var module = context.Body.Method.Module;
 			TypeReference declaringTypeReference;
 
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = parent.VariableType;
-			GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
+			attached = GetNameAndTypeRef(ref bpOwnerType, namespaceURI, ref localName, context, iXmlLineInfo);
 			var name = $"{localName}Property";
 			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == name &&
 														fd.IsStatic &&
@@ -832,7 +834,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Callvirt, module.Import(setBinding));
 		}
 
-		static bool CanSetValue(FieldReference bpRef, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
+		static bool CanSetValue(FieldReference bpRef, bool attached, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
 
@@ -851,6 +853,10 @@ namespace Xamarin.Forms.Build.Tasks
 				return false;
 
 			var bpTypeRef = bpRef.GetBindablePropertyType(iXmlLineInfo, module);
+			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
+			// Worst case scenario ? InvalidCastException at runtime
+			if (attached && varValue.VariableType.FullName == "System.Object") 
+				return true;
 			return varValue.VariableType.InheritsFromOrImplements(bpTypeRef);
 		}
 
