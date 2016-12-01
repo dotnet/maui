@@ -137,7 +137,7 @@
       </Parameters>
       <Docs>
         <param name="userToken">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

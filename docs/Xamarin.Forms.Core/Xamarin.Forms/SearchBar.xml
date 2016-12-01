@@ -628,7 +628,7 @@ public class App : Application
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -229,7 +229,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -244,7 +244,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use .</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -323,7 +323,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -960,7 +960,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>Xamarin.Forms.Rectangle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Internal.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -976,7 +976,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Internal.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -992,7 +992,7 @@ namespace MyFirstFormsApp.WinPhone
         <ReturnType>System.Collections.ObjectModel.ObservableCollection&lt;Xamarin.Forms.Element&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Internal.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -1009,7 +1009,7 @@ namespace MyFirstFormsApp.WinPhone
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1025,7 +1025,7 @@ namespace MyFirstFormsApp.WinPhone
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

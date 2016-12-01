@@ -1844,7 +1844,7 @@
       </Parameters>
       <Docs>
         <param name="trigger">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
