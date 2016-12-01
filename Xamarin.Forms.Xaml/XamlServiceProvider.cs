@@ -137,6 +137,11 @@ namespace Xamarin.Forms.Xaml.Internals
 		readonly object[] objectAndParents;
 		readonly object targetProperty;
 
+		[Obsolete("TargetProperty is now supported, use it")]
+		public SimpleValueTargetProvider(object[] objectAndParents) : this (objectAndParents, null)
+		{
+		}
+
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty)
 		{
 			if (objectAndParents == null)

@@ -21,7 +21,13 @@
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete("TargetProperty is now supported, use it")</AttributeName>
+        </Attribute>
+      </Attributes>
       <Parameters>
         <Parameter Name="objectAndParents" Type="System.Object[]" />
       </Parameters>
