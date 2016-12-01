@@ -35,8 +35,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void ConstraintsAreEvaluatedWithOnPlatform(bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(Unreported007));
 				Device.OS = TargetPlatform.iOS;
 				var page = new Unreported007(useCompiledXaml);
 				Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());

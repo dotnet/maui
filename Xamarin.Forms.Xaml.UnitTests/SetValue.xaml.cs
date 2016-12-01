@@ -278,10 +278,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void NonIntEnums(bool useCompiledXaml)
 			{
-				if (useCompiledXaml) {
-					MockCompiler.Compile(typeof(SetValue));
-					return;
-				}
 				var page = new SetValue(useCompiledXaml);
 				Assert.AreEqual(IntEnum.Foo, page.enums.IntEnum);
 				Assert.AreEqual(ByteEnum.Bar, page.enums.ByteEnum);
