@@ -498,6 +498,10 @@ namespace Xamarin.Forms.Build.Tasks
 			// Worst case scenario ? InvalidCastException at runtime
 			if (attached && varValue.VariableType.FullName == "System.Object") 
 				return true;
+			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(bpTypeRef, module);
+			if (implicitOperator != null)
+				return true;
+
 			return varValue.VariableType.InheritsFromOrImplements(bpTypeRef);
 		}
 
@@ -520,9 +524,17 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var instruction in valueNode.PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef:bpRef), true, false))
 					yield return instruction;
 			} else if (elementNode != null) {
-				yield return Instruction.Create(OpCodes.Ldloc, context.Variables [elementNode]);
-				if (context.Variables [elementNode].VariableType.IsValueType)
-					yield return Instruction.Create(OpCodes.Box, context.Variables [elementNode].VariableType);
+				var bpTypeRef = bpRef.GetBindablePropertyType(iXmlLineInfo, module);
+				var varDef = context.Variables[elementNode];
+				var varType = varDef.VariableType;
+				var implicitOperator = varDef.VariableType.GetImplicitOperatorTo(bpTypeRef, module);
+				yield return Instruction.Create(OpCodes.Ldloc, varDef);
+				if (implicitOperator != null) {
+					yield return Instruction.Create(OpCodes.Call, module.Import(implicitOperator));
+					varType = module.Import(bpTypeRef);
+				}
+				if (varType.IsValueType)
+					yield return Instruction.Create(OpCodes.Box, varType);
 			}
 
 			yield return Instruction.Create(OpCodes.Callvirt, module.Import(setValue));

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		x:Class="Xamarin.Forms.Xaml.UnitTests.Unreported007">
+
+	<Label Text="Foo" x:Name="label">
+		<RelativeLayout.XConstraint>
+			<OnPlatform x:TypeArguments="Constraint" Android="{ConstraintExpression Type=Constant,Constant=6}" iOS="{ConstraintExpression Type=Constant,Constant=3}" />
+		</RelativeLayout.XConstraint>
+	</Label>
+</ContentPage>
