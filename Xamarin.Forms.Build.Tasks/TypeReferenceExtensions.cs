@@ -84,6 +84,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static bool InheritsFromOrImplements(this TypeReference typeRef, TypeReference baseClass)
 		{
+			if (typeRef.FullName == baseClass.FullName)
+				return true;
+
 			var arrayInterfaces = new[]
 			{
 				"System.IEnumerable",
