@@ -52,8 +52,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void IValueConverterOnBindings(bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(Bz47703));
 				var page = new Bz47703(useCompiledXaml);
 				page.BindingContext = new { Name = "Foo" };
 				Assert.AreEqual("Label:Foo", page.view.Text);
