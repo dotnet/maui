@@ -8,6 +8,8 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 		{
 			PushAsync(CreateRoot(restore));
 			WindowsPlatformSpecificsGalleryHelpers.AddToolBarItems(this);
+
+			BarBackgroundColor = Color.CornflowerBlue;
 		}
 
 		ContentPage CreateRoot(ICommand restore)

@@ -41,11 +41,10 @@ namespace Xamarin.Forms.Platform.WinRT
 
 #if WINDOWS_UWP
         ToolbarPlacement _toolbarPlacement;
-		Border _bottomCommandBarArea;
-		Border _topCommandBarArea;
+	    readonly ToolbarPlacementHelper _toolbarPlacementHelper = new ToolbarPlacementHelper();
 #endif
 
-        TaskCompletionSource<CommandBar> _commandBarTcs;
+		TaskCompletionSource<CommandBar> _commandBarTcs;
 		Windows.UI.Xaml.Controls.ContentPresenter _presenter;
 	    
 
@@ -95,7 +94,7 @@ namespace Xamarin.Forms.Platform.WinRT
             set
             {
                 _toolbarPlacement = value; 
-                UpdateToolbarPlacement();
+                _toolbarPlacementHelper.UpdateToolbarPlacement();
             }
         }
 #endif
@@ -147,16 +146,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			_presenter = GetTemplateChild("presenter") as Windows.UI.Xaml.Controls.ContentPresenter;
 
 			_commandBar = GetTemplateChild("CommandBar") as CommandBar;
-#if WINDOWS_UWP
-			_bottomCommandBarArea = GetTemplateChild("BottomCommandBarArea") as Border;
-			_topCommandBarArea = GetTemplateChild("TopCommandBarArea") as Border;
 
-			if (_commandBar != null && _bottomCommandBarArea != null && _topCommandBarArea != null)
-			{
-				// We have to wait for the command bar to load so that it'll be in the control hierarchy
-				// otherwise we can't properly move it to wherever the toolbar is supposed to be
-				_commandBar.Loaded += (sender, args) => UpdateToolbarPlacement();
-			} 
+#if WINDOWS_UWP
+			_toolbarPlacementHelper.Initialize(_commandBar, () => ToolbarPlacement, GetTemplateChild);
 #endif
 
 			TaskCompletionSource<CommandBar> tcs = _commandBarTcs;
@@ -192,12 +184,5 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			_backButton.Opacity = ShowBackButton ? 1 : 0;
 		}
-
-#if WINDOWS_UWP
-        void UpdateToolbarPlacement()
-		{
-			ToolbarPlacementHelper.UpdateToolbarPlacement(_commandBar, ToolbarPlacement, _bottomCommandBarArea, _topCommandBarArea);
-		}
-#endif
     }
 }
