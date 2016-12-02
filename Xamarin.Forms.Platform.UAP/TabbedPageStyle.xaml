@@ -64,22 +64,17 @@
 							</VisualStateGroup>
 						</VisualStateManager.VisualStateGroups>
 
-						<Grid x:Name="TitleBar" Background="{TemplateBinding ToolbarBackground}" HorizontalAlignment="Stretch">
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto"></ColumnDefinition>
-								<ColumnDefinition Width="*"></ColumnDefinition>
-							</Grid.ColumnDefinitions>
+                        <Border x:Name="TopCommandBarArea" HorizontalAlignment="Stretch" Background="{TemplateBinding ToolbarBackground}">
+                            <uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" MinHeight="{ThemeResource TitleBarHeight}">
+                                <uwp:FormsCommandBar.Content>
+                                    <Border x:Name="TitleArea" Visibility="{TemplateBinding TitleVisibility}" Height="{ThemeResource TitleBarHeight}">
+                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Padding="10,0,0,0" Foreground="Red" Style="{ThemeResource TitleTextBlockStyle}" />
+                                    </Border>
+                                </uwp:FormsCommandBar.Content>
+                            </uwp:FormsCommandBar>
+                        </Border>
 
-							<Border Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding TitleVisibility}">
-								<TextBlock Text="{Binding Title}" VerticalAlignment="Center" Padding="10,0,0,0" Foreground="{TemplateBinding ToolbarForeground}" Style="{ThemeResource TitleTextBlockStyle}" />
-							</Border>
-							
-							<Border x:Name="TopCommandBarArea" Grid.Column="1" HorizontalAlignment="Stretch">
-								<uwp:FormsCommandBar x:Name="CommandBar" VerticalContentAlignment="Top" Background="{TemplateBinding ToolbarBackground}" Height="{ThemeResource TitleBarHeight}" />
-							</Border>
-						</Grid>
-						
-						<Grid Grid.Row="1">
+                        <Grid Grid.Row="1">
 							<Grid.Resources>
 								<ControlTemplate x:Key="NextTemplate" TargetType="Button">
 									<Border x:Name="Root" BorderBrush="{ThemeResource SystemControlForegroundTransparentBrush}" BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}" Background="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}">

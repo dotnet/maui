@@ -5,6 +5,7 @@
 	x:Class="Xamarin.Forms.Platform.UWP.Resources">
 
 	<ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="FormsCommandBarStyle.xaml" />
 		<ResourceDictionary Source="PageControlStyle.xaml" />
 		<ResourceDictionary Source="FormsTextBoxStyle.xaml" />
 		<ResourceDictionary Source="AutoSuggestStyle.xaml" />
