@@ -14,7 +14,7 @@
 		<Setter Property="ItemTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<uwp:TabbedPagePresenter Content="{Binding}" ContentTemplate="{ThemeResource ContainedPageTemplate}" />
+					<uwp:FormsPresenter Content="{Binding}" ContentTemplate="{ThemeResource ContainedPageTemplate}" />
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>

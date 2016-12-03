@@ -12,35 +12,6 @@ using WGrid = Windows.UI.Xaml.Controls.Grid;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class TabbedPagePresenter : Windows.UI.Xaml.Controls.ContentPresenter
-	{
-		public TabbedPagePresenter()
-		{
-			Loaded += TabbedPagePresenter_Loaded;
-			Unloaded += TabbedPagePresenter_Unloaded;
-			SizeChanged += (s, e) =>
-			{
-				if (ActualWidth > 0 && ActualHeight > 0)
-				{
-					var tab = (Page)DataContext;
-					((IPageController)tab.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
-				}
-			};
-		}
-
-		void TabbedPagePresenter_Loaded(object sender, RoutedEventArgs e)
-		{
-			var tab = (IPageController)DataContext;
-			tab.SendAppearing();
-		}
-
-		void TabbedPagePresenter_Unloaded(object sender, RoutedEventArgs e)
-		{
-			var tab = (IPageController)DataContext;
-			tab.SendDisappearing();
-		}
-	}
-
     public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
     {
         const string TabBarHeaderTextBlockName = "TabbedPageHeaderTextBlock";
