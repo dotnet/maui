@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Markup;
 using System.Xml;
 
 namespace Xamarin.Forms.Xaml

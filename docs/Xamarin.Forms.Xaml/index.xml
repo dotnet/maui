@@ -48,28 +48,28 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms.Xaml")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Xamarin.Forms.Xaml")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "Xamarin.Forms.Xaml")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Windows.Markup.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms.Xaml")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "Xamarin.Forms.Xaml")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml", "System", AssemblyName="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "Xamarin.Forms.Xaml")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>Xamarin.Forms.XmlnsDefinition("http://schemas.microsoft.com/winfx/2009/xaml", "System", AssemblyName="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>

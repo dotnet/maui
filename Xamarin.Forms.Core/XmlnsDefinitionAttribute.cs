@@ -1,11 +1,10 @@
-﻿using System;
-using System.Reflection;
-using System.Diagnostics;
-namespace Xamarin.Forms
+﻿using System.Diagnostics;
+
+namespace System.Windows.Markup
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	[DebuggerDisplay("{XmlNamespace}, {ClrNamespace}, {AssemblyName}")]
-	public sealed class XmlnsDefinitionAttribute : Attribute
+	sealed class XmlnsDefinitionAttribute : Attribute
 	{
 		public string XmlNamespace { get; }
 		public string ClrNamespace { get; }
