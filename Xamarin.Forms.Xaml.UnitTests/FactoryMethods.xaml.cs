@@ -32,6 +32,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Content = "int ctor " + arg.ToString ();
 		}
 
+		public MockFactory(object [] args)
+		{
+			Content = string.Join(" ", args);
+		}
+
 		public static  MockFactory ParameterlessFactory ()
 		{
 			return new MockFactory {
@@ -137,6 +142,14 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				var layout = new FactoryMethods(useCompiledXaml);
 				Assert.AreEqual("alternate ctor Property", layout.v7.Content.Content);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void TestCtorWithArrayParameter(bool useCompiledXaml)
+			{
+				var layout = new FactoryMethods(useCompiledXaml);
+				Assert.AreEqual("Foo Bar", layout.v8.Content.Content);
 			}
 		}
 	}

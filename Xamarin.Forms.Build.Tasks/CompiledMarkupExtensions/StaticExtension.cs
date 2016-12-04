@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xamarin.Forms.Xaml;
@@ -11,11 +10,11 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	class StaticExtension : ICompiledMarkupExtension
 	{
-		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, out TypeReference memberRef)
+		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
 		{
 			INode ntype;
 			if (!node.Properties.TryGetValue(new XmlName("", "Member"), out ntype))
-				ntype = node.CollectionItems [0];
+				ntype = node.CollectionItems[0];
 			var member = ((ValueNode)ntype).Value as string;
 
 			if (IsNullOrEmpty(member) || !member.Contains(".")) {

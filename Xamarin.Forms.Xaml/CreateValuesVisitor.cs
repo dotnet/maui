@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Xaml
 			Values[node] = value;
 
 			var markup = value as IMarkupExtension;
-			if (markup != null && (value is TypeExtension || value is StaticExtension))
+			if (markup != null && (value is TypeExtension || value is StaticExtension || value is ArrayExtension))
 			{
 				var serviceProvider = new XamlServiceProvider(node, Context);
 
@@ -119,8 +119,15 @@ namespace Xamarin.Forms.Xaml
 
 				value = markup.ProvideValue(serviceProvider);
 
+				INode xKey;
+				if (!node.Properties.TryGetValue(XmlName.xKey, out xKey))
+					xKey = null;
+				
 				node.Properties.Clear();
 				node.CollectionItems.Clear();
+
+				if (xKey != null)
+					node.Properties.Add(XmlName.xKey, xKey);
 
 				Values[node] = value;
 			}

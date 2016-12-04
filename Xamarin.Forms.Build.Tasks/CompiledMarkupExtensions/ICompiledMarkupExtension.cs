@@ -7,6 +7,6 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	interface ICompiledMarkupExtension
 	{
-		IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, out TypeReference typeRef);
+		IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference typeRef);
 	}
 }

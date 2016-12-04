@@ -65,12 +65,9 @@ namespace Xamarin.Forms.Build.Tasks
 			genericArguments = null;
 			var typeDef = typeRef.Resolve();
 			TypeReference iface;
-			if (
-				(iface =
-					typeDef.Interfaces.FirstOrDefault(
-						tr =>
-							tr.FullName.StartsWith(@interface) && tr.IsGenericInstance && (tr as GenericInstanceType).HasGenericArguments)) !=
-				null)
+			if ((iface = typeDef.Interfaces.FirstOrDefault(tr =>
+							tr.FullName.StartsWith(@interface, StringComparison.Ordinal) &&
+							tr.IsGenericInstance && (tr as GenericInstanceType).HasGenericArguments)) != null)
 			{
 				interfaceReference = iface as GenericInstanceType;
 				genericArguments = (iface as GenericInstanceType).GenericArguments;
@@ -89,19 +86,24 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var arrayInterfaces = new[]
 			{
-				"System.IEnumerable",
+				"System.Collections.IEnumerable",
 				"System.Collections.IList",
 				"System.Collections.Collection"
 			};
 
 			var arrayGenericInterfaces = new[]
 			{
-				"System.IEnumerable`1",
+				"System.Collections.IEnumerable`1",
 				"System.Collections.Generic.IList`1",
 				"System.Collections.Generic.IReadOnlyCollection<T>",
 				"System.Collections.Generic.IReadOnlyList<T>",
 				"System.Collections.Generic.Collection<T>"
 			};
+
+			if (typeRef.IsArray && baseClass.IsArray) {
+				typeRef = typeRef.Resolve();
+				baseClass = baseClass.Resolve();
+			}
 
 			if (typeRef.IsArray)
 			{
@@ -112,7 +114,9 @@ namespace Xamarin.Forms.Build.Tasks
 				    baseClass.IsGenericInstance &&
 				    (baseClass as GenericInstanceType).GenericArguments[0].FullName == arrayType.FullName)
 					return true;
+				return false;
 			}
+
 			var typeDef = typeRef.Resolve();
 			if (typeDef.FullName == baseClass.FullName)
 				return true;

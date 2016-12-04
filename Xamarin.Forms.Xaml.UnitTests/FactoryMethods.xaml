@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
@@ -32,7 +32,7 @@
 			<local:MockView.Content>
 				<local:MockFactory x:FactoryMethod="ParameterlessFactory">
 				</local:MockFactory>
-				</local:MockView.Content>
+			</local:MockView.Content>
 		</local:MockView>
 		<local:MockView x:Name="v4">
 			<local:MockView.Content>
@@ -66,6 +66,18 @@
 		<local:MockView x:Name="v7">
 			<local:MockView.Content>
 				<local:MockFactory x:Arguments="{x:Static local:MockxStatic.MockStaticProperty}"/>
+			</local:MockView.Content>
+		</local:MockView>
+		<local:MockView x:Name="v8">
+			<local:MockView.Content>
+				<local:MockFactory >
+					<x:Arguments>
+						<x:Array Type="{x:Type x:Object}">
+				           <x:String>Foo</x:String>
+				           <x:String>Bar</x:String>
+				         </x:Array>
+					</x:Arguments>
+				</local:MockFactory>
 			</local:MockView.Content>
 		</local:MockView>
 	</StackLayout>

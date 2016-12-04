@@ -100,6 +100,7 @@
     <Compile Include="CompiledConverters\RectangleTypeConverter.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="XamlTask.cs" />
+    <Compile Include="CompiledMarkupExtensions\ArrayExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

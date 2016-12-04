@@ -94,7 +94,6 @@
     <Compile Include="OnPlatformTests.cs" />
     <Compile Include="NullExtensionTests.cs" />
     <Compile Include="TypeExtensionTests.cs" />
-    <Compile Include="FactoryMethodTests.cs" />
     <Compile Include="XamlgTests.cs" />
     <Compile Include="Issues\TestCases.cs" />
     <Compile Include="Issues\Issue1493.cs" />
@@ -391,6 +390,12 @@
     <Compile Include="Issues\Bz47703.xaml.cs">
       <DependentUpon>Bz47703.xaml</DependentUpon>
     </Compile>
+     <Compile Include="FactoryMethodMissingCtor.xaml.cs">
+       <DependentUpon>FactoryMethodMissingCtor.xaml</DependentUpon>
+     </Compile>
+     <Compile Include="FactoryMethodMissingMethod.xaml.cs">
+       <DependentUpon>FactoryMethodMissingMethod.xaml</DependentUpon>
+     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -701,6 +706,12 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz47703.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FactoryMethodMissingCtor.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FactoryMethodMissingMethod.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

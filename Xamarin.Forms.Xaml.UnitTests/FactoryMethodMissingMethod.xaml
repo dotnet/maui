@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:MockView
+		xmlns="http://xamarin.com/schemas/2014/forms"
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests"
+		x:Class="Xamarin.Forms.Xaml.UnitTests.FactoryMethodMissingMethod">
+	<local:MockView.Content>
+		<local:MockFactory x:FactoryMethod="Factory">
+			<x:Arguments>
+				<x:Object/>
+				<x:String>bar</x:String>
+				<x:Int32>42</x:Int32>
+			</x:Arguments>
+		</local:MockFactory>
+	</local:MockView.Content>
+</local:MockView>

@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (typeref.FullName == "Xamarin.Forms.Xaml.StaticExtension") {
 				var markupProvider = new StaticExtension();
 
-				var il = markupProvider.ProvideValue(node, Module, out typeref);
+				var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
 
 				var vardef = new VariableDefinition(typeref);
 				Context.Variables [node] = vardef;
@@ -180,7 +180,6 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Initobj, Module.Import(typedef));
 				}
 
-				//if/when we land the compiled converters, those 2 blocks could be greatly simplified
 				if (typeref.FullName == "Xamarin.Forms.Xaml.TypeExtension") {
 					var visitor = new SetPropertiesVisitor(Context);
 					foreach (var cnode in node.Properties.Values.ToList())
@@ -211,6 +210,30 @@ namespace Xamarin.Forms.Build.Tasks
 						Context.Variables [node] = vardefref.VariableDefinition;
 						Context.Body.Variables.Add(vardefref.VariableDefinition);
 					}
+				}
+
+				if (typeref.FullName == "Xamarin.Forms.Xaml.ArrayExtension")
+				{
+					var visitor = new SetPropertiesVisitor(Context);
+					foreach (var cnode in node.Properties.Values.ToList())
+						cnode.Accept(visitor, node);
+					foreach (var cnode in node.CollectionItems)
+						cnode.Accept(visitor, node);
+
+					var markupProvider = new ArrayExtension();
+
+					var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
+
+					vardef = new VariableDefinition(typeref);
+					Context.Variables[node] = vardef;
+					Context.Body.Variables.Add(vardef);
+
+					Context.IL.Append(il);
+					Context.IL.Emit(OpCodes.Stloc, vardef);
+
+					//clean the node as it has been fully exhausted
+					node.Properties.Remove(new XmlName("","Type"));
+					node.CollectionItems.Clear();
 				}
 			}
 		}
@@ -316,8 +339,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static bool IsXaml2009LanguagePrimitive(IElementNode node)
 		{
-			if (node.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml")
-				return true;
+			if (node.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml") {
+				var n = node.XmlType.Name.Split(':') [1];
+				return n != "Array";
+			}
 			if (node.NamespaceURI != "clr-namespace:System;assembly=mscorlib")
 				return false;
 			var name = node.XmlType.Name.Split(':')[1];
