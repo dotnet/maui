@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_tapGesture != null)
 				{
-					if (_clickOffView != null && _clickOffView.GestureRecognizers.Contains(_panGesture))
+					if (_clickOffView != null && _clickOffView.GestureRecognizers.Contains(_tapGesture))
 					{
 						_clickOffView.GestureRecognizers.Remove(_tapGesture);
 						_clickOffView.Dispose();
