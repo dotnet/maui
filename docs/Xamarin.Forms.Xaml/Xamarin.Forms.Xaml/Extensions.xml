@@ -76,7 +76,7 @@
         <typeparam name="TXaml">To be added.</typeparam>
         <param name="view">To be added.</param>
         <param name="callingType">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the XAML infrastructure.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

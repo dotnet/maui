@@ -21,7 +21,7 @@
   <Interfaces />
   <Docs>
     <typeparam name="T">To be added.</typeparam>
-    <summary>Provides idiom-specific implementation of T for the current TargetIdiom.</summary>
+    <summary>Provides idiom-specific implementation of <paramref name="T" /> for the current target idiom.</summary>
     <remarks>
     </remarks>
   </Docs>
@@ -58,7 +58,7 @@
         <ReturnType>T</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets or sets the value applied on desktop systems.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

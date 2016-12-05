@@ -142,7 +142,7 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>Xamarin.Forms.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets or sets the text color.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -158,7 +158,7 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.TimePicker.TextColor" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

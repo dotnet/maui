@@ -33,7 +33,7 @@
       <Docs>
         <param name="page">To be added.</param>
         <param name="poppedPages">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
