@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Markup;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks

@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Windows.Markup;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
