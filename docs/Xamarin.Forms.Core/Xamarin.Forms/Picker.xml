@@ -42,7 +42,7 @@ namespace FormsGallery
         Dictionary<string, Color> nameToColor = new Dictionary<string, Color>
         {
             { "Aqua", Color.Aqua }, { "Black", Color.Black },
-            { "Blue", Color.Blue }, { "Fuschia", Color.Fuschia },
+            { "Blue", Color.Blue }, { "Fucshia", Color.Fucshia },
             { "Gray", Color.Gray }, { "Green", Color.Green },
             { "Lime", Color.Lime }, { "Maroon", Color.Maroon },
             { "Navy", Color.Navy }, { "Olive", Color.Olive },
@@ -274,7 +274,7 @@ namespace FormsGallery
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the index of the slected item of the picker. This is a bindable property.</summary>
+        <summary>Gets or sets the index of the selected item of the picker. This is a bindable property.</summary>
         <value>An 0-based index representing the selected item in the list. Default is -1.</value>
         <remarks>A value of -1 represents no item selected.</remarks>
       </Docs>

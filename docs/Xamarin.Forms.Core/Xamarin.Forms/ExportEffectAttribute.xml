@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Attribute that identifies a <see cref="T:Xamarin.Forms.Effect" /> with a unique identifier that can be used with <see cref="MXamarin.Forms.Effect.Resolve" /> to locate an effect.</summary>
+    <summary>Attribute that identifies a <see cref="T:Xamarin.Forms.Effect" /> with a unique identifier that can be used with <see cref="M:Xamarin.Forms.Effect.Resolve" /> to locate an effect.</summary>
     <remarks>
       <para>Developers must supply a name that is unique over the scope of the value that was supplied to <see cref="T:Xamarin.Forms.ResolutionGroupNameAttribute" />. The <see cref="T:Xamarin.Forms.Effect.Resolve" /> method takes a string that is the concatenation of the the resolution group name that was provided to <see cref="T:Xamarin.Forms.ResolutionGroupNameAttribute" />, '<c>.</c>', and the name that was supplied to <see cref="T:Xamarin.Forms.ExportEffectAttribute" />, and returns an effect that will have the type <paramref name="effectType" />.</para>
       <example>

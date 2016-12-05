@@ -132,7 +132,7 @@ var image = new Image { Source = "picture.png" };]]></code>
       </ReturnValue>
       <Docs>
         <summary>Gets the loading status of the image. This is a bindable property.</summary>
-        <value>A <see cref="T:System.Boolean" /> indicating if the image is loadin. Default is false.</value>
+        <value>A <see cref="T:System.Boolean" /> indicating if the image is loading. Default is false.</value>
         <remarks>
           <para>
               The following example illustrates running a  <see cref="T:Xamarin.Forms.ActivityIndicator" /> to indicate that the image is loading:</para>

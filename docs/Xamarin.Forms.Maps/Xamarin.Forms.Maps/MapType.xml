@@ -34,7 +34,7 @@
         <ReturnType>Xamarin.Forms.Maps.MapType</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>A map that combinse satellite imagery and street data.</summary>
+        <summary>A map that combines satellite imagery and street data.</summary>
       </Docs>
     </Member>
     <Member MemberName="Satellite">

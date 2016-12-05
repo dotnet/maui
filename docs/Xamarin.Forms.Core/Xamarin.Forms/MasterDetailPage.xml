@@ -57,7 +57,7 @@ namespace FormsGallery
                     new NamedColor("Aqua", Color.Aqua),
                     new NamedColor("Black", Color.Black),
                     new NamedColor("Blue", Color.Blue),
-                    new NamedColor("Fuschia", Color.Fuschia),
+                    new NamedColor("Fucshia", Color.Fucshia),
                     new NamedColor("Gray", Color.Gray),
                     new NamedColor("Green", Color.Green),
                     new NamedColor("Lime", Color.Lime),
