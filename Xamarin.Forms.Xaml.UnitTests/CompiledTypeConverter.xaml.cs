@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Xamarin.Forms;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -31,14 +27,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
-			[TestCase (false)]
-			[TestCase (true)]
-			public void CompiledTypeConverterAreInvoked (bool useCompiledXaml)
+			[TestCase(false)]
+			[TestCase(true)]
+			public void CompiledTypeConverterAreInvoked(bool useCompiledXaml)
 			{
-				var p = new CompiledTypeConverter (useCompiledXaml);
-				Assert.AreEqual (new Rectangle (0, 1, 2, 4), p.RectangleP);
-				Assert.AreEqual (new Rectangle (4, 8, 16, 32), p.RectangleBP);
-				Assert.AreEqual (Color.Pink, p.BackgroundColor);
+				var p = new CompiledTypeConverter(useCompiledXaml);
+				Assert.AreEqual(new Rectangle(0, 1, 2, 4), p.RectangleP);
+				Assert.AreEqual(new Rectangle(4, 8, 16, 32), p.RectangleBP);
+				Assert.AreEqual(Color.Pink, p.BackgroundColor);
+				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
+				var xConstraint = RelativeLayout.GetXConstraint(p.label);
+				Assert.AreEqual(2, xConstraint.Compute(null));
 			}
 		}
 	}
