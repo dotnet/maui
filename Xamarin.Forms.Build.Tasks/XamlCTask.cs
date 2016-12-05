@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ICSharpCode.Decompiler;
-using ICSharpCode.Decompiler.Ast;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -16,7 +14,13 @@ namespace Xamarin.Forms.Build.Tasks
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
 		public bool OptimizeIL { get; set; }
-		public bool OutputGeneratedILAsCode { get; set; }
+
+		bool outputGeneratedILAsCode;
+		[Obsolete("This option is no longer available")]
+		public bool OutputGeneratedILAsCode {
+			get { return outputGeneratedILAsCode; }
+			set { outputGeneratedILAsCode = value; }
+		}
 
 		internal string Type { get; set; }
 
@@ -185,22 +189,9 @@ namespace Xamarin.Forms.Build.Tasks
 						Logger.LogLine(2, "done");
 					}
 
-					if (OutputGeneratedILAsCode)
-					{
-						var filepath = Path.Combine(Path.GetDirectoryName(Assembly), typeDef.FullName + ".decompiled.cs");
-						Logger.LogString(2, "   Decompiling {0} into {1}...", typeDef.FullName, filepath);
-						var decompilerContext = new DecompilerContext(module);
-						using (var writer = new StreamWriter(filepath))
-						{
-							var output = new PlainTextOutput(writer);
+					if (outputGeneratedILAsCode)
+						Logger.LogLine(2, "   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
 
-							var codeDomBuilder = new AstBuilder(decompilerContext);
-							codeDomBuilder.AddType(typeDef);
-							codeDomBuilder.GenerateCode(output);
-						}
-
-						Logger.LogLine(2, "done");
-					}
 					resourcesToPrune.Add(resource);
 				}
 				if (!KeepXamlResources)

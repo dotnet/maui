@@ -16,7 +16,6 @@ namespace Xamarin.Forms.Xaml
 			int verbosity = 1;
 			bool keep = false;
 			bool optimize = false;
-			bool decompile = false;
 			string paths = null;
 			string refs = null;
 			List<string> extra = null;
@@ -29,7 +28,6 @@ namespace Xamarin.Forms.Xaml
 				{ "keep", "do not strip compiled embedded xaml", v => keep = true },
 				{ "p=|paths=|dependencypaths=", "look for dependencies in (comma separated) list of paths", v => paths = v },
 				{ "r=", "referencepath", v => refs = v },
-				{ "d|decompile", v => decompile = true }
 			};
 
 			if (help || args.Length < 1)
@@ -64,8 +62,7 @@ namespace Xamarin.Forms.Xaml
 				KeepXamlResources = keep,
 				OptimizeIL = optimize,
 				DependencyPaths = paths,
-				ReferencePath = refs,
-				OutputGeneratedILAsCode=decompile,
+				ReferencePath = refs
 			};
 			xamlc.Execute(null);
 		}

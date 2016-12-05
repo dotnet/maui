@@ -118,11 +118,6 @@
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Mdb.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Pdb.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Rocks.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
-    <file src="..\ICSharpCode.Decompiler\bin\$Configuration$\ICSharpCode.Decompiler.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
-    <file src="..\ICSharpCode.Decompiler\bin\$Configuration$\ICSharpCode.NRefactory.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
-    <file src="..\ICSharpCode.Decompiler\bin\$Configuration$\ICSharpCode.NRefactory.Cecil.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
-    <file src="..\ICSharpCode.Decompiler\bin\$Configuration$\ICSharpCode.NRefactory.CSharp.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
-    <file src="..\ICSharpCode.Decompiler\bin\$Configuration$\ICSharpCode.NRefactory.Xml.dll" target="build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20" />
 
     <!--Android-->
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid10" />
