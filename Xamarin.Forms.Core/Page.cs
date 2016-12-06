@@ -167,20 +167,17 @@ namespace Xamarin.Forms
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			foreach (Element element in ElementController.LogicalChildren)
+			List<Element> elements = ElementController.LogicalChildren.ToList();
+			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
 				if (child == null)
 					continue;
 				var page = child as Page;
 				if (page != null && ((IPageController)page).IgnoresContainerArea)
-				{
 					Forms.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
-				}
 				else
-				{
 					Forms.Layout.LayoutChildIntoBoundingRegion(child, area);
-				}
 			}
 		}
 
