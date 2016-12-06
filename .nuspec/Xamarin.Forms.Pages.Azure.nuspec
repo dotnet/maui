@@ -5,7 +5,7 @@
     <version>$version$</version>
     <authors>Xamarin, Inc.</authors>
     <owners>Xamarin, Inc.</owners>
-    <licenseUrl>http://download.xamarin.com/content/licenses/Xamarin.Forms.rtf</licenseUrl>
+    <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
     <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
