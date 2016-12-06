@@ -471,6 +471,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			Element.InvokeItemSelected(indexPath.Row);
 		}
 
+		CollectionViewController _controller;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Bugzilla21177.CollectionView> e)
 		{
 			if (e.NewElement != null)
@@ -482,8 +484,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 					MinimumInteritemSpacing = 5, // minimum spacing between cells 
 					MinimumLineSpacing = 5 // minimum spacing between rows if ScrollDirection is Vertical or between columns if Horizontal 
 				};
-				var collectionView = new CollectionViewController(flowLayout, ItemSelected);
-				SetNativeControl(collectionView.CollectionView);
+				_controller = new CollectionViewController(flowLayout, ItemSelected);
+				SetNativeControl(_controller.CollectionView);
 			}
 
 			base.OnElementChanged(e);
