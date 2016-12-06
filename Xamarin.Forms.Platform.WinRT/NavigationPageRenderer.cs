@@ -427,7 +427,9 @@ namespace Xamarin.Forms.Platform.WinRT
 				_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 			}
 
-			_previousPage = _currentPage;
+			if (!isPopping)
+				_previousPage = _currentPage;
+
 			_currentPage = page;
 
 			if (page == null)
