@@ -290,6 +290,22 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Finalize">
+      <MemberSignature Language="C#" Value="~VisualElement ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void Finalize() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Focus">
       <MemberSignature Language="C#" Value="public bool Focus ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance bool Focus() cil managed" />

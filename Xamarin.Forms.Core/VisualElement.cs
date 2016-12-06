@@ -781,5 +781,18 @@ namespace Xamarin.Forms
 
 			public bool Result { get; set; }
 		}
+
+		~VisualElement()
+		{
+			if (!GetIsDefault(BehaviorsProperty)) {
+				var behaviors = GetValue(BehaviorsProperty) as AttachedCollection<Behavior>;
+				behaviors.DetachFrom(this);
+			}
+
+			if (!GetIsDefault(TriggersProperty)) {
+				var triggers = GetValue(TriggersProperty) as AttachedCollection<Trigger>;
+				triggers.DetachFrom(this);
+			}
+		}
 	}
 }

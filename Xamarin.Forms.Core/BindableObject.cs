@@ -163,6 +163,14 @@ namespace Xamarin.Forms
 			return bpcontext != null && bpcontext.Binding != null;
 		}
 
+		internal bool GetIsDefault(BindableProperty targetProperty)
+		{
+			if (targetProperty == null)
+				throw new ArgumentNullException(nameof(targetProperty));
+
+			return GetContext(targetProperty) == null;
+		}
+
 		internal object[] GetValues(BindableProperty property0, BindableProperty property1)
 		{
 			var values = new object[2];
