@@ -2,13 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace Xamarin.Forms
 {
 	public class ResourceDictionary : IResourceDictionary, IDictionary<string, object>
 	{
+		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
 
 		Type _mergedWith;
@@ -18,26 +19,17 @@ namespace Xamarin.Forms
 			set { 
 				if (_mergedWith == value)
 					return;
+
+				if (!typeof(ResourceDictionary).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo()))
+					throw new ArgumentException("MergedWith should inherit from ResourceDictionary");
+
 				_mergedWith = value;
 				if (_mergedWith == null)
 					return;
 
-				_mergedInstance = _mergedWith.GetTypeInfo().BaseType.GetTypeInfo().DeclaredMethods.First(mi => mi.Name == "GetInstance").Invoke(null, new object[] {_mergedWith}) as ResourceDictionary;
+				_mergedInstance = s_instances.GetValue(_mergedWith,(key) => (ResourceDictionary)Activator.CreateInstance(key));
 				OnValuesChanged (_mergedInstance.ToArray());
 			}
-		}
-
-		static Dictionary<Type, ResourceDictionary> _instances;
-		static ResourceDictionary GetInstance(Type type)
-		{
-			_instances = _instances ?? new Dictionary<Type, ResourceDictionary>();
-			ResourceDictionary rd;
-			if (!_instances.TryGetValue(type, out rd))
-			{
-				rd = ((ResourceDictionary)Activator.CreateInstance(type));
-				_instances [type] = rd;
-			}
-			return rd;
 		}
 
 		ResourceDictionary _mergedInstance;
@@ -65,7 +57,7 @@ namespace Xamarin.Forms
 
 		public int Count
 		{
-			get { return _innerDictionary.Count + (_mergedInstance != null ? _mergedInstance.Count: 0); }
+			get { return _innerDictionary.Count; }
 		}
 
 		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
@@ -96,8 +88,6 @@ namespace Xamarin.Forms
 			{
 				if (_innerDictionary.ContainsKey(index))
 					return _innerDictionary[index];
-				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
-					return _mergedInstance[index];
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -129,13 +119,25 @@ namespace Xamarin.Forms
 
 		public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
 		{
-			var rd = (IEnumerable<KeyValuePair<string,object>>)_innerDictionary;
-			if (_mergedInstance != null)
-				rd = rd.Concat(_mergedInstance._innerDictionary);
-			return rd.GetEnumerator();
+			return _innerDictionary.GetEnumerator();
+		}
+
+		internal IEnumerable<KeyValuePair<string, object>> MergedResources {
+			get {
+				if (_mergedInstance != null)
+					foreach (var r in _mergedInstance.MergedResources)
+						yield return r;
+				foreach (var r in _innerDictionary)
+					yield return r;
+			}
 		}
 
 		public bool TryGetValue(string key, out object value)
+		{
+			return _innerDictionary.TryGetValue(key, out value);
+		}
+
+		internal bool TryGetMergedValue(string key, out object value)
 		{
 			return _innerDictionary.TryGetValue(key, out value) || (_mergedInstance != null && _mergedInstance.TryGetValue(key, out value));
 		}

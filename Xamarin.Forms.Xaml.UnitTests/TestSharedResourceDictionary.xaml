@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
@@ -16,6 +16,7 @@
 				<ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
 			</ContentView.Resources>
 			<Label x:Name="label2" Style="{StaticResource sharedStyle2}"/>
+			<Label x:Name="label3" Text="{StaticResource foo}"/>
 		</ContentView>
 	</StackLayout>
 </ContentPage>

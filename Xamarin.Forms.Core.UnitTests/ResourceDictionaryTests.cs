@@ -253,13 +253,44 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Fail ();
 		}
 
-        [Test]
-        public void ShowKeyInExceptionIfNotFound()
-        {
-            var rd = new ResourceDictionary();
-            rd.Add("foo", "bar");
-            var ex = Assert.Throws<KeyNotFoundException>(() => { var foo = rd["test_invalid_key"]; });
-            Assert.That(ex.Message, Is.StringContaining("test_invalid_key"));
-        }
-    }
+		[Test]
+		public void ShowKeyInExceptionIfNotFound()
+		{
+			var rd = new ResourceDictionary();
+			rd.Add("foo", "bar");
+			var ex = Assert.Throws<KeyNotFoundException>(() => { var foo = rd ["test_invalid_key"]; });
+			Assert.That(ex.Message, Is.StringContaining("test_invalid_key"));
+		}
+
+		class MyRD : ResourceDictionary
+		{
+			public MyRD()
+			{
+				CreationCount = CreationCount + 1;
+				Add("foo", "Foo");
+				Add("bar", "Bar");
+			}
+
+			public static int CreationCount { get; set; }
+		}
+
+		[Test]
+		public void MergedWithFailsToMergeAnythingButRDs()
+		{
+			var rd = new ResourceDictionary();
+			Assert.DoesNotThrow(() => rd.MergedWith = typeof(MyRD));
+			Assert.Throws<ArgumentException>(() => rd.MergedWith = typeof(ContentPage));
+		}
+
+		[Test]
+		public void MergedResourcesAreFound()
+		{
+			var rd0 = new ResourceDictionary();
+			rd0.MergedWith = typeof(MyRD);
+
+			object _;
+			Assert.True(rd0.TryGetMergedValue("foo", out _));
+			Assert.AreEqual("Foo", _);
+		}
+	}
 }

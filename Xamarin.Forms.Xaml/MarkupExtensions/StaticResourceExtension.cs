@@ -29,14 +29,11 @@ namespace Xamarin.Forms.Xaml
 				var resDict = ve?.Resources ?? p as ResourceDictionary;
 				if (resDict == null)
 					continue;
-				if (resDict.TryGetValue(Key, out resource))
+				if (resDict.TryGetMergedValue(Key, out resource))
 					break;
 			}
-			if (resource == null && Application.Current != null && Application.Current.Resources != null &&
-				Application.Current.Resources.ContainsKey(Key))
-				resource = Application.Current.Resources[Key];
-
-			if (resource == null)
+			if (resource == null && (Application.Current == null || Application.Current.Resources == null ||
+									 !Application.Current.Resources.TryGetMergedValue(Key, out resource)))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 
 			var bp = valueProvider.TargetProperty as BindableProperty;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms
 {
-	internal static class ResourcesExtensions
+	static class ResourcesExtensions
 	{
 		public static IEnumerable<KeyValuePair<string, object>> GetMergedResources(this IElement element)
 		{
@@ -11,10 +11,10 @@ namespace Xamarin.Forms
 			while (element != null)
 			{
 				var ve = element as IResourcesProvider;
-				if (ve != null && ve.Resources != null && ve.Resources.Count != 0)
+				if (ve != null && ve.Resources != null)
 				{
-					resources = resources ?? new Dictionary<string, object>(ve.Resources.Count);
-					foreach (KeyValuePair<string, object> res in ve.Resources)
+					resources = resources ?? new Dictionary<string, object>();
+					foreach (KeyValuePair<string, object> res in ve.Resources.MergedResources)
 						if (!resources.ContainsKey(res.Key))
 							resources.Add(res.Key, res.Value);
 						else if (res.Key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
