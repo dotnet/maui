@@ -4,6 +4,8 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
+using System;
+using System.Collections.Generic;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -13,41 +15,62 @@ namespace Xamarin.Forms.Platform.Android
 		protected readonly Context Context;
 		ITableViewController Controller => _view;
 		Cell _restoreFocus;
+		Cell[] _cellCache;
+		Cell[] CellCache
+		{
+			get
+			{
+				if (_cellCache == null)
+					FillCache();
+				return _cellCache;
+			}
+		}
+		bool[] _isHeaderCache;
+		bool[] IsHeaderCache
+		{
+			get
+			{
+				if (_isHeaderCache == null)
+					FillCache();
+				return _isHeaderCache;
+			}
+		}
+		bool[] _nextIsHeaderCache;
+		bool[] NextIsHeaderCache
+		{
+			get
+			{
+				if (_nextIsHeaderCache == null)
+					FillCache();
+				return _nextIsHeaderCache;
+			}
+		}
 
 		public TableViewModelRenderer(Context context, AListView listView, TableView view) : base(context)
 		{
 			_view = view;
 			Context = context;
 
-			Controller.ModelChanged += (sender, args) => NotifyDataSetChanged();
+			Controller.ModelChanged += (sender, args) =>
+			{
+				InvalidateCellCache();
+				NotifyDataSetChanged();
+			};
 
 			listView.OnItemClickListener = this;
 			listView.OnItemLongClickListener = this;
 		}
 
-		public override int Count
-		{
-			get
-			{
-				var count = 0;
-
-				//Get each adapter's count + 1 for the header
-				ITableModel model = Controller.Model;
-				int section = model.GetSectionCount();
-				for (var i = 0; i < section; i++)
-					count += model.GetRowCount(i) + 1;
-
-				return count;
-			}
-		}
+		public override int Count => CellCache.Length;
 
 		public override object this[int position]
 		{
 			get
 			{
-				bool isHeader, nextIsHeader;
-				Cell cell = GetCellForPosition(position, out isHeader, out nextIsHeader);
-				return cell;
+				if (position < 0 || position >= CellCache.Length)
+					return null;
+
+				return CellCache[position];
 			}
 		}
 
@@ -55,15 +78,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			get
 			{
-				//The headers count as a view type too
+				// 1 for the headers + 1 for each non header cell
 				var viewTypeCount = 1;
-				ITableModel model = Controller.Model;
-
-				//Get each adapter's ViewTypeCount
-				int section = model.GetSectionCount();
-				for (var i = 0; i < section; i++)
-					viewTypeCount += model.GetRowCount(i);
-
+				foreach (var b in IsHeaderCache)
+					if (!b)
+						viewTypeCount++;
 				return viewTypeCount;
 			}
 		}
@@ -80,12 +99,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override AView GetView(int position, AView convertView, ViewGroup parent)
 		{
-			object obj = this[position];
-			if (obj == null)
-				return new AView(Context);
-
 			bool isHeader, nextIsHeader;
 			Cell item = GetCellForPosition(position, out isHeader, out nextIsHeader);
+			if (item == null)
+				return new AView(Context);
 
 			var makeBline = true;
 			var layout = convertView as ConditionalFocusLayout;
@@ -170,22 +187,13 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ITableModel model = Controller.Model;
 
-			int sectionCount = model.GetSectionCount();
-			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
-			{
-				if (position == 0)
-					return;
+			if (position < 0 || position >= CellCache.Length)
+				return;
 
-				int size = model.GetRowCount(sectionIndex) + 1;
+			if (IsHeaderCache[position])
+				return;
 
-				if (position < size)
-				{
-					model.RowSelected(sectionIndex, position - 1);
-					return;
-				}
-
-				position -= size;
-			}
+			model.RowSelected(CellCache[position]);
 		}
 
 		Cell GetCellForPosition(int position, out bool isHeader, out bool nextIsHeader)
@@ -193,42 +201,66 @@ namespace Xamarin.Forms.Platform.Android
 			isHeader = false;
 			nextIsHeader = false;
 
+			if (position < 0 || position >= CellCache.Length)
+				return null;
+
+			isHeader = IsHeaderCache[position];
+			nextIsHeader = NextIsHeaderCache[position];
+			return CellCache[position];
+		}
+
+		void FillCache()
+		{
 			ITableModel model = Controller.Model;
 			int sectionCount = model.GetSectionCount();
 
-			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex ++)
+			var newCellCache = new List<Cell>();
+			var newIsHeaderCache = new List<bool>();
+			var newNextIsHeaderCache = new List<bool>();
+
+			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
 			{
-				int size = model.GetRowCount(sectionIndex) + 1;
+				var sectionTitle = model.GetSectionTitle(sectionIndex);
+				var sectionRowCount = model.GetRowCount(sectionIndex);
 
-				if (position == 0)
+				if (!string.IsNullOrEmpty(sectionTitle))
 				{
-					isHeader = true;
-					nextIsHeader = size == 0 && sectionIndex < sectionCount - 1;
+					Cell headerCell = model.GetHeaderCell(sectionIndex);
+					if (headerCell == null)
+						headerCell = new TextCell { Text = sectionTitle };
+					headerCell.Parent = _view;
 
-					Cell header = model.GetHeaderCell(sectionIndex);
-
-					Cell resultCell = null;
-					if (header != null)
-						resultCell = header;
-
-					if (resultCell == null)
-						resultCell = new TextCell { Text = model.GetSectionTitle(sectionIndex) };
-
-					resultCell.Parent = _view;
-
-					return resultCell;
+					newIsHeaderCache.Add(true);
+					newNextIsHeaderCache.Add(sectionRowCount == 0 && sectionIndex < sectionCount - 1);
+					newCellCache.Add(headerCell);
 				}
 
-				if (position < size)
+				for (int i = 0; i < sectionRowCount; i++)
 				{
-					nextIsHeader = position == size - 1;
-					return (Cell)model.GetItem(sectionIndex, position - 1);
+					newIsHeaderCache.Add(false);
+					newNextIsHeaderCache.Add(i == sectionRowCount - 1 && sectionIndex < sectionCount - 1);
+					newCellCache.Add((Cell)model.GetItem(sectionIndex, i));
 				}
-
-				position -= size;
 			}
 
-			return null;
+			_cellCache = newCellCache.ToArray();
+			_isHeaderCache = newIsHeaderCache.ToArray();
+			_nextIsHeaderCache = newNextIsHeaderCache.ToArray();
+		}
+
+		void InvalidateCellCache()
+		{
+			_cellCache = null;
+			_isHeaderCache = null;
+			_nextIsHeaderCache = null;
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+				InvalidateCellCache();
+
+			base.Dispose(disposing);
 		}
 	}
 }

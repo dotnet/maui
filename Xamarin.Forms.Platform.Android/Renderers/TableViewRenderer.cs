@@ -45,5 +45,13 @@ namespace Xamarin.Forms.Platform.Android
 			TableViewModelRenderer source = GetModelRenderer(listView, view);
 			listView.Adapter = source;
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if(disposing)
+				Control?.Adapter?.Dispose();
+
+			base.Dispose(disposing);
+		}
 	}
 }
