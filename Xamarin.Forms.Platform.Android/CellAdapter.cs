@@ -174,12 +174,10 @@ namespace Xamarin.Forms.Platform.Android
 			view.SetBackgroundResource(0);
 		}
 
-		internal void CloseContextAction()
+		internal void CloseContextActions()
 		{
-			if (_actionMode != null)
-				_actionMode.Finish();
-			if (_supportActionMode != null)
-				_supportActionMode.Finish();
+			_actionMode?.Finish();
+			_supportActionMode?.Finish();
 		}
 
 		void CreateContextMenu(IMenu menu)
@@ -226,8 +224,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (!cell.HasContextActions)
 				{
-					_actionMode?.Finish();
-					_supportActionMode?.Finish();
+					CloseContextActions();
 					return false;
 				}
 

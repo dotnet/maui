@@ -54,9 +54,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			var platform = _listView.Platform;
 			if (platform.GetType() == typeof(AppCompat.Platform))
-				MessagingCenter.Subscribe<AppCompat.Platform>(this, AppCompat.Platform.CloseContextActionsSignalName, p => CloseContextAction());
+				MessagingCenter.Subscribe<AppCompat.Platform>(this, AppCompat.Platform.CloseContextActionsSignalName, p => CloseContextActions());
 			else
-				MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextAction());
+				MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextActions());
 		}
 
 		public override int Count
@@ -321,7 +321,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (disposing)
 			{
-				CloseContextAction();
+				CloseContextActions();
 
 				var platform = _listView.Platform;
 				if (platform.GetType() == typeof(AppCompat.Platform))
@@ -445,6 +445,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnDataChanged()
 		{
+			if (ActionModeContext != null && !TemplatedItemsView.TemplatedItems.Contains(ActionModeContext))
+				CloseContextActions();
+
 			if (IsAttachedToWindow)
 				NotifyDataSetChanged();
 			else
