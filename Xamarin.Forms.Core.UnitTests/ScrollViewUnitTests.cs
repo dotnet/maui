@@ -453,5 +453,36 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(100, scroll.Height);
 			Assert.AreEqual(100, scroll.Width);
 		}
+
+		[Test]
+		public void TestBackToBackBiDirectionalScroll()
+		{
+			var scrollView = new ScrollView
+			{
+				Orientation = ScrollOrientation.Both,
+				Platform = new UnitPlatform(),
+				Content = new Grid
+				{
+					WidthRequest = 1000,
+					HeightRequest = 1000
+				}
+			};
+
+			var y100Count = 0;
+
+			((IScrollViewController)scrollView).ScrollToRequested += (sender, args) =>
+			{
+				if (args.ScrollY == 100)
+				{
+					++y100Count;
+				}
+			};
+
+			scrollView.ScrollToAsync(100, 100, true);
+			Assert.AreEqual(y100Count, 1);
+
+			scrollView.ScrollToAsync(0, 100, true);
+			Assert.AreEqual(y100Count, 2);
+		}
 	}
 }

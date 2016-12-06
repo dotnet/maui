@@ -202,7 +202,18 @@ namespace Xamarin.Forms.Platform.Android
 		internal void UpdateScrollPosition(double x, double y)
 		{
 			if (_view != null)
+			{
+				if (_view.Orientation == ScrollOrientation.Both)
+				{
+					if (x == 0)
+						x = Forms.Context.FromPixels(_hScrollView.ScrollX);
+
+					if (y == 0)
+						y = Forms.Context.FromPixels(ScrollY);
+				}
+
 				Controller.SetScrolledPosition(x, y);
+			}
 		}
 
 		static int GetDistance(double start, double position, double v)
@@ -248,8 +259,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			var x = (int)Forms.Context.ToPixels(e.ScrollX);
 			var y = (int)Forms.Context.ToPixels(e.ScrollY);
-			int currentX = _view.Orientation == ScrollOrientation.Horizontal ? _hScrollView.ScrollX : ScrollX;
-			int currentY = _view.Orientation == ScrollOrientation.Horizontal ? _hScrollView.ScrollY : ScrollY;
+			int currentX = _view.Orientation == ScrollOrientation.Horizontal || _view.Orientation == ScrollOrientation.Both ? _hScrollView.ScrollX : ScrollX;
+			int currentY = _view.Orientation == ScrollOrientation.Vertical || _view.Orientation == ScrollOrientation.Both ? ScrollY : _hScrollView.ScrollY;
 			if (e.Mode == ScrollToMode.Element)
 			{
 				Point itemPosition = Controller.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
@@ -275,10 +286,19 @@ namespace Xamarin.Forms.Platform.Android
 						return;
 					}
 
-					if (_view.Orientation == ScrollOrientation.Horizontal)
-						_hScrollView.ScrollTo(distX, distY);
-					else
-						ScrollTo(distX, distY);
+					switch (_view.Orientation)
+					{
+						case ScrollOrientation.Horizontal:
+							_hScrollView.ScrollTo(distX, distY);
+							break;
+						case ScrollOrientation.Vertical:
+							ScrollTo(distX, distY);
+							break;
+						default:
+							_hScrollView.ScrollTo(distX, distY);
+							ScrollTo(distX, distY);
+							break;
+					}
 				};
 				animator.AnimationEnd += delegate
 				{
@@ -291,10 +311,19 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 			{
-				if (_view.Orientation == ScrollOrientation.Horizontal)
-					_hScrollView.ScrollTo(x, y);
-				else
-					ScrollTo(x, y);
+				switch (_view.Orientation)
+				{
+					case ScrollOrientation.Horizontal:
+						_hScrollView.ScrollTo(x, y);
+						break;
+					case ScrollOrientation.Vertical:
+						ScrollTo(x, y);
+						break;
+					default:
+						_hScrollView.ScrollTo(x, y);
+						ScrollTo(x, y);
+						break;
+				}
 				Controller.SendScrollFinished();
 			}
 		}
