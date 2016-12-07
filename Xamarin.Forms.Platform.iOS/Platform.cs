@@ -46,13 +46,9 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!PageIsChildOfPlatform(sender))
 					return;
 
-				if (Forms.IsiOS9OrNewer)
+				if (Forms.IsiOS8OrNewer)
 				{
 					PresentAlert(arguments);
-				}
-				else if (Forms.IsiOS8OrNewer)
-				{
-					Present8Alert(arguments);
 				}
 				else
 				{
@@ -70,13 +66,9 @@ namespace Xamarin.Forms.Platform.iOS
 					pageRoot = (Page)pageRoot.RealParent;
 				var pageRenderer = GetRenderer(pageRoot);
 
-				if (Forms.IsiOS9OrNewer)
+				if (Forms.IsiOS8OrNewer)
 				{
 					PresentActionSheet(arguments);
-				}
-				else if (Forms.IsiOS8OrNewer)
-				{
-					Present8ActionSheet(arguments, pageRenderer);
 				}
 				else
 				{
@@ -460,6 +452,12 @@ namespace Xamarin.Forms.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
+			if(!Forms.IsiOS9OrNewer)
+			{
+				// For iOS 8, we need to explicitly set the size of the window
+				window.Frame = new RectangleF(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
+			}
+
 			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
@@ -520,62 +518,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 				arguments.Result.TrySetResult(title);
 			};
-		}
-
-		void Present8Alert(AlertArguments arguments)
-		{
-			var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
-			var oldFrame = alert.View.Frame;
-			alert.View.Frame = new RectangleF(oldFrame.X, oldFrame.Y, oldFrame.Width, oldFrame.Height - _alertPadding * 2);
-			alert.AddAction(UIAlertAction.Create(arguments.Cancel, UIAlertActionStyle.Cancel, a => arguments.SetResult(false)));
-			if (arguments.Accept != null)
-				alert.AddAction(UIAlertAction.Create(arguments.Accept, UIAlertActionStyle.Default, a => arguments.SetResult(true)));
-			var page = _modals.Any() ? _modals.Last() : Page;
-			var vc = GetRenderer(page).ViewController;
-			vc.PresentViewController(alert, true, null);
-		}
-
-		void Present8ActionSheet(ActionSheetArguments arguments, IVisualElementRenderer pageRenderer)
-		{
-			var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
-
-			if (arguments.Cancel != null)
-			{
-				alert.AddAction(UIAlertAction.Create(arguments.Cancel, UIAlertActionStyle.Cancel, a => arguments.SetResult(arguments.Cancel)));
-			}
-
-			if (arguments.Destruction != null)
-			{
-				alert.AddAction(UIAlertAction.Create(arguments.Destruction, UIAlertActionStyle.Destructive, a => arguments.SetResult(arguments.Destruction)));
-			}
-
-			foreach (var label in arguments.Buttons)
-			{
-				if (label == null)
-					continue;
-
-				var blabel = label;
-				alert.AddAction(UIAlertAction.Create(blabel, UIAlertActionStyle.Default, a => arguments.SetResult(blabel)));
-			}
-
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
-			{
-				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
-				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-					n => { alert.PopoverPresentationController.SourceRect = pageRenderer.ViewController.View.Bounds; });
-
-				arguments.Result.Task.ContinueWith(t =>
-				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(observer);
-					UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
-				}, TaskScheduler.FromCurrentSynchronizationContext());
-
-				alert.PopoverPresentationController.SourceView = pageRenderer.ViewController.View;
-				alert.PopoverPresentationController.SourceRect = pageRenderer.ViewController.View.Bounds;
-				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
-			}
-
-			pageRenderer.ViewController.PresentViewController(alert, true, null);
 		}
 
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
