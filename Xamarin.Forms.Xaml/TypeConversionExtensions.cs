@@ -170,11 +170,34 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			//if there's an implicit conversion, convert
-			if (value != null)
-			{
-				var cast = value.GetType().GetRuntimeMethod("op_Implicit", new[] { value.GetType() });
-				if (cast != null && cast.ReturnType == toType) {
-					value = cast.Invoke(null, new [] { value });
+			if (value != null) {
+				MethodInfo opImplicit = null;
+				foreach (var mi in value.GetType().GetRuntimeMethods()) {
+					if (!mi.IsSpecialName) continue;
+					if (mi.Name != "op_Implicit") continue;
+					if (!mi.IsPublic) continue;
+					if (mi.ReturnType != toType) continue;
+					var parameters = mi.GetParameters();
+					if (parameters.Length != 1) continue;
+					if (parameters[0].ParameterType != value.GetType()) continue;
+					opImplicit = mi;
+					break;
+				}
+				if (opImplicit == null) {
+					foreach (var mi in toType.GetRuntimeMethods()) {
+						if (!mi.IsSpecialName) continue;
+						if (mi.Name != "op_Implicit") continue;
+						if (!mi.IsPublic) continue;
+						if (mi.ReturnType != toType) continue;
+						var parameters = mi.GetParameters();
+						if (parameters.Length != 1) continue;
+						if (parameters[0].ParameterType != value.GetType()) continue;
+						opImplicit = mi;
+						break;
+					}
+				}
+				if (opImplicit != null) {
+					value = opImplicit.Invoke(null, new[] { value });
 					return value;
 				}
 			}

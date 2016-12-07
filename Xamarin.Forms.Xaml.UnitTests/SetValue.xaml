@@ -90,12 +90,12 @@
 				<local:SV_Foo Value="Bar"/>
 			</local:MockViewWithValues.BPBar>
 		</local:MockViewWithValues>
-		<!--<local:MockViewWithValues x:Name="implicit1" BPFoo="Foo" />-->
+		<local:MockViewWithValues x:Name="implicit1" BPFoo="Foo" />
 		<local:MockViewWithValues x:Name="implicit2">
 			<local:MockViewWithValues.Bar>
 				<local:SV_Foo Value="Bar"/>
 			</local:MockViewWithValues.Bar>
 		</local:MockViewWithValues>
-		<!--<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />-->
+		<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />
 	</StackLayout>
 </ContentPage>

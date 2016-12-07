@@ -109,6 +109,9 @@ namespace Xamarin.Forms.Build.Tasks
 				nullableCtor = originalTypeRef.GetMethods(md => md.IsConstructor && md.Parameters.Count == 1, module).Single().Item1;
 				nullableCtor = nullableCtor.ResolveGenericParameters(nullableTypeRef, module);
 			}
+
+			var implicitOperator = module.TypeSystem.String.GetImplicitOperatorTo(targetTypeRef, module);
+
 			//Obvious Built-in conversions
 			if (targetTypeRef.Resolve().BaseType != null && targetTypeRef.Resolve().BaseType.FullName == "System.Enum")
 				yield return PushParsedEnum(targetTypeRef, str, node);
@@ -203,10 +206,13 @@ namespace Xamarin.Forms.Build.Tasks
 						context.Body.Method.Module.Import(typeof(decimal))
 							.Resolve()
 							.Methods.FirstOrDefault(
-								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters [0].ParameterType.FullName == "System.Int32");
+								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters[0].ParameterType.FullName == "System.Int32");
 					var decimalctor = context.Body.Method.Module.Import(decimalctorinfo);
 					yield return Instruction.Create(OpCodes.Newobj, decimalctor);
 				}
+			} else if (implicitOperator != null) {
+				yield return Instruction.Create(OpCodes.Ldstr, node.Value as string);
+				yield return Instruction.Create(OpCodes.Call, module.Import(implicitOperator));
 			} else
 				yield return Instruction.Create(OpCodes.Ldnull);
 
