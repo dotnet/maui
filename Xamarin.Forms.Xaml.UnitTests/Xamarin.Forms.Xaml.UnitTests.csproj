@@ -396,6 +396,7 @@
      <Compile Include="FactoryMethodMissingMethod.xaml.cs">
        <DependentUpon>FactoryMethodMissingMethod.xaml</DependentUpon>
      </Compile>
+    <Compile Include="XamlC\TypeReferenceExtensionsTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
