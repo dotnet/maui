@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout { Children = { button, labelx, labely, labelz, labela, scrollView } };
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 
 		[Test]
 		public void Bugzilla41415Test()
