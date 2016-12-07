@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Threading;
 
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -20,7 +19,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				thead.CurrentCulture = new CultureInfo (culture);
 			}
 #endif
-			Console.WriteLine ("Current culture: {0}", Thread.CurrentThread.CurrentCulture.Name);
 		}
 
 		[TearDown]
