@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 #if UITEST
@@ -51,8 +52,8 @@ namespace Xamarin.Forms.Controls.Issues
 			scrollView.Content = grid;
 			scrollView.Scrolled += (sender, args) =>
 			{
-				labelx.Text = $"x: {args.ScrollX}";
-				labely.Text = $"y: {args.ScrollY}";
+				labelx.Text = $"x: {(int)Math.Round(args.ScrollX)}";
+				labely.Text = $"y: {(int)Math.Round(args.ScrollY)}";
 
 				// first and second taps
 				if (_x == 0)
