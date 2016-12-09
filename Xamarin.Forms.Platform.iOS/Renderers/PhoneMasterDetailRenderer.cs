@@ -28,8 +28,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public PhoneMasterDetailRenderer()
 		{
-			if (!Forms.IsiOS7OrNewer)
-				WantsFullScreenLayout = true;
 		}
 
 		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;

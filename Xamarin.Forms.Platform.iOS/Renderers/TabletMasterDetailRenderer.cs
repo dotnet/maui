@@ -223,11 +223,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (!MasterDetailPageController.ShouldShowSplitMode && _masterVisible)
 			{
 				MasterDetailPageController.CanChangeIsPresented = true;
-				if (Forms.IsiOS8OrNewer)
-				{
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
-					PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
-				}
+				PreferredDisplayMode = UISplitViewControllerDisplayMode.PrimaryHidden;
+				PreferredDisplayMode = UISplitViewControllerDisplayMode.Automatic;
 			}
 
 			MasterDetailPageController.UpdateMasterBehavior();
@@ -307,10 +304,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void PerformButtonSelector()
 		{
-			if (Forms.IsiOS8OrNewer)
-				DisplayModeButtonItem.Target.PerformSelector(DisplayModeButtonItem.Action, DisplayModeButtonItem, 0);
-			else
-				PresentButton.Target.PerformSelector(PresentButton.Action, PresentButton, 0);
+			DisplayModeButtonItem.Target.PerformSelector(DisplayModeButtonItem.Action, DisplayModeButtonItem, 0);
 		}
 
 		void ToggleMaster()

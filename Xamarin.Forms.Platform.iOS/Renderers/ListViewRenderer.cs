@@ -184,8 +184,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					_tableViewController = new FormsUITableViewController(e.NewElement);
 					SetNativeControl(_tableViewController.TableView);
-					if (Forms.IsiOS9OrNewer)
-						Control.CellLayoutMarginsFollowReadableWidth = false;
+					Control.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(_tableViewController.TableView, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{
@@ -370,8 +369,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
-				if (Forms.IsiOS7OrNewer)
-					Control.EstimatedRowHeight = 0;
+				Control.EstimatedRowHeight = 0;
 				_estimatedRowHeight = true;
 			}
 		}
@@ -560,10 +558,9 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS7OrNewer)
+			if (Element.HasUnevenRows && rowHeight == -1)
 			{
-				if (Forms.IsiOS8OrNewer)
-					Control.RowHeight = UITableView.AutomaticDimension;
+				Control.RowHeight = UITableView.AutomaticDimension;
 			}
 			else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
@@ -613,9 +610,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (List.RowHeight == -1 && cell.Height == -1 && cell is ViewCell)
 				{
 					// only doing ViewCell because its the only one that matters (the others dont adjust ANYWAY)
-					if (Forms.IsiOS8OrNewer)
-						return UITableView.AutomaticDimension;
-					return CalculateHeightForCell(tableView, cell);
+					return UITableView.AutomaticDimension;
 				}
 
 				var renderHeight = cell.RenderHeight;
@@ -681,7 +676,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_uiTableViewController = uiTableViewController;
 				_uiTableView = uiTableViewController.TableView;
-				_defaultSectionHeight = Forms.IsiOS8OrNewer ? DefaultRowHeight : _uiTableView.SectionHeaderHeight;
+				_defaultSectionHeight = DefaultRowHeight;
 				List = list;
 				List.ItemSelected += OnItemSelected;
 				UpdateShortNameListener();
@@ -1007,8 +1002,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public FormsUITableViewController(ListView element)
 		{
-			if (Forms.IsiOS9OrNewer)
-				TableView.CellLayoutMarginsFollowReadableWidth = false;
+			TableView.CellLayoutMarginsFollowReadableWidth = false;
 			_refresh = new UIRefreshControl();
 			_refresh.ValueChanged += OnRefreshingChanged;
 			_list = element;

@@ -46,14 +46,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!PageIsChildOfPlatform(sender))
 					return;
 
-				if (Forms.IsiOS8OrNewer)
-				{
-					PresentAlert(arguments);
-				}
-				else
-				{
-					PresentPre8Alert(arguments);
-				}
+				PresentAlert(arguments);
 			});
 
 			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
@@ -64,16 +57,8 @@ namespace Xamarin.Forms.Platform.iOS
 				var pageRoot = sender;
 				while (!Application.IsApplicationOrNull(pageRoot.RealParent))
 					pageRoot = (Page)pageRoot.RealParent;
-				var pageRenderer = GetRenderer(pageRoot);
 
-				if (Forms.IsiOS8OrNewer)
-				{
-					PresentActionSheet(arguments);
-				}
-				else
-				{
-					PresentPre8ActionSheet(arguments, pageRenderer);
-				}
+				PresentActionSheet(arguments);
 			});
 		}
 
@@ -452,12 +437,6 @@ namespace Xamarin.Forms.Platform.iOS
 				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 			}
 
-			if(!Forms.IsiOS9OrNewer)
-			{
-				// For iOS 8, we need to explicitly set the size of the window
-				window.Frame = new RectangleF(0, 0, UIScreen.MainScreen.Bounds.Width, UIScreen.MainScreen.Bounds.Height);
-			}
-
 			window.RootViewController.PresentViewController(alert, true, null);
 		}
 
@@ -489,18 +468,6 @@ namespace Xamarin.Forms.Platform.iOS
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 			await _renderer.PresentViewControllerAsync(wrapper, animated);
 			await Task.Delay(5);
-		}
-
-		void PresentPre8Alert(AlertArguments arguments)
-		{
-			UIAlertView alertView;
-			if (arguments.Accept != null)
-				alertView = new UIAlertView(arguments.Title, arguments.Message, null, arguments.Cancel, arguments.Accept);
-			else
-				alertView = new UIAlertView(arguments.Title, arguments.Message, null, arguments.Cancel);
-
-			alertView.Dismissed += (o, args) => arguments.SetResult(args.ButtonIndex != 0);
-			alertView.Show();
 		}
 
 		void PresentPre8ActionSheet(ActionSheetArguments arguments, IVisualElementRenderer pageRenderer)
