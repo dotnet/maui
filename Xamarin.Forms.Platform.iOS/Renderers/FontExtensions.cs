@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					if (UIFont.FamilyNames.Contains(self.FontFamily))
+					if (UIFont.FamilyNames.Contains(self.FontFamily) && Forms.IsiOS7OrNewer)
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(self.FontFamily);
 
@@ -67,6 +67,12 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			if (bold && italic)
 			{
+				if (!Forms.IsiOS7OrNewer)
+				{
+					// not sure how to make a font both bold and italic in iOS 6, default to bold
+					return UIFont.BoldSystemFontOfSize(size);
+				}
+
 				var defaultFont = UIFont.SystemFontOfSize(size);
 				var descriptor = defaultFont.FontDescriptor.CreateWithTraits(UIFontDescriptorSymbolicTraits.Bold | UIFontDescriptorSymbolicTraits.Italic);
 				return UIFont.FromDescriptor(descriptor, 0);
@@ -104,7 +110,7 @@ namespace Xamarin.Forms.Platform.iOS
 				try
 				{
 					UIFont result;
-					if (UIFont.FamilyNames.Contains(family))
+					if (UIFont.FamilyNames.Contains(family) && Forms.IsiOS7OrNewer)
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
 
@@ -136,6 +142,13 @@ namespace Xamarin.Forms.Platform.iOS
 			if (bold && italic)
 			{
 				var defaultFont = UIFont.SystemFontOfSize(size);
+
+				if (!Forms.IsiOS7OrNewer)
+				{
+					// not sure how to make a font both bold and italic in iOS 6, default to bold
+					return UIFont.BoldSystemFontOfSize(size);
+				}
+
 				var descriptor = defaultFont.FontDescriptor.CreateWithTraits(UIFontDescriptorSymbolicTraits.Bold | UIFontDescriptorSymbolicTraits.Italic);
 				return UIFont.FromDescriptor(descriptor, 0);
 			}

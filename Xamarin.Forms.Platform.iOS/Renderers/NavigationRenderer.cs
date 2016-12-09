@@ -182,7 +182,13 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 
-			UpdateTranslucent();
+			if (Forms.IsiOS7OrNewer)
+			{
+				
+				UpdateTranslucent();
+			}
+			else
+				WantsFullScreenLayout = false;
 
 			_secondaryToolbar = new SecondaryToolbar { Frame = new RectangleF(0, 0, 320, 44) };
 			View.Add(_secondaryToolbar);
@@ -448,6 +454,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateTranslucent()
 		{
+			if (!Forms.IsiOS7OrNewer)
+			{
+				return;
+			}
+
 			NavigationBar.Translucent = ((NavigationPage)Element).OnThisPlatform().IsNavigationBarTranslucent();
 		}
 
@@ -560,9 +571,18 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var barBackgroundColor = ((NavigationPage)Element).BarBackgroundColor;
 			// Set navigation bar background color
-			NavigationBar.BarTintColor = barBackgroundColor == Color.Default 
-				? UINavigationBar.Appearance.BarTintColor 
-				: barBackgroundColor.ToUIColor();
+			if (Forms.IsiOS7OrNewer)
+			{
+				NavigationBar.BarTintColor = barBackgroundColor == Color.Default
+					? UINavigationBar.Appearance.BarTintColor
+					: barBackgroundColor.ToUIColor();
+			}
+			else
+			{
+				NavigationBar.TintColor = barBackgroundColor == Color.Default
+					? UINavigationBar.Appearance.TintColor
+					: barBackgroundColor.ToUIColor();
+			}
 		}
 
 		void UpdateBarTextColor()
@@ -596,9 +616,12 @@ namespace Xamarin.Forms.Platform.iOS
 			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();
 
 			// set Tint color (i. e. Back Button arrow and Text)
-			NavigationBar.TintColor = barTextColor == Color.Default || statusBarColorMode == StatusBarTextColorMode.DoNotAdjust
+			if (Forms.IsiOS7OrNewer)
+			{
+				NavigationBar.TintColor = barTextColor == Color.Default || statusBarColorMode == StatusBarTextColorMode.DoNotAdjust
 					? UINavigationBar.Appearance.TintColor
 					: barTextColor.ToUIColor();
+			}
 
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor.Luminosity <= 0.5)
 			{
@@ -656,13 +679,18 @@ namespace Xamarin.Forms.Platform.iOS
 #pragma warning disable 0618 //retaining legacy call to obsolete code
 			var tintColor = ((NavigationPage)Element).Tint;
 #pragma warning restore 0618
-			NavigationBar.BarTintColor = tintColor == Color.Default
-				? UINavigationBar.Appearance.BarTintColor
-				: tintColor.ToUIColor();
-			if (tintColor == Color.Default)
-				NavigationBar.TintColor = UINavigationBar.Appearance.TintColor;
+			if (Forms.IsiOS7OrNewer)
+			{
+				NavigationBar.BarTintColor = tintColor == Color.Default
+					? UINavigationBar.Appearance.BarTintColor
+					: tintColor.ToUIColor();
+				if (tintColor == Color.Default)
+					NavigationBar.TintColor = UINavigationBar.Appearance.TintColor;
+				else
+					NavigationBar.TintColor = tintColor.Luminosity > 0.5 ? UIColor.Black : UIColor.White;
+			}
 			else
-				NavigationBar.TintColor = tintColor.Luminosity > 0.5 ? UIColor.Black : UIColor.White;
+				NavigationBar.TintColor = tintColor == Color.Default ? null : tintColor.ToUIColor();
 		}
 
 		void UpdateToolBarVisible()
@@ -748,7 +776,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
-				AutomaticallyAdjustsScrollViewInsets = false;
+				if (Forms.IsiOS7OrNewer)
+					AutomaticallyAdjustsScrollViewInsets = false;
+
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
 

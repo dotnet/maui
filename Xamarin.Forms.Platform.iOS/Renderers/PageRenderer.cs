@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public PageRenderer()
 		{
+			if (!Forms.IsiOS7OrNewer)
+				WantsFullScreenLayout = true;
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)

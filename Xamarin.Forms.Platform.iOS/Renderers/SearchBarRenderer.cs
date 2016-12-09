@@ -106,9 +106,17 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			if (_defaultTintColor == null)
-				_defaultTintColor = Control.BarTintColor;
+			{
+				if (Forms.IsiOS7OrNewer)
+					_defaultTintColor = Control.BarTintColor;
+				else
+					_defaultTintColor = Control.TintColor;
+			}
 
-			Control.BarTintColor = color.ToUIColor(_defaultTintColor);
+			if (Forms.IsiOS7OrNewer)
+				Control.BarTintColor = color.ToUIColor(_defaultTintColor);
+			else
+				Control.TintColor = color.ToUIColor(_defaultTintColor);
 
 			if (color.A < 1)
 				Control.SetBackgroundImage(new UIImage(), UIBarPosition.Any, UIBarMetrics.Default);

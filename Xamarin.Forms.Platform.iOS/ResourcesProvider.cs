@@ -8,7 +8,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public ResourcesProvider()
 		{
-			UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) => UpdateStyles());
+			if (Forms.IsiOS7OrNewer)
+				UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) => UpdateStyles());
 		}
 
 		public IResourceDictionary GetSystemResources()
@@ -44,10 +45,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateStyles()
 		{
-			_dictionary[Device.Styles.TitleStyleKey] = GenerateStyle(UIFont.PreferredHeadline);
-			_dictionary[Device.Styles.SubtitleStyleKey] = GenerateStyle(UIFont.PreferredSubheadline);
-			_dictionary[Device.Styles.BodyStyleKey] = GenerateStyle(UIFont.PreferredBody);
-			_dictionary[Device.Styles.CaptionStyleKey] = GenerateStyle(UIFont.PreferredCaption1);
+			if (Forms.IsiOS7OrNewer)
+			{
+				_dictionary[Device.Styles.TitleStyleKey] = GenerateStyle(UIFont.PreferredHeadline);
+				_dictionary[Device.Styles.SubtitleStyleKey] = GenerateStyle(UIFont.PreferredSubheadline);
+				_dictionary[Device.Styles.BodyStyleKey] = GenerateStyle(UIFont.PreferredBody);
+				_dictionary[Device.Styles.CaptionStyleKey] = GenerateStyle(UIFont.PreferredCaption1);
+			}
+			else
+			{
+				_dictionary[Device.Styles.TitleStyleKey] = GenerateStyle(UIFont.BoldSystemFontOfSize(17));
+				_dictionary[Device.Styles.SubtitleStyleKey] = GenerateStyle(UIFont.SystemFontOfSize(15));
+				_dictionary[Device.Styles.BodyStyleKey] = GenerateStyle(UIFont.SystemFontOfSize(17));
+				_dictionary[Device.Styles.CaptionStyleKey] = GenerateStyle(UIFont.SystemFontOfSize(12));
+			}
+
 			_dictionary[Device.Styles.ListItemTextStyleKey] = GenerateListItemTextStyle();
 			_dictionary[Device.Styles.ListItemDetailTextStyleKey] = GenerateListItemDetailTextStyle();
 		}

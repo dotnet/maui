@@ -169,7 +169,9 @@ namespace Xamarin.Forms.Platform.iOS
 				_scroller = new UIScrollView(new RectangleF(0, 0, width, height));
 				_scroller.ScrollsToTop = false;
 				_scroller.ShowsHorizontalScrollIndicator = false;
-				_scroller.PreservesSuperviewLayoutMargins = true;
+
+				if (Forms.IsiOS8OrNewer)
+					_scroller.PreservesSuperviewLayoutMargins = true;
 
 				ContentView.AddSubview(_scroller);
 			}
@@ -297,8 +299,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			var frame = _moreButton.Frame;
-			var container = _moreButton.Superview;
-			frame = new RectangleF(container.Frame.X, 0, frame.Width, frame.Height);
+			if (!Forms.IsiOS8OrNewer)
+			{
+				var container = _moreButton.Superview;
+				frame = new RectangleF(container.Frame.X, 0, frame.Width, frame.Height);
+			}
 
 			var x = frame.X - _scroller.ContentOffset.X;
 

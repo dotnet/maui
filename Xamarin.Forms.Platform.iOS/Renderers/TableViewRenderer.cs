@@ -73,7 +73,8 @@ namespace Xamarin.Forms.Platform.iOS
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
-					tv.CellLayoutMarginsFollowReadableWidth = false;
+					if (Forms.IsiOS9OrNewer)
+						tv.CellLayoutMarginsFollowReadableWidth = false;
 
 					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
 					{
@@ -133,9 +134,10 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1)
-				Control.RowHeight = UITableView.AutomaticDimension;
-			else
+			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS7OrNewer) {
+				if (Forms.IsiOS8OrNewer)
+					Control.RowHeight = UITableView.AutomaticDimension;
+			} else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
 		}
 
@@ -145,7 +147,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element.HasUnevenRows && rowHeight == -1) {
 				Control.EstimatedRowHeight = DefaultRowHeight;
 			} else {
-				Control.EstimatedRowHeight = 0;
+				if (Forms.IsiOS7OrNewer)
+					Control.EstimatedRowHeight = 0;
 			}
 		}
 	}
