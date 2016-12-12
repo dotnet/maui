@@ -4,6 +4,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
+	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.TypeTypeConverter")]
 	public sealed class TypeTypeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		[Obsolete("Use ConvertFromInvariantString (string, IServiceProvider)")]

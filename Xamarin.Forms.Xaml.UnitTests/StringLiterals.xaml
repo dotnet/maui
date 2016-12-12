@@ -1,15 +1,17 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.StringLiterals">
-	<Label x:Name="label0" Text="{}Foo" />
-	<Label x:Name="label1" Text="{}{Foo}" />
-	<Label x:Name="label2">
-		{}Foo
-	</Label>
-	<Label x:Name="label3">
-		<Label.Text>
+	<StackLayout>
+		<Label x:Name="label0" Text="{}Foo" />
+		<Label x:Name="label1" Text="{}{Foo}" />
+		<Label x:Name="label2">
 			{}Foo
-		</Label.Text>
-	</Label>
+		</Label>
+		<Label x:Name="label3">
+			<Label.Text>
+				{}Foo
+			</Label.Text>
+		</Label>
+	</StackLayout>
 </ContentPage>
