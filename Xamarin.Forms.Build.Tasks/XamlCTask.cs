@@ -185,8 +185,7 @@ namespace Xamarin.Forms.Build.Tasks
 					if (OptimizeIL)
 					{
 						Logger.LogString(2, "   Optimizing IL... ");
-						OptimizeLongs(initComp.Body);
-						initComp.Body.OptimizeMacros();
+						initComp.Body.Optimize();
 						Logger.LogLine(2, "done");
 					}
 
@@ -235,28 +234,6 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			return success;
-		}
-
-		static void ExpandMacro(Instruction instruction, OpCode opcode, object operand)
-		{
-			instruction.OpCode = opcode;
-			instruction.Operand = operand;
-		}
-
-		//this can be removed if/when https://github.com/jbevain/cecil/pull/307 is released in a nuget we consume
-		static void OptimizeLongs(MethodBody self)
-		{
-			var method = self.Method;
-			for (var i = 0; i < self.Instructions.Count; i++) {
-				var instruction = self.Instructions[i];
-				if (instruction.OpCode.Code != Code.Ldc_I8)
-					continue;
-				var l = (long)instruction.Operand;
-				if (l < int.MinValue || l > int.MaxValue)
-					continue;
-				ExpandMacro(instruction, OpCodes.Ldc_I4, unchecked((int)l));
-				self.Instructions.Insert(++i, Instruction.Create(OpCodes.Conv_I8));
-			}
 		}
 
 		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, out Exception exception)

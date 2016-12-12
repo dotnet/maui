@@ -1161,6 +1161,8 @@ namespace Xamarin.Forms.Build.Tasks
 				module.Import(typeof (IDataTemplate)).Resolve().Properties.First(p => p.Name == "LoadTemplate").SetMethod;
 #pragma warning restore 0612
 			parentContext.IL.Emit(OpCodes.Callvirt, module.Import(propertySetter));
+
+			loadTemplate.Body.Optimize();
 		}
 	}
 
