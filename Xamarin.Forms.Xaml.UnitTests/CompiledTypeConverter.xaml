@@ -7,5 +7,5 @@
 			 BackgroundColor="Pink">
 	<Label x:Name="label"
 		HorizontalOptions="EndAndExpand"
-		RelativeLayout.XConstraint="2" />
+		RelativeLayout.XConstraint="2" Margin="2,3"/>
 </ContentPage>

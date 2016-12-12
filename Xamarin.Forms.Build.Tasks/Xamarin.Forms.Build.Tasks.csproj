@@ -102,6 +102,7 @@
     <Compile Include="XamlTask.cs" />
     <Compile Include="CompiledMarkupExtensions\ArrayExtension.cs" />
     <Compile Include="CompiledConverters\ConstraintTypeConverter.cs" />
+    <Compile Include="CompiledConverters\ThicknessTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

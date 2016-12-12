@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual(LayoutOptions.EndAndExpand, p.label.GetValue(View.HorizontalOptionsProperty));
 				var xConstraint = RelativeLayout.GetXConstraint(p.label);
 				Assert.AreEqual(2, xConstraint.Compute(null));
+				Assert.AreEqual(new Thickness(2, 3), p.label.Margin);
 			}
 		}
 	}

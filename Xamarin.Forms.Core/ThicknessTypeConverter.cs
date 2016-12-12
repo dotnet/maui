@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Xamarin.Forms
 {
+	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ThicknessTypeConverter")]
 	public class ThicknessTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)
@@ -29,7 +30,7 @@ namespace Xamarin.Forms
 				}
 			}
 
-			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(Thickness)));
+			throw new InvalidOperationException($"Cannot convert \"{value}\" into {typeof(Thickness)}");
 		}
 	}
 }
