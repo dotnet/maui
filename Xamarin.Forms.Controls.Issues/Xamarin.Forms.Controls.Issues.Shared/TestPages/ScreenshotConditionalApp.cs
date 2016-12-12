@@ -273,7 +273,17 @@ namespace Xamarin.Forms.Controls
 			_app.SwipeLeftToRight(query, swipePercentage, swipeSpeed, withInertia);
 		}
 
+		public void SwipeLeftToRight(Func<AppQuery, AppWebQuery> query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			_app.SwipeLeftToRight(query, swipePercentage, swipeSpeed, withInertia);
+		}
+
 		public void SwipeRightToLeft(Func<AppQuery, AppQuery> query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			_app.SwipeRightToLeft(query, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		public void SwipeRightToLeft(Func<AppQuery, AppWebQuery> query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			_app.SwipeRightToLeft(query, swipePercentage, swipeSpeed, withInertia);
 		}
