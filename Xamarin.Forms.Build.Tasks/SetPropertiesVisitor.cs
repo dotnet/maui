@@ -953,12 +953,19 @@ namespace Xamarin.Forms.Build.Tasks
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 
-			yield return Instruction.Create(OpCodes.Ldloc, parent);
+			//if it's a value type, load the address so we can invoke methods on it
+			if (parent.VariableType.IsValueType)
+				yield return Instruction.Create(OpCodes.Ldloca, parent);
+			else
+				yield return Instruction.Create(OpCodes.Ldloc, parent);
 
 			if (valueNode != null) {
 				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, new ICustomAttributeProvider [] { property, propertyType.Resolve() }, valueNode.PushServiceProvider(context, propertyRef:property), false, true))
 					yield return instruction;
-				yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
+				if (parent.VariableType.IsValueType)
+					yield return Instruction.Create(OpCodes.Call, propertySetterRef);
+				else
+					yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
 			} else if (elementNode != null) {
 				var vardef = context.Variables [elementNode];
 				var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(propertyType, module);
@@ -970,7 +977,10 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Instruction.Create(OpCodes.Unbox_Any, module.Import(propertyType));
 				else if (vardef.VariableType.IsValueType && propertyType.FullName == "System.Object")
 					yield return Instruction.Create(OpCodes.Box, vardef.VariableType);
-				yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
+				if (parent.VariableType.IsValueType)
+					yield return Instruction.Create(OpCodes.Call, propertySetterRef);
+				else
+					yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
 			}
 		}
 
