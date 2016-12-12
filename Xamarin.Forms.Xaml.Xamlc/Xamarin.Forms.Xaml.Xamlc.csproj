@@ -17,7 +17,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Externalconsole>true</Externalconsole>
-    <Commandlineparameters>-r "../../../Xamarin.Forms.Controls/bin/Debug/" -p "../../../Xamarin.Forms.Xaml.UnitTest/bin/Debug/;/Library/Frameworks/Mono.framework/Versions/3.12.1/lib/mono/4.5;/Library/Frameworks/Mono.framework/Versions/3.12.1/lib/mono/4.5/Facades/" --keep -v 4 -d ../../../Xamarin.Forms.Xaml.UnitTests/bin/Debug/Xamarin.Forms.Xaml.UnitTests.dll</Commandlineparameters>
+    <Commandlineparameters>-r "../../../Xamarin.Forms.Controls/bin/Debug/" -p "../../../Xamarin.Forms.Xaml.UnitTest/bin/Debug/;/Library/Frameworks/Mono.framework/Versions/3.12.1/lib/mono/4.5;/Library/Frameworks/Mono.framework/Versions/3.12.1/lib/mono/4.5/Facades/" --keep -v 4 ../../../Xamarin.Forms.Xaml.UnitTests/bin/Debug/Xamarin.Forms.Xaml.UnitTests.dll</Commandlineparameters>
     <AssemblyName>xamlc</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>

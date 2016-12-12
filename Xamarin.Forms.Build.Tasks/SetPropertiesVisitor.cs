@@ -1034,6 +1034,8 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldloc, vardef);
 			if (implicitOperator != null)
 				yield return Instruction.Create(OpCodes.Call, module.Import(implicitOperator));
+			if (implicitOperator == null && vardef.VariableType.IsValueType && !childType.IsValueType)
+				yield return Instruction.Create(OpCodes.Box, vardef.VariableType);
 			yield return Instruction.Create(OpCodes.Callvirt, adderRef);
 			if (adderRef.ReturnType.FullName != "System.Void")
 				yield return Instruction.Create(OpCodes.Pop);
