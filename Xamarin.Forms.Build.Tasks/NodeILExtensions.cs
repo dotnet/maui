@@ -128,11 +128,11 @@ namespace Xamarin.Forms.Build.Tasks
 			else if (targetTypeRef.FullName == "System.Byte")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Byte.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.UInt16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, UInt16.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)UInt16.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.UInt32")
 				yield return Instruction.Create(OpCodes.Ldc_I4, UInt32.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.UInt64")
-				yield return Instruction.Create(OpCodes.Ldc_I8, UInt64.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I8, unchecked((long)UInt64.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.Single")
 				yield return Instruction.Create(OpCodes.Ldc_R4, Single.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Double")

@@ -400,6 +400,9 @@
     <Compile Include="Issues\Bz46921.xaml.cs">
       <DependentUpon>Bz46921.xaml</DependentUpon>
     </Compile>
+     <Compile Include="I8.xaml.cs">
+       <DependentUpon>I8.xaml</DependentUpon>
+     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -719,6 +722,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz46921.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="I8.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
