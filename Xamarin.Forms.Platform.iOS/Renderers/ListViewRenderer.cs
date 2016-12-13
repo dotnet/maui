@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 		RectangleF _previousFrame;
 		ScrollToRequestedEventArgs _requestedScroll;
 		bool _shouldEstimateRowHeight = true;
+			
 		FormsUITableViewController _tableViewController;
 		IListViewController Controller => Element;
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
@@ -327,6 +328,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var position = GetScrollPosition(e.Position);
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
+
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (Element.IsGroupingEnabled)
 			{
@@ -338,7 +340,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var index = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
 				if (index != -1)
+				{
+					Control.Layer.RemoveAllAnimations();
 					Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
+				}
 			}
 		}
 
@@ -353,11 +358,9 @@ namespace Xamarin.Forms.Platform.iOS
 				var source = _dataSource as UnevenListViewDataSource;
 				if (_shouldEstimateRowHeight)
 				{
-					var templatedItems = TemplatedItemsView.TemplatedItems;
-					if (templatedItems.Count > 0 && source != null)
+					if (source != null)
 					{
-						var estimatedHeightFromFirstCell = source.CalculateHeightForCell(Control, templatedItems.First());
-						Control.EstimatedRowHeight = estimatedHeightFromFirstCell;
+						Control.EstimatedRowHeight = source.GetEstimatedRowHeight(Control);
 						_estimatedRowHeight = true;
 					}
 					else
@@ -482,12 +485,13 @@ namespace Xamarin.Forms.Platform.iOS
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
+
 					UpdateEstimatedRowHeight();
 					if (e.NewStartingIndex == -1 || groupReset)
 						goto case NotifyCollectionChangedAction.Reset;
+
 					Control.BeginUpdates();
 					Control.InsertRows(GetPaths(section, e.NewStartingIndex, e.NewItems.Count), UITableViewRowAnimation.Automatic);
-
 					Control.EndUpdates();
 
 					break;
@@ -560,11 +564,9 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS7OrNewer)
-			{
-				if (Forms.IsiOS8OrNewer)
-					Control.RowHeight = UITableView.AutomaticDimension;
-			}
+			
+			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS8OrNewer)
+				Control.RowHeight = UITableView.AutomaticDimension;
 			else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
 		}
@@ -604,6 +606,36 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public UnevenListViewDataSource(ListViewDataSource source) : base(source)
 			{
+			}
+
+			internal nfloat GetEstimatedRowHeight(UITableView table) 
+			{
+				if (List.RowHeight != -1)
+				{
+					// Not even sure we need this case; A list with HasUnevenRows and a RowHeight doesn't make a ton of sense
+					// Anyway, no need for an estimate, because the heights we'll use are known
+					return 0;
+				}
+
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+
+				if (templatedItems.Count == 0)
+				{
+					// No cells to provide an estimate, use the default row height constant
+					return DefaultRowHeight;
+				}
+
+				// We're going to base our estimate off of the first cell 
+				var firstCell = templatedItems.First();
+
+				if (firstCell.Height > 0) 
+				{
+					// Seems like we've got cells which already specify their height; since the heights are known,
+					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights
+					return 0; 
+				}
+
+				return CalculateHeightForCell(table, firstCell);
 			}
 
 			public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
@@ -662,7 +694,7 @@ namespace Xamarin.Forms.Platform.iOS
 			readonly FormsUITableViewController _uiTableViewController;
 			protected readonly ListView List;
 			IListViewController Controller => List;
-			ITemplatedItemsView<Cell> TemplatedItemsView => List;
+			protected ITemplatedItemsView<Cell> TemplatedItemsView => List;
 			bool _isDragging;
 			bool _selectionFromNative;
 
