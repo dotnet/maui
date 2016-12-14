@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
 			var h = cell.Height;
 
-			if (View.RowHeight == -1 && h == -1 && cell is ViewCell && Forms.IsiOS8OrNewer) {
+			if (View.RowHeight == -1 && h == -1 && cell is ViewCell) {
 				return UITableView.AutomaticDimension;
 			} else if (h == -1)
 				return tableView.RowHeight;

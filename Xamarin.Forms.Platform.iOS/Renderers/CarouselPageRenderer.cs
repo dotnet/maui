@@ -22,8 +22,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public CarouselPageRenderer()
 		{
-			if (!Forms.IsiOS7OrNewer)
-				WantsFullScreenLayout = true;
 		}
 
 		IElementController ElementController => Element as IElementController;

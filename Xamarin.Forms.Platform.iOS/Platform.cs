@@ -45,15 +45,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (!PageIsChildOfPlatform(sender))
 					return;
-
-				if (Forms.IsiOS8OrNewer)
-				{
-					PresentAlert(arguments);
-				}
-				else
-				{
-					PresentPre8Alert(arguments);
-				}
+				PresentAlert(arguments);
 			});
 
 			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
@@ -64,16 +56,8 @@ namespace Xamarin.Forms.Platform.iOS
 				var pageRoot = sender;
 				while (!Application.IsApplicationOrNull(pageRoot.RealParent))
 					pageRoot = (Page)pageRoot.RealParent;
-				var pageRenderer = GetRenderer(pageRoot);
 
-				if (Forms.IsiOS8OrNewer)
-				{
-					PresentActionSheet(arguments);
-				}
-				else
-				{
-					PresentPre8ActionSheet(arguments, pageRenderer);
-				}
+				PresentActionSheet(arguments);
 			});
 		}
 
@@ -489,35 +473,6 @@ namespace Xamarin.Forms.Platform.iOS
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
 			await _renderer.PresentViewControllerAsync(wrapper, animated);
 			await Task.Delay(5);
-		}
-
-		void PresentPre8Alert(AlertArguments arguments)
-		{
-			UIAlertView alertView;
-			if (arguments.Accept != null)
-				alertView = new UIAlertView(arguments.Title, arguments.Message, null, arguments.Cancel, arguments.Accept);
-			else
-				alertView = new UIAlertView(arguments.Title, arguments.Message, null, arguments.Cancel);
-
-			alertView.Dismissed += (o, args) => arguments.SetResult(args.ButtonIndex != 0);
-			alertView.Show();
-		}
-
-		void PresentPre8ActionSheet(ActionSheetArguments arguments, IVisualElementRenderer pageRenderer)
-		{
-			var actionSheet = new UIActionSheet(arguments.Title, null, arguments.Cancel, arguments.Destruction,
-						arguments.Buttons.ToArray());
-
-			actionSheet.ShowInView(pageRenderer.NativeView);
-
-			actionSheet.Clicked += (o, args) =>
-			{
-				string title = null;
-				if (args.ButtonIndex != -1)
-					title = actionSheet.ButtonTitle(args.ButtonIndex);
-
-				arguments.Result.TrySetResult(title);
-			};
 		}
 
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>

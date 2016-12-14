@@ -134,14 +134,6 @@ namespace Xamarin.Forms.Platform.iOS
 			_loaded = true;
 		}
 
-		public override void ViewDidLoad()
-		{
-			base.ViewDidLoad();
-
-			if (!Forms.IsiOS7OrNewer)
-				WantsFullScreenLayout = false;
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -314,25 +306,15 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if (!_defaultBarColorSet)
 			{
-				if (Forms.IsiOS7OrNewer)
-					_defaultBarColor = TabBar.BarTintColor;
-				else
-					_defaultBarColor = TabBar.TintColor;
+				_defaultBarColor = TabBar.BarTintColor;
 
 				_defaultBarColorSet = true;
 			}
 
 			if (!isDefaultColor)
 				_barBackgroundColorWasSet = true;
-
-			if (Forms.IsiOS7OrNewer)
-			{
-				TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
-			}
-			else
-			{
-				TabBar.TintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
-			}
+			
+			TabBar.BarTintColor = isDefaultColor ? _defaultBarColor : barBackgroundColor.ToUIColor();
 		}
 
 		void UpdateBarTextColor()
@@ -369,10 +351,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
-			if (Forms.IsiOS7OrNewer)
-			{
-				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
-			}
+			TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToUIColor();
 		}
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)

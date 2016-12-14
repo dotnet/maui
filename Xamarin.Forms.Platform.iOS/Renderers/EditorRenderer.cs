@@ -11,16 +11,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		IElementController ElementController => Element as IElementController;
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			if (!Forms.IsiOS7OrNewer)
-			{
-				// Avoid crash iOS 6. iOS 6, I hate you. Why you no like Infinite size?
-				return base.GetDesiredSize(Math.Min(widthConstraint, 2000), Math.Min(heightConstraint, 2000));
-			}
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
