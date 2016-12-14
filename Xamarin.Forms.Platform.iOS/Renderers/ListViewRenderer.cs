@@ -564,7 +564,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var rowHeight = Element.RowHeight;
 			
-			if (Element.HasUnevenRows && rowHeight == -1 && Forms.IsiOS8OrNewer)
+			if (Element.HasUnevenRows && rowHeight == -1)
 				Control.RowHeight = UITableView.AutomaticDimension;
 			else
 				Control.RowHeight = rowHeight <= 0 ? DefaultRowHeight : rowHeight;
