@@ -6,6 +6,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms
 {
 	[ContentProperty("Setters")]
+	[ProvideCompiled("Xamarin.Forms.Core.XamlC.TriggerValueProvider")]
 	public sealed class Trigger : TriggerBase, IValueProvider
 	{
 		public Trigger([TypeConverter(typeof(TypeTypeConverter))] [Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)

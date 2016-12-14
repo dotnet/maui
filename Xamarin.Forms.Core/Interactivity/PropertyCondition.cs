@@ -14,7 +14,7 @@ namespace Xamarin.Forms
 
 		public PropertyCondition()
 		{
-			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(DataTrigger), false, propertyChanged: OnStatePropertyChanged);
+			_stateProperty = BindableProperty.CreateAttached("State", typeof(bool), typeof(PropertyCondition), false, propertyChanged: OnStatePropertyChanged);
 		}
 
 		public BindableProperty Property
