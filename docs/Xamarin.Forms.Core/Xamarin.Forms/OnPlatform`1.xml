@@ -113,6 +113,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Tizen">
+      <MemberSignature Language="C#" Value="public T Tizen { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance !T Tizen" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The type as it is implemented on the Tizen platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="WinPhone">
       <MemberSignature Language="C#" Value="public T WinPhone { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance !T WinPhone" />

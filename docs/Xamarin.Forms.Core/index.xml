@@ -460,6 +460,7 @@
     <Namespace Name="Xamarin.Forms.PlatformConfiguration">
       <Type Name="Android" Kind="Class" />
       <Type Name="iOS" Kind="Class" />
+      <Type Name="Tizen" Kind="Class" />
       <Type Name="Windows" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.PlatformConfiguration.AndroidSpecific">

@@ -88,6 +88,21 @@ namespace Xamarin.Forms
 			}
 		}
 
+		public static void OnPlatform(Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null, Action Tizen = null)
+		{
+			if (OS == TargetPlatform.Tizen)
+			{
+				if (Tizen != null)
+					Tizen();
+				else if (Default != null)
+					Default();
+			}
+			else
+			{
+				OnPlatform(iOS, Android, WinPhone, Default);
+			}
+		}
+
 		public static T OnPlatform<T>(T iOS, T Android, T WinPhone)
 		{
 			switch (OS)
@@ -102,6 +117,18 @@ namespace Xamarin.Forms
 			}
 
 			return iOS;
+		}
+
+		public static T OnPlatform<T>(T iOS, T Android, T WinPhone, T Tizen)
+		{
+			if (OS == TargetPlatform.Tizen)
+			{
+				return Tizen;
+			}
+			else
+			{
+				return OnPlatform<T>(iOS, Android, WinPhone);
+			}
 		}
 
 		public static void OpenUri(Uri uri)

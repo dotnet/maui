@@ -80,6 +80,20 @@
         <summary>(Unused) Indicates that Forms is running on an undefined platform.</summary>
       </Docs>
     </Member>
+    <Member MemberName="Tizen">
+      <MemberSignature Language="C#" Value="Tizen" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.TargetPlatform Tizen = int32(5)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.TargetPlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates that forms is running on the Tizen platform.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Windows">
       <MemberSignature Language="C#" Value="Windows" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.TargetPlatform Windows = int32(4)" />

@@ -8,6 +8,8 @@ namespace Xamarin.Forms
 
 		public T WinPhone { get; set; }
 
+		public T Tizen { get; set; }
+
 		public static implicit operator T(OnPlatform<T> onPlatform)
 		{
 			switch (Device.OS)
@@ -19,6 +21,8 @@ namespace Xamarin.Forms
 				case TargetPlatform.Windows:
 				case TargetPlatform.WinPhone:
 					return onPlatform.WinPhone;
+				case TargetPlatform.Tizen:
+					return onPlatform.Tizen;
 			}
 
 			return onPlatform.iOS;
