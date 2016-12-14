@@ -18,7 +18,12 @@ namespace Xamarin.Forms.Core.XamlC
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;
 			}
+			var bpRef = GetBindablePropertyFieldReference(value, module, node);
+			yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
+		}
 
+		public FieldReference GetBindablePropertyFieldReference(string value, ModuleDefinition module, BaseNode node)
+		{
 			FieldReference bpRef = null;
 			string typeName = null, propertyName = null;
 
@@ -49,7 +54,7 @@ namespace Xamarin.Forms.Core.XamlC
 			bpRef = GetBindablePropertyFieldReference(typeRef, propertyName, module);
 			if (bpRef == null)
 				throw new XamlParseException($"Can't resolve {propertyName} on {typeRef.Name}", node);
-			yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
+			return bpRef;
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode iNode)

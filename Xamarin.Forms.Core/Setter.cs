@@ -8,6 +8,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms
 {
 	[ContentProperty("Value")]
+	[ProvideCompiled("Xamarin.Forms.Core.XamlC.SetterValueProvider")]
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();

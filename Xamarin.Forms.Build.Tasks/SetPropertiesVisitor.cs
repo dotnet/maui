@@ -242,7 +242,8 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		public static IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ILContext context,
-		                                                    ModuleDefinition module, ElementNode node, FieldReference bpRef = null, PropertyReference propertyRef = null, TypeReference propertyDeclaringTypeRef = null)
+		                                                    ModuleDefinition module, ElementNode node, FieldReference bpRef = null,
+		                                                    PropertyReference propertyRef = null, TypeReference propertyDeclaringTypeRef = null)
 		{
 			GenericInstanceType markupExtension;
 			IList<TypeReference> genericArguments;
@@ -306,8 +307,25 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			else if (context.Variables[node].VariableType.ImplementsInterface(module.Import(typeof (IValueProvider))))
 			{
-				var markExt = module.Import(typeof (IValueProvider)).Resolve();
-				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
+				var valueProviderType = context.Variables[node].VariableType;
+				//If the IValueProvider has a ProvideCompiledAttribute that can be resolved, shortcut this
+				var compiledValueProviderName = valueProviderType?.GetCustomAttribute(module.Import(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?[0].Value as string;
+				Type compiledValueProviderType;
+				if (compiledValueProviderName != null && (compiledValueProviderType = Type.GetType(compiledValueProviderName)) != null) {
+					var compiledValueProvider = Activator.CreateInstance(compiledValueProviderType);
+					var cProvideValue = typeof(ICompiledValueProvider).GetMethods().FirstOrDefault(md => md.Name == "ProvideValue");
+					var instructions = (IEnumerable<Instruction>)cProvideValue.Invoke(compiledValueProvider, new object[] {
+						vardefref,
+						context.Body.Method.Module,
+						node as BaseNode,
+						context});
+					foreach (var i in instructions)
+						yield return i;
+					yield break;
+				}
+
+				var valueProviderDef = module.Import(typeof (IValueProvider)).Resolve();
+				var provideValueInfo = valueProviderDef.Methods.First(md => md.Name == "ProvideValue");
 				var provideValue = module.Import(provideValueInfo);
 
 				vardefref.VariableDefinition = new VariableDefinition(module.TypeSystem.Object);

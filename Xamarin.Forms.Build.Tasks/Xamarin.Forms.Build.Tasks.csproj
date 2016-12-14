@@ -105,6 +105,8 @@
     <Compile Include="CompiledConverters\ThicknessTypeConverter.cs" />
     <Compile Include="MethodBodyExtensions.cs" />
     <Compile Include="CompiledConverters\TypeTypeConverter.cs" />
+    <Compile Include="CompiledValueProviders\SetterValueProvider.cs" />
+    <Compile Include="CompiledValueProviders\ICompiledValueProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
@@ -128,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CompiledMarkupExtensions\" />
+    <Folder Include="CompiledValueProviders\" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
