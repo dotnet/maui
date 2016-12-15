@@ -85,6 +85,7 @@
       <DependentUpon>Bugzilla38827.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38989.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39395.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39461.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39483.xaml.cs">
