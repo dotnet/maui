@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.MacTwitterDemo">
+    <MasterDetailPage.Master>
+        <ContentPage BackgroundColor="#24456e" Title="Master">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+                <ScrollView Margin="0,55,0,0" BackgroundColor="Transparent">
+                    <StackLayout>
+                        <Image Source="rui.jpg" WidthRequest="50" HeightRequest="50" HorizontalOptions="Center" />
+                        <Image Source="home.png" Margin="0,20,0,0" WidthRequest="25"/>
+                        <Image Source="notifications.png" Margin="0,20,0,0" WidthRequest="25" />
+                        <Image Source="messages.png" Margin="0,20,0,0" WidthRequest="22" />
+                        <Image Source="profile.png" Margin="0,20,0,0" WidthRequest="25" />
+                        <Image Source="lists.png" Margin="0,20,0,0" WidthRequest="25" />
+                        <Image Source="search.png" Margin="0,20,0,0" WidthRequest="25" />
+                    </StackLayout>
+                </ScrollView>
+                <Image Grid.Row="1" Source="tweet.png" WidthRequest="25" HeightRequest="25" VerticalOptions="Start" />
+            </Grid>
+        </ContentPage>
+    </MasterDetailPage.Master>
+    <MasterDetailPage.Detail>
+        <ContentPage BackgroundColor="#ffffff" Title="Home">
+            <ListView x:Name="lstTweets" RowHeight="125" BackgroundColor="#ffffff">
+                <ListView.Header>
+                    <Grid HeightRequest="45"  BackgroundColor="#ffffff">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition Height="0.5" />
+                        </Grid.RowDefinitions>
+                        <Label Text="Home" FontFamily="Helvetica" FontSize="14" VerticalOptions="CenterAndExpand" VerticalTextAlignment="Center"  HorizontalOptions="CenterAndExpand" />
+                        <BoxView Color="#cbd5dd" Grid.Row="1" />
+                    </Grid>
+                </ListView.Header>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Grid BackgroundColor="White" Padding="0,5,0,5" RowSpacing="3">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="0.5" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Image Source="xamarinlogo.png" Grid.RowSpan="3" Margin="0,5,0,0" WidthRequest="50" HeightRequest="50" VerticalOptions="Start" />
+                                <Label FontFamily="Helvetica" FontSize="15" Grid.Column="1" Grid.Row="0" Text="Xamarin" VerticalOptions="Start" VerticalTextAlignment="Start" />
+                                <Label FontFamily="Helvetica" FontSize="14" Grid.Column="1" Grid.Row="1" Text="Download the source code for the #XamarinEvolve 2016 app, leveraging 93% codeshare across iOS, Android, and Windows: http://xmn.io/26xD51i" />
+                                <StackLayout HorizontalOptions="Start" Spacing="40" VerticalOptions="Center" Orientation="Horizontal" Grid.Column="1" Grid.Row="2" Padding="0,10,0,10">
+                                    <Image Source="reply.png" WidthRequest="15" />
+                                    <Image Source="retweet.png" WidthRequest="15" />
+                                    <Image Source="favorite.png" WidthRequest="15" />
+                                </StackLayout>
+                                <BoxView Color="#cbd5dd" Grid.Row="3" Grid.ColumnSpan="2" />
+                            </Grid>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ContentPage>
+    </MasterDetailPage.Detail>
+</MasterDetailPage>

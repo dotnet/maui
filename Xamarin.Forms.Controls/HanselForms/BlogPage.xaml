@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Controls.BlogPage" Title="{Binding Title}" Icon="{Binding Icon}" IsBusy="{Binding IsBusy}">
+	<AbsoluteLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+		<ListView x:Name="listView" CachingStrategy="RecycleElement" ItemsSource="{Binding FeedItems}" HasUnevenRows="True" RowHeight="175" IsPullToRefreshEnabled="True" RefreshCommand="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=OneWay}" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,0,1,1">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<ViewCell>
+						<Grid Padding="10">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="80" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<StackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+								<Label Text="{Binding Title}" FontSize="Small" LineBreakMode="WordWrap" />
+								<Label Text="{Binding PublishDate}" TextColor="#3498DB" FontSize="Small" LineBreakMode="NoWrap" />
+								<Label Text="{Binding Caption}" FontSize="Small" LineBreakMode="WordWrap" />
+							</StackLayout>
+							<Image HeightRequest="80" WidthRequest="80" Source="{Binding FirstImage}" Aspect="AspectFill" VerticalOptions="Center" />
+						</Grid>
+					</ViewCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+		<StackLayout IsVisible="{Binding IsBusy}" BackgroundColor="#80000000" Padding="12" AbsoluteLayout.LayoutFlags="PositionProportional" AbsoluteLayout.LayoutBounds="0.5,0.5,-1,-1">
+			<ActivityIndicator IsRunning="{Binding IsBusy}" Color="White">
+			</ActivityIndicator>
+			<Label Text="Loading Blog..." HorizontalOptions="Center" TextColor="White" />
+		</StackLayout>
+	</AbsoluteLayout>
+</ContentPage>
