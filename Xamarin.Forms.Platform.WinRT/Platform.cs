@@ -761,8 +761,41 @@ namespace Xamarin.Forms.Platform.WinRT
 				dialog.CancelCommandIndex = (uint)dialog.Commands.Count - 1;
 			}
 
-			IUICommand command = await dialog.ShowAsync();
-			options.SetResult(command.Label == options.Accept);
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(async () =>
+				{
+					IUICommand command = await dialog.ShowAsyncQueue();
+					options.SetResult(command.Label == options.Accept);
+				});
+			}
+			else
+			{
+				IUICommand command = await dialog.ShowAsyncQueue();
+				options.SetResult(command.Label == options.Accept);
+			}
+		}
+	}
+	
+	// refer to http://stackoverflow.com/questions/29209954/multiple-messagedialog-app-crash for why this is used
+	// in order to allow for multiple MessageDialogs, or a crash occurs otherwise
+	public static class MessageDialogExtensions
+	{
+		static TaskCompletionSource<MessageDialog> _currentDialogShowRequest;
+
+		public static async Task<IUICommand> ShowAsyncQueue(this MessageDialog dialog)
+		{
+			while (_currentDialogShowRequest != null)
+			{
+				await _currentDialogShowRequest.Task;
+			}
+
+			var request = _currentDialogShowRequest = new TaskCompletionSource<MessageDialog>();
+			var result = await dialog.ShowAsync();
+			_currentDialogShowRequest = null;
+			request.SetResult(dialog);
+
+			return result;
 		}
 	}
 }
