@@ -7,8 +7,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SliderRenderer : ViewRenderer<Slider, SeekBar>, SeekBar.IOnSeekBarChangeListener
 	{
-		double _max;
-		double _min;
+		double _max, _min;
+		bool _progressChangedOnce;
 
 		public SliderRenderer()
 		{
@@ -23,6 +23,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SeekBar.IOnSeekBarChangeListener.OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
+			if (!_progressChangedOnce)
+			{
+				_progressChangedOnce = true;
+				return;
+			}
+
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
 		}
 
@@ -84,20 +90,20 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnLayout(changed, l, t, r, b);
 
 			BuildVersionCodes androidVersion = Build.VERSION.SdkInt;
-			if (androidVersion >= BuildVersionCodes.JellyBean)
-			{
-				// Thumb only supported JellyBean and higher
+			if (androidVersion < BuildVersionCodes.JellyBean)
+				return;
 
-				if (Control == null)
-					return;
+			// Thumb only supported JellyBean and higher
 
-				SeekBar seekbar = Control;
+			if (Control == null)
+				return;
 
-				Drawable thumb = seekbar.Thumb;
-				int thumbTop = seekbar.Height / 2 - thumb.IntrinsicHeight / 2;
+			SeekBar seekbar = Control;
 
-				thumb.SetBounds(thumb.Bounds.Left, thumbTop, thumb.Bounds.Left + thumb.IntrinsicWidth, thumbTop + thumb.IntrinsicHeight);
-			}
+			Drawable thumb = seekbar.Thumb;
+			int thumbTop = seekbar.Height / 2 - thumb.IntrinsicHeight / 2;
+
+			thumb.SetBounds(thumb.Bounds.Left, thumbTop, thumb.Bounds.Left + thumb.IntrinsicWidth, thumbTop + thumb.IntrinsicHeight);
 		}
 	}
 }
