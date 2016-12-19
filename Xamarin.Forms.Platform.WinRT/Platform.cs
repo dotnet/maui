@@ -296,13 +296,16 @@ namespace Xamarin.Forms.Platform.WinRT
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
 
-#if WINDOWS_UWP
-				toolBarProvider?.BindForegroundColor(button);
-#endif
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
+
 				if (order == ToolbarItemOrder.Primary)
+				{
+#if WINDOWS_UWP
+					toolBarProvider?.BindForegroundColor(button);
+#endif
 					commandBar.PrimaryCommands.Add(button);
+				}
 				else
 					commandBar.SecondaryCommands.Add(button);
 			}
