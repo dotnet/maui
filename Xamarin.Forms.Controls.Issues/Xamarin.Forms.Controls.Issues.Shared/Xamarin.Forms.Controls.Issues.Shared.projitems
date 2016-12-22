@@ -55,6 +55,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32847.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33248.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33268.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33612.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33714.cs" />
