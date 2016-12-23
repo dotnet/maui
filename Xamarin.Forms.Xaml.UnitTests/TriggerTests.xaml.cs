@@ -47,6 +47,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual (Entry.IsPasswordProperty, pwTrigger.Property);
 				Assert.AreEqual (true, pwTrigger.Value);
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void ValueIsConvertedWithPropertyCondition(bool useCompiledXaml)
+			{
+				var layout = new TriggerTests(useCompiledXaml);
+				Entry entry = layout.entry1;
+				Assert.NotNull(entry);
+
+				var triggers = entry.Triggers;
+				Assert.IsNotEmpty(triggers);
+				var pwTrigger = triggers[0] as MultiTrigger;
+				var pwCondition = pwTrigger.Conditions[0] as PropertyCondition;
+				Assert.AreEqual(Entry.IsPasswordProperty, pwCondition.Property);
+				Assert.AreEqual(true, pwCondition.Value);
+			}
 		}
 	}
 }

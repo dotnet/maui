@@ -12,7 +12,7 @@ namespace Xamarin.Forms
 
 		public BindingCondition()
 		{
-			_boundProperty = BindableProperty.CreateAttached("Bound", typeof(object), typeof(DataTrigger), null, propertyChanged: OnBoundPropertyChanged);
+			_boundProperty = BindableProperty.CreateAttached("Bound", typeof(object), typeof(BindingCondition), null, propertyChanged: OnBoundPropertyChanged);
 		}
 
 		public BindingBase Binding
@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 				if (_binding == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Binding once the Trigger has been applied.");
+					throw new InvalidOperationException("Can not change Binding once the Condition has been applied.");
 				_binding = value;
 			}
 		}
@@ -36,7 +36,7 @@ namespace Xamarin.Forms
 				if (_triggerValue == value)
 					return;
 				if (IsSealed)
-					throw new InvalidOperationException("Can not change Value once the Trigger has been applied.");
+					throw new InvalidOperationException("Can not change Value once the Condition has been applied.");
 				_triggerValue = value;
 			}
 		}

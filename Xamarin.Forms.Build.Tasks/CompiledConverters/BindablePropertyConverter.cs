@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Core.XamlC
 			var parts = value.Split('.');
 			if (parts.Length == 1) {
 				var parent = node.Parent?.Parent as IElementNode;
-				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" && (node.Parent as ElementNode)?.XmlType.Name == "Setter") {
+				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
+				    ((node.Parent as ElementNode)?.XmlType.Name == "Setter" || (node.Parent as ElementNode)?.XmlType.Name == "PropertyCondition")) {
 					if (parent.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
 						(parent.XmlType.Name == "Trigger" || parent.XmlType.Name == "DataTrigger" || parent.XmlType.Name == "MultiTrigger" || parent.XmlType.Name == "Style")) {
 						var ttnode = (parent as ElementNode).Properties [new XmlName("", "TargetType")];
@@ -46,6 +47,9 @@ namespace Xamarin.Forms.Core.XamlC
 				typeName = parts [0];
 				propertyName = parts [1];
 			} else
+				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(BindableProperty)}", node);
+
+			if (typeName == null || propertyName == null)
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(BindableProperty)}", node);
 
 			var typeRef = GetTypeReference(typeName, module, node);

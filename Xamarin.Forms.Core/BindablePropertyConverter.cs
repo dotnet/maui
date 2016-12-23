@@ -50,6 +50,8 @@ namespace Xamarin.Forms
 				}
 				else if (parentValuesProvider.TargetObject is Trigger)
 					type = (parentValuesProvider.TargetObject as Trigger).TargetType;
+				else if (parentValuesProvider.TargetObject is PropertyCondition && (parent as TriggerBase) != null)
+					type = (parent as TriggerBase).TargetType;
 
 				if (type == null)
 					throw new XamlParseException($"Can't resolve {parts [0]}", lineinfo);

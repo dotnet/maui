@@ -8,7 +8,7 @@ namespace Xamarin.Forms
 
 		public MultiCondition()
 		{
-			_aggregatedStateProperty = BindableProperty.CreateAttached("AggregatedState", typeof(bool), typeof(DataTrigger), false, propertyChanged: OnAggregatedStatePropertyChanged);
+			_aggregatedStateProperty = BindableProperty.CreateAttached("AggregatedState", typeof(bool), typeof(MultiCondition), false, propertyChanged: OnAggregatedStatePropertyChanged);
 			Conditions = new TriggerBase.SealedList<Condition>();
 		}
 
