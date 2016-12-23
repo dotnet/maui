@@ -108,6 +108,7 @@
     <Compile Include="CompiledValueProviders\SetterValueProvider.cs" />
     <Compile Include="CompiledValueProviders\ICompiledValueProvider.cs" />
     <Compile Include="CompiledValueProviders\TriggerValueProvider.cs" />
+    <Compile Include="CompiledValueProviders\PassthroughValueProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

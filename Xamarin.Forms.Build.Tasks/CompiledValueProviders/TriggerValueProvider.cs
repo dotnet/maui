@@ -8,7 +8,6 @@ using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Core.XamlC
 {
-	
 	class TriggerValueProvider : ICompiledValueProvider
 	{
 		public IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ModuleDefinition module, BaseNode node, ILContext context)
