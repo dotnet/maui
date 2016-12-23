@@ -1,6 +1,7 @@
 ﻿using System;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -11,22 +12,41 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			InitializeComponent ();
 		}
 
+		public BuiltInConversions(bool useCompiledXaml)
+		{
+			//this stub will be replaced at compile time
+		}
+
 		[TestFixture]
 		public class Tests
 		{
-			[Test]
-			public void Datetime ()
+			[SetUp]
+			public void Setup()
 			{
-				var layout = new BuiltInConversions ();
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void Datetime (bool useCompiledXaml)
+			{
+				var layout = new BuiltInConversions (useCompiledXaml);
 
 				Assert.AreEqual (new DateTime (2015, 01, 16), layout.datetime0.Date);
 				Assert.AreEqual (new DateTime (2015, 01, 16), layout.datetime1.Date);
 			}
 
-			[Test]
-			public void String ()
+			[TestCase(false)]
+			[TestCase(true)]
+			public void String (bool useCompiledXaml)
 			{
-				var layout = new BuiltInConversions ();
+				var layout = new BuiltInConversions (useCompiledXaml);
 
 				Assert.AreEqual ("foobar", layout.label0.Text);
 				Assert.AreEqual ("foobar", layout.label1.Text);

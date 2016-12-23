@@ -13,9 +13,9 @@ namespace Xamarin.Forms.Build.Tasks
 			if (declaringTypeRef == null)
 				throw new ArgumentNullException(nameof(declaringTypeRef));
 
-			var reference = new MethodReference(self.Name, self.ReturnType)
+			var reference = new MethodReference(self.Name, module.Import(self.ReturnType))
 			{
-				DeclaringType = declaringTypeRef,
+				DeclaringType = module.Import(declaringTypeRef),
 				HasThis = self.HasThis,
 				ExplicitThis = self.ExplicitThis,
 				CallingConvention = self.CallingConvention

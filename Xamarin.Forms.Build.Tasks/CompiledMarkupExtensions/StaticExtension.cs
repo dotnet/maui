@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
-			var typeRef = GetTypeReference(typename, module, node);
+			var typeRef = module.Import(GetTypeReference(typename, module, node));
 			var fieldRef = GetFieldReference(typeRef, membername, module);
 			var propertyDef = GetPropertyDefinition(typeRef, membername, module);
 
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			memberRef = propertyDef.PropertyType;
-			var getterDef = propertyDef.GetMethod;
+			var getterDef = module.Import(propertyDef.GetMethod);
 			return new [] { Instruction.Create(OpCodes.Call, getterDef) };
 		}
 

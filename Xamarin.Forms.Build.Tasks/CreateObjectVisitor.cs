@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			var typeref = node.XmlType.GetTypeReference(Module, node);
+			var typeref = Module.Import(node.XmlType.GetTypeReference(Module, node));
 			TypeDefinition typedef = typeref.Resolve();
 
 			if (IsXaml2009LanguagePrimitive(node)) {
@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var markupProvider = new StaticExtension();
 
 				var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
+				typeref = Module.Import(typeref);
 
 				var vardef = new VariableDefinition(typeref);
 				Context.Variables [node] = vardef;
@@ -154,8 +155,7 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Call, implicitOperator);
 					Context.IL.Emit(OpCodes.Stloc, vardef);
 				} else if (factorymethodinforef != null) {
-					var factory = Module.Import(factorymethodinforef);
-					Context.IL.Emit(OpCodes.Call, factory);
+					Context.IL.Emit(OpCodes.Call, Module.Import(factorymethodinforef));
 					Context.IL.Emit(OpCodes.Stloc, vardef);
 				} else if (!typedef.IsValueType) {
 					var ctor = Module.Import(ctorinforef);

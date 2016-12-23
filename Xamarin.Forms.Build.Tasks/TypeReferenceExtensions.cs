@@ -21,7 +21,15 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public bool Equals(TypeReference x, TypeReference y)
 		{
-			return GetAssembly(x) == GetAssembly(y) && x.FullName == y.FullName;
+			if (x.FullName != y.FullName)
+				return false;
+			var xasm = GetAssembly(x);
+			if (xasm.StartsWith("System.Runtime", StringComparison.Ordinal) || xasm.StartsWith("mscorlib", StringComparison.Ordinal))
+				xasm = "mscorlib";
+			var yasm = GetAssembly(y);
+			if (yasm.StartsWith("System.Runtime", StringComparison.Ordinal) || yasm.StartsWith("mscorlib", StringComparison.Ordinal))
+				yasm = "mscorlib";
+			return xasm == yasm;
 		}
 
 		public int GetHashCode(TypeReference obj)
