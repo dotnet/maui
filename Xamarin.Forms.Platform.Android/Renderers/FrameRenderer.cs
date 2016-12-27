@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_normalBitmap == null || _normalBitmap.Height != height || _normalBitmap.Width != width)
 				{
-					// If the user changes the orientation of the screen, make sure to detroy reference before
+					// If the user changes the orientation of the screen, make sure to destroy reference before
 					// reassigning a new bitmap reference.
 					if (_normalBitmap != null)
 					{
