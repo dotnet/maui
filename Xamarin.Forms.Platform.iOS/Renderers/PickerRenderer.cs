@@ -108,9 +108,9 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Element != null)
 			{
 				var oldText = Control.Text;
-				ElementController.SetValueFromRenderer(Picker.SelectedIndexProperty, s.SelectedIndex);
 				Control.Text = s.SelectedItem;
 				UpdatePickerNativeSize(oldText);
+				ElementController.SetValueFromRenderer(Picker.SelectedIndexProperty, s.SelectedIndex);
 			}
 		}
 
