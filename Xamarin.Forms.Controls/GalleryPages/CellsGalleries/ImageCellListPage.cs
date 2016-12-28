@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Controls
 
 			var albums = new List<string> ();
 			for (int i = 0; i < 30; i++) {
-				albums.Add (string.Format ("http://cdn.instructables.com/FCP/9TOJ/GCJ0ZQV5/FCP9TOJGCJ0ZQV5.MEDIUM.jpg?ticks={0}",i ));
+				albums.Add (string.Format ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png?ticks={0}", i ));
 			}
 
 

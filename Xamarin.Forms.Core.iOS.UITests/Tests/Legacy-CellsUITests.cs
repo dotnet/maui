@@ -113,8 +113,16 @@ namespace Xamarin.Forms.Core.UITests
 
 			App.Screenshot("All ImageCells are present");
 
-			await Task.Delay(1000);
-			var numberOfImages = App.Query(q => q.Raw(PlatformViews.Image)).Length;
+			int numberOfImages = 0;
+
+			// Most of the time, 1 second is long enough to wait for the images to load, but depending on network conditions
+			// it may take longer
+			for (int n = 0; n < 30; n++)
+			{
+				await Task.Delay(1000);
+				numberOfImages = App.Query(q => q.Raw(PlatformViews.Image)).Length;
+			}
+
 			// Check that there are images present. In Android, 
 			// have to make sure that there are more than 2 for navigation.
 			Assert.IsTrue(numberOfImages > 2);
