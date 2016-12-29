@@ -121,6 +121,10 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				await Task.Delay(1000);
 				numberOfImages = App.Query(q => q.Raw(PlatformViews.Image)).Length;
+				if (numberOfImages > 2)
+				{
+					break;
+				}
 			}
 
 			// Check that there are images present. In Android, 
