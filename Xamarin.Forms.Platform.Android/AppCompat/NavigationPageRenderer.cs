@@ -39,6 +39,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		int _lastActionBarHeight = -1;
 		AToolbar _toolbar;
 		ToolbarTracker _toolbarTracker;
+		DrawerMultiplexedListener _drawerListener;
+		DrawerLayout _drawerLayout;
 		bool _toolbarVisible;
 
 		// The following is based on https://android.googlesource.com/platform/frameworks/support/+/refs/heads/master/v4/java/android/support/v4/app/FragmentManager.java#849
@@ -133,29 +135,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					}
 				}
 
-				if (Element != null)
-				{
-					foreach (Element element in PageController.InternalChildren)
-					{
-						var child = element as VisualElement;
-						if (child == null)
-						{
-							continue;
-						}
-
-						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
-						renderer?.Dispose();
-					}
-
-					var navController = (INavigationPageController)Element;
-
-					navController.PushRequested -= OnPushed;
-					navController.PopRequested -= OnPopped;
-					navController.PopToRootRequested -= OnPoppedToRoot;
-					navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
-					navController.RemovePageRequested -= OnRemovePageRequested;
-				}
-
 				if (_toolbarTracker != null)
 				{
 					_toolbarTracker.CollectionChanged -= ToolbarTrackerOnCollectionChanged;
@@ -173,12 +152,50 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (_drawerLayout != null && _drawerListener != null)
 				{
 					_drawerLayout.RemoveDrawerListener(_drawerListener);
+				}
+
+				if (_drawerListener != null)
+				{
+					_drawerListener.Dispose();
 					_drawerListener = null;
 				}
 
-				_drawerToggle = null;
+				if (_drawerToggle != null)
+				{
+					_drawerToggle.Dispose();
+					_drawerToggle = null;
+				}
+
+				if (_backgroundDrawable != null)
+				{
+					_backgroundDrawable.Dispose();
+					_backgroundDrawable = null;
+				}
 
 				Current = null;
+
+				// We dispose the child renderers after cleaning up everything related to DrawerLayout in case
+				// one of the children is a MasterDetailPage (which may dispose of the DrawerLayout).
+				if (Element != null)
+				{
+					foreach (Element element in PageController.InternalChildren)
+					{
+						var child = element as VisualElement;
+						if (child == null)
+							continue;
+
+						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
+						renderer?.Dispose();
+					}
+
+					var navController = (INavigationPageController)Element;
+
+					navController.PushRequested -= OnPushed;
+					navController.PopRequested -= OnPopped;
+					navController.PopToRootRequested -= OnPoppedToRoot;
+					navController.InsertPageBeforeRequested -= OnInsertPageBeforeRequested;
+					navController.RemovePageRequested -= OnRemovePageRequested;
+				}
 
 				Device.Info.PropertyChanged -= DeviceInfoPropertyChanged;
 			}
@@ -465,9 +482,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			RemovePage(e.Page);
 		}
 
-		private DrawerMultiplexedListener _drawerListener;
-		private DrawerLayout _drawerLayout;
-
 		void RegisterToolbar()
 		{
 			Context context = Context;
@@ -499,7 +513,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (renderer == null)
 				return;
 
-			_drawerLayout = (DrawerLayout)renderer;
+			_drawerLayout = renderer;
 			_drawerToggle = new ActionBarDrawerToggle((Activity)context, _drawerLayout, bar, global::Android.Resource.String.Ok, global::Android.Resource.String.Ok)
 			{
 				ToolbarNavigationClickListener = new ClickListener(Element)
