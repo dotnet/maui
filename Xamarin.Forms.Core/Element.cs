@@ -280,6 +280,7 @@ namespace Xamarin.Forms
 			namescope.RegisterName(name, scopedElement);
 		}
 
+		[Obsolete]
 		void INameScope.RegisterName(string name, object scopedElement, IXmlLineInfo xmlLineInfo)
 		{
 			INameScope namescope = GetNameScope();

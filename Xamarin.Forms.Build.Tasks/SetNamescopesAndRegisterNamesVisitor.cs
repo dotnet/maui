@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using Mono.Cecil.Cil;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
@@ -33,7 +35,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			Context.Scopes[node] = Context.Scopes[parentNode];
 			if (IsXNameProperty(node, parentNode))
-				RegisterName((string)node.Value, Context.Scopes[node], Context.Variables[(IElementNode)parentNode], node);
+				RegisterName((string)node.Value, Context.Scopes[node].Item1, Context.Scopes[node].Item2, Context.Variables[(IElementNode)parentNode], node);
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
@@ -43,26 +45,27 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			VariableDefinition ns;
-			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode))
-				ns = CreateNamescope();
-			else
-				ns = Context.Scopes[parentNode];
-			if (
-				Context.Variables[node].VariableType.InheritsFromOrImplements(
-					Context.Body.Method.Module.Import(typeof (BindableObject))))
-				SetNameScope(node, ns);
-			Context.Scopes[node] = ns;
+			VariableDefinition namescopeVarDef;
+			IList<string> namesInNamescope;
+			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode)) {
+				namescopeVarDef = CreateNamescope();
+				namesInNamescope = new List<string>();
+			} else {
+				namescopeVarDef = Context.Scopes[parentNode].Item1;
+				namesInNamescope = Context.Scopes[parentNode].Item2;
+			}
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.Import(typeof (BindableObject))))
+				SetNameScope(node, namescopeVarDef);
+			Context.Scopes[node] = new System.Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
 
 		public void Visit(RootNode node, INode parentNode)
 		{
-			var ns = CreateNamescope();
-			if (
-				Context.Variables[node].VariableType.InheritsFromOrImplements(
-					Context.Body.Method.Module.Import(typeof (BindableObject))))
-				SetNameScope(node, ns);
-			Context.Scopes[node] = ns;
+			var namescopeVarDef = CreateNamescope();
+			IList<string> namesInNamescope = new List<string>();
+			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.Import(typeof (BindableObject))))
+				SetNameScope(node, namescopeVarDef);
+			Context.Scopes[node] = new System.Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
 
 		public void Visit(ListNode node, INode parentNode)
@@ -121,18 +124,21 @@ namespace Xamarin.Forms.Build.Tasks
 			Context.IL.Emit(OpCodes.Call, setNS);
 		}
 
-		void RegisterName(string str, VariableDefinition scope, VariableDefinition element, INode node)
+		void RegisterName(string str, VariableDefinition namescopeVarDef, IList<string> namesInNamescope, VariableDefinition element, INode node)
 		{
+			if (namesInNamescope.Contains(str))
+				throw new XamlParseException($"An element with the name \"{str}\" already exists in this NameScope", node as IXmlLineInfo);
+			namesInNamescope.Add(str);
+
 			var module = Context.Body.Method.Module;
 			var nsRef = module.Import(typeof (INameScope));
 			var nsDef = nsRef.Resolve();
-			var registerInfo = nsDef.Methods.First(md => md.Name == "RegisterName" && md.Parameters.Count == 3);
+			var registerInfo = nsDef.Methods.First(md => md.Name == "RegisterName" && md.Parameters.Count == 2);
 			var register = module.Import(registerInfo);
 
-			Context.IL.Emit(OpCodes.Ldloc, scope);
+			Context.IL.Emit(OpCodes.Ldloc, namescopeVarDef);
 			Context.IL.Emit(OpCodes.Ldstr, str);
 			Context.IL.Emit(OpCodes.Ldloc, element);
-			Context.IL.Append(node.PushXmlLineInfo(Context));
 			Context.IL.Emit(OpCodes.Callvirt, register);
 		}
 	}

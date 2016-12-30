@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
@@ -13,7 +16,7 @@ namespace Xamarin.Forms.Build.Tasks
 			Body = body;
 			Values = new Dictionary<IValueNode, object>();
 			Variables = new Dictionary<IElementNode, VariableDefinition>();
-			Scopes = new Dictionary<INode, VariableDefinition>();
+			Scopes = new Dictionary<INode, Tuple<VariableDefinition, IList<string>>>();
 			TypeExtensions = new Dictionary<INode, TypeReference>();
 			ParentContextValues = parentContextValues;
 			Module = module;
@@ -23,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public Dictionary<IElementNode, VariableDefinition> Variables { get; private set; }
 
-		public Dictionary<INode, VariableDefinition> Scopes { get; private set; }
+		public Dictionary<INode, Tuple<VariableDefinition, IList<string>>> Scopes { get; private set; }
 
 		public Dictionary<INode, TypeReference> TypeExtensions { get; }
 

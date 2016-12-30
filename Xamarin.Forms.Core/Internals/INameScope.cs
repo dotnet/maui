@@ -1,3 +1,4 @@
+using System;
 using System.Xml;
 
 namespace Xamarin.Forms.Internals
@@ -6,7 +7,7 @@ namespace Xamarin.Forms.Internals
 	{
 		object FindByName(string name);
 		void RegisterName(string name, object scopedElement);
-		void RegisterName(string name, object scopedElement, IXmlLineInfo xmlLineInfo);
 		void UnregisterName(string name);
+		[Obsolete]void RegisterName(string name, object scopedElement, IXmlLineInfo xmlLineInfo);
 	}
 }

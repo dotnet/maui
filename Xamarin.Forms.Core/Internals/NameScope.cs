@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Internals
 			_names[name] = scopedElement;
 		}
 
+		[Obsolete]
 		void INameScope.RegisterName(string name, object scopedElement, IXmlLineInfo xmlLineInfo)
 		{
 			try

@@ -131,9 +131,6 @@
     <Compile Include="Issues\Issue2114.xaml.cs">
       <DependentUpon>Issue2114.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Issue2125.xaml.cs">
-      <DependentUpon>Issue2125.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Validation\StaticExtensionException.xaml.cs">
       <DependentUpon>StaticExtensionException.xaml</DependentUpon>
     </Compile>
@@ -467,9 +464,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Issue2114.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Issue2125.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Validation\StaticExtensionException.xaml">

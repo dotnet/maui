@@ -488,7 +488,7 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Dup); //Duplicate the namescopeProvider
 				var setNamescope = module.Import(typeof (NameScopeProvider).GetProperty("NameScope").GetSetMethod());
 
-				yield return Instruction.Create(OpCodes.Ldloc, context.Scopes[node]);
+				yield return Instruction.Create(OpCodes.Ldloc, context.Scopes[node].Item1);
 				yield return Instruction.Create(OpCodes.Callvirt, setNamescope);
 				yield return Instruction.Create(OpCodes.Callvirt, addService);
 			}

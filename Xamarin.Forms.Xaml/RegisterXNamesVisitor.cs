@@ -39,8 +39,7 @@ namespace Xamarin.Forms.Xaml
 			{
 				if (ae.ParamName != "name")
 					throw ae;
-				throw new XamlParseException(
-					string.Format("An element with the name \"{0}\" already exists in this NameScope", (string)node.Value), node);
+				throw new XamlParseException($"An element with the name \"{(string)node.Value}\" already exists in this NameScope", node);
 			}
 		}
 
