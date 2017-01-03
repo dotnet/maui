@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Platform.WinRT
 		public static readonly DependencyProperty IncrementProperty = DependencyProperty.Register("Increment", typeof(double), typeof(StepperControl),
 			new PropertyMetadata(default(double), OnIncrementChanged));
 
+		public static readonly DependencyProperty ButtonBackgroundColorProperty = DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(Color), typeof(StepperControl), new PropertyMetadata(default(Color), OnButtonBackgroundColorChanged));
+
 		public StepperControl()
 		{
 			InitializeComponent();
@@ -44,7 +46,19 @@ namespace Xamarin.Forms.Platform.WinRT
 			set { SetValue(ValueProperty, value); }
 		}
 
+		public Color ButtonBackgroundColor
+		{
+			get { return (Color)GetValue(ButtonBackgroundColorProperty); }
+			set { SetValue(ButtonBackgroundColorProperty, value); }
+		}
+
 		public event EventHandler ValueChanged;
+
+		static void OnButtonBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var stepper = (StepperControl)d;
+			stepper.UpdateButtonBackgroundColor(stepper.ButtonBackgroundColor);
+		}
 
 		static void OnIncrementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -76,6 +90,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			EventHandler changed = stepper.ValueChanged;
 			if (changed != null)
 				changed(d, EventArgs.Empty);
+		}
+
+		void UpdateButtonBackgroundColor(Color value)
+		{
+			Windows.UI.Xaml.Media.Brush brush = value.ToBrush();
+			Minus.Background = brush;
+			Plus.Background = brush;
 		}
 
 		void UpdateEnabled(double value)

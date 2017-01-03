@@ -18,6 +18,8 @@ namespace Xamarin.Forms.Platform.UWP
 		public static readonly DependencyProperty IncrementProperty = DependencyProperty.Register("Increment", typeof(double), typeof(StepperControl),
 			new PropertyMetadata(default(double), OnIncrementChanged));
 
+		public static readonly DependencyProperty ButtonBackgroundColorProperty = DependencyProperty.Register(nameof(ButtonBackgroundColor), typeof(Color), typeof(StepperControl), new PropertyMetadata(default(Color), OnButtonBackgroundColorChanged));
+
 		Windows.UI.Xaml.Controls.Button _plus;
 		Windows.UI.Xaml.Controls.Button _minus;
 		VisualStateCache _plusStateCache;
@@ -52,6 +54,12 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(ValueProperty, value); }
 		}
 
+		public Color ButtonBackgroundColor
+		{
+			get { return (Color)GetValue(ButtonBackgroundColorProperty); }
+			set { SetValue(ButtonBackgroundColorProperty, value); }
+		}
+
 		public event EventHandler ValueChanged;
 
 		protected override void OnApplyTemplate()
@@ -67,6 +75,13 @@ namespace Xamarin.Forms.Platform.UWP
 				_minus.Click += OnMinusClicked;
 
 			UpdateEnabled(Value);
+			UpdateButtonBackgroundColor(ButtonBackgroundColor);
+		}
+
+		static void OnButtonBackgroundColorChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			var stepper = (StepperControl)d;
+			stepper.UpdateButtonBackgroundColor(stepper.ButtonBackgroundColor);
 		}
 
 		static void OnIncrementChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -187,6 +202,17 @@ namespace Xamarin.Forms.Platform.UWP
 			VisualStateManager.GoToState(control, "Normal", true);
 
 			cache = null;
+		}
+
+		void UpdateButtonBackgroundColor(Color value)
+		{
+			Brush brush = value.ToBrush();
+			_minus = GetTemplateChild("Minus") as Windows.UI.Xaml.Controls.Button;
+			_plus = GetTemplateChild("Plus") as Windows.UI.Xaml.Controls.Button;
+			if (_minus != null)
+				_minus.Background = brush;
+			if (_plus != null)
+				_plus.Background = brush;
 		}
 
 		void UpdateEnabled(double value)
