@@ -186,6 +186,7 @@ namespace Xamarin.Forms.Maps.Android
 			else if (changed)
 			{
 				UpdateVisibleRegion(NativeMap.CameraPosition.Target);
+				MoveToRegion(Element.LastMoveToRegion, false);
 			}
 		}
 
