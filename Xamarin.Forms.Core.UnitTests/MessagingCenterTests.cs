@@ -1,7 +1,6 @@
 using System;
 using NUnit.Framework;
 
-
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
@@ -186,6 +185,172 @@ namespace Xamarin.Forms.Core.UnitTests
 			MessagingCenter.Send (this, "SimpleTest");
 
 			Assert.AreEqual (1, messageCount);
+		}
+
+		[Test]
+		public void SubscriberShouldBeCollected()
+		{
+			new Action(() =>
+			{
+				var subscriber = new TestSubcriber();
+				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => Assert.Fail());
+			})();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			var pub = new TestPublisher();
+			pub.Test(); // Assert.Fail() shouldn't be called, because the TestSubcriber object should have ben GCed
+		}
+
+		[Test]
+		public void ShouldBeCollectedIfCallbackTargetIsSubscriber()
+		{
+			WeakReference wr = null;
+
+			new Action(() =>
+			{
+				var subscriber = new TestSubcriber();
+
+				wr = new WeakReference(subscriber);
+
+				subscriber.SubscribeToTestMessages();
+			})();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			var pub = new TestPublisher();
+			pub.Test();
+
+			Assert.IsFalse(wr.IsAlive); // The Action target and subscriber were the same object, so both could be collected
+		}
+
+		[Test]
+		public void NotCollectedIfSubscriberIsNotTheCallbackTarget()
+		{
+			WeakReference wr = null;
+
+			new Action(() =>
+			{
+				var subscriber = new TestSubcriber();
+
+				wr = new WeakReference(subscriber);
+
+				// This creates a closure, so the callback target is not 'subscriber', but an instancce of a compiler generated class 
+				// So MC has to keep a strong reference to it, and 'subscriber' won't be collectable
+				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
+			})();
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			
+			Assert.IsTrue(wr.IsAlive); // The closure in Subscribe should be keeping the subscriber alive
+			Assert.IsNotNull(wr.Target as TestSubcriber);
+
+			Assert.IsFalse(((TestSubcriber)wr.Target).Successful);
+
+			var pub = new TestPublisher();
+			pub.Test();
+
+			Assert.IsTrue(((TestSubcriber)wr.Target).Successful);  // Since it's still alive, the subscriber should still have received the message and updated the property
+		}
+
+		[Test]
+		public void SubscriberCollectableAfterUnsubscribeEvenIfHeldByClosure()
+		{
+			WeakReference wr = null;
+
+			new Action(() =>
+			{
+				var subscriber = new TestSubcriber();
+
+				wr = new WeakReference(subscriber);
+
+				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
+			})();
+
+			Assert.IsNotNull(wr.Target as TestSubcriber); 
+
+			MessagingCenter.Unsubscribe<TestPublisher>(wr.Target, "test");
+			
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.IsFalse(wr.IsAlive); // The Action target and subscriber were the same object, so both could be collected
+		}
+
+		[Test]
+		public void StaticCallback()
+		{
+			int i = 4;
+
+			var subscriber = new TestSubcriber();
+
+			MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => MessagingCenterTestsCallbackSource.Increment(ref i));
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			var pub = new TestPublisher();
+			pub.Test();
+
+			Assert.IsTrue(i == 5, "The static method should have incremented 'i'"); 
+		}
+
+		[Test]
+		public void NothingShouldBeCollected()
+		{
+			var success = false;
+
+			var subscriber = new TestSubcriber();
+			
+			var source = new MessagingCenterTestsCallbackSource();
+			MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => source.SuccessCallback(ref success));
+			
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			var pub = new TestPublisher();
+			pub.Test(); 
+
+			Assert.True(success); // TestCallbackSource.SuccessCallback() should be invoked to make success == true
+		}
+
+		class TestSubcriber
+		{
+			public void SetSuccess()
+			{
+				Successful = true;
+			}
+
+			public bool Successful { get; private set; }
+
+			public void SubscribeToTestMessages()
+			{
+				MessagingCenter.Subscribe<TestPublisher>(this, "test", p => SetSuccess());
+			}
+		}
+
+		class TestPublisher
+		{
+			public void Test()
+			{
+				MessagingCenter.Send(this, "test");
+			}
+		}
+
+		public class MessagingCenterTestsCallbackSource
+		{
+			public void SuccessCallback(ref bool success)
+			{
+				success = true;
+			}
+
+			public static void Increment(ref int i)
+			{
+				i = i + 1;
+			}
 		}
 	}
 }

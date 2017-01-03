@@ -165,9 +165,11 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			var platformRenderer = (PlatformRenderer)_window.RootViewController;
-			_window.RootViewController = _application.MainPage.CreateViewController();
+
 			if (platformRenderer != null)
 				((IDisposable)platformRenderer.Platform).Dispose();
+
+			_window.RootViewController = _application.MainPage.CreateViewController();
 		}
 	}
 }
