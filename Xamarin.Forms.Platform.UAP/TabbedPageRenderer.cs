@@ -317,6 +317,9 @@ namespace Xamarin.Forms.Platform.UWP
             var nav = page as NavigationPage;
             TitleProvider.ShowTitle = nav != null;
 
+			// Enforce consistency rules on toolbar (show toolbar if visible Tab is Navigation Page)
+			Control.ShouldShowToolbar = nav != null;
+
             if (page == null)
                 return;
 

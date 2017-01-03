@@ -68,7 +68,7 @@
                             <uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" MinHeight="{ThemeResource TitleBarHeight}">
                                 <uwp:FormsCommandBar.Content>
                                     <Border x:Name="TitleArea" Visibility="{TemplateBinding TitleVisibility}" Height="{ThemeResource TitleBarHeight}">
-                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Padding="10,0,0,0" Foreground="Red" Style="{ThemeResource TitleTextBlockStyle}" />
+                                        <TextBlock Text="{TemplateBinding Title}" TextWrapping="NoWrap" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding ToolbarForeground}" Style="{ThemeResource TitleTextBlockStyle}" />
                                     </Border>
                                 </uwp:FormsCommandBar.Content>
                             </uwp:FormsCommandBar>

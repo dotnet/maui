@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 		{
 			Children.Add(CreateFirstPage(restore));
 			Children.Add(CreateSecondPage());
-			WindowsPlatformSpecificsGalleryHelpers.AddToolBarItems(this);
+			Children.Add(CreateThirdPage());
 		}
 
 		ContentPage CreateFirstPage(ICommand restore)
@@ -38,6 +38,16 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			page.Content = content;
 
 			return page;
+		}
+
+		NavigationPage CreateThirdPage()
+		{
+			var content = CreateSecondPage();
+			content.Title = "Content in a Nav Page";
+			var navpage = new NavigationPage(content);
+			navpage.Title = "Nav Page";
+			WindowsPlatformSpecificsGalleryHelpers.AddToolBarItems(navpage);
+			return navpage;
 		}
 
 		static Page CreateSecondPage()

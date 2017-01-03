@@ -3,6 +3,7 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -11,7 +12,9 @@ namespace Xamarin.Forms.Platform.UWP
 		// TODO Once 10.0.14393.0 is available (and we don't have to support lower versions), enable dynamic overflow: https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.commandbar.isdynamicoverflowenabled.aspx 
 
 		Windows.UI.Xaml.Controls.Button _moreButton;
-		
+		Windows.UI.Xaml.Controls.ItemsControl _primaryItemsControl;
+		bool _isInValidLocation;
+
 		public FormsCommandBar()
 		{
 			PrimaryCommands.VectorChanged += OnCommandsChanged;
@@ -20,11 +23,26 @@ namespace Xamarin.Forms.Platform.UWP
 			WatchForContentChanges();
 		}
 
+		// Set by the container if the container is a valid place to show a toolbar.
+		// This exists to provide consistency with the other platforms; we've got 
+		// rules in place that limit toolbars to Navigation Page and to Tabbed 
+		// and Master-Detail Pages when they're currently displaying a Navigation Page
+		public bool IsInValidLocation
+		{
+			get { return _isInValidLocation; }
+			set
+			{
+				_isInValidLocation = value;
+				UpdateVisibility();
+			}
+		}
+
 		protected override void OnApplyTemplate()
 		{
 			base.OnApplyTemplate();
 
 			_moreButton = GetTemplateChild("MoreButton") as Windows.UI.Xaml.Controls.Button;
+			_primaryItemsControl = GetTemplateChild("PrimaryItemsControl") as Windows.UI.Xaml.Controls.ItemsControl;
 		}
 
 		void OnCommandsChanged(IObservableVector<ICommandBarElement> sender, IVectorChangedEventArgs args)
@@ -34,8 +52,52 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateVisibility()
 		{
+			// Determine whether we have a title (or some other content) inside this command bar
+			var frameworkElement = Content as FrameworkElement;
+
+			// Apply the rules for consistency with other platforms
+
+			// Not in one of the acceptable toolbar locations from the other platforms
+			if (!IsInValidLocation)
+			{
+				// If there's no title to display (e.g., toolbarplacement is set to bottom)
+				// or the title is collapsed (e.g., because it's empty)
+				if (frameworkElement == null || frameworkElement.Visibility != Visibility.Visible)
+				{
+					// Just collapse the whole thing
+					Visibility = Visibility.Collapsed;
+					return;
+				}
+			
+				// The title needs to be visible, but we're not allowed to show a toolbar
+				// So we need to hide the toolbar items
+
+				Visibility = Visibility.Visible;
+
+				if (_moreButton != null)
+				{
+					_moreButton.Visibility = Visibility.Collapsed;
+				}
+
+				if (_primaryItemsControl != null)
+				{
+					_primaryItemsControl.Visibility = Visibility.Collapsed;
+				}
+
+				return;
+			}
+
+			// We're in one of the acceptable toolbar locations from the other platforms so the normal rules apply
+
+			if (_primaryItemsControl != null)
+			{
+				// This is normally visible by default, but it might have been collapsed by the toolbar consistency rules above
+				_primaryItemsControl.Visibility = Visibility.Visible;
+			}
+
+			// Are there any commands to display?
 			var visibility = PrimaryCommands.Count + SecondaryCommands.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-		
+
 			if (_moreButton != null)
 			{
 				// The "..." button should only be visible if we have commands to display
@@ -44,26 +106,15 @@ namespace Xamarin.Forms.Platform.UWP
 				// There *is* an OverflowButtonVisibility property that does more or less the same thing, 
 				// but it became available in 10.0.14393.0 and we have to support 10.0.10240
 			}
-
-			// If we have a title (or some other content) inside this command bar
-			// and that content is not collapsed
-			var frameworkElement = Content as FrameworkElement;
-
-			// Temporarily tie the visibility of the toolbar to the visibility of the Title
-			// to be consistent with the old style / other platforms
-			if (frameworkElement != null && frameworkElement.Visibility == Visibility.Collapsed)
-			{
-				Visibility = Visibility.Collapsed;
-				return;
-			}
-
+			
 			if (frameworkElement != null && frameworkElement.Visibility != Visibility.Collapsed)
 			{
+				// If there's a title to display, we have to be visible whether or not we have commands
 				Visibility = Visibility.Visible;
 			}
 			else
 			{
-				// Otherwise, collapse it if there are no commands
+				// Otherwise, visibility depends on whether we have commands
 				Visibility = visibility;
 			}
 		}
