@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.iOS
 		GlobalCloseContextGestureRecognizer _globalCloser;
 
 		bool _isDisposed;
-
+		static WeakReference<UIScrollView> s_scrollViewBeingScrolled;
 		UITableView _table;
 
 		public ContextScrollViewDelegate(UIView container, List<UIButton> buttons, bool isOpen)
@@ -72,6 +72,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void DraggingStarted(UIScrollView scrollView)
 		{
+			if (ShouldIgnoreScrolling(scrollView))
+				return;
+
+			s_scrollViewBeingScrolled = new WeakReference<UIScrollView>(scrollView);
+			
 			if (!IsOpen)
 				SetButtonsShowing(true);
 
@@ -90,6 +95,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void Scrolled(UIScrollView scrollView)
 		{
+			if (ShouldIgnoreScrolling(scrollView))
+				return;
+
 			var width = _finalButtonSize;
 			var count = _buttons.Count;
 
@@ -116,10 +124,9 @@ namespace Xamarin.Forms.Platform.iOS
 				SetButtonsShowing(false);
 				RestoreHighlight(scrollView);
 
+				s_scrollViewBeingScrolled = null;
 				ClearCloserRecognizer(scrollView);
-
-				if (ClosedCallback != null)
-					ClosedCallback();
+				ClosedCallback?.Invoke();
 			}
 		}
 
@@ -131,6 +138,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void WillEndDragging(UIScrollView scrollView, PointF velocity, ref PointF targetContentOffset)
 		{
+			if (ShouldIgnoreScrolling(scrollView))
+				return;
+
 			var width = ButtonsWidth;
 			var x = targetContentOffset.X;
 			var parentThreshold = scrollView.Frame.Width * .4f;
@@ -185,6 +195,19 @@ namespace Xamarin.Forms.Platform.iOS
 				if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
 					RestoreHighlight(scrollView);
 			}
+		}
+
+		static bool ShouldIgnoreScrolling(UIScrollView scrollView)
+		{
+			if (s_scrollViewBeingScrolled == null)
+				return false;
+
+			UIScrollView scrollViewBeingScrolled;
+			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled) || ReferenceEquals(scrollViewBeingScrolled, scrollView))
+				return false;
+
+			scrollView.SetContentOffset(new PointF(0, 0), false);
+			return true;
 		}
 
 		protected override void Dispose(bool disposing)
