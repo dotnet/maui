@@ -2,6 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -178,7 +179,9 @@ namespace Xamarin.Forms.Platform.iOS
 					SelectedItem = _renderer.Element.Items[(int)row];
 					SelectedIndex = (int)row;
 				}
-				_renderer.UpdatePickerFromModel(this);
+
+				if(_renderer.Element.On<PlatformConfiguration.iOS>().UpdateMode() == UpdateMode.Immediately)
+					_renderer.UpdatePickerFromModel(this);
 			}
 		}
 	}
