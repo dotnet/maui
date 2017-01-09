@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Android.Support.V4.View;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
@@ -197,13 +198,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (element != null)
 				SendVisualElementInitialized(element, this);
 
-			var controller = (IElementController)oldElement;
-			if (controller != null && controller.EffectControlProvider == this)
-				controller.EffectControlProvider = null;
-
-			controller = element;
-			if (controller != null)
-				controller.EffectControlProvider = this;
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (element != null && !string.IsNullOrEmpty(element.AutomationId))
 				SetAutomationId(element.AutomationId);

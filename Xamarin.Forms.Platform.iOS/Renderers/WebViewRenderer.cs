@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	public class WebViewRenderer : UIWebView, IVisualElementRenderer, IWebViewDelegate
+	public class WebViewRenderer : UIWebView, IVisualElementRenderer, IWebViewDelegate, IEffectControlProvider
 	{
 		EventTracker _events;
 		bool _ignoreSourceChanges;
@@ -54,6 +54,8 @@ namespace Xamarin.Forms.Platform.iOS
 			Load();
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+
+			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
 				AccessibilityIdentifier = Element.AutomationId;
@@ -260,5 +262,10 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		#endregion
+
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, this, NativeView);
+		}
 	}
 }

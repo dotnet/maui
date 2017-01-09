@@ -73,6 +73,16 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		public static void RegisterEffect(Effect effect, UIView container, UIView control = null)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect == null)
+				return;
+
+			platformEffect.Container = container;
+			platformEffect.Control = control;
+		}
+
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			var platformEffect = effect as PlatformEffect;

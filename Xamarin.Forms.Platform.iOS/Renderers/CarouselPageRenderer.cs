@@ -382,5 +382,10 @@ namespace Xamarin.Forms.Platform.iOS
 					Subviews[0].Frame = new RectangleF(0, 0, (float)Element.Width, (float)Element.Height);
 			}
 		}
+
+		public void RegisterEffect(Effect effect)
+		{
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
+		}
 	}
 }

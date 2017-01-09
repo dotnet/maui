@@ -978,9 +978,7 @@ namespace Xamarin.Forms.Platform.iOS
 		
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
-			var platformEffect = effect as PlatformEffect;
-			if (platformEffect != null)
-				platformEffect.Container = View;
+			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
 		}
 	}
 }
