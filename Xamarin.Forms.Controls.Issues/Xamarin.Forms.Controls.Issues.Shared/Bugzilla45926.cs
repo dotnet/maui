@@ -38,7 +38,12 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 
-			createPage.Clicked += (s, e) => PushAsync (new _45926SecondPage ());
+			createPage.Clicked += (s, e) =>
+			{
+				PushAsync(new _45926IntermediatePage());
+				PushAsync(new _45926SecondPage());
+			};
+			
 			sendMessage.Clicked += (s, e) =>
 			{
 				MessagingCenter.Send (this, "Test");
@@ -62,6 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			RunningApp.Tap (q => q.Marked ("New Page"));
 			RunningApp.Back();
+			RunningApp.Back();
 			RunningApp.Tap(q => q.Marked("Do GC"));
 			RunningApp.Tap(q => q.Marked("Send Message"));
 			RunningApp.Tap(q => q.Marked("Do GC"));
@@ -70,6 +76,11 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement (q => q.Marked ("Messages: 0"));
 		}
 #endif
+	}
+
+	[Preserve(AllMembers = true)]
+	public class _45926IntermediatePage : ContentPage
+	{
 	}
 
 	[Preserve(AllMembers = true)]
