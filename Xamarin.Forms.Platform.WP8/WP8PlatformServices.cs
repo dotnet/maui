@@ -137,36 +137,6 @@ namespace Xamarin.Forms
 			return 'a' + v - 10;
 		}
 
-		public class _Timer : ITimer
-		{
-			readonly Timer _timer;
-
-			public _Timer(Timer timer)
-			{
-				_timer = timer;
-			}
-
-			public void Change(int dueTime, int period)
-			{
-				_timer.Change(dueTime, period);
-			}
-
-			public void Change(long dueTime, long period)
-			{
-				_timer.Change(dueTime, period);
-			}
-
-			public void Change(TimeSpan dueTime, TimeSpan period)
-			{
-				_timer.Change(dueTime, period);
-			}
-
-			public void Change(uint dueTime, uint period)
-			{
-				_timer.Change(dueTime, period);
-			}
-		}
-
 		public class _IsolatedStorageFile : IIsolatedStorageFile
 		{
 			readonly IsolatedStorageFile _isolatedStorageFile;

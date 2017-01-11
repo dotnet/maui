@@ -410,22 +410,15 @@ namespace Xamarin.Forms
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
 			{
-				Timer timer = null;
-				bool invoking = false;
-				TimerCallback onTimeout = o =>
+				var handler = new Handler(Looper.MainLooper);
+				handler.PostDelayed(() =>
 				{
-					if (!invoking)
-					{
-						invoking = true;
-						BeginInvokeOnMainThread(() =>
-						{
-							if (!callback())
-								timer.Dispose();
-							invoking = false;
-						});
-					}
-				};
-				timer = new Timer(onTimeout, null, interval, interval);
+					if (callback())
+						StartTimer(interval, callback);
+
+					handler.Dispose();
+					handler = null;
+				}, (long)interval.TotalMilliseconds);
 			}
 
 			double ConvertTextAppearanceToSize(int themeDefault, int deviceDefault, double defaultValue)
@@ -470,36 +463,6 @@ namespace Xamarin.Forms
 					Log.Warning("Xamarin.Forms.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
-			}
-
-			public class _Timer : ITimer
-			{
-				readonly Timer _timer;
-
-				public _Timer(Timer timer)
-				{
-					_timer = timer;
-				}
-
-				public void Change(int dueTime, int period)
-				{
-					_timer.Change(dueTime, period);
-				}
-
-				public void Change(long dueTime, long period)
-				{
-					_timer.Change(dueTime, period);
-				}
-
-				public void Change(TimeSpan dueTime, TimeSpan period)
-				{
-					_timer.Change(dueTime, period);
-				}
-
-				public void Change(uint dueTime, uint period)
-				{
-					_timer.Change(dueTime, period);
-				}
 			}
 
 			public class _IsolatedStorageFile : IIsolatedStorageFile

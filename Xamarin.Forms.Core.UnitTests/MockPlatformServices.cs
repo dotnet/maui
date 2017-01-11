@@ -119,57 +119,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			return AppDomain.CurrentDomain.GetAssemblies ();
 		}
 
-		public ITimer CreateTimer (Action<object> callback)
-		{
-			return new MockTimer (new Timer (o => callback(o)));
-		}
-
-		public ITimer CreateTimer (Action<object> callback, object state, int dueTime, int period)
-		{
-			return new MockTimer (new Timer (o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer (Action<object> callback, object state, long dueTime, long period)
-		{
-			return new MockTimer (new Timer (o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer (Action<object> callback, object state, TimeSpan dueTime, TimeSpan period)
-		{
-			return new MockTimer (new Timer (o => callback(o), state, dueTime, period));
-		}
-
-		public ITimer CreateTimer (Action<object> callback, object state, uint dueTime, uint period)
-		{
-			return new MockTimer (new Timer (o => callback(o), state, dueTime, period));
-		}
-
-		public class MockTimer : ITimer
-		{
-			readonly Timer timer;
-			public MockTimer (Timer timer)
-			{
-				this.timer = timer;
-			}
-
-			public void Change (int dueTime, int period)
-			{
-				timer.Change (dueTime, period);
-			}
-			public void Change (long dueTime, long period)
-			{
-				timer.Change (dueTime, period);
-			}
-			public void Change (TimeSpan dueTime, TimeSpan period)
-			{
-				timer.Change (dueTime, period);
-			}
-			public void Change (uint dueTime, uint period)
-			{
-				timer.Change (dueTime, period);
-			}
-		}
-
 		public IIsolatedStorageFile GetUserStoreForApplication ()
 		{
 #if WINDOWS_PHONE

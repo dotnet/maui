@@ -29,12 +29,12 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	internal abstract class WindowsBasePlatformServices : IPlatformServices
 	{
-		CoreDispatcher _dispatcher;
+		readonly CoreDispatcher _dispatcher;
 
-		public WindowsBasePlatformServices(CoreDispatcher dispatcher)
+		protected WindowsBasePlatformServices(CoreDispatcher dispatcher)
 		{
 			if (dispatcher == null)
-				throw new ArgumentNullException("dispatcher");
+				throw new ArgumentNullException(nameof(dispatcher));
 
 			_dispatcher = dispatcher;
 		}
@@ -57,9 +57,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			IReadOnlyList<StorageFile> files = query.GetFilesAsync().AsTask().Result;
 
 			var assemblies = new List<Assembly>(files.Count);
-			for (var i = 0; i < files.Count; i++)
+			foreach (StorageFile file in files)
 			{
-				StorageFile file = files[i];
 				try
 				{
 					Assembly assembly = Assembly.Load(new AssemblyName { Name = Path.GetFileNameWithoutExtension(file.Name) });
@@ -132,36 +131,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (!result)
 					timer.Stop();
 			};
-		}
-
-		internal class WindowsTimer : ITimer
-		{
-			readonly Timer _timer;
-
-			public WindowsTimer(Timer timer)
-			{
-				_timer = timer;
-			}
-
-			public void Change(int dueTime, int period)
-			{
-				_timer.Change(dueTime, period);
-			}
-
-			public void Change(long dueTime, long period)
-			{
-				Change(TimeSpan.FromMilliseconds(dueTime), TimeSpan.FromMilliseconds(period));
-			}
-
-			public void Change(TimeSpan dueTime, TimeSpan period)
-			{
-				_timer.Change(dueTime, period);
-			}
-
-			public void Change(uint dueTime, uint period)
-			{
-				Change(TimeSpan.FromMilliseconds(dueTime), TimeSpan.FromMilliseconds(period));
-			}
 		}
 	}
 }

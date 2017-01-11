@@ -369,7 +369,6 @@
     <Compile Include="Tweener.cs" />
     <Compile Include="IPlatformServices.cs" />
     <Compile Include="UriTypeConverter.cs" />
-    <Compile Include="ITimer.cs" />
     <Compile Include="IIsolatedStorageFile.cs" />
     <Compile Include="Grid.cs" />
     <Compile Include="GridCalc.cs" />
