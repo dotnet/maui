@@ -10,7 +10,10 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		static readonly Dictionary<Tuple<string, FontAttributes>, Typeface> Typefaces = new Dictionary<Tuple<string, FontAttributes>, Typeface>();
 
-		static readonly Regex LoadFromAssets = new Regex(@"\w+\.((ttf)|(otf))\#\w*");
+		// We don't create and cache a Regex object here because we may not ever need it, and creating Regexes is surprisingly expensive (especially on older hardware)
+		// Instead, we'll use the static Regex.IsMatch below, which will create and cache the regex internally as needed. It's the equivalent of Lazy<Regex> with less code.
+		// See https://msdn.microsoft.com/en-us/library/sdx2bds0(v=vs.110).aspx#Anchor_2
+		const string LoadFromAssetsRegex = @"\w+\.((ttf)|(otf))\#\w*";
 
 		static Typeface s_defaultTypeface;
 
@@ -56,7 +59,7 @@ namespace Xamarin.Forms.Platform.Android
 				var style = ToTypefaceStyle(self.FontAttributes);
 				result = Typeface.Create(Typeface.Default, style);
 			}
-			else if (LoadFromAssets.IsMatch(self.FontFamily))
+			else if (Regex.IsMatch(self.FontFamily, LoadFromAssetsRegex))
 			{
 				result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(self.FontFamily));
 			}
@@ -88,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android
 				var style = ToTypefaceStyle(self.FontAttributes);
 				result = Typeface.Create(Typeface.Default, style);
 			}
-			else if (LoadFromAssets.IsMatch(self.FontFamily))
+			else if (Regex.IsMatch(self.FontFamily, LoadFromAssetsRegex))
 			{
 				result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(self.FontFamily));
 			}
