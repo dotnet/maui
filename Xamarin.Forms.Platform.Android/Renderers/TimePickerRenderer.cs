@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.App;
 using Android.Content.Res;
 using Android.Widget;
+using Android.Text.Format;
 using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
@@ -92,7 +93,8 @@ namespace Xamarin.Forms.Platform.Android
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, false);
+			bool is24HourFormat = DateFormat.Is24HourFormat(Context);
+			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)
 				_dialog.CancelEvent += OnCancelButtonClicked;
