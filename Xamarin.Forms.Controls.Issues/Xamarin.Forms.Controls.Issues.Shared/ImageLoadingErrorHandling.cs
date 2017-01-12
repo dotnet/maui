@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls
 
 			Grid fakeUri = CreateTest(() => image.Source = ImageSource.FromUri(new Uri("http://not.real")),
 				"Non-existent URI",
-				Device.OS == TargetPlatform.Windows && Device.Idiom == TargetIdiom.Phone 
+				Device.RuntimePlatform == Device.Windows && Device.Idiom == TargetIdiom.Phone
 				? "Clicking this button should display an alert dialog. The error message should include the text 'NotFound'."
 				: "Clicking this button should display an alert dialog. The error message should include the text 'the server name or address could not be resolved'.");
 

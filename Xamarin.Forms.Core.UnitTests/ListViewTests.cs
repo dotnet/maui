@@ -1472,20 +1472,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (cell.Parent, Is.Null);
 		}
 
-		[TestCase (TargetPlatform.Android, ListViewCachingStrategy.RecycleElement)]
-		[TestCase (TargetPlatform.iOS, ListViewCachingStrategy.RecycleElement)]
-		[TestCase (TargetPlatform.Windows, ListViewCachingStrategy.RetainElement)]
-		[TestCase (TargetPlatform.Other, ListViewCachingStrategy.RetainElement)]
-		[TestCase (TargetPlatform.WinPhone, ListViewCachingStrategy.RetainElement)]
-		public void EnforcesCachingStrategy (TargetPlatform platform, ListViewCachingStrategy expected)
+		[TestCase (Device.Android, ListViewCachingStrategy.RecycleElement)]
+		[TestCase (Device.iOS, ListViewCachingStrategy.RecycleElement)]
+		[TestCase (Device.Windows, ListViewCachingStrategy.RetainElement)]
+		[TestCase ("Other", ListViewCachingStrategy.RetainElement)]
+		[TestCase (Device.WinPhone, ListViewCachingStrategy.RetainElement)]
+		public void EnforcesCachingStrategy (string platform, ListViewCachingStrategy expected)
 		{
-			var oldOS = Device.OS;
+			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			Device.OS = platform;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
 			var listView = new ListView (ListViewCachingStrategy.RecycleElement);
 
 			Assert.AreEqual (expected, listView.CachingStrategy);
-			Device.OS = oldOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 
 		[Test]
@@ -1504,9 +1504,9 @@ namespace Xamarin.Forms.Core.UnitTests
 				"Bar"
 			};
 
-			var oldOS = Device.OS;
+			var oldOS = Device.RuntimePlatform;
 			// we need to do this because otherwise we cant set the caching strategy
-			Device.OS = TargetPlatform.Android;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 
 			var bindable = new ListView (ListViewCachingStrategy.RecycleElement);
 			bindable.ItemTemplate = new DataTemplate (typeof (TextCell)) {
@@ -1521,7 +1521,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.False(ReferenceEquals (item1, item2));
 
-			Device.OS = oldOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = oldOS;
 		}
 	}
 }

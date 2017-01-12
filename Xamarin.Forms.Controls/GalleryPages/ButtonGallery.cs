@@ -31,8 +31,21 @@ namespace Xamarin.Forms.Controls
 			var click = new Button { Text = "Click Button" };
 			var rotate = new Button { Text = "Rotate Button" };
 			var transparent = new Button { Text = "Transparent Button" };
+			string fontName;
+			switch (Device.RuntimePlatform) {
+			default:
+			case Device.iOS:
+				fontName = "Georgia";
+				break;
+			case Device.Android:
+				fontName = "sans-serif-light";
+				break;
+			case Device.WinPhone:
+			case Device.Windows:
+				fontName = "Comic Sans MS";
+				break;
+			}
 
-			var fontName = Device.OnPlatform ("Georgia", "sans-serif-light", "Comic Sans MS");
 			var font = Font.OfSize (fontName, NamedSize.Medium);
 
 			var themedButton = new Button {

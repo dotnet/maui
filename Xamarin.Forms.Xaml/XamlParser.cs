@@ -263,9 +263,12 @@ namespace Xamarin.Forms.Xaml
 				XmlnsHelper.ParseXmlns(kvp.Value, out typeName, out ns, out asm, out targetPlatform);
 				if (targetPlatform == null)
 					continue;
-				TargetPlatform os;
-				if (Enum.TryParse<TargetPlatform>(targetPlatform, out os) && os != Device.OS)
+				try {
+					if (targetPlatform != Device.RuntimePlatform)
+						prefixes.Add(prefix);
+				} catch (InvalidOperationException) {
 					prefixes.Add(prefix);
+				}
 			}
 			return prefixes;
 		}

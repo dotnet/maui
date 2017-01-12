@@ -970,7 +970,7 @@ namespace Xamarin.Forms
 
 			/* HACKAHACKHACK: LongListSelector on WP SL has a bug in that it completely fails to deal with
 			 * INCC notifications that include more than 1 item. */
-			if (fixWindows && Device.OS == TargetPlatform.WinPhone)
+			if (fixWindows && Device.RuntimePlatform == Device.WinPhone)
 			{
 				SplitCollectionChangedItems(e);
 				return;
@@ -1205,7 +1205,7 @@ namespace Xamarin.Forms
 
 			//Hack: the cell could still be visible on iOS because the cells are reloaded after this unhook 
 			//this causes some visual updates caused by a null datacontext and default values like IsVisible
-			if (Device.OS == TargetPlatform.iOS && CachingStrategy == ListViewCachingStrategy.RetainElement)
+			if (Device.RuntimePlatform == Device.iOS && CachingStrategy == ListViewCachingStrategy.RetainElement)
 				await Task.Delay(100);
 			item.BindingContext = null;
 		}

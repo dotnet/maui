@@ -21,6 +21,21 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="Android">
+      <MemberSignature Language="C#" Value="public const string Android;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Android" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="BeginInvokeOnMainThread">
       <MemberSignature Language="C#" Value="public static void BeginInvokeOnMainThread (Action action);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void BeginInvokeOnMainThread(class System.Action action) cil managed" />
@@ -129,6 +144,21 @@ Device.BeginInvokeOnMainThread (() => {
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="iOS">
+      <MemberSignature Language="C#" Value="public const string iOS;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string iOS" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnPlatform">
       <MemberSignature Language="C#" Value="public static void OnPlatform (Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnPlatform(class System.Action iOS, class System.Action Android, class System.Action WinPhone, class System.Action Default) cil managed" />
@@ -142,6 +172,11 @@ Device.BeginInvokeOnMainThread (() => {
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete("Use switch(RuntimePlatform) instead.")</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -181,6 +216,11 @@ Device.OnPlatform (iOS: () => label.Font = Font.OfSize ("HelveticaNeue-UltraLigh
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete("Use switch(RuntimePlatform) instead.")</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>T</ReturnType>
       </ReturnValue>
@@ -197,44 +237,6 @@ Device.OnPlatform (iOS: () => label.Font = Font.OfSize ("HelveticaNeue-UltraLigh
         <param name="iOS">The value for iOS.</param>
         <param name="Android">The value for Android.</param>
         <param name="WinPhone">The value for WinPhone.</param>
-        <summary>Returns different values depending on the <see cref="T:Xamarin.Forms.TargetOS" /> Xamarin.Forms is working on.</summary>
-        <returns>The value for the current OS.</returns>
-        <remarks>
-          <para>This example shows how to use different heights for a Button on different OS.
-          </para>
-          <example>
-            <code lang="C#"><![CDATA[
-button.HeightRequest = Device.OnPlatform (20,30,30);
-          ]]></code>
-          </example>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="OnPlatform&lt;T&gt;">
-      <MemberSignature Language="C#" Value="public static T OnPlatform&lt;T&gt; (T iOS, T Android, T WinPhone, T Tizen);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!T OnPlatform&lt;T&gt;(!!T iOS, !!T Android, !!T WinPhone, !!T Tizen) cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>T</ReturnType>
-      </ReturnValue>
-      <TypeParameters>
-        <TypeParameter Name="T" />
-      </TypeParameters>
-      <Parameters>
-        <Parameter Name="iOS" Type="T" />
-        <Parameter Name="Android" Type="T" />
-        <Parameter Name="WinPhone" Type="T" />
-        <Parameter Name="Tizen" Type="T" />
-      </Parameters>
-      <Docs>
-        <typeparam name="T">The type of the value to be returned.</typeparam>
-        <param name="iOS">The value for iOS.</param>
-        <param name="Android">The value for Android.</param>
-        <param name="WinPhone">The value for WinPhone.</param>
-        <param name="WinPhone">The value for Tizen.</param>
         <summary>Returns different values depending on the <see cref="T:Xamarin.Forms.TargetOS" /> Xamarin.Forms is working on.</summary>
         <returns>The value for the current OS.</returns>
         <remarks>
@@ -286,6 +288,11 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete("Use RuntimePlatform instead.")</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>Xamarin.Forms.TargetPlatform</ReturnType>
       </ReturnValue>
@@ -294,6 +301,22 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <value>A <see cref="Xamarin.Forms.TargetPlatform" /> that indicates the current OS.</value>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RuntimePlatform">
+      <MemberSignature Language="C#" Value="public static string RuntimePlatform { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string RuntimePlatform" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StartTimer">
@@ -321,6 +344,36 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <param name="callback">The action to run when the timer elapses.</param>
         <summary>Starts a recurring timer using the device clock capabilities.</summary>
         <remarks>While the callback returns <see langword="true" />, the timer will keep recurring.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Windows">
+      <MemberSignature Language="C#" Value="public const string Windows;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Windows" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="WinPhone">
+      <MemberSignature Language="C#" Value="public const string WinPhone;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string WinPhone" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

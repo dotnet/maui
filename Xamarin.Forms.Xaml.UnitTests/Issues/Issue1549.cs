@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using System.Collections.ObjectModel;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -58,6 +59,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			SeverityColorConverter.count = 0;
 			InvertBoolenConverter.count = 0;
+			Device.PlatformServices = new MockPlatformServices();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
 		}
 
 		[Test]

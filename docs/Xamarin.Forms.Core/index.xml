@@ -338,6 +338,7 @@
       <Type Name="NavigationEventArgs" Kind="Class" />
       <Type Name="NavigationMenu" Kind="Class" />
       <Type Name="NavigationPage" Kind="Class" />
+      <Type Name="On" Kind="Class" />
       <Type Name="OnIdiom`1" DisplayName="OnIdiom&lt;T&gt;" Kind="Class" />
       <Type Name="OnPlatform`1" DisplayName="OnPlatform&lt;T&gt;" Kind="Class" />
       <Type Name="OpenGLView" Kind="Class" />

@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Controls.Issues
 				listView.ScrollTo (person, ScrollToPosition.End, true);
 			};
 
-			Padding = new Thickness (10, Device.OnPlatform (20, 0, 0), 10, 5);
+			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);
 
 			Content = new StackLayout {
 				Orientation = StackOrientation.Vertical,

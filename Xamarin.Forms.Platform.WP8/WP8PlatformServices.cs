@@ -113,6 +113,8 @@ namespace Xamarin.Forms
 			get { return !Deployment.Current.Dispatcher.CheckAccess(); }
 		}
 
+		public string RuntimePlatform => Device.WinPhone;
+
 		public void OpenUriAction(Uri uri)
 		{
 			Launcher.LaunchUriAsync(uri).WatchForError();

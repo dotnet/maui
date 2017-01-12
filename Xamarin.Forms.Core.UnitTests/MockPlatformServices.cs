@@ -82,6 +82,8 @@ namespace Xamarin.Forms.Core.UnitTests
 			get { return false; }
 		}
 
+		public string RuntimePlatform { get; set; }
+
 		public void BeginInvokeOnMainThread (Action action) 
 		{
 			if (invokeOnMainThread == null)

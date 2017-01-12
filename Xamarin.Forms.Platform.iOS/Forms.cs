@@ -53,7 +53,6 @@ namespace Xamarin.Forms
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 
-			Device.OS = TargetPlatform.iOS;
 			Device.PlatformServices = new IOSPlatformServices();
 			Device.Info = new IOSDeviceInfo();
 
@@ -198,6 +197,8 @@ namespace Xamarin.Forms
 			}
 
 			public bool IsInvokeRequired => !NSThread.IsMain;
+
+			public string RuntimePlatform => Device.iOS;
 
 			public void OpenUriAction(Uri uri)
 			{

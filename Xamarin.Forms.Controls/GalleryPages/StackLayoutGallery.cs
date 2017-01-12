@@ -10,11 +10,8 @@ namespace Xamarin.Forms.Controls
 	{
 		public StackLayoutGallery ()
 		{
-			Device.OnPlatform (iOS: () => {
-				if (Device.Idiom == TargetIdiom.Tablet) {
-					Padding = new Thickness (0, 0, 0, 60);
-				}
-			});
+			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
+				Padding = new Thickness(0, 0, 0, 60);
 
 			var stack = new StackLayout { Orientation = StackOrientation.Vertical };
 			Button b1 = new Button { Text = "Boring", HeightRequest = 500, MinimumHeightRequest = 50 };

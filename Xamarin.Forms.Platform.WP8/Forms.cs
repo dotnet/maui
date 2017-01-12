@@ -50,7 +50,6 @@ namespace Xamarin.Forms
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Console.WriteLine("[{0}] {1}", m, c)));
 
-			Device.OS = TargetPlatform.WinPhone;
 			Device.PlatformServices = new WP8PlatformServices();
 			Device.Info = new WP8DeviceInfo();
 

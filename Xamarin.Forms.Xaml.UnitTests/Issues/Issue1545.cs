@@ -1,10 +1,23 @@
 ﻿using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1545
 	{
+		[SetUp]
+		public void Setup()
+		{
+			Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
+		}
+
 		[Test]
 		public void BindingCanNotBeReused()
 		{

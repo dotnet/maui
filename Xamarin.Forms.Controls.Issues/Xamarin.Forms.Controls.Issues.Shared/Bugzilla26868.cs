@@ -30,9 +30,9 @@ namespace Xamarin.Forms.Controls
 
 			var listView = new ListView {
 				IsGroupingEnabled = true,
-				GroupDisplayBinding = new Binding ("GroupName"),
-				GroupShortNameBinding = new Binding ("GroupName"),
-				HasUnevenRows = Device.OnPlatform (Android: true, WinPhone: false, iOS: false),
+				GroupDisplayBinding = new Binding("GroupName"),
+				GroupShortNameBinding = new Binding("GroupName"),
+				HasUnevenRows = Device.RuntimePlatform == Device.Android,
 
 				ItemTemplate = itemTemplate,
 				GroupHeaderTemplate = groupHeaderTemplate,

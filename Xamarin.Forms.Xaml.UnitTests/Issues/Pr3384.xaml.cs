@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -22,9 +23,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public class Tests
 		{
 			[SetUp]
-			public void SetUp ()
+			public void Setup()
 			{
-				Device.OS = TargetPlatform.iOS;
+				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
 			}
 
 			[TestCase (false)]

@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			// Accomodate iPhone status bar.
-			Padding = new Thickness(10, Device.OnPlatform(20, 0, 0), 10, 0);
+			Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(10, 20, 10, 0) : new Thickness(10, 0);
 
 			// Build the page.
 			Content = new StackLayout

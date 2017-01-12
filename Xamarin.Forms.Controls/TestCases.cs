@@ -204,9 +204,19 @@ namespace Xamarin.Forms.Controls
 			rootLayout.Children.Add (searchButton);
 			rootLayout.Children.Add (new TestCaseScreen ());
 
-			return new NavigationPage (testCasesRoot) {
-				Title = Device.OnPlatform ("Test Cases", "Test Cases", "Tests")
-			};
+			var page = new NavigationPage(testCasesRoot);
+			switch (Device.RuntimePlatform) {
+			case Device.iOS:
+			case Device.Android:
+			default:
+				page.Title = "Test Cases";
+				break;
+			case Device.WinPhone:
+			case Device.Windows:
+				page.Title = "Tests";
+				break;
+			}
+			return page;
 		}
 	}
 

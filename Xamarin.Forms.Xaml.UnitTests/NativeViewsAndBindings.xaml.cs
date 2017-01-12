@@ -246,22 +246,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = null;
 			}
 
-			void SetUpPlatform(TargetPlatform platform)
+			void SetUpPlatform(string platform)
 			{
-				Device.OS = platform;
-				if (platform == TargetPlatform.iOS) {
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = platform;
+				if (platform == Device.iOS) {
 					DependencyService.Register<INativeValueConverterService, MockIosNativeValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockIosNativeBindingService>();
-				} else if (platform == TargetPlatform.Android) {
+				} else if (platform == Device.Android) {
 					DependencyService.Register<INativeValueConverterService, MockAndroidNativeValueConverterService>();
 					DependencyService.Register<INativeBindingService, MockAndroidNativeBindingService>();
 				}
 			}
 
-			[TestCase(false, TargetPlatform.iOS)]
-			[TestCase(false, TargetPlatform.Android)]
+			[TestCase(false, Device.iOS)]
+			[TestCase(false, Device.Android)]
 			//[TestCase(true)]
-			public void NativeInContentView(bool useCompiledXaml, TargetPlatform platform)
+			public void NativeInContentView(bool useCompiledXaml, string platform)
 			{
 				SetUpPlatform(platform);
 				var layout = new NativeViewsAndBindings(useCompiledXaml);
@@ -272,11 +272,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var view = layout.view0;
 				Assert.NotNull(view.Content);
 				MockNativeView nativeView = null;
-				if (platform == TargetPlatform.iOS) {
+				if (platform == Device.iOS) {
 					Assert.That(view.Content, Is.TypeOf<MockUIViewWrapper>());
 					Assert.That(((MockUIViewWrapper)view.Content).NativeView, Is.TypeOf<MockUIView>());
 					nativeView = ((MockUIViewWrapper)view.Content).NativeView;
-				} else if (platform == TargetPlatform.Android) {
+				} else if (platform == Device.Android) {
 					Assert.That(view.Content, Is.TypeOf<MockAndroidViewWrapper>());
 					Assert.That(((MockAndroidViewWrapper)view.Content).NativeView, Is.TypeOf<MockAndroidView>());
 					nativeView = ((MockAndroidViewWrapper)view.Content).NativeView;

@@ -25,7 +25,6 @@ namespace Xamarin.Forms
 
 			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add (GetPhoneResources());
 
-			Device.OS = TargetPlatform.Windows;
 			Device.PlatformServices = new WindowsPhonePlatformServices (Window.Current.Dispatcher);
 			Device.Info = new WindowsDeviceInfo();
 			Device.Idiom = TargetIdiom.Phone;

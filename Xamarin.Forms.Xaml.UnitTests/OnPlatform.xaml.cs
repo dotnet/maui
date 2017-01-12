@@ -39,11 +39,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase (true)]
 			public void BoolToVisibility (bool useCompiledXaml)
 			{
-				Device.OS = TargetPlatform.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var layout = new OnPlatform (useCompiledXaml);
 				Assert.AreEqual (true, layout.label0.IsVisible);
 
-				Device.OS = TargetPlatform.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 				layout = new OnPlatform (useCompiledXaml);
 				Assert.AreEqual (false, layout.label0.IsVisible);
 			}
@@ -52,11 +52,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void DoubleToWidth(bool useCompiledXaml)
 			{
-				Device.OS = TargetPlatform.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(20, layout.label0.WidthRequest);
 
-				Device.OS = TargetPlatform.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(30, layout.label0.WidthRequest);
 			}
@@ -65,11 +65,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void StringToText(bool useCompiledXaml)
 			{
-				Device.OS = TargetPlatform.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Foo", layout.label0.Text);
 
-				Device.OS = TargetPlatform.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual("Bar", layout.label0.Text);
 			}
@@ -81,16 +81,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new OnPlatform(useCompiledXaml);
 				var onplat = layout.Resources ["fontAttributes"] as OnPlatform<FontAttributes>;
 				Assert.NotNull(onplat);
+#pragma warning disable 612
 				Assert.AreEqual(FontAttributes.Bold, onplat.iOS);
-
 				Assert.AreEqual(FontAttributes.Italic, onplat.Android);
+#pragma warning restore 612
+
 			}
 
 			[TestCase(false)]
 			[TestCase(true)]
 			public void OnPlatformAsResourceAreApplied(bool useCompiledXaml)
 			{
-				Device.OS = TargetPlatform.iOS;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 				var layout = new OnPlatform(useCompiledXaml);
 				var onidiom = layout.Resources ["fontSize"] as OnIdiom<double>;
 				Assert.NotNull(onidiom);
@@ -98,9 +100,28 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual(20, onidiom.Phone);
 				Assert.AreEqual(FontAttributes.Bold, layout.label0.FontAttributes);
 
-				Device.OS = TargetPlatform.Android;
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(FontAttributes.Italic, layout.label0.FontAttributes);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatform2Syntax(bool useCompiledXaml)
+			{
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(42, layout.label0.HeightRequest);
+
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(21, layout.label0.HeightRequest);
+
+
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "FooBar";
+				layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(42, layout.label0.HeightRequest);
+
 			}
 		}
 	}

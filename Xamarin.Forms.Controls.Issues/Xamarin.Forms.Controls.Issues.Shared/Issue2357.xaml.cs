@@ -138,7 +138,7 @@ namespace Xamarin.Forms.Controls
 
 		static void WebView_OnNavigating (object sender, WebNavigatingEventArgs e)
 		{
-			Debug.WriteLine ("OS: " + Device.OS + " Current Url: " + GetSourceUrl (((WebView)sender).Source) + "Destination Url: " + e.Url + " " + DateTime.Now);
+			Debug.WriteLine ("OS: " + Device.RuntimePlatform + " Current Url: " + GetSourceUrl (((WebView)sender).Source) + "Destination Url: " + e.Url + " " + DateTime.Now);
 
 			if (e.Url.IsValidAbsoluteUrl ()) {
 				var destinationUri = new Uri (e.Url);

@@ -18,6 +18,11 @@
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.ContentProperty("Platforms")</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <typeparam name="T">To be added.</typeparam>
     <summary>Provides the platform-specific implementation of T for the current <see cref="P:Xamarin.Forms.Device.OS" />.</summary>
@@ -56,6 +61,11 @@
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>T</ReturnType>
       </ReturnValue>
@@ -78,6 +88,11 @@
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>T</ReturnType>
       </ReturnValue>
@@ -113,18 +128,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Tizen">
-      <MemberSignature Language="C#" Value="public T Tizen { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance !T Tizen" />
+    <Member MemberName="Platforms">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Xamarin.Forms.On&gt; Platforms { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.On&gt; Platforms" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>T</ReturnType>
+        <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.On&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The type as it is implemented on the Tizen platform.</summary>
+        <summary>To be added.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -142,6 +157,11 @@
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Obsolete</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>T</ReturnType>
       </ReturnValue>

@@ -72,8 +72,20 @@ namespace Xamarin.Forms.Controls
 #pragma warning disable 618
 			bolditalic.Font = Font.SystemFontOfSize (NamedSize.Medium, FontAttributes.Bold | FontAttributes.Italic);
 #pragma warning restore 618
-
-			var fontName = Device.OnPlatform ("Georgia", "sans-serif-light", "Comic Sans MS");
+			string fontName;
+			switch (Device.RuntimePlatform) {
+			default:
+			case Device.iOS:
+				fontName = "Georgia";
+				break;
+			case Device.Android:
+				fontName = "sans-serif-light";
+				break;
+			case Device.WinPhone:
+			case Device.Windows:
+				fontName = "Comic Sans MS";
+				break;
+			}
 			var font = Font.OfSize (fontName, NamedSize.Medium);
 #pragma warning disable 618
 			customFont.Font = font;
@@ -113,10 +125,8 @@ namespace Xamarin.Forms.Controls
 
 			Thickness padding = new Thickness (20);
 			// Padding Adjust for iPad
-			Device.OnPlatform (iOS: () => {
-				if (Device.Idiom == TargetIdiom.Tablet)
-					padding = new Thickness (20, 20, 20, 60);
-			});
+			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
+				Padding = new Thickness(20, 20, 20, 60);
 
 			Content = new ScrollView {
 				Content = new StackLayout {

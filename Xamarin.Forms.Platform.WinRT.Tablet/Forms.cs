@@ -40,7 +40,6 @@ namespace Xamarin.Forms
 
 			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 
-			Device.OS = TargetPlatform.Windows;
 			Device.Idiom = TargetIdiom.Tablet;
 			Device.PlatformServices = new WindowsPlatformServices(Window.Current.Dispatcher);
 			Device.Info = new WindowsDeviceInfo();

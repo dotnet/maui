@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[SetUp]
 			public void Setup()
 			{
-				Device.PlatformServices = new MockPlatformServices();
+				Device.PlatformServices = new MockPlatformServices { RuntimePlatform = Device.iOS };
 			}
 
 			[TearDown]
@@ -35,7 +35,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void ConstraintsAreEvaluatedWithOnPlatform(bool useCompiledXaml)
 			{
-				Device.OS = TargetPlatform.iOS;
 				var page = new Unreported007(useCompiledXaml);
 				Assert.That(RelativeLayout.GetXConstraint(page.label), Is.TypeOf<Constraint>());
 				Assert.AreEqual(3, RelativeLayout.GetXConstraint(page.label).Compute(null));

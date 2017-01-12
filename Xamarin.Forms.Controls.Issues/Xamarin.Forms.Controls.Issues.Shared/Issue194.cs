@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Controls
 				Title = "Page 9"
 			};
 
-			Device.OnPlatform (iOS: () => {
+			if (Device.RuntimePlatform == Device.iOS) {
 				// Create an overflow amount of tabs depending on device
 				if (Device.Idiom == TargetIdiom.Tablet) {
 					Children.Add (pageOne);
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls
 					Children.Add (pageFive);
 					Children.Add (pageSix);
 				}
-			});
+			}
 		}
 	}
 }

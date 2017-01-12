@@ -28,5 +28,7 @@ namespace Xamarin.Forms
 		void OpenUriAction(Uri uri);
 
 		void StartTimer(TimeSpan interval, Func<bool> callback);
+
+		string RuntimePlatform { get; }
 	}
 }

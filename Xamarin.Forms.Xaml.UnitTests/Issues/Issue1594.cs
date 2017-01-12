@@ -1,11 +1,24 @@
 ﻿using System;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	[TestFixture]
 	public class Issue1594
 	{
+		[SetUp]
+		public void Setup()
+		{
+			Device.PlatformServices = new MockPlatformServices();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Device.PlatformServices = null;
+		}
+
 		[Test]
 		public void OnPlatformForButtonHeight ()
 		{
@@ -23,21 +36,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				         </Button.HeightRequest>
 				 </Button>";
 
-			Device.OS = TargetPlatform.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			var button = new Button ().LoadFromXaml (xaml);
 			Assert.AreEqual (33, button.HeightRequest);
 
-			Device.OS = TargetPlatform.Android;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 			button = new Button ().LoadFromXaml (xaml);
 			Assert.AreEqual (44, button.HeightRequest);
 
-			Device.OS = TargetPlatform.WinPhone;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
 			button = new Button ().LoadFromXaml (xaml);
 			Assert.AreEqual (44, button.HeightRequest);
-
-
 		}
-
 	}
 }
-

@@ -8,6 +8,20 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	[TestFixture]
 	public class OnPlatformTests : BaseTestFixture
 	{
+		[SetUp]
+		public override void Setup()
+		{
+			base.Setup();
+			Device.PlatformServices = new MockPlatformServices();
+		}
+
+		[TearDown]
+		public override void TearDown()
+		{
+			Device.PlatformServices = null;
+			base.TearDown();
+		}
+
 		[Test]
 		public void ApplyToProperty ()
 		{
@@ -50,15 +64,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			ContentPage layout;
 
-			Device.OS = TargetPlatform.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			layout = new ContentPage ().LoadFromXaml (xaml);
 			Assert.AreEqual (new Thickness (0, 20, 0, 0), layout.Padding);
 
-			Device.OS = TargetPlatform.Android;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.Android;
 			layout = new ContentPage ().LoadFromXaml (xaml);
 			Assert.AreEqual (new Thickness (0, 0, 10, 0), layout.Padding);
 
-			Device.OS = TargetPlatform.WinPhone;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
 			layout = new ContentPage ().LoadFromXaml (xaml);
 			Assert.AreEqual (new Thickness (0, 20, 0, 20), layout.Padding);
 		}
@@ -81,7 +95,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			Image image;
 
-			Device.OS = TargetPlatform.iOS;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			image = new Image ().LoadFromXaml (xaml);
 			Assert.AreEqual ("icon_twitter.png", (image.Source as FileImageSource).File);
 		}

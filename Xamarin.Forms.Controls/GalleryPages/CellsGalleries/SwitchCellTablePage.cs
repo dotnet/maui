@@ -6,11 +6,8 @@ namespace Xamarin.Forms.Controls
 		{
 			Title = "SwitchCell Table Gallery - Legacy";
 
-			Device.OnPlatform (iOS: () => {
-				if (Device.Idiom == TargetIdiom.Tablet) {
-					Padding = new Thickness (0, 0, 0, 60);
-				}
-			});
+			if (Device.RuntimePlatform == Device.iOS && Device.Idiom == TargetIdiom.Tablet)
+				Padding = new Thickness(0, 0, 0, 60);
 
 			var tableSection = new TableSection ("Section One") {
 				new SwitchCell { Text = "text 1", On = true },

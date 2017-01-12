@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls
 
 			var frame = new Frame {
 				Content = _stack,
-				BackgroundColor = Device.OnPlatform (iOS: new Color (1), Android: new Color (0.2), WinPhone: new Color (0.2))
+				BackgroundColor = new[] { Device.Android, Device.Windows, Device.WinPhone }.Contains(Device.RuntimePlatform) ? new Color(0.2) : new Color(1)
 			};
 			_timeLabel = new Label {
 				Text = text

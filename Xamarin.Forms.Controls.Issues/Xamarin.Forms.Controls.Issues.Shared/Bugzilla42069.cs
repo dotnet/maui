@@ -19,11 +19,16 @@ namespace Xamarin.Forms.Controls
 
 			if (!Application.Current.Resources.ContainsKey("SomeSmallImage"))
 			{
-				var smallImage = new OnPlatform<ImageSource> {
-					Android = ImageSource.FromFile("coffee.png"),
-					WinPhone = ImageSource.FromFile("bank.png"),
-					iOS = ImageSource.FromFile("coffee.png")
-				};
+				ImageSource smallImage;
+				switch (Device.RuntimePlatform) {
+				default:
+					smallImage = "coffee.png";
+					break;
+				case Device.WinPhone:
+				case Device.Windows:
+					smallImage = "bank.png";
+					break;
+				}
 
 				Application.Current.Resources.Add("SomeSmallImage", smallImage);
 			}

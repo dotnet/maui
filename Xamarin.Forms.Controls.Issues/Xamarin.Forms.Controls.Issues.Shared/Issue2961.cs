@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Children = { logoImg }
 				};
 
-				var paddingTop = Device.OnPlatform (40, 2, 2);
+				var paddingTop = Device.RuntimePlatform == Device.iOS ? 40 : 2;
 				Content = new StackLayout {
 					Spacing = 0, 
 					BackgroundColor = Color.FromHex ("1e1e1e"),

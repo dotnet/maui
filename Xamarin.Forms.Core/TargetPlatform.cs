@@ -1,5 +1,8 @@
+using System;
+
 namespace Xamarin.Forms
 {
+	[Obsolete]
 	public enum TargetPlatform
 	{
 		Other,
@@ -7,6 +10,5 @@ namespace Xamarin.Forms
 		Android,
 		WinPhone,
 		Windows,
-		Tizen
 	}
 }

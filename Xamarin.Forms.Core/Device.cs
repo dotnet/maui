@@ -8,13 +8,30 @@ namespace Xamarin.Forms
 {
 	public static class Device
 	{
+		public const string iOS = "iOS";
+		public const string Android = "Android";
+		public const string WinPhone = "WinPhone";
+		public const string Windows = "Windows";
+
 		internal static DeviceInfo info;
 
 		static IPlatformServices s_platformServices;
 
 		public static TargetIdiom Idiom { get; internal set; }
 
-		public static TargetPlatform OS { get; internal set; }
+		[Obsolete("Use RuntimePlatform instead.")]
+#pragma warning disable 0618
+		public static TargetPlatform OS {
+			get {
+				TargetPlatform platform;
+				if (Enum.TryParse(RuntimePlatform, out platform))
+					return platform;
+				return TargetPlatform.Other;
+			}
+		}
+#pragma warning restore 0618
+
+		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
 
 		internal static DeviceInfo Info
 		{
@@ -58,6 +75,7 @@ namespace Xamarin.Forms
 			return GetNamedSize(size, targetElementType, false);
 		}
 
+		[Obsolete("Use switch(RuntimePlatform) instead.")]
 		public static void OnPlatform(Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null)
 		{
 			switch (OS)
@@ -88,6 +106,7 @@ namespace Xamarin.Forms
 			}
 		}
 
+		[Obsolete("Use switch(RuntimePlatform) instead.")]
 		public static T OnPlatform<T>(T iOS, T Android, T WinPhone)
 		{
 			switch (OS)
@@ -102,18 +121,6 @@ namespace Xamarin.Forms
 			}
 
 			return iOS;
-		}
-
-		public static T OnPlatform<T>(T iOS, T Android, T WinPhone, T Tizen)
-		{
-			if (OS == TargetPlatform.Tizen)
-			{
-				return Tizen;
-			}
-			else
-			{
-				return OnPlatform<T>(iOS, Android, WinPhone);
-			}
 		}
 
 		public static void OpenUri(Uri uri)

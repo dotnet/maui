@@ -162,10 +162,10 @@ namespace Xamarin.Forms.Controls.Issues
 
 			layout.Children.Add (label);
 
-			layout.Children.Add (new ScrollView {
+			layout.Children.Add(new ScrollView {
 				BackgroundColor = Color.Aqua,
 				Orientation = ScrollOrientation.Horizontal,
-				HeightRequest = Device.OnPlatform (44, 44, 80),
+				HeightRequest = Device.RuntimePlatform == Device.Windows || Device.RuntimePlatform == Device.WinPhone ? 80 : 44,
 				Content = buttonStack
 			});
 

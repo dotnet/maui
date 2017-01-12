@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls
 				Content = new Button {
 					Text = "Framous!"
 				},
-				BackgroundColor = Device.OnPlatform (iOS: new Color (1), Android: new Color (0), WinPhone: new Color (0)),
+				BackgroundColor = new[] { Device.Android, Device.Windows, Device.WinPhone }.Contains(Device.RuntimePlatform) ? new Color(0) : new Color(1),
 				VerticalOptions = LayoutOptions.FillAndExpand
 			};
 

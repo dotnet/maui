@@ -73,15 +73,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// The root page of your application
 			Content = new StackLayout {
-				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
+				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 #pragma warning disable 618
 						XAlign = TextAlignment.Center,
 #pragma warning restore 618
-						Text = Device.OnPlatform("Custom renderer UITableView","Custom renderer ListView","Custom renderer todo")
+						Text = Device.RuntimePlatform == Device.iOS ? "Custom renderer UITableView" : Device.RuntimePlatform == Device.Android ? "Custom renderer ListView" : "Custom renderer todo"
 					},
-					fasterListView 
+					fasterListView
 				}
 			};
 		}
@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = new StackLayout { 
-				Padding = new Thickness (5, Device.OnPlatform(20,0,0), 5, 0),
+				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(5, 20, 5, 0) : new Thickness(5,0),
 				Children = {
 					new Label {
 #pragma warning disable 618
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 
 			Content = new StackLayout { 
-				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
+				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 #pragma warning disable 618
@@ -250,7 +250,7 @@ namespace Xamarin.Forms.Controls.Issues
 			b.Clicked += (sender, e) => Navigation.PopModalAsync();
 
 			Content = new StackLayout { 
-				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
+				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions =  LayoutOptions.Center,
 				Children = {
@@ -289,13 +289,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 			// The root page of your application
 			Content = new StackLayout {
-				Padding = new Thickness (0, Device.OnPlatform(20,0,0), 0, 0),
+				Padding = Device.RuntimePlatform == Device.iOS ? new Thickness(0, 20, 0, 0) : new Thickness(0),
 				Children = {
 					new Label {
 #pragma warning disable 618
 						XAlign = TextAlignment.Center,
 #pragma warning restore 618
-						Text = Device.OnPlatform("Custom UITableView+UICell","Custom ListView+Cell","Custom renderer todo")
+						Text = Device.RuntimePlatform == Device.iOS ? "Custom UITableView+UICell" : Device.RuntimePlatform == Device.Android ? "Custom ListView+Cell" : "Custom renderer todo"
 					},
 					nativeListView2
 				}

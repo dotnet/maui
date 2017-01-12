@@ -119,11 +119,11 @@ namespace Xamarin.Forms.Controls
 				//	Tweets.Add(tweet);
 				//}
 
-				if (Device.OS == TargetPlatform.iOS)
-				{
-					// only does anything on iOS, for the Watch
-					//	DependencyService.Get<ITweetStore>().Save(tweets);
-				}
+				//if (Device.OS == TargetPlatform.iOS)
+				//{
+				//	// only does anything on iOS, for the Watch
+				//	//	DependencyService.Get<ITweetStore>().Save(tweets);
+				//}
 
 
 

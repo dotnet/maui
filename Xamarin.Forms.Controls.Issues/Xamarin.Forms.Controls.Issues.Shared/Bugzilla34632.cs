@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init ()
 		{
-			if (Device.OS == TargetPlatform.Windows)
+			if (Device.RuntimePlatform == Device.Windows)
 				MasterBehavior = MasterBehavior.Split;
 			else
 				MasterBehavior = MasterBehavior.SplitOnLandscape;
