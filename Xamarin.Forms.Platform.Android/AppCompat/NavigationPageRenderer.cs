@@ -588,33 +588,30 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_toolbar = bar;
 		}
 
-		Task<bool> SwitchContentAsync(Page view, bool animated, bool removed = false, bool popToRoot = false)
+		Task<bool> SwitchContentAsync(Page page, bool animated, bool removed = false, bool popToRoot = false)
 		{
 			var tcs = new TaskCompletionSource<bool>();
-			Fragment fragment = FragmentContainer.CreateInstance(view);
-			FragmentManager fm = FragmentManager;
+			Fragment fragment = GetFragment(page, removed, popToRoot);
 
 #if DEBUG
 			// Enables logging of moveToState operations to logcat
 			FragmentManager.EnableDebugLogging(true);
 #endif
 
-			List<Fragment> fragments = _fragmentStack;
-
-			Current = view;
+			Current = page;
 
 			((Platform)Element.Platform).NavAnimationInProgress = true;
-			FragmentTransaction transaction = fm.BeginTransaction();
+			FragmentTransaction transaction = FragmentManager.BeginTransaction();
 
 			if (animated)
 				SetupPageTransition(transaction, !removed);
 
 			transaction.DisallowAddToBackStack();
 
-			if (fragments.Count == 0)
+			if (_fragmentStack.Count == 0)
 			{
 				transaction.Add(Id, fragment);
-				fragments.Add(fragment);
+				_fragmentStack.Add(fragment);
 			}
 			else
 			{
@@ -622,18 +619,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					// pop only one page, or pop everything to the root
 					var popPage = true;
-					while (fragments.Count > 1 && popPage)
+					while (_fragmentStack.Count > 1 && popPage)
 					{
-						Fragment currentToRemove = fragments.Last();
-						fragments.RemoveAt(fragments.Count - 1);
+						Fragment currentToRemove = _fragmentStack.Last();
+						_fragmentStack.RemoveAt(_fragmentStack.Count - 1);
 						transaction.Remove(currentToRemove);
 						popPage = popToRoot;
 					}
 					
-					Fragment toShow = fragments.Last();
+					Fragment toShow = _fragmentStack.Last();
 					// Execute pending transactions so that we can be sure the fragment list is accurate.
-					fm.ExecutePendingTransactions();
-					if (fm.Fragments.Contains(toShow))
+					FragmentManager.ExecutePendingTransactions();
+					if (FragmentManager.Fragments.Contains(toShow))
 						transaction.Show(toShow);
 					else
 						transaction.Add(Id, toShow);
@@ -641,10 +638,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				else
 				{
 					// push
-					Fragment currentToHide = fragments.Last();
+					Fragment currentToHide = _fragmentStack.Last();
 					transaction.Hide(currentToHide);
 					transaction.Add(Id, fragment);
-					fragments.Add(fragment);
+					_fragmentStack.Add(fragment);
 				}
 			}
 
@@ -696,6 +693,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			// TransitionDuration is how long the built-in animations are, and they are "reversible" in the sense that starting another one slightly before it's done is fine
 
 			return tcs.Task;
+		}
+
+		Fragment GetFragment(Page page, bool removed, bool popToRoot)
+		{
+			// pop
+			if (removed)
+				return _fragmentStack[_fragmentStack.Count - 2];
+
+			// pop to root
+			if(popToRoot)
+				return _fragmentStack[0];
+
+			// push
+			return FragmentContainer.CreateInstance(page);
 		}
 
 		void ToolbarTrackerOnCollectionChanged(object sender, EventArgs eventArgs)
