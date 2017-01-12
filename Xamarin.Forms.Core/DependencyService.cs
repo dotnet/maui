@@ -14,8 +14,7 @@ namespace Xamarin.Forms
 
 		public static T Get<T>(DependencyFetchTarget fetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
 		{
-			if (!s_initialized)
-				Initialize();
+			Initialize();
 
 			Type targetType = typeof(T);
 
@@ -64,10 +63,25 @@ namespace Xamarin.Forms
 
 		static void Initialize()
 		{
+			if (s_initialized)
+			{
+				return;
+			}
+
 			Assembly[] assemblies = Device.GetAssemblies();
 			if (Registrar.ExtraAssemblies != null)
 			{
 				assemblies = assemblies.Union(Registrar.ExtraAssemblies).ToArray();
+			}
+
+			Initialize(assemblies);
+		}
+
+		internal static void Initialize(Assembly[] assemblies)
+		{
+			if (s_initialized)
+			{
+				return;
 			}
 
 			Type targetAttrType = typeof(DependencyAttribute);
