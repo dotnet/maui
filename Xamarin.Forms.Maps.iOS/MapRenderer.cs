@@ -17,9 +17,10 @@ namespace Xamarin.Forms.Maps.iOS
 	internal class MapDelegate : MKMapViewDelegate
 	{
 		// keep references alive, removing this will cause a segfault
-		static readonly List<object> List = new List<object>();
-		readonly Map _map;
+		readonly List<object> List = new List<object>();
+		Map _map;
 		UIView _lastTouchedView;
+		bool _disposed;
 
 		internal MapDelegate(Map map)
 		{
@@ -103,31 +104,80 @@ namespace Xamarin.Forms.Maps.iOS
 
 			targetPin.SendTap();
 		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
+			if (disposing)
+			{
+				_map = null;
+				_lastTouchedView = null;
+			}
+
+			base.Dispose(disposing);
+		}
 	}
 
 	public class MapRenderer : ViewRenderer
 	{
 	    CLLocationManager _locationManager;
 		bool _shouldUpdateRegion;
+		bool _disposed; 
+
+		const string MoveMessageName = "MapMoveToRegion";
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return Control.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
+		// iOS 10 has some issues with releasing memory from map views; each one we create allocates
+		// a bunch of memory we can never get back. Until that's fixed, we'll just reuse MKMapViews
+		// as much as possible to prevent creating new ones and losing more memory
+
+		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
+		// if we're on iOS 10; during Dispose we'll be putting the MKMapView in a pool instead
+		protected override bool ManageNativeControlLifetime => !FormsMaps.IsiOs10OrNewer;
+
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			if (disposing)
 			{
 				if (Element != null)
 				{
 					var mapModel = (Map)Element;
-					MessagingCenter.Unsubscribe<Map, MapSpan>(this, "MapMoveToRegion");
+					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
 				}
 
 				var mkMapView = (MKMapView)Control;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
+				mkMapView.GetViewForAnnotation = null;
+				mkMapView.Delegate.Dispose();
+				mkMapView.Delegate = null;
+				mkMapView.RemoveFromSuperview();
+
+				if (FormsMaps.IsiOs10OrNewer)
+				{
+					// This renderer is done with the MKMapView; we can put it in the pool
+					// for other rendererers to use in the future
+					MapPool.Add(mkMapView);
+				}
+
+				// For iOS versions < 10, the MKMapView will be disposed in ViewRenderer's Dispose method
 
 				if (_locationManager != null)
 				{
@@ -146,7 +196,7 @@ namespace Xamarin.Forms.Maps.iOS
 			if (e.OldElement != null)
 			{
 				var mapModel = (Map)e.OldElement;
-				MessagingCenter.Unsubscribe<Map, MapSpan>(this, "MapMoveToRegion");
+				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
 			}
 
@@ -156,14 +206,30 @@ namespace Xamarin.Forms.Maps.iOS
 
 				if (Control == null)
 				{
-					SetNativeControl(new MKMapView(RectangleF.Empty));
+					MKMapView mapView = null;
+
+					if (FormsMaps.IsiOs10OrNewer)
+					{
+						// See if we've got an MKMapView available in the pool; if so, use it
+						mapView = MapPool.Get();
+					}
+
+					if (mapView == null)
+					{
+						// If this is iOS 9 or lower, or if there weren't any MKMapViews in the pool,
+						// create a new one
+						mapView = new MKMapView(RectangleF.Empty);
+					}
+
+					SetNativeControl(mapView);
+
 					var mkMapView = (MKMapView)Control;
 					var mapDelegate = new MapDelegate(mapModel);
 					mkMapView.GetViewForAnnotation = mapDelegate.GetViewForAnnotation;
 					mkMapView.RegionChanged += MkMapViewOnRegionChanged;
 				}
 
-				MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) => MoveToRegion(a), mapModel);
+				MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, (s, a) => MoveToRegion(a), mapModel);
 				if (mapModel.LastMoveToRegion != null)
 					MoveToRegion(mapModel.LastMoveToRegion, false);
 
@@ -202,7 +268,6 @@ namespace Xamarin.Forms.Maps.iOS
 				MoveToRegion(((Map)Element).LastMoveToRegion, false);
 				_shouldUpdateRegion = false;
 			}
-
 		}
 
 		void AddPins(IList pins)
