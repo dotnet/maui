@@ -11,7 +11,7 @@
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Add support for deep linking and indexing app content using Xamarin.Forms on the Android Platform</description>
-    <copyright>Copyright 2013-2016</copyright>
+    <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group targetFramework="MonoAndroid10">
         <dependency id="Xamarin.Android.Support.v4" version="[23.3.0]"/>

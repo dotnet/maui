@@ -11,7 +11,7 @@
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Maps models and renderers for Xamarin.Forms</description>
-    <copyright>Copyright 2013-2016</copyright>
+    <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>

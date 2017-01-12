@@ -11,7 +11,7 @@
     <projectUrl>http://xamarin.com/forms</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Build native UIs for iOS, Android, and Windows Phone from a single, shared C# codebase</description>
-    <copyright>Copyright 2013-2016</copyright>
+    <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group targetFramework="WP80">
         <dependency id="WPtoolkit" version="4.2013.08.16"/>
