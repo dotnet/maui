@@ -26,9 +26,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
 			result.Minimum = new Size(Math.Min(10, result.Request.Width), result.Request.Height);
-			if ((Element.LineBreakMode & (LineBreakMode.TailTruncation | LineBreakMode.HeadTruncation | LineBreakMode.MiddleTruncation)) != 0)
+			if (Element.LineBreakMode != LineBreakMode.NoWrap)
 			{
-				if (result.Request.Width > widthConstraint)
+				if (result.Request.Width > widthConstraint || Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap)
 					result.Request = new Size(Math.Max(result.Minimum.Width, widthConstraint), result.Request.Height);
 			}
 

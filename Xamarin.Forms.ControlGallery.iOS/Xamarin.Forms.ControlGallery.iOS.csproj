@@ -201,6 +201,7 @@
     <Content Include="bank.png" />
     <Content Include="calculator%402x.png" />
     <Content Include="calculator.png" />
+    <BundleResource Include="caret_r.png" />
     <Content Include="cover1.jpg" />
     <Content Include="crimson.jpg" />
     <Content Include="Default-568h%402x.png" />
