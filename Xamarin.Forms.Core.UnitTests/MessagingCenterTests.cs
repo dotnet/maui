@@ -6,6 +6,8 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class MessagingCenterTests : BaseTestFixture
 	{
+		TestSubcriber _subscriber;
+
 		[Test]
 		public void SingleSubscriber ()
 		{
@@ -285,9 +287,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			int i = 4;
 
-			var subscriber = new TestSubcriber();
+			_subscriber = new TestSubcriber(); // Using a class member so it doesn't get optimized away in Release build
 
-			MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => MessagingCenterTestsCallbackSource.Increment(ref i));
+			MessagingCenter.Subscribe<TestPublisher>(_subscriber, "test", p => MessagingCenterTestsCallbackSource.Increment(ref i));
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
@@ -295,7 +297,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var pub = new TestPublisher();
 			pub.Test();
 
-			Assert.IsTrue(i == 5, "The static method should have incremented 'i'"); 
+			Assert.IsTrue(i == 5, "The static method should have incremented 'i'");
 		}
 
 		[Test]
@@ -303,10 +305,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var success = false;
 
-			var subscriber = new TestSubcriber();
-			
+			_subscriber = new TestSubcriber(); // Using a class member so it doesn't get optimized away in Release build
+
 			var source = new MessagingCenterTestsCallbackSource();
-			MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => source.SuccessCallback(ref success));
+			MessagingCenter.Subscribe<TestPublisher>(_subscriber, "test", p => source.SuccessCallback(ref success));
 			
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
