@@ -137,13 +137,13 @@ namespace Xamarin.Forms.Maps.iOS
 			return Control.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		// iOS 10 has some issues with releasing memory from map views; each one we create allocates
+		// iOS 9/10 have some issues with releasing memory from map views; each one we create allocates
 		// a bunch of memory we can never get back. Until that's fixed, we'll just reuse MKMapViews
 		// as much as possible to prevent creating new ones and losing more memory
 
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
-		// if we're on iOS 10; during Dispose we'll be putting the MKMapView in a pool instead
-		protected override bool ManageNativeControlLifetime => !FormsMaps.IsiOs10OrNewer;
+		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
+		protected override bool ManageNativeControlLifetime => !FormsMaps.IsiOs9OrNewer;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -170,14 +170,14 @@ namespace Xamarin.Forms.Maps.iOS
 				mkMapView.Delegate = null;
 				mkMapView.RemoveFromSuperview();
 
-				if (FormsMaps.IsiOs10OrNewer)
+				if (FormsMaps.IsiOs9OrNewer)
 				{
 					// This renderer is done with the MKMapView; we can put it in the pool
 					// for other rendererers to use in the future
 					MapPool.Add(mkMapView);
 				}
 
-				// For iOS versions < 10, the MKMapView will be disposed in ViewRenderer's Dispose method
+				// For iOS versions < 9, the MKMapView will be disposed in ViewRenderer's Dispose method
 
 				if (_locationManager != null)
 				{
@@ -208,7 +208,7 @@ namespace Xamarin.Forms.Maps.iOS
 				{
 					MKMapView mapView = null;
 
-					if (FormsMaps.IsiOs10OrNewer)
+					if (FormsMaps.IsiOs9OrNewer)
 					{
 						// See if we've got an MKMapView available in the pool; if so, use it
 						mapView = MapPool.Get();
@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Maps.iOS
 
 					if (mapView == null)
 					{
-						// If this is iOS 9 or lower, or if there weren't any MKMapViews in the pool,
+						// If this is iOS 8 or lower, or if there weren't any MKMapViews in the pool,
 						// create a new one
 						mapView = new MKMapView(RectangleF.Empty);
 					}

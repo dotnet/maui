@@ -29,6 +29,7 @@
 		public const string TimePicker = "TimePicker";
 		public const string ToolbarItem = "ToolbarItem";
 		public const string WebView = "WebView";
+		public const string Maps = "Maps";
 
 		public const string ManualReview = "ManualReview";
 	}
