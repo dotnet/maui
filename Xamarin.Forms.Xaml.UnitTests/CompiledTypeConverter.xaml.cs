@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -13,6 +14,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		public Rectangle RectangleP { get; set; }
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> List { get; set; }
+
 
 		public CompiledTypeConverter ()
 		{
@@ -39,6 +44,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var xConstraint = RelativeLayout.GetXConstraint(p.label);
 				Assert.AreEqual(2, xConstraint.Compute(null));
 				Assert.AreEqual(new Thickness(2, 3), p.label.Margin);
+				Assert.AreEqual(2, p.List.Count);
+				Assert.AreEqual("Bar", p.List[1]);
 			}
 		}
 	}

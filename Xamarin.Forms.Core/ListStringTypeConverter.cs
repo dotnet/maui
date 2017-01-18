@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace Xamarin.Forms
 {
+	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ListStringTypeConverter")]
 	public class ListStringTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

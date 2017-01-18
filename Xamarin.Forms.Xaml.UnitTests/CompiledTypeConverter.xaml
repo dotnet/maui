@@ -4,7 +4,8 @@
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.CompiledTypeConverter"
 			 RectangleP="0,1,2,4"
 			 RectangleBP="4,8,16,32"
-			 BackgroundColor="Pink">
+			 BackgroundColor="Pink"
+			 List="Foo, Bar">
 	<Label x:Name="label"
 		HorizontalOptions="EndAndExpand"
 		RelativeLayout.XConstraint="2" Margin="2,3"/>
