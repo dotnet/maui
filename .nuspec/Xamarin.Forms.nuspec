@@ -23,6 +23,13 @@
         <dependency id="Xamarin.Android.Support.v7.CardView" version="[23.3.0]"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.3.0]"/>
       </group>
+      <group targetFramework="MonoAndroid70">
+        <dependency id="Xamarin.Android.Support.v4" version="23.3.0"/>
+        <dependency id="Xamarin.Android.Support.Design" version="23.3.0"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="23.3.0"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="23.3.0"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="23.3.0"/>
+      </group>
     </dependencies>
     <references>
        <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20">

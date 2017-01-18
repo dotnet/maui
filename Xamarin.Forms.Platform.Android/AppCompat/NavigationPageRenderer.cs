@@ -23,10 +23,11 @@ using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 using FragmentTransaction = Android.Support.V4.App.FragmentTransaction;
 using Object = Java.Lang.Object;
+using static Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments
+	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener
 	{
 		readonly List<Fragment> _fragmentStack = new List<Fragment>();
 
@@ -144,7 +145,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (_toolbar != null)
 				{
-					_toolbar.NavigationClick -= BarOnNavigationClick;
+					_toolbar.SetNavigationOnClickListener(null);
 					_toolbar.Dispose();
 					_toolbar = null;
 				}
@@ -392,7 +393,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			valueAnim.Start();
 		}
 
-		void BarOnNavigationClick(object sender, AToolbar.NavigationClickEventArgs navigationClickEventArgs)
+		public void OnClick(AView v)
 		{
 			Element?.PopAsync();
 		}
@@ -558,7 +559,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AToolbar oldToolbar = _toolbar;
 
 			_toolbar.RemoveFromParent();
-			_toolbar.NavigationClick -= BarOnNavigationClick;
+			_toolbar.SetNavigationOnClickListener(null);
 			_toolbar = null;
 
 			SetupToolbar();
@@ -582,7 +583,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			else
 				bar = new AToolbar(context);
 
-			bar.NavigationClick += BarOnNavigationClick;
+			bar.SetNavigationOnClickListener(this);
 
 			AddView(bar);
 			_toolbar = bar;
