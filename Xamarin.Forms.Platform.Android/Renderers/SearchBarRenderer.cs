@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool SearchView.IOnQueryTextListener.OnQueryTextSubmit(string query)
 		{
 			((ISearchBarController)Element).OnSearchButtonPressed();
-			Control.ClearFocus();
+			ClearFocus(Control);
 			return true;
 		}
 
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.Android
 				_inputType = InputTypes.ClassText | InputTypes.TextFlagAutoComplete | InputTypes.TextFlagNoSuggestions;
 			}
 
-			searchView.ClearFocus();
+			ClearFocus(searchView);
 			UpdatePlaceholder();
 			UpdateText();
 			UpdateEnabled();
@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal override void OnNativeFocusChanged(bool hasFocus)
 		{
 			if (hasFocus && !Element.IsEnabled)
-				Control.ClearFocus();
+				ClearFocus(Control);
 		}
 
 		void UpdateAlignment()
@@ -148,12 +148,24 @@ namespace Xamarin.Forms.Platform.Android
 			SearchView control = Control;
 			if (!model.IsEnabled)
 			{
-				control.ClearFocus();
+				ClearFocus(control);
 				// removes cursor in SearchView
 				control.SetInputType(InputTypes.Null);
 			}
 			else
 				control.SetInputType(_inputType);
+		}
+
+		void ClearFocus(SearchView view)
+		{
+			try
+			{
+				view.ClearFocus();
+			}
+			catch (Java.Lang.UnsupportedOperationException)
+			{
+				// silently catch these as they happen in the previewer due to some bugs in upstread android
+			}
 		}
 
 		void UpdateFont()
