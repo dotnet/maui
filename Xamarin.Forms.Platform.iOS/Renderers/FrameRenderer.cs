@@ -18,8 +18,10 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Xamarin.Forms.Frame.OutlineColorProperty.PropertyName ||
-				e.PropertyName == Xamarin.Forms.Frame.HasShadowProperty.PropertyName)
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
+				e.PropertyName == Xamarin.Forms.Frame.OutlineColorProperty.PropertyName ||
+				e.PropertyName == Xamarin.Forms.Frame.HasShadowProperty.PropertyName ||
+				e.PropertyName == Xamarin.Forms.Frame.CornerRadiusProperty.PropertyName)
 				SetupLayer();
 		}
 
