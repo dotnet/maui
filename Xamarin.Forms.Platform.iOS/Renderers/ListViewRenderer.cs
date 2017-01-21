@@ -414,6 +414,8 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (_footerRenderer != null)
 			{
 				Control.TableFooterView = null;
+				_footerRenderer.Element.MeasureInvalidated -= OnFooterMeasureInvalidated;
+
 				var platform = _footerRenderer.Element.Platform as Platform;
 				if (platform != null)
 					platform.DisposeModelAndChildrenRenderers(_footerRenderer.Element);
@@ -458,6 +460,8 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (_headerRenderer != null)
 			{
 				Control.TableHeaderView = null;
+				_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
+				
 				var platform = _headerRenderer.Element.Platform as Platform;
 				if (platform != null)
 					platform.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
