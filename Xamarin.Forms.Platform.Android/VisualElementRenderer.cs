@@ -106,6 +106,12 @@ namespace Xamarin.Forms.Platform.Android
 
 			_gestureListener?.OnTouchEvent(e);
 
+			if (_gestureDetector.IsValueCreated && _gestureDetector.Value.Handle == IntPtr.Zero)
+			{
+				// This gesture detector has already been disposed, probably because it's on a cell which is going away
+				return handled;
+			}
+
 			return _gestureDetector.Value.OnTouchEvent(e) || handled;
 		}
 
