@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var platform = Element.Platform as Platform;
 			if (platform != null)
 			{
-				if (e.Page == ((INavigationPageController)Element).StackCopy.LastOrDefault())
+				if (e.Page == ((INavigationPageController)Element).Pages.FirstOrDefault()) 
 					((IPageController)e.Page).IgnoresContainerArea = true;
 				e.Task = platform.PushCore(e.Page, Element, e.Animated, e.Realize).ContinueWith((t, o) => true, null);
 			}

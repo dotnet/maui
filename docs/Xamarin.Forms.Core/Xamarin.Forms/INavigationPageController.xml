@@ -26,6 +26,42 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Pages">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt; Pages { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Forms.Page&gt; Pages" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Peek">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Page Peek (int depth);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.Page Peek(int32 depth) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Page</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="depth" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="depth">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="PopAsyncInner">
       <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt; PopAsyncInner (bool animated, bool fast = false);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class Xamarin.Forms.Page&gt; PopAsyncInner(bool animated, bool fast) cil managed" />
@@ -105,22 +141,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="StackCopy">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.Stack&lt;Xamarin.Forms.Page&gt; StackCopy { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.Stack`1&lt;class Xamarin.Forms.Page&gt; StackCopy" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.Stack&lt;Xamarin.Forms.Page&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>For internal use by platform renderers.</summary>
-        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

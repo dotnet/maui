@@ -213,27 +213,92 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task TestStackCopy ()
+		public async Task PeekOne()
 		{
-			var nav = new NavigationPage ();
+			var nav = new NavigationPage();
 
 			bool signaled = false;
 			nav.PoppedToRoot += (sender, args) => signaled = true;
 
-			var root = new ContentPage {Content = new View ()};
-			var child1 = new ContentPage {Content = new View ()};
-			var child2 = new ContentPage {Content = new View ()};
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
 
-			await nav.PushAsync (root);
-			await nav.PushAsync (child1);
-			await nav.PushAsync (child2);
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
 
-			var copy = ((INavigationPageController)nav).StackCopy;
-
-			Assert.AreEqual (child2, copy.Pop ());
-			Assert.AreEqual (child1, copy.Pop ());
-			Assert.AreEqual (root, copy.Pop ());
+			Assert.AreEqual(((INavigationPageController)nav).Peek(1), child1);
 		}
+
+		[Test]
+		public async Task PeekZero()
+		{
+			var nav = new NavigationPage();
+
+			bool signaled = false;
+			nav.PoppedToRoot += (sender, args) => signaled = true;
+
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
+
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
+
+			Assert.AreEqual(((INavigationPageController)nav).Peek(0), child2);
+		}
+
+		[Test]
+		public async Task PeekPastStackDepth()
+		{
+			var nav = new NavigationPage();
+
+			bool signaled = false;
+			nav.PoppedToRoot += (sender, args) => signaled = true;
+
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
+
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
+
+			Assert.AreEqual(((INavigationPageController)nav).Peek(3), null);
+		}
+
+		[Test]
+		public async Task PeekShallow()
+		{
+			var nav = new NavigationPage();
+
+			bool signaled = false;
+			nav.PoppedToRoot += (sender, args) => signaled = true;
+
+			var root = new ContentPage { Content = new View() };
+			var child1 = new ContentPage { Content = new View() };
+			var child2 = new ContentPage { Content = new View() };
+
+			await nav.PushAsync(root);
+			await nav.PushAsync(child1);
+			await nav.PushAsync(child2);
+
+			Assert.AreEqual(((INavigationPageController)nav).Peek(-1), null);
+		}
+
+		[Test]
+		public async Task PeekEmpty([Range(0, 3)] int depth)
+		{
+			var nav = new NavigationPage();
+
+			bool signaled = false;
+			nav.PoppedToRoot += (sender, args) => signaled = true;
+
+			Assert.AreEqual(((INavigationPageController)nav).Peek(depth), null);
+		}
+
 
 		[Test]
 		public void ConstructWithRoot ()

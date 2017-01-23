@@ -397,7 +397,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnPopRequested(object sender, NavigationRequestedEventArgs e)
 		{
-			var newCurrent = (Page)PageController.InternalChildren[PageController.InternalChildren.Count - 2];
+			var newCurrent = ((INavigationPageController)Element).Peek(1);
 			SetPage(newCurrent, e.Animated, true);
 		}
 
@@ -418,8 +418,10 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void PushExistingNavigationStack()
 		{
-			for (int i = ((INavigationPageController)Element).StackCopy.Count - 1; i >= 0; i--)
-				SetPage(((INavigationPageController)Element).StackCopy.ElementAt(i), false, false);
+			foreach (var page in ((INavigationPageController)Element).Pages)
+			{
+				SetPage(page, false, false);
+			}
 		}
 
 		void SetPage(Page page, bool isAnimated, bool isPopping)

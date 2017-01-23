@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -61,16 +62,22 @@ namespace Xamarin.Forms
 
 		internal Task CurrentNavigationTask { get; set; }
 
-		Stack<Page> INavigationPageController.StackCopy
+		Page INavigationPageController.Peek(int depth)
 		{
-			get
+			if (depth < 0)
 			{
-				var result = new Stack<Page>(PageController.InternalChildren.Count);
-				foreach (Page page in PageController.InternalChildren)
-					result.Push(page);
-				return result;
+				return null;
 			}
+
+			if (PageController.InternalChildren.Count <= depth)
+			{
+				return null;
+			}
+
+			return (Page)PageController.InternalChildren[PageController.InternalChildren.Count - depth - 1];
 		}
+
+		IEnumerable<Page> INavigationPageController.Pages => PageController.InternalChildren.Cast<Page>();
 
 		int INavigationPageController.StackDepth
 		{
