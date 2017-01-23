@@ -248,6 +248,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			await nav.PushAsync(child2);
 
 			Assert.AreEqual(((INavigationPageController)nav).Peek(0), child2);
+			Assert.AreEqual(((INavigationPageController)nav).Peek(), child2);
 		}
 
 		[Test]
