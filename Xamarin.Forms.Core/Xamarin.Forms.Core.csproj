@@ -234,7 +234,6 @@
     <Compile Include="Properties\GlobalAssemblyInfo.cs" />
     <Compile Include="PropertyChangingEventArgs.cs" />
     <Compile Include="IValueConverter.cs" />
-    <Compile Include="ConcurrentDictionary.cs" />
     <Compile Include="PropertyChangingEventHandler.cs" />
     <Compile Include="ReadOnlyCastingList.cs" />
     <Compile Include="ReadOnlyListAdapter.cs" />
@@ -256,7 +255,6 @@
     <Compile Include="SeparatorVisibility.cs" />
     <Compile Include="SizeRequest.cs" />
     <Compile Include="Span.cs" />
-    <Compile Include="SplitOrderedList.cs" />
     <Compile Include="StackOrientation.cs" />
     <Compile Include="StreamWrapper.cs" />
     <Compile Include="SynchronizedList.cs" />
