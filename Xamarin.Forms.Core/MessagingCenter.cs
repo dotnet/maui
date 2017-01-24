@@ -205,7 +205,7 @@ namespace Xamarin.Forms
 			var key = new Sender(message, senderType, argType);
 			if (!s_subscriptions.ContainsKey(key))
 				return;
-			s_subscriptions[key].RemoveAll(sub => !sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
+			s_subscriptions[key].RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
 			if (!s_subscriptions[key].Any())
 				s_subscriptions.Remove(key);
 		}
