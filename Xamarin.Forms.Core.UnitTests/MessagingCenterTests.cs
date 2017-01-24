@@ -319,6 +319,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True(success); // TestCallbackSource.SuccessCallback() should be invoked to make success == true
 		}
 
+		[Test]
+		public void MultipleSubscribersOfTheSameClass()
+		{
+			var sub1 = new object();
+			var sub2 = new object();
+
+			string args2 = null;
+
+			const string message = "message";
+
+			MessagingCenter.Subscribe<MessagingCenterTests, string>(sub1, message, (sender, args) => { });
+			MessagingCenter.Subscribe<MessagingCenterTests, string>(sub2, message, (sender, args) => args2 = args);
+			MessagingCenter.Unsubscribe<MessagingCenterTests, string>(sub1, message);
+
+			MessagingCenter.Send(this, message, "Testing");
+			Assert.That(args2, Is.EqualTo("Testing"), "unsubscribing sub1 should not unsubscribe sub2");
+		}
+
 		class TestSubcriber
 		{
 			public void SetSuccess()
