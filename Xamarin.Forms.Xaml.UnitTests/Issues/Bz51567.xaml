@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Bz51567">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<Style x:Key="ListText" TargetType="Label">
+				<Setter Property="TextColor" Value="Black" />
+				<Setter Property="FontSize">
+					<OnPlatform x:TypeArguments="x:Double" iOS="17" Android="17" WinPhone="20" />
+				</Setter>
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+</ContentPage>

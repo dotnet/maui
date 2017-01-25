@@ -5,6 +5,7 @@ using Mono.Cecil.Cil;
 
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Build.Tasks;
+using System.Xml;
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -12,7 +13,12 @@ namespace Xamarin.Forms.Core.XamlC
 	{
 		public IEnumerable<Instruction> ProvideValue(VariableDefinitionReference vardefref, ModuleDefinition module, BaseNode node, ILContext context)
 		{
-			var valueNode = ((IElementNode)node).Properties[new XmlName("", "Value")];
+			INode valueNode = null;
+			if (!((IElementNode)node).Properties.TryGetValue(new XmlName("", "Value"), out valueNode) && ((IElementNode)node).CollectionItems.Count == 1)
+				valueNode = ((IElementNode)node).CollectionItems[0];
+
+			if (valueNode == null)
+				throw new XamlParseException("Missing Value for Trigger", (IXmlLineInfo)node);
 
 			//if it's an elementNode, there's probably no need to convert it
 			if (valueNode is IElementNode)
