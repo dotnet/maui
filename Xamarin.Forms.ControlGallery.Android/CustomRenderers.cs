@@ -19,12 +19,18 @@ using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 using Android.OS;
 using System.Reflection;
+using Android.Text;
+using Android.Text.Method;
 using Xamarin.Forms.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeAndroidCellRenderer))]
+
+[assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
+[assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
+
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
 #else
@@ -483,6 +489,30 @@ namespace Xamarin.Forms.ControlGallery.Android
 			}
 
 			base.OnElementChanged(e);
+		}
+	}
+
+	// Custom renderers for Bugzilla42000 demonstration purposes
+
+	public class EntryRendererNoNegative : EntryRenderer
+	{
+		protected override NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		{
+			// Disable the NumberFlagSigned bit
+			inputTypes &= ~InputTypes.NumberFlagSigned;
+
+			return base.GetDigitsKeyListener(inputTypes);
+		}
+	}
+
+	public class EntryRendererNoDecimal : EntryRenderer
+	{
+		protected override NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		{
+			// Disable the NumberFlagDecimal bit
+			inputTypes &= ~InputTypes.NumberFlagDecimal;
+
+			return base.GetDigitsKeyListener(inputTypes);
 		}
 	}
 }

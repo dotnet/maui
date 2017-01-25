@@ -132,6 +132,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41424.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41600.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41619.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42000.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42069.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42069_Page.xaml.cs">
       <DependentUpon>Bugzilla42069_Page.xaml</DependentUpon>

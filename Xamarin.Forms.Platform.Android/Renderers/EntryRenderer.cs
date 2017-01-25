@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Android.Content.Res;
 using Android.Text;
+using Android.Text.Method;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -116,6 +117,14 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 		}
 
+		protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		{
+			// Override this in a custom renderer to use a different NumberKeyListener 
+			// or to filter out input types you don't want to allow 
+			// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
+			return LocalizedDigitsKeyListener.Create(inputTypes);
+		}
+
 		void UpdateAlignment()
 		{
 			Control.Gravity = Element.HorizontalTextAlignment.ToHorizontalGravityFlags();
@@ -156,7 +165,15 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateInputType()
 		{
 			Entry model = Element;
-			_textView.InputType = model.Keyboard.ToInputType();
+			var keyboard = model.Keyboard;
+
+			_textView.InputType = keyboard.ToInputType();
+
+			if (keyboard == Keyboard.Numeric)
+			{
+				_textView.KeyListener = GetDigitsKeyListener(_textView.InputType);
+			}
+
 			if (model.IsPassword && ((_textView.InputType & InputTypes.ClassText) == InputTypes.ClassText))
 				_textView.InputType = _textView.InputType | InputTypes.TextVariationPassword;
 			if (model.IsPassword && ((_textView.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))

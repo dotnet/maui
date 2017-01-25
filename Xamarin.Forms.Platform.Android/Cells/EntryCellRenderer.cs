@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Android.Content;
+using Android.Text;
+using Android.Text.Method;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
@@ -56,6 +58,14 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeight();
 		}
 
+		protected NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		{
+			// Override this in a custom renderer to use a different NumberKeyListener 
+			// or to filter out input types you don't want to allow 
+			// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
+			return LocalizedDigitsKeyListener.Create(inputTypes);
+		}
+
 		void OnEditingCompleted()
 		{
 			var entryCell = (IEntryCellController)Cell;
@@ -88,7 +98,13 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateKeyboard()
 		{
 			var entryCell = (EntryCell)Cell;
-			_view.EditText.InputType = entryCell.Keyboard.ToInputType();
+			var keyboard = entryCell.Keyboard;
+			_view.EditText.InputType = keyboard.ToInputType();
+
+			if (keyboard == Keyboard.Numeric)
+			{
+				_view.EditText.KeyListener = GetDigitsKeyListener(_view.EditText.InputType);
+			}
 		}
 
 		void UpdateLabel()
