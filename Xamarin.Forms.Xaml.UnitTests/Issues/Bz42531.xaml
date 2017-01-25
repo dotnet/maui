@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz42531">
+	<ListView x:Name="lv">
+		<ListView.ItemTemplate>
+			<DataTemplate>
+				<ViewCell>
+					<StackLayout Orientation="Horizontal">
+						<StackLayout.Resources>
+							<ResourceDictionary>
+								<Style TargetType="Label">
+									<Setter Property="HorizontalOptions" Value="Center"/>
+								</Style>
+							</ResourceDictionary>
+						</StackLayout.Resources>
+						<Label Text="Example1"/>
+						<Label Text="2..."/>
+					</StackLayout>
+				</ViewCell>
+			</DataTemplate>
+		</ListView.ItemTemplate>
+	</ListView>
+</ContentPage>
