@@ -40,25 +40,25 @@ namespace Xamarin.Forms.Build.Tasks
 					return new [] { Instruction.Create(OpCodes.Ldsfld, fieldRef) };
 
 				//Constants can be numbers, Boolean values, strings, or a null reference. (https://msdn.microsoft.com/en-us/library/e6w8fe1b.aspx)
-				if (memberRef == module.TypeSystem.Boolean)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Boolean))
 					return new [] { Instruction.Create(((bool)fieldDef.Constant) ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0) };
-				if (memberRef == module.TypeSystem.String)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.String))
 					return new [] { Instruction.Create(OpCodes.Ldstr, (string)fieldDef.Constant) };
 				if (fieldDef.Constant == null)
 					return new [] { Instruction.Create(OpCodes.Ldnull) };
-				if (memberRef == module.TypeSystem.Char)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Char))
 					return new [] { Instruction.Create(OpCodes.Ldc_I4, (char)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.Single)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Single))
 					return new [] { Instruction.Create(OpCodes.Ldc_R4, (float)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.Double)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Double))
 					return new [] { Instruction.Create(OpCodes.Ldc_R8, (double)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.Byte || memberRef == module.TypeSystem.Int16 || memberRef == module.TypeSystem.Int32)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Byte) || TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Int16) || TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Int32))
 					return new [] { Instruction.Create(OpCodes.Ldc_I4, (int)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.SByte || memberRef == module.TypeSystem.UInt16 || memberRef == module.TypeSystem.UInt32)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.SByte) || TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.UInt16) || TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.UInt32))
 					return new [] { Instruction.Create(OpCodes.Ldc_I4, (uint)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.Int64)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.Int64))
 					return new [] { Instruction.Create(OpCodes.Ldc_I8, (long)fieldDef.Constant) };
-				if (memberRef == module.TypeSystem.UInt64)
+				if (TypeRefComparer.Default.Equals(memberRef, module.TypeSystem.UInt64))
 					return new [] { Instruction.Create(OpCodes.Ldc_I8, (ulong)fieldDef.Constant) };
 
 				//enum values

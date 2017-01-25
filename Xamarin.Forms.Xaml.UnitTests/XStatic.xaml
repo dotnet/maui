@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+			 xmlns:remote="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
 			 x:Class="Xamarin.Forms.Xaml.UnitTests.XStatic">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Icon="{x:Static local:MockxStatic.MockFieldRef}" />
@@ -15,6 +16,8 @@
 			   TextColor="{x:Static local:MockxStatic.BackgroundColor}" />
 		<Label x:Name="constant"
 				Text="{x:Static local:MockxStatic.MockConstant}"/>
+		<Label x:Name="remoteConstant"
+				Text="{x:Static remote:App.AppName}"/>
 		<Label x:Name="field"
 				Text="{x:Static local:MockxStatic.MockField}"/>
 		<ScrollView x:Name="enuM"
