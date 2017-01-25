@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,36 +6,30 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal interface INode
+	interface INode
 	{
 		List<string> IgnorablePrefixes { get; set; }
-
 		IXmlNamespaceResolver NamespaceResolver { get; }
-
 		INode Parent { get; set; }
 
 		void Accept(IXamlNodeVisitor visitor, INode parentNode);
 		INode Clone();
 	}
 
-	internal interface IValueNode : INode
+	interface IValueNode : INode
 	{
 	}
 
-	internal interface IElementNode : INode, IListNode
+	interface IElementNode : INode, IListNode
 	{
 		Dictionary<XmlName, INode> Properties { get; }
-
 		List<XmlName> SkipProperties { get; }
-
 		INameScope Namescope { get; }
-
 		XmlType XmlType { get; }
-
 		string NamespaceURI { get; }
 	}
 
-	internal interface IListNode : INode
+	interface IListNode : INode
 	{
 		List<INode> CollectionItems { get; }
 	}
@@ -56,7 +49,7 @@ namespace Xamarin.Forms.Xaml
 		public IList<XmlType> TypeArguments { get; }
 	}
 
-	internal abstract class BaseNode : IXmlLineInfo, INode
+	abstract class BaseNode : IXmlLineInfo, INode
 	{
 		protected BaseNode(IXmlNamespaceResolver namespaceResolver, int linenumber = -1, int lineposition = -1)
 		{
@@ -66,27 +59,19 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public IXmlNamespaceResolver NamespaceResolver { get; }
-
-		public abstract void Accept(IXamlNodeVisitor visitor, INode parentNode);
-
 		public INode Parent { get; set; }
-
 		public List<string> IgnorablePrefixes { get; set; }
-
-		public bool HasLineInfo()
-		{
-			return LineNumber >= 0 && LinePosition >= 0;
-		}
-
 		public int LineNumber { get; set; }
-
 		public int LinePosition { get; set; }
 
+		public bool HasLineInfo() => LineNumber >= 0 && LinePosition >= 0;
+
+		public abstract void Accept(IXamlNodeVisitor visitor, INode parentNode);
 		public abstract INode Clone();
 	}
 
 	[DebuggerDisplay("{Value}")]
-	internal class ValueNode : BaseNode, IValueNode
+	class ValueNode : BaseNode, IValueNode
 	{
 		public ValueNode(object value, IXmlNamespaceResolver namespaceResolver, int linenumber = -1, int lineposition = -1)
 			: base(namespaceResolver, linenumber, lineposition)
@@ -101,19 +86,15 @@ namespace Xamarin.Forms.Xaml
 			visitor.Visit(this, parentNode);
 		}
 
-		public override INode Clone()
-		{
-			return new ValueNode(Value, NamespaceResolver, LineNumber, LinePosition) {
-				IgnorablePrefixes = IgnorablePrefixes
-			};
-		}
+		public override INode Clone() => new ValueNode(Value, NamespaceResolver, LineNumber, LinePosition) {
+			IgnorablePrefixes = IgnorablePrefixes
+		};
 	}
 
 	[DebuggerDisplay("{MarkupString}")]
-	internal class MarkupNode : BaseNode, IValueNode
+	class MarkupNode : BaseNode, IValueNode
 	{
-		public MarkupNode(string markupString, IXmlNamespaceResolver namespaceResolver, int linenumber = -1,
-			int lineposition = -1)
+		public MarkupNode(string markupString, IXmlNamespaceResolver namespaceResolver, int linenumber = -1, int lineposition = -1)
 			: base(namespaceResolver, linenumber, lineposition)
 		{
 			MarkupString = markupString;
@@ -126,15 +107,13 @@ namespace Xamarin.Forms.Xaml
 			visitor.Visit(this, parentNode);
 		}
 
-		public override INode Clone()
-		{
-			return new MarkupNode(MarkupString, NamespaceResolver, LineNumber, LinePosition) {
-				IgnorablePrefixes = IgnorablePrefixes
-			};
-		}
+		public override INode Clone() => new MarkupNode(MarkupString, NamespaceResolver, LineNumber, LinePosition) {
+			IgnorablePrefixes = IgnorablePrefixes
+		};
 	}
 
-	internal class ElementNode : BaseNode, IValueNode, IElementNode
+	[DebuggerDisplay("{XmlType.Name}")]
+	class ElementNode : BaseNode, IValueNode, IElementNode
 	{
 		public ElementNode(XmlType type, string namespaceURI, IXmlNamespaceResolver namespaceResolver, int linenumber = -1,
 			int lineposition = -1)
@@ -148,48 +127,48 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public Dictionary<XmlName, INode> Properties { get; }
-
 		public List<XmlName> SkipProperties { get; }
-
 		public List<INode> CollectionItems { get; }
-
 		public XmlType XmlType { get; }
-
 		public string NamespaceURI { get; }
-
 		public INameScope Namescope { get; set; }
 
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
-			if (!visitor.VisitChildrenFirst)
+			if (!SkipVisitNode(visitor, parentNode) && visitor.VisitingMode == TreeVisitingMode.TopDown)
 				visitor.Visit(this, parentNode);
-			if ((!visitor.StopOnDataTemplate || !IsDataTemplate(this, parentNode)) &&
-			    (!visitor.StopOnResourceDictionary || !IsResourceDictionary(this, parentNode)))
-			{
+
+			if (!SkipChildren(visitor, parentNode)) {
 				foreach (var node in Properties.Values.ToList())
 					node.Accept(visitor, this);
 				foreach (var node in CollectionItems)
 					node.Accept(visitor, this);
 			}
-			if (visitor.VisitChildrenFirst)
+
+			if (!SkipVisitNode(visitor, parentNode) && visitor.VisitingMode == TreeVisitingMode.BottomUp)
 				visitor.Visit(this, parentNode);
+
 		}
 
-		internal static bool IsDataTemplate(INode node, INode parentNode)
+		bool IsDataTemplate(INode parentNode)
 		{
 			var parentElement = parentNode as IElementNode;
 			INode createContent;
-			if (parentElement != null && parentElement.Properties.TryGetValue(XmlName._CreateContent, out createContent) &&
-			    createContent == node)
+			if (parentElement != null &&
+				parentElement.Properties.TryGetValue(XmlName._CreateContent, out createContent) &&
+				createContent == this)
 				return true;
 			return false;
 		}
 
-		internal static bool IsResourceDictionary(INode node, INode parentNode)
-		{
-			var enode = node as ElementNode;
-			return enode.XmlType.Name == "ResourceDictionary";
-		}
+		bool IsResourceDictionary() => XmlType.Name == "ResourceDictionary";
+
+		protected bool SkipChildren(IXamlNodeVisitor visitor, INode parentNode) =>
+			(visitor.StopOnDataTemplate && IsDataTemplate(parentNode)) ||
+			(visitor.StopOnResourceDictionary && IsResourceDictionary());
+
+		protected bool SkipVisitNode(IXamlNodeVisitor visitor, INode parentNode) =>
+			!visitor.VisitNodeOnDataTemplate && IsDataTemplate(parentNode);
 
 		public override INode Clone()
 		{
@@ -206,7 +185,7 @@ namespace Xamarin.Forms.Xaml
 		}
 	}
 
-	internal abstract class RootNode : ElementNode
+	abstract class RootNode : ElementNode
 	{
 		protected RootNode(XmlType xmlType, IXmlNamespaceResolver nsResolver) : base(xmlType, xmlType.NamespaceUri, nsResolver)
 		{
@@ -214,40 +193,39 @@ namespace Xamarin.Forms.Xaml
 
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
-			if (!visitor.VisitChildrenFirst)
+			if (!SkipVisitNode(visitor, parentNode) && visitor.VisitingMode == TreeVisitingMode.TopDown)
 				visitor.Visit(this, parentNode);
-			if ((!visitor.StopOnDataTemplate || !IsDataTemplate(this, parentNode)) &&
-				(!visitor.StopOnResourceDictionary || !IsResourceDictionary(this, parentNode)))
-			{
+
+			if (!SkipChildren(visitor, parentNode)) {
 				foreach (var node in Properties.Values.ToList())
 					node.Accept(visitor, this);
 				foreach (var node in CollectionItems)
 					node.Accept(visitor, this);
 			}
-			if (visitor.VisitChildrenFirst)
+
+			if (!SkipVisitNode(visitor, parentNode) && visitor.VisitingMode == TreeVisitingMode.BottomUp)
 				visitor.Visit(this, parentNode);
 		}
 	}
 
-	internal class ListNode : BaseNode, IListNode, IValueNode
+	class ListNode : BaseNode, IListNode, IValueNode
 	{
-		public ListNode(IList<INode> nodes, IXmlNamespaceResolver namespaceResolver, int linenumber = -1,
-			int lineposition = -1) : base(namespaceResolver, linenumber, lineposition)
+		public ListNode(IList<INode> nodes, IXmlNamespaceResolver namespaceResolver, int linenumber = -1, int lineposition = -1)
+			: base(namespaceResolver, linenumber, lineposition)
 		{
 			CollectionItems = nodes.ToList();
 		}
 
 		public XmlName XmlName { get; set; }
-
 		public List<INode> CollectionItems { get; set; }
 
 		public override void Accept(IXamlNodeVisitor visitor, INode parentNode)
 		{
-			if (!visitor.VisitChildrenFirst)
+			if (visitor.VisitingMode == TreeVisitingMode.TopDown)
 				visitor.Visit(this, parentNode);
 			foreach (var node in CollectionItems)
 				node.Accept(visitor, this);
-			if (visitor.VisitChildrenFirst)
+			if (visitor.VisitingMode == TreeVisitingMode.BottomUp)
 				visitor.Visit(this, parentNode);
 		}
 
@@ -262,12 +240,11 @@ namespace Xamarin.Forms.Xaml
 		}
 	}
 
-	internal static class INodeExtensions
+	static class INodeExtensions
 	{
 		public static bool SkipPrefix(this INode node, string prefix)
 		{
-			do
-			{
+			do {
 				if (node.IgnorablePrefixes != null && node.IgnorablePrefixes.Contains(prefix))
 					return true;
 				node = node.Parent;

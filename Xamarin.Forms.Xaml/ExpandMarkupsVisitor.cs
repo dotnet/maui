@@ -28,20 +28,10 @@ namespace Xamarin.Forms.Xaml
 
 		HydratationContext Context { get; }
 
-		public bool VisitChildrenFirst
-		{
-			get { return true; }
-		}
-
-		public bool StopOnDataTemplate
-		{
-			get { return false; }
-		}
-
-		public bool StopOnResourceDictionary
-		{
-			get { return false; }
-		}
+		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
+		public bool StopOnDataTemplate => false;
+		public bool StopOnResourceDictionary => false;
+		public bool VisitNodeOnDataTemplate => true;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

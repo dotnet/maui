@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz45179">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<DataTemplate x:Key="dt0">
+				<local:Bz45179_0/>
+			</DataTemplate>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+</ContentPage>

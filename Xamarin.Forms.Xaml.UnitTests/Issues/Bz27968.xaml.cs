@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Xamarin.Forms;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -26,6 +27,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			[SetUp]
+			public void Setup()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
 			[TestCase(true)]
 			[TestCase(false)]
 			public void BaseClassIdentifiersAreValidForResources (bool useCompiledXaml)

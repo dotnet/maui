@@ -2,12 +2,11 @@
 
 namespace Xamarin.Forms.Xaml
 {
-	internal interface IXamlNodeVisitor
+	interface IXamlNodeVisitor
 	{
-		bool VisitChildrenFirst { get; }
-
+		TreeVisitingMode VisitingMode { get; }
 		bool StopOnDataTemplate { get; }
-
+		bool VisitNodeOnDataTemplate { get; }
 		bool StopOnResourceDictionary { get; }
 
 		void Visit(ValueNode node, INode parentNode);
@@ -17,22 +16,27 @@ namespace Xamarin.Forms.Xaml
 		void Visit(ListNode node, INode parentNode);
 	}
 
-	internal class XamlNodeVisitor : IXamlNodeVisitor
+	enum TreeVisitingMode {
+		TopDown,
+		BottomUp
+	}
+
+	class XamlNodeVisitor : IXamlNodeVisitor
 	{
 		readonly Action<INode, INode> action;
 
-		public XamlNodeVisitor(Action<INode, INode> action, bool visitChildrenFirst = false, bool stopOnDataTemplate = false)
+		public XamlNodeVisitor(Action<INode, INode> action, TreeVisitingMode visitingMode = TreeVisitingMode.TopDown, bool stopOnDataTemplate = false, bool visitNodeOnDataTemplate = true)
 		{
 			this.action = action;
-			VisitChildrenFirst = visitChildrenFirst;
+			VisitingMode = visitingMode;
 			StopOnDataTemplate = stopOnDataTemplate;
+			VisitNodeOnDataTemplate = visitNodeOnDataTemplate;
 		}
 
-		public bool VisitChildrenFirst { get; }
-
+		public TreeVisitingMode VisitingMode { get; }
 		public bool StopOnDataTemplate { get; }
-
 		public bool StopOnResourceDictionary { get; private set; }
+		public bool VisitNodeOnDataTemplate { get; }
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

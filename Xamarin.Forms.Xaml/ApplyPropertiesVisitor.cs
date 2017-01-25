@@ -35,15 +35,10 @@ namespace Xamarin.Forms.Xaml
 
 		HydratationContext Context { get; }
 
-		public bool VisitChildrenFirst {
-			get { return true; }
-		}
-
-		public bool StopOnDataTemplate {
-			get { return true; }
-		}
-
+		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
+		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary { get; }
+		public bool VisitNodeOnDataTemplate => true;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
@@ -81,6 +76,15 @@ namespace Xamarin.Forms.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
+			var propertyName = XmlName.Empty;
+			if (TryGetPropertyName(node, parentNode, out propertyName) && propertyName == XmlName._CreateContent){
+				var s0 = Values[parentNode];
+				if (s0 is ElementTemplate) {
+					SetTemplate(s0 as ElementTemplate, node);
+					return;
+				}
+			}
+
 			var value = Values [node];
 			var parentElement = parentNode as IElementNode;
 			var markupExtension = value as IMarkupExtension;
@@ -96,7 +100,7 @@ namespace Xamarin.Forms.Xaml
 				value = valueProvider.ProvideValue(serviceProvider);
 			}
 
-			XmlName propertyName = XmlName.Empty;
+			propertyName = XmlName.Empty;
 
 			//Simplify ListNodes with single elements
 			var pList = parentNode as ListNode;
@@ -113,11 +117,7 @@ namespace Xamarin.Forms.Xaml
 					return;
 
 				var source = Values [parentNode];
-
-				if (propertyName == XmlName._CreateContent && source is ElementTemplate)
-					SetTemplate(source as ElementTemplate, node);
-				else
-					SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
+				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 			} else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode) {
 				// Collection element, implicit content, or implicit collection element.
 				string contentProperty;

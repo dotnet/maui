@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Xaml
 			}
 			if (resource == null && (Application.Current == null || Application.Current.Resources == null ||
 									 !Application.Current.Resources.TryGetMergedValue(Key, out resource)))
-				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
+					throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 
 			var bp = valueProvider.TargetProperty as BindableProperty;
 			var pi = valueProvider.TargetProperty as PropertyInfo;

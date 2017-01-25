@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -20,26 +19,15 @@ namespace Xamarin.Forms.Build.Tasks
 
 		ModuleDefinition Module { get; }
 
-		public bool VisitChildrenFirst
-		{
-			get { return false; }
-		}
-
-		public bool StopOnDataTemplate
-		{
-			get { return true; }
-		}
-
-		public bool StopOnResourceDictionary
-		{
-			get { return false; }
-		}
+		public TreeVisitingMode VisitingMode => TreeVisitingMode.TopDown;
+		public bool StopOnDataTemplate => true;
+		public bool StopOnResourceDictionary => false;
+		public bool VisitNodeOnDataTemplate => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			XmlName propertyName;
-			if (!SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName))
-			{
+			if (!SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)) {
 				if (!IsCollectionItem(node, parentNode))
 					return;
 				string contentProperty;
