@@ -96,6 +96,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			[TestCase(false)]
 			[TestCase(true)]
+			//https://bugzilla.xamarin.com/show_bug.cgi?id=49228
+			public void ConstantInARemoteAssembly(bool useCompiledXaml)
+			{
+				var layout = new XStatic(useCompiledXaml);
+				Assert.AreEqual("XamarinFormsControls", layout.remoteConstant.Text);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
 			public void Field(bool useCompiledXaml)
 			{
 				var layout = new XStatic(useCompiledXaml);
