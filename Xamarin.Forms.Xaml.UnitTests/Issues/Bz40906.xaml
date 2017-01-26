@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Bz40906">
+	<Label x:Name="label0">
+		<![CDATA[Foo]]>
+	</Label>
+	<Label x:Name="label1">
+		<![CDATA[Foo]]>Bar<![CDATA[>><<]]>
+	</Label>
+</ContentPage>

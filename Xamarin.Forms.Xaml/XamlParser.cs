@@ -104,7 +104,11 @@ namespace Xamarin.Forms.Xaml
 					case XmlNodeType.Whitespace:
 						break;
 					case XmlNodeType.Text:
-						node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
+					case XmlNodeType.CDATA:
+						if (node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode)
+							((ValueNode)node.CollectionItems[0]).Value += reader.Value.Trim();
+						else
+							node.CollectionItems.Add(new ValueNode(reader.Value.Trim(), (IXmlNamespaceResolver)reader));
 						break;
 					default:
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
