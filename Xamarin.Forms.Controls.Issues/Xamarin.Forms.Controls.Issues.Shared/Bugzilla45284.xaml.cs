@@ -7,6 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if APP
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 45284, "[iOS10] Extra tab icons display in iOS when binding Title on TabbedPage", PlatformAffected.iOS)]
 	public partial class Bugzilla45284 : TabbedPage
@@ -44,4 +45,5 @@ namespace Xamarin.Forms.Controls.Issues
 		public string Title { get; set; } = "Title";
 		public string Icon { get; set; } = "bank.png";
 	}
+#endif
 }
