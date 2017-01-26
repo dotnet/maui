@@ -1,7 +1,11 @@
 using System.Collections.Concurrent;
 using MapKit;
 
+#if __MOBILE__
 namespace Xamarin.Forms.Maps.iOS
+#else
+namespace Xamarin.Forms.Maps.MacOS
+#endif
 {
 	// A static pool of MKMapView instances we can reuse 
 	internal class MapPool

@@ -1,12 +1,21 @@
 using System;
 using System.ComponentModel;
-using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
+#if __MOBILE__
+using UIKit;
+using NativeLabel = UIKit.UILabel;
+
 namespace Xamarin.Forms.Platform.iOS
+#else
+using AppKit;
+using NativeLabel = AppKit.NSTextField;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
-	public class LabelRenderer : ViewRenderer<Label, UILabel>
+	public class LabelRenderer : ViewRenderer<Label, NativeLabel>
 	{
 		SizeRequest _perfectSize;
 
@@ -35,9 +44,16 @@ namespace Xamarin.Forms.Platform.iOS
 			return result;
 		}
 
+#if __MOBILE__
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+#else
+		public override void Layout()
+		{
+			base.Layout();
+#endif
+
 			if (Control == null)
 				return;
 
@@ -69,7 +85,12 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UILabel(RectangleF.Empty) { BackgroundColor = UIColor.Clear });
+					SetNativeControl(new NativeLabel(RectangleF.Empty));
+#if !__MOBILE__
+					Control.Editable = false;
+					Control.Bezeled = false;
+					Control.DrawsBackground = false;
+#endif
 				}
 
 				UpdateText();
@@ -87,7 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateAlignment();
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
-				LayoutSubviews();
+				UpdateLayout();
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.FontProperty.PropertyName)
@@ -102,21 +123,33 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void SetBackgroundColor(Color color)
 		{
+#if __MOBILE__
 			if (color == Color.Default)
 				BackgroundColor = UIColor.Clear;
 			else
 				BackgroundColor = color.ToUIColor();
+#else
+			if (color == Color.Default)
+				Layer.BackgroundColor = NSColor.Clear.CGColor;
+			else
+				Layer.BackgroundColor = color.ToCGColor();
+#endif
+
 		}
 
 		void UpdateAlignment()
 		{
+#if __MOBILE__
 			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+#else
+			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+#endif
 		}
 
 		void UpdateLineBreakMode()
 		{
 			_perfectSizeValid = false;
-
+#if __MOBILE__
 			switch (Element.LineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
@@ -144,6 +177,35 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.Lines = 1;
 					break;
 			}
+#else
+			switch (Element.LineBreakMode)
+			{
+				case LineBreakMode.NoWrap:
+					Control.LineBreakMode = NSLineBreakMode.Clipping;
+					Control.MaximumNumberOfLines = 1;
+					break;
+				case LineBreakMode.WordWrap:
+					Control.LineBreakMode = NSLineBreakMode.ByWordWrapping;
+					Control.MaximumNumberOfLines = 0;
+					break;
+				case LineBreakMode.CharacterWrap:
+					Control.LineBreakMode = NSLineBreakMode.CharWrapping;
+					Control.MaximumNumberOfLines = 0;
+					break;
+				case LineBreakMode.HeadTruncation:
+					Control.LineBreakMode = NSLineBreakMode.TruncatingHead;
+					Control.MaximumNumberOfLines = 1;
+					break;
+				case LineBreakMode.MiddleTruncation:
+					Control.LineBreakMode = NSLineBreakMode.TruncatingMiddle;
+					Control.MaximumNumberOfLines = 1;
+					break;
+				case LineBreakMode.TailTruncation:
+					Control.LineBreakMode = NSLineBreakMode.TruncatingTail;
+					Control.MaximumNumberOfLines = 1;
+					break;
+			}
+#endif
 		}
 
 		void UpdateText()
@@ -151,9 +213,12 @@ namespace Xamarin.Forms.Platform.iOS
 			_perfectSizeValid = false;
 
 			var values = Element.GetValues(Label.FormattedTextProperty, Label.TextProperty, Label.TextColorProperty);
-			var formatted = (FormattedString)values[0];
+			var formatted = values[0] as FormattedString;
 			if (formatted != null)
+			{
+#if __MOBILE__
 				Control.AttributedText = formatted.ToAttributed(Element, (Color)values[2]);
+			}
 			else
 			{
 				Control.Text = (string)values[1];
@@ -161,8 +226,28 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Font = Element.ToUIFont();
 				Control.TextColor = ((Color)values[2]).ToUIColor(ColorExtensions.Black);
 			}
+#else
+				Control.AttributedStringValue = formatted.ToAttributed(Element, (Color)values[2]);
+			}
+			else
+			{
+				Control.StringValue = (string)values[1] ?? "";
+				// default value of color documented to be black in iOS docs
+				Control.Font = Element.ToNSFont();
+				Control.TextColor = ((Color)values[2]).ToNSColor(ColorExtensions.Black);
+			}
+#endif
 
+			UpdateLayout();
+		}
+
+		void UpdateLayout()
+		{
+#if __MOBILE__
 			LayoutSubviews();
+#else
+			Layout();
+#endif
 		}
 	}
 }

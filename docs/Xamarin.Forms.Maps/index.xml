@@ -33,7 +33,7 @@
           <AttributeName>System.Resources.NeutralResourcesLanguage("en")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps.macOS")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Maps.iOS")</AttributeName>

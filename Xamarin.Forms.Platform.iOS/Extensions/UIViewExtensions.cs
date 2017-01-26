@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using UIKit;
 using static System.String;
-
+#if __MOBILE__
+using UIKit;
 namespace Xamarin.Forms.Platform.iOS
+#else
+using UIView = AppKit.NSView;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public static class UIViewExtensions
 	{
@@ -16,15 +21,28 @@ namespace Xamarin.Forms.Platform.iOS
 			return self.Subviews.Concat(self.Subviews.SelectMany(s => s.Descendants()));
 		}
 
-		public static SizeRequest GetSizeRequest(this UIView self, double widthConstraint, double heightConstraint, double minimumWidth = -1, double minimumHeight = -1)
+		public static SizeRequest GetSizeRequest(this UIView self, double widthConstraint, double heightConstraint,
+			double minimumWidth = -1, double minimumHeight = -1)
 		{
-			var s = self.SizeThatFits(new SizeF((float)widthConstraint, (float)heightConstraint));
-			var request = new Size(s.Width == float.PositiveInfinity ? double.PositiveInfinity : s.Width, s.Height == float.PositiveInfinity ? double.PositiveInfinity : s.Height);
-			var minimum = new Size(minimumWidth < 0 ? request.Width : minimumWidth, minimumHeight < 0 ? request.Height : minimumHeight);
+			CoreGraphics.CGSize s;
+#if __MOBILE__
+			s = self.SizeThatFits(new SizeF((float)widthConstraint, (float)heightConstraint));
+#else
+			var control = self as AppKit.NSControl;
+			if (control != null)
+				s = control.SizeThatFits(new CoreGraphics.CGSize(widthConstraint, heightConstraint));
+			else
+				s = self.FittingSize;
+#endif
+			var request = new Size(s.Width == float.PositiveInfinity ? double.PositiveInfinity : s.Width,
+				s.Height == float.PositiveInfinity ? double.PositiveInfinity : s.Height);
+			var minimum = new Size(minimumWidth < 0 ? request.Width : minimumWidth,
+				minimumHeight < 0 ? request.Height : minimumHeight);
 			return new SizeRequest(request, minimum);
 		}
 
-		public static void SetBinding(this UIView view, string propertyName, BindingBase bindingBase, string updateSourceEventName = null)
+		public static void SetBinding(this UIView view, string propertyName, BindingBase bindingBase,
+			string updateSourceEventName = null)
 		{
 			var binding = bindingBase as Binding;
 			//This will allow setting bindings from Xaml by reusing the MarkupExtension
@@ -51,6 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 						view.AddObserver(nativePropertyListener, key, Foundation.NSKeyValueObservingOptions.New, IntPtr.Zero);
 					}
 				}
+#if __MOBILE__
 				catch (Foundation.MonoTouchException ex)
 				{
 					nativePropertyListener = null;
@@ -61,7 +80,12 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 					throw ex;
 				}
-
+#else
+				catch (Exception ex)
+				{
+					throw ex;
+				}
+#endif
 			}
 
 			NativeBindingHelpers.SetBinding(view, propertyName, bindingBase, nativePropertyListener);
@@ -77,7 +101,8 @@ namespace Xamarin.Forms.Platform.iOS
 			NativeBindingHelpers.SetValue(target, targetProperty, value);
 		}
 
-		public static void SetBindingContext(this UIView target, object bindingContext, Func<UIView, IEnumerable<UIView>> getChildren = null)
+		public static void SetBindingContext(this UIView target, object bindingContext,
+			Func<UIView, IEnumerable<UIView>> getChildren = null)
 		{
 			NativeBindingHelpers.SetBindingContext(target, bindingContext, getChildren);
 		}
@@ -107,6 +132,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return null;
 		}
 
+#if __MOBILE__
 		internal static UIView FindFirstResponder(this UIView view)
 		{
 			if (view.IsFirstResponder)
@@ -121,5 +147,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return null;
 		}
+#endif
 	}
 }

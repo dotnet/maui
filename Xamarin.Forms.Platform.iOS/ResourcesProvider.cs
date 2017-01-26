@@ -1,6 +1,11 @@
+#if __MOBILE__
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
+#else
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	internal class ResourcesProvider : ISystemResourcesProvider
 	{
@@ -8,7 +13,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public ResourcesProvider()
 		{
+#if __MOBILE__
 			UIApplication.Notifications.ObserveContentSizeCategoryChanged((sender, args) => UpdateStyles());
+#endif
 		}
 
 		public IResourceDictionary GetSystemResources()
@@ -19,6 +26,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return _dictionary;
 		}
 
+#if __MOBILE__
 		Style GenerateListItemDetailTextStyle()
 		{
 			var font = new UITableViewCell(UITableViewCellStyle.Subtitle, "Foobar").DetailTextLabel.Font;
@@ -44,7 +52,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateStyles()
 		{
-			
+
 			_dictionary[Device.Styles.TitleStyleKey] = GenerateStyle(UIFont.PreferredHeadline);
 			_dictionary[Device.Styles.SubtitleStyleKey] = GenerateStyle(UIFont.PreferredSubheadline);
 			_dictionary[Device.Styles.BodyStyleKey] = GenerateStyle(UIFont.PreferredBody);
@@ -53,5 +61,11 @@ namespace Xamarin.Forms.Platform.iOS
 			_dictionary[Device.Styles.ListItemTextStyleKey] = GenerateListItemTextStyle();
 			_dictionary[Device.Styles.ListItemDetailTextStyleKey] = GenerateListItemDetailTextStyle();
 		}
+#else
+		void UpdateStyles()
+		{
+		}
+#endif
+
 	}
 }

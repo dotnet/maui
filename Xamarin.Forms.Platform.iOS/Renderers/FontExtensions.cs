@@ -1,15 +1,26 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Xamarin.Forms;
+#if __MOBILE__
 using UIKit;
-
 namespace Xamarin.Forms.Platform.iOS
+#else
+using AppKit;
+using UIFont = AppKit.NSFont;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public static class FontExtensions
 	{
 		static readonly Dictionary<ToUIFontKey, UIFont> ToUiFont = new Dictionary<ToUIFontKey, UIFont>();
-
+#if __MOBILE__
 		public static UIFont ToUIFont(this Font self)
+
+#else
+		public static UIFont ToNSFont(this Font self)
+#endif
 		{
 			var size = (float)self.FontSize;
 			if (self.UseNamedSize)
@@ -41,6 +52,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
+#if __MOBILE__
 					if (UIFont.FamilyNames.Contains(self.FontFamily))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(self.FontFamily);
@@ -59,6 +71,25 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 
 					return UIFont.FromName(self.FontFamily, size);
+
+#else
+
+					var descriptor = new NSFontDescriptor().FontDescriptorWithFamily(self.FontFamily);
+
+					if (bold || italic)
+					{
+						var traits = (NSFontSymbolicTraits)0;
+						if (bold)
+							traits = traits | NSFontSymbolicTraits.BoldTrait;
+						if (italic)
+							traits = traits | NSFontSymbolicTraits.ItalicTrait;
+
+						descriptor = descriptor.FontDescriptorWithSymbolicTraits(traits);
+						return NSFont.FromDescription(descriptor, size);
+					}
+
+					return NSFont.FromFontName(self.FontFamily, size);
+#endif
 				}
 				catch
 				{
@@ -68,28 +99,54 @@ namespace Xamarin.Forms.Platform.iOS
 			if (bold && italic)
 			{
 				var defaultFont = UIFont.SystemFontOfSize(size);
+#if __MOBILE__
 				var descriptor = defaultFont.FontDescriptor.CreateWithTraits(UIFontDescriptorSymbolicTraits.Bold | UIFontDescriptorSymbolicTraits.Italic);
 				return UIFont.FromDescriptor(descriptor, 0);
 			}
-			if (bold)
-				return UIFont.BoldSystemFontOfSize(size);
 			if (italic)
 				return UIFont.ItalicSystemFontOfSize(size);
+#else
+				var descriptor = defaultFont.FontDescriptor.FontDescriptorWithSymbolicTraits(
+					NSFontSymbolicTraits.BoldTrait |
+					NSFontSymbolicTraits.ItalicTrait);
+
+				return NSFont.FromDescription(descriptor, 0);
+			}
+			if (italic)
+			{
+				Debug.WriteLine("Italic font requested, passing regular one");
+				return NSFont.UserFontOfSize(size);
+			}
+#endif
+
+			if (bold)
+				return UIFont.BoldSystemFontOfSize(size);
+
 			return UIFont.SystemFontOfSize(size);
 		}
 
 		internal static bool IsDefault(this Span self)
 		{
-			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
+			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) &&
+					self.FontAttributes == FontAttributes.None;
 		}
 
+#if __MOBILE__
 		internal static UIFont ToUIFont(this Label label)
+#else
+		internal static UIFont ToNSFont(this Label label)
+#endif
 		{
 			var values = label.GetValues(Label.FontFamilyProperty, Label.FontSizeProperty, Label.FontAttributesProperty);
-			return ToUIFont((string)values[0], (float)(double)values[1], (FontAttributes)values[2]) ?? UIFont.SystemFontOfSize(UIFont.LabelFontSize);
+			return ToUIFont((string)values[0], (float)(double)values[1], (FontAttributes)values[2]) ??
+					UIFont.SystemFontOfSize(UIFont.LabelFontSize);
 		}
 
+#if __MOBILE__
 		internal static UIFont ToUIFont(this IFontElement element)
+#else
+		internal static NSFont ToNSFont(this IFontElement element)
+#endif
 		{
 			return ToUIFont(element.FontFamily, (float)element.FontSize, element.FontAttributes);
 		}
@@ -104,6 +161,7 @@ namespace Xamarin.Forms.Platform.iOS
 				try
 				{
 					UIFont result;
+#if __MOBILE__
 					if (UIFont.FamilyNames.Contains(family))
 					{
 						var descriptor = new UIFontDescriptor().CreateWithFamily(family);
@@ -124,6 +182,26 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 
 					result = UIFont.FromName(family, size);
+#else
+
+					var descriptor = new NSFontDescriptor().FontDescriptorWithFamily(family);
+
+					if (bold || italic)
+					{
+						var traits = (NSFontSymbolicTraits)0;
+						if (bold)
+							traits = traits | NSFontSymbolicTraits.BoldTrait;
+						if (italic)
+							traits = traits | NSFontSymbolicTraits.ItalicTrait;
+
+						descriptor = descriptor.FontDescriptorWithSymbolicTraits(traits);
+						result = NSFont.FromDescription(descriptor, size);
+						if (result != null)
+							return result;
+					}
+
+					result = NSFont.FromFontName(family, size);
+#endif
 					if (result != null)
 						return result;
 				}
@@ -137,13 +215,27 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var defaultFont = UIFont.SystemFontOfSize(size);
 
+#if __MOBILE__
 				var descriptor = defaultFont.FontDescriptor.CreateWithTraits(UIFontDescriptorSymbolicTraits.Bold | UIFontDescriptorSymbolicTraits.Italic);
 				return UIFont.FromDescriptor(descriptor, 0);
 			}
-			if (bold)
-				return UIFont.BoldSystemFontOfSize(size);
 			if (italic)
 				return UIFont.ItalicSystemFontOfSize(size);
+#else
+				var descriptor = defaultFont.FontDescriptor.FontDescriptorWithSymbolicTraits(
+					NSFontSymbolicTraits.BoldTrait |
+					NSFontSymbolicTraits.ItalicTrait);
+
+				return NSFont.FromDescription(descriptor, 0);
+			}
+			if (italic)
+			{
+				Debug.WriteLine("Italic font requested, passing regular one");
+				return NSFont.UserFontOfSize(size);
+			}
+#endif
+			if (bold)
+				return UIFont.BoldSystemFontOfSize(size);
 
 			return UIFont.SystemFontOfSize(size);
 		}

@@ -71,7 +71,7 @@ namespace Xamarin.Forms
 
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
-			if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.iOS)
+			if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.iOS || Device.RuntimePlatform == Device.macOS)
 				CachingStrategy = cachingStrategy;
 		}
 

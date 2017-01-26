@@ -3,27 +3,42 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+
+#if __MOBILE__
 using UIKit;
+using NativeView = UIKit.UIView;
+using NativeGestureRecognizer = UIKit.UIGestureRecognizer;
+using NativeGestureRecognizerState = UIKit.UIGestureRecognizerState;
 
 namespace Xamarin.Forms.Platform.iOS
+#else
+using AppKit;
+using NativeView = AppKit.NSView;
+using NativeGestureRecognizer = AppKit.NSGestureRecognizer;
+using NativeGestureRecognizerState = AppKit.NSGestureRecognizerState;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public class EventTracker : IDisposable
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
-		readonly Dictionary<IGestureRecognizer, UIGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, UIGestureRecognizer>();
+		readonly Dictionary<IGestureRecognizer, NativeGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, NativeGestureRecognizer>();
 
 		readonly IVisualElementRenderer _renderer;
 		bool _disposed;
-		UIView _handler;
+		NativeView _handler;
 
 		double _previousScale = 1.0;
+#if __MOBILE__
 		UITouchEventArgs _shouldReceive;
+#endif
 
 		public EventTracker(IVisualElementRenderer renderer)
 		{
 			if (renderer == null)
-				throw new ArgumentNullException("renderer");
+				throw new ArgumentNullException(nameof(renderer));
 
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
@@ -62,18 +77,18 @@ namespace Xamarin.Forms.Platform.iOS
 			_handler = null;
 		}
 
-		public void LoadEvents(UIView handler)
+		public void LoadEvents(NativeView handler)
 		{
 			if (_disposed)
 				throw new ObjectDisposedException(null);
-
+#if __MOBILE__
 			_shouldReceive = (r, t) => t.View is IVisualElementRenderer;
-
+#endif
 			_handler = handler;
 			OnElementChanged(this, new VisualElementChangedEventArgs(null, _renderer.Element));
 		}
 
-		protected virtual UIGestureRecognizer GetNativeRecognizer(IGestureRecognizer recognizer)
+		protected virtual NativeGestureRecognizer GetNativeRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -84,7 +99,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var tapRecognizer = recognizer as TapGestureRecognizer;
 			if (tapRecognizer != null)
 			{
-				var uiRecognizer = CreateTapRecognizer(1, tapRecognizer.NumberOfTapsRequired, r =>
+				var returnAction = new Action(() =>
 				{
 					var tapGestureRecognizer = weakRecognizer.Target as TapGestureRecognizer;
 					var eventTracker = weakEventTracker.Target as EventTracker;
@@ -93,6 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (tapGestureRecognizer != null && view != null)
 						tapGestureRecognizer.SendTapped(view);
 				});
+				var uiRecognizer = CreateTapRecognizer(tapRecognizer.NumberOfTapsRequired, returnAction);
 				return uiRecognizer;
 			}
 
@@ -110,41 +126,51 @@ namespace Xamarin.Forms.Platform.iOS
 					{
 						var oldScale = eventTracker._previousScale;
 						var originPoint = r.LocationInView(null);
+#if __MOBILE__
 						originPoint = UIApplication.SharedApplication.KeyWindow.ConvertPointToView(originPoint, eventTracker._renderer.NativeView);
+#else
+						originPoint = NSApplication.SharedApplication.KeyWindow.ContentView.ConvertPointToView(originPoint, eventTracker._renderer.NativeView);
+#endif
 						var scaledPoint = new Point(originPoint.X / view.Width, originPoint.Y / view.Height);
 
 						switch (r.State)
 						{
-							case UIGestureRecognizerState.Began:
+							case NativeGestureRecognizerState.Began:
+#if __MOBILE__
 								if (r.NumberOfTouches < 2)
 									return;
+#endif
 								pinchGestureRecognizer.SendPinchStarted(view, scaledPoint);
 								startingScale = view.Scale;
 								break;
-							case UIGestureRecognizerState.Changed:
+							case NativeGestureRecognizerState.Changed:
+#if __MOBILE__
 								if (r.NumberOfTouches < 2 && pinchGestureRecognizer.IsPinching)
 								{
-									r.State = UIGestureRecognizerState.Ended;
+									r.State = NativeGestureRecognizerState.Ended;
 									pinchGestureRecognizer.SendPinchEnded(view);
 									return;
 								}
-
+								var scale = r.Scale;
+#else
+								var scale = r.Magnification;
+#endif
 								var delta = 1.0;
-								var dif = Math.Abs(r.Scale - oldScale) * startingScale;
-								if (oldScale < r.Scale)
+								var dif = Math.Abs(scale - oldScale) * startingScale;
+								if (oldScale < scale)
 									delta = 1 + dif;
-								if (oldScale > r.Scale)
+								if (oldScale > scale)
 									delta = 1 - dif;
 
 								pinchGestureRecognizer.SendPinch(view, delta, scaledPoint);
-								eventTracker._previousScale = r.Scale;
+								eventTracker._previousScale = scale;
 								break;
-							case UIGestureRecognizerState.Cancelled:
-							case UIGestureRecognizerState.Failed:
+							case NativeGestureRecognizerState.Cancelled:
+							case NativeGestureRecognizerState.Failed:
 								if (pinchGestureRecognizer.IsPinching)
 									pinchGestureRecognizer.SendPinchCanceled(view);
 								break;
-							case UIGestureRecognizerState.Ended:
+							case NativeGestureRecognizerState.Ended:
 								if (pinchGestureRecognizer.IsPinching)
 									pinchGestureRecognizer.SendPinchEnded(view);
 								eventTracker._previousScale = 1;
@@ -168,33 +194,42 @@ namespace Xamarin.Forms.Platform.iOS
 					{
 						switch (r.State)
 						{
-							case UIGestureRecognizerState.Began:
+							case NativeGestureRecognizerState.Began:
+#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 									return;
+#endif
 								panGestureRecognizer.SendPanStarted(view, Application.Current.PanGestureId);
 								break;
-							case UIGestureRecognizerState.Changed:
+							case NativeGestureRecognizerState.Changed:
+#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
-									r.State = UIGestureRecognizerState.Ended;
+									r.State = NativeGestureRecognizerState.Ended;
 									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
 									Application.Current.PanGestureId++;
 									return;
 								}
+#endif
 								var translationInView = r.TranslationInView(_handler);
 								panGestureRecognizer.SendPan(view, translationInView.X, translationInView.Y, Application.Current.PanGestureId);
 								break;
-							case UIGestureRecognizerState.Cancelled:
-							case UIGestureRecognizerState.Failed:
+							case NativeGestureRecognizerState.Cancelled:
+							case NativeGestureRecognizerState.Failed:
 								panGestureRecognizer.SendPanCanceled(view, Application.Current.PanGestureId);
 								Application.Current.PanGestureId++;
 								break;
-							case UIGestureRecognizerState.Ended:
+							case NativeGestureRecognizerState.Ended:
+#if __MOBILE__
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
 									Application.Current.PanGestureId++;
 								}
+#else
+								panGestureRecognizer.SendPanCompleted(view, Application.Current.PanGestureId);
+								Application.Current.PanGestureId++;
+#endif
 								break;
 						}
 					}
@@ -204,7 +239,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			return null;
 		}
-
+#if __MOBILE__
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
 		{
 			var result = new UIPanGestureRecognizer(action);
@@ -218,14 +253,33 @@ namespace Xamarin.Forms.Platform.iOS
 			return result;
 		}
 
-		UITapGestureRecognizer CreateTapRecognizer(int numFingers, int numTaps, Action<UITapGestureRecognizer> action)
+		UITapGestureRecognizer CreateTapRecognizer(int numTaps, Action action, int numFingers = 1)
 		{
 			var result = new UITapGestureRecognizer(action);
 			result.NumberOfTouchesRequired = (uint)numFingers;
 			result.NumberOfTapsRequired = (uint)numTaps;
 			return result;
 		}
+#else
+		NSPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<NSPanGestureRecognizer> action)
+		{
+			var result = new NSPanGestureRecognizer(action);
+			return result;
+		}
 
+		NSMagnificationGestureRecognizer CreatePinchRecognizer(Action<NSMagnificationGestureRecognizer> action)
+		{
+			var result = new NSMagnificationGestureRecognizer(action);
+			return result;
+		}
+
+		NSClickGestureRecognizer CreateTapRecognizer(int numTaps, Action action)
+		{
+			var result = new NSClickGestureRecognizer(action);
+			result.NumberOfClicksRequired = numTaps;
+			return result;
+		}
+#endif
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -239,7 +293,9 @@ namespace Xamarin.Forms.Platform.iOS
 				var nativeRecognizer = GetNativeRecognizer(recognizer);
 				if (nativeRecognizer != null)
 				{
+#if __MOBILE__
 					nativeRecognizer.ShouldReceiveTouch = _shouldReceive;
+#endif
 					_handler.AddGestureRecognizer(nativeRecognizer);
 
 					_gestureRecognizers[recognizer] = nativeRecognizer;

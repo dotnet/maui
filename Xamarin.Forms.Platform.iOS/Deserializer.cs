@@ -6,7 +6,12 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
 
+#if __MOBILE__
 namespace Xamarin.Forms.Platform.iOS
+#else
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	internal class Deserializer : IDeserializer
 	{

@@ -1,11 +1,16 @@
+#if __MOBILE__
 using UIKit;
 using Xamarin.Forms.Maps.iOS;
+#else
+using Xamarin.Forms.Maps.MacOS;
+#endif
 
 namespace Xamarin
 {
 	public static class FormsMaps
 	{
 		static bool s_isInitialized;
+#if __MOBILE__
 		static bool? s_isiOs8OrNewer;
 		static bool? s_isiOs9OrNewer;
 		static bool? s_isiOs10OrNewer;
@@ -39,7 +44,7 @@ namespace Xamarin
 				return s_isiOs10OrNewer.Value;
 			}
 		}
-
+#endif
 		public static void Init()
 		{
 			if (s_isInitialized)

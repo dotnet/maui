@@ -12,6 +12,7 @@ namespace Xamarin.Forms
 		public const string Android = "Android";
 		public const string WinPhone = "WinPhone";
 		public const string Windows = "Windows";
+		public const string macOS = "macOS";
 
 		internal static DeviceInfo info;
 
@@ -21,8 +22,10 @@ namespace Xamarin.Forms
 
 		[Obsolete("Use RuntimePlatform instead.")]
 #pragma warning disable 0618
-		public static TargetPlatform OS {
-			get {
+		public static TargetPlatform OS
+		{
+			get
+			{
 				TargetPlatform platform;
 				if (Enum.TryParse(RuntimePlatform, out platform))
 					return platform;

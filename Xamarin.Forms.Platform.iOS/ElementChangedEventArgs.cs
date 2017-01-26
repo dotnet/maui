@@ -1,10 +1,16 @@
 using System;
 
+#if __MOBILE__
 namespace Xamarin.Forms.Platform.iOS
+#else
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public class VisualElementChangedEventArgs : ElementChangedEventArgs<VisualElement>
 	{
-		public VisualElementChangedEventArgs(VisualElement oldElement, VisualElement newElement) : base(oldElement, newElement)
+		public VisualElementChangedEventArgs(VisualElement oldElement, VisualElement newElement)
+			: base(oldElement, newElement)
 		{
 		}
 	}

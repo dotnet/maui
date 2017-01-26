@@ -445,6 +445,8 @@
     <Compile Include="ProvideCompiledAttribute.cs" />
     <Compile Include="TypedBinding.cs" />
     <Compile Include="XmlnsDefinitionAttribute.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\TabbedPage.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\TabsStyle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
@@ -459,4 +461,7 @@
     </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="PlatformConfiguration\macOSSpecific\" />
+  </ItemGroup>
 </Project>

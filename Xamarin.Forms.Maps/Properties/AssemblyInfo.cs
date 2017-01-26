@@ -13,6 +13,7 @@ using Xamarin.Forms.Internals;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.Maps.macOS")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Maps.iOS")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Maps.iOS.Classic")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Maps.Android")]

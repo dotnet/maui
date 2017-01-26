@@ -159,6 +159,21 @@ Device.BeginInvokeOnMainThread (() => {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="macOS">
+      <MemberSignature Language="C#" Value="public const string macOS;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string macOS" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnPlatform">
       <MemberSignature Language="C#" Value="public static void OnPlatform (Action iOS = null, Action Android = null, Action WinPhone = null, Action Default = null);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnPlatform(class System.Action iOS, class System.Action Android, class System.Action WinPhone, class System.Action Default) cil managed" />

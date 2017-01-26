@@ -76,6 +76,12 @@
         <reference file="Xamarin.Forms.Xaml.dll" />
         <reference file="Xamarin.Forms.Platform.WP8.dll" />
       </group>
+	  <group targetFramework="Xamarin.Mac">
+		<reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.MacOS.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+      </group>
     </references>
   </metadata>
   <files>
@@ -219,10 +225,16 @@
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Resources.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
-	  <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\AutoSuggestStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\AutoSuggestStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\MasterDetailControlStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControlStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\TabbedPageStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+	
+	 <!--Mac-->
+	<file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
+	<file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.Mac" />
+	<file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.MacOS.dll" target="lib\Xamarin.Mac" />
+	<file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.Mac" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\uap10.0" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0" />

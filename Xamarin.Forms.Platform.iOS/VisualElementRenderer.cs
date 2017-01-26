@@ -1,13 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
+#if __MOBILE__
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using UIKit;
+using NativeView = UIKit.UIView;
+using NativeViewController = UIKit.UIViewController;
+using NativeColor = UIKit.UIColor;
 
 namespace Xamarin.Forms.Platform.iOS
+#else
+using AppKit;
+using NativeView = AppKit.NSView;
+using NativeViewController = AppKit.NSViewController;
+using NativeColor = AppKit.NSColor;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	[Flags]
 	public enum VisualElementRendererFlags
@@ -17,9 +29,9 @@ namespace Xamarin.Forms.Platform.iOS
 		AutoPackage = 1 << 2
 	}
 
-	public class VisualElementRenderer<TElement> : UIView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
+	public class VisualElementRenderer<TElement> : NativeView, IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
-		readonly UIColor _defaultColor = UIColor.Clear;
+		readonly NativeColor _defaultColor = NativeColor.Clear;
 
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
 
@@ -31,21 +43,30 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementPackager _packager;
 		VisualElementTracker _tracker;
 
+#if __MOBILE__
 		UIVisualEffectView _blur;
 		BlurEffectStyle _previousBlur;
+#endif
 
 		protected VisualElementRenderer() : base(RectangleF.Empty)
 		{
 			_propertyChangedHandler = OnElementPropertyChanged;
-			BackgroundColor = UIColor.Clear;
+#if __MOBILE__
+			BackgroundColor = _defaultColor;
+#else
+			WantsLayer = true;
+			Layer.BackgroundColor = _defaultColor.CGColor;
+#endif
 		}
 
+#if __MOBILE__
 		// prevent possible crashes in overrides
-		public sealed override UIColor BackgroundColor
+		public sealed override NativeColor BackgroundColor
 		{
 			get { return base.BackgroundColor; }
 			set { base.BackgroundColor = value; }
 		}
+#endif
 
 		public TElement Element { get; private set; }
 
@@ -73,7 +94,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		public static void RegisterEffect(Effect effect, UIView container, UIView control = null)
+		public static void RegisterEffect(Effect effect, NativeView container, NativeView control = null)
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect == null)
@@ -106,10 +127,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return NativeView.GetSizeRequest(widthConstraint, heightConstraint);
 		}
 
-		public UIView NativeView
-		{
-			get { return this; }
-		}
+		public NativeView NativeView => this;
 
 		void IVisualElementRenderer.SetElement(VisualElement element)
 		{
@@ -118,13 +136,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void SetElementSize(Size size)
 		{
-			Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
+			Xamarin.Forms.Layout.LayoutChildIntoBoundingRegion(Element, new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
-		public virtual UIViewController ViewController
-		{
-			get { return null; }
-		}
+		public virtual NativeViewController ViewController => null;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
@@ -175,6 +190,7 @@ namespace Xamarin.Forms.Platform.iOS
 				SetAutomationId(Element.AutomationId);
 		}
 
+#if __MOBILE__
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			return new SizeF(0, 0);
@@ -190,6 +206,16 @@ namespace Xamarin.Forms.Platform.iOS
 					Superview.Add(_blur);
 			}
 		}
+#else
+		public override void MouseDown(NSEvent theEvent)
+		{
+			bool inViewCell = IsOnViewCell(Element);
+
+			if (Element.InputTransparent || inViewCell)
+				base.MouseDown(theEvent);
+		}
+#endif
+
 		protected override void Dispose(bool disposing)
 		{
 			if ((_flags & VisualElementRendererFlags.Disposed) != 0)
@@ -227,22 +253,23 @@ namespace Xamarin.Forms.Platform.iOS
 			for (var i = 0; i < _elementChangedHandlers.Count; i++)
 				_elementChangedHandlers[i](this, args);
 
-			var changed = ElementChanged;
-			if (changed != null)
-				changed(this, e);
-
+			ElementChanged?.Invoke(this, e);
+#if __MOBILE__
 			if (e.NewElement != null)
 				SetBlur((BlurEffectStyle)e.NewElement.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
+#endif
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				SetBackgroundColor(Element.BackgroundColor);
-			else if (e.PropertyName == Layout.IsClippedToBoundsProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.Layout.IsClippedToBoundsProperty.PropertyName)
 				UpdateClipToBounds();
+#if __MOBILE__
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty.PropertyName)
 				SetBlur((BlurEffectStyle)Element.GetValue(PlatformConfiguration.iOSSpecific.VisualElement.BlurEffectProperty));
+#endif
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -258,11 +285,20 @@ namespace Xamarin.Forms.Platform.iOS
 		protected virtual void SetBackgroundColor(Color color)
 		{
 			if (color == Color.Default)
+#if __MOBILE__
+			
 				BackgroundColor = _defaultColor;
 			else
 				BackgroundColor = color.ToUIColor();
+				
+#else
+				Layer.BackgroundColor = _defaultColor.CGColor;
+			else
+				Layer.BackgroundColor = color.ToCGColor();
+#endif
 		}
 
+#if __MOBILE__
 		protected virtual void SetBlur(BlurEffectStyle blur)
 		{
 			if (_previousBlur == blur)
@@ -300,21 +336,35 @@ namespace Xamarin.Forms.Platform.iOS
 			_blur = new UIVisualEffectView(blurEffect);
 			LayoutSubviews();
 		}
+#endif
 
 		protected virtual void UpdateNativeWidget()
 		{
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, UIView nativeView)
+		internal virtual void SendVisualElementInitialized(VisualElement element, NativeView nativeView)
 		{
 			element.SendViewInitialized(nativeView);
 		}
 
 		void UpdateClipToBounds()
 		{
+#if __MOBILE__
 			var clippableLayout = Element as Layout;
 			if (clippableLayout != null)
 				ClipsToBounds = clippableLayout.IsClippedToBounds;
+#endif
+		}
+
+		static bool IsOnViewCell(Element element)
+		{
+
+			if (element.Parent == null)
+				return false;
+			else if (element.Parent is ViewCell)
+				return true;
+			else
+				return IsOnViewCell(element.Parent);
 		}
 	}
 }

@@ -1,10 +1,16 @@
-﻿using UIKit;
-
+﻿#if __MOBILE__
+using UIKit;
 namespace Xamarin.Forms.Platform.iOS
+#else
+using UIView = AppKit.NSView;
+
+namespace Xamarin.Forms.Platform.MacOS
+#endif
 {
 	public class NativeViewWrapper : View
 	{
-		public NativeViewWrapper(UIView nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null, SizeThatFitsDelegate sizeThatFitsDelegate = null, LayoutSubviewsDelegate layoutSubViews = null)
+		public NativeViewWrapper(UIView nativeView, GetDesiredSizeDelegate getDesiredSizeDelegate = null,
+			SizeThatFitsDelegate sizeThatFitsDelegate = null, LayoutSubviewsDelegate layoutSubViews = null)
 		{
 			GetDesiredSizeDelegate = getDesiredSizeDelegate;
 			SizeThatFitsDelegate = sizeThatFitsDelegate;
