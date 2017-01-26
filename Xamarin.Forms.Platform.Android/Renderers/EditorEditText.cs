@@ -23,13 +23,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnKeyPreIme(Keycode keyCode, KeyEvent e)
 		{
-			if (keyCode == Keycode.Back && e.Action == KeyEventActions.Down)
-			{
-				EventHandler handler = OnBackKeyboardPressed;
-				if (handler != null)
-					handler(this, EventArgs.Empty);
-			}
-			return base.OnKeyPreIme(keyCode, e);
+			if (keyCode != Keycode.Back || e.Action != KeyEventActions.Down)
+				return base.OnKeyPreIme(keyCode, e);
+
+			this.HideKeyboard();
+			OnBackKeyboardPressed?.Invoke(this, EventArgs.Empty);
+			return true;
 		}
 
 		public override bool RequestFocus(FocusSearchDirection direction, Rect previouslyFocusedRect)
