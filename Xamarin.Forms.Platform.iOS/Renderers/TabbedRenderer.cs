@@ -171,7 +171,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Page.TitleProperty.PropertyName)
+			// Setting TabBarItem.Title in iOS 10 causes rendering bugs
+			// Work around this by creating a new UITabBarItem on each change
+			if (e.PropertyName == Page.TitleProperty.PropertyName && !Forms.IsiOS10OrNewer)
 			{
 				var page = (Page)sender;
 				var renderer = Platform.GetRenderer(page);
@@ -181,7 +183,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (renderer.ViewController.TabBarItem != null)
 					renderer.ViewController.TabBarItem.Title = page.Title;
 			}
-			else if (e.PropertyName == Page.IconProperty.PropertyName)
+			else if (e.PropertyName == Page.IconProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName && Forms.IsiOS10OrNewer)
 			{
 				var page = (Page)sender;
 
