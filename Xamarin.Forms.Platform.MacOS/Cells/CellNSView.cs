@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.ComponentModel;
 using AppKit;
 using CoreGraphics;
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		static readonly CGColor s_defaultHeaderViewsBackground = NSColor.LightGray.CGColor;
 		Cell _cell;
 		readonly NSTableViewCellStyle _style;
+		NSView _contexActionsTrackingView;
 
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
@@ -29,7 +31,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public NSView AccessoryView { get; private set; }
 
-		public Element Element => Cell;
+		public virtual Element Element => Cell;
 
 		public Cell Cell
 		{
@@ -92,14 +94,26 @@ namespace Xamarin.Forms.Platform.MacOS
 			nfloat labelHeights = availableHeight;
 			nfloat labelWidth = availableWidth - imageWidth - accessoryViewWidth;
 
-			if (!string.IsNullOrEmpty(DetailTextLabel?.StringValue))
+			if (DetailTextLabel != null)
 			{
-				labelHeights = availableHeight / 2;
-				DetailTextLabel.CenterTextVertically(new CGRect(imageWidth + padding, 0, labelWidth, labelHeights));
+
+				if (!string.IsNullOrEmpty(DetailTextLabel?.StringValue))
+				{
+					labelHeights = availableHeight / 2;
+					DetailTextLabel.CenterTextVertically(new CGRect(imageWidth + padding, 0, labelWidth, labelHeights));
+				}
 			}
 
-			TextLabel.CenterTextVertically(new CGRect(imageWidth + padding, availableHeight - labelHeights, labelWidth,
+			TextLabel?.CenterTextVertically(new CGRect(imageWidth + padding, availableHeight - labelHeights, labelWidth,
 				labelHeights));
+
+			var topNSView = Subviews.LastOrDefault();
+			if (_contexActionsTrackingView != topNSView)
+			{
+				_contexActionsTrackingView.RemoveFromSuperview();
+				_contexActionsTrackingView.Frame = Frame;
+				AddSubview(_contexActionsTrackingView, NSWindowOrderingMode.Above, Subviews.LastOrDefault());
+			}
 			base.Layout();
 		}
 
@@ -129,39 +143,86 @@ namespace Xamarin.Forms.Platform.MacOS
 		void CreateUI()
 		{
 			var style = _style;
-
-			AddSubview(TextLabel = new NSTextField
+			if (style != NSTableViewCellStyle.Empty)
 			{
-				Bordered = false,
-				Selectable = false,
-				Editable = false,
-				Font = NSFont.LabelFontOfSize(NSFont.SystemFontSize)
-			});
-
-			TextLabel.Cell.BackgroundColor = s_defaultChildViewsBackground;
-
-			if (style == NSTableViewCellStyle.Image || style == NSTableViewCellStyle.Subtitle ||
-				style == NSTableViewCellStyle.ImageSubtitle)
-			{
-				AddSubview(DetailTextLabel = new NSTextField
+				AddSubview(TextLabel = new NSTextField
 				{
 					Bordered = false,
 					Selectable = false,
 					Editable = false,
-					Font = NSFont.LabelFontOfSize(NSFont.SmallSystemFontSize)
+					Font = NSFont.LabelFontOfSize(NSFont.SystemFontSize)
 				});
-				DetailTextLabel.Cell.BackgroundColor = s_defaultChildViewsBackground;
+
+				TextLabel.Cell.BackgroundColor = s_defaultChildViewsBackground;
+
+				if (style == NSTableViewCellStyle.Image || style == NSTableViewCellStyle.Subtitle ||
+					style == NSTableViewCellStyle.ImageSubtitle)
+				{
+					AddSubview(DetailTextLabel = new NSTextField
+					{
+						Bordered = false,
+						Selectable = false,
+						Editable = false,
+						Font = NSFont.LabelFontOfSize(NSFont.SmallSystemFontSize)
+					});
+					DetailTextLabel.Cell.BackgroundColor = s_defaultChildViewsBackground;
+				}
+
+				if (style == NSTableViewCellStyle.Image || style == NSTableViewCellStyle.ImageSubtitle)
+					AddSubview(ImageView = new NSImageView());
+
+				if (style == NSTableViewCellStyle.Value1 || style == NSTableViewCellStyle.Value2)
+				{
+					var accessoryView = new NSView { WantsLayer = true };
+					accessoryView.Layer.BackgroundColor = s_defaultChildViewsBackground.CGColor;
+					AddSubview(AccessoryView = accessoryView);
+				}
 			}
+			AddSubview(_contexActionsTrackingView = new TrackingClickNSView());
+		}
+	}
 
-			if (style == NSTableViewCellStyle.Image || style == NSTableViewCellStyle.ImageSubtitle)
-				AddSubview(ImageView = new NSImageView());
+	class TrackingClickNSView : NSView
+	{
+		public override void RightMouseDown(NSEvent theEvent)
+		{
+			HandleContextActions(theEvent);
 
-			if (style == NSTableViewCellStyle.Value1 || style == NSTableViewCellStyle.Value2)
+			base.RightMouseDown(theEvent);
+		}
+
+		void HandleContextActions(NSEvent theEvent)
+		{
+			var contextActionCell = (Superview as INativeElementView).Element as Cell;
+			var contextActionsCount = contextActionCell.ContextActions.Count;
+			if (contextActionsCount > 0)
 			{
-				var accessoryView = new NSView { WantsLayer = true };
-				accessoryView.Layer.BackgroundColor = s_defaultChildViewsBackground.CGColor;
-				AddSubview(AccessoryView = accessoryView);
+				NSMenu menu = new NSMenu();
+				for (int i = 0; i < contextActionsCount; i++)
+				{
+					var contextAction = contextActionCell.ContextActions[i];
+					var nsMenuItem = GetNSMenuItem(i, contextAction);
+					menu.AddItem(nsMenuItem);
+				}
+
+				NSMenu.PopUpContextMenu(menu, theEvent, this);
 			}
+		}
+
+		static NSMenuItem GetNSMenuItem(int i, MenuItem contextAction)
+		{
+			var menuItem = new NSMenuItem(contextAction.Text ?? "");
+			menuItem.Tag = i;
+			menuItem.Enabled = contextAction.IsEnabled;
+			if (menuItem.Enabled)
+				menuItem.Activated += (sender, e) =>
+				{
+					((IMenuItemController)contextAction).Activate();
+				};
+			if (!string.IsNullOrEmpty(contextAction.Icon))
+				menuItem.Image = new NSImage(contextAction.Icon);
+
+			return menuItem;
 		}
 	}
 }

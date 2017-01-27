@@ -7,6 +7,7 @@
 		Value2,
 		Subtitle,
 		Image,
-		ImageSubtitle
+		ImageSubtitle,
+		Empty
 	}
 }

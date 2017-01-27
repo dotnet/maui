@@ -4,13 +4,18 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	public class ViewCellNSView : NSView, INativeElementView
+	internal class ViewCellNSView : CellNSView
 	{
+		public ViewCellNSView() : base(NSTableViewCellStyle.Empty)
+		{
+
+		}
+
 		WeakReference<IVisualElementRenderer> _rendererRef;
 
 		ViewCell _viewCell;
 
-		public Element Element => ViewCell;
+		public override Element Element => ViewCell;
 
 		public ViewCell ViewCell
 		{

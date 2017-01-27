@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 
-		public const int DefaultRowHeight = 16;
+		public const int DefaultRowHeight = 44;
 
 		public NSTableView NativeTableView => _table;
 
