@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (typeConverter != null)
 			{
 				var isExtendedConverter = typeConverter.ImplementsInterface(module.Import(typeof (IExtendedTypeConverter)));
-				var typeConverterCtor = typeConverter.Resolve().Methods.Single(md => md.IsConstructor && md.Parameters.Count == 0);
+				var typeConverterCtor = typeConverter.Resolve().Methods.Single(md => md.IsConstructor && md.Parameters.Count == 0 && !md.IsStatic);
 				var typeConverterCtorRef = module.Import(typeConverterCtor);
 				var convertFromInvariantStringDefinition = isExtendedConverter
 					? module.Import(typeof (IExtendedTypeConverter))

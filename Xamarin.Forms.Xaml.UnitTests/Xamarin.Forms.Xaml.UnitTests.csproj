@@ -418,6 +418,9 @@
     <Compile Include="Issues\Bz42531.xaml.cs">
       <DependentUpon>Bz42531.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Bz45299.xaml.cs">
+      <DependentUpon>Bz45299.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Issues\Bz43733.xaml.cs">
       <DependentUpon>Bz43733.xaml</DependentUpon>
     </Compile>
@@ -758,6 +761,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz42531.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz45299.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz43733.xaml">
