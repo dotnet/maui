@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -217,23 +220,29 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		class LockableObservableListWrapper : INotifyCollectionChanged, IList<string>
+		internal class LockableObservableListWrapper : IList<string>, ICollection<string>, INotifyCollectionChanged, INotifyPropertyChanged, IReadOnlyList<string>, IReadOnlyCollection<string>, IEnumerable<string>, IEnumerable
 		{
-			readonly ObservableList<string> _list = new ObservableList<string>();
+			internal readonly ObservableCollection<string> _list = new ObservableCollection<string>();
+
+			event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+			{
+				add { ((INotifyCollectionChanged)_list).CollectionChanged += value; }
+				remove { ((INotifyCollectionChanged)_list).CollectionChanged -= value; }
+			}
+
+			event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged {
+				add { ((INotifyPropertyChanged)_list).PropertyChanged += value; }
+				remove { ((INotifyPropertyChanged)_list).PropertyChanged -= value; }
+			}
 
 			public bool IsLocked { get; set; }
-
-			event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged {
-				add { _list.CollectionChanged += value; }
-				remove { _list.CollectionChanged -= value; }
-			}
 
 			void ThrowOnLocked()
 			{
 				if (IsLocked)
 					throw new InvalidOperationException("The Items list can not be manipulated if the ItemsSource property is set");
-			
 			}
+
 			public string this [int index] {
 				get { return _list [index]; }
 				set {
