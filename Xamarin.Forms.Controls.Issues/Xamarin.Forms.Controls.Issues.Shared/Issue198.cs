@@ -64,10 +64,10 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot ("Clicked Leave");
 
 			RunningApp.WaitForElement (q => q.Marked ("Bug Repro's"));
-
+#if !__MACOS__
 			RunningApp.ClearText(q => q.Raw("* marked:'SearchBarGo'"));
 			RunningApp.EnterText(q => q.Raw("* marked:'SearchBarGo'"), "G198");
-
+#endif
 			RunningApp.Tap (q => q.Marked ("SearchButton"));
 			RunningApp.Screenshot ("Navigate into gallery again");
 

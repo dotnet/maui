@@ -67,6 +67,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+#if __MACOS__
+		[Ignore("Missing UITest for focus")]
+#endif
 		public void EntryTextDoesNotDisplayNonnumericInput ()
 		{
 			RunningApp.WaitForElement ("Start Entry");

@@ -47,11 +47,14 @@ namespace Xamarin.Forms.Core.UITests
 		[UiTest (typeof(ActivityIndicator), "IsRunning")]
 		public void IsRunning ()
 		{
-			var remote = new ViewContainerRemote (App, Test.ActivityIndicator.IsRunning, PlatformViewType);
-			remote.GoTo ();
-
+			var remote = new ViewContainerRemote(App, Test.ActivityIndicator.IsRunning, PlatformViewType);
+			remote.GoTo();
+#if __MACOS__
+			Assert.Inconclusive("Not tested yet");
+#else
 			var isRunning = remote.GetProperty<bool> (ActivityIndicator.IsRunningProperty);
 			Assert.IsTrue (isRunning);
+#endif
 		}
 		
 		protected override void FixtureTeardown ()

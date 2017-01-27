@@ -32,9 +32,10 @@ namespace Xamarin.Forms.Controls.Issues
 
             RunningApp.Tap(q => q.All().Marked(CanTouchButtonId));
             RunningApp.WaitForElement(q => q.All().Text(CanTouchSuccessText));
-
+#if !__MACOS__
             RunningApp.Tap(q => q.All().Marked(ListTapTarget));
             RunningApp.WaitForElement(q => q.All().Text(ListTapSuccessText));
+#endif
         }
 #endif
 

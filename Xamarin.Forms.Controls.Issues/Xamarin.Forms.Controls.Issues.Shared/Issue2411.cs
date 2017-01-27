@@ -31,6 +31,9 @@ namespace Xamarin.Forms.Controls.Issues
 #if __ANDROID__
 		[Ignore("Appearing event is tied to virtualization in TabbedPage for Material")]
 #endif
+#if __MACOS__
+		[Ignore("ScrollTo not implemented on MacOS")]
+#endif
 		[Issue(IssueTracker.Github, 2411, "ScrollToPosition.MakeVisible not called every time TabbedPage", PlatformAffected.Android)]
 		public void Issue2411ScrollToPositionMakeVisible()
 		{
@@ -57,6 +60,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 		[Test]
 		[Issue(IssueTracker.Github, 2411, "ScrollToPosition.End crashing in TabbedPage", PlatformAffected.Android)]
+#if __MACOS__
+		[Ignore("ScrollTo not implemented on MacOS")]
+#endif
 		public void Issue2411ScrollToPositionEndCrash()
 		{
 			RunningApp.Tap(q => q.Marked("Crash in ScrollToPosition.End"));

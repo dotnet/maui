@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
-
 using Xamarin.Forms.CustomAttributes;
 
 #if UITEST
@@ -14,18 +11,24 @@ using Xamarin.UITest;
 namespace Xamarin.Forms.Controls
 {
 	internal static class AppPaths
-    {
-        public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+	{
+		public static string ApkPath = "../../../Xamarin.Forms.ControlGallery.Android/bin/Debug/AndroidControlGallery.AndroidControlGallery-Signed.apk";
+
+		public static string MacOSPath = "../../../Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
 		// when you change the BundleId
-        public static string BundleId = "com.xamarin.quickui.controlgallery";
-    }
+		public static string BundleId = "com.xamarin.quickui.controlgallery";
+
+		// Have to continue using the old BundleId for now; Test Cloud doesn't like
+		// when you change the BundleId
+		public static string MacOSBundleId = "com.xamarin.xamarin-forms-controlgallery-macos";
+	}
 
 #if UITEST
 	internal static class AppSetup
 	{
-		static IApp InitializeApp ()
+		static IApp InitializeApp()
 		{
 			IApp app = null;
 #if __ANDROID__
@@ -35,9 +38,13 @@ namespace Xamarin.Forms.Controls
 #elif __IOS__
 
 			app = InitializeiOSApp();
+			
+#elif __MACOS__
+			Xamarin.UITest.Desktop.TestAgent.Start();
+			app = InitializeMacOSApp();
 #endif
 			if (app == null)
-				throw new NullReferenceException ("App was not initialized.");
+				throw new NullReferenceException("App was not initialized.");
 
 			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
 			return new ScreenshotConditionalApp(app);
@@ -69,22 +76,38 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		public static void NavigateToIssue (Type type, IApp app)
+#if __MACOS__
+		static IApp InitializeMacOSApp()
 		{
-			var typeIssueAttribute = type.GetTypeInfo ().GetCustomAttribute <IssueAttribute> ();
+			// Running on a device
+			var configurator = new Xamarin.UITest.Desktop.CocoaAppConfigurator();
+			var app = configurator
+							//.AppBundle("/Users/rmarinho/Xamarin/Xamarin.Forms/Xamarin.Forms.ControlGallery.MacOS/bin/Debug/Xamarin.Forms.ControlGallery.MacOS.app")
+							.AppBundle(AppPaths.MacOSPath)
+							.BundleId(AppPaths.MacOSBundleId)
+							.StartApp();
+			return new Xamarin.Forms.Core.macOS.UITests.MacOSApp(app);
+		}
+#endif
+
+		public static void NavigateToIssue(Type type, IApp app)
+		{
+			var typeIssueAttribute = type.GetTypeInfo().GetCustomAttribute<IssueAttribute>();
 
 			string cellName = "";
-			if (typeIssueAttribute.IssueTracker.ToString () != "None" &&
+			if (typeIssueAttribute.IssueTracker.ToString() != "None" &&
 				typeIssueAttribute.IssueNumber != 1461 &&
-				typeIssueAttribute.IssueNumber != 342) {
-				cellName = typeIssueAttribute.IssueTracker.ToString ().Substring(0, 1) + typeIssueAttribute.IssueNumber.ToString ();
-			} else {
+				typeIssueAttribute.IssueNumber != 342)
+			{
+				cellName = typeIssueAttribute.IssueTracker.ToString().Substring(0, 1) + typeIssueAttribute.IssueNumber.ToString();
+			}
+			else {
 				cellName = typeIssueAttribute.Description;
 			}
 
 			int maxAttempts = 2;
 			int attempts = 0;
-			
+
 			while (attempts < maxAttempts)
 			{
 				attempts += 1;
@@ -151,17 +174,20 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public static IApp Setup (Type pageType = null)
+		public static IApp Setup(Type pageType = null)
 		{
 			IApp runningApp = null;
-			try {
-				runningApp = InitializeApp ();
-			} catch (Exception e) {
-				Assert.Inconclusive ($"App did not start for some reason: {e}");
+			try
+			{
+				runningApp = InitializeApp();
 			}
-			
+			catch (Exception e)
+			{
+				Assert.Inconclusive($"App did not start for some reason: {e}");
+			}
+
 			if (pageType != null)
-				NavigateToIssue (pageType, runningApp);
+				NavigateToIssue(pageType, runningApp);
 
 			return runningApp;
 		}
@@ -233,10 +259,10 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestPage ()
+		protected TestPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
@@ -267,7 +293,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 
 
@@ -279,16 +305,16 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestContentPage ()
+		protected TestContentPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
 #if UITEST
 		[SetUp]
-		public void Setup ()
+		public void Setup()
 		{
 			if (Isolate)
 			{
@@ -313,7 +339,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 
 	public abstract class TestCarouselPage : CarouselPage
@@ -324,10 +350,10 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestCarouselPage ()
+		protected TestCarouselPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
@@ -358,7 +384,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 
 	public abstract class TestMasterDetailPage : MasterDetailPage
@@ -369,10 +395,10 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestMasterDetailPage ()
+		protected TestMasterDetailPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
@@ -403,7 +429,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 
 	public abstract class TestNavigationPage : NavigationPage
@@ -414,10 +440,10 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestNavigationPage ()
+		protected TestNavigationPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
@@ -448,7 +474,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 
 	public abstract class TestTabbedPage : TabbedPage
@@ -459,10 +485,10 @@ namespace Xamarin.Forms.Controls
 		protected virtual bool Isolate => false;
 #endif
 
-		protected TestTabbedPage ()
+		protected TestTabbedPage()
 		{
 #if APP
-			Init ();
+			Init();
 #endif
 		}
 
@@ -493,7 +519,7 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
-		protected abstract void Init ();
+		protected abstract void Init();
 	}
 }
 

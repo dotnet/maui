@@ -81,18 +81,42 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla29257Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("Page 1"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.WaitForElement (q => q.Marked ("This is page 1"));
 			RunningApp.Back ();
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.Tap (q => q.Marked ("Page 2"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.WaitForElement (q => q.Marked ("This is page 2"));
 			RunningApp.Back ();
 			RunningApp.Tap (q => q.Marked ("Page 3"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.WaitForElement (q => q.Marked ("This is page 3"));
 			RunningApp.Back ();
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.Tap (q => q.Marked ("Page 4"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.WaitForElement (q => q.Marked ("This is page 4"));
 			RunningApp.Back ();
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.Tap (q => q.Marked ("Page 5"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 			RunningApp.WaitForElement (q => q.Marked ("This is page 5"));
 		}
 #endif

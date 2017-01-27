@@ -57,6 +57,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+#if __MACOS__
+		[Ignore("UITest.Desktop doesn't return empty NSView yet so it can't find the frame")]
+#endif
 		public void Bugzilla39530PanTest()
 		{
 			// Got to wait for the element to be visible to the UI test framework, otherwise we get occasional 
@@ -69,6 +72,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+#if __MACOS__
+		[Ignore("UITest.Desktop doesn't return empty NSView yet so it can't find the frame")]
+#endif
 		public void Bugzilla39530PinchTest()
 		{
 			RunningApp.PinchToZoomIn ("frame");
@@ -76,6 +82,9 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		[Test]
+#if __MACOS__
+		[Ignore("UITest.Desktop doesn't return empty NSView yet so it can't find the frame")]
+#endif
 		public void Bugzilla39530TapTest()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("frame"));

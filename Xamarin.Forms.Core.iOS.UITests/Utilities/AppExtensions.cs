@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
-using NUnit.Framework;
 
 using Xamarin.UITest;
-using Xamarin.UITest.Android;
-using Xamarin.UITest.iOS;
 using Xamarin.UITest.Queries;
 using System.Text.RegularExpressions;
 

@@ -173,11 +173,10 @@ namespace Xamarin.Forms.Maps.MacOS
 		// as much as possible to prevent creating new ones and losing more memory
 
 		// For the time being, we don't want ViewRenderer handling disposal of the MKMapView
-		// if we're on iOS 10; during Dispose we'll be putting the MKMapView in a pool instead
+		// if we're on iOS 9 or 10; during Dispose we'll be putting the MKMapView in a pool instead
 #if __MOBILE__
 		protected override bool ManageNativeControlLifetime => !FormsMaps.IsiOs9OrNewer;
 #endif
-
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -211,6 +210,7 @@ namespace Xamarin.Forms.Maps.MacOS
 				}
 #endif
 				// For iOS versions < 9, the MKMapView will be disposed in ViewRenderer's Dispose method
+
 				if (_locationManager != null)
 				{
 					_locationManager.Dispose();

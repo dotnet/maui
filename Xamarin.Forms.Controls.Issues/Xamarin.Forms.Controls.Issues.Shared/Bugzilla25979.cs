@@ -115,11 +115,17 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Screenshot ("At page one");
 			RunningApp.WaitForElement (q => q.Marked ("PageOneButtonId"));
 			RunningApp.Tap (q => q.Marked ("PageOneButtonId"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 
 			RunningApp.WaitForElement (q => q.Marked ("PageTwoId"));
 			RunningApp.Screenshot ("At page two - I didn't crash");
 			RunningApp.WaitForElement (q => q.Marked ("PageTwoButtonId"));
 			RunningApp.Tap (q => q.Marked ("PageTwoButtonId"));
+#if __MACOS__
+			System.Threading.Thread.Sleep(2000);
+#endif
 
 			RunningApp.WaitForElement (q => q.Marked ("PageThreeId"));
 			RunningApp.Screenshot ("At page three - I didn't crash");

@@ -78,11 +78,17 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 
-			while (true) {
+			while (true)
+			{
+#if __MACOS__
+				var result = App.Query(o => o.Raw(ViewQuery));
+#else
 				var result = App.Query (o => o.Raw(ContainerQuery));
-				if (result.Any ())
+#endif
+
+				if (result.Any())
 					break;
-				App.Tap (o => o.Raw ("* marked:'MoveNextButton'"));
+				App.Tap(o => o.Raw("* marked:'MoveNextButton'"));
 			}
 
 			//Assert.True (App.ScrollForElement (
@@ -139,13 +145,33 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 			isEdgeCase = (formProperty == View.ScaleProperty);
 #endif
-		    if (!isEdgeCase) {
-			    found =
-					MaybeGetProperty<string> (App, query, propertyPath, out prop) ||
-					MaybeGetProperty<float> (App, query, propertyPath, out prop) ||
-					MaybeGetProperty<bool> (App, query, propertyPath, out prop) ||
-					MaybeGetProperty<object> (App, query, propertyPath, out prop);
-		    }
+			if (!isEdgeCase)
+			{
+				found =
+					MaybeGetProperty<string>(App, query, propertyPath, out prop) ||
+					MaybeGetProperty<float>(App, query, propertyPath, out prop) ||
+					MaybeGetProperty<bool>(App, query, propertyPath, out prop) ||
+					MaybeGetProperty<object>(App, query, propertyPath, out prop);
+			}
+#if __MACOS__
+			if (!found)
+			{
+
+				if (formProperty == View.IsEnabledProperty)
+				{
+					var view = App.Query((arg) => arg.Raw(query)).FirstOrDefault();
+					found = view != null;
+					prop = view.Enabled;
+				}
+
+				if (formProperty == Button.TextProperty)
+				{
+					var view = App.Query((arg) => arg.Raw(query)).FirstOrDefault();
+					found = view != null;
+					prop = view.Text;
+				}
+			}
+#endif
 
 #if __ANDROID__
 			if (formProperty == View.ScaleProperty) {

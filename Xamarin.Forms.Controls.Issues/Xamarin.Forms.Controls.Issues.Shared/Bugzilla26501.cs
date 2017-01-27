@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void TestCellsShowAfterRefresh ()
+		public void TestCellsShowAfterRefresh()
 		{
 			RunningApp.Tap (q => q.Marked ("Refresh"));
 

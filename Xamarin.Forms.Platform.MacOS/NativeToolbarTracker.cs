@@ -385,11 +385,11 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					var element = toolbarItems[i];
 
-					var item = new NSToolbarItem(element.Text);
+					var item = new NSToolbarItem(element.Text ?? "");
 					item.Activated += (sender, e) => (element as IMenuItemController).Activate();
 
 					var button = new NSButton();
-					button.Title = element.Text;
+					button.Title = element.Text ?? "";
 					button.SizeToFit();
 					var buttonWidth = itemWidth;
 					if (button.FittingSize.Width > itemWidth)
@@ -408,7 +408,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					button.SizeToFit();
 					view.AddSubview(button);
 
-					item.Label = item.PaletteLabel = item.ToolTip = button.ToolTip = element.Text;
+					item.Label = item.PaletteLabel = item.ToolTip = button.ToolTip = element.Text ?? "";
 
 					subItems[i] = item;
 

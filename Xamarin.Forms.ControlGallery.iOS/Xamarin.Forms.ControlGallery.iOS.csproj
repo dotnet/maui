@@ -291,6 +291,7 @@
     <BundleResource Include="Resources\twitternav.png" />
     <BundleResource Include="Resources\twitternav%402x.png" />
     <BundleResource Include="Resources\xamarinlogo.png" />
+    <BundleResource Include="coffee.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AdvancedColorPicker">

@@ -37,9 +37,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 			RunningApp.Screenshot ("All elements exist");
 
+#if !__MACOS__
 			var scrollRect = RunningApp.Query (q => q.Raw ("* index:0"))[0].Rect;
 			Xamarin.Forms.Core.UITests.Gestures.ScrollForElement (RunningApp, "* marked:'9'", new Xamarin.Forms.Core.UITests.Drag (scrollRect, Xamarin.Forms.Core.UITests.Drag.Direction.BottomToTop, Xamarin.Forms.Core.UITests.Drag.DragLength.Long));
 			RunningApp.Screenshot ("I see 9");
+#endif
 
 			RunningApp.Tap (q => q.Marked ("9"));
 			RunningApp.WaitForNoElement (q => q.Marked ("9"));

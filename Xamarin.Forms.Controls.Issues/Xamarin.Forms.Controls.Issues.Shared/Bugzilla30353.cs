@@ -10,62 +10,69 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 30353, "MasterDetailPage.IsPresentedChanged is not raised")]
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Bugzilla, 30353, "MasterDetailPage.IsPresentedChanged is not raised")]
 	public class Bugzilla30353 : TestMasterDetailPage
 	{
-		protected override void Init ()
+		protected override void Init()
 		{
-			var lbl = new Label {
+			var lbl = new Label
+			{
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				Text = "Detail"
 			};
 
-			#if !UITEST
-			if (App.IOSVersion == 7) {
+#if !UITEST
+			if (App.IOSVersion == 7 || Device.RuntimePlatform == Device.macOS)
+			{
 				lbl.Text = "Don't run";
 			}
-			#endif
+#endif
 
-			var lblMaster = new Label {
+			var lblMaster = new Label
+			{
 				HorizontalOptions = LayoutOptions.CenterAndExpand,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				Text = "Master"
 			};
-			var btn = new Button () { 
+			var btn = new Button()
+			{
 				Text = "Toggle"
 			};
-			var btn1 = new Button () { 
+			var btn1 = new Button()
+			{
 				Text = "Toggle"
 			};
 
 			btn.Clicked += (object sender, EventArgs e) => IsPresented = !IsPresented;
 			btn1.Clicked += (object sender, EventArgs e) => IsPresented = !IsPresented;
 
-			var stacklayout = new StackLayout ();
-			stacklayout.Children.Add (lbl);
-			stacklayout.Children.Add (btn);
+			var stacklayout = new StackLayout();
+			stacklayout.Children.Add(lbl);
+			stacklayout.Children.Add(btn);
 
-			var stacklayout1 = new StackLayout ();
-			stacklayout1.Children.Add (lblMaster);
-			stacklayout1.Children.Add (btn1);
+			var stacklayout1 = new StackLayout();
+			stacklayout1.Children.Add(lblMaster);
+			stacklayout1.Children.Add(btn1);
 
-			Master = new ContentPage {
+			Master = new ContentPage
+			{
 				Title = "IsPresentedChanged Test",
 				BackgroundColor = Color.Green,
 				Content = stacklayout1
 			};
-			Detail = new ContentPage {
+			Detail = new ContentPage
+			{
 				BackgroundColor = Color.Gray,
 				Content = stacklayout
 			};
 			MasterBehavior = MasterBehavior.Popover;
 			IsPresentedChanged += (s, e) =>
-				lblMaster.Text = lbl.Text = string.Format ("The Master is now {0}", IsPresented ? "visible" : "invisible");
+				lblMaster.Text = lbl.Text = string.Format("The Master is now {0}", IsPresented ? "visible" : "invisible");
 		}
 
-		#if UITEST
+#if UITEST
 		[Test]
 		public void Bugzilla30353Test ()
 		{

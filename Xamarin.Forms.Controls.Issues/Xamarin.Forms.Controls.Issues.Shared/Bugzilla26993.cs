@@ -87,6 +87,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+#if __MACOS__
+		[Ignore("Webview query is not implemented yet on UITEst desktop")]
+#endif
 		public void Bugzilla26993Test ()
 		{
 			RunningApp.Screenshot ("I am at BZ26993");

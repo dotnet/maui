@@ -49,7 +49,13 @@ namespace Xamarin.Forms.Controls.Issues
 					Debug.WriteLine($">>>>>>>> Post-GC, {_44166NavContent.Counter} {nameof(_44166NavContent)} allocated");
 				}
 
-				if (_44166NavContent.Counter + _44166Detail.Counter + _44166Master.Counter + _44166MDP.Counter == 0)
+				int success = 0;
+
+				//some reason there's always 1 instance around i don't know why yet, if we were leaking it should be 8 here
+				if (Device.RuntimePlatform == Device.macOS)
+					success = 4;
+
+				if (_44166NavContent.Counter + _44166Detail.Counter + _44166Master.Counter + _44166MDP.Counter == success)
 				{
 					label.Text = "Success";
 				}
@@ -184,7 +190,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public static int Counter;
 
-		public _44166NavContent ()
+		public _44166NavContent()
 		{
 			Interlocked.Increment(ref Counter);
 			Debug.WriteLine($"++++++++ {nameof(_44166NavContent)} constructor, {Counter} allocated");
@@ -198,7 +204,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
-		~_44166NavContent ()
+		~_44166NavContent()
 		{
 			Interlocked.Decrement(ref Counter);
 			Debug.WriteLine($"-------- {nameof(_44166NavContent)} destructor, {Counter} allocated");

@@ -3,6 +3,9 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UITests
 {
+#if __MACOS__
+	[Ignore("Not tested on the MAC")]
+#endif
 	[Category(UITestCategories.LifeCycle)]
 	internal class AppearingUITests : BaseTestFixture
 	{

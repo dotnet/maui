@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-		#if UITEST
+#if UITEST
 		[Test]
 		public void Bugzilla31330Test ()
 		{
