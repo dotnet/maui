@@ -68,6 +68,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
+    <Compile Include="NavigationPageRendererWinRT.cs" />
+    <Compile Include="PlatformWinRT.cs" />
     <Compile Include="BrushHelpers.cs" />
     <Compile Include="NativeBindingExtensions.cs" />
     <Compile Include="NativeEventWrapper.cs" />

@@ -192,6 +192,8 @@
     <Compile Include="IToolBarForegroundBinder.cs" />
     <Compile Include="NativeBindingService.cs" />
     <Compile Include="NativeValueConverterService.cs" />
+    <Compile Include="NavigationPageRendererUWP.cs" />
+    <Compile Include="PlatformUWP.cs" />
     <Compile Include="SearchBarRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextAlignmentToHorizontalAlignmentConverter.cs">
       <Link>TextAlignmentToHorizontalAlignmentConverter.cs</Link>

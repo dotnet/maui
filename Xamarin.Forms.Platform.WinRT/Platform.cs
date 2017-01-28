@@ -2,39 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Windows.ApplicationModel.Core;
-using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
 using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
-using Windows.Foundation;
-using Windows.Foundation.Metadata;
-using Windows.UI.Core;
-using Windows.UI.ViewManagement;
-#endif
-
-#if WINDOWS_UWP
-
 namespace Xamarin.Forms.Platform.UWP
 #else
-
 namespace Xamarin.Forms.Platform.WinRT
 #endif
 {
-	public abstract class Platform : IPlatform, INavigation, IToolbarProvider
+	public abstract partial class Platform : IPlatform, INavigation, IToolbarProvider
 	{
-		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer));
-
-#if WINDOWS_UWP
-		internal static StatusBar MobileStatusBar => ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar") ? StatusBar.GetForCurrentView() : null;
-#endif
+		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer",
+			typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer));
 
 		public static IVisualElementRenderer GetRenderer(VisualElement element)
 		{
@@ -50,9 +33,10 @@ namespace Xamarin.Forms.Platform.WinRT
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			if (element == null)
-				throw new ArgumentNullException("element");
+				throw new ArgumentNullException(nameof(element));
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ??
+			                                  new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;
 		}
@@ -60,11 +44,14 @@ namespace Xamarin.Forms.Platform.WinRT
 		internal Platform(Windows.UI.Xaml.Controls.Page page)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			_page = page;
 
-			_container = new Canvas { Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["RootContainerStyle"] };
+			_container = new Canvas
+			{
+				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["RootContainerStyle"]
+			};
 
 			_page.Content = _container;
 
@@ -84,38 +71,19 @@ namespace Xamarin.Forms.Platform.WinRT
 			UpdateBounds();
 
 #if WINDOWS_UWP
-			StatusBar statusBar = MobileStatusBar;
-			if (statusBar != null)
-			{
-				statusBar.Showing += (sender, args) => UpdateBounds();
-				statusBar.Hiding += (sender, args) => UpdateBounds();
-
-				// UWP 14393 Bug: If RequestedTheme is Light (which it is by default), then the 
-				// status bar uses White Foreground with White Background. 
-				// UWP 10586 Bug: If RequestedTheme is Light (which it is by default), then the 
-				// status bar uses Black Foreground with Black Background. 
-				// Since the Light theme should have a Black on White status bar, we will set it explicitly. 
-				// This can be overriden by setting the status bar colors in App.xaml.cs OnLaunched.
-
-				if (statusBar.BackgroundColor == null && statusBar.ForegroundColor == null && Windows.UI.Xaml.Application.Current.RequestedTheme == ApplicationTheme.Light)
-				{
-					statusBar.BackgroundColor = Colors.White;
-					statusBar.ForegroundColor = Colors.Black;
-					statusBar.BackgroundOpacity = 1;
-				}
-			}
+			InitializeStatusBar();
 #endif
 		}
 
 		internal void SetPage(Page newRoot)
 		{
 			if (newRoot == null)
-				throw new ArgumentNullException("newRoot");
+				throw new ArgumentNullException(nameof(newRoot));
 
 			_navModel.Clear();
 
 			_navModel.Push(newRoot, null);
-			SetCurrent(newRoot, false, true);
+			SetCurrent(newRoot, true);
 			Application.Current.NavigationProxy.Inner = this;
 		}
 
@@ -156,7 +124,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		Task INavigation.PopToRootAsync(bool animated)
 		{
-			throw new InvalidOperationException("PopToRootAsync is not supported globally on Windows, please use a NavigationPage.");
+			throw new InvalidOperationException(
+				"PopToRootAsync is not supported globally on Windows, please use a NavigationPage.");
 		}
 
 		void INavigation.RemovePage(Page page)
@@ -166,7 +135,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void INavigation.InsertPageBefore(Page page, Page before)
 		{
-			throw new InvalidOperationException("InsertPageBefore is not supported globally on Windows, please use a NavigationPage.");
+			throw new InvalidOperationException(
+				"InsertPageBefore is not supported globally on Windows, please use a NavigationPage.");
 		}
 
 		Task INavigation.PushModalAsync(Page page)
@@ -182,11 +152,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		Task INavigation.PushModalAsync(Page page, bool animated)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 
 			var tcs = new TaskCompletionSource<bool>();
 			_navModel.PushModal(page);
-			SetCurrent(page, animated, completedCallback: () => tcs.SetResult(true));
+			SetCurrent(page, completedCallback: () => tcs.SetResult(true));
 			return tcs.Task;
 		}
 
@@ -194,7 +164,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			var tcs = new TaskCompletionSource<Page>();
 			Page result = _navModel.PopModal();
-			SetCurrent(_navModel.CurrentPage, animated, true, () => tcs.SetResult(result));
+			SetCurrent(_navModel.CurrentPage, true, () => tcs.SetResult(result));
 			return tcs.Task;
 		}
 
@@ -235,128 +205,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
-		internal IToolbarProvider GetToolbarProvider()
-		{
-			IToolbarProvider provider = null;
-
-			Page element = _currentPage;
-			while (element != null)
-			{
-				provider = GetRenderer(element) as IToolbarProvider;
-				if (provider != null)
-					break;
-
-				var pageContainer = element as IPageContainer<Page>;
-				element = pageContainer?.CurrentPage;
-			}
-
-			if (provider != null && _toolbarProvider == null)
-				ClearCommandBar();
-
-			return provider;
-		}
-
-		internal async Task UpdateToolbarItems()
-		{
-			CommandBar commandBar = await GetCommandBarAsync();
-			if (commandBar != null)
-			{
-				commandBar.PrimaryCommands.Clear();
-				commandBar.SecondaryCommands.Clear();
-#if WINDOWS_UWP
-				if (_page.BottomAppBar != null || _page.TopAppBar != null)
-				{
-					_page.BottomAppBar = null;
-					_page.TopAppBar = null;
-					_page.InvalidateMeasure();
-				}
-#endif
-			}
-
-#if !WINDOWS_UWP
-			commandBar = AddOpenMasterButton(commandBar);
-#endif
-
-#if WINDOWS_UWP
-			var toolBarProvider = GetToolbarProvider() as IToolBarForegroundBinder;
-#endif
-
-			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems.OrderBy(ti => ti.Priority))
-			{
-				if (commandBar == null)
-					commandBar = CreateCommandBar();
-
-#if WINDOWS_UWP
-				toolBarProvider?.BindForegroundColor(commandBar);
-#endif
-
-				var button = new AppBarButton();
-				button.SetBinding(AppBarButton.LabelProperty, "Text");
-				button.SetBinding(AppBarButton.IconProperty, "Icon", _fileImageSourcePathConverter);
-				button.Command = new MenuItemCommand(item);
-				button.DataContext = item;
-
-
-				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
-
-				if (order == ToolbarItemOrder.Primary)
-				{
-#if WINDOWS_UWP
-					toolBarProvider?.BindForegroundColor(button);
-#endif
-					commandBar.PrimaryCommands.Add(button);
-				}
-				else
-					commandBar.SecondaryCommands.Add(button);
-			}
-
-			if (commandBar?.PrimaryCommands.Count + commandBar?.SecondaryCommands.Count == 0)
-				ClearCommandBar();
-		}
-
-#if !WINDOWS_UWP
-		CommandBar AddOpenMasterButton(CommandBar commandBar)
-		{
-			if (!_toolbarTracker.HaveMasterDetail)
-			{
-				return commandBar;
-			}
-
-			if (commandBar == null)
-			{
-				commandBar = CreateCommandBar();
-			}
-
-			Page target = _toolbarTracker.Target;
-			var mdp = target as MasterDetailPage;
-			while (mdp == null)
-			{
-				var container = target as IPageContainer<Page>;
-				if (container == null)
-				{
-					break;
-				}
-
-				target = container.CurrentPage;
-				mdp = container.CurrentPage as MasterDetailPage;
-			}
-
-			if (mdp == null || !mdp.ShouldShowToolbarButton())
-			{
-				return commandBar;
-			}
-
-			var openMaster = new AppBarButton { DataContext = mdp };
-			openMaster.SetBinding(AppBarButton.LabelProperty, "Master.Title");
-			openMaster.SetBinding(AppBarButton.IconProperty, "Master.Icon", _fileImageSourcePathConverter);
-			openMaster.Click += (s, a) => { mdp.IsPresented = !mdp.IsPresented; };
-
-			commandBar.PrimaryCommands.Add(openMaster);
-
-			return commandBar;
-		}
-#endif
-
 		Rectangle _bounds;
 		readonly Canvas _container;
 		readonly Windows.UI.Xaml.Controls.Page _page;
@@ -366,32 +214,17 @@ namespace Xamarin.Forms.Platform.WinRT
 		readonly ToolbarTracker _toolbarTracker = new ToolbarTracker();
 		readonly FileImageSourcePathConverter _fileImageSourcePathConverter = new FileImageSourcePathConverter();
 
-#pragma warning disable 649
-        IToolbarProvider _toolbarProvider;
-#pragma warning restore 649
-
-		class ToolbarProvider : IToolbarProvider
-		{
-			readonly Task<CommandBar> _commandBar;
-
-			public ToolbarProvider(CommandBar commandBar)
-			{
-				_commandBar = Task.FromResult(commandBar);
-			}
-
-			public CommandBar CommandBar => _commandBar.Result;
-
-			public Task<CommandBar> GetCommandBarAsync()
-			{
-				return _commandBar;
-			}
-		}
 
 		Windows.UI.Xaml.Controls.ProgressBar GetBusyIndicator()
 		{
 			if (_busyIndicator == null)
 			{
-				_busyIndicator = new Windows.UI.Xaml.Controls.ProgressBar { IsIndeterminate = true, Visibility = Visibility.Collapsed, VerticalAlignment = VerticalAlignment.Top };
+				_busyIndicator = new Windows.UI.Xaml.Controls.ProgressBar
+				{
+					IsIndeterminate = true,
+					Visibility = Visibility.Collapsed,
+					VerticalAlignment = VerticalAlignment.Top
+				};
 
 				Canvas.SetZIndex(_busyIndicator, 1);
 				_container.Children.Add(_busyIndicator);
@@ -417,7 +250,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				Page removed = _navModel.PopModal();
 				if (removed != null)
 				{
-					SetCurrent(_navModel.CurrentPage, true, true);
+					SetCurrent(_navModel.CurrentPage, true);
 					handled = true;
 				}
 			}
@@ -436,18 +269,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			_currentActionSheet = null;
 		}
 
-		void UpdateBounds()
-		{
-			_bounds = new Rectangle(0, 0, _container.ActualWidth, _container.ActualHeight);
-		}
-
 		void OnRendererSizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
 		{
 			UpdateBounds();
 			UpdatePageSizes();
 		}
 
-		async void SetCurrent(Page newPage, bool animated, bool popping = false, Action completedCallback = null)
+		async void SetCurrent(Page newPage, bool popping = false, Action completedCallback = null)
 		{
 			if (newPage == _currentPage)
 				return;
@@ -472,82 +300,20 @@ namespace Xamarin.Forms.Platform.WinRT
 			pageRenderer.ContainerElement.Width = _container.ActualWidth;
 			pageRenderer.ContainerElement.Height = _container.ActualHeight;
 
-			if (completedCallback != null)
-				completedCallback();
+			completedCallback?.Invoke();
 
 			_currentPage = newPage;
 
 			UpdateToolbarTracker();
+#if WINDOWS_UWP
 			UpdateToolbarTitle(newPage);
+#endif
 			await UpdateToolbarItems();
-		}
-
-		void UpdateToolbarTitle(Page page)
-		{
-			if (_toolbarProvider == null)
-				return;
-
-			((ToolbarProvider)_toolbarProvider).CommandBar.Content = page.Title;
 		}
 
 		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
 		{
 			return GetCommandBarAsync();
-		}
-
-#pragma warning disable 1998 // considered for removal
-		async Task<CommandBar> GetCommandBarAsync()
-#pragma warning restore 1998
-		{
-#if !WINDOWS_UWP
-			return _page.BottomAppBar as CommandBar;
-#else
-			IToolbarProvider provider = GetToolbarProvider();
-			//var titleProvider = provider as ITitleProvider; 
-			if (provider == null) // || (titleProvider != null && !titleProvider.ShowTitle))
-				return null;
-
-			return await provider.GetCommandBarAsync();
-#endif
-		}
-
-		CommandBar CreateCommandBar()
-		{
-#if !WINDOWS_UWP
-			var commandBar = new CommandBar();
-			_page.BottomAppBar = commandBar;
-			return commandBar;
-#else
-
-			var bar = new FormsCommandBar();
-			if (Device.Idiom != TargetIdiom.Phone)
-				bar.Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TitleToolbar"];
-
-			_toolbarProvider = new ToolbarProvider(bar);
-
-			if (Device.Idiom == TargetIdiom.Phone)
-				_page.BottomAppBar = bar;
-			else
-				_page.TopAppBar = bar;
-
-			return bar;
-#endif
-		}
-
-		void ClearCommandBar()
-		{
-#if !WINDOWS_UWP
-			_page.BottomAppBar = null;
-#else
-			if (_toolbarProvider != null)
-			{
-				_toolbarProvider = null;
-				if (Device.Idiom == TargetIdiom.Phone)
-					_page.BottomAppBar = null;
-				else
-					_page.TopAppBar = null;
-			}
-#endif
 		}
 
 		async void OnToolbarItemsChanged(object sender, EventArgs e)
@@ -564,163 +330,6 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		ActionSheetArguments _actionSheetOptions;
 		Popup _currentActionSheet;
-
-#if WINDOWS_UWP
-		async void OnPageActionSheet(Page sender, ActionSheetArguments options)
-		{
-			List<string> buttons = options.Buttons.ToList();
-
-			var list = new Windows.UI.Xaml.Controls.ListView
-			{
-				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ActionSheetList"],
-				ItemsSource = buttons,
-				IsItemClickEnabled = true
-			};
-
-			var dialog = new ContentDialog
-			{
-				Template = (Windows.UI.Xaml.Controls.ControlTemplate)Windows.UI.Xaml.Application.Current.Resources["MyContentDialogControlTemplate"],
-				Content = list,
-				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ActionSheetStyle"]
-			};
-
-			if (options.Title != null)
-				dialog.Title = options.Title;
-
-			list.ItemClick += (s, e) =>
-			{
-				dialog.Hide();
-				options.SetResult((string)e.ClickedItem);
-			};
-
-			TypedEventHandler<CoreWindow, CharacterReceivedEventArgs> onEscapeButtonPressed = delegate(CoreWindow window, CharacterReceivedEventArgs args)
-			{
-				if (args.KeyCode == 27)
-				{
-					dialog.Hide();
-					options.SetResult(ContentDialogResult.None.ToString());
-				}
-			};
-
-			Window.Current.CoreWindow.CharacterReceived += onEscapeButtonPressed;
-
-			_actionSheetOptions = options;
-
-			if (options.Cancel != null)
-				dialog.SecondaryButtonText = options.Cancel;
-
-			if (options.Destruction != null)
-				dialog.PrimaryButtonText = options.Destruction;
-
-			ContentDialogResult result = await dialog.ShowAsync();
-			if (result == ContentDialogResult.Secondary)
-				options.SetResult(options.Cancel);
-			else if (result == ContentDialogResult.Primary)
-				options.SetResult(options.Destruction);
-
-			Window.Current.CoreWindow.CharacterReceived -= onEscapeButtonPressed;
-		}
-#else
-		void OnPageActionSheet(Page sender, ActionSheetArguments options)
-		{
-			var finalArguments = new List<string>();
-			if (options.Destruction != null)
-				finalArguments.Add(options.Destruction);
-			if (options.Buttons != null)
-				finalArguments.AddRange(options.Buttons);
-			if (options.Cancel != null)
-				finalArguments.Add(options.Cancel);
-
-			var list = new Windows.UI.Xaml.Controls.ListView
-			{
-				Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["ActionSheetList"],
-				ItemsSource = finalArguments,
-				IsItemClickEnabled = true
-			};
-
-			list.ItemClick += (s, e) =>
-			{
-				_currentActionSheet.IsOpen = false;
-				options.SetResult((string)e.ClickedItem);
-			};
-
-			_actionSheetOptions = options;
-
-			Size size = Device.Info.ScaledScreenSize;
-
-			var stack = new StackPanel
-			{
-				MinWidth = 100,
-				Children =
-				{
-					new TextBlock
-					{
-						Text = options.Title ?? string.Empty,
-						Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TitleTextBlockStyle"],
-						Margin = new Windows.UI.Xaml.Thickness(0, 0, 0, 10),
-						Visibility = options.Title != null ? Visibility.Visible : Visibility.Collapsed
-					},
-					list
-				}
-			};
-
-			var border = new Border
-			{
-				Child = stack,
-				BorderBrush = new SolidColorBrush(Colors.White),
-				BorderThickness = new Windows.UI.Xaml.Thickness(1),
-				Padding = new Windows.UI.Xaml.Thickness(15),
-				Background = (Brush)Windows.UI.Xaml.Application.Current.Resources["AppBarBackgroundThemeBrush"]
-			};
-
-			Windows.UI.Xaml.Controls.Grid.SetRow(border, 1);
-			Windows.UI.Xaml.Controls.Grid.SetColumn(border, 1);
-
-			var container = new Windows.UI.Xaml.Controls.Grid
-			{
-				RowDefinitions =
-				{
-					new Windows.UI.Xaml.Controls.RowDefinition { Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star) },
-					new Windows.UI.Xaml.Controls.RowDefinition { Height = new Windows.UI.Xaml.GridLength(0, Windows.UI.Xaml.GridUnitType.Auto) },
-					new Windows.UI.Xaml.Controls.RowDefinition { Height = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star) }
-				},
-				ColumnDefinitions =
-				{
-					new Windows.UI.Xaml.Controls.ColumnDefinition { Width = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star) },
-					new Windows.UI.Xaml.Controls.ColumnDefinition { Width = new Windows.UI.Xaml.GridLength(0, Windows.UI.Xaml.GridUnitType.Auto) },
-					new Windows.UI.Xaml.Controls.ColumnDefinition { Width = new Windows.UI.Xaml.GridLength(1, Windows.UI.Xaml.GridUnitType.Star) }
-				},
-				Height = size.Height,
-				Width = size.Width,
-				Children = { border }
-			};
-
-			var bgPopup = new Popup { Child = new Canvas { Width = size.Width, Height = size.Height, Background = new SolidColorBrush(new Windows.UI.Color { A = 128, R = 0, G = 0, B = 0 }) } };
-
-			bgPopup.IsOpen = true;
-
-			_currentActionSheet = new Popup { ChildTransitions = new TransitionCollection { new PopupThemeTransition() }, IsLightDismissEnabled = true, Child = container };
-
-			_currentActionSheet.Closed += (s, e) =>
-			{
-				bgPopup.IsOpen = false;
-				CancelActionSheet();
-			};
-
-			if (Device.Idiom == TargetIdiom.Phone)
-			{
-				double height = _page.ActualHeight;
-				stack.Height = height;
-				stack.Width = size.Width;
-				border.BorderThickness = new Windows.UI.Xaml.Thickness(0);
-
-				_currentActionSheet.Height = height;
-				_currentActionSheet.VerticalOffset = size.Height - height;
-			}
-
-			_currentActionSheet.IsOpen = true;
-		}
-#endif
 
 		async void OnPageAlert(Page sender, AlertArguments options)
 		{
@@ -759,7 +368,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 	}
-	
+
 	// refer to http://stackoverflow.com/questions/29209954/multiple-messagedialog-app-crash for why this is used
 	// in order to allow for multiple MessageDialogs, or a crash occurs otherwise
 	public static class MessageDialogExtensions
@@ -773,8 +382,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				await _currentDialogShowRequest.Task;
 			}
 
-			var request = _currentDialogShowRequest = new TaskCompletionSource<MessageDialog>();
-			var result = await dialog.ShowAsync();
+			TaskCompletionSource<MessageDialog> request = _currentDialogShowRequest = new TaskCompletionSource<MessageDialog>();
+			IUICommand result = await dialog.ShowAsync();
 			_currentDialogShowRequest = null;
 			request.SetResult(dialog);
 
