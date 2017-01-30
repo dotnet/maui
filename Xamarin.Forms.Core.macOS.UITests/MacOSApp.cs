@@ -290,6 +290,15 @@ namespace Xamarin.Forms.Core.macOS.UITests
 				var result = allREsults[0].Children[0].Children[0].Children[1];
 				results.Add(result.ToUITestResult());
 			}
+			else if (queryStr.Contains("button"))
+			{
+				var allREsults = _cocoaApp.QueryByType("button");
+				foreach (var item in allREsults)
+				{
+					results.Add(item.ToUITestResult());
+				}
+
+			}
 
 			return results.ToArray();
 		}
@@ -615,6 +624,7 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			indexMarked = 0;
 			markedWord = string.Empty;
 			var isSuccess = false;
+
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
 			var isIndex = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bindex\b");
 			if (isIndex)
@@ -641,14 +651,26 @@ namespace Xamarin.Forms.Core.macOS.UITests
 				markedWord = markedWords[1].Replace("'", "").Trim();
 				isSuccess = true;
 			}
+			if (!isSuccess)
+			{
+				if (queryStr == "button")
+				{
+					isSuccess = true;
+				}
+			}
 			return isSuccess;
 		}
 
 		void Tap(string marked, int index)
 		{
 			var safeIndex = Math.Max(index, 0);
-			var queryById = _cocoaApp.QueryById(marked.Trim())[safeIndex];
-			_cocoaApp.Click(queryById.Rect.CenterX, queryById.Rect.CenterY);
+			var all = _cocoaApp.Query();
+			var centerPoint = new PointF();
+			if (!string.IsNullOrEmpty(marked))
+				centerPoint = _cocoaApp.QueryById(marked.Trim())[safeIndex].Rect.Center;
+			else
+				centerPoint = _cocoaApp.QueryByType("Button")[safeIndex].Rect.Center;
+			_cocoaApp.Click(centerPoint.X, centerPoint.Y);
 			Thread.Sleep(1000);
 		}
 

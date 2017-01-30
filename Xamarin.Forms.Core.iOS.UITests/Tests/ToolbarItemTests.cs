@@ -1,14 +1,10 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Xamarin.Forms.CustomAttributes;
-using Xamarin.UITest.Android;
-using Xamarin.UITest.iOS;
+
+using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Core.UITests
 {
-#if __MACOS__
-	[Ignore("Not tested in MacOS yet")]
-#endif
 	[TestFixture]
 	[Category(UITestCategories.ToolbarItem)]
 	internal class ToolbarItemTests : BaseTestFixture
@@ -18,28 +14,29 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 		static bool isSecondaryMenuOpen = false;
 #endif
-		static void ShouldShowMenu ()
+		static void ShouldShowMenu()
 		{
 #if __ANDROID__
 			isSecondaryMenuOpen = true;
 			//show secondary menu
-			App.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
+			App.Tap(c => c.Class("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
 #endif
 		}
 
-		static void ShouldHideMenu ()
+		static void ShouldHideMenu()
 		{
 #if __ANDROID__
-			if (isSecondaryMenuOpen) {
+			if (isSecondaryMenuOpen)
+			{
 				isSecondaryMenuOpen = false;
-				App.Back ();	
+				App.Back();
 			}
 #endif
 		}
 
-		protected override void NavigateToGallery ()
+		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery (GalleryQueries.ToolbarItemGallery);
+			App.NavigateToGallery(GalleryQueries.ToolbarItemGallery);
 #if __IOS__
 			btn1Id = "menuIcon";
 			btn4Id = "tb4";
@@ -47,59 +44,105 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		public void ToolbarButtonsClick ()
+		public void ToolbarButtonsClick()
 		{
-			ShouldHideMenu ();
-			App.Tap (c => c.Marked (btn1Id));
+			ShouldHideMenu();
+#if __MACOS__
+			App.Tap(c => c.Button().Index(4));
+#else
+			App.Tap(c => c.Marked(btn1Id));
+#endif
+			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
+			Assert.False(textLabel.Text == "tb1");
+			Assert.True(textLabel.Text == "Hello ContentPage");
 		}
 
 		[Test]
-		public void ToolbarButtonsCommand ()
+		public void ToolbarButtonsCommand()
 		{
-			ShouldShowMenu ();
+			ShouldShowMenu();
 #if __ANDROID__
 			//App.Query (c => c.Marked (btn4Id))[0];
 #else
-			App.Tap (c => c.Marked (btn4Id));
+			App.Tap(c => c.Marked(btn4Id));
+			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
+			Assert.False(textLabel.Text == "tb4");
+#if __MACOS__
+			App.Tap(c => c.Button().Index(6));
+#else
+			App.Tap(c => c.Marked("tb3"));
+#endif
+			App.Tap(c => c.Marked(btn4Id));
+			textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
+			Assert.IsTrue(textLabel.Text == "tb4");
+#if __MACOS__
+			App.Tap(c => c.Button().Index(6));
+#else
+			App.Tap(c => c.Marked("tb3"));
+#endif
 #endif
 		}
 
 		[Test]
-		public void ToolbarButtonsDisable ()
+		public void ToolbarButtonsDisable()
 		{
-			ShouldHideMenu ();
-			var btn1 = App.Query (c => c.Marked (btn1Id)) [0];
-			ShouldShowMenu ();
-			//var btn2 = App.Query (c => c.Marked (btn4Id)) [0];
-			Assert.False (btn1.Enabled, "Toolbar Item  should be disable");
+			ShouldHideMenu();
+#if __MACOS__
+			var result = App.Query(c => c.Button());
+			var btn1 = result[4];
+			var btn2 = App.Query(c => c.Marked(btn4Id))[0];
+			Assert.False(btn2.Enabled, "Toolbar Item  should be disable");
+#else
+			var btn1 = App.Query(c => c.Marked(btn1Id))[0];
+			ShouldShowMenu();
+			//var btn2 = App.Query (c => c.Marked (btn4Id)) [0];		
 			//TODO: how to check Enable for the textview
 			//Assert.False (btn2.Enabled, "Toolbar Item  should be disable");
+#endif
+			Assert.False(btn1.Enabled, "Toolbar Item  should be disable");
 		}
 
 		[Test]
-		public void ToolbarButtonsExist ()
+		public void ToolbarButtonsExist()
 		{
-			ShouldHideMenu ();
-			var existsPrimary = App.Query (c => c.Marked (btn1Id)).Length;
-			var existsPrimary2 = App.Query (c => c.Marked ("tb2")).Length;
-			ShouldShowMenu ();
-			var existsSecondary = App.Query (c => c.Marked ("tb3")).Length;
-			var existsSecondary2 = App.Query (c => c.Marked (btn4Id)).Length;
-			Assert.True (existsPrimary > 0, "Toolbar Item 1 no name, not found");
-			Assert.True (existsPrimary2 > 0, "Toolbar Item 2, not found");
-			Assert.True (existsSecondary > 0, "Toolbar Item 1 no name, not found");
-			Assert.True (existsSecondary2 > 0, "Toolbar Item 1, not found");
+			ShouldHideMenu();
+#if __MACOS__
+			var existsPrimary = App.Query(c => c.Button())[4];
+			Assert.True(existsPrimary != null, "Toolbar Item 1 no name, not found");
+#else
+			var existsPrimary = App.Query(c => c.Marked(btn1Id)).Length;
+			Assert.True(existsPrimary > 0, "Toolbar Item 1 no name, not found");
+#endif
+			var existsPrimary2 = App.Query(c => c.Marked("tb2")).Length;
+			Assert.True(existsPrimary2 > 0, "Toolbar Item 2, not found");
+			ShouldShowMenu();
+
+#if __MACOS__
+			var existsSecondary = App.Query(c => c.Button())[7];
+			Assert.True(existsSecondary != null, "Toolbar Item 3 no name, not found");
+#else
+			var existsSecondary = App.Query(c => c.Marked("tb3")).Length;
+			Assert.True(existsSecondary > 0, "Toolbar Item 1 no name, not found");
+#endif
+			var existsSecondary2 = App.Query(c => c.Marked(btn4Id)).Length;
+			Assert.True(existsSecondary2 > 0, "Toolbar Item 4, not found");
 		}
 
 		[Test]
-		public void ToolbarButtonsOrder ()
+		public void ToolbarButtonsOrder()
 		{
-			ShouldHideMenu ();
-			var btn1 = App.Query (c => c.Marked (btn1Id)) [0];
-			ShouldShowMenu ();
-			var btn2 = App.Query (c => c.Marked ("tb4")) [0];
+			ShouldHideMenu();
+#if __MACOS__
+			var btn1 = App.Query(c => c.Button())[4];
+#else
+			var btn1 = App.Query(c => c.Marked(btn1Id))[0];
+#endif
+			ShouldShowMenu();
+			var btn2 = App.Query(c => c.Marked("tb4"))[0];
 #if __IOS__
-			Assert.True (btn1.Rect.CenterY < btn2.Rect.CenterY);
+			Assert.True(btn1.Rect.CenterY < btn2.Rect.CenterY);
+#elif __MACOS__
+			Assert.True(btn1.Rect.CenterX < btn2.Rect.CenterX);
 #endif
 		}
 

@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			public NSToolbarItem ToolbarItem;
 			public NSButton Button;
+			public ToolbarItem Element;
 		}
 
 		public NativeToolbarGroup(NSToolbarItemGroup itemGroup)
@@ -370,8 +371,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateGroup(_tabbedGroup, items, ToolbarItemWidth, ToolbarItemSpacing);
 		}
 
-		static void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems, double itemWidth,
-			double itemSpacing)
+		void UpdateGroup(NativeToolbarGroup group, IList<ToolbarItem> toolbarItems, double itemWidth,
+		   double itemSpacing)
 		{
 			int count = toolbarItems.Count;
 			group.Items.Clear();
@@ -390,6 +391,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 					var button = new NSButton();
 					button.Title = element.Text ?? "";
+
 					button.SizeToFit();
 					var buttonWidth = itemWidth;
 					if (button.FittingSize.Width > itemWidth)
@@ -406,13 +408,17 @@ namespace Xamarin.Forms.Platform.MacOS
 						button.Image = new NSImage(element.Icon);
 
 					button.SizeToFit();
-					view.AddSubview(button);
 
-					item.Label = item.PaletteLabel = item.ToolTip = button.ToolTip = element.Text ?? "";
+					button.Enabled = item.Enabled = element.IsEnabled;
+					element.PropertyChanged -= ToolBarItemPropertyChanged;
+					element.PropertyChanged += ToolBarItemPropertyChanged;
+
+					view.AddSubview(button);
+					//item.Label = item.PaletteLabel = item.ToolTip = element.Text ?? "";
 
 					subItems[i] = item;
 
-					group.Items.Add(new NativeToolbarGroup.Item { ToolbarItem = item, Button = button });
+					group.Items.Add(new NativeToolbarGroup.Item { ToolbarItem = item, Button = button, Element = element });
 				}
 				view.Frame = new CGRect(0, 0, totalWidth + (itemSpacing * (count - 1)), ToolbarItemHeight);
 
@@ -423,6 +429,31 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				group.Group.Subitems = new NSToolbarItem[] { };
 				group.Group.View = new NSView();
+			}
+		}
+
+		void ToolBarItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			var nativeToolbarItem = _toolbarGroup.Items.FirstOrDefault((NativeToolbarGroup.Item arg1) => arg1.Element == sender);
+			if (nativeToolbarItem != null)
+			{
+				if (e.PropertyName.Equals(VisualElement.IsEnabledProperty.PropertyName))
+				{
+					nativeToolbarItem.Button.Enabled = nativeToolbarItem.ToolbarItem.Enabled = nativeToolbarItem.Element.IsEnabled;
+				}
+
+				if (e.PropertyName.Equals(ToolbarItem.TextProperty.PropertyName))
+				{
+					nativeToolbarItem.Button.Title = nativeToolbarItem.ToolbarItem.Label = nativeToolbarItem.Element.Text;
+				}
+			}
+		}
+
+		class ToolBarItemNSButton : NSView
+		{
+			public ToolBarItemNSButton(string automationID)
+			{
+				AccessibilityIdentifier = automationID;
 			}
 		}
 	}
