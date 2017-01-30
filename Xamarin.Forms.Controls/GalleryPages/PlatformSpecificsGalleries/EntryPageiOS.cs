@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 					new Button
 					{
 						Text = "Toggle AdjustsFontSizeToFitWidth",
-						Command = new Command(() => entry.On<iOS>().SetAdjustsFontSizeToFitWidthEnabled(!entry.On<iOS>().IsAdjustsFontSizeToFitWidthEnabled()))
+						Command = new Command(() => entry.On<iOS>().SetAdjustsFontSizeToFitWidth(!entry.On<iOS>().AdjustsFontSizeToFitWidth()))
 					}
 				}
 			};

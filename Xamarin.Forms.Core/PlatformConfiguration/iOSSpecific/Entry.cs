@@ -7,7 +7,7 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 	public static class Entry
 	{
 		public static readonly BindableProperty AdjustsFontSizeToFitWidthProperty =
-			BindableProperty.Create("AdjustsFontSizeToFitWidthEnabled", typeof(bool),
+			BindableProperty.Create("AdjustsFontSizeToFitWidth", typeof(bool),
 			typeof(Entry), false);
 
 		public static bool GetAdjustsFontSizeToFitWidth(BindableObject element)
@@ -20,12 +20,12 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 			element.SetValue(AdjustsFontSizeToFitWidthProperty, value);
 		}
 
-		public static bool IsAdjustsFontSizeToFitWidthEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		public static bool AdjustsFontSizeToFitWidth(this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			return GetAdjustsFontSizeToFitWidth(config.Element);
 		}
 
-		public static IPlatformElementConfiguration<iOS, FormsElement> SetAdjustsFontSizeToFitWidthEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetAdjustsFontSizeToFitWidth(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
 		{
 			SetAdjustsFontSizeToFitWidth(config.Element, value);
 			return config;
