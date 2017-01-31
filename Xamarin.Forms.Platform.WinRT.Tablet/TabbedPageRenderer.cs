@@ -144,6 +144,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			return new SizeRequest(result);
 		}
 
+		UIElement IVisualElementRenderer.GetNativeElement()
+		{
+			return null;
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);

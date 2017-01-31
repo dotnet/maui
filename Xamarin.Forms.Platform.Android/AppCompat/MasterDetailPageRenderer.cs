@@ -165,6 +165,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_tracker = new VisualElementTracker(this);
 		}
 
+		void IVisualElementRenderer.SetLabelFor(int? id)
+		{
+		}
+
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
 		void IVisualElementRenderer.UpdateLayout()

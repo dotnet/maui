@@ -1,365 +1,366 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-	<PropertyGroup>
-		<MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-		<ProjectGuid>{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}</ProjectGuid>
-		<OutputType>Library</OutputType>
-		<AppDesignerFolder>Properties</AppDesignerFolder>
-		<RootNamespace>Xamarin.Forms.Controls</RootNamespace>
-		<AssemblyName>Xamarin.Forms.Controls</AssemblyName>
-		<TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-		<TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
-		<FileAlignment>512</FileAlignment>
-		<ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-		<RestorePackages>true</RestorePackages>
-		<NuGetPackageImportStamp>
-		</NuGetPackageImportStamp>
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>full</DebugType>
-		<Optimize>false</Optimize>
-		<OutputPath>bin\Debug\</OutputPath>
-		<DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<DebugType>pdbonly</DebugType>
-		<Optimize>true</Optimize>
-		<OutputPath>bin\Release\</OutputPath>
-		<DefineConstants>TRACE;APP</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
-		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>bin\Turkey\</OutputPath>
-		<DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
-		<DebugType>full</DebugType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-		<WarningLevel>4</WarningLevel>
-		<Optimize>false</Optimize>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
-	</PropertyGroup>
-	<ItemGroup>
-		<!-- A reference to the entire .NET Framework is automatically included -->
-		<ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-			<Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-			<Name>Xamarin.Forms.Core</Name>
-		</ProjectReference>
-		<ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
-			<Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
-			<Name>Xamarin.Forms.Build.Tasks</Name>
-			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-		</ProjectReference>
-		<ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
-			<Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
-			<Name>Xamarin.Forms.CustomAttributes</Name>
-		</ProjectReference>
-		<ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
-			<Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
-			<Name>Xamarin.Forms.Maps</Name>
-		</ProjectReference>
-		<ProjectReference Include="..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj">
-			<Project>{d6133dbd-6c60-4bd5-bea2-07e0a3927c31}</Project>
-			<Name>Xamarin.Forms.Pages</Name>
-		</ProjectReference>
-		<ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
-			<Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
-			<Name>Xamarin.Forms.Xaml</Name>
-		</ProjectReference>
-	</ItemGroup>
-	<ItemGroup>
-		<Compile Include="App.cs" />
-		<Compile Include="AppLifeCycle.cs" />
-		<Compile Include="Bugzilla44596SplashPage.cs" />
-		<Compile Include="ControlGalleryPages\CellForceUpdateSizeGalleryPage.cs" />
-		<Compile Include="ControlGalleryPages\LayoutAddPerformance.xaml.cs">
-			<DependentUpon>LayoutAddPerformance.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="ControlGalleryPages\ListScrollTo.cs" />
-		<Compile Include="ControlGalleryPages\NavBarTitleTestPage.cs" />
-		<Compile Include="ControlGalleryPages\NestedNativeControlGalleryPage.cs" />
-		<Compile Include="ControlGalleryPages\PanGestureGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\KeyboardCoreGalleryPage.cs" />
-		<Compile Include="GalleryPages\BackgroundImageGallery.cs" />
-		<Compile Include="GalleryPages\ControlTemplatePage.cs" />
-		<Compile Include="GalleryPages\ControlTemplateXamlPage.xaml.cs">
-			<DependentUpon>ControlTemplateXamlPage.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="GalleryPages\LayoutPerformanceGallery.cs" />
-		<Compile Include="GalleryPages\NavigationPropertiesGallery.cs" />
-		<Compile Include="ControlGalleryPages\ListViewSelectionColor.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\ApplicationAndroid.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\EntryPageiOS.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageiOS.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageWindows.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageiOS.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageWindows.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageAndroid.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageiOS.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageWindows.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\VisualElementiOS.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGalleries\WindowsPlatformSpecificsGalleryHelpers.cs" />
-		<Compile Include="GalleryPages\PlatformSpecificsGallery.cs" />
-		<Compile Include="LegacyRepro\Page1.xaml.cs">
-			<DependentUpon>Page1.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="MainPageLifeCycleTests.cs" />
-		<Compile Include="NavReproApp.cs" />
-		<Compile Include="RootPages\RootContentPage.cs" />
-		<Compile Include="RootPages\SwapHierachyStackLayout.cs" />
-		<Compile Include="GalleryPages\EditableList.cs" />
-		<Compile Include="CoreGalleryPages\EditorCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\EntryCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\FrameCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\ImageCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\LabelCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\ListViewCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\OpenGLViewCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\PickerCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\ProgressBarCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\SearchBarCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\SliderCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\StepperCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\SwitchCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\TableViewCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\TimePickerCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\WebViewCoreGalleryPage.cs" />
-		<Compile Include="LegacyRepro\SampleViewCell.xaml.cs">
-			<DependentUpon>SampleViewCell.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="SimpleApp.cs" />
-		<Compile Include="ViewContainers\EventViewContainer.cs" />
-		<Compile Include="ViewContainers\LayeredViewContainer.cs" />
-		<Compile Include="ViewContainers\MultiBindingHack.cs" />
-		<Compile Include="ViewContainers\StateViewContainer.cs" />
-		<Compile Include="ViewContainers\ValueViewContainer.cs" />
-		<Compile Include="ViewContainers\ViewContainer.cs" />
-		<Compile Include="CoreGalleryPages\ActivityIndicatorCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\CoreBoxViewGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\ButtonCoreGalleryPage.cs" />
-		<Compile Include="CoreGallery.cs" />
-		<Compile Include="CoreGalleryPages\DatePickerCoreGalleryPage.cs" />
-		<Compile Include="CoreGalleryPages\CoreGalleryPage.cs" />
-		<Compile Include="Properties\AssemblyInfo.cs" />
-		<Compile Include="TestCases.cs" />
-		<Compile Include="GalleryPages\GridGallery.cs" />
-		<Compile Include="GalleryPages\PickerGallery.cs" />
-		<Compile Include="GalleryPages\ImageLoadingGallery.cs" />
-		<Compile Include="GalleryPages\CarouselPageGallery.cs" />
-		<Compile Include="GalleryPages\StepperGallery.cs" />
-		<Compile Include="GalleryPages\ScaleRotate.cs" />
-		<Compile Include="GalleryPages\LineBreakModeGallery.cs" />
-		<Compile Include="GalleryPages\ActionSheetGallery.cs" />
-		<Compile Include="GalleryPages\XamlPage.xaml.cs">
-			<DependentUpon>XamlPage.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="RootPages\RootTabbedContentPage.cs" />
-		<Compile Include="RootPages\RootTabbedNavigationContentPage.cs" />
-		<Compile Include="RootPages\RootNavigationContentPage.cs" />
-		<Compile Include="RootPages\RootNavigationTabbedContentPage.cs" />
-		<Compile Include="RootPages\RootMDPNavigationContentPage.cs" />
-		<Compile Include="RootPages\RootTabbedMDPNavigationContentPage.cs" />
-		<Compile Include="RootPages\RootTabbedManyNavigationContentPage.cs" />
-		<Compile Include="RootPages\RootNavigationManyTabbedPage.cs" />
-		<Compile Include="ControlGalleryPages\BehaviorsAndTriggers.xaml.cs">
-			<DependentUpon>BehaviorsAndTriggers.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="GalleryPages\CellsGalleries\EntryCellListPage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\EntryCellTablePage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\ImageCellListPage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\ImageCellTablePage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\ProductViewCell.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\SwitchCellListPage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\SwitchCellTablePage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\TextCellListPage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\TextCellTablePage.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\UnEvenViewCellGallery.cs" />
-		<Compile Include="GalleryPages\CellsGalleries\ViewCellGallery.cs" />
-		<Compile Include="GalleryPages\AbsoluteLayoutGallery.cs" />
-		<Compile Include="GalleryPages\BoundContentPage.cs" />
-		<Compile Include="GalleryPages\ButtonGallery.cs" />
-		<Compile Include="GalleryPages\CellTypeList.cs" />
-		<Compile Include="GalleryPages\ClipToBoundsGallery.cs" />
-		<Compile Include="GalleryPages\DisposeGallery.cs" />
-		<Compile Include="GalleryPages\EditorGallery.cs" />
-		<Compile Include="GalleryPages\EntryGallery.cs" />
-		<Compile Include="GalleryPages\FrameGallery.cs" />
-		<Compile Include="GalleryPages\GroupedListActionsGallery.cs" />
-		<Compile Include="GalleryPages\GroupedListContactsGallery.cs" />
-		<Compile Include="GalleryPages\ImageGallery.cs" />
-		<Compile Include="GalleryPages\InputIntentGallery.cs" />
-		<Compile Include="GalleryPages\LabelGallery.cs" />
-		<Compile Include="GalleryPages\LayoutOptionsGallery.cs" />
-		<Compile Include="GalleryPages\ListPage.cs" />
-		<Compile Include="GalleryPages\ListViewDemoPage.cs" />
-		<Compile Include="GalleryPages\MapGallery.cs" />
-		<Compile Include="GalleryPages\MinimumSizeGallery.cs" />
-		<Compile Include="GalleryPages\MultiGallery.cs" />
-		<Compile Include="GalleryPages\NavigationBarGallery.cs" />
-		<Compile Include="GalleryPages\NavigationMenuGallery.cs" />
-		<Compile Include="GalleryPages\OpenGLGallery.cs" />
-		<Compile Include="GalleryPages\ProgressBarGallery.cs" />
-		<Compile Include="GalleryPages\RelativeLayoutGallery.cs" />
-		<Compile Include="GalleryPages\ScrollGallery.cs" />
-		<Compile Include="GalleryPages\SearchBarGallery.cs" />
-		<Compile Include="GalleryPages\SettingsPage.cs" />
-		<Compile Include="GalleryPages\SliderGallery.cs" />
-		<Compile Include="GalleryPages\StackLayoutGallery.cs" />
-		<Compile Include="GalleryPages\SwitchGallery.cs" />
-		<Compile Include="GalleryPages\TableViewGallery.cs" />
-		<Compile Include="GalleryPages\TemplatedCarouselGallery.cs" />
-		<Compile Include="GalleryPages\TemplatedTabbedGallery.cs" />
-		<Compile Include="GalleryPages\UnevenListGallery.cs" />
-		<Compile Include="GalleryPages\WebViewGallery.cs" />
-		<Compile Include="GalleryPages\StyleGallery.cs" />
-		<Compile Include="GalleryPages\StyleXamlGallery.xaml.cs">
-			<DependentUpon>StyleXamlGallery.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="GalleryPages\MasterDetailPageTabletPage.cs" />
-		<Compile Include="Helpers\ITestCloudService.cs" />
-		<Compile Include="ControlGalleryPages\ToolbarItems.cs" />
-		<Compile Include="GalleryPages\AlertGallery.cs" />
-		<Compile Include="RootPages\RootMDPNavigationTabbedContentPage.cs" />
-		<Compile Include="Controls\Issue3076Button.cs" />
-		<Compile Include="ControlGalleryPages\ListRefresh.cs" />
-		<Compile Include="ControlGalleryPages\PinchGestureTestPage.cs" />
-		<Compile Include="ControlGalleryPages\AppearingGalleryPage.cs" />
-		<Compile Include="ControlGalleryPages\AutomationIDGallery.cs" />
-		<Compile Include="GalleryPages\AppLinkPageGallery.cs" />
-		<Compile Include="ControlGalleryPages\NativeBindingGalleryPage.cs" />
-		<Compile Include="GalleryPages\XamlNativeViews.xaml.cs">
-			<DependentUpon>XamlNativeViews.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="HanselForms\BaseView.cs" />
-		<Compile Include="HanselForms\HBaseViewModel.cs" />
-		<Compile Include="HanselForms\RootPage.cs" />
-		<Compile Include="HanselForms\WebsiteView.cs" />
-		<Compile Include="HanselForms\BlogPage.xaml.cs">
-			<DependentUpon>BlogPage.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="HanselForms\MyAbout.xaml.cs">
-			<DependentUpon>MyAbout.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="HanselForms\TwitterPage.xaml.cs">
-			<DependentUpon>TwitterPage.xaml</DependentUpon>
-		</Compile>
-		<Compile Include="GalleryPages\MacTwitterDemo.xaml.cs">
-			<DependentUpon>MacTwitterDemo.xaml</DependentUpon>
-		</Compile>
-	</ItemGroup>
-	<Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-	<Import Project="..\.nuspec\Xamarin.Forms.targets" />
-	<!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CB9C96CE-125C-4A68-B6A1-C3FF1FBF93E1}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Xamarin.Forms.Controls</RootNamespace>
+    <AssemblyName>Xamarin.Forms.Controls</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;APP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Turkey\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;PERF;APP</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
+      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
+      <Name>Xamarin.Forms.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
+      <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
+      <Name>Xamarin.Forms.Build.Tasks</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj">
+      <Project>{4dcd0420-1168-4b77-86db-6196ee4bd491}</Project>
+      <Name>Xamarin.Forms.CustomAttributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
+      <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
+      <Name>Xamarin.Forms.Maps</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj">
+      <Project>{d6133dbd-6c60-4bd5-bea2-07e0a3927c31}</Project>
+      <Name>Xamarin.Forms.Pages</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
+      <Project>{9db2f292-8034-4e06-89ad-98bbda4306b9}</Project>
+      <Name>Xamarin.Forms.Xaml</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="AppLifeCycle.cs" />
+    <Compile Include="Bugzilla44596SplashPage.cs" />
+    <Compile Include="ControlGalleryPages\AccessibilityGallery.cs" />
+    <Compile Include="ControlGalleryPages\CellForceUpdateSizeGalleryPage.cs" />
+    <Compile Include="ControlGalleryPages\LayoutAddPerformance.xaml.cs">
+      <DependentUpon>LayoutAddPerformance.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlGalleryPages\ListScrollTo.cs" />
+    <Compile Include="ControlGalleryPages\NavBarTitleTestPage.cs" />
+    <Compile Include="ControlGalleryPages\NestedNativeControlGalleryPage.cs" />
+    <Compile Include="ControlGalleryPages\PanGestureGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\KeyboardCoreGalleryPage.cs" />
+    <Compile Include="GalleryPages\BackgroundImageGallery.cs" />
+    <Compile Include="GalleryPages\ControlTemplatePage.cs" />
+    <Compile Include="GalleryPages\ControlTemplateXamlPage.xaml.cs">
+      <DependentUpon>ControlTemplateXamlPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GalleryPages\LayoutPerformanceGallery.cs" />
+    <Compile Include="GalleryPages\NavigationPropertiesGallery.cs" />
+    <Compile Include="ControlGalleryPages\ListViewSelectionColor.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\ApplicationAndroid.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\EntryPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\MasterDetailPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\NavigationPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageAndroid.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\TabbedPageWindows.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\VisualElementiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\WindowsPlatformSpecificsGalleryHelpers.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGallery.cs" />
+    <Compile Include="LegacyRepro\Page1.xaml.cs">
+      <DependentUpon>Page1.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainPageLifeCycleTests.cs" />
+    <Compile Include="NavReproApp.cs" />
+    <Compile Include="RootPages\RootContentPage.cs" />
+    <Compile Include="RootPages\SwapHierachyStackLayout.cs" />
+    <Compile Include="GalleryPages\EditableList.cs" />
+    <Compile Include="CoreGalleryPages\EditorCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\EntryCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\FrameCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\ImageCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\LabelCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\ListViewCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\OpenGLViewCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\PickerCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\ProgressBarCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\SearchBarCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\SliderCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\StepperCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\SwitchCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\TableViewCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\TimePickerCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\WebViewCoreGalleryPage.cs" />
+    <Compile Include="LegacyRepro\SampleViewCell.xaml.cs">
+      <DependentUpon>SampleViewCell.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleApp.cs" />
+    <Compile Include="ViewContainers\EventViewContainer.cs" />
+    <Compile Include="ViewContainers\LayeredViewContainer.cs" />
+    <Compile Include="ViewContainers\MultiBindingHack.cs" />
+    <Compile Include="ViewContainers\StateViewContainer.cs" />
+    <Compile Include="ViewContainers\ValueViewContainer.cs" />
+    <Compile Include="ViewContainers\ViewContainer.cs" />
+    <Compile Include="CoreGalleryPages\ActivityIndicatorCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\CoreBoxViewGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\ButtonCoreGalleryPage.cs" />
+    <Compile Include="CoreGallery.cs" />
+    <Compile Include="CoreGalleryPages\DatePickerCoreGalleryPage.cs" />
+    <Compile Include="CoreGalleryPages\CoreGalleryPage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestCases.cs" />
+    <Compile Include="GalleryPages\GridGallery.cs" />
+    <Compile Include="GalleryPages\PickerGallery.cs" />
+    <Compile Include="GalleryPages\ImageLoadingGallery.cs" />
+    <Compile Include="GalleryPages\CarouselPageGallery.cs" />
+    <Compile Include="GalleryPages\StepperGallery.cs" />
+    <Compile Include="GalleryPages\ScaleRotate.cs" />
+    <Compile Include="GalleryPages\LineBreakModeGallery.cs" />
+    <Compile Include="GalleryPages\ActionSheetGallery.cs" />
+    <Compile Include="GalleryPages\XamlPage.xaml.cs">
+      <DependentUpon>XamlPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RootPages\RootTabbedContentPage.cs" />
+    <Compile Include="RootPages\RootTabbedNavigationContentPage.cs" />
+    <Compile Include="RootPages\RootNavigationContentPage.cs" />
+    <Compile Include="RootPages\RootNavigationTabbedContentPage.cs" />
+    <Compile Include="RootPages\RootMDPNavigationContentPage.cs" />
+    <Compile Include="RootPages\RootTabbedMDPNavigationContentPage.cs" />
+    <Compile Include="RootPages\RootTabbedManyNavigationContentPage.cs" />
+    <Compile Include="RootPages\RootNavigationManyTabbedPage.cs" />
+    <Compile Include="ControlGalleryPages\BehaviorsAndTriggers.xaml.cs">
+      <DependentUpon>BehaviorsAndTriggers.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GalleryPages\CellsGalleries\EntryCellListPage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\EntryCellTablePage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\ImageCellListPage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\ImageCellTablePage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\ProductViewCell.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\SwitchCellListPage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\SwitchCellTablePage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\TextCellListPage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\TextCellTablePage.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\UnEvenViewCellGallery.cs" />
+    <Compile Include="GalleryPages\CellsGalleries\ViewCellGallery.cs" />
+    <Compile Include="GalleryPages\AbsoluteLayoutGallery.cs" />
+    <Compile Include="GalleryPages\BoundContentPage.cs" />
+    <Compile Include="GalleryPages\ButtonGallery.cs" />
+    <Compile Include="GalleryPages\CellTypeList.cs" />
+    <Compile Include="GalleryPages\ClipToBoundsGallery.cs" />
+    <Compile Include="GalleryPages\DisposeGallery.cs" />
+    <Compile Include="GalleryPages\EditorGallery.cs" />
+    <Compile Include="GalleryPages\EntryGallery.cs" />
+    <Compile Include="GalleryPages\FrameGallery.cs" />
+    <Compile Include="GalleryPages\GroupedListActionsGallery.cs" />
+    <Compile Include="GalleryPages\GroupedListContactsGallery.cs" />
+    <Compile Include="GalleryPages\ImageGallery.cs" />
+    <Compile Include="GalleryPages\InputIntentGallery.cs" />
+    <Compile Include="GalleryPages\LabelGallery.cs" />
+    <Compile Include="GalleryPages\LayoutOptionsGallery.cs" />
+    <Compile Include="GalleryPages\ListPage.cs" />
+    <Compile Include="GalleryPages\ListViewDemoPage.cs" />
+    <Compile Include="GalleryPages\MapGallery.cs" />
+    <Compile Include="GalleryPages\MinimumSizeGallery.cs" />
+    <Compile Include="GalleryPages\MultiGallery.cs" />
+    <Compile Include="GalleryPages\NavigationBarGallery.cs" />
+    <Compile Include="GalleryPages\NavigationMenuGallery.cs" />
+    <Compile Include="GalleryPages\OpenGLGallery.cs" />
+    <Compile Include="GalleryPages\ProgressBarGallery.cs" />
+    <Compile Include="GalleryPages\RelativeLayoutGallery.cs" />
+    <Compile Include="GalleryPages\ScrollGallery.cs" />
+    <Compile Include="GalleryPages\SearchBarGallery.cs" />
+    <Compile Include="GalleryPages\SettingsPage.cs" />
+    <Compile Include="GalleryPages\SliderGallery.cs" />
+    <Compile Include="GalleryPages\StackLayoutGallery.cs" />
+    <Compile Include="GalleryPages\SwitchGallery.cs" />
+    <Compile Include="GalleryPages\TableViewGallery.cs" />
+    <Compile Include="GalleryPages\TemplatedCarouselGallery.cs" />
+    <Compile Include="GalleryPages\TemplatedTabbedGallery.cs" />
+    <Compile Include="GalleryPages\UnevenListGallery.cs" />
+    <Compile Include="GalleryPages\WebViewGallery.cs" />
+    <Compile Include="GalleryPages\StyleGallery.cs" />
+    <Compile Include="GalleryPages\StyleXamlGallery.xaml.cs">
+      <DependentUpon>StyleXamlGallery.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GalleryPages\MasterDetailPageTabletPage.cs" />
+    <Compile Include="Helpers\ITestCloudService.cs" />
+    <Compile Include="ControlGalleryPages\ToolbarItems.cs" />
+    <Compile Include="GalleryPages\AlertGallery.cs" />
+    <Compile Include="RootPages\RootMDPNavigationTabbedContentPage.cs" />
+    <Compile Include="Controls\Issue3076Button.cs" />
+    <Compile Include="ControlGalleryPages\ListRefresh.cs" />
+    <Compile Include="ControlGalleryPages\PinchGestureTestPage.cs" />
+    <Compile Include="ControlGalleryPages\AppearingGalleryPage.cs" />
+    <Compile Include="ControlGalleryPages\AutomationIDGallery.cs" />
+    <Compile Include="GalleryPages\AppLinkPageGallery.cs" />
+    <Compile Include="ControlGalleryPages\NativeBindingGalleryPage.cs" />
+    <Compile Include="GalleryPages\XamlNativeViews.xaml.cs">
+      <DependentUpon>XamlNativeViews.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HanselForms\BaseView.cs" />
+    <Compile Include="HanselForms\HBaseViewModel.cs" />
+    <Compile Include="HanselForms\RootPage.cs" />
+    <Compile Include="HanselForms\WebsiteView.cs" />
+    <Compile Include="HanselForms\BlogPage.xaml.cs">
+      <DependentUpon>BlogPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HanselForms\MyAbout.xaml.cs">
+      <DependentUpon>MyAbout.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="HanselForms\TwitterPage.xaml.cs">
+      <DependentUpon>TwitterPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GalleryPages\MacTwitterDemo.xaml.cs">
+      <DependentUpon>MacTwitterDemo.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="..\.nuspec\Xamarin.Forms.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
   </Target>
   -->
-	<ItemGroup>
-		<EmbeddedResource Include="GalleryPages\crimson.jpg" />
-		<EmbeddedResource Include="GalleryPages\XamlPage.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="ControlGalleryPages\BehaviorsAndTriggers.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="GalleryPages\StyleXamlGallery.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="GalleryPages\XamlNativeViews.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="GalleryPages\MacTwitterDemo.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="HanselForms\MyAbout.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="HanselForms\BlogPage.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-		<EmbeddedResource Include="HanselForms\TwitterPage.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-		</EmbeddedResource>
-	</ItemGroup>
-	<Import Project="..\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
-	<Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-	<Import Project="..\packages\Xamarin.Insights.1.11.1\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.11.1\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets')" />
-	<Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-		<PropertyGroup>
-			<ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-		</PropertyGroup>
-		<Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-	</Target>
-	<ItemGroup>
-		<EmbeddedResource Include="ControlGalleryPages\LayoutAddPerformance.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-			<SubType>Designer</SubType>
-		</EmbeddedResource>
-	</ItemGroup>
-	<ItemGroup>
-		<EmbeddedResource Include="GalleryPages\ControlTemplateXamlPage.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-			<SubType>Designer</SubType>
-		</EmbeddedResource>
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="app.config" />
-		<EmbeddedResource Include="controlgallery.config" />
-		<None Include="packages.config" />
-	</ItemGroup>
-	<ItemGroup>
-		<EmbeddedResource Include="LegacyRepro\Page1.xaml">
-			<Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-			<SubType>Designer</SubType>
-		</EmbeddedResource>
-		<EmbeddedResource Include="LegacyRepro\SampleViewCell.xaml">
-			<Generator>MSBuild:UpdateDeisgnTimeXaml</Generator>
-			<SubType>Designer</SubType>
-		</EmbeddedResource>
-	</ItemGroup>
-	<ItemGroup>
-		<Reference Include="PCLStorage, Version=1.0.2.0, Culture=neutral, PublicKeyToken=286fe515a2c35b64, processorArchitecture=MSIL">
-			<HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
-			<Private>True</Private>
-		</Reference>
-		<Reference Include="PCLStorage.Abstractions, Version=1.0.2.0, Culture=neutral, PublicKeyToken=286fe515a2c35b64, processorArchitecture=MSIL">
-			<HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.Abstractions.dll</HintPath>
-			<Private>True</Private>
-		</Reference>
-		<Reference Include="Xamarin.Insights">
-			<HintPath>..\packages\Xamarin.Insights.1.12.3\lib\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.dll</HintPath>
-		</Reference>
-		<Reference Include="System.Net.Http">
-			<HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
-		</Reference>
-		<Reference Include="System.Net.Http.Extensions">
-			<HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
-		</Reference>
-		<Reference Include="System.Net.Http.Primitives">
-			<HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	<Target Name="BeforeBuild">
-		<CreateItem Include="blank.config">
-			<Output TaskParameter="Include" ItemName="ConfigFile" />
-		</CreateItem>
-		<Copy SourceFiles="@(ConfigFile)" DestinationFiles="controlgallery.config" Condition="!Exists('controlgallery.config')" />
-	</Target>
-	<Import Project="..\packages\Xamarin.Insights.1.12.3\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.12.3\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets')" />
+  <ItemGroup>
+    <EmbeddedResource Include="GalleryPages\crimson.jpg" />
+    <EmbeddedResource Include="GalleryPages\XamlPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ControlGalleryPages\BehaviorsAndTriggers.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalleryPages\StyleXamlGallery.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalleryPages\XamlNativeViews.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalleryPages\MacTwitterDemo.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HanselForms\MyAbout.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HanselForms\BlogPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HanselForms\TwitterPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="..\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\packages\Xamarin.Insights.1.11.1\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.11.1\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <ItemGroup>
+    <EmbeddedResource Include="ControlGalleryPages\LayoutAddPerformance.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="GalleryPages\ControlTemplateXamlPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <EmbeddedResource Include="controlgallery.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="LegacyRepro\Page1.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LegacyRepro\SampleViewCell.xaml">
+      <Generator>MSBuild:UpdateDeisgnTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PCLStorage, Version=1.0.2.0, Culture=neutral, PublicKeyToken=286fe515a2c35b64, processorArchitecture=MSIL">
+      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="PCLStorage.Abstractions, Version=1.0.2.0, Culture=neutral, PublicKeyToken=286fe515a2c35b64, processorArchitecture=MSIL">
+      <HintPath>..\packages\PCLStorage.1.0.2\lib\portable-net45+wp8+wpa81+win8+monoandroid+monotouch+Xamarin.iOS+Xamarin.Mac\PCLStorage.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.Insights">
+      <HintPath>..\packages\Xamarin.Insights.1.12.3\lib\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives">
+      <HintPath>..\packages\Microsoft.Net.Http.2.2.29\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Target Name="BeforeBuild">
+    <CreateItem Include="blank.config">
+      <Output TaskParameter="Include" ItemName="ConfigFile" />
+    </CreateItem>
+    <Copy SourceFiles="@(ConfigFile)" DestinationFiles="controlgallery.config" Condition="!Exists('controlgallery.config')" />
+  </Target>
+  <Import Project="..\packages\Xamarin.Insights.1.12.3\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.12.3\build\portable-win+net45+wp80+windows8+wpa+MonoAndroid10+MonoTouch10\Xamarin.Insights.targets')" />
 </Project>

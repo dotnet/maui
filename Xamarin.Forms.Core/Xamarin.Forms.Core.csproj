@@ -50,6 +50,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AbsoluteLayoutFlags.cs" />
+    <Compile Include="Accessibility.cs" />
     <Compile Include="ActionSheetArguments.cs" />
     <Compile Include="AlertArguments.cs" />
     <Compile Include="AnimatableKey.cs" />

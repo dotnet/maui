@@ -287,6 +287,10 @@ namespace Xamarin.Forms.Platform.Android
 			SetDrawerLockMode(_page.IsGestureEnabled ? LockModeUnlocked : LockModeLockedClosed);
 		}
 
+		void IVisualElementRenderer.SetLabelFor(int? id)
+		{
+		}
+
 		void SetLockMode(int lockMode)
 		{
 			if (_currentLockMode != lockMode)

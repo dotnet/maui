@@ -77,9 +77,6 @@ namespace Xamarin.Forms.Platform.WinRT
 					// and prevented from bubbling up) rather than ListView.ItemClick
 					List.Tapped += ListOnTapped;
 
-					// We also want to watch for the Enter key being pressed for selection
-					List.KeyUp += OnKeyPressed;
-					
 					List.SelectionChanged += OnControlSelectionChanged;
 
 					List.SetBinding(ItemsControl.ItemsSourceProperty, "");
@@ -141,7 +138,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (List != null)
 			{
 				List.Tapped -= ListOnTapped;
-				List.KeyUp -= OnKeyPressed;
 
 				List.SelectionChanged -= OnControlSelectionChanged;
 
@@ -508,17 +504,6 @@ namespace Xamarin.Forms.Platform.WinRT
 #endif
 		}
 
-		void OnKeyPressed(object sender, KeyRoutedEventArgs e)
-		{
-			if (e.Key == VirtualKey.Enter)
-			{
-				if (Element.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
-				{
-					((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
-				}
-			}
-		}
-
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			RestorePreviousSelectedVisual();
@@ -540,6 +525,10 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 			}
 #endif
+
+			// A11y: Tapped event will not be routed when Narrator is active
+			// Also handles keyboard selection
+			SelectElementItem();
 		}
 
 		FrameworkElement FindElement(object cell)
@@ -551,6 +540,15 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			return null;
+		}
+
+		void SelectElementItem()
+		{
+			if (List.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
+			{
+				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List?.SelectedItem);
+				OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element?.SelectedItem));
+			}
 		}
 
 #if WINDOWS_UWP

@@ -17,6 +17,9 @@ namespace Xamarin.Forms.Platform.Android
 		SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint);
 
 		void SetElement(VisualElement element);
+
+		void SetLabelFor(int? id);
+
 		void UpdateLayout();
 	}
 }

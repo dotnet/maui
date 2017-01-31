@@ -122,7 +122,12 @@ namespace Xamarin.Forms.Platform.UWP
             return new SizeRequest(result);
         }
 
-        public void SetElement(VisualElement element)
+		UIElement IVisualElementRenderer.GetNativeElement()
+		{
+			return Control;
+		}
+
+		public void SetElement(VisualElement element)
         {
             if (element != null && !(element is TabbedPage))
                 throw new ArgumentException("Element must be a TabbedPage", "element");

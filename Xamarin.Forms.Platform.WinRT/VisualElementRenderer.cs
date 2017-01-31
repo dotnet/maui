@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 
 #if WINDOWS_UWP
@@ -17,6 +18,10 @@ namespace Xamarin.Forms.Platform.WinRT
 	public class VisualElementRenderer<TElement, TNativeElement> : Panel, IVisualElementRenderer, IDisposable, IEffectControlProvider where TElement : VisualElement
 																																	  where TNativeElement : FrameworkElement
 	{
+		string _defaultAutomationPropertiesName;
+		AccessibilityView? _defaultAutomationPropertiesAccessibilityView;
+		string _defaultAutomationPropertiesHelpText;
+		UIElement _defaultAutomationPropertiesLabeledBy;
 		bool _disposed;
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
@@ -106,6 +111,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			var result = new Size(Math.Ceiling(child.DesiredSize.Width), Math.Ceiling(child.DesiredSize.Height));
 
 			return new SizeRequest(result);
+		}
+
+		public UIElement GetNativeElement()
+		{
+			return Control;
 		}
 
 		public void SetElement(VisualElement element)
@@ -287,6 +297,14 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateEnabled();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == Accessibility.HintProperty.PropertyName)
+				SetAutomationPropertiesHelpText();
+			else if (e.PropertyName == Accessibility.NameProperty.PropertyName)
+				SetAutomationPropertiesName();
+			else if (e.PropertyName == Accessibility.IsInAccessibleTreeProperty.PropertyName)
+				SetAutomationPropertiesAccessibilityView();
+			else if (e.PropertyName == Accessibility.LabeledByProperty.PropertyName)
+				SetAutomationPropertiesLabeledBy();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -298,6 +316,75 @@ namespace Xamarin.Forms.Platform.WinRT
 		protected virtual void SetAutomationId(string id)
 		{
 			SetValue(AutomationProperties.AutomationIdProperty, id);
+		}
+
+		protected virtual void SetAutomationPropertiesName()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			if (_defaultAutomationPropertiesName == null)
+				_defaultAutomationPropertiesName = (string)Control.GetValue(AutomationProperties.NameProperty);
+
+			var elemValue = (string)Element.GetValue(Accessibility.NameProperty);
+
+			if (!string.IsNullOrWhiteSpace(elemValue))
+				Control.SetValue(AutomationProperties.NameProperty, elemValue);
+			else
+				Control.SetValue(AutomationProperties.NameProperty, _defaultAutomationPropertiesName);
+		}
+
+		protected virtual void SetAutomationPropertiesAccessibilityView()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
+				_defaultAutomationPropertiesAccessibilityView = (AccessibilityView)Control.GetValue(AutomationProperties.AccessibilityViewProperty);
+
+			var newValue = _defaultAutomationPropertiesAccessibilityView;
+			var elemValue = (bool?)Element.GetValue(Accessibility.IsInAccessibleTreeProperty);
+
+			if (elemValue == true)
+				newValue = AccessibilityView.Content;
+			else if (elemValue == false)
+				newValue = AccessibilityView.Raw;
+
+			Control.SetValue(AutomationProperties.AccessibilityViewProperty, newValue);
+		}
+
+		protected virtual void SetAutomationPropertiesHelpText()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			if (_defaultAutomationPropertiesHelpText == null)
+				_defaultAutomationPropertiesHelpText = (string)Control.GetValue(AutomationProperties.HelpTextProperty);
+
+			var elemValue = (string)Element.GetValue(Accessibility.HintProperty);
+
+			if (!string.IsNullOrWhiteSpace(elemValue))
+				Control.SetValue(AutomationProperties.HelpTextProperty, elemValue);
+			else
+				Control.SetValue(AutomationProperties.HelpTextProperty, _defaultAutomationPropertiesHelpText);
+		}
+
+		protected virtual void SetAutomationPropertiesLabeledBy()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			if (_defaultAutomationPropertiesLabeledBy == null)
+				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(AutomationProperties.LabeledByProperty);
+
+			var elemValue = (VisualElement)Element.GetValue(Accessibility.LabeledByProperty);
+			var renderer = elemValue?.GetOrCreateRenderer();
+			var nativeElement = renderer?.GetNativeElement();
+
+			if (nativeElement != null)
+				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);
+			else
+				Control.SetValue(AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		protected void SetNativeControl(TNativeElement control)
@@ -367,6 +454,10 @@ namespace Xamarin.Forms.Platform.WinRT
 		protected virtual void UpdateNativeControl()
 		{
 			UpdateEnabled();
+			SetAutomationPropertiesHelpText();
+			SetAutomationPropertiesName();
+			SetAutomationPropertiesAccessibilityView();
+			SetAutomationPropertiesLabeledBy();
 		}
 
 		internal virtual void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)

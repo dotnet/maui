@@ -70,6 +70,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			return new SizeRequest(result);
 		}
 
+		UIElement IVisualElementRenderer.GetNativeElement()
+		{
+			return null;
+		}
+
 		public void SetElement(VisualElement element)
 		{
 			var newPage = element as CarouselPage;

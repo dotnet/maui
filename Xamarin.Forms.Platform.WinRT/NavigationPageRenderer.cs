@@ -137,6 +137,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			return new SizeRequest(result);
 		}
 
+		UIElement IVisualElementRenderer.GetNativeElement()
+		{
+			return null;
+		}
+
 		public void SetElement(VisualElement element)
 		{
 			if (element != null && !(element is NavigationPage))

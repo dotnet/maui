@@ -121,6 +121,23 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateLineBreakMode();
 		}
 
+#if __MOBILE__
+		protected override void SetAccessibilityLabel()
+		{
+			// If we have not specified an AccessibilityLabel and the AccessibiltyLabel is current bound to the Text,
+			// exit this method so we don't set the AccessibilityLabel value and break the binding.
+			// This may pose a problem for users who want to explicitly set the AccessibilityLabel to null, but this
+			// will prevent us from inadvertently breaking UI Tests that are using Query.Marked to get the dynamic Text 
+			// of the Label.
+
+			var elemValue = (string)Element?.GetValue(Accessibility.NameProperty);
+			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Text)
+				return;
+
+			base.SetAccessibilityLabel();
+		}
+#endif
+
 		protected override void SetBackgroundColor(Color color)
 		{
 #if __MOBILE__

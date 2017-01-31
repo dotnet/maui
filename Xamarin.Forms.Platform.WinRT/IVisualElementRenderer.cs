@@ -18,6 +18,9 @@ namespace Xamarin.Forms.Platform.WinRT
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint);
+
 		void SetElement(VisualElement element);
+
+		UIElement GetNativeElement();
 	}
 }

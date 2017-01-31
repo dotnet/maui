@@ -112,6 +112,11 @@ namespace Xamarin.Forms.Platform.UWP
 			return new SizeRequest(new Size(size.Width, size.Height));
 		}
 
+		UIElement IVisualElementRenderer.GetNativeElement()
+		{
+			return Control;
+		}
+
 		public void SetElement(VisualElement element)
 		{
 			MasterDetailPage old = Element;
