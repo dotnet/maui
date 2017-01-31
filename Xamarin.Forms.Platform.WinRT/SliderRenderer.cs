@@ -24,7 +24,11 @@ namespace Xamarin.Forms.Platform.WinRT
 					var slider = new Windows.UI.Xaml.Controls.Slider();
 					SetNativeControl(slider);
 
-					slider.ValueChanged += OnNativeValueCHanged;
+					Control.Minimum = e.NewElement.Minimum;
+					Control.Maximum = e.NewElement.Maximum;
+					Control.Value = e.NewElement.Value;
+
+					slider.ValueChanged += OnNativeValueChanged;
 
 					// Even when using Center/CenterAndExpand, a Slider has an oddity where it looks
 					// off-center in its layout by a smidge. The default templates are slightly different
@@ -49,10 +53,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 10, 1);
 				Control.StepFrequency = stepping;
 				Control.SmallChange = stepping;
-
-				Control.Minimum = e.NewElement.Minimum;
-				Control.Maximum = e.NewElement.Maximum;
-				Control.Value = e.NewElement.Value;
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
-		void OnNativeValueCHanged(object sender, RangeBaseValueChangedEventArgs e)
+		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, e.NewValue);
 		}
