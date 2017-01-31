@@ -1,6 +1,6 @@
 <Type Name="MessagingCenter" FullName="Xamarin.Forms.MessagingCenter">
-  <TypeSignature Language="C#" Value="public static class MessagingCenter" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit MessagingCenter extends System.Object" />
+  <TypeSignature Language="C#" Value="public class MessagingCenter : Xamarin.Forms.IMessagingCenter" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit MessagingCenter extends System.Object implements class Xamarin.Forms.IMessagingCenter" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,7 +14,11 @@
   <Base>
     <BaseTypeName>System.Object</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IMessagingCenter</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Docs>
     <summary>Associates a callback on subscribers with a specific message name.</summary>
     <remarks>
@@ -40,6 +44,35 @@ Assert.AreEqual(2, subscriber.IntProperty);
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public MessagingCenter ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Instance">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.IMessagingCenter Instance { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.IMessagingCenter Instance" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IMessagingCenter</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Send&lt;TSender&gt;">
       <MemberSignature Language="C#" Value="public static void Send&lt;TSender&gt; (TSender sender, string message) where TSender : class;" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Send&lt;class TSender&gt;(!!TSender sender, string message) cil managed" />
@@ -256,6 +289,196 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <param name="subscriber">To be added.</param>
         <param name="message">To be added.</param>
         <summary>Unsubscribes from the specified parameterless subscriber messages.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Send&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Send&lt;TSender&gt; (TSender sender, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Send&lt;class TSender&gt;(!!TSender sender, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="sender" Type="TSender" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="sender">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Send&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Send&lt;TSender,TArgs&gt; (TSender sender, string message, TArgs args) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Send&lt;class TSender, TArgs&gt;(!!TSender sender, string message, !!TArgs args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="sender" Type="TSender" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="args" Type="TArgs" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="sender">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Subscribe&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Subscribe&lt;TSender&gt; (object subscriber, string message, Action&lt;TSender&gt; callback, TSender source) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Subscribe&lt;class TSender&gt;(object subscriber, string message, class System.Action`1&lt;!!TSender&gt; callback, !!TSender source) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="callback" Type="System.Action&lt;TSender&gt;" />
+        <Parameter Name="source" Type="TSender" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="callback">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Subscribe&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Subscribe&lt;TSender,TArgs&gt; (object subscriber, string message, Action&lt;TSender,TArgs&gt; callback, TSender source) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Subscribe&lt;class TSender, TArgs&gt;(object subscriber, string message, class System.Action`2&lt;!!TSender, !!TArgs&gt; callback, !!TSender source) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="callback" Type="System.Action&lt;TSender,TArgs&gt;" />
+        <Parameter Name="source" Type="TSender" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="callback">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Unsubscribe&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Unsubscribe&lt;TSender&gt; (object subscriber, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Unsubscribe&lt;class TSender&gt;(object subscriber, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IMessagingCenter.Unsubscribe&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="void IMessagingCenter.Unsubscribe&lt;TSender,TArgs&gt; (object subscriber, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IMessagingCenter.Unsubscribe&lt;class TSender, TArgs&gt;(object subscriber, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

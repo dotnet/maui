@@ -1,0 +1,205 @@
+<Type Name="IMessagingCenter" FullName="Xamarin.Forms.IMessagingCenter">
+  <TypeSignature Language="C#" Value="public interface IMessagingCenter" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IMessagingCenter" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Send&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="public void Send&lt;TSender&gt; (TSender sender, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Send&lt;class TSender&gt;(!!TSender sender, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="sender" Type="TSender" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="sender">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Send&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="public void Send&lt;TSender,TArgs&gt; (TSender sender, string message, TArgs args) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Send&lt;class TSender, TArgs&gt;(!!TSender sender, string message, !!TArgs args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="sender" Type="TSender" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="args" Type="TArgs" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="sender">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subscribe&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="public void Subscribe&lt;TSender&gt; (object subscriber, string message, Action&lt;TSender&gt; callback, TSender source = null) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Subscribe&lt;class TSender&gt;(object subscriber, string message, class System.Action`1&lt;!!TSender&gt; callback, !!TSender source) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="callback" Type="System.Action&lt;TSender&gt;" />
+        <Parameter Name="source" Type="TSender" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="callback">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Subscribe&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="public void Subscribe&lt;TSender,TArgs&gt; (object subscriber, string message, Action&lt;TSender,TArgs&gt; callback, TSender source = null) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Subscribe&lt;class TSender, TArgs&gt;(object subscriber, string message, class System.Action`2&lt;!!TSender, !!TArgs&gt; callback, !!TSender source) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+        <Parameter Name="callback" Type="System.Action&lt;TSender,TArgs&gt;" />
+        <Parameter Name="source" Type="TSender" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <param name="callback">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Unsubscribe&lt;TSender&gt;">
+      <MemberSignature Language="C#" Value="public void Unsubscribe&lt;TSender&gt; (object subscriber, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Unsubscribe&lt;class TSender&gt;(object subscriber, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Unsubscribe&lt;TSender,TArgs&gt;">
+      <MemberSignature Language="C#" Value="public void Unsubscribe&lt;TSender,TArgs&gt; (object subscriber, string message) where TSender : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Unsubscribe&lt;class TSender, TArgs&gt;(object subscriber, string message) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TSender">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+        <TypeParameter Name="TArgs" />
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="subscriber" Type="System.Object" />
+        <Parameter Name="message" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TArgs">To be added.</typeparam>
+        <param name="subscriber">To be added.</param>
+        <param name="message">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -2,12 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
-	public static class MessagingCenter
+	public interface IMessagingCenter
 	{
+		void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class;
+
+		void Send<TSender>(TSender sender, string message) where TSender : class;
+
+		void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = null) where TSender : class;
+
+		void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = null) where TSender : class;
+
+		void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class;
+
+		void Unsubscribe<TSender>(object subscriber, string message) where TSender : class;
+	}
+
+	public class MessagingCenter : IMessagingCenter
+	{
+		public static IMessagingCenter Instance { get; } = new MessagingCenter();
+
 		class Sender : Tuple<string, Type, Type>
 		{
 			public Sender(string message, Type senderType, Type argType) : base(message, senderType, argType)
@@ -19,8 +35,8 @@ namespace Xamarin.Forms
 
 		class MaybeWeakReference
 		{
-			WeakReference DelegateWeakReference { get; set; }
-			object DelegateStrongReference { get; set; }
+			WeakReference DelegateWeakReference { get; }
+			object DelegateStrongReference { get; }
 
 			readonly bool _isStrongReference;
 
@@ -84,10 +100,15 @@ namespace Xamarin.Forms
 			}
 		}
 
-		static readonly Dictionary<Sender, List<Subscription>> s_subscriptions =
+		readonly Dictionary<Sender, List<Subscription>> _subscriptions =
 			new Dictionary<Sender, List<Subscription>>();
 
 		public static void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class
+		{
+			Instance.Send(sender, message, args);
+		}
+
+		void IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args)
 		{
 			if (sender == null)
 				throw new ArgumentNullException(nameof(sender));
@@ -96,12 +117,22 @@ namespace Xamarin.Forms
 
 		public static void Send<TSender>(TSender sender, string message) where TSender : class
 		{
+			Instance.Send(sender, message);
+		}
+
+		void IMessagingCenter.Send<TSender>(TSender sender, string message)
+		{
 			if (sender == null)
 				throw new ArgumentNullException(nameof(sender));
 			InnerSend(message, typeof(TSender), null, sender, null);
 		}
 
 		public static void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = null) where TSender : class
+		{
+			Instance.Subscribe(subscriber, message, callback, source);
+		}
+
+		void IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source)
 		{
 			if (subscriber == null)
 				throw new ArgumentNullException(nameof(subscriber));
@@ -121,6 +152,11 @@ namespace Xamarin.Forms
 
 		public static void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = null) where TSender : class
 		{
+			Instance.Subscribe(subscriber, message, callback, source);
+		}
+
+		void IMessagingCenter.Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source)
+		{
 			if (subscriber == null)
 				throw new ArgumentNullException(nameof(subscriber));
 			if (callback == null)
@@ -139,27 +175,32 @@ namespace Xamarin.Forms
 
 		public static void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class
 		{
+			Instance.Unsubscribe<TSender, TArgs>(subscriber, message);
+		}
+
+		void IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message)
+		{
 			InnerUnsubscribe(message, typeof(TSender), typeof(TArgs), subscriber);
 		}
 
 		public static void Unsubscribe<TSender>(object subscriber, string message) where TSender : class
 		{
+			Instance.Unsubscribe<TSender>(subscriber, message);
+		}
+
+		void IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message)
+		{
 			InnerUnsubscribe(message, typeof(TSender), null, subscriber);
 		}
 
-		internal static void ClearSubscribers()
-		{
-			s_subscriptions.Clear();
-		}
-
-		static void InnerSend(string message, Type senderType, Type argType, object sender, object args)
+		void InnerSend(string message, Type senderType, Type argType, object sender, object args)
 		{
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
-			if (!s_subscriptions.ContainsKey(key))
+			if (!_subscriptions.ContainsKey(key))
 				return;
-			List<Subscription> subcriptions = s_subscriptions[key];
+			List<Subscription> subcriptions = _subscriptions[key];
 			if (subcriptions == null || !subcriptions.Any())
 				return; // should not be reachable
 
@@ -178,24 +219,24 @@ namespace Xamarin.Forms
 			}
 		}
 
-		static void InnerSubscribe(object subscriber, string message, Type senderType, Type argType, object target, MethodInfo methodInfo, Filter filter)
+		void InnerSubscribe(object subscriber, string message, Type senderType, Type argType, object target, MethodInfo methodInfo, Filter filter)
 		{
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 			var key = new Sender(message, senderType, argType);
 			var value = new Subscription(subscriber, target, methodInfo, filter);
-			if (s_subscriptions.ContainsKey(key))
+			if (_subscriptions.ContainsKey(key))
 			{
-				s_subscriptions[key].Add(value);
+				_subscriptions[key].Add(value);
 			}
 			else
 			{
 				var list = new List<Subscription> { value };
-				s_subscriptions[key] = list;
+				_subscriptions[key] = list;
 			}
 		}
 
-		static void InnerUnsubscribe(string message, Type senderType, Type argType, object subscriber)
+		void InnerUnsubscribe(string message, Type senderType, Type argType, object subscriber)
 		{
 			if (subscriber == null)
 				throw new ArgumentNullException(nameof(subscriber));
@@ -203,11 +244,19 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException(nameof(message));
 
 			var key = new Sender(message, senderType, argType);
-			if (!s_subscriptions.ContainsKey(key))
+			if (!_subscriptions.ContainsKey(key))
 				return;
-			s_subscriptions[key].RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
-			if (!s_subscriptions[key].Any())
-				s_subscriptions.Remove(key);
+			_subscriptions[key].RemoveAll(sub => sub.CanBeRemoved() || sub.Subscriber.Target == subscriber);
+			if (!_subscriptions[key].Any())
+				_subscriptions.Remove(key);
+		}
+
+		// This is a bit gross; it only exists to support the unit tests in PageTests
+		// because the implementations of ActionSheet, Alert, and IsBusy are all very
+		// tightly coupled to the MessagingCenter singleton 
+		internal static void ClearSubscribers()
+		{
+			(Instance as MessagingCenter)?._subscriptions.Clear();
 		}
 	}
 }

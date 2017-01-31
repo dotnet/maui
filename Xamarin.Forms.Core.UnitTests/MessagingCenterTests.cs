@@ -246,7 +246,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			
+
 			Assert.IsTrue(wr.IsAlive); // The closure in Subscribe should be keeping the subscriber alive
 			Assert.IsNotNull(wr.Target as TestSubcriber);
 
@@ -272,10 +272,10 @@ namespace Xamarin.Forms.Core.UnitTests
 				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
 			})();
 
-			Assert.IsNotNull(wr.Target as TestSubcriber); 
+			Assert.IsNotNull(wr.Target as TestSubcriber);
 
 			MessagingCenter.Unsubscribe<TestPublisher>(wr.Target, "test");
-			
+
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
@@ -309,12 +309,12 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var source = new MessagingCenterTestsCallbackSource();
 			MessagingCenter.Subscribe<TestPublisher>(_subscriber, "test", p => source.SuccessCallback(ref success));
-			
+
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
 			var pub = new TestPublisher();
-			pub.Test(); 
+			pub.Test();
 
 			Assert.True(success); // TestCallbackSource.SuccessCallback() should be invoked to make success == true
 		}
@@ -370,6 +370,71 @@ namespace Xamarin.Forms.Core.UnitTests
 			public static void Increment(ref int i)
 			{
 				i = i + 1;
+			}
+		}
+
+		[Test(Description = "This is a demonstration of what a test with a fake/mock/substitute IMessagingCenter might look like")]
+		public void TestMessagingCenterSubstitute()
+		{
+			var mc = new FakeMessagingCenter();
+
+			// In the real world, you'd construct this with `new ComponentWithMessagingDependency(MessagingCenter.Instance);`
+			var component = new ComponentWithMessagingDependency(mc);
+			component.DoAThing();
+
+			Assert.IsTrue(mc.WasSubscribeCalled, "ComponentWithMessagingDependency should have subscribed in its constructor");
+			Assert.IsTrue(mc.WasSendCalled, "The DoAThing method should send a message");
+		}
+
+		class ComponentWithMessagingDependency
+		{
+			readonly IMessagingCenter _messagingCenter;
+
+			public ComponentWithMessagingDependency(IMessagingCenter messagingCenter)
+			{
+				_messagingCenter = messagingCenter;
+				_messagingCenter.Subscribe<ComponentWithMessagingDependency>(this, "test", dependency => Console.WriteLine("test"));
+			}
+
+			public void DoAThing()
+			{
+				_messagingCenter.Send(this, "test");
+			}
+		}
+
+		internal class FakeMessagingCenter : IMessagingCenter
+		{
+			public bool WasSubscribeCalled { get; private set; }
+			public bool WasSendCalled { get; private set; }
+
+			public void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class
+			{
+				WasSendCalled = true;
+			}
+
+			public void Send<TSender>(TSender sender, string message) where TSender : class
+			{
+				WasSendCalled = true;
+			}
+
+			public void Subscribe<TSender, TArgs>(object subscriber, string message, Action<TSender, TArgs> callback, TSender source = default(TSender)) where TSender : class
+			{
+				WasSubscribeCalled = true;
+			}
+
+			public void Subscribe<TSender>(object subscriber, string message, Action<TSender> callback, TSender source = default(TSender)) where TSender : class
+			{
+				WasSubscribeCalled = true;
+			}
+
+			public void Unsubscribe<TSender, TArgs>(object subscriber, string message) where TSender : class
+			{
+
+			}
+
+			public void Unsubscribe<TSender>(object subscriber, string message) where TSender : class
+			{
+
 			}
 		}
 	}
