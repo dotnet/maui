@@ -78,7 +78,7 @@
       </group>
 	  <group targetFramework="Xamarin.Mac">
 		<reference file="Xamarin.Forms.Core.dll" />
-        <reference file="Xamarin.Forms.Platform.MacOS.dll" />
+        <reference file="Xamarin.Forms.Platform.macOS.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
       </group>
@@ -233,7 +233,7 @@
 	 <!--Mac-->
 	<file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\Xamarin.Mac" />
 	<file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="lib\Xamarin.Mac" />
-	<file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.MacOS.dll" target="lib\Xamarin.Mac" />
+	<file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.macOS.dll" target="lib\Xamarin.Mac" />
 	<file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.Mac" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\uap10.0" />
