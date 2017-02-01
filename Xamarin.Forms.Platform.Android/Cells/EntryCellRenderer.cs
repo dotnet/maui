@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeight();
 		}
 
-		protected NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
 		{
 			// Override this in a custom renderer to use a different NumberKeyListener 
 			// or to filter out input types you don't want to allow 
