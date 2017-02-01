@@ -228,10 +228,11 @@ namespace Xamarin.Forms
 
 			public void OpenUriAction(Uri uri)
 			{
+				var url = NSUrl.FromString(uri.ToString()) ?? new NSUrl(uri.Scheme, uri.Host, uri.LocalPath);
 #if __MOBILE__
-				UIApplication.SharedApplication.OpenUrl(new NSUrl(uri.AbsoluteUri));
+				UIApplication.SharedApplication.OpenUrl(url);
 #else
-				NSWorkspace.SharedWorkspace.OpenUrl(new NSUrl(uri.AbsoluteUri));
+				NSWorkspace.SharedWorkspace.OpenUrl(url);
 #endif
 			}
 
