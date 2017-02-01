@@ -18,6 +18,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			InitializeComponent ();
             LoadDelayedVM();
+			BoundPicker.SelectedIndexChanged += (s, e) =>
+			{
+				SelectedItemLabel.Text = BoundPicker.SelectedItem.ToString();
+			};
 		}
 
         public async void LoadDelayedVM()

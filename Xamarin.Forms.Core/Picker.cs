@@ -181,8 +181,8 @@ namespace Xamarin.Forms
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
 		{
 			var picker = (Picker)bindable;
-			picker.SelectedIndexChanged?.Invoke(bindable, EventArgs.Empty);
 			picker.UpdateSelectedItem();
+			picker.SelectedIndexChanged?.Invoke(bindable, EventArgs.Empty);
 		}
 
 		static void OnSelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
