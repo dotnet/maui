@@ -361,7 +361,7 @@ namespace Xamarin.Forms.Xaml
 			exception = null;
 
 			var elementType = element.GetType();
-			var binding = value as BindingBase;
+			var binding = value.ConvertTo(typeof(BindingBase),pinfoRetriever:null,serviceProvider:null) as BindingBase;
 			var bindable = element as BindableObject;
 			var nativeBindingService = DependencyService.Get<INativeBindingService>();
 
