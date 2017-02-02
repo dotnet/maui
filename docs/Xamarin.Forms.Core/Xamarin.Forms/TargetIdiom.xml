@@ -80,6 +80,20 @@
         <summary>Indicates that the width of the iPad, Windows 8.1, or Android device on which Forms is running is wider than 600 dips.</summary>
       </Docs>
     </Member>
+    <Member MemberName="TV">
+      <MemberSignature Language="C#" Value="TV" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.TargetIdiom TV = int32(4)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.TargetIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates that Forms is running on a Tizen app on Tizen TV.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Unsupported">
       <MemberSignature Language="C#" Value="Unsupported" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.TargetIdiom Unsupported = int32(0)" />

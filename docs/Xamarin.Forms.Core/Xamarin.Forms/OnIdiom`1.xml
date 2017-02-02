@@ -139,5 +139,22 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="TV">
+      <MemberSignature Language="C#" Value="public T TV { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance !T TV" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the value applied on TV-like devices.</summary>
+        <value>A T.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>
