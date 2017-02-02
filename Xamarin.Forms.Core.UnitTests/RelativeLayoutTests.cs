@@ -75,6 +75,47 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void LayoutIsUpdatedWhenConstraintsChange()
+		{
+			var relativeLayout = new RelativeLayout
+			{
+				Platform = new UnitPlatform(),
+				IsPlatformEnabled = true
+			};
+
+			var child = new View
+			{
+				IsPlatformEnabled = true
+			};
+
+			relativeLayout.Children.Add(child,
+								Constraint.Constant(30),
+								Constraint.Constant(20),
+								Constraint.RelativeToParent(parent => parent.Height / 2),
+								Constraint.RelativeToParent(parent => parent.Height / 4));
+
+			relativeLayout.Layout(new Rectangle(0, 0, 100, 100));
+
+			Assert.AreEqual(new Rectangle(30, 20, 50, 25), child.Bounds);
+
+			RelativeLayout.SetXConstraint(child, Constraint.Constant(40));
+
+			Assert.AreEqual(new Rectangle(40, 20, 50, 25), child.Bounds);
+
+			RelativeLayout.SetYConstraint(child, Constraint.Constant(10));
+
+			Assert.AreEqual(new Rectangle(40, 10, 50, 25), child.Bounds);
+
+			RelativeLayout.SetWidthConstraint(child, Constraint.RelativeToParent(parent => parent.Height / 4));
+
+			Assert.AreEqual(new Rectangle(40, 10, 25, 25), child.Bounds);
+
+			RelativeLayout.SetHeightConstraint(child, Constraint.RelativeToParent(parent => parent.Height / 2));
+
+			Assert.AreEqual(new Rectangle(40, 10, 25, 50), child.Bounds);
+		}
+
+		[Test]
 		public void SimpleExpressionLayout ()
 		{
 			var relativeLayout = new RelativeLayout {
