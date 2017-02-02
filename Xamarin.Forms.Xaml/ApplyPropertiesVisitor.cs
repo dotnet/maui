@@ -121,7 +121,7 @@ namespace Xamarin.Forms.Xaml
 			} else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode) {
 				// Collection element, implicit content, or implicit collection element.
 				string contentProperty;
-				if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(Context.Types [parentElement].GetTypeInfo())) {
+				if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(Context.Types [parentElement].GetTypeInfo()) && Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1)) {
 					var source = Values [parentNode];
 					if (!(typeof(ResourceDictionary).IsAssignableFrom(Context.Types [parentElement]))) {
 						var addMethod =
@@ -137,7 +137,8 @@ namespace Xamarin.Forms.Xaml
 
 					var source = Values [parentNode];
 					SetPropertyValue(source, name, value, Context.RootElement, node, Context, node);
-				}
+				} else
+					throw new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 			} else if (IsCollectionItem(node, parentNode) && parentNode is ListNode) {
 				var parentList = (ListNode)parentNode;
 				var source = Values [parentNode.Parent];
