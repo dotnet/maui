@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz44216">
+	<ContentPage.Behaviors>
+		<local:Bz44216Behavior MinLengh="5" />
+	</ContentPage.Behaviors>
+</ContentPage>

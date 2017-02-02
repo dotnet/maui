@@ -297,7 +297,7 @@ namespace Xamarin.Forms.Xaml
 				return;
 
 			//If we can assign that value to a normal property, let's do it
-			if (xpe == null && TrySetProperty(xamlelement, localName, value, lineInfo, serviceProvider, out xpe))
+			if (xpe == null && TrySetProperty(xamlelement, localName, value, lineInfo, serviceProvider, context, out xpe))
 				return;
 
 			//If it's an already initialized property, add to it
@@ -423,7 +423,7 @@ namespace Xamarin.Forms.Xaml
 			return false;
 		}
 
-		static bool TrySetProperty(object element, string localName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, out Exception exception)
+		static bool TrySetProperty(object element, string localName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, HydratationContext context, out Exception exception)
 		{
 			exception = null;
 
@@ -433,12 +433,28 @@ namespace Xamarin.Forms.Xaml
 			if (propertyInfo == null || !propertyInfo.CanWrite || (setter = propertyInfo.SetMethod) == null)
 				return false;
 
+			if (!IsVisibleFrom(setter, context.RootElement))
+				return false;
+
 			object convertedValue = value.ConvertTo(propertyInfo.PropertyType, () => propertyInfo, serviceProvider);
 			if (convertedValue != null && !propertyInfo.PropertyType.IsInstanceOfType(convertedValue))
 				return false;
 
 			setter.Invoke(element, new object [] { convertedValue });
 			return true;
+		}
+
+		static bool IsVisibleFrom(MethodInfo setter, object rootElement)
+		{
+			if (setter.IsPublic)
+				return true;
+			if (setter.IsPrivate && setter.DeclaringType == rootElement.GetType())
+				return true;
+			if ((setter.IsAssembly || setter.IsFamilyOrAssembly) && setter.DeclaringType.AssemblyQualifiedName == rootElement.GetType().AssemblyQualifiedName)
+				return true;
+			if (setter.IsFamily && setter.DeclaringType.IsAssignableFrom(rootElement.GetType()))
+				return true;
+			return false;
 		}
 
 		static bool TryAddToProperty(object element, string localName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, out Exception exception)
