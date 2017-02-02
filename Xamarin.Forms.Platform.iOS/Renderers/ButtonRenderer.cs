@@ -38,7 +38,10 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)
+			{
 				Control.TouchUpInside -= OnButtonTouchUpInside;
+				Control.TouchDown -= OnButtonTouchDown;
+			}
 
 			base.Dispose(disposing);
 		}
@@ -60,6 +63,7 @@ namespace Xamarin.Forms.Platform.iOS
 					_buttonTextColorDefaultDisabled = Control.TitleColor(UIControlState.Disabled);
 
 					Control.TouchUpInside += OnButtonTouchUpInside;
+					Control.TouchDown += OnButtonTouchDown;
 				}
 
 				UpdateText();
@@ -103,7 +107,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnButtonTouchUpInside(object sender, EventArgs eventArgs)
 		{
+			((IButtonController)Element)?.SendReleased();
 			((IButtonController)Element)?.SendClicked();
+		}
+
+		void OnButtonTouchDown(object sender, EventArgs eventArgs)
+		{
+			((IButtonController)Element)?.SendPressed();
 		}
 
 		void UpdateBorder()

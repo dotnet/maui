@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Xamarin.Forms.Internals;
@@ -20,7 +21,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.OnElementChanged(e);
 
 			var button = new WButton();
+			button.ClickMode = ClickMode.Press;
 			button.Click += HandleButtonClick;
+			button.AddHandler(UIElement.TapEvent, new EventHandler<GestureEventArgs>(HandleButtonTap), true);
 			SetNativeControl(button);
 
 			UpdateContent();
@@ -60,9 +63,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void HandleButtonClick(object sender, RoutedEventArgs e)
 		{
-			Button buttonView = Element;
-			if (buttonView != null)
-				((IButtonController)buttonView).SendClicked();
+			((IButtonController)Element)?.SendPressed();
+		}
+
+		void HandleButtonTap(object sender, GestureEventArgs e)
+		{
+			((IButtonController)Element)?.SendReleased();
+			((IButtonController)Element)?.SendClicked();
 		}
 
 		void UpdateBackground()

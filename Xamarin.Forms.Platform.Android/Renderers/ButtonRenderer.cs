@@ -7,6 +7,8 @@ using Android.Util;
 using static System.String;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
+using AMotionEvent = Android.Views.MotionEvent;
+using AMotionEventActions = Android.Views.MotionEventActions;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
@@ -96,6 +98,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					button = CreateNativeControl();
 					button.SetOnClickListener(ButtonClickListener.Instance.Value);
+					button.SetOnTouchListener(ButtonTouchListener.Instance.Value);
 					button.Tag = this;
 					SetNativeControl(button);
 					_textColorSwitcher = new TextColorSwitcher(button.TextColors);
@@ -301,6 +304,29 @@ namespace Xamarin.Forms.Platform.Android
 				var renderer = v.Tag as ButtonRenderer;
 				if (renderer != null)
 					((IButtonController)renderer.Element).SendClicked();
+			}
+		}
+
+		class ButtonTouchListener : Object, IOnTouchListener
+		{
+			public static readonly Lazy<ButtonTouchListener> Instance = new Lazy<ButtonTouchListener>(() => new ButtonTouchListener());
+
+			public bool OnTouch(AView v, AMotionEvent e)
+			{
+				var renderer = v.Tag as ButtonRenderer;
+				if (renderer != null)
+				{
+					var buttonController = renderer.Element as IButtonController;
+					if (e.Action == AMotionEventActions.Down)
+					{
+						buttonController?.SendPressed();
+					}
+					else if (e.Action == AMotionEventActions.Up)
+					{
+						buttonController?.SendReleased();
+					}
+				}
+				return false;
 			}
 		}
 	}

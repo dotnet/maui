@@ -116,13 +116,18 @@ namespace Xamarin.Forms
 
 		void IButtonController.SendClicked()
 		{
-			ICommand cmd = Command;
-			if (cmd != null)
-				cmd.Execute(CommandParameter);
+			Command?.Execute(CommandParameter);
+			Clicked?.Invoke(this, EventArgs.Empty);
+		}
 
-			EventHandler handler = Clicked;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
+		void IButtonController.SendPressed()
+		{
+			Pressed?.Invoke(this, EventArgs.Empty);
+		}
+
+		void IButtonController.SendReleased()
+		{
+			Released?.Invoke(this, EventArgs.Empty);
 		}
 
 		public FontAttributes FontAttributes
@@ -145,6 +150,10 @@ namespace Xamarin.Forms
 		}
 
 		public event EventHandler Clicked;
+
+		public event EventHandler Pressed;
+
+		public event EventHandler Released;
 
 		public Button()
 		{

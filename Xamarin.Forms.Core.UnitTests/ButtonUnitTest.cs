@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestTappedEvent ()
+		public void TestClickedvent ()
 		{
 			var view = new Button ();
 
@@ -45,6 +45,32 @@ namespace Xamarin.Forms.Core.UnitTests
 			((IButtonController) view).SendClicked ();
 
 			Assert.True (activated);
+		}
+
+		[Test]
+		public void TestPressedEvent ()
+		{
+			var view = new Button();
+
+			bool pressed = false;
+			view.Pressed += (sender, e) => pressed = true;
+
+			((IButtonController)view).SendPressed();
+
+			Assert.True(pressed);
+		}
+
+		[Test]
+		public void TestReleasedEvent ()
+		{
+			var view = new Button();
+
+			bool released = false;
+			view.Released += (sender, e) => released = true;
+
+			((IButtonController)view).SendReleased();
+
+			Assert.True(released);
 		}
 
 		protected override Button CreateSource()
