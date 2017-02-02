@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[TestCase(typeof(bool), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(Dictionary<string, string>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(List<string>), typeof(BindableObject), ExpectedResult = false)]
+		[TestCase(typeof(List<string>), typeof(IEnumerable<string>), ExpectedResult = true)]
 		[TestCase(typeof(List<Button>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(Queue<KeyValuePair<string, string>>), typeof(BindableObject), ExpectedResult = false)]
 		[TestCase(typeof(double), typeof(double), ExpectedResult = true)]
