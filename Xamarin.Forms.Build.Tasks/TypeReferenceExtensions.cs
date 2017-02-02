@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public static bool ImplementsInterface(this TypeReference typeRef, TypeReference @interface)
 		{
 			var typeDef = typeRef.Resolve();
-			if (typeDef.Interfaces.Any(tr => tr.FullName == @interface.FullName))
+			if (typeDef.Interfaces.Any(tr => tr.InterfaceType.FullName == @interface.FullName))
 				return true;
 			var baseTypeRef = typeDef.BaseType;
 			if (baseTypeRef != null && baseTypeRef.FullName != "System.Object")
@@ -99,13 +99,13 @@ namespace Xamarin.Forms.Build.Tasks
 			interfaceReference = null;
 			genericArguments = null;
 			var typeDef = typeRef.Resolve();
-			TypeReference iface;
+			InterfaceImplementation iface;
 			if ((iface = typeDef.Interfaces.FirstOrDefault(tr =>
-							tr.FullName.StartsWith(@interface, StringComparison.Ordinal) &&
-							tr.IsGenericInstance && (tr as GenericInstanceType).HasGenericArguments)) != null)
+							tr.InterfaceType.FullName.StartsWith(@interface, StringComparison.Ordinal) &&
+							tr.InterfaceType.IsGenericInstance && (tr.InterfaceType as GenericInstanceType).HasGenericArguments)) != null)
 			{
-				interfaceReference = iface as GenericInstanceType;
-				genericArguments = (iface as GenericInstanceType).GenericArguments;
+				interfaceReference = iface.InterfaceType as GenericInstanceType;
+				genericArguments = (iface.InterfaceType as GenericInstanceType).GenericArguments;
 				return true;
 			}
 			var baseTypeRef = typeDef.BaseType;
@@ -157,7 +157,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var typeDef = typeRef.Resolve();
 			if (TypeRefComparer.Default.Equals(typeDef, baseClass.Resolve()))
 				return true;
-			if (typeDef.Interfaces.Any(ir => TypeRefComparer.Default.Equals(ir, baseClass)))
+			if (typeDef.Interfaces.Any(ir => TypeRefComparer.Default.Equals(ir.InterfaceType, baseClass)))
 				return true;
 			if (typeDef.BaseType == null)
 				return false;
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				foreach (var face in typeDef.Interfaces)
 				{
-					var m = face.GetMethod(predicate);
+					var m = face.InterfaceType.GetMethod(predicate);
 					if (m != null)
 						return m;
 				}
@@ -226,13 +226,13 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				foreach (var face in typeDef.Interfaces)
 				{
-					if (face.IsGenericInstance && typeRef is GenericInstanceType)
+					if (face.InterfaceType.IsGenericInstance && typeRef is GenericInstanceType)
 					{
 						int i = 0;
 						foreach (var arg in ((GenericInstanceType)typeRef).GenericArguments)
-							((GenericInstanceType)face).GenericArguments[i++] = module.Import(arg);
+							((GenericInstanceType)face.InterfaceType).GenericArguments[i++] = module.ImportReference(arg);
 					}
-					foreach (var tuple in face.GetMethods(predicate, module))
+					foreach (var tuple in face.InterfaceType.GetMethods(predicate, module))
 						yield return tuple;
 				}
 				yield break;
@@ -253,7 +253,7 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var op in implicitOperators) {
 					var cast = op.Item1;
 					var opDeclTypeRef = op.Item2;
-					var castDef = module.Import(cast).ResolveGenericParameters(opDeclTypeRef, module);
+					var castDef = module.ImportReference(cast).ResolveGenericParameters(opDeclTypeRef, module);
 					var returnType = castDef.ReturnType;
 					if (returnType.IsGenericParameter)
 						returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments [((GenericParameter)returnType).Position];

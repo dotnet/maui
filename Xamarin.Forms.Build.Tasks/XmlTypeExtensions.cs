@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 					var assemblydefinition = module.Assembly.Name.Name == asm.AssemblyName ?
 												module.Assembly :
-												module.AssemblyResolver.Resolve(asm.AssemblyName);
+												module.AssemblyResolver.Resolve(AssemblyNameReference.Parse(asm.AssemblyName));
 
 					type = assemblydefinition.MainModule.GetType(asm.ClrNamespace, name);
 					if (type == null)
@@ -108,14 +108,14 @@ namespace Xamarin.Forms.Build.Tasks
 			if (type != null && typeArguments != null && type.HasGenericParameters)
 			{
 				type =
-					module.Import(type)
+					module.ImportReference(type)
 						.MakeGenericInstanceType(typeArguments.Select(x => GetTypeReference(x, module, xmlInfo)).ToArray());
 			}
 
 			if (type == null)
 				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}", elementName, namespaceURI), xmlInfo);
 
-			return module.Import(type);
+			return module.ImportReference(type);
 		}
 	}
 }

@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[TestCase(typeof(Bar<string>), typeof(Foo<string>), ExpectedResult = true)]
 		public bool TestInheritsFromOrImplements(Type typeRef, Type baseClass)
 		{
-			return TypeReferenceExtensions.InheritsFromOrImplements(module.Import(typeRef), module.Import(baseClass));
+			return TypeReferenceExtensions.InheritsFromOrImplements(module.ImportReference(typeRef), module.ImportReference(baseClass));
 		}
 
 		[Test]

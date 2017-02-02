@@ -31,9 +31,9 @@ namespace Xamarin.Forms.Core.XamlC
 			if (typeRef == null)
 				goto error;
 
-			var getTypeFromHandle = module.Import(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-			yield return Instruction.Create(OpCodes.Ldtoken, module.Import(typeRef));
-			yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+			var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+			yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeRef));
+			yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
 			yield break;
 
 		error:

@@ -17,8 +17,8 @@ namespace Xamarin.Forms.Core.XamlC
 			if (IsNullOrEmpty(value))
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Binding)}", node);
 
-			var bindingCtor = module.Import(typeof(Binding)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 6);
-			var bindingCtorRef = module.Import(bindingCtor);
+			var bindingCtor = module.ImportReference(typeof(Binding)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 6);
+			var bindingCtorRef = module.ImportReference(bindingCtor);
 
 			yield return Instruction.Create(OpCodes.Ldstr, value);
 			yield return Instruction.Create(OpCodes.Ldc_I4, (int)BindingMode.Default);

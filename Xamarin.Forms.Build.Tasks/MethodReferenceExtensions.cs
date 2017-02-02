@@ -13,16 +13,16 @@ namespace Xamarin.Forms.Build.Tasks
 			if (declaringTypeRef == null)
 				throw new ArgumentNullException(nameof(declaringTypeRef));
 
-			var reference = new MethodReference(self.Name, module.Import(self.ReturnType))
+			var reference = new MethodReference(self.Name, module.ImportReference(self.ReturnType))
 			{
-				DeclaringType = module.Import(declaringTypeRef),
+				DeclaringType = module.ImportReference(declaringTypeRef),
 				HasThis = self.HasThis,
 				ExplicitThis = self.ExplicitThis,
 				CallingConvention = self.CallingConvention
 			};
 
 			foreach (var parameter in self.Parameters) {
-				var p = parameter.ParameterType.IsGenericParameter ? parameter.ParameterType : module.Import(parameter.ParameterType);
+				var p = parameter.ParameterType.IsGenericParameter ? parameter.ParameterType : module.ImportReference(parameter.ParameterType);
 				reference.Parameters.Add(new ParameterDefinition(p));
 			}
 
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (self.HasParameters)
 			{
 				for (var i = 0; i < self.Parameters.Count; i++)
-					self.Parameters[i].ParameterType = module.Import(self.Parameters[i].ParameterType);
+					self.Parameters[i].ParameterType = module.ImportReference(self.Parameters[i].ParameterType);
 			}
 		}
 

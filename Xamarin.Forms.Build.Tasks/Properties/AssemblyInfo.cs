@@ -27,4 +27,5 @@ using System.Runtime.CompilerServices;
 //[assembly: AssemblyKeyFile("")]
 
 [assembly: InternalsVisibleTo("xamlg")]
+[assembly: InternalsVisibleTo("xamlc")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]

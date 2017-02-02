@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Xaml
 		{
 			var xaml = GetXamlForType(callingType);
 			if (string.IsNullOrEmpty(xaml))
-				throw new XamlParseException(string.Format("No embeddedresources found for {0}", callingType), new XmlLineInfo());
+				throw new XamlParseException(string.Format("No embeddedresource found for {0}", callingType), new XmlLineInfo());
 			Load(view, xaml);
 		}
 
