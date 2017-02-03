@@ -74,6 +74,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (disposing && Control != null && ManageNativeControlLifetime)
 			{
+				Control.RemoveFromSuperview();
 				Control.Dispose();
 				Control = null;
 			}
