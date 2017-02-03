@@ -2,7 +2,6 @@
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -38,11 +37,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			throw new NotSupportedException();
 		}
 
-		class WrapperControl : ContentControl
+		class WrapperControl : Canvas
 		{
 			readonly View _view;
 
-			FrameworkElement FrameworkElement => Content as FrameworkElement;
+			FrameworkElement FrameworkElement { get; }
 
 			public WrapperControl(View view)
 			{
@@ -52,9 +51,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				IVisualElementRenderer renderer = Platform.CreateRenderer(view);
 				Platform.SetRenderer(view, renderer);
 
-				NotifyWrapperAwareDescendants(view, renderer);
-
-				Content = renderer.ContainerElement;
+				FrameworkElement = renderer.ContainerElement;
+				Children.Add(renderer.ContainerElement);
 
 				// make sure we re-measure once the template is applied
 				if (FrameworkElement != null)
@@ -99,25 +97,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				FrameworkElement?.Measure(availableSize);
 				
 				return result;
-			}
-
-			void NotifyWrapperAwareDescendants(Element currentView, IVisualElementRenderer currentRenderer)
-			{
-				// If any of the child renderers need to handle anything differently because they're in 
-				// a wrapper in a list view, let them know that they're being wrapped
-				var wrapperAwareRenderer = currentRenderer as IWrapperAware;
-				wrapperAwareRenderer?.NotifyWrapped();
-
-				foreach (Element child in ((IElementController)currentView).LogicalChildren)
-				{
-					var childView = child as View;
-					if (childView == null)
-					{
-						continue;
-					}
-
-					NotifyWrapperAwareDescendants(childView, Platform.GetRenderer(childView));
-				}
 			}
 		}
 	}

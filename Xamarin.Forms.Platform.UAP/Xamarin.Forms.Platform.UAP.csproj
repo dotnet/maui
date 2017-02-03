@@ -140,12 +140,6 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsComboBox.cs">
       <Link>FormsComboBox.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsDatePicker.cs">
-      <Link>FormsDatePicker.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTimePicker.cs">
-      <Link>FormsTimePicker.cs</Link>
-    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\HorizontalTextAlignmentConverter.cs">
       <Link>HorizontalTextAlignmentConverter.cs</Link>
     </Compile>
@@ -154,9 +148,6 @@
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\IToolbarProvider.cs">
       <Link>IToolbarProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IWrapperAware.cs">
-      <Link>IWrapperAware.cs</Link>
     </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeBindingExtensions.cs">
       <Link>NativeBindingExtensions.cs</Link>

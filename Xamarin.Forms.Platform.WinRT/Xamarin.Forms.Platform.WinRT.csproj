@@ -80,9 +80,6 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="FormsComboBox.cs" />
-    <Compile Include="IWrapperAware.cs" />
-    <Compile Include="FormsDatePicker.cs" />
-    <Compile Include="FormsTimePicker.cs" />
     <Compile Include="FormsTextBox.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="IToolbarProvider.cs" />
