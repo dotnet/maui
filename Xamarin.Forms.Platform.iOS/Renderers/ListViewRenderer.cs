@@ -24,12 +24,20 @@ namespace Xamarin.Forms.Platform.iOS
 		RectangleF _previousFrame;
 		ScrollToRequestedEventArgs _requestedScroll;
 		bool _shouldEstimateRowHeight = true;
-			
+
 		FormsUITableViewController _tableViewController;
 		IListViewController Controller => Element;
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 		public override UIViewController ViewController => _tableViewController;
 		bool _disposed;
+		protected UITableViewRowAnimation InsertRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
+		protected UITableViewRowAnimation DeleteRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
+		protected UITableViewRowAnimation ReloadRowsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
+		protected UITableViewRowAnimation ReloadSectionsAnimation
+		{
+			get { return _dataSource.ReloadSectionsAnimation; }
+			set { _dataSource.ReloadSectionsAnimation = value; }
+		}
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -468,7 +476,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				Control.TableHeaderView = null;
 				_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
-				
+
 				var platform = _headerRenderer.Element.Platform as Platform;
 				if (platform != null)
 					platform.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
@@ -501,7 +509,7 @@ namespace Xamarin.Forms.Platform.iOS
 						goto case NotifyCollectionChangedAction.Reset;
 
 					Control.BeginUpdates();
-					Control.InsertRows(GetPaths(section, e.NewStartingIndex, e.NewItems.Count), UITableViewRowAnimation.Automatic);
+					Control.InsertRows(GetPaths(section, e.NewStartingIndex, e.NewItems.Count), InsertRowsAnimation);
 					Control.EndUpdates();
 
 					break;
@@ -510,7 +518,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (e.OldStartingIndex == -1 || groupReset)
 						goto case NotifyCollectionChangedAction.Reset;
 					Control.BeginUpdates();
-					Control.DeleteRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), UITableViewRowAnimation.Automatic);
+					Control.DeleteRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), DeleteRowsAnimation);
 
 					Control.EndUpdates();
 
@@ -547,7 +555,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (e.OldStartingIndex == -1 || groupReset)
 						goto case NotifyCollectionChangedAction.Reset;
 					Control.BeginUpdates();
-					Control.ReloadRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), UITableViewRowAnimation.Automatic);
+					Control.ReloadRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), ReloadRowsAnimation);
 					Control.EndUpdates();
 
 					if (_estimatedRowHeight && e.OldStartingIndex == 0)
@@ -574,7 +582,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateRowHeight()
 		{
 			var rowHeight = Element.RowHeight;
-			
+
 			if (Element.HasUnevenRows && rowHeight == -1)
 				Control.RowHeight = UITableView.AutomaticDimension;
 			else
@@ -619,7 +627,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 			}
 
-			internal nfloat GetEstimatedRowHeight(UITableView table) 
+			internal nfloat GetEstimatedRowHeight(UITableView table)
 			{
 				if (List.RowHeight != -1)
 				{
@@ -639,11 +647,11 @@ namespace Xamarin.Forms.Platform.iOS
 				// We're going to base our estimate off of the first cell 
 				var firstCell = templatedItems.First();
 
-				if (firstCell.Height > 0) 
+				if (firstCell.Height > 0)
 				{
 					// Seems like we've got cells which already specify their height; since the heights are known,
 					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights
-					return 0; 
+					return 0;
 				}
 
 				return CalculateHeightForCell(table, firstCell);
@@ -726,6 +734,7 @@ namespace Xamarin.Forms.Platform.iOS
 			bool _isDragging;
 			bool _selectionFromNative;
 			bool _disposed;
+			public UITableViewRowAnimation ReloadSectionsAnimation { get; set; } = UITableViewRowAnimation.Automatic;
 
 			public ListViewDataSource(ListViewDataSource source)
 			{
@@ -990,7 +999,7 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 				}
 
-				_uiTableView.ReloadSections(NSIndexSet.FromIndex(groupIndex), UITableViewRowAnimation.Automatic);
+				_uiTableView.ReloadSections(NSIndexSet.FromIndex(groupIndex), ReloadSectionsAnimation);
 				_uiTableView.SelectRow(currentSelected, false, UITableViewScrollPosition.None);
 			}
 
@@ -1161,11 +1170,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void ViewWillAppear(bool animated)
 		{
-		    if (!_list.IsRefreshing || !_refresh.Refreshing) return;
+			if (!_list.IsRefreshing || !_refresh.Refreshing) return;
 
-		    // Restart the refreshing to get the animation to trigger
-		    UpdateIsRefreshing(false);
-		    UpdateIsRefreshing(true);
+			// Restart the refreshing to get the animation to trigger
+			UpdateIsRefreshing(false);
+			UpdateIsRefreshing(true);
 		}
 
 		protected override void Dispose(bool disposing)
