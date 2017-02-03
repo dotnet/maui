@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			ContentView.PostsBoundsChangedNotifications = true;
 			NSNotificationCenter.DefaultCenter.AddObserver(this, new Selector(nameof(UpdateScrollPosition)),
 				BoundsChangedNotification, ContentView);
+			HasVerticalScroller = true;
 		}
 
 		IScrollViewController Controller => Element as IScrollViewController;
