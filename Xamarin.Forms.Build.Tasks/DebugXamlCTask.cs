@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Build.Tasks
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly, new ReaderParameters {
 				ReadWrite = true,
 				ReadSymbols = DebugSymbols,
-				SymbolReaderProvider = System.Type.GetType("Mono.Runtime") != null ? ((ISymbolReaderProvider)(new MdbReaderProvider())) : ((ISymbolReaderProvider)new PdbReaderProvider()),
+				SymbolReaderProvider = GetSymbolReaderProvider(Assembly, DebugSymbols),
 				AssemblyResolver = resolver
 			})) {
 				foreach (var module in assemblyDefinition.Modules) {
@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				Logger.LogString(1, "Writing the assembly... ");
 				assemblyDefinition.Write(new WriterParameters {
-					SymbolWriterProvider = System.Type.GetType("Mono.Runtime") != null ? ((ISymbolWriterProvider)(new MdbWriterProvider())) : ((ISymbolWriterProvider)new MdbWriterProvider()),
+					SymbolWriterProvider = GetSymbolWriterProvider(Assembly, DebugSymbols),
 					WriteSymbols = DebugSymbols
 				});
 			}
