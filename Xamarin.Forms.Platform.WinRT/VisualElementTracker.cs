@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				UpdateScaleAndRotation(Element, Container);
 			}
-			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName ||)e.PropertyName == VisualElement.ScaleYProperty.PropertyName
 			{
 				UpdateScaleAndRotation(Element, Container);
 			}
@@ -470,9 +470,8 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
-			double scale = view.Scale;
 			frameworkElement.RenderTransformOrigin = new Windows.Foundation.Point(anchorX, anchorY);
-			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = scale, ScaleY = scale };
+			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = view.Scale * view.ScaleX, view.Scale * view.ScaleY = scale };
 
 			UpdateRotation(view, frameworkElement);
 		}

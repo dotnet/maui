@@ -48,6 +48,10 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty ScaleProperty = BindableProperty.Create("Scale", typeof(double), typeof(VisualElement), 1d);
 
+		public static readonly BindableProperty ScaleXProperty = BindableProperty.Create("ScaleX", typeof(double), typeof(VisualElement), 1d);
+
+		public static readonly BindableProperty ScaleYProperty = BindableProperty.Create("ScaleY", typeof(double), typeof(VisualElement), 1d);
+
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
@@ -240,6 +244,16 @@ namespace Xamarin.Forms
 		{
 			get { return (double)GetValue(ScaleProperty); }
 			set { SetValue(ScaleProperty, value); }
+		}
+
+		public double ScaleX {
+			get { return (double)GetValue(ScaleXProperty); }
+			set { SetValue(ScaleXProperty, value); }
+		}
+
+		public double ScaleY {
+			get { return (double)GetValue(ScaleYProperty); }
+			set { SetValue(ScaleYProperty, value); }
 		}
 
 		public Style Style

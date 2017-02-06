@@ -160,7 +160,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				MaybeInvalidate();
 			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName || e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
 				UpdateScaleAndRotation(Model, Element);
-			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName)
+			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName || e.PropertyName == VisualElement.ScaleYProperty.PropertyName )
 				UpdateScaleAndRotation(Model, Element);
 			else if (e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName ||
 					 e.PropertyName == VisualElement.RotationProperty.PropertyName || e.PropertyName == VisualElement.RotationXProperty.PropertyName || e.PropertyName == VisualElement.RotationYProperty.PropertyName)
@@ -350,9 +350,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
-			double scale = view.Scale;
 			frameworkElement.RenderTransformOrigin = new System.Windows.Point(anchorX, anchorY);
-			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = scale, ScaleY = scale };
+			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = view.Scale * view.ScaleX, ScaleY = view.Scale * view.ScaleY };
 
 			UpdateRotation(view, frameworkElement);
 		}

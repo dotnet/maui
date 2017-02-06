@@ -39,19 +39,41 @@ namespace Xamarin.Forms.Controls
 			scaleSlider.SetBinding(Slider.ValueProperty,
 				new Binding("Scale", BindingMode.TwoWay));
 
+			// Label and Slider for ScaleX property.
+			Label scaleXSliderValue = new Label {
+				VerticalTextAlignment = TextAlignment.Center
+			};
+			Grid.SetRow(scaleXSliderValue, 1);
+			Grid.SetColumn(scaleXSliderValue, 0);
+
+			Slider scaleXSlider = new Slider {
+				Maximum = 10
+			};
+			Grid.SetRow(scaleXSlider, 1);
+			Grid.SetColumn(scaleXSlider, 1);
+
+			// Set Bindings.
+			scaleXSliderValue.BindingContext = scaleXSlider;
+			scaleXSliderValue.SetBinding(Label.TextProperty,
+				new Binding("Value", BindingMode.OneWay, null, null, "ScaleX = {0:F1}"));
+
+			scaleXSlider.BindingContext = label;
+			scaleXSlider.SetBinding(Slider.ValueProperty,
+				new Binding("ScaleX", BindingMode.TwoWay));
+
 			// Label and Slider for Rotation property.
 			Label rotationSliderValue = new Label
 			{
 				VerticalTextAlignment = TextAlignment.Center
 			};
-			Grid.SetRow(rotationSliderValue, 1);
+			Grid.SetRow(rotationSliderValue, 2);
 			Grid.SetColumn(rotationSliderValue, 0);
 
 			Slider rotationSlider = new Slider
 			{
 				Maximum = 360
 			};
-			Grid.SetRow(rotationSlider, 1);
+			Grid.SetRow(rotationSlider, 2);
 			Grid.SetColumn(rotationSlider, 1);
 
 			// Set Bindings.
@@ -68,7 +90,7 @@ namespace Xamarin.Forms.Controls
 			{
 				VerticalTextAlignment = TextAlignment.Center
 			};
-			Grid.SetRow(anchorxStepperValue, 2);
+			Grid.SetRow(anchorxStepperValue, 3);
 			Grid.SetColumn(anchorxStepperValue, 0);
 
 			Stepper anchorxStepper = new Stepper
@@ -77,7 +99,7 @@ namespace Xamarin.Forms.Controls
 				Minimum = -1,
 				Increment = 0.5
 			};
-			Grid.SetRow(anchorxStepper, 2);
+			Grid.SetRow(anchorxStepper, 3);
 			Grid.SetColumn(anchorxStepper, 1);
 
 			// Set bindings.
@@ -94,7 +116,7 @@ namespace Xamarin.Forms.Controls
 			{
 				VerticalTextAlignment = TextAlignment.Center
 			};
-			Grid.SetRow(anchoryStepperValue, 3);
+			Grid.SetRow(anchoryStepperValue, 4);
 			Grid.SetColumn(anchoryStepperValue, 0);
 
 			Stepper anchoryStepper = new Stepper
@@ -103,7 +125,7 @@ namespace Xamarin.Forms.Controls
 				Minimum = -1,
 				Increment = 0.5
 			};
-			Grid.SetRow(anchoryStepper, 3);
+			Grid.SetRow(anchoryStepper, 4);
 			Grid.SetColumn(anchoryStepper, 1);
 
 			// Set bindings.
@@ -130,6 +152,7 @@ namespace Xamarin.Forms.Controls
 							new RowDefinition { Height = GridLength.Auto },
 							new RowDefinition { Height = GridLength.Auto },
 							new RowDefinition { Height = GridLength.Auto },
+							new RowDefinition { Height = GridLength.Auto },
 						},
 						ColumnDefinitions = 
 						{
@@ -140,6 +163,8 @@ namespace Xamarin.Forms.Controls
 						{
 							scaleSliderValue,
 							scaleSlider,
+							scaleXSliderValue,
+							scaleXSlider,
 							rotationSliderValue,
 							rotationSlider,
 							anchorxStepperValue, 
