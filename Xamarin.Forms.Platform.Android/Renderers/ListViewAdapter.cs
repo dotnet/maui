@@ -371,8 +371,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (position < 0 || position >= Count)
 				return;
 
+			if(_lastSelected != view)
+				_fromNative = true;
 			Select(position, view);
-			_fromNative = true;
 			Controller.NotifyRowTapped(position, cell);
 		}
 

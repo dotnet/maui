@@ -914,7 +914,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
 
-				_selectionFromNative = true;
+				if (!cell.Selected)
+					_selectionFromNative = true;
 
 				tableView.EndEditing(true);
 				Controller.NotifyRowTapped(indexPath.Section, indexPath.Row, formsCell);
