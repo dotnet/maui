@@ -1,3 +1,4 @@
+<img src="banner.png" alt="Xamarin.Forms banner" height="145" >
 # Xamarin.Forms #
 
 Xamarin.Forms provides a way to quickly build native apps for iOS, Android, and Windows, completely in C#.
