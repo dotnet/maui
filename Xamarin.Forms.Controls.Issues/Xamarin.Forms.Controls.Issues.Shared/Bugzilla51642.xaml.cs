@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
         }
 	}
 
+	[Preserve(AllMembers=true)]
     class Bz51642VM
     {
         public IList<string> Items {
