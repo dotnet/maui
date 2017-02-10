@@ -11,4 +11,9 @@ namespace Xamarin.Forms.Xaml
 	{
 		object ProvideValue(IServiceProvider serviceProvider);
 	}
+
+	[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+	public sealed class AcceptEmptyServiceProviderAttribute : Attribute
+	{
+	}
 }

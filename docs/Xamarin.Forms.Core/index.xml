@@ -494,6 +494,7 @@
       <Type Name="ToolbarPlacement" Kind="Enumeration" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Xaml">
+      <Type Name="AcceptEmptyServiceProviderAttribute" Kind="Class" />
       <Type Name="IMarkupExtension" Kind="Interface" />
       <Type Name="IMarkupExtension`1" DisplayName="IMarkupExtension&lt;T&gt;" Kind="Interface" />
       <Type Name="IProvideValueTarget" Kind="Interface" />

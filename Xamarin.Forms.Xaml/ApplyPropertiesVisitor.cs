@@ -91,12 +91,12 @@ namespace Xamarin.Forms.Xaml
 			var valueProvider = value as IValueProvider;
 
 			if (markupExtension != null) {
-				var serviceProvider = new XamlServiceProvider(node, Context);
+				var serviceProvider = value.GetType().GetTypeInfo().GetCustomAttribute<AcceptEmptyServiceProviderAttribute>() == null ? new XamlServiceProvider(node, Context) : null;
 				value = markupExtension.ProvideValue(serviceProvider);
 			}
 
 			if (valueProvider != null) {
-				var serviceProvider = new XamlServiceProvider(node, Context);
+				var serviceProvider = value.GetType().GetTypeInfo().GetCustomAttribute<AcceptEmptyServiceProviderAttribute>() == null ? new XamlServiceProvider(node, Context) : null;
 				value = valueProvider.ProvideValue(serviceProvider);
 			}
 

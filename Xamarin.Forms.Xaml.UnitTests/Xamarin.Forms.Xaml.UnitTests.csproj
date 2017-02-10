@@ -441,6 +441,10 @@
     </Compile>
     <Compile Include="Issues\Bz44216.xaml.cs">
       <DependentUpon>Bz44216.xaml</DependentUpon>
+      <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AcceptEmptyServiceProvider.xaml.cs">
+      <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -803,6 +807,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz44216.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AcceptEmptyServiceProvider.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
