@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates toolbar positions for pages on the Windows platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ToolbarPlacement</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the toolbar should be placed at the bottom of the screen.</summary>
       </Docs>
     </Member>
     <Member MemberName="Default">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ToolbarPlacement</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the toolbar should be placed at the system default location on the screen.</summary>
       </Docs>
     </Member>
     <Member MemberName="Top">
@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ToolbarPlacement</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the toolbar should be placed at the top of the screen.</summary>
       </Docs>
     </Member>
   </Members>

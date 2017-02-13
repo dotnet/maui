@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates status bar hiding behavior preferences.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the default behavior on the system should be used.</summary>
       </Docs>
     </Member>
     <Member MemberName="False">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the status bar should not be hidden.</summary>
       </Docs>
     </Member>
     <Member MemberName="True">
@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates that the status bar should not be hidden.</summary>
       </Docs>
     </Member>
   </Members>
