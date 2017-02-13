@@ -52,31 +52,13 @@ namespace Xamarin.Forms.Core.XamlC
 			if (typeName == null || propertyName == null)
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(BindableProperty)}", node);
 
-			var typeRef = GetTypeReference(typeName, module, node);
+			var typeRef = XmlTypeExtensions.GetTypeReference(typeName, module, node);
 			if (typeRef == null)
 				throw new XamlParseException($"Can't resolve {typeName}", node);
 			bpRef = GetBindablePropertyFieldReference(typeRef, propertyName, module);
 			if (bpRef == null)
 				throw new XamlParseException($"Can't resolve {propertyName} on {typeRef.Name}", node);
 			return bpRef;
-		}
-
-		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode iNode)
-		{
-			var split = xmlType.Split(':');
-			if (split.Length > 2)
-				throw new XamlParseException($"Type \"{xmlType}\" is invalid", iNode);
-
-			string prefix, name;
-			if (split.Length == 2) {
-				prefix = split [0];
-				name = split [1];
-			} else {
-				prefix = "";
-				name = split [0];
-			}
-			var namespaceuri = iNode.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			return XmlTypeExtensions.GetTypeReference(namespaceuri, name, module, iNode);
 		}
 
 		public static FieldReference GetBindablePropertyFieldReference(TypeReference typeRef, string propertyName, ModuleDefinition module)

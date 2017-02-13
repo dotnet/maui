@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
-			var typeRef = module.ImportReference(GetTypeReference(typename, module, node));
+			var typeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(typename, module, node as BaseNode));
 			var fieldRef = GetFieldReference(typeRef, membername, module);
 			var propertyDef = GetPropertyDefinition(typeRef, membername, module);
 
@@ -77,25 +77,6 @@ namespace Xamarin.Forms.Build.Tasks
 			memberRef = propertyDef.PropertyType;
 			var getterDef = module.ImportReference(propertyDef.GetMethod);
 			return new [] { Instruction.Create(OpCodes.Call, getterDef) };
-		}
-
-
-		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, IElementNode node)
-		{
-			var split = xmlType.Split(':');
-			if (split.Length > 2)
-				throw new XamlParseException($"Type \"{xmlType}\" is invalid", node as IXmlLineInfo);
-
-			string prefix, name;
-			if (split.Length == 2) {
-				prefix = split [0];
-				name = split [1];
-			} else {
-				prefix = "";
-				name = split [0];
-			}
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			return XmlTypeExtensions.GetTypeReference(new XmlType(namespaceuri, name, null), module, node as IXmlLineInfo);
 		}
 
 		public static FieldReference GetFieldReference(TypeReference typeRef, string fieldName, ModuleDefinition module)

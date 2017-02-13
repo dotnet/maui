@@ -6,6 +6,7 @@ using System.Xml;
 namespace Xamarin.Forms.Xaml
 {
 	[ContentProperty(nameof(Member))]
+	[ProvideCompiled("Xamarin.Forms.Build.Tasks.StaticExtension")]
 	public class StaticExtension : IMarkupExtension
 	{
 		public string Member { get; set; }

@@ -52,21 +52,28 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			}
 
-			if (typeref.FullName == "Xamarin.Forms.Xaml.StaticExtension") {
-				var markupProvider = new StaticExtension();
+			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
+			var compiledMarkupExtensionName = typeref.GetCustomAttribute(Module.ImportReference(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?[0].Value as string;
+			Type compiledMarkupExtensionType;
+			ICompiledMarkupExtension markupProvider;
+			if (compiledMarkupExtensionName != null &&
+				(compiledMarkupExtensionType = Type.GetType(compiledMarkupExtensionName)) != null &&
+				(markupProvider = Activator.CreateInstance(compiledMarkupExtensionType) as ICompiledMarkupExtension) != null) {
 
 				var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
 				typeref = Module.ImportReference(typeref);
 
 				var vardef = new VariableDefinition(typeref);
-				Context.Variables [node] = vardef;
+				Context.Variables[node] = vardef;
 				Context.Body.Variables.Add(vardef);
 
 				Context.IL.Append(il);
 				Context.IL.Emit(OpCodes.Stloc, vardef);
 
 				//clean the node as it has been fully exhausted
-				node.Properties.Clear();
+				foreach (var prop in node.Properties)
+					if (!node.SkipProperties.Contains(prop.Key))
+						node.SkipProperties.Add(prop.Key);
 				node.CollectionItems.Clear();
 				return;
 			}
@@ -171,47 +178,14 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Initobj, Module.ImportReference(typedef));
 				}
 
-				if (typeref.FullName == "Xamarin.Forms.Xaml.TypeExtension") {
+				if (typeref.FullName == "Xamarin.Forms.Xaml.ArrayExtension") {
 					var visitor = new SetPropertiesVisitor(Context);
 					foreach (var cnode in node.Properties.Values.ToList())
 						cnode.Accept(visitor, node);
 					foreach (var cnode in node.CollectionItems)
 						cnode.Accept(visitor, node);
 
-					//As we're stripping the TypeExtension bare, keep the type if we need it later (hint: we do need it)
-					INode ntype;
-					if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out ntype))
-						ntype = node.CollectionItems [0];
-
-					var type = ((ValueNode)ntype).Value as string;
-					var prefix = "";
-					if (type.Contains(":")) {
-						prefix = type.Split(':') [0].Trim();
-						type = type.Split(':') [1].Trim();
-					}
-					var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix);
-					Context.TypeExtensions [node] = new XmlType(namespaceuri, type, null).GetTypeReference(Module, node);
-
-					if (!node.SkipProperties.Contains(new XmlName("", "TypeName")))
-						node.SkipProperties.Add(new XmlName("", "TypeName"));
-					
-					var vardefref = new VariableDefinitionReference(vardef);
-					Context.IL.Append(SetPropertiesVisitor.ProvideValue(vardefref, Context, Module, node));
-					if (vardef != vardefref.VariableDefinition) {
-						Context.Variables [node] = vardefref.VariableDefinition;
-						Context.Body.Variables.Add(vardefref.VariableDefinition);
-					}
-				}
-
-				if (typeref.FullName == "Xamarin.Forms.Xaml.ArrayExtension")
-				{
-					var visitor = new SetPropertiesVisitor(Context);
-					foreach (var cnode in node.Properties.Values.ToList())
-						cnode.Accept(visitor, node);
-					foreach (var cnode in node.CollectionItems)
-						cnode.Accept(visitor, node);
-
-					var markupProvider = new ArrayExtension();
+					markupProvider = new ArrayExtension();
 
 					var il = markupProvider.ProvideValue(node, Module, Context, out typeref);
 
@@ -223,8 +197,12 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Stloc, vardef);
 
 					//clean the node as it has been fully exhausted
-					node.Properties.Remove(new XmlName("","Type"));
+					foreach (var prop in node.Properties)
+						if (!node.SkipProperties.Contains(prop.Key))
+							node.SkipProperties.Add(prop.Key);
 					node.CollectionItems.Clear();
+
+					return;
 				}
 			}
 		}

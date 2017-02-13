@@ -110,6 +110,7 @@
     <Compile Include="CompiledValueProviders\TriggerValueProvider.cs" />
     <Compile Include="CompiledValueProviders\PassthroughValueProvider.cs" />
     <Compile Include="CompiledConverters\ListStringTypeConverter.cs" />
+    <Compile Include="CompiledMarkupExtensions\TypeExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
