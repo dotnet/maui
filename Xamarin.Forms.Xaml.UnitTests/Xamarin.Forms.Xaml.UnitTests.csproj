@@ -409,6 +409,40 @@
     <Compile Include="Issues\Bz51567.xaml.cs">
       <DependentUpon>Bz51567.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Bz42531.xaml.cs">
+      <DependentUpon>Bz42531.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz45299.xaml.cs">
+      <DependentUpon>Bz45299.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz43733.xaml.cs">
+      <DependentUpon>Bz43733.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz44213.xaml.cs">
+      <DependentUpon>Bz44213.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DefaultCtorRouting.xaml.cs">
+      <DependentUpon>DefaultCtorRouting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DefaultCtorRouting2.xaml.cs">
+      <DependentUpon>DefaultCtorRouting2.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz43694.xaml.cs">
+      <DependentUpon>Bz43694.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz45891.xaml.cs">
+      <DependentUpon>Bz45891.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz44216.xaml.cs">
+      <DependentUpon>Bz44216.xaml</DependentUpon>
+      <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AcceptEmptyServiceProvider.xaml.cs">
+      <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Unreported009.xaml.cs">
+      <DependentUpon>Unreported009.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -737,6 +771,39 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz51567.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz42531.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz45299.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz43733.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz44213.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DefaultCtorRouting.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DefaultCtorRouting2.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz43694.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz45891.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz44216.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AcceptEmptyServiceProvider.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Unreported009.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
