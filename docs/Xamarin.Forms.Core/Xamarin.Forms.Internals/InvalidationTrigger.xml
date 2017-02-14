@@ -14,7 +14,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -29,7 +29,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="MarginChanged">
@@ -43,7 +43,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="MeasureChanged">
@@ -57,7 +57,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="RendererReady">
@@ -71,7 +71,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="SizeRequestChanged">
@@ -85,7 +85,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="Undefined">
@@ -99,7 +99,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
     <Member MemberName="VerticalOptionsChanged">
@@ -113,7 +113,7 @@
         <ReturnType>Xamarin.Forms.Internals.InvalidationTrigger</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
       </Docs>
     </Member>
   </Members>
