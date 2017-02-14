@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EditorRenderer))]
-	public class Editor : InputView, IFontElement, IElementConfiguration<Editor>
+	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue) =>
 		{
@@ -68,6 +68,7 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
+		void IEditorController.SendCompleted() => SendCompleted();
 		internal void SendCompleted()
 		{
 			EventHandler handler = Completed;
