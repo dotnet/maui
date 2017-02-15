@@ -10,17 +10,34 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		UIDatePicker _picker;
 		UIColor _defaultTextColor;
+		bool _disposed;
 
 		IElementController ElementController => Element as IElementController;
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+
 			if (disposing)
 			{
-				Control.EditingDidBegin -= OnStarted;
-				Control.EditingDidEnd -= OnEnded;
+				_defaultTextColor = null;
 
-				_picker.ValueChanged -= OnValueChanged;
+				if (_picker != null)
+				{
+					_picker.RemoveFromSuperview();
+					_picker.ValueChanged -= OnValueChanged;
+					_picker.Dispose();
+					_picker = null;
+				}
+
+				if (Control != null)
+				{
+					Control.EditingDidBegin -= OnStarted;
+					Control.EditingDidEnd -= OnEnded;
+				}
 			}
 
 			base.Dispose(disposing);
