@@ -12,3 +12,6 @@
 *.png binary
 *.jpg binary
 *.jpeg binary
+
+# Always checkout docs using unix line endings because mdoc uses unix line endings even on windows
+/docs/**/*.xml text eol=lf

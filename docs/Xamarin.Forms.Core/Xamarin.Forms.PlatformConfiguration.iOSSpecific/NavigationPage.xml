@@ -28,7 +28,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Makes the navigation bar opaque on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
         <remarks>To be added.</remarks>
@@ -48,7 +48,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Makes the navigation bar translucent on the platform-specific element.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
         <remarks>To be added.</remarks>
@@ -68,7 +68,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
         <remarks>To be added.</remarks>
@@ -88,7 +88,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>A value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</returns>
         <remarks>To be added.</remarks>
@@ -108,7 +108,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>A value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</returns>
         <remarks>To be added.</remarks>
@@ -128,7 +128,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>A Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</returns>
         <remarks>To be added.</remarks>
@@ -164,7 +164,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that controls whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <remarks>To be added.</remarks>
@@ -185,7 +185,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a Boolean value that controls whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
@@ -207,7 +207,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <remarks>To be added.</remarks>
@@ -228,7 +228,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>

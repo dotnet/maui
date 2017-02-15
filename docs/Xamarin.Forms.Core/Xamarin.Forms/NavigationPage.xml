@@ -226,42 +226,6 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="RootPage">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Page RootPage { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Page RootPage" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Forms.Page</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>
-          The <see cref="T:Xamarin.Forms.Page" /> that is the root of the navigation stack.
-        </summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RootPageProperty">
-      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty RootPageProperty;" />
-      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty RootPageProperty" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>
-          Identifies the <see cref="P:Xamarin.Forms.NavigationPage.RootPage" /> property.
-        </summary>
-        <remarks>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="GetBackButtonTitle">
       <MemberSignature Language="C#" Value="public static string GetBackButtonTitle (Xamarin.Forms.BindableObject page);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig string GetBackButtonTitle(class Xamarin.Forms.BindableObject page) cil managed" />
@@ -486,7 +450,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__39))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopAsync&gt;d__44))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -584,7 +548,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__47))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PopToRootAsync&gt;d__52))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -641,7 +605,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__49))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;PushAsync&gt;d__54))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -678,6 +642,42 @@
       <Docs>
         <summary>Event that is raised when a page is pushed onto this <see cref="T:Xamarin.Forms.NavigationPage" /> element.</summary>
         <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RootPage">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Page RootPage { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Page RootPage" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Page</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          The <see cref="T:Xamarin.Forms.Page" /> that is the root of the navigation stack.
+        </summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RootPageProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty RootPageProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty RootPageProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>
+          Identifies the <see cref="P:Xamarin.Forms.NavigationPage.RootPage" /> property.
+        </summary>
+        <remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBackButtonTitle">
@@ -928,7 +928,7 @@ public class MyPage : NavigationPage
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-PopAsyncInner&gt;d__64))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-PopAsyncInner&gt;d__69))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

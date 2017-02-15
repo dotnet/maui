@@ -43,8 +43,8 @@
         <ReturnType>System.Uri</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets an application-specific URI that uniquely describes content within an app.</summary>
-          <value>An application-specific URI that uniquely describes content within an app.</value>
+        <summary>Gets or sets an application-specific URI that uniquely describes content within an app.</summary>
+        <value>An application-specific URI that uniquely describes content within an app.</value>
         <remarks>To be added.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
@@ -75,8 +75,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets a description that appears with the item in search results.</summary>
-          <value>The description that appears with the item in search results.</value>
+        <summary>Gets or sets a description that appears with the item in search results.</summary>
+        <value>The description that appears with the item in search results.</value>
         <remarks>To be added.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
@@ -127,9 +127,9 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets a value that tells whether the item that is identified by the link entry is currently open.</summary>
-          <value>A value that tells whether the item that is identified by the link entry is currently open.</value>
-          <remarks>Application developers can set this value in <see cref="M:Xamarin.Forms.Application.OnAppearing" /> and <see cref="M:Xamarin.Forms.Application.OnDisappearing" /> methods to control whether the app link is shown for indexing or Handoff.</remarks>
+        <summary>Gets or sets a value that tells whether the item that is identified by the link entry is currently open.</summary>
+        <value>A value that tells whether the item that is identified by the link entry is currently open.</value>
+        <remarks>Application developers can set this value in <see cref="M:Xamarin.Forms.Application.OnAppearing" /> and <see cref="M:Xamarin.Forms.Application.OnDisappearing" /> methods to control whether the app link is shown for indexing or Handoff.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
@@ -160,9 +160,9 @@
         <ReturnType>System.Collections.Generic.IDictionary&lt;System.String,System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets a dictionary of application-specific key-value pairs.</summary>
-          <value>A dictionary of standard and application-specific key-value pairs that is used for Handoff on the iOS platform.</value>
-          <remarks>The standard keys are <c>contentType</c>, <c>associatedWebPage</c>, and <c>shouldAddToPublicIndex</c>.</remarks>
+        <summary>Gets a dictionary of application-specific key-value pairs.</summary>
+        <value>A dictionary of standard and application-specific key-value pairs that is used for Handoff on the iOS platform.</value>
+        <remarks>The standard keys are <c>contentType</c>, <c>associatedWebPage</c>, and <c>shouldAddToPublicIndex</c>.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
@@ -177,8 +177,8 @@
         <ReturnType>Xamarin.Forms.ImageSource</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets a small image that appears with the item in search results.</summary>
-          <value>A small image that appears with the item in search results</value>
+        <summary>Gets or sets a small image that appears with the item in search results.</summary>
+        <value>A small image that appears with the item in search results</value>
         <remarks>To be added.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
@@ -209,8 +209,8 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-          <summary>Gets or sets the title of the item.</summary>
-          <value>The title of the item.</value>
+        <summary>Gets or sets the title of the item.</summary>
+        <value>The title of the item.</value>
         <remarks>To be added.</remarks>
         <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>

@@ -1,6 +1,6 @@
 <Type Name="Button" FullName="Xamarin.Forms.Button">
-  <TypeSignature Language="C#" Value="public class Button : Xamarin.Forms.View, Xamarin.Forms.IButtonController, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Button&gt;, Xamarin.Forms.IFontElement" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Button extends Xamarin.Forms.View implements class Xamarin.Forms.IButtonController, class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Button&gt;, class Xamarin.Forms.IElementController, class Xamarin.Forms.IFontElement, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
+  <TypeSignature Language="C#" Value="public class Button : Xamarin.Forms.View, Xamarin.Forms.IButtonController, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Button&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Button extends Xamarin.Forms.View implements class Xamarin.Forms.IButtonController, class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Button&gt;, class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -20,9 +20,6 @@
     </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Button&gt;</InterfaceName>
-    </Interface>
-    <Interface>
-      <InterfaceName>Xamarin.Forms.IFontElement</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>

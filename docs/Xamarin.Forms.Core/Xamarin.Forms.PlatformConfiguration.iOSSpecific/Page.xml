@@ -28,7 +28,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
         <returns>A value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</returns>
         <remarks>To be added.</remarks>
@@ -48,7 +48,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that tells whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
         <returns>A value that tells whether it is preferred that the status bar is shown, hidden, or relies on the system default.</returns>
         <remarks>To be added.</remarks>
@@ -68,7 +68,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
         <returns>A value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</returns>
         <remarks>To be added.</remarks>
@@ -103,7 +103,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
         <returns>A value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</returns>
         <remarks>To be added.</remarks>
@@ -139,7 +139,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
         <remarks>To be added.</remarks>
@@ -160,7 +160,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
@@ -182,7 +182,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
         <remarks>To be added.</remarks>
@@ -203,7 +203,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>

@@ -28,7 +28,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Disables swiped paging.</summary>
         <returns>The updated element on the Android platform.</returns>
         <remarks>To be added.</remarks>
@@ -48,7 +48,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Enables swiped paging.</summary>
         <returns>The updated element on the Android platform.</returns>
         <remarks>To be added.</remarks>
@@ -68,7 +68,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether swiped paging is enabled.</summary>
         <returns>A Boolean value that tells whether swipe paging is enabled.</returns>
         <remarks>To be added.</remarks>
@@ -88,7 +88,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the number of offscreen pages are cached in memory.</summary>
         <returns>The number of offscreen pages are cached in memory.</returns>
         <remarks>To be added.</remarks>
@@ -108,9 +108,10 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Gets a Boolean value that controls whether swipe paging is enabled.</summary>
-        <returns><see langword="true" /> if swiped paging is enabled. Otherwise, <see langword="false" />.</returns>
+        <returns>
+          <see langword="true" /> if swiped paging is enabled. Otherwise, <see langword="false" />.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -143,7 +144,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns the number of offscreen pages are cached in memory.</summary>
         <returns>The number of offscreen pages are cached in memory.</returns>
         <remarks>To be added.</remarks>
@@ -179,7 +180,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether page swiping is enabled to the provided <paramref name="value" />.</summary>
         <remarks>To be added.</remarks>
@@ -200,7 +201,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls whether page swiping is enabled to the provided <paramref name="value" />.</summary>
         <returns>The configuration that was updated.</returns>
@@ -222,7 +223,7 @@
         <Parameter Name="value" Type="System.Int32" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets the number of off-screen pages that are stored in memory to the provided <paramref name="value" />.</summary>
         <remarks>To be added.</remarks>
@@ -243,7 +244,7 @@
         <Parameter Name="value" Type="System.Int32" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets the number of off-screen pages that are stored in memory to the provided <paramref name="value" />.</summary>
         <returns>The configuration that was updated.</returns>

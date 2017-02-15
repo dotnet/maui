@@ -1,4 +1,4 @@
-﻿<Type Name="UpdateMode" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode">
+<Type Name="UpdateMode" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode">
   <TypeSignature Language="C#" Value="public enum UpdateMode" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed UpdateMode extends System.Enum" />
   <AssemblyInfo>
@@ -13,20 +13,6 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
-    <Member MemberName="WhenFinished">
-      <MemberSignature Language="C#" Value="WhenFinished" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode WhenFinished = int32(1)" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Bound properties on picker elements should be updated after scrolling is finished.</summary>
-      </Docs>
-    </Member>
     <Member MemberName="Immediately">
       <MemberSignature Language="C#" Value="Immediately" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode Immediately = int32(0)" />
@@ -39,6 +25,20 @@
       </ReturnValue>
       <Docs>
         <summary>Bound properties on picker elements should be continuously updated while the user scrolls.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="WhenFinished">
+      <MemberSignature Language="C#" Value="WhenFinished" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode WhenFinished = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Bound properties on picker elements should be updated after scrolling is finished.</summary>
       </Docs>
     </Member>
   </Members>

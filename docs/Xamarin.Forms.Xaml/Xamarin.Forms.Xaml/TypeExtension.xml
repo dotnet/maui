@@ -22,6 +22,9 @@
     <Attribute>
       <AttributeName>Xamarin.Forms.ContentProperty("TypeName")</AttributeName>
     </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.ProvideCompiled("Xamarin.Forms.Build.Tasks.TypeExtension")</AttributeName>
+    </Attribute>
   </Attributes>
   <Docs>
     <summary>For internal use by the XAML infrastructure.</summary>

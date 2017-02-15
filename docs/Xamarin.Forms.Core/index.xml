@@ -57,7 +57,7 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WP8")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.MacOS")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.macOS")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("iOSUnitTests")</AttributeName>
@@ -156,6 +156,7 @@
       <Type Name="AbsoluteLayout" Kind="Class" />
       <Type Name="AbsoluteLayout+IAbsoluteList`1" DisplayName="AbsoluteLayout+IAbsoluteList&lt;T&gt;" Kind="Interface" />
       <Type Name="AbsoluteLayoutFlags" Kind="Enumeration" />
+      <Type Name="Accessibility" Kind="Class" />
       <Type Name="ActivityIndicator" Kind="Class" />
       <Type Name="Animation" Kind="Class" />
       <Type Name="AnimationExtensions" Kind="Class" />
@@ -283,6 +284,7 @@
       <Type Name="ImageSourceConverter" Kind="Class" />
       <Type Name="IMasterDetailPageController" Kind="Interface" />
       <Type Name="IMenuItemController" Kind="Interface" />
+      <Type Name="IMessagingCenter" Kind="Interface" />
       <Type Name="INativeElementView" Kind="Interface" />
       <Type Name="INavigation" Kind="Interface" />
       <Type Name="INavigationPageController" Kind="Interface" />
@@ -481,7 +483,12 @@
       <Type Name="BlurEffectStyle" Kind="Enumeration" />
       <Type Name="Entry" Kind="Class" />
       <Type Name="NavigationPage" Kind="Class" />
+      <Type Name="Page" Kind="Class" />
+      <Type Name="Picker" Kind="Class" />
+      <Type Name="StatusBarHiddenMode" Kind="Enumeration" />
       <Type Name="StatusBarTextColorMode" Kind="Enumeration" />
+      <Type Name="UIStatusBarAnimation" Kind="Enumeration" />
+      <Type Name="UpdateMode" Kind="Enumeration" />
       <Type Name="VisualElement" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.PlatformConfiguration.macOSSpecific">
@@ -1156,6 +1163,27 @@
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
+      <Member MemberName="GetShouldPreserveKeyboardOnResume">
+        <MemberSignature Language="C#" Value="public static bool GetShouldPreserveKeyboardOnResume (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool GetShouldPreserveKeyboardOnResume(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.Application" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.Application.GetShouldPreserveKeyboardOnResume(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
       <Member MemberName="SendAppearingEventOnResume">
         <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; SendAppearingEventOnResume (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; config, bool value);" />
         <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; SendAppearingEventOnResume(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; config, bool value) cil managed" />
@@ -1202,6 +1230,29 @@
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
+      <Member MemberName="ShouldPreserveKeyboardOnResume">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; ShouldPreserveKeyboardOnResume (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; config, bool value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; ShouldPreserveKeyboardOnResume(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; config, bool value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt;" RefType="this" />
+          <Parameter Name="value" Type="System.Boolean" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.Application" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat.Application.ShouldPreserveKeyboardOnResume(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application},System.Boolean)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
       <Member MemberName="GetWindowSoftInputModeAdjust">
         <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust GetWindowSoftInputModeAdjust (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt; config);" />
         <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust GetWindowSoftInputModeAdjust(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.Application&gt; config) cil managed" />
@@ -1213,8 +1264,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that tells whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Application" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Application.GetWindowSoftInputModeAdjust(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application})" />
       </Member>
@@ -1235,9 +1286,9 @@
           <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Application" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Application.UseWindowSoftInputModeAdjust(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application},Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust)" />
       </Member>
@@ -1257,8 +1308,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Disables swiped paging.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.DisableSwipePaging(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage})" />
       </Member>
@@ -1278,8 +1329,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Enables swiped paging.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.EnableSwipePaging(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage})" />
       </Member>
@@ -1299,8 +1350,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Gets a Boolean value that controls whether swipe paging is enabled.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.IsSwipePagingEnabled(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage})" />
       </Member>
@@ -1320,8 +1371,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns the number of offscreen pages are cached in memory.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.OffscreenPageLimit(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage})" />
       </Member>
@@ -1342,9 +1393,9 @@
           <Parameter Name="value" Type="System.Boolean" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether page swiping is enabled to the provided <paramref name="value" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.SetIsSwipePagingEnabled(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage},System.Boolean)" />
       </Member>
@@ -1353,9 +1404,9 @@
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
-      <Member MemberName="SetOffscreenPageLimitProperty">
-        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimitProperty (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; config, int value);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimitProperty(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; config, int32 value) cil managed" />
+      <Member MemberName="SetOffscreenPageLimit">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimit (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt; config, int value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; SetOffscreenPageLimit(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.TabbedPage&gt; config, int32 value) cil managed" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage&gt;</ReturnType>
@@ -1365,11 +1416,11 @@
           <Parameter Name="value" Type="System.Int32" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets the number of off-screen pages that are stored in memory to the provided <paramref name="value" />.</summary>
         </Docs>
-        <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.SetOffscreenPageLimitProperty(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage},System.Int32)" />
+        <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.TabbedPage.SetOffscreenPageLimit(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.TabbedPage},System.Int32)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
@@ -1408,8 +1459,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Disables automatic font size adjustment on the platform-specific element.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry.DisableAdjustsFontSizeToFitWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry})" />
       </Member>
@@ -1429,8 +1480,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Enables automatic font size adjustment on the platform-specific element.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry.EnableAdjustsFontSizeToFitWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry})" />
       </Member>
@@ -1451,9 +1502,9 @@
           <Parameter Name="value" Type="System.Boolean" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a Boolean value that tells whether automatic font size adjusmtent is enabled on the element.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Entry.SetAdjustsFontSizeToFitWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry},System.Boolean)" />
       </Member>
@@ -1473,8 +1524,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Makes the navigation bar opaque on the platform-specific element.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.DisableTranslucentNavigationBar(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage})" />
       </Member>
@@ -1494,8 +1545,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Makes the navigation bar translucent on the platform-specific element.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.EnableTranslucentNavigationBar(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage})" />
       </Member>
@@ -1515,8 +1566,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.GetStatusBarTextColorMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage})" />
       </Member>
@@ -1536,8 +1587,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a Boolean value that tells whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucent(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage})" />
       </Member>
@@ -1558,9 +1609,9 @@
           <Parameter Name="value" Type="System.Boolean" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a Boolean value that controls whether the navigation bar on the platform-specific navigation page is translucent.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.SetIsNavigationBarTranslucent(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage},System.Boolean)" />
       </Member>
@@ -1581,11 +1632,143 @@
           <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Returns a value that controls whether the status bar text color is adjusted to match the luminosity of the navigation bar for the platform-specific navigation page.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage.SetStatusBarTextColorMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.NavigationPage},Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarTextColorMode)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="PreferredStatusBarUpdateAnimation">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation PreferredStatusBarUpdateAnimation (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation PreferredStatusBarUpdateAnimation(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that tells whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimation(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="PrefersStatusBarHidden">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode PrefersStatusBarHidden (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode PrefersStatusBarHidden(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHidden(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetPreferredStatusBarUpdateAnimation">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; SetPreferredStatusBarUpdateAnimation (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; config, Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; SetPreferredStatusBarUpdateAnimation(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
+          <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether the preferred animation style to use when updating the status bar is <c>None</c>, <c>Slide</c>, or <c>Fade</c>.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page.SetPreferredStatusBarUpdateAnimation(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page},Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetPrefersStatusBarHidden">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; SetPrefersStatusBarHidden (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt; config, Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; SetPrefersStatusBarHidden(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Page&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page&gt;" RefType="this" />
+          <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether it is preferred that the status bar is shown, hidden, or relies on the system default.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page.SetPrefersStatusBarHidden(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Page},Xamarin.Forms.PlatformConfiguration.iOSSpecific.StatusBarHiddenMode)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetUpdateMode">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt; SetUpdateMode (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt; config, Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Picker&gt; SetUpdateMode(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Picker&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt;" RefType="this" />
+          <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker.SetUpdateMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker},Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="UpdateMode">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode UpdateMode (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode UpdateMode(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Picker&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker.UpdateMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker})" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
@@ -1603,8 +1786,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.VisualElement&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that tells which, if any, blur effect is applied.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement.GetBlurEffect(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.VisualElement})" />
       </Member>
@@ -1625,9 +1808,9 @@
           <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets the blur effect to use.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement.UseBlurEffect(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.VisualElement},Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle)" />
       </Member>
@@ -1754,8 +1937,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns the width of the master pane when it is collapsed.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.CollapsedPaneWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage})" />
       </Member>
@@ -1776,9 +1959,9 @@
           <Parameter Name="value" Type="System.Double" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets the width of a pane when it is collapsed.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.CollapsedPaneWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage},System.Double)" />
       </Member>
@@ -1798,8 +1981,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that controls whether panes collapses fully or partially.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.GetCollapseStyle(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage})" />
       </Member>
@@ -1820,9 +2003,9 @@
           <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls whether panes collapses fully or partially.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.SetCollapseStyle(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage},Xamarin.Forms.PlatformConfiguration.WindowsSpecific.CollapseStyle)" />
       </Member>
@@ -1842,8 +2025,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Causes the master detail page to partially collapse panes.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.UsePartialCollapse(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage})" />
       </Member>
@@ -1863,8 +2046,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.Page&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a value that controls the placement of the toolbar.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page.GetToolbarPlacement(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.Page})" />
       </Member>
@@ -1885,9 +2068,9 @@
           <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ToolbarPlacement" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a value that controls the placement of the toolbar.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page.SetToolbarPlacement(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.Page},Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ToolbarPlacement)" />
       </Member>

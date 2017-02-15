@@ -33,5 +33,5 @@ del tmpFile
 
 IF NOT "%RESULT%" == "Members Added: 0, Members Deleted: 0" (exit 1)
 
-exit 0
+exit /B 0
 

@@ -43,7 +43,7 @@
       </Docs>
     </Member>
     <Member MemberName="Peek">
-      <MemberSignature Language="C#" Value="public Xamarin.Forms.Page Peek (int depth);" />
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Page Peek (int depth = 0);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.Page Peek(int32 depth) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>

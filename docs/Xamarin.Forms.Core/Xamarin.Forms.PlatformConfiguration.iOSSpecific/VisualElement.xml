@@ -11,7 +11,9 @@
   <Interfaces />
   <Docs>
     <summary>A visual element instance that Xamarin.Forms created on the iOS platform.</summary>
-    <remarks><para>Developers use this type to set iOS-specific blur effects on visual elements.</para></remarks>
+    <remarks>
+      <para>Developers use this type to set iOS-specific blur effects on visual elements.</para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="BlurEffectProperty">
@@ -43,7 +45,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a value that controls which, if any, blur effect is applied.</summary>
         <returns>A value that controls which, if any, blur effect is applied.</returns>
         <remarks>To be added.</remarks>
@@ -63,7 +65,7 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.VisualElement&gt;" RefType="this" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a value that tells which, if any, blur effect is applied.</summary>
         <returns>A value that tells which, if any, blur effect is applied.</returns>
         <remarks>To be added.</remarks>
@@ -84,7 +86,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle" />
       </Parameters>
       <Docs>
-         <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets a value that controls which, if any, blur effect is applied.</summary>
         <remarks>To be added.</remarks>
@@ -105,7 +107,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle" />
       </Parameters>
       <Docs>
-         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets the blur effect to use.</summary>
         <returns>The updated configuration object on which developers can make successive method calls.</returns>
