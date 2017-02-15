@@ -218,7 +218,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void HandleMasterPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.IconProperty.PropertyName || e.PropertyName == Page.TitleProperty.PropertyName)
-				MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
+				UpdateLeftBarButton();
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -319,6 +319,19 @@ namespace Xamarin.Forms.Platform.iOS
 			_detailController.AddChildViewController(detailRenderer.ViewController);
 
 			SetNeedsStatusBarAppearanceUpdate();
+		}
+
+		void UpdateLeftBarButton()
+		{
+			var masterDetailPage = Element as MasterDetailPage;
+			if (!(masterDetailPage?.Detail is NavigationPage))
+				return;
+
+			var detailRenderer = Platform.GetRenderer(masterDetailPage.Detail) as UINavigationController;
+
+			UIViewController firstPage = detailRenderer?.ViewControllers.FirstOrDefault();
+			if (firstPage != null)
+				NavigationRenderer.SetMasterLeftBarButton(firstPage, masterDetailPage);
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()

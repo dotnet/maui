@@ -35,8 +35,6 @@ namespace Xamarin.Forms.Platform.iOS
 				var parentingViewController = (ParentingViewController)ViewControllers.Last();
 				UpdateLeftBarButtonItem(parentingViewController);
 			});
-
-			
 		}
 
 		Page Current { get; set; }
@@ -621,34 +619,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if ((firstPage != pageBeingRemoved && currentChild != firstPage && NavigationPage.GetHasBackButton(currentChild)) || _parentMasterDetailPage == null)
 				return;
 
-			if (!_parentMasterDetailPage.ShouldShowToolbarButton())
-			{
-				containerController.NavigationItem.LeftBarButtonItem = null;
-				return;
-			}
-
-			var shouldUseIcon = _parentMasterDetailPage.Master.Icon != null;
-			if (shouldUseIcon)
-			{
-				try
-				{
-					containerController.NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(new UIImage(_parentMasterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain,
-						(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
-				}
-				catch (Exception)
-				{
-					// Throws Exception otherwise would catch more specific exception type
-					shouldUseIcon = false;
-				}
-			}
-
-			if (!shouldUseIcon)
-			{
-				containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(_parentMasterDetailPage.Master.Title,
-					UIBarButtonItemStyle.Plain,
-					(o, e) => _parentMasterDetailPage.IsPresented = !_parentMasterDetailPage.IsPresented);
-			}
+			SetMasterLeftBarButton(containerController, _parentMasterDetailPage);
 		}
 
 		void UpdateTint()
@@ -678,6 +649,36 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_secondaryToolbar.Hidden = true;
 				//secondaryToolbar.Items = null;
+			}
+		}
+
+		internal static void SetMasterLeftBarButton(UIViewController containerController, MasterDetailPage masterDetailPage)
+		{
+			if (!masterDetailPage.ShouldShowToolbarButton())
+			{
+				containerController.NavigationItem.LeftBarButtonItem = null;
+				return;
+			}
+
+			EventHandler handler = (o, e) => masterDetailPage.IsPresented = !masterDetailPage.IsPresented;
+
+			bool shouldUseIcon = masterDetailPage.Master.Icon != null;
+			if (shouldUseIcon)
+			{
+				try
+				{
+					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(new UIImage(masterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain, handler);
+				}
+				catch (Exception)
+				{
+					// Throws Exception otherwise would catch more specific exception type
+					shouldUseIcon = false;
+				}
+			}
+
+			if (!shouldUseIcon)
+			{
+				containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(masterDetailPage.Master.Title, UIBarButtonItemStyle.Plain, handler);
 			}
 		}
 
