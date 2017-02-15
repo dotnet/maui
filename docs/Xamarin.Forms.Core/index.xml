@@ -264,6 +264,7 @@
       <Type Name="IConfigElement`1" DisplayName="IConfigElement&lt;T&gt;" Kind="Interface" />
       <Type Name="IConfigPlatform" Kind="Interface" />
       <Type Name="IDefinition" Kind="Interface" />
+      <Type Name="IEditorController" Kind="Interface" />
       <Type Name="IEffectControlProvider" Kind="Interface" />
       <Type Name="IElementConfiguration`1" DisplayName="IElementConfiguration&lt;TElement&gt;" Kind="Interface" />
       <Type Name="IElementController" Kind="Interface" />
