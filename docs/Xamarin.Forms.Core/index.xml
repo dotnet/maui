@@ -839,7 +839,7 @@
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
           <param name="cell">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroup``2(``1)" />
       </Member>
@@ -875,7 +875,7 @@
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
           <param name="cell">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroupHeaderContent``2(``1)" />
       </Member>
@@ -911,7 +911,7 @@
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
           <param name="cell">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIndex``2(``1)" />
       </Member>
@@ -947,7 +947,7 @@
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
           <param name="cell">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIsGroupHeader``2(``1)" />
       </Member>
@@ -968,7 +968,7 @@
         </Parameters>
         <Docs>
           <param name="cell">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetPath(Xamarin.Forms.Cell)" />
       </Member>
@@ -1006,7 +1006,7 @@
           <typeparam name="TItem">To be added.</typeparam>
           <param name="cell">To be added.</param>
           <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.SetIsGroupHeader``2(``1,System.Boolean)" />
       </Member>
@@ -1033,7 +1033,7 @@
           <param name="insert">To be added.</param>
           <param name="removeAt">To be added.</param>
           <param name="reset">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Action{System.Object,System.Int32,System.Boolean},System.Action{System.Object,System.Int32},System.Action)" />
       </Member>
@@ -1062,7 +1062,7 @@
           <param name="self">To be added.</param>
           <param name="from">To be added.</param>
           <param name="to">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply``1(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Collections.Generic.IList{``0},System.Collections.Generic.IList{System.Object})" />
       </Member>
@@ -1085,7 +1085,7 @@
         <Docs>
           <param name="e">To be added.</param>
           <param name="count">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.WithCount(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Int32)" />
       </Member>
