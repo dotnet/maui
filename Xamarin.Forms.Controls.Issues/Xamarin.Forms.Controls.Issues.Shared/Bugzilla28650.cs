@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 928650, "In a Listview on iOS, \"andExpand\" does not expand when text is two lines long")]
+	[Issue(IssueTracker.Bugzilla, 28650, "In a Listview on iOS, \"andExpand\" does not expand when text is two lines long")]
 	public class Bugzilla28650 : TestContentPage
 	{
 		const string caret_image = "caret_r.png";
