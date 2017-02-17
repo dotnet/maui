@@ -8,9 +8,9 @@ namespace Xamarin.Forms.Platform.iOS
 	public class EditorRenderer : ViewRenderer<Editor, UITextView>
 	{
 		bool _disposed;
-		IElementController ElementController => Element as IElementController;
+        IEditorController ElementController => Element;
 
-		protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.iOS
 					var doneButton = new UIBarButtonItem(UIBarButtonSystemItem.Done, (o, a) =>
 					{
 						Control.ResignFirstResponder();
-						Element.SendCompleted();
+                        ElementController.SendCompleted();
 					});
 					accessoryView.SetItems(new[] { spacer, doneButton }, false);
 					Control.InputAccessoryView = accessoryView;
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.iOS
 				ElementController.SetValueFromRenderer(Editor.TextProperty, Control.Text);
 
 			Element.SetValue(VisualElement.IsFocusedPropertyKey, false);
-			Element.SendCompleted();
+			ElementController.SendCompleted();
 		}
 
 		void OnStarted(object sender, EventArgs eventArgs)

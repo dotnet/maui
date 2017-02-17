@@ -68,8 +68,7 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void IEditorController.SendCompleted() => SendCompleted();
-		internal void SendCompleted()
+		void IEditorController.SendCompleted()
 		{
 			EventHandler handler = Completed;
 			if (handler != null)
