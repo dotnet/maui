@@ -11,7 +11,8 @@ namespace Xamarin.Forms
 		public const string iOS = "iOS";
 		public const string Android = "Android";
 		public const string WinPhone = "WinPhone";
-		public const string Windows = "Windows";
+		public const string UWP = "UWP";
+		public const string WinRT = "WinRT";
 		public const string macOS = "macOS";
 
 		internal static DeviceInfo info;
@@ -29,6 +30,13 @@ namespace Xamarin.Forms
 				TargetPlatform platform;
 				if (Enum.TryParse(RuntimePlatform, out platform))
 					return platform;
+
+				// In the old TargetPlatform, there was no distinction between WinRT/UWP
+				if (RuntimePlatform == UWP || RuntimePlatform == WinRT)
+				{
+					return TargetPlatform.Windows;
+				}
+
 				return TargetPlatform.Other;
 			}
 		}

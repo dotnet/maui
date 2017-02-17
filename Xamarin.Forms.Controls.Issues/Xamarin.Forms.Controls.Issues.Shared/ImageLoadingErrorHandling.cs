@@ -5,7 +5,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.None, 0, "Image Loading Error Handling", PlatformAffected.WinRT)]
+	[Issue(IssueTracker.None, 0, "Image Loading Error Handling", PlatformAffected.WinRT | PlatformAffected.UWP)]
 	public class ImageLoadingErrorHandling : TestContentPage
 	{
 		protected override void Init()
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Controls
 
 			Grid fakeUri = CreateTest(() => image.Source = ImageSource.FromUri(new Uri("http://not.real")),
 				"Non-existent URI",
-				Device.RuntimePlatform == Device.Windows && Device.Idiom == TargetIdiom.Phone
+				(Device.RuntimePlatform == Device.UWP || Device.RuntimePlatform == Device.WinRT) && Device.Idiom == TargetIdiom.Phone
 				? "Clicking this button should display an alert dialog. The error message should include the text 'NotFound'."
 				: "Clicking this button should display an alert dialog. The error message should include the text 'the server name or address could not be resolved'.");
 

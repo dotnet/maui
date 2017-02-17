@@ -269,7 +269,14 @@ namespace Xamarin.Forms.Xaml
 					continue;
 				try {
 					if (targetPlatform != Device.RuntimePlatform)
+					{
+						// Special case for Windows backward compatibility
+						if (targetPlatform == "Windows" &&
+						    (Device.RuntimePlatform == Device.UWP || Device.RuntimePlatform == Device.WinRT))
+							continue;
+						
 						prefixes.Add(prefix);
+					}
 				} catch (InvalidOperationException) {
 					prefixes.Add(prefix);
 				}

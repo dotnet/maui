@@ -25,7 +25,8 @@ namespace Xamarin.Forms.Controls
 					smallImage = "coffee.png";
 					break;
 				case Device.WinPhone:
-				case Device.Windows:
+				case Device.WinRT:
+				case Device.UWP:
 					smallImage = "bank.png";
 					break;
 				}

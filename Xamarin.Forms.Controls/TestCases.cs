@@ -212,7 +212,8 @@ namespace Xamarin.Forms.Controls
 				page.Title = "Test Cases";
 				break;
 			case Device.WinPhone:
-			case Device.Windows:
+			case Device.UWP:
+			case Device.WinRT:
 				page.Title = "Tests";
 				break;
 			}

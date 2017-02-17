@@ -116,7 +116,11 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		public bool IsInvokeRequired => !CoreApplication.MainView.CoreWindow.Dispatcher.HasThreadAccess;
 
-		public string RuntimePlatform => Device.Windows;
+#if WINDOWS_UWP
+		public string RuntimePlatform => Device.UWP;
+#else
+		public string RuntimePlatform => Device.WinRT;
+#endif
 
 		public void OpenUriAction(Uri uri)
 		{

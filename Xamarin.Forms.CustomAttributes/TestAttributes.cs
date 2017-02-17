@@ -135,6 +135,7 @@ namespace Xamarin.Forms.CustomAttributes
 		Android = 1 << 1,
 		WinPhone = 1 << 2,
 		WinRT = 1 << 3,
+		UWP = 1 << 4,
 		All = ~0,
 		Default = 0
 	}

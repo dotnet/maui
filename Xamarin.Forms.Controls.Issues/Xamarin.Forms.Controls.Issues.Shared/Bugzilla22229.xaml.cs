@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Controls
 			case Device.Android:
 				_prefix = "";
 				break;
-			case Device.Windows:
+			case Device.WinRT:
+			case Device.UWP:
 			case Device.WinPhone:
 				_prefix = "Assets/";
 				break;
