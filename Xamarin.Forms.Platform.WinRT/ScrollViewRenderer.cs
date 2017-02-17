@@ -146,6 +146,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				Control.ChangeView(x, y, null, !e.ShouldAnimate);
 			}
+			Controller.SendScrollFinished();
 		}
 
 		void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
