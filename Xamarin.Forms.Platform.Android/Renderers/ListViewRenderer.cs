@@ -206,6 +206,9 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				position = templatedItems.GetGlobalIndexOfItem(scrollArgs.Item);
+				if (position == -1)
+					return;
+
 				cell = templatedItems[position];
 			}
 
