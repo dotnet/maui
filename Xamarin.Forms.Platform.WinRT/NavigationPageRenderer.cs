@@ -314,6 +314,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateBackButtonTitle();
 			else if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 				UpdateTitleVisible();
+			else if (e.PropertyName == Page.TitleProperty.PropertyName)
+				UpdateTitleOnParents();
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
