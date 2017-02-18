@@ -35,10 +35,8 @@ namespace Xamarin.Forms
 
 #if __MOBILE__
 		static bool? s_isiOS9OrNewer;
-#endif
-
 		static bool? s_isiOS10OrNewer;
-
+#endif
 		static Forms()
 		{
 			if (nevertrue)
@@ -55,7 +53,7 @@ namespace Xamarin.Forms
 				return s_isiOS9OrNewer.Value;
 			}
 		}
-#endif
+
 
 		internal static bool IsiOS10OrNewer
 		{
@@ -66,6 +64,7 @@ namespace Xamarin.Forms
 				return s_isiOS10OrNewer.Value;
 			}
 		}
+#endif
 
 		public static void Init()
 		{
