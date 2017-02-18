@@ -37,8 +37,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			result.Minimum = new Size(Math.Min(10, result.Request.Width), result.Request.Height);
 			if (Element.LineBreakMode != LineBreakMode.NoWrap)
 			{
-				if (result.Request.Width > widthConstraint || Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap)
-					result.Request = new Size(Math.Max(result.Minimum.Width, widthConstraint), result.Request.Height);
+				if (!double.IsInfinity(result.Request.Width) && !double.IsInfinity(widthConstraint))
+					if (result.Request.Width > widthConstraint || Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap)
+						result.Request = new Size(Math.Max(result.Minimum.Width, widthConstraint), result.Request.Height);
 			}
 
 			return result;
