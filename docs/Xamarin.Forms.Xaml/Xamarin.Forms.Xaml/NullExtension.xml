@@ -18,6 +18,11 @@
       <InterfaceName>Xamarin.Forms.Xaml.IMarkupExtension</InterfaceName>
     </Interface>
   </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.ProvideCompiled("Xamarin.Forms.Build.Tasks.NullExtension")</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Extension class that differentiates between null values and empty strings.</summary>
     <remarks>To be added.</remarks>
