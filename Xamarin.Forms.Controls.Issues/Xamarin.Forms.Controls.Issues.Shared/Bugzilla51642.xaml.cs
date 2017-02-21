@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
     [Issue(IssueTracker.Bugzilla, 51642, "Delayed BindablePicker UWP", PlatformAffected.All)]
     public partial class Bugzilla51642 : ContentPage
 	{
+#if APP
 		public Bugzilla51642 ()
 		{
 			InitializeComponent ();
@@ -29,6 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
             await Task.Delay(1000);
             Device.BeginInvokeOnMainThread(() => BindingContext = new Bz51642VM());
         }
+#endif
 	}
 
 	[Preserve(AllMembers=true)]
