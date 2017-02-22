@@ -42,7 +42,7 @@ using Xamarin.Forms.Internals;
 [assembly: InternalsVisibleTo("Xamarin.Forms.Maps.Android")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.UITests")]
-//[assembly:InternalsVisibleTo("Xamarin.Forms.Core.UITests")]
+[assembly: InternalsVisibleTo("Xamarin.Forms.FlexLayout.UnitTests")]
 
 [assembly: InternalsVisibleTo("Xamarin.Forms.Core.iOS.UITests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Core.Android.UITests")]
