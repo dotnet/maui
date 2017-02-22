@@ -99,6 +99,9 @@
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.UITests")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.FlexLayout.UnitTests")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Core.iOS.UITests")</AttributeName>
         </Attribute>
         <Attribute>
