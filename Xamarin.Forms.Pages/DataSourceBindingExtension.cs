@@ -4,6 +4,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Pages
 {
 	[ContentProperty("Path")]
+	[AcceptEmptyServiceProvider]
 	public sealed class DataSourceBindingExtension : IMarkupExtension<BindingBase>
 	{
 		public DataSourceBindingExtension()

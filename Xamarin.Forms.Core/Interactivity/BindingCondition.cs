@@ -4,6 +4,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms
 {
 	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[AcceptEmptyServiceProvider]
 	public sealed class BindingCondition : Condition, IValueProvider
 	{
 		readonly BindableProperty _boundProperty;

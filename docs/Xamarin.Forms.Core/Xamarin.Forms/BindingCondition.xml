@@ -16,6 +16,11 @@
       <InterfaceName>Xamarin.Forms.Xaml.IValueProvider</InterfaceName>
     </Interface>
   </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.AcceptEmptyServiceProvider</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Class that represents a value comparison with the target of an arbitrary binding.</summary>
     <remarks>To be added.</remarks>

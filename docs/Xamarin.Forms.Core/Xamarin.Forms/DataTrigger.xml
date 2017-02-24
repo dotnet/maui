@@ -20,6 +20,9 @@
     <Attribute>
       <AttributeName>Xamarin.Forms.ContentProperty("Setters")</AttributeName>
     </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.AcceptEmptyServiceProvider</AttributeName>
+    </Attribute>
   </Attributes>
   <Docs>
     <summary>Class that represents a binding condition and a list of <see cref="T:Xamarin.Forms.Setter" /> objects that will be applied when the condition is met.</summary>

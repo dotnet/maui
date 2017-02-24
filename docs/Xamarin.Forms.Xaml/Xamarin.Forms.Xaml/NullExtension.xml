@@ -20,6 +20,9 @@
   </Interfaces>
   <Attributes>
     <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.AcceptEmptyServiceProvider</AttributeName>
+    </Attribute>
+    <Attribute>
       <AttributeName>Xamarin.Forms.Xaml.ProvideCompiled("Xamarin.Forms.Build.Tasks.NullExtension")</AttributeName>
     </Attribute>
   </Attributes>

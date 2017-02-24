@@ -19,6 +19,9 @@
     <Attribute>
       <AttributeName>Xamarin.Forms.ContentProperty("Path")</AttributeName>
     </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.AcceptEmptyServiceProvider</AttributeName>
+    </Attribute>
   </Attributes>
   <Docs>
     <summary>For internal use by the XAML infrastructure.</summary>

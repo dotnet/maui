@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace Xamarin.Forms.Xaml
 {
 	[ContentProperty("Items")]
+	[AcceptEmptyServiceProvider]
 	public class ArrayExtension : IMarkupExtension<Array>
 	{
 		public ArrayExtension()
