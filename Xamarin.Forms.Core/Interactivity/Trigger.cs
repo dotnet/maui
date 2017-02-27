@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
 	[ContentProperty("Setters")]
-	[ProvideCompiled("Xamarin.Forms.Core.XamlC.TriggerValueProvider")]
+	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[AcceptEmptyServiceProvider]
 	public sealed class Trigger : TriggerBase, IValueProvider
 	{
 		public Trigger([TypeConverter(typeof(TypeTypeConverter))] [Parameter("TargetType")] Type targetType) : base(new PropertyCondition(), targetType)
@@ -50,11 +50,7 @@ namespace Xamarin.Forms
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
-			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
-			Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-
-			object value = valueconverter.Convert(Value, Property.ReturnType, minforetriever, serviceProvider);
-			Value = value;
+			//This is no longer required
 			return this;
 		}
 	}

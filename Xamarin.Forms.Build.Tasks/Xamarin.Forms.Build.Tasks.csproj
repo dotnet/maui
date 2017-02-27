@@ -107,7 +107,6 @@
     <Compile Include="CompiledConverters\TypeTypeConverter.cs" />
     <Compile Include="CompiledValueProviders\SetterValueProvider.cs" />
     <Compile Include="CompiledValueProviders\ICompiledValueProvider.cs" />
-    <Compile Include="CompiledValueProviders\TriggerValueProvider.cs" />
     <Compile Include="CompiledValueProviders\PassthroughValueProvider.cs" />
     <Compile Include="CompiledConverters\ListStringTypeConverter.cs" />
     <Compile Include="CompiledMarkupExtensions\TypeExtension.cs" />

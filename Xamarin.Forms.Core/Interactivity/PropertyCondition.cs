@@ -5,6 +5,8 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
+	[ProvideCompiled("Xamarin.Forms.Core.XamlC.PassthroughValueProvider")]
+	[AcceptEmptyServiceProvider]
 	public sealed class PropertyCondition : Condition, IValueProvider
 	{
 		readonly BindableProperty _stateProperty;
@@ -27,6 +29,13 @@ namespace Xamarin.Forms
 				if (IsSealed)
 					throw new InvalidOperationException("Can not change Property once the Trigger has been applied.");
 				_property = value;
+
+				//convert the value
+				if (_property != null && s_valueConverter != null)
+				{
+					Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+					Value = s_valueConverter.Convert(Value, Property.ReturnType, minforetriever, null);
+				}
 			}
 		}
 
@@ -39,17 +48,20 @@ namespace Xamarin.Forms
 					return;
 				if (IsSealed)
 					throw new InvalidOperationException("Can not change Value once the Trigger has been applied.");
+
+				//convert the value
+				if (_property != null && s_valueConverter != null)
+				{
+					Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+					value = s_valueConverter.Convert(value, Property.ReturnType, minforetriever, null);
+				}
 				_triggerValue = value;
 			}
 		}
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
-			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
-			Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
-
-			object value = valueconverter.Convert(Value, Property.ReturnType, minforetriever, serviceProvider);
-			Value = value;
+			//This is no longer required
 			return this;
 		}
 
@@ -58,10 +70,11 @@ namespace Xamarin.Forms
 			return (bool)bindable.GetValue(_stateProperty);
 		}
 
+		static IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();
+
 		internal override void SetUp(BindableObject bindable)
 		{
 			object newvalue = bindable.GetValue(Property);
-
 			bool newState = (newvalue == Value) || (newvalue != null && newvalue.Equals(Value));
 			bindable.SetValue(_stateProperty, newState);
 			bindable.PropertyChanged += OnAttachedObjectPropertyChanged;
