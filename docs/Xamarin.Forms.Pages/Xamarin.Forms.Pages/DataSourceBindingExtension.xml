@@ -17,6 +17,9 @@
     <Attribute>
       <AttributeName>Xamarin.Forms.ContentProperty("Path")</AttributeName>
     </Attribute>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.AcceptEmptyServiceProvider</AttributeName>
+    </Attribute>
   </Attributes>
   <Docs>
     <summary>Extension methods for a binding to a data source, for example, for display in a list.</summary>
