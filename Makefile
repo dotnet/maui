@@ -13,9 +13,11 @@ XAML=Xamarin.Forms.Xaml
 XAMLASSEMBLY=$(XAML)/bin/Release/$(XAML).dll
 MAPS=Xamarin.Forms.Maps
 MAPSASSEMBLY=$(MAPS)/bin/Release/$(MAPS).dll
+PAGES=Xamarin.Forms.Pages
+PAGESASSEMBLY=$(PAGES)/bin/Release/$(PAGES).dll
 MDOC=mono tools/mdoc/mdoc.exe
 
-docs: $(CORE).docs $(MAPS).docs $(XAML).docs
+docs: $(CORE).docs $(MAPS).docs $(XAML).docs $(PAGES).docs
 
 $(CORE).docs: $(COREASSEMBLY)
 	$(MDOC) update --delete -o docs/$(CORE) $(COREASSEMBLY) -L $(DOTNETPCL)
@@ -26,6 +28,9 @@ $(XAML).docs: $(XAMLASSEMBLY)
 $(MAPS).docs: $(MAPSASSEMBLY)
 	$(MDOC) update --delete -o docs/$(MAPS) $(MAPSASSEMBLY) -L $(DOTNETPCL)
 
+$(PAGES).docs: $(PAGESASSEMBLY)
+	$(MDOC) update --delete -o docs/$(PAGES) $(PAGESASSEMBLY) -L $(DOTNETPCL)
+
 $(COREASSEMBLY): .FORCE
 	xbuild /property:Configuration=Release Xamarin.Forms.Core/Xamarin.Forms.Core.csproj
 
@@ -35,6 +40,9 @@ $(XAMLASSEMBLY): .FORCE
 $(MAPSASSEMBLY): .FORCE
 	xbuild /property:Configuration=Release Xamarin.Forms.Maps/Xamarin.Forms.Maps.csproj
 
+$(PAGESASSEMBLY): .FORCE
+	xbuild /property:Configuration=Release Xamarin.Forms.Pages/Xamarin.Forms.Pages.csproj
+
 htmldocs: docs
 	$(MDOC) export-html -o htmldocs docs/*
 
@@ -43,6 +51,7 @@ xmldocs: docs
 	$(MDOC) export-msxdoc -o docs/$(CORE).xml docs/$(CORE)
 	$(MDOC) export-msxdoc -o docs/$(XAML).xml docs/$(XAML)
 	$(MDOC) export-msxdoc -o docs/$(MAPS).xml docs/$(MAPS)
+	$(MDOC) export-msxdoc -o docs/$(PAGES).xml docs/$(PAGES)
 .FORCE:
 
-.PHONY: .FORCE $(CORE).docs $(MAPS).docs $(XAML).docs htmldocs xmldocs
+.PHONY: .FORCE $(CORE).docs $(MAPS).docs $(XAML).docs $(PAGES).docs htmldocs xmldocs
