@@ -60,56 +60,6 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			return rootnode;
 		}
-
-		protected static ISymbolReaderProvider GetSymbolReaderProvider(string moduleFileName, bool debugSymbols)
-		{
-			if (!debugSymbols)
-				return null;
-
-			var pdb_name = GetPdbFileName(moduleFileName);
-			if (File.Exists(pdb_name)) {
-				// TODO: check mvid match
-				return new PdbReaderProvider();
-			}
-
-			var mdb_name = GetMdbFileName(moduleFileName);
-			if (File.Exists(mdb_name)) {
-				// TODO: check mvid match
-				return new MdbReaderProvider();
-			}
-
-			return null;
-		}
-
-		protected static ISymbolWriterProvider GetSymbolWriterProvider(string moduleFileName, bool debugSymbols)
-		{
-			if (!debugSymbols)
-				return null;
-
-			var pdb_name = GetPdbFileName(moduleFileName);
-			if (File.Exists(pdb_name)) {
-				// TODO: check mvid match
-				return new PdbWriterProvider();
-			}
-
-			var mdb_name = GetMdbFileName(moduleFileName);
-			if (File.Exists(mdb_name)) {
-				// TODO: check mvid match
-				return new MdbWriterProvider();
-			}
-
-			return null;
-		}
-
-		static string GetPdbFileName(string assemblyFileName)
-		{
-			return Path.ChangeExtension(assemblyFileName, ".pdb");
-		}
-
-		static string GetMdbFileName(string assemblyFileName)
-		{
-			return assemblyFileName + ".mdb";
-		}
 	}
 
 	static class CecilExtensions

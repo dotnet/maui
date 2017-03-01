@@ -72,7 +72,6 @@ namespace Xamarin.Forms.Build.Tasks
 				AssemblyResolver = resolver,
 				ReadWrite = !ReadOnly,
 				ReadSymbols = DebugSymbols,
-				SymbolReaderProvider = GetSymbolReaderProvider(Assembly, DebugSymbols),
 			};
 
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly),readerParameters)) {
@@ -226,7 +225,6 @@ namespace Xamarin.Forms.Build.Tasks
 				try {
 					assemblyDefinition.Write(new WriterParameters {
 						WriteSymbols = DebugSymbols,
-						SymbolWriterProvider = GetSymbolWriterProvider(Assembly, DebugSymbols),
 					});
 					Logger.LogLine(1, "done.");
 				} catch (Exception e) {

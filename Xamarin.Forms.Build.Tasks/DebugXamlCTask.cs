@@ -46,7 +46,6 @@ namespace Xamarin.Forms.Build.Tasks
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly, new ReaderParameters {
 				ReadWrite = true,
 				ReadSymbols = DebugSymbols,
-				SymbolReaderProvider = GetSymbolReaderProvider(Assembly, DebugSymbols),
 				AssemblyResolver = resolver
 			})) {
 				foreach (var module in assemblyDefinition.Modules) {
@@ -146,7 +145,6 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				Logger.LogString(1, "Writing the assembly... ");
 				assemblyDefinition.Write(new WriterParameters {
-					SymbolWriterProvider = GetSymbolWriterProvider(Assembly, DebugSymbols),
 					WriteSymbols = DebugSymbols
 				});
 			}
