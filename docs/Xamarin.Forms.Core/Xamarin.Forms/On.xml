@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Class that is used within <c>OnPlatform</c> tags in XAML when specifying values on platforms.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.On" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,7 +48,7 @@
         <ReturnType>System.Collections.Generic.IList&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets or sets the list of specified platforms.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -64,7 +64,7 @@
         <ReturnType>System.Object</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets or sets the value on the current platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

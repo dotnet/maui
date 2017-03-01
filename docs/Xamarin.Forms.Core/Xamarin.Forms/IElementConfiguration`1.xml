@@ -15,8 +15,8 @@
   </TypeParameters>
   <Interfaces />
   <Docs>
-    <typeparam name="TElement">To be added.</typeparam>
-    <summary>To be added.</summary>
+    <typeparam name="TElement">The element for which to return a platform-specific type.</typeparam>
+    <summary>Interface for returning the platform-specific instance of a Xamarin.Forms type.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -39,7 +39,7 @@
       </TypeParameters>
       <Parameters />
       <Docs>
-        <typeparam name="T">To be added.</typeparam>
+        <typeparam name="T">The platform for which to return an instance.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Xamarin.Forms.IElementConfiguration`1" />, on which a platform-specific method may be called.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

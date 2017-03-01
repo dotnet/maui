@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates tab styles for tabbed pages.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.TabsStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Tabs are placed and displayed according to system defaults.</summary>
       </Docs>
     </Member>
     <Member MemberName="Hidden">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.TabsStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Tabs are hidden.</summary>
       </Docs>
     </Member>
     <Member MemberName="Icons">
@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.TabsStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Tabs are shown as icons.</summary>
       </Docs>
     </Member>
     <Member MemberName="OnBottom">
@@ -66,7 +66,7 @@
         <ReturnType>Xamarin.Forms.TabsStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Tabs are displayed at the bottom of the page.</summary>
       </Docs>
     </Member>
     <Member MemberName="OnNavigation">
@@ -80,7 +80,7 @@
         <ReturnType>Xamarin.Forms.TabsStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Tabs are displayed when the user swipes from a screen edge.</summary>
       </Docs>
     </Member>
   </Members>

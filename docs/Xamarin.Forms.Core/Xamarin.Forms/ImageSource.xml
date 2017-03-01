@@ -35,7 +35,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.ImageSource" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

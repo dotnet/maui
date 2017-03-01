@@ -174,8 +174,8 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Xamarin.Forms.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the background color of the bar.</summary>
+        <value>The background color of the bar.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -190,7 +190,7 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.TabbedPage.BarBackgroundColor" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -205,8 +205,8 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Xamarin.Forms.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the color of text on the bar.</summary>
+        <value>The color of text on the bar.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -221,7 +221,7 @@ class TabbedPageDemoPage2 : TabbedPage
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.TabbedPage.BarTextColor" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

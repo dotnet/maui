@@ -259,8 +259,8 @@
         <ReturnType>System.Type</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the type of object with which the resource dictionary is merged.</summary>
+        <value>The type of object with which the resource dictionary is merged, or null if the dictionary is not merged with another.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
