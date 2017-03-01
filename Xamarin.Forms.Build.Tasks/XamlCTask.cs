@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
+
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
@@ -23,9 +24,12 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		internal string Type { get; set; }
+		internal MethodDefinition InitCompForType { get; private set; }
+		internal bool ReadOnly { get; set; }
 
-		public override bool Execute(IList<Exception> thrownExceptions)
+		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
+			thrownExceptions = null;
 			Logger = Logger ?? new Logger(null, Verbosity);
 			Logger.LogLine(1, "Compiling Xaml");
 			Logger.LogLine(1, "\nAssembly: {0}", Assembly);
@@ -64,175 +68,173 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 			}
 
-			var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly), new ReaderParameters
-			{
+			var readerParameters = new ReaderParameters {
 				AssemblyResolver = resolver,
-				ReadSymbols = DebugSymbols
-			});
+				ReadWrite = !ReadOnly,
+				ReadSymbols = DebugSymbols,
+			};
 
-			CustomAttribute xamlcAttr;
-			if (assemblyDefinition.HasCustomAttributes &&
-			    (xamlcAttr =
-				    assemblyDefinition.CustomAttributes.FirstOrDefault(
-					    ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
-			{
-				var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
-				if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-					skipassembly = true;
-				if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-					skipassembly = false;
-			}
-
-			foreach (var module in assemblyDefinition.Modules)
-			{
-				var skipmodule = skipassembly;
-				if (module.HasCustomAttributes &&
-				    (xamlcAttr =
-					    module.CustomAttributes.FirstOrDefault(
-						    ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
-				{
+			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly),readerParameters)) {
+				CustomAttribute xamlcAttr;
+				if (assemblyDefinition.HasCustomAttributes &&
+					(xamlcAttr =
+						assemblyDefinition.CustomAttributes.FirstOrDefault(
+							ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
 					var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 					if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-						skipmodule = true;
+						skipassembly = true;
 					if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-						skipmodule = false;
+						skipassembly = false;
 				}
 
-				Logger.LogLine(2, " Module: {0}", module.Name);
-				var resourcesToPrune = new List<EmbeddedResource>();
-				foreach (var resource in module.Resources.OfType<EmbeddedResource>())
-				{
-					Logger.LogString(2, "  Resource: {0}... ", resource.Name);
-					string classname;
-					if (!resource.IsXaml(out classname))
-					{
-						Logger.LogLine(2, "skipped.");
-						continue;
-					}
-					TypeDefinition typeDef = module.GetType(classname);
-					if (typeDef == null)
-					{
-						Logger.LogLine(2, "no type found... skipped.");
-						continue;
-					}
-					var skiptype = skipmodule;
-					if (typeDef.HasCustomAttributes &&
-					    (xamlcAttr =
-						    typeDef.CustomAttributes.FirstOrDefault(
-							    ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null)
-					{
+				foreach (var module in assemblyDefinition.Modules) {
+					var skipmodule = skipassembly;
+					if (module.HasCustomAttributes &&
+						(xamlcAttr =
+							module.CustomAttributes.FirstOrDefault(
+								ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
 						var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
 						if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
-							skiptype = true;
+							skipmodule = true;
 						if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
-							skiptype = false;
+							skipmodule = false;
 					}
 
-					if (Type != null)
-						skiptype = !(Type == classname);
+					Logger.LogLine(2, " Module: {0}", module.Name);
+					var resourcesToPrune = new List<EmbeddedResource>();
+					foreach (var resource in module.Resources.OfType<EmbeddedResource>()) {
+						Logger.LogString(2, "  Resource: {0}... ", resource.Name);
+						string classname;
+						if (!resource.IsXaml(out classname)) {
+							Logger.LogLine(2, "skipped.");
+							continue;
+						}
+						TypeDefinition typeDef = module.GetType(classname);
+						if (typeDef == null) {
+							Logger.LogLine(2, "no type found... skipped.");
+							continue;
+						}
+						var skiptype = skipmodule;
+						if (typeDef.HasCustomAttributes &&
+							(xamlcAttr =
+								typeDef.CustomAttributes.FirstOrDefault(
+									ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlCompilationAttribute")) != null) {
+							var options = (XamlCompilationOptions)xamlcAttr.ConstructorArguments[0].Value;
+							if ((options & XamlCompilationOptions.Skip) == XamlCompilationOptions.Skip)
+								skiptype = true;
+							if ((options & XamlCompilationOptions.Compile) == XamlCompilationOptions.Compile)
+								skiptype = false;
+						}
 
-					if (skiptype)
-					{
-						Logger.LogLine(2, "Has XamlCompilationAttribute set to Skip and not Compile... skipped");
-						continue;
-					}
+						if (Type != null)
+							skiptype = !(Type == classname);
 
-					var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == "InitializeComponent");
-					if (initComp == null)
-					{
-						Logger.LogLine(2, "no InitializeComponent found... skipped.");
-						continue;
-					}
-					Logger.LogLine(2, "");
+						if (skiptype) {
+							Logger.LogLine(2, "Has XamlCompilationAttribute set to Skip and not Compile... skipped");
+							continue;
+						}
 
-					CustomAttribute xamlFilePathAttr;
-					var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlFilePathAttribute")) != null ?
-											  (string)xamlFilePathAttr.ConstructorArguments [0].Value :
-											  resource.Name;
+						var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == "InitializeComponent");
+						if (initComp == null) {
+							Logger.LogLine(2, "no InitializeComponent found... skipped.");
+							continue;
+						}
+						Logger.LogLine(2, "");
 
-					var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
-					if (initCompRuntime != null)
-						Logger.LogLine(2, "   __InitComponentRuntime already exists... not duplicating");
-					else {
-						Logger.LogString(2, "   Duplicating {0}.InitializeComponent () into {0}.__InitComponentRuntime ... ", typeDef.Name);
-						initCompRuntime = DuplicateMethodDef(typeDef, initComp, "__InitComponentRuntime");
+						CustomAttribute xamlFilePathAttr;
+						var xamlFilePath = typeDef.HasCustomAttributes && (xamlFilePathAttr = typeDef.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "Xamarin.Forms.Xaml.XamlFilePathAttribute")) != null ?
+												  (string)xamlFilePathAttr.ConstructorArguments[0].Value :
+												  resource.Name;
+
+						var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
+						if (initCompRuntime != null)
+							Logger.LogLine(2, "   __InitComponentRuntime already exists... not creating");
+						else {
+							Logger.LogString(2, "   Creating empty {0}.__InitComponentRuntime ...", typeDef.Name);
+							initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
+							Logger.LogLine(2, "done.");
+							Logger.LogString(2, "   Copying body of InitializeComponent to __InitComponentRuntime ...", typeDef.Name);
+							initCompRuntime.Body = new MethodBody(initCompRuntime);
+							var iCRIl = initCompRuntime.Body.GetILProcessor();
+							foreach (var instr in initComp.Body.Instructions)
+								iCRIl.Append(instr);
+							initComp.Body.Instructions.Clear();
+							initComp.Body.GetILProcessor().Emit(OpCodes.Ret);
+							typeDef.Methods.Add(initCompRuntime);
+							Logger.LogLine(2, "done.");
+						}
+
+						Logger.LogString(2, "   Parsing Xaml... ");
+						var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
+						if (rootnode == null) {
+							Logger.LogLine(2, "failed.");
+							continue;
+						}
 						Logger.LogLine(2, "done.");
+
+						hasCompiledXamlResources = true;
+
+						Logger.LogString(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
+						Exception e;
+						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, out e)) {
+							success = false;
+							Logger.LogLine(2, "failed.");
+							(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
+							Logger.LogException(null, null, null, xamlFilePath, e);
+							Logger.LogLine(4, e.StackTrace);
+							continue;
+						}
+						if (Type != null)
+						    InitCompForType = initComp;
+
+						Logger.LogLine(2, "done.");
+
+						if (OptimizeIL) {
+							Logger.LogString(2, "   Optimizing IL... ");
+							initComp.Body.Optimize();
+							Logger.LogLine(2, "done");
+						}
+
+						if (outputGeneratedILAsCode)
+							Logger.LogLine(2, "   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
+
+						resourcesToPrune.Add(resource);
+					}
+					if (!KeepXamlResources) {
+						if (resourcesToPrune.Any())
+							Logger.LogLine(2, "  Removing compiled xaml resources");
+						foreach (var resource in resourcesToPrune) {
+							Logger.LogString(2, "   Removing {0}... ", resource.Name);
+							module.Resources.Remove(resource);
+							Logger.LogLine(2, "done");
+						}
 					}
 
-					Logger.LogString(2, "   Parsing Xaml... ");
-					var rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
-					if (rootnode == null)
-					{
-						Logger.LogLine(2, "failed.");
-						continue;
-					}
-					Logger.LogLine(2, "done.");
-
-					hasCompiledXamlResources = true;
-
-					Logger.LogString(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
-					Exception e;
-					if (!TryCoreCompile(initComp, initCompRuntime, rootnode, out e)) {
-						success = false;
-						Logger.LogLine(2, "failed.");
-						thrownExceptions?.Add(e);
-						Logger.LogException(null, null, null, xamlFilePath, e);
-						Logger.LogLine(4, e.StackTrace);
-						continue;
-					}
-					Logger.LogLine(2, "done.");
-
-					if (OptimizeIL)
-					{
-						Logger.LogString(2, "   Optimizing IL... ");
-						initComp.Body.Optimize();
-						Logger.LogLine(2, "done");
-					}
-
-					if (outputGeneratedILAsCode)
-						Logger.LogLine(2, "   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
-
-					resourcesToPrune.Add(resource);
-				}
-				if (!KeepXamlResources)
-				{
-					if (resourcesToPrune.Any())
-						Logger.LogLine(2, "  Removing compiled xaml resources");
-					foreach (var resource in resourcesToPrune)
-					{
-						Logger.LogString(2, "   Removing {0}... ", resource.Name);
-						module.Resources.Remove(resource);
-						Logger.LogLine(2, "done");
-					}
+					Logger.LogLine(2, "");
 				}
 
-				Logger.LogLine(2, "");
-			}
+				if (!hasCompiledXamlResources) {
+					Logger.LogLine(1, "No compiled resources. Skipping writing assembly.");
+					return success;
+				}
 
-			if (!hasCompiledXamlResources)
-			{
-				Logger.LogLine(1, "No compiled resources. Skipping writing assembly.");
-				return success;
+				if (ReadOnly)
+					return success;
+				
+				Logger.LogString(1, "Writing the assembly... ");
+				try {
+					assemblyDefinition.Write(new WriterParameters {
+						WriteSymbols = DebugSymbols,
+					});
+					Logger.LogLine(1, "done.");
+				} catch (Exception e) {
+					Logger.LogLine(1, "failed.");
+					Logger.LogException(null, null, null, null, e);
+					(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
+					Logger.LogLine(4, e.StackTrace);
+					success = false;
+				}
 			}
-
-			Logger.LogString(1, "Writing the assembly... ");
-			try
-			{
-				assemblyDefinition.Write(Assembly, new WriterParameters
-				{
-					WriteSymbols = DebugSymbols
-				});
-				Logger.LogLine(1, "done.");
-			}
-			catch (Exception e)
-			{
-				Logger.LogLine(1, "failed.");
-				Logger.LogException(null, null, null, null, e);
-				thrownExceptions?.Add(e);
-				Logger.LogLine(4, e.StackTrace);
-				success = false;
-			}
-
 			return success;
 		}
 
@@ -258,7 +260,8 @@ namespace Xamarin.Forms.Build.Tasks
 					//  IL_0031:  nop
 
 					var nop = Instruction.Create(OpCodes.Nop);
-					var getXamlFileProvider = body.Method.Module.Import(body.Method.Module.Import(typeof(Xamarin.Forms.Xaml.Internals.XamlLoader))
+
+					var getXamlFileProvider = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(Xamarin.Forms.Xaml.Internals.XamlLoader))
 							.Resolve()
 							.Properties.FirstOrDefault(pd => pd.Name == "XamlFileProvider")
 							.GetMethod);
@@ -266,14 +269,14 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(OpCodes.Brfalse, nop);
 					il.Emit(OpCodes.Call, getXamlFileProvider);
 					il.Emit(OpCodes.Ldarg_0);
-					var getType = body.Method.Module.Import(body.Method.Module.Import(typeof(object))
+					var getType = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(object))
 									  .Resolve()
 									  .Methods.FirstOrDefault(md => md.Name == "GetType"));
 					il.Emit(OpCodes.Call, getType);
-					var func = body.Method.Module.Import(body.Method.Module.Import(typeof(Func<Type, string>))
+					var func = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(Func<Type, string>))
 							 .Resolve()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(body.Method.Module.Import(typeof(Func<Type, string>)), body.Method.Module);
+					func = func.ResolveGenericParameters(body.Method.Module.ImportReference(typeof(Func<Type, string>)), body.Method.Module);
 					il.Emit(OpCodes.Callvirt, func);
 					il.Emit(OpCodes.Brfalse, nop);
 					il.Emit(OpCodes.Ldarg_0);

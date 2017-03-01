@@ -10,6 +10,9 @@ using Microsoft.Build.Utilities;
 using Mono.Cecil;
 
 using Xamarin.Forms.Xaml;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Pdb;
+using Mono.Cecil.Mdb;
 
 namespace Xamarin.Forms.Build.Tasks
 {
@@ -31,18 +34,11 @@ namespace Xamarin.Forms.Build.Tasks
 		public override bool Execute()
 		{
 			Logger = new Logger(Log, Verbosity);
-			return Execute(null);
+			IList<Exception> _;
+			return Execute(out _);
 		}
 
-		public abstract bool Execute(IList<Exception> thrownExceptions);
-
-		protected static MethodDefinition DuplicateMethodDef(TypeDefinition typeDef, MethodDefinition methodDef, string newName)
-		{
-			var dup = new MethodDefinition(newName, methodDef.Attributes, methodDef.ReturnType);
-			dup.Body = methodDef.Body;
-			typeDef.Methods.Add(dup);
-			return dup;
-		}
+		public abstract bool Execute(out IList<Exception> thrownExceptions);
 
 		internal static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
 		{

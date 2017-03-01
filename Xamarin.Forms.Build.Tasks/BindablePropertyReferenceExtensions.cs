@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.Import(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
 
 			if (getter == null)
 				throw new XamlParseException($"Missing a public static Get{bpName} or a public instance property getter for the attached property \"{bpRef.DeclaringType}.{bpRef.Name}\"", iXmlLineInfo);
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.Import(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
 
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)

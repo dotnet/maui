@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var str = (string)node.Value;
 
 			//If the TypeConverter has a ProvideCompiledAttribute that can be resolved, shortcut this
-			var compiledConverterName = typeConverter?.GetCustomAttribute (module.Import(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?.First().Value as string;
+			var compiledConverterName = typeConverter?.GetCustomAttribute (module.ImportReference(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?.First().Value as string;
 			Type compiledConverterType;
 			if (compiledConverterName != null && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
 				var compiledConverter = Activator.CreateInstance (compiledConverterType);
@@ -62,24 +62,24 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
-					yield return Instruction.Create (OpCodes.Box, module.Import (targetTypeRef));
+					yield return Instruction.Create (OpCodes.Box, module.ImportReference (targetTypeRef));
 				yield break;
 			}
 
 			//If there's a [TypeConverter], use it
 			if (typeConverter != null)
 			{
-				var isExtendedConverter = typeConverter.ImplementsInterface(module.Import(typeof (IExtendedTypeConverter)));
+				var isExtendedConverter = typeConverter.ImplementsInterface(module.ImportReference(typeof (IExtendedTypeConverter)));
 				var typeConverterCtor = typeConverter.Resolve().Methods.Single(md => md.IsConstructor && md.Parameters.Count == 0);
-				var typeConverterCtorRef = module.Import(typeConverterCtor);
+				var typeConverterCtorRef = module.ImportReference(typeConverterCtor);
 				var convertFromInvariantStringDefinition = isExtendedConverter
-					? module.Import(typeof (IExtendedTypeConverter))
+					? module.ImportReference(typeof (IExtendedTypeConverter))
 						.Resolve()
 						.Methods.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 2)
 					: typeConverter.Resolve()
 						.AllMethods()
 						.FirstOrDefault(md => md.Name == "ConvertFromInvariantString" && md.Parameters.Count == 1);
-				var convertFromInvariantStringReference = module.Import(convertFromInvariantStringDefinition);
+				var convertFromInvariantStringReference = module.ImportReference(convertFromInvariantStringDefinition);
 
 				yield return Instruction.Create(OpCodes.Newobj, typeConverterCtorRef);
 				yield return Instruction.Create(OpCodes.Ldstr, node.Value as string);
@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Callvirt, convertFromInvariantStringReference);
 
 				if (targetTypeRef.IsValueType && unboxValueTypes)
-					yield return Instruction.Create(OpCodes.Unbox_Any, module.Import(targetTypeRef));
+					yield return Instruction.Create(OpCodes.Unbox_Any, module.ImportReference(targetTypeRef));
 
 				//ConvertFrom returns an object, no need to Box
 				yield break;
@@ -146,10 +146,10 @@ namespace Xamarin.Forms.Build.Tasks
 				var ts = TimeSpan.Parse(str, CultureInfo.InvariantCulture);
 				var ticks = ts.Ticks;
 				var timeSpanCtor =
-					module.Import(typeof(TimeSpan))
+					module.ImportReference(typeof(TimeSpan))
 						.Resolve()
 						.Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 1);
-				var timeSpanCtorRef = module.Import(timeSpanCtor);
+				var timeSpanCtorRef = module.ImportReference(timeSpanCtor);
 
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, timeSpanCtorRef);
@@ -157,10 +157,10 @@ namespace Xamarin.Forms.Build.Tasks
 				var dt = DateTime.Parse(str, CultureInfo.InvariantCulture);
 				var ticks = dt.Ticks;
 				var dateTimeCtor =
-					module.Import(typeof(DateTime))
+					module.ImportReference(typeof(DateTime))
 						.Resolve()
 						.Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 1);
-				var dateTimeCtorRef = module.Import(dateTimeCtor);
+				var dateTimeCtorRef = module.ImportReference(dateTimeCtor);
 
 				yield return Instruction.Create(OpCodes.Ldc_I8, ticks);
 				yield return Instruction.Create(OpCodes.Newobj, dateTimeCtorRef);
@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Build.Tasks
 			else if (targetTypeRef.FullName == "System.Decimal") {
 				decimal outdecimal;
 				if (decimal.TryParse(str, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal)) {
-					var vardef = new VariableDefinition(context.Body.Method.Module.Import(typeof(decimal)));
+					var vardef = new VariableDefinition(context.Body.Method.Module.ImportReference(typeof(decimal)));
 					context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
 					//					IL_0003:  ldstr "adecimal"
@@ -185,41 +185,41 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Instruction.Create(OpCodes.Ldstr, str);
 					yield return Instruction.Create(OpCodes.Ldc_I4, 0x6f); //NumberStyles.Number
 					var getInvariantInfo =
-						context.Body.Method.Module.Import(typeof(CultureInfo))
+						context.Body.Method.Module.ImportReference(typeof(CultureInfo))
 							.Resolve()
 							.Properties.FirstOrDefault(pd => pd.Name == "InvariantCulture")
 							.GetMethod;
-					var getInvariant = context.Body.Method.Module.Import(getInvariantInfo);
+					var getInvariant = context.Body.Method.Module.ImportReference(getInvariantInfo);
 					yield return Instruction.Create(OpCodes.Call, getInvariant);
 					yield return Instruction.Create(OpCodes.Ldloca, vardef);
 					var tryParseInfo =
-						context.Body.Method.Module.Import(typeof(decimal))
+						context.Body.Method.Module.ImportReference(typeof(decimal))
 							.Resolve()
 							.Methods.FirstOrDefault(md => md.Name == "TryParse" && md.Parameters.Count == 4);
-					var tryParse = context.Body.Method.Module.Import(tryParseInfo);
+					var tryParse = context.Body.Method.Module.ImportReference(tryParseInfo);
 					yield return Instruction.Create(OpCodes.Call, tryParse);
 					yield return Instruction.Create(OpCodes.Pop);
 					yield return Instruction.Create(OpCodes.Ldloc, vardef);
 				} else {
 					yield return Instruction.Create(OpCodes.Ldc_I4_0);
 					var decimalctorinfo =
-						context.Body.Method.Module.Import(typeof(decimal))
+						context.Body.Method.Module.ImportReference(typeof(decimal))
 							.Resolve()
 							.Methods.FirstOrDefault(
 								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters[0].ParameterType.FullName == "System.Int32");
-					var decimalctor = context.Body.Method.Module.Import(decimalctorinfo);
+					var decimalctor = context.Body.Method.Module.ImportReference(decimalctorinfo);
 					yield return Instruction.Create(OpCodes.Newobj, decimalctor);
 				}
 			} else if (implicitOperator != null) {
 				yield return Instruction.Create(OpCodes.Ldstr, node.Value as string);
-				yield return Instruction.Create(OpCodes.Call, module.Import(implicitOperator));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(implicitOperator));
 			} else
 				yield return Instruction.Create(OpCodes.Ldnull);
 
 			if (isNullable)
-				yield return Instruction.Create(OpCodes.Newobj, module.Import(nullableCtor));
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportReference(nullableCtor));
 			if (originalTypeRef.IsValueType && boxValueTypes)
-				yield return Instruction.Create(OpCodes.Box, module.Import(originalTypeRef));
+				yield return Instruction.Create(OpCodes.Box, module.ImportReference(originalTypeRef));
 		}
 
 		static Instruction PushParsedEnum(TypeReference enumRef, string value, IXmlLineInfo lineInfo)
@@ -320,10 +320,10 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LinePosition);
-				ctor = module.Import(typeof (XmlLineInfo).GetConstructor(new[] { typeof (int), typeof (int) }));
+				ctor = module.ImportReference(typeof (XmlLineInfo).GetConstructor(new[] { typeof (int), typeof (int) }));
 			}
 			else
-				ctor = module.Import(typeof (XmlLineInfo).GetConstructor(new Type[] { }));
+				ctor = module.ImportReference(typeof (XmlLineInfo).GetConstructor(new Type[] { }));
 			yield return Instruction.Create(OpCodes.Newobj, ctor);
 		}
 
@@ -373,7 +373,7 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldc_I4, nodes.Count);
 			yield return Instruction.Create(OpCodes.Add);
 			yield return Instruction.Create(OpCodes.Newarr, module.TypeSystem.Object);
-			var finalArray = new VariableDefinition(module.Import(typeof (object[])));
+			var finalArray = new VariableDefinition(module.ImportReference(typeof (object[])));
 			context.Body.Variables.Add(finalArray);
 			yield return Instruction.Create(OpCodes.Stloc, finalArray);
 
@@ -387,13 +387,13 @@ namespace Xamarin.Forms.Build.Tasks
 				yield return Instruction.Create(OpCodes.Ldc_I4, nodes.Count); //destinationIndex
 				yield return Instruction.Create(OpCodes.Ldloc, parentObjectLength); //length
 				var arrayCopy =
-					module.Import(typeof (Array))
+					module.ImportReference(typeof (Array))
 						.Resolve()
 						.Methods.First(
 							md =>
 								md.Name == "Copy" && md.Parameters.Count == 5 &&
 								md.Parameters[1].ParameterType.FullName == module.TypeSystem.Int32.FullName);
-				yield return Instruction.Create(OpCodes.Call, module.Import(arrayCopy));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(arrayCopy));
 			}
 
 			//Add nodes to array
@@ -407,7 +407,7 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Instruction.Create(OpCodes.Ldc_I4, i);
 					yield return Instruction.Create(OpCodes.Ldloc, context.Variables[en]);
 					if (context.Variables[en].VariableType.IsValueType)
-						yield return Instruction.Create(OpCodes.Box, module.Import(context.Variables[en].VariableType));
+						yield return Instruction.Create(OpCodes.Box, module.ImportReference(context.Variables[en].VariableType));
 					yield return Instruction.Create(OpCodes.Stelem_Ref);
 				}
 			}
@@ -424,12 +424,12 @@ namespace Xamarin.Forms.Build.Tasks
 //				IL_0005:  call class [mscorlib]System.Type class [mscorlib] System.Type::GetTypeFromHandle(valuetype [mscorlib] System.RuntimeTypeHandle)
 //				IL_000a:  ldstr "Foo"
 //				IL_000f:  callvirt instance class [mscorlib] System.Reflection.PropertyInfo class [mscorlib] System.Type::GetProperty(string)
-				var getTypeFromHandle = module.Import(typeof(Type).GetMethod("GetTypeFromHandle", new [] { typeof(RuntimeTypeHandle) }));
-				var getPropertyInfo = module.Import(typeof(Type).GetMethod("GetProperty", new [] { typeof(string) }));
-				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(declaringTypeReference ?? propertyRef.DeclaringType));
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+				var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new [] { typeof(RuntimeTypeHandle) }));
+				var getPropertyInfo = module.ImportReference(typeof(Type).GetMethod("GetProperty", new [] { typeof(string) }));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(declaringTypeReference ?? propertyRef.DeclaringType));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
 				yield return Instruction.Create(OpCodes.Ldstr, propertyRef.Name);
-				yield return Instruction.Create(OpCodes.Callvirt, module.Import(getPropertyInfo));
+				yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(getPropertyInfo));
 				yield break;
 			}
 			yield return Instruction.Create(OpCodes.Ldnull);
@@ -446,14 +446,14 @@ namespace Xamarin.Forms.Build.Tasks
 #endif
 
 			var ctorinfo = typeof (XamlServiceProvider).GetConstructor(new Type[] { });
-			var ctor = module.Import(ctorinfo);
+			var ctor = module.ImportReference(ctorinfo);
 
 			var addServiceInfo = typeof (XamlServiceProvider).GetMethod("Add", new[] { typeof (Type), typeof (object) });
-			var addService = module.Import(addServiceInfo);
+			var addService = module.ImportReference(addServiceInfo);
 
 			var getTypeFromHandle =
-				module.Import(typeof (Type).GetMethod("GetTypeFromHandle", new[] { typeof (RuntimeTypeHandle) }));
-			var getAssembly = module.Import(typeof (Type).GetProperty("Assembly").GetMethod);
+				module.ImportReference(typeof (Type).GetMethod("GetTypeFromHandle", new[] { typeof (RuntimeTypeHandle) }));
+			var getAssembly = module.ImportReference(typeof (Type).GetProperty("Assembly").GetMethod);
 
 			yield return Instruction.Create(OpCodes.Newobj, ctor);
 
@@ -462,8 +462,8 @@ namespace Xamarin.Forms.Build.Tasks
 			if (pushParentIl[pushParentIl.Count - 1].OpCode != OpCodes.Ldnull)
 			{
 				yield return Instruction.Create(OpCodes.Dup); //Keep the serviceProvider on the stack
-				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(typeof (IProvideValueTarget)));
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeof (IProvideValueTarget)));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
 
 				foreach (var instruction in pushParentIl)
 					yield return instruction;
@@ -472,7 +472,7 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return instruction;
 
 				var targetProviderCtor =
-					module.Import(typeof (SimpleValueTargetProvider).GetConstructor(new[] { typeof (object[]), typeof(object) }));
+					module.ImportReference(typeof (SimpleValueTargetProvider).GetConstructor(new[] { typeof (object[]), typeof(object) }));
 				yield return Instruction.Create(OpCodes.Newobj, targetProviderCtor);
 				yield return Instruction.Create(OpCodes.Callvirt, addService);
 			}
@@ -481,12 +481,12 @@ namespace Xamarin.Forms.Build.Tasks
 			if (context.Scopes.ContainsKey(node))
 			{
 				yield return Instruction.Create(OpCodes.Dup); //Dupicate the serviceProvider
-				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(typeof (INameScopeProvider)));
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
-				var namescopeProviderCtor = module.Import(typeof (NameScopeProvider).GetConstructor(new Type[] { }));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeof (INameScopeProvider)));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
+				var namescopeProviderCtor = module.ImportReference(typeof (NameScopeProvider).GetConstructor(new Type[] { }));
 				yield return Instruction.Create(OpCodes.Newobj, namescopeProviderCtor);
 				yield return Instruction.Create(OpCodes.Dup); //Duplicate the namescopeProvider
-				var setNamescope = module.Import(typeof (NameScopeProvider).GetProperty("NameScope").GetSetMethod());
+				var setNamescope = module.ImportReference(typeof (NameScopeProvider).GetProperty("NameScope").GetSetMethod());
 
 				yield return Instruction.Create(OpCodes.Ldloc, context.Scopes[node].Item1);
 				yield return Instruction.Create(OpCodes.Callvirt, setNamescope);
@@ -497,10 +497,10 @@ namespace Xamarin.Forms.Build.Tasks
 			if (node.NamespaceResolver != null)
 			{
 				yield return Instruction.Create(OpCodes.Dup); //Dupicate the serviceProvider
-				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(typeof (IXamlTypeResolver)));
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
-				var xmlNamespaceResolverCtor = module.Import(typeof (XmlNamespaceResolver).GetConstructor(new Type[] { }));
-				var addNamespace = module.Import(typeof (XmlNamespaceResolver).GetMethod("Add"));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeof (IXamlTypeResolver)));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
+				var xmlNamespaceResolverCtor = module.ImportReference(typeof (XmlNamespaceResolver).GetConstructor(new Type[] { }));
+				var addNamespace = module.ImportReference(typeof (XmlNamespaceResolver).GetMethod("Add"));
 				yield return Instruction.Create(OpCodes.Newobj, xmlNamespaceResolverCtor);
 				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
 				{
@@ -510,10 +510,10 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Instruction.Create(OpCodes.Callvirt, addNamespace);
 				}
 				yield return Instruction.Create(OpCodes.Ldtoken, context.Body.Method.DeclaringType);
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
 				yield return Instruction.Create(OpCodes.Callvirt, getAssembly);
-				var xtr = module.Import(typeof (XamlTypeResolver)).Resolve();
-				var xamlTypeResolverCtor = module.Import(xtr.Methods.First(md => md.IsConstructor && md.Parameters.Count == 2));
+				var xtr = module.ImportReference(typeof (XamlTypeResolver)).Resolve();
+				var xamlTypeResolverCtor = module.ImportReference(xtr.Methods.First(md => md.IsConstructor && md.Parameters.Count == 2));
 				yield return Instruction.Create(OpCodes.Newobj, xamlTypeResolverCtor);
 				yield return Instruction.Create(OpCodes.Callvirt, addService);
 			}
@@ -521,14 +521,14 @@ namespace Xamarin.Forms.Build.Tasks
 			if (node is IXmlLineInfo)
 			{
 				yield return Instruction.Create(OpCodes.Dup); //Dupicate the serviceProvider
-				yield return Instruction.Create(OpCodes.Ldtoken, module.Import(typeof (IXmlLineInfoProvider)));
-				yield return Instruction.Create(OpCodes.Call, module.Import(getTypeFromHandle));
+				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeof (IXmlLineInfoProvider)));
+				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
 
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction;
 
-				var lip = module.Import(typeof (XmlLineInfoProvider)).Resolve();
-				var lineInfoProviderCtor = module.Import(lip.Methods.First(md => md.IsConstructor && md.Parameters.Count == 1));
+				var lip = module.ImportReference(typeof (XmlLineInfoProvider)).Resolve();
+				var lineInfoProviderCtor = module.ImportReference(lip.Methods.First(md => md.IsConstructor && md.Parameters.Count == 1));
 				yield return Instruction.Create(OpCodes.Newobj, lineInfoProviderCtor);
 				yield return Instruction.Create(OpCodes.Callvirt, addService);
 			}

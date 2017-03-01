@@ -4,7 +4,6 @@ using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
-	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class Unreported008 : ContentPage
 	{
 		public Unreported008()

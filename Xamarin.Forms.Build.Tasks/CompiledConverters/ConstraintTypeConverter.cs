@@ -20,8 +20,8 @@ namespace Xamarin.Forms.Core.XamlC
 
 			yield return Instruction.Create(OpCodes.Ldc_R8, size);
 
-			var constantDef = module.Import(typeof(Constraint)).Resolve().Methods.FirstOrDefault(md => md.IsStatic && md.Name == "Constant");
-			var constantRef = module.Import(constantDef);
+			var constantDef = module.ImportReference(typeof(Constraint)).Resolve().Methods.FirstOrDefault(md => md.IsStatic && md.Name == "Constant");
+			var constantRef = module.ImportReference(constantDef);
 			yield return Instruction.Create(OpCodes.Call, constantRef);
 		}
 	}

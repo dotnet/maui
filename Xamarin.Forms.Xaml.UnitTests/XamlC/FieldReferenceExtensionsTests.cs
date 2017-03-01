@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[Test]
 		public void ResolveGenericsOnNonGenericDoesNotThrow ()
 		{
-			var type = module.Import (typeof (NonGenericClass));
+			var type = module.ImportReference (typeof (NonGenericClass));
 			TypeReference declaringTypeReference;
 			FieldDefinition field = type.GetField (fd => fd.Name == "Field", out declaringTypeReference);
 			Assert.DoesNotThrow (() => field.ResolveGenericParameters (declaringTypeReference));
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[Test]
 		public void NonGenericFieldOnGenericType ()
 		{
-			var type = module.Import (typeof (Inheritor));
+			var type = module.ImportReference (typeof (Inheritor));
 			TypeReference declaringTypeReference;
 			FieldDefinition field = type.GetField (fd => fd.Name == "NonGenericField", out declaringTypeReference);
 			Assert.AreEqual ("NonGenericField", field.Name);
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[Test]
 		public void GenericFieldOnGenericType ()
 		{
-			var type = module.Import (typeof (Inheritor));
+			var type = module.ImportReference (typeof (Inheritor));
 			TypeReference declaringTypeReference;
 
 			FieldDefinition field1 = type.GetField (fd => fd.Name == "GenericField1", out declaringTypeReference);

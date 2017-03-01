@@ -12,6 +12,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			InitializeComponent();
 		}
 
+		public FactoryMethodMissingMethod(bool useCompiledXaml)
+		{
+			//this stub will be replaced at compile time
+		}
+
 		[TestFixture]
 		public class Tests
 		{
@@ -28,7 +33,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				if (useCompiledXaml)
 					Assert.Throws(new XamlParseExceptionConstraint(8, 4), () => MockCompiler.Compile(typeof(FactoryMethodMissingMethod)));
 				else
-					Assert.Throws<MissingMemberException>(() => new FactoryMethodMissingMethod());
+					Assert.Throws<MissingMemberException>(() => new FactoryMethodMissingMethod(useCompiledXaml));
 			}
 		}
 	}
