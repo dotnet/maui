@@ -125,12 +125,11 @@ namespace Xamarin.Forms
 			void RegisterImplicitStyles()
 			{
 				Type type = TargetType;
-				while (true)
-				{
+				while (true) {
 					BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(VisualElement), default(Style),
-						propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable)._mergedStyle.OnImplicitStyleChanged());
-					Target.SetDynamicResource(implicitStyleProperty, type.FullName);
+						 propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 					_implicitStyles.Add(implicitStyleProperty);
+					Target.SetDynamicResource(implicitStyleProperty, type.FullName);
 					type = type.GetTypeInfo().BaseType;
 					if (s_stopAtTypes.Contains(type))
 						return;

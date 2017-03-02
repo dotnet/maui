@@ -55,6 +55,11 @@ namespace Xamarin.Forms
 					return true;
 				element = element.Parent;
 			}
+
+			//Fallback for the XF previewer
+			if (Application.Current != null && Application.Current.Resources != null && Application.Current.Resources.TryGetValue(key, out value))
+				return true;
+
 			value = null;
 			return false;
 		}

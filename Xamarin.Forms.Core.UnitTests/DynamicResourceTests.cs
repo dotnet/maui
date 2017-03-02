@@ -10,6 +10,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			base.Setup ();
 			Device.PlatformServices = new MockPlatformServices ();
+			Application.Current = new MockApplication();
+		}
+
+		[TearDown]
+		public override void TearDown()
+		{
+			Application.Current = null;
 		}
 
 		[Test]
@@ -143,11 +150,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			label.SetDynamicResource (Label.TextProperty, "foo");
 			label.Resources = new ResourceDictionary { {"foo","FOO"}};
 
-			Assert.AreEqual ("FOO", label.Text);
+			Assume.That(label.Text, Is.EqualTo("FOO"));
 
 			label.Resources ["foo"] = "BAR";
 
 			Assert.AreEqual ("BAR", label.Text);
+		}
+
+		[Test]
+		public void FallbackToApplicationCurrent()
+		{
+			Application.Current.Resources = new ResourceDictionary { { "foo", "FOO" } };
+
+			var label = new Label();
+			label.BindingContext = new MockViewModel();
+			label.SetBinding(Label.TextProperty, "Text", BindingMode.TwoWay);
+			label.SetDynamicResource(Label.TextProperty, "foo");
+
+			Assert.That(label.Text, Is.EqualTo("FOO"));
 		}
 	}
 }
