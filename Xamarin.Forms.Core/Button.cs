@@ -25,13 +25,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontProperty = BindableProperty.Create("Font", typeof(Font), typeof(Button), default(Font), propertyChanged: FontStructPropertyChanged);
 
-		public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create("FontFamily", typeof(string), typeof(Button), default(string), propertyChanged: SpecificFontPropertyChanged);
+		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		public static readonly BindableProperty FontSizeProperty = BindableProperty.Create("FontSize", typeof(double), typeof(Button), -1.0, propertyChanged: SpecificFontPropertyChanged,
-			defaultValueCreator: bindable => Device.GetNamedSize(NamedSize.Default, (Button)bindable));
+		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create("FontAttributes", typeof(FontAttributes), typeof(Button), FontAttributes.None,
-			propertyChanged: SpecificFontPropertyChanged);
+		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		public static readonly BindableProperty BorderWidthProperty = BindableProperty.Create("BorderWidth", typeof(double), typeof(Button), -1d);
 
@@ -214,18 +212,26 @@ namespace Xamarin.Forms
 			{
 				button.FontFamily = button.Font.FontFamily;
 				if (button.Font.UseNamedSize)
-				{
 					button.FontSize = Device.GetNamedSize(button.Font.NamedSize, button.GetType(), true);
-				}
 				else
-				{
 					button.FontSize = button.Font.FontSize;
-				}
 				button.FontAttributes = button.Font.FontAttributes;
 			}
 
 			button._cancelEvents = false;
 		}
+
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
+			SpecificFontPropertyChanged();
+
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
+			SpecificFontPropertyChanged();
+
+		double IFontElement.FontSizeDefaultValueCreator() =>
+			Device.GetNamedSize(NamedSize.Default, (Button)this);
+
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			SpecificFontPropertyChanged();
 
 		void OnCommandChanged()
 		{
@@ -260,27 +266,21 @@ namespace Xamarin.Forms
 				oldvalue.SourceChanged -= OnSourceChanged;
 		}
 
-		static void SpecificFontPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		void SpecificFontPropertyChanged()
 		{
-			var button = (Button)bindable;
-
-			if (button._cancelEvents)
+			if (_cancelEvents)
 				return;
 
-			button.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
-			button._cancelEvents = true;
+			_cancelEvents = true;
 
-			if (button.FontFamily != null)
-			{
-				button.Font = Font.OfSize(button.FontFamily, button.FontSize).WithAttributes(button.FontAttributes);
-			}
+			if (FontFamily != null)
+				Font = Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
 			else
-			{
-				button.Font = Font.SystemFontOfSize(button.FontSize, button.FontAttributes);
-			}
+				Font = Font.SystemFontOfSize(FontSize, FontAttributes);
 
-			button._cancelEvents = false;
+			_cancelEvents = false;
 		}
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]
