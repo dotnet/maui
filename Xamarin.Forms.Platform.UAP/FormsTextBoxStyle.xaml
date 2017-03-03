@@ -166,7 +166,7 @@
 						<Border x:Name="BackgroundElement" Background="{TemplateBinding Background}" Grid.ColumnSpan="2"
 						        Margin="{TemplateBinding BorderThickness}" Opacity="{ThemeResource TextControlBackgroundRestOpacity}"
 						        Grid.Row="1" Grid.RowSpan="1" />
-						<Border x:Name="BorderElement" BorderBrush="{TemplateBinding BorderBrush}"
+						<Border x:Name="BorderElement" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
 						        BorderThickness="{TemplateBinding BorderThickness}" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="1" />
 						<ContentPresenter x:Name="HeaderContentPresenter" Grid.ColumnSpan="2"
 						                  ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}"

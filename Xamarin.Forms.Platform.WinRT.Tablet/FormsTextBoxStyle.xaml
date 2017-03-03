@@ -123,12 +123,22 @@
 											<DiscreteObjectKeyFrame KeyTime="0"
 											                        Value="{ThemeResource TextBoxDisabledBackgroundThemeBrush}" />
 										</ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement"
+										                               Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0"
+											                        Value="{ThemeResource TextBoxDisabledBackgroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement"
 										                               Storyboard.TargetProperty="BorderBrush">
 											<DiscreteObjectKeyFrame KeyTime="0"
 											                        Value="{ThemeResource TextBoxDisabledBorderThemeBrush}" />
 										</ObjectAnimationUsingKeyFrames>
-										<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement"
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement"
+										                               Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0"
+											                        Value="{ThemeResource TextBoxDisabledBackgroundThemeBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement"
 										                               Storyboard.TargetProperty="Foreground">
 											<DiscreteObjectKeyFrame KeyTime="0"
 											                        Value="{ThemeResource TextBoxDisabledForegroundThemeBrush}" />
@@ -198,6 +208,7 @@
 						        Grid.ColumnSpan="2"
 						        Grid.RowSpan="1" />
 						<Border x:Name="BorderElement"
+                                Background="{Binding Background, RelativeSource={RelativeSource TemplatedParent}}"
 						        Grid.Row="1"
 						        BorderBrush="{TemplateBinding BorderBrush}"
 						        BorderThickness="{TemplateBinding BorderThickness}"
@@ -212,6 +223,7 @@
 						                  ContentTemplate="{TemplateBinding HeaderTemplate}"
 						                  FontWeight="Semilight" />
 						<ScrollViewer x:Name="ContentElement"
+                                      Background="{Binding Background, RelativeSource={RelativeSource TemplatedParent}}"
 						              Grid.Row="1"
 						              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
 						              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
