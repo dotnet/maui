@@ -171,16 +171,30 @@ namespace Xamarin.Forms
 
 #pragma warning restore
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
-			OnSomeFontPropertyChanged();
+		//Those 4 methods are never used as Span isn't a BO, and doesn't compose with FontElement
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
+		{
+			throw new NotImplementedException();
+		}
 
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
-			OnSomeFontPropertyChanged();
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
+		{
+			throw new NotImplementedException();
+		}
 
-		double IFontElement.FontSizeDefaultValueCreator() =>
-			Device.GetNamedSize(NamedSize.Default, typeof(Label));
+		double IFontElement.FontSizeDefaultValueCreator()
+		{
+			throw new NotImplementedException();
+		}
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
-			OnSomeFontPropertyChanged();
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
+		{
+			throw new NotImplementedException();
+		}
+
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

@@ -125,6 +125,10 @@ namespace Xamarin.Forms
 		{
 		}
 
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		{
+		}
+
 		public event EventHandler SearchButtonPressed;
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;

@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Label), Color.Default);
 
-		public static readonly BindableProperty FontProperty = BindableProperty.Create("Font", typeof(Font), typeof(Label), default(Font), propertyChanged: FontStructPropertyChanged);
+		public static readonly BindableProperty FontProperty = FontElement.FontProperty;
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Label), default(string), propertyChanged: OnTextPropertyChanged);
 
@@ -56,8 +56,6 @@ namespace Xamarin.Forms
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Label>>(() => new PlatformConfigurationRegistry<Label>(this));
 		}
-
-		bool _cancelEvents;
 
 		[Obsolete("Please use the Font attributes which are on the class itself. Obsoleted in v1.3.0")]
 		public Font Font
@@ -135,107 +133,20 @@ namespace Xamarin.Forms
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		static void FontStructPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var label = (Label)bindable;
-			if (label._cancelEvents)
-				return;
-
-			label._cancelEvents = true;
-
-			var font = (Font)newValue;
-			if (font == Font.Default)
-			{
-				label.FontFamily = null;
-				label.FontSize = Device.GetNamedSize(NamedSize.Default, label);
-				label.FontAttributes = FontAttributes.None;
-			}
-			else
-			{
-				label.FontFamily = font.FontFamily;
-				if (font.UseNamedSize)
-				{
-					label.FontSize = Device.GetNamedSize(font.NamedSize, label.GetType(), true);
-				}
-				else
-				{
-					label.FontSize = font.FontSize;
-				}
-				label.FontAttributes = font.FontAttributes;
-			}
-
-			label._cancelEvents = false;
-
-			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Label)this);
 
-		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
-		{
-			if (_cancelEvents)
-				return;
-
-			_cancelEvents = true;
-
-			var attributes = newValue;
-
-#pragma warning disable 0618 // retain until Font removed
-			object[] values = GetValues(FontFamilyProperty, FontSizeProperty);
-			var family = (string)values[0];
-			if (family != null)
-				Font = Font.OfSize(family, (double)values[1]).WithAttributes(attributes);
-			else
-				Font = Font.SystemFontOfSize((double)values[1], attributes);
-#pragma warning restore 0618
-
-			_cancelEvents = false;
-
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
 
-		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
-		{
-			if (_cancelEvents)
-				return;
-
-			_cancelEvents = true;
-
-#pragma warning disable 0618 // retain until Font removed
-			object[] values = GetValues(FontSizeProperty, FontAttributesProperty);
-			var family = newValue;
-			if (family != null)
-				Font = Font.OfSize(family, (double)values[0]).WithAttributes((FontAttributes)values[1]);
-			else
-				Font = Font.SystemFontOfSize((double)values[0], (FontAttributes)values[1]);
-#pragma warning restore 0618
-
-			_cancelEvents = false;
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
 
-		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
-		{
-			if (_cancelEvents)
-				return;
-
-			_cancelEvents = true;
-
-#pragma warning disable 0618 // retain until Font removed
-			object[] values = GetValues(FontFamilyProperty, FontAttributesProperty);
-			var size = newValue;
-			var family = (string)values[0];
-			if (family != null)
-				Font = Font.OfSize(family, size).WithAttributes((FontAttributes)values[1]);
-			else
-				Font = Font.SystemFontOfSize(size, (FontAttributes)values[1]);
-#pragma warning restore 0618
-
-			_cancelEvents = false;
-
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
+
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			 InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{

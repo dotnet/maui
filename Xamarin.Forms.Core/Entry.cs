@@ -101,6 +101,10 @@ namespace Xamarin.Forms
 		{
 		}
 
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		{
+		}
+
 		public event EventHandler Completed;
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;

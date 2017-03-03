@@ -61,6 +61,10 @@ namespace Xamarin.Forms
 		{
 		}
 
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
+		{
+		}
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Editor)this);
 

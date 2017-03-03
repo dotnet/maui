@@ -14,5 +14,6 @@ namespace Xamarin.Forms
 		void OnFontSizeChanged(double oldValue, double newValue);
 		double FontSizeDefaultValueCreator();
 		void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue);
+		void OnFontChanged(Font oldValue, Font newValue);
 	}
 }
