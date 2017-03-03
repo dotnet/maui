@@ -2,6 +2,7 @@ using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
+using System;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -31,6 +32,9 @@ namespace Xamarin.Forms.Platform.Android
 				unevenRows = ListView.HasUnevenRowsProperty;
 				rowHeight = ListView.RowHeightProperty;
 			}
+
+			if (cell.View == null)
+				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
 			IVisualElementRenderer view = Platform.CreateRenderer(cell.View);
 			Platform.SetRenderer(cell.View, view);

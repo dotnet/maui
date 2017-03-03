@@ -139,6 +139,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			IVisualElementRenderer GetNewRenderer()
 			{
+				if (_viewCell.View == null)
+					throw new InvalidOperationException($"ViewCell must have a {nameof(_viewCell.View)}");
+
 				var newRenderer = Platform.CreateRenderer(_viewCell.View);
 				_rendererRef = new WeakReference<IVisualElementRenderer>(newRenderer);
 				ContentView.AddSubview(newRenderer.NativeView);
