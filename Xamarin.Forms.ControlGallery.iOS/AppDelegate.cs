@@ -17,8 +17,22 @@ using Xamarin.Forms.Platform.iOS;
 [assembly: Dependency(typeof(CacheService))]
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
+[assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+	public class BorderEffect : PlatformEffect
+	{
+		protected override void OnAttached()
+		{
+			Control.BackgroundColor = UIColor.Blue;
+		}
+
+		protected override void OnDetached()
+		{
+			Control.BackgroundColor = UIColor.Brown;
+		}
+	}
+
 	public class CacheService : ICacheService
 	{
 		public void ClearImageCache()

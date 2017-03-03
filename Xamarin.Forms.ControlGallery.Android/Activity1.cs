@@ -43,6 +43,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 		protected override void OnDetached ()
 		{
+			Control.SetBackgroundColor(global::Android.Graphics.Color.Beige);
 		}
 
 		protected override void OnElementPropertyChanged (PropertyChangedEventArgs args)
