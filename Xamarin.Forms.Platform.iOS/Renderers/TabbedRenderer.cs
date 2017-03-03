@@ -233,7 +233,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
-			return GetViewController(Tabbed.CurrentPage);
+			var current = Tabbed.CurrentPage;
+			if (current == null)
+				return null;
+
+			return GetViewController(current);
 		}
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
