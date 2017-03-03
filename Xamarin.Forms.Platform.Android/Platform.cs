@@ -846,9 +846,21 @@ namespace Xamarin.Forms.Platform.Android
 			Color navigationBarTextColor = CurrentNavigationPage == null ? Color.Default : CurrentNavigationPage.BarTextColor;
 			TextView actionBarTitleTextView = null;
 
-			int actionBarTitleId = _context.Resources.GetIdentifier("action_bar_title", "id", "android");
-			if (actionBarTitleId > 0)
-				actionBarTitleTextView = ((Activity)_context).FindViewById<TextView>(actionBarTitleId);
+			if(Forms.IsLollipopOrNewer)
+			{
+				int actionbarId = _context.Resources.GetIdentifier("action_bar", "id", "android");
+				if(actionbarId > 0)
+				{
+					var toolbar = (Toolbar)((Activity)_context).FindViewById(actionbarId);
+					actionBarTitleTextView = (TextView)toolbar.GetChildAt(0);
+				}
+			}
+			else
+			{
+				int actionBarTitleId = _context.Resources.GetIdentifier("action_bar_title", "id", "android");
+				if (actionBarTitleId > 0)
+					actionBarTitleTextView = ((Activity)_context).FindViewById<TextView>(actionBarTitleId);
+			}
 
 			if (actionBarTitleTextView != null && navigationBarTextColor != Color.Default)
 				actionBarTitleTextView.SetTextColor(navigationBarTextColor.ToAndroid());
