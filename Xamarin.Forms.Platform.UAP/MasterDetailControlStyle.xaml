@@ -29,26 +29,26 @@
 									<RowDefinition Height="Auto" />
 								</Grid.RowDefinitions>
 
-                                <Border x:Name="TopCommandBarArea" HorizontalAlignment="Stretch" Background="{TemplateBinding ToolbarBackground}">
-                                    <uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" MinHeight="{ThemeResource TitleBarHeight}">
-                                        <uwp:FormsCommandBar.Content>
-                                            <Border x:Name="TitleArea" Height="{ThemeResource TitleBarHeight}">
-                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="{TemplateBinding ToolbarBackground}" >
+								<Border x:Name="TopCommandBarArea" HorizontalAlignment="Stretch" Background="{TemplateBinding ToolbarBackground}">
+									<uwp:FormsCommandBar x:Name="CommandBar" Background="{TemplateBinding ToolbarBackground}" MinHeight="{ThemeResource TitleBarHeight}">
+										<uwp:FormsCommandBar.Content>
+											<Border x:Name="TitleArea" Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding DetailTitleVisibility}">
+												<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="{TemplateBinding ToolbarBackground}" >
 
-                                                    <Button Name="ContentTogglePane" Style="{ThemeResource PaneButton}" Foreground="{TemplateBinding ToolbarForeground}"  
-											Visibility="{TemplateBinding ContentTogglePaneButtonVisibility}" />
+													<Button Name="ContentTogglePane" Style="{ThemeResource PaneButton}" Foreground="{TemplateBinding ToolbarForeground}"  
+															Visibility="{TemplateBinding ContentTogglePaneButtonVisibility}" />
 
-                                                    <Border Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding DetailTitleVisibility}">
-                                                        <TextBlock Text="{TemplateBinding DetailTitle}" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding ToolbarForeground}" Style="{ThemeResource TitleTextBlockStyle}" />
-                                                    </Border>
+													<Border Height="{ThemeResource TitleBarHeight}" Visibility="{TemplateBinding DetailTitleVisibility}">
+														<TextBlock Text="{TemplateBinding DetailTitle}" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{TemplateBinding ToolbarForeground}" Style="{ThemeResource TitleTextBlockStyle}" />
+													</Border>
 
-                                                </StackPanel>
-                                            </Border>
-                                        </uwp:FormsCommandBar.Content>
-                                    </uwp:FormsCommandBar>
-                                </Border>
+												</StackPanel>
+											</Border>
+										</uwp:FormsCommandBar.Content>
+									</uwp:FormsCommandBar>
+								</Border>
 
-                                <ContentPresenter x:Name="DetailPresenter" Grid.Row="1" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Detail}" />
+								<ContentPresenter x:Name="DetailPresenter" Grid.Row="1" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Detail}" />
 
 								<Border x:Name="BottomCommandBarArea" Grid.Row="2" HorizontalAlignment="Stretch"></Border>
 							</Grid>
@@ -58,4 +58,4 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-</ResourceDictionary> 
+</ResourceDictionary>
