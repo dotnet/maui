@@ -347,7 +347,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var d = new MoreActionSheetDelegate { Scroller = _scroller, Items = new List<MenuItem>() };
 
-				var actionSheet = new UIActionSheet(null, d);
+				var actionSheet = new UIActionSheet(null, (IUIActionSheetDelegate)d);
 
 				for (var i = 0; i < _cell.ContextActions.Count; i++)
 				{
