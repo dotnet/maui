@@ -170,11 +170,6 @@ namespace Xamarin.Forms.Platform.WinRT
 
 					Tracker = new BackgroundTracker<PageControl>(Control.BackgroundProperty) { Element = (Page)element, Container = _container };
 
-#if WINDOWS_UWP
-					// Enforce consistency rules on toolbar (show toolbar if top-level page is Navigation Page)
-					_container.ShouldShowToolbar = _parentMasterDetailPage == null && _parentMasterDetailPage == null;
-#endif
-
 					SetPage(Element.CurrentPage, false, false);
 
 					_container.Loaded += OnLoaded;
@@ -188,6 +183,11 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateTitleColor();
 				UpdateNavigationBarBackground();
 				UpdateToolbarPlacement();
+
+#if WINDOWS_UWP
+				// Enforce consistency rules on toolbar (show toolbar if top-level page is Navigation Page)
+				_container.ShouldShowToolbar = _parentMasterDetailPage == null && _parentTabbedPage == null;
+#endif
 
 				Element.PropertyChanged += OnElementPropertyChanged;
 				((INavigationPageController)Element).PushRequested += OnPushRequested;

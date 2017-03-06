@@ -294,6 +294,9 @@ namespace Xamarin.Forms.Platform.UWP
 			ContentTogglePaneButtonVisibility = _split.DisplayMode == SplitViewDisplayMode.Overlay 
 				? Visibility.Visible 
 				: Visibility.Collapsed;
+
+			if (ContentTogglePaneButtonVisibility == Visibility.Visible)
+				DetailTitleVisibility = Visibility.Visible;
 		}
 	}
 }
