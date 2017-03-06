@@ -4,11 +4,11 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_TimePickerRenderer))]
-	public class TimePicker : View, IElementConfiguration<TimePicker>
+	public class TimePicker : View, ITextElement, IElementConfiguration<TimePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(TimePicker), "t");
 
-		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(TimePicker), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay, (bindable, value) =>
 		{
@@ -31,8 +31,8 @@ namespace Xamarin.Forms
 
 		public Color TextColor
 		{
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		public TimeSpan Time
@@ -44,6 +44,10 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, TimePicker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 	}
 }

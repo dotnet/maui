@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EntryRenderer))]
-	public class Entry : InputView, IFontElement, IEntryController, IElementConfiguration<Entry>
+	public class Entry : InputView, IFontElement, ITextElement, IEntryController, IElementConfiguration<Entry>
 	{
 		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create("Placeholder", typeof(string), typeof(Entry), default(string));
 
@@ -12,7 +12,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Entry), null, BindingMode.TwoWay, propertyChanged: OnTextChanged);
 
-		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Entry), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(Entry), TextAlignment.Start);
 
@@ -63,8 +63,8 @@ namespace Xamarin.Forms
 
 		public Color TextColor
 		{
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		public FontAttributes FontAttributes
@@ -124,6 +124,10 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, Entry> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 	}
 }

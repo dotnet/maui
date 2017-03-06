@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EditorRenderer))]
-	public class Editor : InputView, IEditorController, IFontElement, IElementConfiguration<Editor>
+	public class Editor : InputView, IEditorController, IFontElement, ITextElement, IElementConfiguration<Editor>
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue) =>
 		{
@@ -19,7 +19,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Editor), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
 		public string Text
@@ -30,8 +31,8 @@ namespace Xamarin.Forms
 
 		public Color TextColor
 		{
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		public FontAttributes FontAttributes
@@ -91,6 +92,10 @@ namespace Xamarin.Forms
 			EventHandler handler = Completed;
 			if (handler != null)
 				handler(this, EventArgs.Empty);
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 	}
 }

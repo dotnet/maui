@@ -5,7 +5,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_SearchBarRenderer))]
-	public class SearchBar : View, IFontElement, ISearchBarController, IElementConfiguration<SearchBar>
+	public class SearchBar : View, IFontElement, ITextElement, ISearchBarController, IElementConfiguration<SearchBar>
 	{
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
@@ -32,7 +32,7 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(SearchBar), TextAlignment.Start);
 
-		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(SearchBar), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create("PlaceholderColor", typeof(Color), typeof(SearchBar), Color.Default);
 
@@ -82,8 +82,8 @@ namespace Xamarin.Forms
 
 		public Color TextColor
 		{
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		bool IsEnabledCore
@@ -181,6 +181,10 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, SearchBar> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 	}
 }

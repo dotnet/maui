@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
@@ -8,7 +7,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ButtonRenderer))]
-	public class Button : View, IFontElement, IButtonController, IElementConfiguration<Button>
+	public class Button : View, IFontElement, ITextElement, IButtonController, IElementConfiguration<Button>
 	{
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(Button), null, propertyChanged: (bo, o, n) => ((Button)bo).OnCommandChanged());
 
@@ -21,7 +20,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Button), null,
 			propertyChanged: (bindable, oldVal, newVal) => ((Button)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(Button), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty FontProperty = FontElement.FontProperty;
 
@@ -101,8 +100,8 @@ namespace Xamarin.Forms
 
 		public Color TextColor
 		{
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		bool IsEnabledCore
@@ -235,6 +234,10 @@ namespace Xamarin.Forms
 		{
 			if (oldvalue != null)
 				oldvalue.SourceChanged -= OnSourceChanged;
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 
 		[DebuggerDisplay("Image Position = {Position}, Spacing = {Spacing}")]

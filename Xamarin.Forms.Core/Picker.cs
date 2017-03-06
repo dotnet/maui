@@ -10,10 +10,9 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_PickerRenderer))]
-	public class Picker : View, IElementConfiguration<Picker>
+	public class Picker : View, ITextElement, IElementConfiguration<Picker>
 	{
-		public static readonly BindableProperty TextColorProperty =
-			BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(Picker), Color.Default);
+		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(Picker), default(string));
@@ -59,8 +58,8 @@ namespace Xamarin.Forms
 		}
 
 		public Color TextColor {
-			get { return (Color)GetValue(TextColorProperty); }
-			set { SetValue(TextColorProperty, value); }
+			get { return (Color)GetValue(TextElement.TextColorProperty); }
+			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
 		public string Title {
@@ -218,6 +217,10 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, Picker> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
+		{
 		}
 
 		internal class LockableObservableListWrapper : IList<string>, ICollection<string>, INotifyCollectionChanged, INotifyPropertyChanged, IReadOnlyList<string>, IReadOnlyCollection<string>, IEnumerable<string>, IEnumerable

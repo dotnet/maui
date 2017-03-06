@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				self.FontWeight = FontWeights.Normal;
 		}
 
-		public static void ApplyFont(this TextElement self, Font font)
+		public static void ApplyFont(this System.Windows.Documents.TextElement self, Font font)
 		{
 			if (font.UseNamedSize)
 			{
