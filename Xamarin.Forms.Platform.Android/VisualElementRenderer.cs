@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_defaultHint == null)
 				_defaultHint = textView.Hint;
 
-			var elemValue = string.Join(". ", (string)Element.GetValue(Accessibility.NameProperty), (string)Element.GetValue(Accessibility.HintProperty));
+			var elemValue = string.Join((String.IsNullOrWhiteSpace((string)(Element.GetValue(Accessibility.NameProperty))) || String.IsNullOrWhiteSpace((string)(Element.GetValue(Accessibility.HintProperty)))) ? "" : ". ", (string)Element.GetValue(Accessibility.NameProperty), (string)Element.GetValue(Accessibility.HintProperty));
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
 				textView.Hint = elemValue;
