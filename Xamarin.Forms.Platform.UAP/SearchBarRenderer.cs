@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.QuerySubmitted += OnQuerySubmitted;
 					Control.TextChanged += OnTextChanged;
 					Control.Loaded += OnControlLoaded;
+					Control.AutoMaximizeSuggestionArea = false;
 				}
 
 				UpdateText();
