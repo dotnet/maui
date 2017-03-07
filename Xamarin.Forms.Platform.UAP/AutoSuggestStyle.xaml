@@ -7,7 +7,7 @@
 	<Style TargetType="AutoSuggestBox">
 		<Setter Property="VerticalAlignment" Value="Top" />
 		<Setter Property="IsTabStop" Value="False" />
-		<Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxTextBoxStyle}" />
+		<Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxFormsTextBoxStyle}" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="AutoSuggestBox">
@@ -58,7 +58,7 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="uwp:FormsTextBox" x:Key="AutoSuggestBoxTextBoxStyle">
+	<Style TargetType="uwp:FormsTextBox" x:Key="AutoSuggestBoxFormsTextBoxStyle">
 		<Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
 		<Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
 		<Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
