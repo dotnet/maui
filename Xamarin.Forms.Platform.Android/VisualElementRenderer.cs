@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.Android
 				OnRegisterEffect(platformEffect);
 		}
 
-		void IOnClickListener.OnClick(AView v)
+		void AView.IOnClickListener.OnClick(AView v)
 		{
 			_tapGestureHandler.OnSingleClick();
 		}
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.Android
 			return base.OnInterceptTouchEvent(ev);
 		}
 
-		bool IOnTouchListener.OnTouch(AView v, MotionEvent e)
+		bool AView.IOnTouchListener.OnTouch(AView v, MotionEvent e)
 		{
 			var handled = false;
 			if (_pinchGestureHandler.IsPinchSupported)
@@ -334,7 +334,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.Container = this;
+			effect.SetContainer(this);
 		}
 
 		protected virtual void SetAutomationId(string id)

@@ -105,8 +105,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (platformEffect == null)
 				return;
 
-			platformEffect.Container = container;
-			platformEffect.Control = control;
+			platformEffect.SetContainer(container);
+			platformEffect.SetControl(control);
 		}
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
@@ -291,7 +291,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.Container = this;
+			effect.SetContainer(this);
 		}
 
 #if __MOBILE__

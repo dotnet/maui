@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 

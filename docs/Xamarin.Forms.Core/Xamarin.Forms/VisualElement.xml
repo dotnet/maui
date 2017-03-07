@@ -204,6 +204,47 @@
         <remarks>This method merely ensures that updates sent during the batch have been committed. It does not ensure that they were not committed before calling this.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="BatchCommitted">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.EventArg&lt;Xamarin.Forms.VisualElement&gt;&gt; BatchCommitted;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.EventArg`1&lt;class Xamarin.Forms.VisualElement&gt;&gt; BatchCommitted" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.EventArg&lt;Xamarin.Forms.VisualElement&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Batched">
+      <MemberSignature Language="C#" Value="public bool Batched { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool Batched" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Behaviors">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Xamarin.Forms.Behavior&gt; Behaviors { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.Behavior&gt; Behaviors" />
@@ -290,6 +331,27 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="DisableLayout">
+      <MemberSignature Language="C#" Value="public bool DisableLayout { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool DisableLayout" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Finalize">
       <MemberSignature Language="C#" Value="~VisualElement ();" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void Finalize() cil managed" />
@@ -328,6 +390,26 @@
         <returns>
           <see langword="true" /> if the keyboard focus was set to this element; <see langword="false" /> if the call to this method did not force a focus change.</returns>
         <remarks>Element must be able to receive focus for this to work. Calling Focus on offscreen or unrealized elements has undefined behavior.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FocusChangeRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.VisualElement.FocusRequestArgs&gt; FocusChangeRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.VisualElement/FocusRequestArgs&gt; FocusChangeRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.VisualElement+FocusRequestArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Focused">
@@ -539,6 +621,30 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="InvalidateMeasureNonVirtual">
+      <MemberSignature Language="C#" Value="public void InvalidateMeasureNonVirtual (Xamarin.Forms.Internals.InvalidationTrigger trigger);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void InvalidateMeasureNonVirtual(valuetype Xamarin.Forms.Internals.InvalidationTrigger trigger) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="trigger" Type="Xamarin.Forms.Internals.InvalidationTrigger" />
+      </Parameters>
+      <Docs>
+        <param name="trigger">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="IsEnabled">
       <MemberSignature Language="C#" Value="public bool IsEnabled { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool IsEnabled" />
@@ -661,6 +767,89 @@
         <summary>Identifies the IsFocused bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsFocusedPropertyKey">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindablePropertyKey IsFocusedPropertyKey;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindablePropertyKey IsFocusedPropertyKey" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindablePropertyKey</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsInNativeLayout">
+      <MemberSignature Language="C#" Value="public bool IsInNativeLayout { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsInNativeLayout" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsNativeStateConsistent">
+      <MemberSignature Language="C#" Value="public bool IsNativeStateConsistent { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsNativeStateConsistent" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsPlatformEnabled">
+      <MemberSignature Language="C#" Value="public bool IsPlatformEnabled { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsPlatformEnabled" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsVisible">
@@ -1010,6 +1199,27 @@
         <summary>Identifies the Navigation bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="NavigationProxy">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Internals.NavigationProxy NavigationProxy { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Internals.NavigationProxy NavigationProxy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.NavigationProxy</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">

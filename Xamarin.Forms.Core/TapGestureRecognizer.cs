@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace Xamarin.Forms
@@ -35,7 +36,8 @@ namespace Xamarin.Forms
 
 		public event EventHandler Tapped;
 
-		internal void SendTapped(View sender)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendTapped(View sender)
 		{
 			ICommand cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))

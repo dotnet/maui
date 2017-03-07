@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 using static System.String;
 #if WINDOWS_UWP
 

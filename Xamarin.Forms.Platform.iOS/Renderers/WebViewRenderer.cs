@@ -20,6 +20,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 		}
 
+		IWebViewController ElementController => Element as IWebViewController;
+
 		public VisualElement Element { get; private set; }
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -34,9 +36,9 @@ namespace Xamarin.Forms.Platform.iOS
 			var oldElement = Element;
 			Element = element;
 			Element.PropertyChanged += HandlePropertyChanged;
-			((WebView)Element).EvalRequested += OnEvalRequested;
-			((WebView)Element).GoBackRequested += OnGoBackRequested;
-			((WebView)Element).GoForwardRequested += OnGoForwardRequested;
+			ElementController.EvalRequested += OnEvalRequested;
+			ElementController.GoBackRequested += OnGoBackRequested;
+			ElementController.GoForwardRequested += OnGoForwardRequested;
 			Delegate = new CustomWebViewDelegate(this);
 
 			BackgroundColor = UIColor.Clear;
@@ -96,9 +98,9 @@ namespace Xamarin.Forms.Platform.iOS
 					StopLoading();
 
 				Element.PropertyChanged -= HandlePropertyChanged;
-				((WebView)Element).EvalRequested -= OnEvalRequested;
-				((WebView)Element).GoBackRequested -= OnGoBackRequested;
-				((WebView)Element).GoForwardRequested -= OnGoForwardRequested;
+				ElementController.EvalRequested -= OnEvalRequested;
+				ElementController.GoBackRequested -= OnGoBackRequested;
+				ElementController.GoForwardRequested -= OnGoForwardRequested;
 
 				_tracker?.Dispose();
 				_packager?.Dispose();
@@ -160,8 +162,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateCanGoBackForward()
 		{
-			((WebView)Element).CanGoBack = CanGoBack;
-			((WebView)Element).CanGoForward = CanGoForward;
+			ElementController.CanGoBack = CanGoBack;
+			ElementController.CanGoForward = CanGoForward;
 		}
 
 		class CustomWebViewDelegate : UIWebViewDelegate
@@ -176,6 +178,8 @@ namespace Xamarin.Forms.Platform.iOS
 				_renderer = renderer;
 			}
 
+			IWebViewController WebViewController => WebView;
+
 			WebView WebView
 			{
 				get { return (WebView)_renderer.Element; }
@@ -184,7 +188,7 @@ namespace Xamarin.Forms.Platform.iOS
 			public override void LoadFailed(UIWebView webView, NSError error)
 			{
 				var url = GetCurrentUrl();
-				WebView.SendNavigated(new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = url }, url, WebNavigationResult.Failure));
+				WebViewController.SendNavigated(new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = url }, url, WebNavigationResult.Failure));
 
 				_renderer.UpdateCanGoBackForward();
 			}
@@ -200,7 +204,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_renderer._ignoreSourceChanges = false;
 
 				var args = new WebNavigatedEventArgs(_lastEvent, WebView.Source, url, WebNavigationResult.Success);
-				WebView.SendNavigated(args);
+				WebViewController.SendNavigated(args);
 
 				_renderer.UpdateCanGoBackForward();
 			}
@@ -238,7 +242,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var lastUrl = request.Url.ToString();
 				var args = new WebNavigatingEventArgs(navEvent, new UrlWebViewSource { Url = lastUrl }, lastUrl);
 
-				WebView.SendNavigating(args);
+				WebViewController.SendNavigating(args);
 				_renderer.UpdateCanGoBackForward();
 				return !args.Cancel;
 			}

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -21,7 +22,8 @@ namespace Xamarin.Forms
 				eh(this, EventArgs.Empty);
 		}
 
-		internal abstract void Load(IWebViewDelegate renderer);
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public abstract void Load(IWebViewDelegate renderer);
 
 		internal event EventHandler SourceChanged;
 	}

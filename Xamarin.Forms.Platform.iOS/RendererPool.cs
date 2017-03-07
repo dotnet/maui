@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (view == null)
 				throw new ArgumentNullException("view");
 
-			var rendererType = Registrar.Registered.GetHandlerType(view.GetType()) ?? typeof(ViewRenderer);
+			var rendererType = Internals.Registrar.Registered.GetHandlerType(view.GetType()) ?? typeof(ViewRenderer);
 
 			Stack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers) || renderers.Count == 0)

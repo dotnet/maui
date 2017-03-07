@@ -321,5 +321,26 @@ Debug.WriteLine (label.Text); //prints "John Doe".
         <remarks>If the Source is not null, the BindingContext is ignored, and the Source is used instead. This allows to set a source for a single Binding, and not for all the Bindings applied to the BindableObject.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="UpdateSourceEventName">
+      <MemberSignature Language="C#" Value="public string UpdateSourceEventName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string UpdateSourceEventName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

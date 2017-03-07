@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class AlertArguments
+	public class AlertArguments
 	{
 		public AlertArguments(string title, string message, string accept, string cancel)
 		{

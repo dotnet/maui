@@ -1,7 +1,10 @@
-namespace Xamarin.Forms
+using System.ComponentModel;
+
+namespace Xamarin.Forms.Internals
 {
-	internal static class DataTemplateExtensions
+	public static class DataTemplateExtensions
 	{
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static object CreateContent(this DataTemplate self, object item, BindableObject container)
 		{
 			var selector = self as DataTemplateSelector;

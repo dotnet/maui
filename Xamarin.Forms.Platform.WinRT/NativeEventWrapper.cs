@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 namespace Xamarin.Forms.Platform.UWP

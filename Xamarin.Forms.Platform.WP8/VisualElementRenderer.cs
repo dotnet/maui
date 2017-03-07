@@ -239,8 +239,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.Container = this;
-			effect.Control = Control;
+			effect.SetContainer(this);
+			effect.SetControl(Control);
 		}
 
 		protected void SetNativeControl(TNativeElement element)

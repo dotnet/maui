@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Xamarin.Forms.Internals;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;

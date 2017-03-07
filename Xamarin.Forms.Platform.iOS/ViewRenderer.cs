@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected override void OnRegisterEffect(PlatformEffect effect)
 		{
 			base.OnRegisterEffect(effect);
-			effect.Control = Control;
+			effect.SetControl(Control);
 		}
 #if __MOBILE__
 		protected override void SetAccessibilityHint()

@@ -1,6 +1,6 @@
 <Type Name="MultiPage&lt;T&gt;" FullName="Xamarin.Forms.MultiPage&lt;T&gt;">
-  <TypeSignature Language="C#" Value="public abstract class MultiPage&lt;T&gt; : Xamarin.Forms.Page, Xamarin.Forms.IItemsView&lt;T&gt;, Xamarin.Forms.IPageContainer&lt;T&gt;, Xamarin.Forms.IViewContainer&lt;T&gt; where T : Page" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit MultiPage`1&lt;(class Xamarin.Forms.Page) T&gt; extends Xamarin.Forms.Page implements class Xamarin.Forms.IItemsView`1&lt;!T&gt;, class Xamarin.Forms.IPageContainer`1&lt;!T&gt;, class Xamarin.Forms.IViewContainer`1&lt;!T&gt;" />
+  <TypeSignature Language="C#" Value="public abstract class MultiPage&lt;T&gt; : Xamarin.Forms.Page, Xamarin.Forms.IItemsView&lt;T&gt;, Xamarin.Forms.IMultiPageController&lt;T&gt;, Xamarin.Forms.IPageContainer&lt;T&gt;, Xamarin.Forms.IViewContainer&lt;T&gt; where T : Page" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract beforefieldinit MultiPage`1&lt;(class Xamarin.Forms.Page) T&gt; extends Xamarin.Forms.Page implements class Xamarin.Forms.IItemsView`1&lt;!T&gt;, class Xamarin.Forms.IMultiPageController`1&lt;!T&gt;, class Xamarin.Forms.IPageContainer`1&lt;!T&gt;, class Xamarin.Forms.IViewContainer`1&lt;!T&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -24,6 +24,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>Xamarin.Forms.IItemsView&lt;T&gt;</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IMultiPageController&lt;T&gt;</InterfaceName>
     </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IPageContainer&lt;T&gt;</InterfaceName>
@@ -194,6 +197,56 @@ Children = {
         <summary>Raised when the <see cref="P:Xamarin.MultiPage{T}.CurrentPage" /> property changes.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetIndex">
+      <MemberSignature Language="C#" Value="public static int GetIndex (T page);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 GetIndex(!T page) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="page" Type="T" />
+      </Parameters>
+      <Docs>
+        <param name="page">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPageByIndex">
+      <MemberSignature Language="C#" Value="public T GetPageByIndex (int index);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance !T GetPageByIndex(int32 index) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="index" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="index">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsSource">
@@ -471,6 +524,32 @@ Children = {
         <summary>Identifies the <see cref="P:Xamarin.Forms.MultiPage`1.SelectedItem" /> bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetIndex">
+      <MemberSignature Language="C#" Value="public static void SetIndex (Xamarin.Forms.Page page, int index);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIndex(class Xamarin.Forms.Page page, int32 index) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="page" Type="Xamarin.Forms.Page" />
+        <Parameter Name="index" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="page">To be added.</param>
+        <param name="index">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetupContent">

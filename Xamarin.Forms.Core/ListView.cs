@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -210,7 +212,8 @@ namespace Xamarin.Forms
 			set { SetValue(SeparatorVisibilityProperty, value); }
 		}
 
-		internal ListViewCachingStrategy CachingStrategy { get; private set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public ListViewCachingStrategy CachingStrategy { get; private set; }
 		ListViewCachingStrategy IListViewController.CachingStrategy
 		{
 			get

@@ -380,6 +380,35 @@ class MyBindable : BindableObject
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetValues">
+      <MemberSignature Language="C#" Value="public object[] GetValues (Xamarin.Forms.BindableProperty property0, Xamarin.Forms.BindableProperty property1, Xamarin.Forms.BindableProperty property2);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance object[] GetValues(class Xamarin.Forms.BindableProperty property0, class Xamarin.Forms.BindableProperty property1, class Xamarin.Forms.BindableProperty property2) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Object[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="property0" Type="Xamarin.Forms.BindableProperty" />
+        <Parameter Name="property1" Type="Xamarin.Forms.BindableProperty" />
+        <Parameter Name="property2" Type="Xamarin.Forms.BindableProperty" />
+      </Parameters>
+      <Docs>
+        <param name="property0">To be added.</param>
+        <param name="property1">To be added.</param>
+        <param name="property2">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnBindingContextChanged">
       <MemberSignature Language="C#" Value="protected virtual void OnBindingContextChanged ();" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance void OnBindingContextChanged() cil managed" />
@@ -574,8 +603,8 @@ label.SetBinding (Label.TextProperty, new Binding ("Name"));
       </Docs>
     </Member>
     <Member MemberName="SetInheritedBindingContext">
-      <MemberSignature Language="C#" Value="protected static void SetInheritedBindingContext (Xamarin.Forms.BindableObject bindable, object value);" />
-      <MemberSignature Language="ILAsm" Value=".method familyorassemblystatic hidebysig void SetInheritedBindingContext(class Xamarin.Forms.BindableObject bindable, object value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void SetInheritedBindingContext (Xamarin.Forms.BindableObject bindable, object value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetInheritedBindingContext(class Xamarin.Forms.BindableObject bindable, object value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -586,6 +615,11 @@ label.SetBinding (Label.TextProperty, new Binding ("Name"));
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -689,6 +723,34 @@ class MyBindable : BindableObject
         ]]></code>
           </example>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetValueCore">
+      <MemberSignature Language="C#" Value="public void SetValueCore (Xamarin.Forms.BindableProperty property, object value, Xamarin.Forms.Internals.SetValueFlags attributes = Xamarin.Forms.Internals.SetValueFlags.None);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetValueCore(class Xamarin.Forms.BindableProperty property, object value, valuetype Xamarin.Forms.Internals.SetValueFlags attributes) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="property" Type="Xamarin.Forms.BindableProperty" />
+        <Parameter Name="value" Type="System.Object" />
+        <Parameter Name="attributes" Type="Xamarin.Forms.Internals.SetValueFlags" />
+      </Parameters>
+      <Docs>
+        <param name="property">To be added.</param>
+        <param name="value">To be added.</param>
+        <param name="attributes">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UnapplyBindings">

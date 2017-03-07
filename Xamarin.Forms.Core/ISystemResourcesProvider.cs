@@ -1,6 +1,6 @@
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal interface ISystemResourcesProvider
+	public interface ISystemResourcesProvider
 	{
 		IResourceDictionary GetSystemResources();
 	}

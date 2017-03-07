@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Xamarin.Forms.Platform;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
 	// Mark as internal until renderers are ready for release after 1.0
 	[RenderWith(typeof(_NavigationMenuRenderer))]
-	internal class NavigationMenu : View, IElementConfiguration<NavigationMenu>
+	public class NavigationMenu : View, INavigationMenuController, IElementConfiguration<NavigationMenu>
 	{
 		readonly List<Page> _targets = new List<Page>();
 
@@ -64,12 +64,7 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		internal void SendTargetSelected(Page target)
-		{
-			TargetSelected(target);
-		}
-
-		void TargetSelected(Page target)
+		void INavigationMenuController.SendTargetSelected(Page target)
 		{
 			Navigation.PushAsync(target);
 		}

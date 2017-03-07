@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Forms.Pages
+﻿using Xamarin.Forms.Internals;
+
+namespace Xamarin.Forms.Pages
 {
 	public class ListDataPageControl : ListView
 	{

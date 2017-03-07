@@ -1,6 +1,6 @@
 <Type Name="WebView" FullName="Xamarin.Forms.WebView">
-  <TypeSignature Language="C#" Value="public class WebView : Xamarin.Forms.View, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.WebView&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit WebView extends Xamarin.Forms.View implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.WebView&gt;" />
+  <TypeSignature Language="C#" Value="public class WebView : Xamarin.Forms.View, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.WebView&gt;, Xamarin.Forms.IWebViewController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit WebView extends Xamarin.Forms.View implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.WebView&gt;, class Xamarin.Forms.IElementController, class Xamarin.Forms.IViewController, class Xamarin.Forms.IVisualElementController, class Xamarin.Forms.IWebViewController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,6 +17,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.WebView&gt;</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IWebViewController</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>
@@ -403,6 +406,76 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Xamarin.Forms.WebView.Source" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IWebViewController.CanGoBack">
+      <MemberSignature Language="C#" Value="bool Xamarin.Forms.IWebViewController.CanGoBack { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool Xamarin.Forms.IWebViewController.CanGoBack" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IWebViewController.CanGoForward">
+      <MemberSignature Language="C#" Value="bool Xamarin.Forms.IWebViewController.CanGoForward { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool Xamarin.Forms.IWebViewController.CanGoForward" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IWebViewController.SendNavigated">
+      <MemberSignature Language="C#" Value="void IWebViewController.SendNavigated (Xamarin.Forms.WebNavigatedEventArgs args);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IWebViewController.SendNavigated(class Xamarin.Forms.WebNavigatedEventArgs args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="args" Type="Xamarin.Forms.WebNavigatedEventArgs" />
+      </Parameters>
+      <Docs>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.IWebViewController.SendNavigating">
+      <MemberSignature Language="C#" Value="void IWebViewController.SendNavigating (Xamarin.Forms.WebNavigatingEventArgs args);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IWebViewController.SendNavigating(class Xamarin.Forms.WebNavigatingEventArgs args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="args" Type="Xamarin.Forms.WebNavigatingEventArgs" />
+      </Parameters>
+      <Docs>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

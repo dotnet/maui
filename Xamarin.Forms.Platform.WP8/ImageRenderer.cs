@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
 				System.Windows.Media.ImageSource imagesource;
 				try

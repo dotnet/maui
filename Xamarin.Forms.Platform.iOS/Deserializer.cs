@@ -5,6 +5,7 @@ using System.IO.IsolatedStorage;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml;
+using Xamarin.Forms.Internals;
 
 #if __MOBILE__
 namespace Xamarin.Forms.Platform.iOS

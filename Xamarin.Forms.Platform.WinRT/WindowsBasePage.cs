@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (application == null)
 				throw new ArgumentNullException("application");
 
-			Application.Current = application;
+			Application.SetCurrentApplication(application);
 			Platform = CreatePlatform();
 			Platform.SetPage(Application.Current.MainPage);
 			application.PropertyChanged += OnApplicationPropertyChanged;

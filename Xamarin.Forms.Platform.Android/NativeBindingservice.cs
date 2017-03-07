@@ -1,11 +1,12 @@
 ﻿using System;
+using Xamarin.Forms.Xaml.Internals;
 using AView = Android.Views.View;
 
 [assembly: Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Platform.Android.NativeBindingService))]
 
 namespace Xamarin.Forms.Platform.Android
 {
-	class NativeBindingService : Xaml.INativeBindingService
+	class NativeBindingService : INativeBindingService
 	{
 		public bool TrySetBinding(object target, string propertyName, BindingBase binding)
 		{

@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		protected void LoadApplication(Application application)
 		{
-			Application.Current = application;
+			Application.SetCurrentApplication(application);
 			application.PropertyChanged += ApplicationOnPropertyChanged;
 			_application = application;
 

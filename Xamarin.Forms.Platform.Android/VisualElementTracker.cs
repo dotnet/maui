@@ -6,6 +6,7 @@ using Android.OS;
 using Android.Views;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

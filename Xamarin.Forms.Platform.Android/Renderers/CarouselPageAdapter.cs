@@ -4,6 +4,7 @@ using System.Linq;
 using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android

@@ -7,6 +7,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Support.V4.Content;
 using Path = System.IO.Path;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

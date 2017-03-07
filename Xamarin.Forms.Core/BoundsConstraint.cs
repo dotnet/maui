@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {

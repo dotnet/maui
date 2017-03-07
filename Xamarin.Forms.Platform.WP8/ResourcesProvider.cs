@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {

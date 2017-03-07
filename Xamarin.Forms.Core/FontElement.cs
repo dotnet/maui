@@ -1,3 +1,5 @@
+using Xamarin.Forms.Internals;
+
 namespace Xamarin.Forms
 {
 	static class FontElement

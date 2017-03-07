@@ -125,5 +125,29 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Load">
+      <MemberSignature Language="C#" Value="public override void Load (Xamarin.Forms.IWebViewDelegate renderer);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance void Load(class Xamarin.Forms.IWebViewDelegate renderer) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="renderer" Type="Xamarin.Forms.IWebViewDelegate" />
+      </Parameters>
+      <Docs>
+        <param name="renderer">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

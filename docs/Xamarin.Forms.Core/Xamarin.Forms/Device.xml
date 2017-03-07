@@ -71,6 +71,28 @@ Device.BeginInvokeOnMainThread (() => {
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetAssemblies">
+      <MemberSignature Language="C#" Value="public static System.Reflection.Assembly[] GetAssemblies ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Reflection.Assembly[] GetAssemblies() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Reflection.Assembly[]</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="GetNamedSize">
       <MemberSignature Language="C#" Value="public static double GetNamedSize (Xamarin.Forms.NamedSize size, Type targetElementType);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 GetNamedSize(valuetype Xamarin.Forms.NamedSize size, class System.Type targetElementType) cil managed" />
@@ -121,6 +143,35 @@ Device.BeginInvokeOnMainThread (() => {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetNamedSize">
+      <MemberSignature Language="C#" Value="public static double GetNamedSize (Xamarin.Forms.NamedSize size, Type targetElementType, bool useOldSizes);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 GetNamedSize(valuetype Xamarin.Forms.NamedSize size, class System.Type targetElementType, bool useOldSizes) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="size" Type="Xamarin.Forms.NamedSize" />
+        <Parameter Name="targetElementType" Type="System.Type" />
+        <Parameter Name="useOldSizes" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="size">To be added.</param>
+        <param name="targetElementType">To be added.</param>
+        <param name="useOldSizes">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Idiom">
       <MemberSignature Language="C#" Value="public static Xamarin.Forms.TargetIdiom Idiom { get; }" />
       <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Forms.TargetIdiom Idiom" />
@@ -144,6 +195,47 @@ Device.BeginInvokeOnMainThread (() => {
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="info">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Internals.DeviceInfo info;" />
+      <MemberSignature Language="ILAsm" Value=".field public static class Xamarin.Forms.Internals.DeviceInfo info" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.DeviceInfo</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Info">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Internals.DeviceInfo Info { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.Internals.DeviceInfo Info" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.DeviceInfo</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="iOS">
       <MemberSignature Language="C#" Value="public const string iOS;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string iOS" />
@@ -156,6 +248,27 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Docs>
         <summary>The string "iOS", representing the iOS operating system.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsInvokeRequired">
+      <MemberSignature Language="C#" Value="public static bool IsInvokeRequired { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsInvokeRequired" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -318,6 +431,27 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="PlatformServices">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Internals.IPlatformServices PlatformServices { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.Internals.IPlatformServices PlatformServices" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.IPlatformServices</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RuntimePlatform">
       <MemberSignature Language="C#" Value="public static string RuntimePlatform { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string RuntimePlatform" />
@@ -331,6 +465,54 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       <Docs>
         <summary>Gets the kind of device that Xamarin.Forms is currently working on.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetIdiom">
+      <MemberSignature Language="C#" Value="public static void SetIdiom (Xamarin.Forms.TargetIdiom value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetIdiom(valuetype Xamarin.Forms.TargetIdiom value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="Xamarin.Forms.TargetIdiom" />
+      </Parameters>
+      <Docs>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetTargetIdiom">
+      <MemberSignature Language="C#" Value="public static void SetTargetIdiom (Xamarin.Forms.TargetIdiom value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetTargetIdiom(valuetype Xamarin.Forms.TargetIdiom value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="Xamarin.Forms.TargetIdiom" />
+      </Parameters>
+      <Docs>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

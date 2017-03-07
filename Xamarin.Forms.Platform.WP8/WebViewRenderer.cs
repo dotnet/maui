@@ -14,6 +14,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 		WebNavigationEvent _eventState;
 		bool _updating;
 
+		IWebViewController ElementController => Element;
+
 		public async void LoadHtml(string html, string baseUrl)
 		{
 			string fileName = string.Format("formslocal_{0}.html", DateTime.Now.Ticks);
@@ -43,17 +45,19 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			if (e.OldElement != null)
 			{
-				e.OldElement.EvalRequested -= OnEvalRequested;
-				e.OldElement.GoBackRequested -= OnGoBackRequested;
-				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
+				var oldElementController = e.OldElement as IWebViewController;
+				oldElementController.EvalRequested -= OnEvalRequested;
+				oldElementController.GoBackRequested -= OnGoBackRequested;
+				oldElementController.GoForwardRequested -= OnGoForwardRequested;
 				Control.DataContext = null;
 			}
 
 			if (e.NewElement != null)
 			{
-				e.NewElement.EvalRequested += OnEvalRequested;
-				e.NewElement.GoBackRequested += OnGoBackRequested;
-				e.NewElement.GoForwardRequested += OnGoForwardRequested;
+				var newElementController = e.NewElement as IWebViewController;
+				newElementController.EvalRequested += OnEvalRequested;
+				newElementController.GoBackRequested += OnGoBackRequested;
+				newElementController.GoForwardRequested += OnGoForwardRequested;
 				Control.DataContext = e.NewElement;
 			}
 
@@ -110,7 +114,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		async Task SaveToIsoStore(string fileName, string html)
 		{
 			IIsolatedStorageFile store = Device.PlatformServices.GetUserStoreForApplication();
-			using (Stream file = await store.OpenFileAsync(fileName, FileMode.CreateNew, FileAccess.Write).ConfigureAwait(false))
+			using (Stream file = await store.OpenFileAsync(fileName, Internals.FileMode.CreateNew, Internals.FileAccess.Write).ConfigureAwait(false))
 			{
 				byte[] bytes = Encoding.UTF8.GetBytes(html);
 				await file.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
@@ -123,7 +127,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			((IElementController)Element).SetValueFromRenderer(WebView.SourceProperty, source);
 			_updating = false;
 
-			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
+			ElementController.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
@@ -132,8 +136,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 		// Nasty hack because we cant bind this because OneWayToSource isn't a thing in WP8, yay
 		void UpdateCanGoBackForward()
 		{
-			Element.CanGoBack = Control.CanGoBack;
-			Element.CanGoForward = Control.CanGoForward;
+			ElementController.CanGoBack = Control.CanGoBack;
+			ElementController.CanGoForward = Control.CanGoForward;
 		}
 
 		void WebBrowserOnNavigated(object sender, System.Windows.Navigation.NavigationEventArgs navigationEventArgs)
@@ -149,7 +153,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			string url = navigatingEventArgs.Uri.IsAbsoluteUri ? navigatingEventArgs.Uri.AbsoluteUri : navigatingEventArgs.Uri.OriginalString;
 			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
 
-			Element.SendNavigating(args);
+			ElementController.SendNavigating(args);
 
 			navigatingEventArgs.Cancel = args.Cancel;
 

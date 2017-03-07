@@ -4,6 +4,7 @@ using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -109,6 +110,8 @@ namespace Xamarin.Forms.Platform.iOS
 				_menu = menu;
 			}
 
+			INavigationMenuController MenuController => _menu;
+
 			public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 			{
 				var cell = (NavigationCell)collectionView.DequeueReusableCell(new NSString("NavigationCell"), indexPath);
@@ -118,7 +121,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					cell.Name = target.Title;
 					cell.Icon = target.Icon;
-					cell.Selected = () => _menu.SendTargetSelected(target);
+					cell.Selected = () => MenuController.SendTargetSelected(target);
 				}
 				else
 				{

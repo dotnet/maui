@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public partial class Grid : Layout<View>
+	public partial class Grid : Layout<View>, IGridController
 	{
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
@@ -212,6 +212,11 @@ namespace Xamarin.Forms
 			view.ComputedConstraint = result;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void InvalidateMeasureInernalNonVirtual(InvalidationTrigger trigger)
+		{
+			InvalidateMeasureInternal(trigger);
+		}
 		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			base.InvalidateMeasureInternal(trigger);

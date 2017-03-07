@@ -1,6 +1,6 @@
 namespace Xamarin.Forms.Internals
 {
-	internal static class EffectUtilities
+	public static class EffectUtilities
 	{
 		public static void RegisterEffectControlProvider(IEffectControlProvider self, IElementController oldElement, IElementController newElement)
 		{

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -159,7 +160,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				object container = ((ConstantExpression)member.Expression).Value;
 				object value = ((FieldInfo)member.Member).GetValue(container);
 
-				if (_targeType.IsInstanceOfType(value))
+				if (ReflectionExtensions.IsInstanceOfType(_targeType, value))
 				{
 					_results.Add(value);
 				}

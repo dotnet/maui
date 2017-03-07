@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			NSView nativeCell;
 			if (reusable == null || !isRecycle)
 			{
-				var renderer = (CellRenderer)Registrar.Registered.GetHandler(cell.GetType());
+				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
 				nativeCell = renderer.GetCell(cell, null, tableView);
 			}
 			else

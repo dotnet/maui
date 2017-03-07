@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class ActionSheetArguments
+	public class ActionSheetArguments
 	{
 		public ActionSheetArguments(string title, string cancel, string destruction, IEnumerable<string> buttons)
 		{

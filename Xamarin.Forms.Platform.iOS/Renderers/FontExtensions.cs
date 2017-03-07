@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 #if __MOBILE__
 using UIKit;
 namespace Xamarin.Forms.Platform.iOS

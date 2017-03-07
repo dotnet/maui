@@ -1,6 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -22,11 +24,14 @@ namespace Xamarin.Forms
 			get { return new Color(-1d, -1d, -1d, -1d, Mode.Default); }
 		}
 
-		internal bool IsDefault
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsDefault
 		{
 			get { return _mode == Mode.Default; }
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetAccent(Color value) => Accent = value;
 		public static Color Accent { get; internal set; }
 
 		readonly float _a;

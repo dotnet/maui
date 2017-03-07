@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		WebNavigationEvent _lastBackForwardEvent;
 		WebNavigationEvent _lastEvent;
 
-		IElementController ElementController => Element;
+		IWebViewController ElementController => Element;
 
 		void IWebViewDelegate.LoadHtml(string html, string baseUrl)
 		{
@@ -43,9 +43,9 @@ namespace Xamarin.Forms.Platform.MacOS
 					Control.OnFinishedLoading += OnNSWebViewFinishedLoad;
 					Control.OnFailedLoading += OnNSWebViewFailedLoadWithError;
 
-					Element.EvalRequested += OnEvalRequested;
-					Element.GoBackRequested += OnGoBackRequested;
-					Element.GoForwardRequested += OnGoForwardRequested;
+					ElementController.EvalRequested += OnEvalRequested;
+					ElementController.GoBackRequested += OnGoBackRequested;
+					ElementController.GoForwardRequested += OnGoForwardRequested;
 
 					Layer.BackgroundColor = NSColor.Clear.CGColor;
 				}
@@ -69,9 +69,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				_disposed = true;
 				Control.OnFinishedLoading -= OnNSWebViewFinishedLoad;
 				Control.OnFailedLoading -= OnNSWebViewFailedLoadWithError;
-				Element.EvalRequested -= OnEvalRequested;
-				Element.GoBackRequested -= OnGoBackRequested;
-				Element.GoForwardRequested -= OnGoForwardRequested;
+				ElementController.EvalRequested -= OnEvalRequested;
+				ElementController.GoBackRequested -= OnGoBackRequested;
+				ElementController.GoForwardRequested -= OnGoForwardRequested;
 			}
 			base.Dispose(disposing);
 		}
@@ -90,8 +90,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (Element == null)
 				return;
-			Element.CanGoBack = Control.CanGoBack();
-			Element.CanGoForward = Control.CanGoForward();
+			ElementController.CanGoBack = Control.CanGoBack();
+			ElementController.CanGoForward = Control.CanGoForward();
 		}
 
 		void OnEvalRequested(object sender, EvalRequested eventArg)
@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		void OnNSWebViewFailedLoadWithError(object sender, WebKit.WebResourceErrorEventArgs e)
 		{
 			_lastEvent = _lastBackForwardEvent;
-			Element?.SendNavigated(new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = Control.MainFrameUrl },
+			ElementController?.SendNavigated(new WebNavigatedEventArgs(_lastEvent, new UrlWebViewSource { Url = Control.MainFrameUrl },
 				Control.MainFrameUrl, WebNavigationResult.Failure));
 
 			UpdateCanGoBackForward();
@@ -140,7 +140,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			_ignoreSourceChanges = false;
 
 			_lastEvent = _lastBackForwardEvent;
-			Element?.SendNavigated(new WebNavigatedEventArgs(_lastEvent, Element?.Source, Control.MainFrameUrl,
+			ElementController?.SendNavigated(new WebNavigatedEventArgs(_lastEvent, Element?.Source, Control.MainFrameUrl,
 				WebNavigationResult.Success));
 
 			UpdateCanGoBackForward();

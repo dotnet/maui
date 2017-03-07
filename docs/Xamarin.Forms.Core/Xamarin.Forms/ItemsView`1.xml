@@ -242,6 +242,27 @@ void SetupView()
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="TemplatedItems">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Internals.TemplatedItemsList&lt;Xamarin.Forms.ItemsView&lt;TVisual&gt;,TVisual&gt; TemplatedItems { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Internals.TemplatedItemsList`2&lt;class Xamarin.Forms.ItemsView`1&lt;!TVisual&gt;, !TVisual&gt; TemplatedItems" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.TemplatedItemsList&lt;Xamarin.Forms.ItemsView&lt;TVisual&gt;,TVisual&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="UnhookContent">
       <MemberSignature Language="C#" Value="protected virtual void UnhookContent (TVisual content);" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance void UnhookContent(!TVisual content) cil managed" />

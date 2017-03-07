@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal static class Log
+	public static class Log
 	{
 		static Log()
 		{

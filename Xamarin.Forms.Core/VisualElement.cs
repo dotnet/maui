@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -86,7 +87,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create("MinimumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		internal static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused", typeof(bool), typeof(VisualElement), default(bool),
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused", typeof(bool), typeof(VisualElement), default(bool),
 			propertyChanged: OnIsFocusedPropertyChanged);
 
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
@@ -296,7 +298,8 @@ namespace Xamarin.Forms
 			private set { SetValue(YPropertyKey, value); }
 		}
 
-		internal bool Batched
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool Batched
 		{
 			get { return _batched > 0; }
 		}
@@ -322,9 +325,11 @@ namespace Xamarin.Forms
 			get { return ComputedConstraint | SelfConstraint; }
 		}
 
-		internal bool DisableLayout { get; set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool DisableLayout { get; set; }
 
-		internal bool IsInNativeLayout
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsInNativeLayout
 		{
 			get
 			{
@@ -345,7 +350,8 @@ namespace Xamarin.Forms
 			set { _isInNativeLayout = value; }
 		}
 
-		internal bool IsNativeStateConsistent
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsNativeStateConsistent
 		{
 			get { return _isNativeStateConsistent; }
 			set
@@ -358,7 +364,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal bool IsPlatformEnabled
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool IsPlatformEnabled
 		{
 			get { return _isPlatformEnabled; }
 			set
@@ -374,7 +381,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal NavigationProxy NavigationProxy
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public NavigationProxy NavigationProxy
 		{
 			get { return Navigation as NavigationProxy; }
 		}
@@ -629,7 +637,8 @@ namespace Xamarin.Forms
 			OnSizeAllocated(width, height);
 		}
 
-		internal event EventHandler<EventArg<VisualElement>> BatchCommitted;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler<EventArg<VisualElement>> BatchCommitted;
 
 		internal void ComputeConstrainsForChildren()
 		{
@@ -646,8 +655,14 @@ namespace Xamarin.Forms
 			view.ComputedConstraint = LayoutConstraint.None;
 		}
 
-		internal event EventHandler<FocusRequestArgs> FocusChangeRequested;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void InvalidateMeasureNonVirtual(InvalidationTrigger trigger)
+		{
+			InvalidateMeasureInternal(trigger);
+		}
 		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
 			_measureCache.Clear();
@@ -775,7 +790,7 @@ namespace Xamarin.Forms
 				SizeChanged(this, EventArgs.Empty);
 		}
 
-		internal class FocusRequestArgs : EventArgs
+		public class FocusRequestArgs : EventArgs
 		{
 			public bool Focus { get; set; }
 

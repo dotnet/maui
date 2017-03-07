@@ -1,6 +1,7 @@
 ﻿using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Xamarin.Forms.Internals;
 using WStyle = Windows.UI.Xaml.Style;
 
 #if WINDOWS_UWP

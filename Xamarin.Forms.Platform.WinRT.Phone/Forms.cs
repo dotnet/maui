@@ -19,7 +19,7 @@ namespace Xamarin.Forms
 				return;
 			
 			var accent = (SolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
-			Color.Accent = Color.FromRgba (accent.Color.R, accent.Color.G, accent.Color.B, accent.Color.A);
+			Color.SetAccent(Color.FromRgba (accent.Color.R, accent.Color.G, accent.Color.B, accent.Color.A));
 
 			Log.Listeners.Add (new DelegateLogListener ((c, m) => Debug.WriteLine (LogFormat, c, m)));
 
@@ -27,9 +27,9 @@ namespace Xamarin.Forms
 
 			Device.PlatformServices = new WindowsPhonePlatformServices (Window.Current.Dispatcher);
 			Device.Info = new WindowsDeviceInfo();
-			Device.Idiom = TargetIdiom.Phone;
+			Device.SetIdiom(TargetIdiom.Phone);
 			
-			Ticker.Default = new WindowsTicker();
+			Ticker.SetDefault(new WindowsTicker());
 
 			ExpressionSearch.Default = new WindowsExpressionSearch();
 

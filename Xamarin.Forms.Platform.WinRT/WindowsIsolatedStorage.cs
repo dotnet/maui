@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -63,27 +64,27 @@ namespace Xamarin.Forms.Platform.WinRT
 			return properties.DateModified;
 		}
 
-		public async Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
+		public async Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access)
 		{
 			StorageFile file;
 
 			switch (mode)
 			{
-				case FileMode.CreateNew:
+				case Internals.FileMode.CreateNew:
 					file = await _folder.CreateFileAsync(path, CreationCollisionOption.FailIfExists).AsTask().ConfigureAwait(false);
 					break;
 
-				case FileMode.Create:
-				case FileMode.Truncate: // TODO See if ReplaceExisting already truncates
+				case Internals.FileMode.Create:
+				case Internals.FileMode.Truncate: // TODO See if ReplaceExisting already truncates
 					file = await _folder.CreateFileAsync(path, CreationCollisionOption.ReplaceExisting).AsTask().ConfigureAwait(false);
 					break;
 
-				case FileMode.OpenOrCreate:
-				case FileMode.Append:
+				case Internals.FileMode.OpenOrCreate:
+				case Internals.FileMode.Append:
 					file = await _folder.CreateFileAsync(path, CreationCollisionOption.OpenIfExists).AsTask().ConfigureAwait(false);
 					break;
 
-				case FileMode.Open:
+				case Internals.FileMode.Open:
 					file = await _folder.GetFileAsync(path);
 					break;
 
@@ -93,16 +94,16 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			switch (access)
 			{
-				case FileAccess.Read:
+				case Internals.FileAccess.Read:
 					return await file.OpenStreamForReadAsync().ConfigureAwait(false);
-				case FileAccess.Write:
+				case Internals.FileAccess.Write:
 					Stream stream = await file.OpenStreamForWriteAsync().ConfigureAwait(false);
-					if (mode == FileMode.Append)
+					if (mode == Internals.FileMode.Append)
 						stream.Position = stream.Length;
 
 					return stream;
 
-				case FileAccess.ReadWrite:
+				case Internals.FileAccess.ReadWrite:
 					IRandomAccessStream randStream = await file.OpenAsync(FileAccessMode.ReadWrite).AsTask().ConfigureAwait(false);
 					return randStream.AsStream();
 
@@ -111,7 +112,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
-		public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
+		public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
 		{
 			return OpenFileAsync(path, mode, access);
 		}

@@ -403,7 +403,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_footerRenderer != null)
 				{
 					_footerRenderer.Element.MeasureInvalidated -= OnFooterMeasureInvalidated;
-					if (footer != null && _footerRenderer.GetType() == Registrar.Registered.GetHandlerType(footer.GetType()))
+					if (footer != null && _footerRenderer.GetType() == Internals.Registrar.Registered.GetHandlerType(footer.GetType()))
 					{
 						_footerRenderer.SetElement(footerView);
 						return;
@@ -449,7 +449,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_headerRenderer != null)
 				{
 					_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
-					if (header != null && _headerRenderer.GetType() == Registrar.Registered.GetHandlerType(header.GetType()))
+					if (header != null && _headerRenderer.GetType() == Internals.Registrar.Registered.GetHandlerType(header.GetType()))
 					{
 						_headerRenderer.SetElement(headerView);
 						return;
@@ -839,7 +839,7 @@ namespace Xamarin.Forms.Platform.iOS
 					if (cell.HasContextActions)
 						throw new NotSupportedException("Header cells do not support context actions");
 
-					var renderer = (CellRenderer)Registrar.Registered.GetHandler(cell.GetType());
+					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
 
 					var view = new HeaderWrapperView();
 					view.AddSubview(renderer.GetCell(cell, null, tableView));

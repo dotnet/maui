@@ -33,33 +33,6 @@
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.iOS")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.iOS.Classic")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.Android")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.UAP")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Tablet")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Phone")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.WP8")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.Forms.Platform.macOS")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("iOSUnitTests")</AttributeName>
         </Attribute>
         <Attribute>
@@ -275,6 +248,7 @@
       <Type Name="IEntryController" Kind="Interface" />
       <Type Name="IExtendedTypeConverter" Kind="Interface" />
       <Type Name="IGestureRecognizer" Kind="Interface" />
+      <Type Name="IGridController" Kind="Interface" />
       <Type Name="IImageController" Kind="Interface" />
       <Type Name="IItemsView`1" DisplayName="IItemsView&lt;T&gt;" Kind="Interface" />
       <Type Name="IItemViewController" Kind="Interface" />
@@ -289,14 +263,18 @@
       <Type Name="IMasterDetailPageController" Kind="Interface" />
       <Type Name="IMenuItemController" Kind="Interface" />
       <Type Name="IMessagingCenter" Kind="Interface" />
+      <Type Name="IMultiPageController`1" DisplayName="IMultiPageController&lt;T&gt;" Kind="Interface" />
       <Type Name="INativeElementView" Kind="Interface" />
       <Type Name="INavigation" Kind="Interface" />
+      <Type Name="INavigationMenuController" Kind="Interface" />
       <Type Name="INavigationPageController" Kind="Interface" />
       <Type Name="InputView" Kind="Class" />
       <Type Name="IOpenGlViewController" Kind="Interface" />
       <Type Name="IOpenGLViewController" Kind="Interface" />
       <Type Name="IPageContainer`1" DisplayName="IPageContainer&lt;T&gt;" Kind="Interface" />
       <Type Name="IPageController" Kind="Interface" />
+      <Type Name="IPanGestureController" Kind="Interface" />
+      <Type Name="IPinchGestureController" Kind="Interface" />
       <Type Name="IPlatform" Kind="Interface" />
       <Type Name="IPlatformElementConfiguration`2" DisplayName="IPlatformElementConfiguration&lt;TPlatform,TElement&gt;" Kind="Interface" />
       <Type Name="IPlatformEngine" Kind="Interface" />
@@ -316,6 +294,7 @@
       <Type Name="IViewContainer`1" DisplayName="IViewContainer&lt;T&gt;" Kind="Interface" />
       <Type Name="IViewController" Kind="Interface" />
       <Type Name="IVisualElementController" Kind="Interface" />
+      <Type Name="IWebViewController" Kind="Interface" />
       <Type Name="IWebViewDelegate" Kind="Interface" />
       <Type Name="Keyboard" Kind="Class" />
       <Type Name="KeyboardFlags" Kind="Enumeration" />
@@ -441,6 +420,7 @@
       <Type Name="ViewExtensions" Kind="Class" />
       <Type Name="ViewState" Kind="Enumeration" />
       <Type Name="VisualElement" Kind="Class" />
+      <Type Name="VisualElement+FocusRequestArgs" Kind="Class" />
       <Type Name="WebNavigatedEventArgs" Kind="Class" />
       <Type Name="WebNavigatingEventArgs" Kind="Class" />
       <Type Name="WebNavigationEvent" Kind="Enumeration" />
@@ -451,18 +431,57 @@
       <Type Name="WebViewSourceTypeConverter" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Internals">
+      <Type Name="ActionSheetArguments" Kind="Class" />
+      <Type Name="AlertArguments" Kind="Class" />
       <Type Name="CellExtensions" Kind="Class" />
+      <Type Name="CustomKeyboard" Kind="Class" />
+      <Type Name="DataTemplateExtensions" Kind="Class" />
+      <Type Name="DelegateLogListener" Kind="Class" />
+      <Type Name="DeviceInfo" Kind="Class" />
+      <Type Name="DeviceOrientation" Kind="Enumeration" />
+      <Type Name="DeviceOrientationExtensions" Kind="Class" />
       <Type Name="DynamicResource" Kind="Class" />
+      <Type Name="EffectUtilities" Kind="Class" />
+      <Type Name="EnumerableExtensions" Kind="Class" />
       <Type Name="EvalRequested" Kind="Class" />
+      <Type Name="EventArg`1" DisplayName="EventArg&lt;T&gt;" Kind="Class" />
+      <Type Name="ExpressionSearch" Kind="Class" />
+      <Type Name="FileAccess" Kind="Enumeration" />
+      <Type Name="FileMode" Kind="Enumeration" />
+      <Type Name="FileShare" Kind="Enumeration" />
       <Type Name="IDataTemplate" Kind="Interface" />
+      <Type Name="IDeserializer" Kind="Interface" />
       <Type Name="IDynamicResourceHandler" Kind="Interface" />
+      <Type Name="IExpressionSearch" Kind="Interface" />
+      <Type Name="IFontElement" Kind="Interface" />
+      <Type Name="IIsolatedStorageFile" Kind="Interface" />
       <Type Name="INameScope" Kind="Interface" />
       <Type Name="InvalidationTrigger" Kind="Enumeration" />
+      <Type Name="IPlatform" Kind="Interface" />
+      <Type Name="IPlatformServices" Kind="Interface" />
+      <Type Name="IResourceDictionary" Kind="Interface" />
+      <Type Name="ISystemResourcesProvider" Kind="Interface" />
+      <Type Name="LockableObservableListWrapper" Kind="Class" />
+      <Type Name="Log" Kind="Class" />
+      <Type Name="LogListener" Kind="Class" />
       <Type Name="NameScope" Kind="Class" />
+      <Type Name="NativeBindingHelpers" Kind="Class" />
+      <Type Name="NavigationMenu" Kind="Class" />
+      <Type Name="NavigationModel" Kind="Class" />
+      <Type Name="NavigationProxy" Kind="Class" />
       <Type Name="NavigationRequestedEventArgs" Kind="Class" />
       <Type Name="NotifyCollectionChangedEventArgsEx" Kind="Class" />
       <Type Name="NotifyCollectionChangedEventArgsExtensions" Kind="Class" />
+      <Type Name="NumericExtensions" Kind="Class" />
+      <Type Name="Performance" Kind="Class" />
       <Type Name="PreserveAttribute" Kind="Class" />
+      <Type Name="ReflectionExtensions" Kind="Class" />
+      <Type Name="Registrar" Kind="Class" />
+      <Type Name="Registrar`1" DisplayName="Registrar&lt;TRegistrable&gt;" Kind="Class" />
+      <Type Name="ResourcesChangedEventArgs" Kind="Class" />
+      <Type Name="SetValueFlags" Kind="Enumeration" />
+      <Type Name="TableModel" Kind="Class" />
+      <Type Name="TemplatedItemsList`2" DisplayName="TemplatedItemsList&lt;TView,TItem&gt;" Kind="Class" />
       <Type Name="Ticker" Kind="Class" />
       <Type Name="ToolbarTracker" Kind="Class" />
       <Type Name="TypedBinding`2" DisplayName="TypedBinding&lt;TSource,TProperty&gt;" Kind="Class" />
@@ -515,6 +534,10 @@
       <Type Name="IXmlLineInfoProvider" Kind="Interface" />
       <Type Name="XamlParseException" Kind="Class" />
       <Type Name="XmlLineInfo" Kind="Class" />
+    </Namespace>
+    <Namespace Name="Xamarin.Forms.Xaml.Internals">
+      <Type Name="INativeBindingService" Kind="Interface" />
+      <Type Name="INativeValueConverterService" Kind="Interface" />
     </Namespace>
   </Types>
   <Title>Xamarin.Forms.Core</Title>
@@ -1017,6 +1040,212 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
+        <Target Type="T:Xamarin.Forms.DataTemplate" />
+      </Targets>
+      <Member MemberName="CreateContent">
+        <MemberSignature Language="C#" Value="public static object CreateContent (this Xamarin.Forms.DataTemplate self, object item, Xamarin.Forms.BindableObject container);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig object CreateContent(class Xamarin.Forms.DataTemplate self, object item, class Xamarin.Forms.BindableObject container) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Object</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.DataTemplate" RefType="this" />
+          <Parameter Name="item" Type="System.Object" />
+          <Parameter Name="container" Type="Xamarin.Forms.BindableObject" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="item">To be added.</param>
+          <param name="container">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.DataTemplateExtensions" Member="M:Xamarin.Forms.Internals.DataTemplateExtensions.CreateContent(Xamarin.Forms.DataTemplate,System.Object,Xamarin.Forms.BindableObject)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.Internals.DeviceOrientation" />
+      </Targets>
+      <Member MemberName="IsLandscape">
+        <MemberSignature Language="C#" Value="public static bool IsLandscape (this Xamarin.Forms.Internals.DeviceOrientation orientation);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsLandscape(valuetype Xamarin.Forms.Internals.DeviceOrientation orientation) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="orientation">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsLandscape(Xamarin.Forms.Internals.DeviceOrientation)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.Internals.DeviceOrientation" />
+      </Targets>
+      <Member MemberName="IsPortrait">
+        <MemberSignature Language="C#" Value="public static bool IsPortrait (this Xamarin.Forms.Internals.DeviceOrientation orientation);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsPortrait(valuetype Xamarin.Forms.Internals.DeviceOrientation orientation) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="orientation">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsPortrait(Xamarin.Forms.Internals.DeviceOrientation)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IEnumerable`1" />
+      </Targets>
+      <Member MemberName="ForEach&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static void ForEach&lt;T&gt; (this System.Collections.Generic.IEnumerable&lt;T&gt; enumeration, Action&lt;T&gt; action);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ForEach&lt;T&gt;(class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; enumeration, class System.Action`1&lt;!!T&gt; action) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Void</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="enumeration" Type="System.Collections.Generic.IEnumerable&lt;T&gt;" RefType="this" />
+          <Parameter Name="action" Type="System.Action&lt;T&gt;" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="enumeration">To be added.</param>
+          <param name="action">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IEnumerable`1" />
+      </Targets>
+      <Member MemberName="GetGesturesFor&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;T&gt; GetGesturesFor&lt;T&gt; (this System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.IGestureRecognizer&gt; gestures, Func&lt;T,bool&gt; predicate = null) where T : Xamarin.Forms.GestureRecognizer;" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; GetGesturesFor&lt;(class Xamarin.Forms.GestureRecognizer) T&gt;(class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Forms.IGestureRecognizer&gt; gestures, class System.Func`2&lt;!!T, bool&gt; predicate) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Collections.Generic.IEnumerable&lt;T&gt;</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T">
+            <Constraints>
+              <BaseTypeName>Xamarin.Forms.GestureRecognizer</BaseTypeName>
+            </Constraints>
+          </TypeParameter>
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="gestures" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.IGestureRecognizer&gt;" RefType="this" />
+          <Parameter Name="predicate" Type="System.Func&lt;T,System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="gestures">To be added.</param>
+          <param name="predicate">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.GetGesturesFor``1(System.Collections.Generic.IEnumerable{Xamarin.Forms.IGestureRecognizer},System.Func{``0,System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IEnumerable`1" />
+      </Targets>
+      <Member MemberName="IndexOf&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static int IndexOf&lt;T&gt; (this System.Collections.Generic.IEnumerable&lt;T&gt; enumerable, T item);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 IndexOf&lt;T&gt;(class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; enumerable, !!T item) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Int32</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="enumerable" Type="System.Collections.Generic.IEnumerable&lt;T&gt;" RefType="this" />
+          <Parameter Name="item" Type="T" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="enumerable">To be added.</param>
+          <param name="item">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IEnumerable`1" />
+      </Targets>
+      <Member MemberName="IndexOf&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static int IndexOf&lt;T&gt; (this System.Collections.Generic.IEnumerable&lt;T&gt; enumerable, Func&lt;T,bool&gt; predicate);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 IndexOf&lt;T&gt;(class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; enumerable, class System.Func`2&lt;!!T, bool&gt; predicate) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Int32</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="enumerable" Type="System.Collections.Generic.IEnumerable&lt;T&gt;" RefType="this" />
+          <Parameter Name="predicate" Type="System.Func&lt;T,System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="enumerable">To be added.</param>
+          <param name="predicate">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Collections.Generic.IEnumerable`1" />
+      </Targets>
+      <Member MemberName="Prepend&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;T&gt; Prepend&lt;T&gt; (this System.Collections.Generic.IEnumerable&lt;T&gt; enumerable, T item);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; Prepend&lt;T&gt;(class System.Collections.Generic.IEnumerable`1&lt;!!T&gt; enumerable, !!T item) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Collections.Generic.IEnumerable&lt;T&gt;</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="enumerable" Type="System.Collections.Generic.IEnumerable&lt;T&gt;" RefType="this" />
+          <Parameter Name="item" Type="T" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="enumerable">To be added.</param>
+          <param name="item">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.Prepend``1(System.Collections.Generic.IEnumerable{``0},``0)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
         <Target Type="T:System.Collections.Specialized.NotifyCollectionChangedEventArgs" />
       </Targets>
       <Member MemberName="Apply">
@@ -1092,6 +1321,213 @@
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.WithCount(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Int32)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Double" />
+      </Targets>
+      <Member MemberName="Clamp">
+        <MemberSignature Language="C#" Value="public static double Clamp (this double self, double min, double max);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 Clamp(float64 self, float64 min, float64 max) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Double</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="System.Double" RefType="this" />
+          <Parameter Name="min" Type="System.Double" />
+          <Parameter Name="max" Type="System.Double" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="min">To be added.</param>
+          <param name="max">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Double,System.Double,System.Double)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Int32" />
+      </Targets>
+      <Member MemberName="Clamp">
+        <MemberSignature Language="C#" Value="public static int Clamp (this int self, int min, int max);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 Clamp(int32 self, int32 min, int32 max) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Int32</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="System.Int32" RefType="this" />
+          <Parameter Name="min" Type="System.Int32" />
+          <Parameter Name="max" Type="System.Int32" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="min">To be added.</param>
+          <param name="max">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Int32,System.Int32,System.Int32)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="GetField">
+        <MemberSignature Language="C#" Value="public static System.Reflection.FieldInfo GetField (this Type type, Func&lt;System.Reflection.FieldInfo,bool&gt; predicate);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Reflection.FieldInfo GetField(class System.Type type, class System.Func`2&lt;class System.Reflection.FieldInfo, bool&gt; predicate) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Reflection.FieldInfo</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="type" Type="System.Type" RefType="this" />
+          <Parameter Name="predicate" Type="System.Func&lt;System.Reflection.FieldInfo,System.Boolean&gt;" />
+        </Parameters>
+        <Docs>
+          <param name="type">To be added.</param>
+          <param name="predicate">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.Func{System.Reflection.FieldInfo,System.Boolean})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="GetField">
+        <MemberSignature Language="C#" Value="public static System.Reflection.FieldInfo GetField (this Type type, string name);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Reflection.FieldInfo GetField(class System.Type type, string name) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Reflection.FieldInfo</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="type" Type="System.Type" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="type">To be added.</param>
+          <param name="name">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="GetFields">
+        <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;System.Reflection.FieldInfo&gt; GetFields (this Type type);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IEnumerable`1&lt;class System.Reflection.FieldInfo&gt; GetFields(class System.Type type) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Collections.Generic.IEnumerable&lt;System.Reflection.FieldInfo&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="type" Type="System.Type" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="type">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetFields(System.Type)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="GetProperties">
+        <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;System.Reflection.PropertyInfo&gt; GetProperties (this Type type);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IEnumerable`1&lt;class System.Reflection.PropertyInfo&gt; GetProperties(class System.Type type) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Collections.Generic.IEnumerable&lt;System.Reflection.PropertyInfo&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="type" Type="System.Type" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="type">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperties(System.Type)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="GetProperty">
+        <MemberSignature Language="C#" Value="public static System.Reflection.PropertyInfo GetProperty (this Type type, string name);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Reflection.PropertyInfo GetProperty(class System.Type type, string name) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Reflection.PropertyInfo</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="type" Type="System.Type" RefType="this" />
+          <Parameter Name="name" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="type">To be added.</param>
+          <param name="name">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperty(System.Type,System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="IsAssignableFrom">
+        <MemberSignature Language="C#" Value="public static bool IsAssignableFrom (this Type self, Type c);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsAssignableFrom(class System.Type self, class System.Type c) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="System.Type" RefType="this" />
+          <Parameter Name="c" Type="System.Type" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="c">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsAssignableFrom(System.Type,System.Type)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.Type" />
+      </Targets>
+      <Member MemberName="IsInstanceOfType">
+        <MemberSignature Language="C#" Value="public static bool IsInstanceOfType (this Type self, object o);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsInstanceOfType(class System.Type self, object o) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="System.Type" RefType="this" />
+          <Parameter Name="o" Type="System.Object" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="o">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsInstanceOfType(System.Type,System.Object)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>

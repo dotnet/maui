@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -49,7 +50,8 @@ namespace Xamarin.Forms
 
 		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems { get { return TemplatedItems; } }
 
-		internal TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
 
 		TVisual IItemsView<TVisual>.CreateDefault(object item)
 		{

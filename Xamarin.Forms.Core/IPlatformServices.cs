@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal interface IPlatformServices
+	public interface IPlatformServices
 	{
 		bool IsInvokeRequired { get; }
 

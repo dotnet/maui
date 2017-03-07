@@ -1,4 +1,5 @@
 using Android.Text;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

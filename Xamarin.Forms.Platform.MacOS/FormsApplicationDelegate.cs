@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (application == null)
 				throw new ArgumentNullException(nameof(application));
 
-			Application.Current = application;
+			Application.SetCurrentApplication(application);
 			_application = application;
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;

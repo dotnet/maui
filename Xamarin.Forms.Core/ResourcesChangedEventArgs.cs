@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class ResourcesChangedEventArgs : EventArgs
+	public class ResourcesChangedEventArgs : EventArgs
 	{
 		public ResourcesChangedEventArgs(IEnumerable<KeyValuePair<string, object>> values)
 		{

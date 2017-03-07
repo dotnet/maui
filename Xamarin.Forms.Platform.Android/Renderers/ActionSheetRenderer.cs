@@ -6,6 +6,7 @@ using Android.Views;
 using Android.Widget;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

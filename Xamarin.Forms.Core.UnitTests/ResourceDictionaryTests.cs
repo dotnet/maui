@@ -2,6 +2,7 @@
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {

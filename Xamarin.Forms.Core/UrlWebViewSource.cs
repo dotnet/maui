@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Xamarin.Forms
 {
 	public class UrlWebViewSource : WebViewSource
@@ -11,7 +13,8 @@ namespace Xamarin.Forms
 			set { SetValue(UrlProperty, value); }
 		}
 
-		internal override void Load(IWebViewDelegate renderer)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public override void Load(IWebViewDelegate renderer)
 		{
 			renderer.LoadUrl(Url);
 		}

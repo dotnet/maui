@@ -1,7 +1,7 @@
-namespace Xamarin.Forms.Xaml
+namespace Xamarin.Forms.Xaml.Internals
 {
 
-	interface INativeBindingService
+	public interface INativeBindingService
 	{
 		bool TrySetBinding(object target, string propertyName, BindingBase binding);
 		bool TrySetBinding(object target, BindableProperty property, BindingBase binding);

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Markup;
 using Microsoft.Windows.Design;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.Design
 {

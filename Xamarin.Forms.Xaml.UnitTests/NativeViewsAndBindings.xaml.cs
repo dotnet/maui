@@ -4,6 +4,8 @@ using System.ComponentModel;
 using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {

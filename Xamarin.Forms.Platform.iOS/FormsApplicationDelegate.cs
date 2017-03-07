@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (application == null)
 				throw new ArgumentNullException("application");
 
-			Application.Current = application;
+			Application.SetCurrentApplication(application);
 			_application = application;
 			(application as IApplicationController)?.SetAppIndexingProvider(new IOSAppIndexingProvider());
 

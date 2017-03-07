@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {

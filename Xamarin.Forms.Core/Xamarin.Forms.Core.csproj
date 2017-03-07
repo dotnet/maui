@@ -88,8 +88,13 @@
     <Compile Include="DateChangedEventArgs.cs" />
     <Compile Include="DelegateLogListener.cs" />
     <Compile Include="IEditorController.cs" />
+    <Compile Include="IGridController.cs" />
+    <Compile Include="IWebViewController.cs" />
+    <Compile Include="INavigationMenuController.cs" />
     <Compile Include="Internals\EffectUtilities.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="IMultiPageController.cs" />
+    <Compile Include="LockableObservableListWrapper.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\AppCompat\Application.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\Application.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\TabbedPage.cs" />
@@ -466,7 +471,5 @@
     </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="PlatformConfiguration\macOSSpecific\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

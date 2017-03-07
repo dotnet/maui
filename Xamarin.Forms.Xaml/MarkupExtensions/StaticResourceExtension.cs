@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Xml;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
 {

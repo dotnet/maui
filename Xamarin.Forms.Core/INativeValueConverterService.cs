@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Xamarin.Forms.Xaml
+namespace Xamarin.Forms.Xaml.Internals
 {
-	interface INativeValueConverterService
+	public interface INativeValueConverterService
 	{
 		bool ConvertTo(object value, Type toType, out object nativeValue);
 	}

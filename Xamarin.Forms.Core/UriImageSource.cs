@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -64,7 +66,8 @@ namespace Xamarin.Forms
 			set { SetValue(UriProperty, value); }
 		}
 
-		internal async Task<Stream> GetStreamAsync(CancellationToken userToken = default(CancellationToken))
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public async Task<Stream> GetStreamAsync(CancellationToken userToken = default(CancellationToken))
 		{
 			OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);

@@ -3,6 +3,7 @@ using System;
 using System.Reflection;
 using System.Linq;
 using System.Globalization;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

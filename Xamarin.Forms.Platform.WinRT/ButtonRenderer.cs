@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			bmp.ImageOpened += (sender, args) => {
 				image.Width = bmp.PixelWidth;
 				image.Height = bmp.PixelHeight;
-				Element.InvalidateMeasureInternal(InvalidationTrigger.RendererReady);
+				Element.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
 			};
 
 			// No text, just the image

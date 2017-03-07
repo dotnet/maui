@@ -108,7 +108,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			((IImageController)Element).SetIsLoading(true);
 
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
 				UIImage uiimage;
 				try

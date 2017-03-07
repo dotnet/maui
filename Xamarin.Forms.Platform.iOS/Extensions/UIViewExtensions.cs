@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using static System.String;
+using Xamarin.Forms.Internals;
 #if __MOBILE__
 using UIKit;
 namespace Xamarin.Forms.Platform.iOS

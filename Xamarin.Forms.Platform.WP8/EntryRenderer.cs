@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Xamarin.Forms.Internals;
 using static System.String;
 using WControl = System.Windows.Controls.Control;
 

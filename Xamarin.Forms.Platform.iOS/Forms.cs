@@ -71,19 +71,19 @@ namespace Xamarin.Forms
 			if (IsInitialized)
 				return;
 			IsInitialized = true;
-			Color.Accent = Color.FromRgba(50, 79, 133, 255);
+			Color.SetAccent(Color.FromRgba(50, 79, 133, 255));
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 
 #if __MOBILE__
-			Device.Idiom = UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone;
+			Device.SetIdiom(UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad ? TargetIdiom.Tablet : TargetIdiom.Phone);
 #else
-			Device.Idiom = TargetIdiom.Desktop;
+			Device.SetIdiom(TargetIdiom.Desktop);
 #endif
 			Device.PlatformServices = new IOSPlatformServices();
 			Device.Info = new IOSDeviceInfo();
 
-			Registrar.RegisterAll(new[]
+			Internals.Registrar.RegisterAll(new[]
 				{ typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
 			ExpressionSearch.Default = new iOSExpressionSearch();
 		}
@@ -306,13 +306,13 @@ namespace Xamarin.Forms
 					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access)
 				{
 					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);
 					return Task.FromResult(stream);
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
 				{
 					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access,
 						(System.IO.FileShare)share);

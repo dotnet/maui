@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
 using AImageView = Android.Widget.ImageView;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -82,7 +83,7 @@ namespace Xamarin.Forms.Platform.Android
 			Bitmap bitmap = null;
 			IImageSourceHandler handler;
 
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
 				try
 				{

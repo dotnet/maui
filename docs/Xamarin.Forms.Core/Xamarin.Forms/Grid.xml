@@ -1,6 +1,6 @@
 <Type Name="Grid" FullName="Xamarin.Forms.Grid">
-  <TypeSignature Language="C#" Value="public class Grid : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt;" />
+  <TypeSignature Language="C#" Value="public class Grid : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;, Xamarin.Forms.IGridController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt; implements class Xamarin.Forms.IGridController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,7 +17,11 @@
       <BaseTypeArgument TypeParamName="T">Xamarin.Forms.View</BaseTypeArgument>
     </BaseTypeArguments>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IGridController</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Docs>
     <summary>A layout that arranges views in rows and columns.</summary>
     <remarks>
@@ -559,6 +563,30 @@ namespace FormsGallery
       <Parameters />
       <Docs>
         <summary>Invalidates the grid layout.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="InvalidateMeasureInernalNonVirtual">
+      <MemberSignature Language="C#" Value="public void InvalidateMeasureInernalNonVirtual (Xamarin.Forms.Internals.InvalidationTrigger trigger);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void InvalidateMeasureInernalNonVirtual(valuetype Xamarin.Forms.Internals.InvalidationTrigger trigger) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="trigger" Type="Xamarin.Forms.Internals.InvalidationTrigger" />
+      </Parameters>
+      <Docs>
+        <param name="trigger">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

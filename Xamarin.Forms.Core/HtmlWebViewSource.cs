@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace Xamarin.Forms
 {
 	public class HtmlWebViewSource : WebViewSource
@@ -20,7 +22,8 @@ namespace Xamarin.Forms
 			set { SetValue(HtmlProperty, value); }
 		}
 
-		internal override void Load(IWebViewDelegate renderer)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public override void Load(IWebViewDelegate renderer)
 		{
 			renderer.LoadHtml(Html, BaseUrl);
 		}

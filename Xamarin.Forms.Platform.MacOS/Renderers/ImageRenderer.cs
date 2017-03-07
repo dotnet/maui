@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			((IImageController)Element).SetIsLoading(true);
 
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
 				NSImage uiimage;
 				try

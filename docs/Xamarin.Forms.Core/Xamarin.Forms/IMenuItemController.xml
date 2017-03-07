@@ -28,7 +28,7 @@
       </Docs>
     </Member>
     <Member MemberName="IsEnabled">
-      <MemberSignature Language="C#" Value="public bool IsEnabled { get; }" />
+      <MemberSignature Language="C#" Value="public bool IsEnabled { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool IsEnabled" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>

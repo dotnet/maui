@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Views;
 using Android.Views.Animations;
 using ARelativeLayout = Android.Widget.RelativeLayout;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {

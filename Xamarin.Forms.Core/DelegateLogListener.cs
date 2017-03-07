@@ -1,8 +1,9 @@
 using System;
+using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal class DelegateLogListener : LogListener
+	public class DelegateLogListener : LogListener
 	{
 		readonly Action<string, string> _log;
 

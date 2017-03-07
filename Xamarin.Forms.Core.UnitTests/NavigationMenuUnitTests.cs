@@ -4,6 +4,7 @@ using NUnit.Framework;
 
 using System.Collections.Generic;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -182,7 +183,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			menu.Add (child);
 
-			menu.SendTargetSelected (child);
+			((INavigationMenuController)menu).SendTargetSelected (child);
 
 			Assert.True (pushed);
 			Assert.AreEqual (child, navForm.CurrentPage);

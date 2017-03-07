@@ -8,10 +8,11 @@ using Xamarin.Forms.Internals;
 
 using static System.String;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	static class NativeBindingHelpers
+	public static class NativeBindingHelpers
 	{
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, string updateSourceEventName = null) where TNativeView : class
 		{
 			var binding = bindingBase as Binding;
@@ -25,7 +26,8 @@ namespace Xamarin.Forms
 			SetBinding(target, targetProperty, bindingBase, eventWrapper);
 		}
 
-		internal static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TNativeView : class
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetBinding<TNativeView>(TNativeView target, string targetProperty, BindingBase bindingBase, INotifyPropertyChanged propertyChanged) where TNativeView : class
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
@@ -93,6 +95,7 @@ namespace Xamarin.Forms
 			bindable.SetValueCore(property, value);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetBinding<TNativeView>(TNativeView target, BindableProperty targetProperty, BindingBase binding) where TNativeView : class
 		{
 			if (target == null)
@@ -106,6 +109,7 @@ namespace Xamarin.Forms
 			proxy.BindingsBackpack.Add(new KeyValuePair<BindableProperty, BindingBase>(targetProperty, binding));
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetValue<TNativeView>(TNativeView target, BindableProperty targetProperty, object value) where TNativeView : class
 		{
 			if (target == null)
@@ -117,6 +121,7 @@ namespace Xamarin.Forms
 			proxy.ValuesBackpack.Add(new KeyValuePair<BindableProperty, object>(targetProperty, value));
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetBindingContext<TNativeView>(TNativeView target, object bindingContext, Func<TNativeView, IEnumerable<TNativeView>> getChild = null) where TNativeView : class
 		{
 			if (target == null)
@@ -134,7 +139,8 @@ namespace Xamarin.Forms
 					SetBindingContext(child, bindingContext, getChild);
 		}
 
-		internal static void TransferBindablePropertiesToWrapper<TNativeView, TNativeWrapper>(TNativeView nativeView, TNativeWrapper wrapper)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void TransferBindablePropertiesToWrapper<TNativeView, TNativeWrapper>(TNativeView nativeView, TNativeWrapper wrapper)
 			where TNativeView : class
 			where TNativeWrapper : View
 		{

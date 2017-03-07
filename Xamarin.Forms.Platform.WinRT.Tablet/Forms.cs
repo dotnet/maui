@@ -8,6 +8,7 @@ using Windows.Foundation.Metadata;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.Internals;
 #if WINDOWS_UWP
 using Xamarin.Forms.Platform.UWP;
 
@@ -34,13 +35,13 @@ namespace Xamarin.Forms
 				return;
 
 			var accent = (SolidColorBrush)Windows.UI.Xaml.Application.Current.Resources["SystemColorControlAccentBrush"];
-			Color.Accent = Color.FromRgba(accent.Color.R, accent.Color.G, accent.Color.B, accent.Color.A);
+			Color.SetAccent(Color.FromRgba(accent.Color.R, accent.Color.G, accent.Color.B, accent.Color.A));
 
 			Log.Listeners.Add(new DelegateLogListener((c, m) => Debug.WriteLine(LogFormat, c, m)));
 
 			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 
-			Device.Idiom = TargetIdiom.Tablet;
+			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.PlatformServices = new WindowsPlatformServices(Window.Current.Dispatcher);
 			Device.Info = new WindowsDeviceInfo();
 
@@ -48,13 +49,13 @@ namespace Xamarin.Forms
 			switch (DetectPlatform())
 			{
 				case Windows.Foundation.Metadata.Platform.Windows:
-					Device.Idiom = TargetIdiom.Desktop;
+					Device.SetIdiom(TargetIdiom.Desktop);
 					break;
 				case Windows.Foundation.Metadata.Platform.WindowsPhone:
-					Device.Idiom = TargetIdiom.Phone;
+					Device.SetIdiom(TargetIdiom.Phone);
 					break;
 				default:
-					Device.Idiom = TargetIdiom.Tablet;
+					Device.SetIdiom(TargetIdiom.Tablet);
 					break;
 			}
 #endif

@@ -7,6 +7,7 @@ using Android.Graphics.Drawables;
 using Android.Support.V4.Content;
 using Android.Support.V7.Widget;
 using Android.Util;
+using Xamarin.Forms.Internals;
 using GlobalResource = Android.Resource;
 using Object = Java.Lang.Object;
 using AView = Android.Views.View;
@@ -31,12 +32,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		global::Android.Widget.Button NativeButton => Control;
 
-		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView)
+		void AView.IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView)
 		{
 			UpdateText();
 		}
 
-		void IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
+		void AView.IOnAttachStateChangeListener.OnViewDetachedFromWindow(AView detachedView)
 		{
 		}
 
@@ -161,7 +162,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 							}
 							catch (Exception ex)
 							{
-								Log.Warning("Xamarin.Forms.Platform.Android.ButtonRenderer", "Could not retrieve button background resource: {0}", ex);
+								Internals.Log.Warning("Xamarin.Forms.Platform.Android.ButtonRenderer", "Could not retrieve button background resource: {0}", ex);
 								Control.SupportBackgroundTintList = new ColorStateList(ColorExtensions.States, new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
 							}
 						}
@@ -289,7 +290,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
-		class ButtonClickListener : Object, IOnClickListener
+		class ButtonClickListener : Object, AView.IOnClickListener
 		{
 			#region Statics
 
@@ -304,7 +305,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		class ButtonTouchListener : Object, IOnTouchListener
+		class ButtonTouchListener : Object, AView.IOnTouchListener
 		{
 			public static readonly Lazy<ButtonTouchListener> Instance = new Lazy<ButtonTouchListener>(() => new ButtonTouchListener());
 

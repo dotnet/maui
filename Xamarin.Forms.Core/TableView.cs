@@ -80,7 +80,8 @@ namespace Xamarin.Forms
 			set { SetValue(RowHeightProperty, value); }
 		}
 
-		internal TableModel Model
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public TableModel Model
 		{
 			get { return _model; }
 			set

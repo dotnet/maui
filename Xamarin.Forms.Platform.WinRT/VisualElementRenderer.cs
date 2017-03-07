@@ -309,8 +309,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
 		{
-			effect.Container = this;
-			effect.Control = Control;
+			effect.SetContainer(this);
+			effect.SetControl(Control);
 		}
 
 		protected virtual void SetAutomationId(string id)

@@ -1,9 +1,12 @@
 using System;
+using System.ComponentModel;
+using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal abstract class TableModel: ITableModel
+	public abstract class TableModel: ITableModel
 	{
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual Cell GetCell(int section, int row)
 		{
 			object item = GetItem(section, row);
@@ -14,36 +17,46 @@ namespace Xamarin.Forms
 			return new TextCell { Text = item.ToString() };
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual Cell GetHeaderCell(int section)
 		{
 			return null;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract object GetItem(int section, int row);
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract int GetRowCount(int section);
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public abstract int GetSectionCount();
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual string[] GetSectionIndexTitles()
 		{
 			return null;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public virtual string GetSectionTitle(int section)
 		{
 			return null;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<object>> ItemLongPressed;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<object>> ItemSelected;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void RowLongPressed(int section, int row)
 		{
 			RowLongPressed(GetItem(section, row));
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void RowLongPressed(object item)
 		{
 			if (ItemLongPressed != null)
@@ -52,11 +65,13 @@ namespace Xamarin.Forms
 			OnRowLongPressed(item);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void RowSelected(int section, int row)
 		{
 			RowSelected(GetItem(section, row));
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void RowSelected(object item)
 		{
 			if (ItemSelected != null)

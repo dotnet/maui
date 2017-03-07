@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {

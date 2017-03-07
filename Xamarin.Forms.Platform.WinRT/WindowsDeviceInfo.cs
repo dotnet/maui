@@ -2,6 +2,7 @@
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 

@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var id = cell.GetType().FullName;
 
-			var renderer = (CellRenderer)Registrar.Registered.GetHandler(cell.GetType());
+			var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
 
 			ContextActionsCell contextCell = null;
 			UITableViewCell reusableCell = null;

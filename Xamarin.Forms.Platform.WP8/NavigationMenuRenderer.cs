@@ -2,12 +2,15 @@
 using System.ComponentModel;
 using System.Windows.Media.Imaging;
 using Microsoft.Phone.Controls;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.WinPhone
 {
 	internal class NavigationMenuRenderer : ViewRenderer<NavigationMenu, System.Windows.Controls.Grid>
 	{
 		const int Spacing = 12;
+
+		INavigationMenuController ElementController => Element;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationMenu> e)
 		{
@@ -63,7 +66,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					hubTile.Background = target.BackgroundColor.ToBrush();
 
 				Page tmp = target;
-				hubTile.Tap += (sender, args) => Element.SendTargetSelected(tmp);
+				hubTile.Tap += (sender, args) => ElementController.SendTargetSelected(tmp);
 
 				hubTile.SetValue(System.Windows.Controls.Grid.RowProperty, y);
 				hubTile.SetValue(System.Windows.Controls.Grid.ColumnProperty, x);

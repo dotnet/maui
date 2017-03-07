@@ -228,6 +228,30 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SendTapped">
+      <MemberSignature Language="C#" Value="public void SendTapped (Xamarin.Forms.View sender);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SendTapped(class Xamarin.Forms.View sender) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sender" Type="Xamarin.Forms.View" />
+      </Parameters>
+      <Docs>
+        <param name="sender">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Tapped">
       <MemberSignature Language="C#" Value="public event EventHandler Tapped;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler Tapped" />

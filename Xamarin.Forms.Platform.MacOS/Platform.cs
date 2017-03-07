@@ -2,6 +2,7 @@
 using AppKit;
 using RectangleF = CoreGraphics.CGRect;
 using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -95,7 +96,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			var t = element.GetType();
-			var renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(t) ?? new DefaultRenderer();
+			var renderer = Internals.Registrar.Registered.GetHandler<IVisualElementRenderer>(t) ?? new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;
 		}

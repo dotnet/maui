@@ -1,6 +1,8 @@
 using Foundation;
+using Xamarin.Forms.Internals;
 #if __MOBILE__
 using UIKit;
+
 namespace Xamarin.Forms.Platform.iOS
 #else
 using AppKit;

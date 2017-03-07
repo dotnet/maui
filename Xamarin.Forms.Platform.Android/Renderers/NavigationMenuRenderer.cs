@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -115,6 +116,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			readonly NavigationMenu _menu;
 
+			INavigationMenuController MenuController => _menu;
+
 			public MenuAdapter(NavigationMenu menu)
 			{
 				_menu = menu;
@@ -135,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 				Page item = this[position];
 				menuItem.Icon = item.Icon;
 				menuItem.Name = item.Title;
-				menuItem.OnSelected = () => _menu.SendTargetSelected(item);
+				menuItem.OnSelected = () => MenuController.SendTargetSelected(item);
 				return menuItem;
 			}
 

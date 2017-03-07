@@ -1,8 +1,11 @@
 #if __MOBILE__
 using UIKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 #else
+
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.MacOS
 #endif

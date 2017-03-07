@@ -91,7 +91,8 @@ namespace Xamarin.Forms
 			SetValue(propertyKey.BindableProperty, value, false, false);
 		}
 
-		protected internal static void SetInheritedBindingContext(BindableObject bindable, object value)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
 			if (bpContext != null && ((bpContext.Attributes & BindableContextAttributes.IsManuallySet) != 0))
@@ -202,7 +203,8 @@ namespace Xamarin.Forms
 			return values;
 		}
 
-		internal object[] GetValues(BindableProperty property0, BindableProperty property1, BindableProperty property2)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public object[] GetValues(BindableProperty property0, BindableProperty property1, BindableProperty property2)
 		{
 			var values = new object[3];
 
@@ -326,7 +328,8 @@ namespace Xamarin.Forms
 			SetValueCore(propertyKey.BindableProperty, value, attributes, SetValuePrivateFlags.None);
 		}
 
-		internal void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
 		{
 			SetValueCore(property, value, attributes, SetValuePrivateFlags.Default);
 		}
@@ -612,16 +615,6 @@ namespace Xamarin.Forms
 		}
 
 		[Flags]
-		internal enum SetValueFlags
-		{
-			None = 0,
-			ClearOneWayBindings = 1 << 0,
-			ClearTwoWayBindings = 1 << 1,
-			ClearDynamicResource = 1 << 2,
-			RaiseOnEqual = 1 << 3
-		}
-
-		[Flags]
 		internal enum SetValuePrivateFlags
 		{
 			None = 0,
@@ -649,6 +642,19 @@ namespace Xamarin.Forms
 				CurrentlyApplying = currentlyApplying;
 				Attributes = attributes;
 			}
+		}
+	}
+
+	namespace Internals
+	{
+		[Flags]
+		public enum SetValueFlags
+		{
+			None = 0,
+			ClearOneWayBindings = 1 << 0,
+			ClearTwoWayBindings = 1 << 1,
+			ClearDynamicResource = 1 << 2,
+			RaiseOnEqual = 1 << 3
 		}
 	}
 }

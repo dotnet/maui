@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using CoreAnimation;
+using Xamarin.Forms.Internals;
 #if __MOBILE__
 
 namespace Xamarin.Forms.Platform.iOS

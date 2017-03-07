@@ -1,8 +1,10 @@
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -15,11 +17,17 @@ namespace Xamarin.Forms
 		public const string WinRT = "WinRT";
 		public const string macOS = "macOS";
 
-		internal static DeviceInfo info;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static DeviceInfo info;
 
 		static IPlatformServices s_platformServices;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetIdiom(TargetIdiom value) => Idiom = value;
 		public static TargetIdiom Idiom { get; internal set; }
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
 		[Obsolete("Use RuntimePlatform instead.")]
 #pragma warning disable 0618
@@ -44,7 +52,8 @@ namespace Xamarin.Forms
 
 		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
 
-		internal static DeviceInfo Info
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static DeviceInfo Info
 		{
 			get
 			{
@@ -55,12 +64,14 @@ namespace Xamarin.Forms
 			set { info = value; }
 		}
 
-		internal static bool IsInvokeRequired
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static bool IsInvokeRequired
 		{
 			get { return PlatformServices.IsInvokeRequired; }
 		}
 
-		internal static IPlatformServices PlatformServices
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IPlatformServices PlatformServices
 		{
 			get
 			{
@@ -144,12 +155,14 @@ namespace Xamarin.Forms
 			PlatformServices.StartTimer(interval, callback);
 		}
 
-		internal static Assembly[] GetAssemblies()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Assembly[] GetAssemblies()
 		{
 			return PlatformServices.GetAssemblies();
 		}
 
-		internal static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
 			return PlatformServices.GetNamedSize(size, targetElementType, useOldSizes);
 		}

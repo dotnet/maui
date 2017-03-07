@@ -1,6 +1,7 @@
 using Android.Content;
 using Android.Content.Res;
 using Android.Util;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {

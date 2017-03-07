@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (renderer.Element != null && renderer == Platform.GetRenderer(renderer.Element))
 					renderer.Element.ClearValue(Platform.RendererProperty);
 
-				var type = Registrar.Registered.GetHandlerType(_viewCell.View.GetType());
+				var type = Internals.Registrar.Registered.GetHandlerType(_viewCell.View.GetType());
 				if (renderer.GetType() == type || (renderer is DefaultRenderer && type == null))
 					renderer.SetElement(_viewCell.View);
 				else

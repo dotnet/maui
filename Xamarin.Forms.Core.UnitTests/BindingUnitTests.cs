@@ -6,8 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using CategoryAttribute=NUnit.Framework.CategoryAttribute;
-using DescriptionAttribute=NUnit.Framework.DescriptionAttribute;
+using CategoryAttribute = NUnit.Framework.CategoryAttribute;
+using DescriptionAttribute = NUnit.Framework.DescriptionAttribute;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {

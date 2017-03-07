@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal interface IExpressionSearch
+	public interface IExpressionSearch
 	{
 		List<T> FindObjects<T>(Expression expression) where T : class;
 	}

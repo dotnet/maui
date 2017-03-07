@@ -1,6 +1,6 @@
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal interface IPlatform
+	public interface IPlatform
 	{
 		SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint);
 	}

@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Forms
 {
-	internal interface IPinchGestureController
+	public interface IPinchGestureController
 	{
 		bool IsPinching { get; set; }
 

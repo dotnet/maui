@@ -115,10 +115,10 @@ namespace Xamarin.Forms
 
 			ResourceManager.Init(resourceAssembly);
 
-			Color.Accent = GetAccentColor();
+			Color.SetAccent(GetAccentColor());
 
 			if (!IsInitialized)
-				Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
+				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
 
 			Device.PlatformServices = new AndroidPlatformServices();
 
@@ -134,7 +134,7 @@ namespace Xamarin.Forms
 			var ticker = Ticker.Default as AndroidTicker;
 			if (ticker != null)
 				ticker.Dispose();
-			Ticker.Default = new AndroidTicker();
+			Ticker.SetDefault(new AndroidTicker());
 
 			if (!IsInitialized)
 			{
@@ -143,7 +143,7 @@ namespace Xamarin.Forms
 
 			int minWidthDp = Context.Resources.Configuration.SmallestScreenWidthDp;
 
-			Device.Idiom = minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone;
+			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
@@ -387,7 +387,7 @@ namespace Xamarin.Forms
 				{
 					if (!response.IsSuccessStatusCode)
 					{
-						Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {response.StatusCode}");
+						Internals.Log.Warning("HTTP Request", $"Could not retrieve {uri}, status code {response.StatusCode}");
 						return null;
 					}
 					return await response.Content.ReadAsStreamAsync();
@@ -468,7 +468,7 @@ namespace Xamarin.Forms
 				}
 				catch (Exception ex)
 				{
-					Log.Warning("Xamarin.Forms.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
+					Internals.Log.Warning("Xamarin.Forms.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
 			}
@@ -503,13 +503,13 @@ namespace Xamarin.Forms
 					return Task.FromResult(_isolatedStorageFile.GetLastWriteTime(path));
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access)
 				{
 					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);
 					return Task.FromResult(stream);
 				}
 
-				public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)
+				public Task<Stream> OpenFileAsync(string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
 				{
 					Stream stream = _isolatedStorageFile.OpenFile(path, (System.IO.FileMode)mode, (System.IO.FileAccess)access, (System.IO.FileShare)share);
 					return Task.FromResult(stream);

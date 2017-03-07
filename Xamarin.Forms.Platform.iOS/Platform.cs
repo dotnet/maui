@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -188,7 +189,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			var t = element.GetType();
-			var renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(t) ?? new DefaultRenderer();
+			var renderer = Internals.Registrar.Registered.GetHandler<IVisualElementRenderer>(t) ?? new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;
 		}

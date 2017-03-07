@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			var platformEffect = effect as PlatformEffect;
 			if (platformEffect != null)
-				platformEffect.Container = View;
+				platformEffect.SetContainer(View);
 		}
 
 		protected MasterDetailPage MasterDetailPage => _masterDetailPage ?? (_masterDetailPage = (MasterDetailPage)Element);

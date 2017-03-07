@@ -2,17 +2,18 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Xamarin.Forms
+namespace Xamarin.Forms.Internals
 {
-	internal abstract class DeviceInfo : INotifyPropertyChanged, IDisposable
+	public abstract class DeviceInfo : INotifyPropertyChanged, IDisposable
 	{
 		DeviceOrientation _currentOrientation;
 		bool _disposed;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public DeviceOrientation CurrentOrientation
 		{
 			get { return _currentOrientation; }
-			internal set
+			set
 			{
 				if (Equals(_currentOrientation, value))
 					return;

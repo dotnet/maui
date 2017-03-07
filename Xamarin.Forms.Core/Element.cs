@@ -133,7 +133,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal IPlatform Platform
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IPlatform Platform
 		{
 			get
 			{
@@ -158,7 +159,8 @@ namespace Xamarin.Forms
 		}
 
 		// you're not my real dad
-		internal Element RealParent { get; private set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Element RealParent { get; private set; }
 
 		List<KeyValuePair<string, BindableProperty>> DynamicResources
 		{
@@ -389,7 +391,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal IEnumerable<Element> Descendants()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IEnumerable<Element> Descendants()
 		{
 			var queue = new Queue<Element>(16);
 			queue.Enqueue(this);
@@ -476,7 +479,8 @@ namespace Xamarin.Forms
 
 		internal event EventHandler ParentSet;
 
-		internal event EventHandler PlatformSet;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler PlatformSet;
 
 		internal virtual void SetChildInheritedBindingContext(Element child, object context)
 		{

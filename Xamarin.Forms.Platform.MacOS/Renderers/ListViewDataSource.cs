@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using AppKit;
 using Foundation;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.MacOS
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -594,7 +595,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			mock.SetValueCore (MockBindable.TextProperty, foo, 
-				BindableObject.SetValueFlags.ClearOneWayBindings | BindableObject.SetValueFlags.ClearDynamicResource | BindableObject.SetValueFlags.RaiseOnEqual);
+				SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | SetValueFlags.RaiseOnEqual);
 
 			Assert.That (changing, Is.True, "PropertyChanging event did not fire");
 			Assert.That (changed, Is.True, "PropertyChanged event did not fire");

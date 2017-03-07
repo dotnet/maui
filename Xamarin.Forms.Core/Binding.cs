@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
@@ -82,7 +84,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal string UpdateSourceEventName {
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public string UpdateSourceEventName {
 			get { return _updateSourceEventName; }
 			set {
 				ThrowIfApplied();
