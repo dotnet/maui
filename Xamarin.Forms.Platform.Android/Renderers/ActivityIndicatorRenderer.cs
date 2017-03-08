@@ -45,16 +45,22 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateColor()
 		{
+			if (Element == null || Control == null)
+				return;
+
 			Color color = Element.Color;
 
 			if (!color.IsDefault)
-				Control.IndeterminateDrawable.SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
+				Control.IndeterminateDrawable?.SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
 			else
-				Control.IndeterminateDrawable.ClearColorFilter();
+				Control.IndeterminateDrawable?.ClearColorFilter();
 		}
 
 		void UpdateVisibility()
 		{
+			if (Element == null || Control == null)
+				return;
+
 			Control.Visibility = Element.IsRunning ? ViewStates.Visible : ViewStates.Invisible;
 		}
 	}
