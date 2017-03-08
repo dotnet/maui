@@ -455,6 +455,7 @@
     <Compile Include="PlatformConfiguration\macOSSpecific\TabbedPage.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\TabsStyle.cs" />
     <Compile Include="FontElement.cs" />
+    <Compile Include="PlatformConfiguration\AndroidSpecific\ListView.cs" />
     <Compile Include="ITextElement.cs" />
     <Compile Include="TextElement.cs" />
   </ItemGroup>

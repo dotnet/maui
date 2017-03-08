@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly AListView _realListView;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
 		int _dataTemplateIncrementer = 2; // lets start at not 0 because
+		int _listCount = -1; // -1 we need to get count from the list
 		Cell _enabledCheckCell;
 
 		bool _fromNative;
@@ -57,22 +58,27 @@ namespace Xamarin.Forms.Platform.Android
 				MessagingCenter.Subscribe<AppCompat.Platform>(this, AppCompat.Platform.CloseContextActionsSignalName, p => CloseContextActions());
 			else
 				MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextActions());
+			InvalidateCount();
 		}
 
 		public override int Count
 		{
 			get
 			{
-				var templatedItems = TemplatedItemsView.TemplatedItems;
-				int count = templatedItems.Count;
-
-				if (_listView.IsGroupingEnabled)
+				if (_listCount == -1)
 				{
-					for (var i = 0; i < templatedItems.Count; i++)
-						count += templatedItems.GetGroup(i).Count;
-				}
+					var templatedItems = TemplatedItemsView.TemplatedItems;
+					int count = templatedItems.Count;
 
-				return count;
+					if (_listView.IsGroupingEnabled)
+					{
+						for (var i = 0; i < templatedItems.Count; i++)
+							count += templatedItems.GetGroup(i).Count;
+					}
+
+					_listCount = count;
+				}
+				return _listCount;
 			}
 		}
 
@@ -371,7 +377,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (position < 0 || position >= Count)
 				return;
 
-			if(_lastSelected != view)
+			if (_lastSelected != view)
 				_fromNative = true;
 			Select(position, view);
 			Controller.NotifyRowTapped(position, cell);
@@ -386,11 +392,12 @@ namespace Xamarin.Forms.Platform.Android
 				return cells;
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
+			var templatedItemsCount = templatedItems.Count;
 			if (!_listView.IsGroupingEnabled)
 			{
 				for (var x = 0; x < take; x++)
 				{
-					if (position + x >= templatedItems.Count)
+					if (position + x >= templatedItemsCount)
 						return cells;
 
 					cells.Add(templatedItems[x + position]);
@@ -401,7 +408,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			var i = 0;
 			var global = 0;
-			for (; i < templatedItems.Count; i++)
+			for (; i < templatedItemsCount; i++)
 			{
 				var group = templatedItems.GetGroup(i);
 
@@ -446,6 +453,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnDataChanged()
 		{
+			InvalidateCount();
 			if (ActionModeContext != null && !TemplatedItemsView.TemplatedItems.Contains(ActionModeContext))
 				CloseContextActions();
 
@@ -585,6 +593,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Row,
 			Header
+		}
+
+		void InvalidateCount()
+		{
+			_listCount = -1;
 		}
 	}
 }

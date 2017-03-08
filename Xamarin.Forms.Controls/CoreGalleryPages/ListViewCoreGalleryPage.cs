@@ -9,9 +9,12 @@ using System.Threading;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
+	[Preserve(AllMembers = true)]
 	internal class ListViewCoreGalleryPage : CoreGalleryPage<ListView>
 	{
 		internal class Employee : INotifyPropertyChanged
@@ -22,10 +25,11 @@ namespace Xamarin.Forms.Controls
 				get { return _name; }
 				set
 				{
-					if (value != null && value != _name) {
+					if (value != null && value != _name)
+					{
 						_name = value;
-						OnPropertyChanged ();
-					}	
+						OnPropertyChanged();
+					}
 				}
 			}
 
@@ -35,10 +39,11 @@ namespace Xamarin.Forms.Controls
 				get { return _daysWorked; }
 				set
 				{
-					if (value != null && value != _daysWorked) {
+					if (value != null && value != _daysWorked)
+					{
 						_daysWorked = value;
-						OnPropertyChanged ();
-					}	
+						OnPropertyChanged();
+					}
 				}
 			}
 
@@ -48,14 +53,15 @@ namespace Xamarin.Forms.Controls
 				get { return _rowHeight; }
 				set
 				{
-					if (value != null && value != _rowHeight) {
+					if (value != null && value != _rowHeight)
+					{
 						_rowHeight = value;
-						OnPropertyChanged ();
+						OnPropertyChanged();
 					}
 				}
 			}
 
-			public Employee (string name, TimeSpan daysWorked, int rowHeight)
+			public Employee(string name, TimeSpan daysWorked, int rowHeight)
 			{
 				_name = name;
 				_daysWorked = daysWorked;
@@ -64,61 +70,65 @@ namespace Xamarin.Forms.Controls
 
 			public event PropertyChangedEventHandler PropertyChanged;
 
-			protected virtual void OnPropertyChanged ([CallerMemberName] string propertyName = null)
+			protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			{
 				PropertyChangedEventHandler handler = PropertyChanged;
 				if (handler != null)
-					handler (this, new PropertyChangedEventArgs (propertyName));
+					handler(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal class Grouping<K, T> : ObservableCollection<T>
 		{
 			public K Key { get; private set; }
 
-			public Grouping (K key, IEnumerable<T> items)
+			public Grouping(K key, IEnumerable<T> items)
 			{
 				Key = key;
-				foreach (T item in items) {
-					Items.Add (item);
+				foreach (T item in items)
+				{
+					Items.Add(item);
 				}
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		public class HeaderCell : ViewCell
 		{
-			public HeaderCell ()
+			public HeaderCell()
 			{
 				Height = 60;
-				var title = new Label {
+				var title = new Label
+				{
 					HeightRequest = 60,
 					BackgroundColor = Color.Navy,
 					TextColor = Color.White
 				};
 
-				title.SetBinding (Label.TextProperty, new Binding ("Key"));
+				title.SetBinding(Label.TextProperty, new Binding("Key"));
 
-				View = new StackLayout {
+				View = new StackLayout
+				{
 					BackgroundColor = Color.Pink,
 					Children = { title }
 				};
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		class UnevenCell : ViewCell
 		{
-			public UnevenCell ()
+			public UnevenCell()
 			{
-	
-				SetBinding (HeightProperty, new Binding("RowHeight"));
 
-				var label = new Label ();
-				label.SetBinding (Label.TextProperty, new Binding("Name"));
+				SetBinding(HeightProperty, new Binding("RowHeight"));
 
-				var layout = new StackLayout {
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+
+				var layout = new StackLayout
+				{
 					BackgroundColor = Color.Red,
 					Children = {
 						label
@@ -129,17 +139,17 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		[Preserve (AllMembers = true)]
+		[Preserve(AllMembers = true)]
 		internal class ListViewViewModel
 		{
 			public ObservableCollection<Grouping<string, Employee>> CategorizedEmployees { get; private set; }
-			public ObservableCollection<Employee> Employees { get; private set; } 
+			public ObservableCollection<Employee> Employees { get; private set; }
 
-			public ListViewViewModel ()
+			public ListViewViewModel()
 			{
 				CategorizedEmployees = new ObservableCollection<Grouping<string, Employee>> {
 					new Grouping<string, Employee> (
-						"Engineer", 
+						"Engineer",
 						new [] {
 							new Employee ("Seth", TimeSpan.FromDays (10), 60),
 							new Employee ("Jason", TimeSpan.FromDays (100), 100),
@@ -147,7 +157,7 @@ namespace Xamarin.Forms.Controls
 						}
 					),
  					new Grouping<string, Employee> (
-						"Sales", 
+						"Sales",
 						new [] {
 							new Employee ("Andrew 1", TimeSpan.FromDays (10), 160),
 							new Employee ("Andrew 2", TimeSpan.FromDays (100), 100),
@@ -165,7 +175,7 @@ namespace Xamarin.Forms.Controls
 					new Employee ("Andrew 3", TimeSpan.FromDays (1000), 60),
 				};
 
-				Enumerable.Range (0, 9000).Select (e => new Employee (e.ToString (), TimeSpan.FromDays (1), 60)).ForEach (e => Employees.Add (e));
+				Enumerable.Range(0, 9000).Select(e => new Employee(e.ToString(), TimeSpan.FromDays(1), 60)).ForEach(e => Employees.Add(e));
 			}
 		}
 
@@ -174,96 +184,102 @@ namespace Xamarin.Forms.Controls
 			get { return false; }
 		}
 
-		protected override void InitializeElement (ListView element)
+		protected override void InitializeElement(ListView element)
 		{
 			element.HeightRequest = 350;
 			element.RowHeight = 60;
 
-			var viewModel = new ListViewViewModel ();
+			var viewModel = new ListViewViewModel();
 			element.BindingContext = viewModel;
 
 			element.ItemsSource = viewModel.Employees;
 
-			var template = new DataTemplate (typeof(TextCell));
-			template.SetBinding (TextCell.TextProperty, "Name");
-			template.SetBinding (TextCell.DetailProperty, new Binding("DaysWorked", converter: new GenericValueConverter (time => time.ToString ())));
+			var template = new DataTemplate(typeof(TextCell));
+			template.SetBinding(TextCell.TextProperty, "Name");
+			template.SetBinding(TextCell.DetailProperty, new Binding("DaysWorked", converter: new GenericValueConverter(time => time.ToString())));
 
 			element.ItemTemplate = template;
 		}
 
-		protected override void Build (StackLayout stackLayout)
+		protected override void Build(StackLayout stackLayout)
 		{
-			base.Build (stackLayout);
+			base.Build(stackLayout);
 
-			var viewModel = new ListViewViewModel ();
+			var viewModel = new ListViewViewModel();
 
-			var groupDisplayBindingContainer = new ViewContainer<ListView> (Test.ListView.GroupDisplayBinding, new ListView ());
-			InitializeElement (groupDisplayBindingContainer.View);
+			var groupDisplayBindingContainer = new ViewContainer<ListView>(Test.ListView.GroupDisplayBinding, new ListView());
+			InitializeElement(groupDisplayBindingContainer.View);
 			groupDisplayBindingContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupDisplayBindingContainer.View.IsGroupingEnabled = true;
-			groupDisplayBindingContainer.View.GroupDisplayBinding = new Binding ("Key");
+			groupDisplayBindingContainer.View.GroupDisplayBinding = new Binding("Key");
 
 
-			var groupHeaderTemplateContainer = new ViewContainer<ListView> (Test.ListView.GroupHeaderTemplate, new ListView ());
-			InitializeElement (groupHeaderTemplateContainer.View);
+			var groupHeaderTemplateContainer = new ViewContainer<ListView>(Test.ListView.GroupHeaderTemplate, new ListView());
+			InitializeElement(groupHeaderTemplateContainer.View);
 			groupHeaderTemplateContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupHeaderTemplateContainer.View.IsGroupingEnabled = true;
-			groupHeaderTemplateContainer.View.GroupHeaderTemplate = new DataTemplate (typeof (HeaderCell));
+			groupHeaderTemplateContainer.View.GroupHeaderTemplate = new DataTemplate(typeof(HeaderCell));
 
-			var groupShortNameContainer = new ViewContainer<ListView> (Test.ListView.GroupShortNameBinding, new ListView ());
-			InitializeElement (groupShortNameContainer.View);
+			var groupShortNameContainer = new ViewContainer<ListView>(Test.ListView.GroupShortNameBinding, new ListView());
+			InitializeElement(groupShortNameContainer.View);
 			groupShortNameContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			groupShortNameContainer.View.IsGroupingEnabled = true;
 			groupShortNameContainer.View.GroupShortNameBinding = new Binding("Key");
 
 			// TODO - not sure how to do this
-			var hasUnevenRowsContainer = new ViewContainer<ListView> (Test.ListView.HasUnevenRows, new ListView ());
-			InitializeElement (hasUnevenRowsContainer.View);
+			var hasUnevenRowsContainer = new ViewContainer<ListView>(Test.ListView.HasUnevenRows, new ListView());
+			InitializeElement(hasUnevenRowsContainer.View);
 			hasUnevenRowsContainer.View.HasUnevenRows = true;
-			hasUnevenRowsContainer.View.ItemTemplate = new DataTemplate (typeof(UnevenCell));
+			hasUnevenRowsContainer.View.ItemTemplate = new DataTemplate(typeof(UnevenCell));
 
-			var isGroupingEnabledContainer = new StateViewContainer<ListView> (Test.ListView.IsGroupingEnabled, new ListView ());
-			InitializeElement (isGroupingEnabledContainer.View);
+			var isGroupingEnabledContainer = new StateViewContainer<ListView>(Test.ListView.IsGroupingEnabled, new ListView());
+			InitializeElement(isGroupingEnabledContainer.View);
 			isGroupingEnabledContainer.View.ItemsSource = viewModel.CategorizedEmployees;
 			isGroupingEnabledContainer.View.IsGroupingEnabled = true;
 			isGroupingEnabledContainer.StateChangeButton.Clicked += (sender, args) => isGroupingEnabledContainer.View.IsGroupingEnabled = !isGroupingEnabledContainer.View.IsGroupingEnabled;
 
 
-			var itemAppearingContainer = new EventViewContainer<ListView> (Test.ListView.ItemAppearing, new ListView ());
-			InitializeElement (itemAppearingContainer.View);
-			itemAppearingContainer.View.ItemAppearing += (sender, args) => itemAppearingContainer.EventFired ();
+			var itemAppearingContainer = new EventViewContainer<ListView>(Test.ListView.ItemAppearing, new ListView());
+			InitializeElement(itemAppearingContainer.View);
+			itemAppearingContainer.View.ItemAppearing += (sender, args) => itemAppearingContainer.EventFired();
 
-			var itemDisappearingContainer = new EventViewContainer<ListView> (Test.ListView.ItemDisappearing, new ListView ());
-			InitializeElement (itemDisappearingContainer.View);
-			itemDisappearingContainer.View.ItemDisappearing += (sender, args) => itemDisappearingContainer.EventFired ();
+			var itemDisappearingContainer = new EventViewContainer<ListView>(Test.ListView.ItemDisappearing, new ListView());
+			InitializeElement(itemDisappearingContainer.View);
+			itemDisappearingContainer.View.ItemDisappearing += (sender, args) => itemDisappearingContainer.EventFired();
 
-			var itemSelectedContainer = new EventViewContainer<ListView> (Test.ListView.ItemSelected, new ListView ());
-			InitializeElement (itemSelectedContainer.View);
-			itemSelectedContainer.View.ItemSelected += (sender, args) => itemSelectedContainer.EventFired ();
+			var itemSelectedContainer = new EventViewContainer<ListView>(Test.ListView.ItemSelected, new ListView());
+			InitializeElement(itemSelectedContainer.View);
+			itemSelectedContainer.View.ItemSelected += (sender, args) => itemSelectedContainer.EventFired();
 
-			var itemTappedContainer = new EventViewContainer<ListView> (Test.ListView.ItemTapped, new ListView ());
-			InitializeElement (itemTappedContainer.View);
-			itemTappedContainer.View.ItemTapped += (sender, args) => itemTappedContainer.EventFired ();
+			var itemTappedContainer = new EventViewContainer<ListView>(Test.ListView.ItemTapped, new ListView());
+			InitializeElement(itemTappedContainer.View);
+			itemTappedContainer.View.ItemTapped += (sender, args) => itemTappedContainer.EventFired();
 
 			// TODO
-			var rowHeightContainer = new ViewContainer<ListView> (Test.ListView.RowHeight, new ListView ());
-			InitializeElement (rowHeightContainer.View);
+			var rowHeightContainer = new ViewContainer<ListView>(Test.ListView.RowHeight, new ListView());
+			InitializeElement(rowHeightContainer.View);
 
-			var selectedItemContainer = new ViewContainer<ListView> (Test.ListView.SelectedItem, new ListView ());
-			InitializeElement (selectedItemContainer.View);
+			var selectedItemContainer = new ViewContainer<ListView>(Test.ListView.SelectedItem, new ListView());
+			InitializeElement(selectedItemContainer.View);
 			selectedItemContainer.View.SelectedItem = viewModel.Employees[2];
 
-			Add (groupDisplayBindingContainer);
-			Add (groupHeaderTemplateContainer);
-			Add (groupShortNameContainer);
-			Add (hasUnevenRowsContainer);
-			Add (isGroupingEnabledContainer);
-			Add (itemAppearingContainer);
-			Add (itemDisappearingContainer);
-			Add (itemSelectedContainer);
-			Add (itemTappedContainer);
-			Add (rowHeightContainer);
-			Add (selectedItemContainer);
+			var fastScrollItemContainer = new ViewContainer<ListView>(Test.ListView.FastScroll, new ListView());
+			InitializeElement(fastScrollItemContainer.View);
+			fastScrollItemContainer.View.On<Android>().SetIsFastScrollEnabled(true);
+			fastScrollItemContainer.View.ItemsSource = viewModel.CategorizedEmployees;
+
+			Add(groupDisplayBindingContainer);
+			Add(groupHeaderTemplateContainer);
+			Add(groupShortNameContainer);
+			Add(hasUnevenRowsContainer);
+			Add(isGroupingEnabledContainer);
+			Add(itemAppearingContainer);
+			Add(itemDisappearingContainer);
+			Add(itemSelectedContainer);
+			Add(itemTappedContainer);
+			Add(rowHeightContainer);
+			Add(selectedItemContainer);
+			Add(fastScrollItemContainer);
 		}
 	}
 }

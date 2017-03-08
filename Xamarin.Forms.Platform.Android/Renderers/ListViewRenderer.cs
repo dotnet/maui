@@ -6,6 +6,8 @@ using Android.Views;
 using AListView = Android.Widget.ListView;
 using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
+using System;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -147,6 +149,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateHeader();
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
+				UpdateFastScrollEnabled();
 			}
 		}
 
@@ -166,6 +169,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsRefreshing();
 			else if (e.PropertyName == ListView.SeparatorColorProperty.PropertyName || e.PropertyName == ListView.SeparatorVisibilityProperty.PropertyName)
 				_adapter.NotifyDataSetChanged();
+			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabledProperty.PropertyName)
+				UpdateFastScrollEnabled();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -326,6 +331,12 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_refresh != null)
 				_refresh.Enabled = Element.IsPullToRefreshEnabled && (Element as IListViewController).RefreshAllowed;
+		}
+
+		void UpdateFastScrollEnabled()
+		{
+			if (Control != null)
+				Control.FastScrollEnabled = Element.OnThisPlatform().IsFastScrollEnabled();
 		}
 
 		internal class Container : ViewGroup
