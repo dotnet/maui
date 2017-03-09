@@ -4,6 +4,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class EnumerableExtensions
 	{
 		public static IEnumerable<T> GetGesturesFor<T>(this IEnumerable<IGestureRecognizer> gestures, Func<T, bool> predicate = null) where T : GestureRecognizer
@@ -32,7 +33,6 @@ namespace Xamarin.Forms.Internals
 			yield return item;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void ForEach<T>(this IEnumerable<T> enumeration, Action<T> action)
 		{
 			foreach (T item in enumeration)
@@ -41,7 +41,6 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
 		{
 			if (enumerable == null)
@@ -59,7 +58,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
 		{
 			var i = 0;
@@ -74,7 +72,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IEnumerable<T> Prepend<T>(this IEnumerable<T> enumerable, T item)
 		{
 			yield return item;

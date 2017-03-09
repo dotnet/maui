@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Log
 	{
 		static Log()

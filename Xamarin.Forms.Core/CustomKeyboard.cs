@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class CustomKeyboard : Keyboard
 	{
 		internal CustomKeyboard(KeyboardFlags flags)
@@ -10,7 +11,6 @@ namespace Xamarin.Forms.Internals
 		}
 
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public KeyboardFlags Flags { get; private set; }
 	}
 }

@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NotifyCollectionChangedEventArgsEx : NotifyCollectionChangedEventArgs
 	{
 		public NotifyCollectionChangedEventArgsEx(int count, NotifyCollectionChangedAction action) : base(action)

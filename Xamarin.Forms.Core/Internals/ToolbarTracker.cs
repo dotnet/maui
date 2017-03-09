@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ToolbarTracker
 	{
 		int _masterDetails;

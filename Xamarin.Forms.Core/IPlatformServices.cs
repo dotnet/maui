@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -7,6 +8,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IPlatformServices
 	{
 		bool IsInvokeRequired { get; }

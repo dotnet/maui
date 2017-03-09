@@ -8,18 +8,17 @@ using System.Text;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Performance
 	{
 		static readonly Dictionary<string, Stats> Statistics = new Dictionary<string, Stats>();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Conditional("PERF")]
 		public static void Clear()
 		{
 			Statistics.Clear();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void Count(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
 			string id = path + ":" + member + (tag != null ? "-" + tag : string.Empty);
@@ -31,14 +30,12 @@ namespace Xamarin.Forms.Internals
 			stats.CallCount++;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Conditional("PERF")]
 		public static void DumpStats()
 		{
 			Debug.WriteLine(GetStats());
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static string GetStats()
 		{
 			var b = new StringBuilder();
@@ -54,7 +51,6 @@ namespace Xamarin.Forms.Internals
 			return b.ToString();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Conditional("PERF")]
 		public static void Start(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{
@@ -68,7 +64,6 @@ namespace Xamarin.Forms.Internals
 			stats.StartTimes.Push(Stopwatch.GetTimestamp());
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Conditional("PERF")]
 		public static void Stop(string tag = null, [CallerFilePath] string path = null, [CallerMemberName] string member = null)
 		{

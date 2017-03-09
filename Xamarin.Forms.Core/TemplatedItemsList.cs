@@ -11,14 +11,13 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Internals
 {
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class TemplatedItemsList<TView, TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
 												where TView : BindableObject, IItemsView<TItem>
 												where TItem : BindableObject
 	{
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty ShortNameProperty = BindableProperty.Create("ShortName", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
 		static readonly BindablePropertyKey HeaderContentPropertyKey = BindableProperty.CreateReadOnly("HeaderContent", typeof(TItem), typeof(TemplatedItemsList<TView, TItem>), null);
@@ -96,7 +95,6 @@ namespace Xamarin.Forms.Internals
 			remove { PropertyChanged -= value; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public BindingBase GroupDisplayBinding
 		{
 			get { return _groupDisplayBinding; }
@@ -107,7 +105,6 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public DataTemplate GroupHeaderTemplate
 		{
 			get
@@ -129,10 +126,8 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public BindableProperty GroupHeaderTemplateProperty { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public BindingBase GroupShortNameBinding
 		{
 			get { return _groupShortNameBinding; }
@@ -143,49 +138,40 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TItem HeaderContent
 		{
 			get { return (TItem)GetValue(HeaderContentPropertyKey.BindableProperty); }
 			private set { SetValue(HeaderContentPropertyKey, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsGroupingEnabled
 		{
 			get { return (IsGroupingEnabledProperty != null) && (bool)_itemsView.GetValue(IsGroupingEnabledProperty); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public BindableProperty IsGroupingEnabledProperty { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEnumerable ItemsSource
 		{
 			get { return ListProxy.ProxiedEnumerable; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string Name
 		{
 			get { return (string)GetValue(NameProperty); }
 			set { SetValue(NameProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TemplatedItemsList<TView, TItem> Parent { get; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public BindableProperty ProgressiveLoadingProperty { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string ShortName
 		{
 			get { return (string)GetValue(ShortNameProperty); }
 			set { SetValue(ShortNameProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IReadOnlyList<string> ShortNames
 		{
 			get { return _shortNames; }
@@ -339,22 +325,18 @@ namespace Xamarin.Forms.Internals
 			throw new NotSupportedException();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int Count
 		{
 			get { return ListProxy.Count; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TItem this[int index]
 		{
 			get { return GetOrCreateContent(index, ListProxy[index]); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetDescendantCount()
 		{
 			if (!IsGroupingEnabled)
@@ -370,7 +352,6 @@ namespace Xamarin.Forms.Internals
 			return count;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group)
 		{
 			if (group == null)
@@ -385,7 +366,6 @@ namespace Xamarin.Forms.Internals
 			return index;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetGlobalIndexOfGroup(object item)
 		{
 			var count = 0;
@@ -402,7 +382,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetGlobalIndexOfItem(object item)
 		{
 			if (!IsGroupingEnabled)
@@ -426,7 +405,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetGlobalIndexOfItem(object group, object item)
 		{
 			if (!IsGroupingEnabled)
@@ -453,7 +431,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Tuple<int, int> GetGroupAndIndexOfItem(object item)
 		{
 			if (item == null)
@@ -477,7 +454,6 @@ namespace Xamarin.Forms.Internals
 			return new Tuple<int, int>(-1, -1);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Tuple<int, int> GetGroupAndIndexOfItem(object group, object item)
 		{
 			if (!IsGroupingEnabled)
@@ -506,7 +482,6 @@ namespace Xamarin.Forms.Internals
 			return new Tuple<int, int>(-1, -1);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int GetGroupIndexFromGlobal(int globalIndex, out int leftOver)
 		{
 			leftOver = 0;
@@ -532,7 +507,6 @@ namespace Xamarin.Forms.Internals
 			return -1;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event NotifyCollectionChangedEventHandler GroupedCollectionChanged;
 		event NotifyCollectionChangedEventHandler ITemplatedItemsList<TItem>.GroupedCollectionChanged
 		{
@@ -540,7 +514,6 @@ namespace Xamarin.Forms.Internals
 			remove { GroupedCollectionChanged -= value; }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public int IndexOf(TItem item)
 		{
 			TemplatedItemsList<TView, TItem> group = GetGroup(item);
@@ -550,7 +523,6 @@ namespace Xamarin.Forms.Internals
 			return GetIndex(item);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TItem CreateContent(int index, object item, bool insert = false)
 		{
 			TItem content = ItemTemplate != null ? (TItem)ItemTemplate.CreateContent(item, _itemsView) : _itemsView.CreateDefault(item);

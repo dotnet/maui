@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public interface IFontElement
 	{
 		//note to implementor: implement the properties publicly

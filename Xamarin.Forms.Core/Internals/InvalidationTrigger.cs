@@ -1,8 +1,10 @@
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Internals
 {
 	[Flags]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public enum InvalidationTrigger
 	{
 		Undefined = 0,

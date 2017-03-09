@@ -13,6 +13,11 @@
     <BaseTypeName>Xamarin.Forms.Internals.TypedBindingBase</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <typeparam name="TSource">To be added.</typeparam>
     <typeparam name="TProperty">To be added.</typeparam>

@@ -9,6 +9,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
 		IValueConverter _converter;
@@ -53,6 +54,7 @@ namespace Xamarin.Forms.Internals
 		}
 	}
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
 	{
 		readonly Func<TSource, TProperty> _getter;

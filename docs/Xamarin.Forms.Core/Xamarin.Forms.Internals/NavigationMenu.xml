@@ -18,6 +18,9 @@
   </Interfaces>
   <Attributes>
     <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+    <Attribute>
       <AttributeName>Xamarin.Forms.RenderWith(typeof(Xamarin.Forms.Platform._NavigationMenuRenderer))</AttributeName>
     </Attribute>
   </Attributes>

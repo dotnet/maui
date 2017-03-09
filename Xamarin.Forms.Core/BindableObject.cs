@@ -648,6 +648,7 @@ namespace Xamarin.Forms
 	namespace Internals
 	{
 		[Flags]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public enum SetValueFlags
 		{
 			None = 0,

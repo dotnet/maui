@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class Registrar<TRegistrable> where TRegistrable : class
 	{
 		readonly Dictionary<Type, Type> _handlers = new Dictionary<Type, Type>();
@@ -26,13 +27,11 @@ namespace Xamarin.Forms.Internals
 			return (TRegistrable)handler;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TOut GetHandler<TOut>(Type type) where TOut : TRegistrable
 		{
 			return (TOut)GetHandler(type);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Type GetHandlerType(Type viewType)
 		{
 			Type type;
@@ -88,6 +87,7 @@ namespace Xamarin.Forms.Internals
 		}
 	}
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class Registrar
 	{
 		static Registrar()
@@ -97,13 +97,10 @@ namespace Xamarin.Forms.Internals
 
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Registrar<IRegisterable> Registered { get; }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void RegisterAll(Type[] attrTypes)
 		{
 			Assembly[] assemblies = Device.GetAssemblies();

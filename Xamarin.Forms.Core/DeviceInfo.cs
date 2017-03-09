@@ -4,12 +4,12 @@ using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class DeviceInfo : INotifyPropertyChanged, IDisposable
 	{
 		DeviceOrientation _currentOrientation;
 		bool _disposed;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public DeviceOrientation CurrentOrientation
 		{
 			get { return _currentOrientation; }

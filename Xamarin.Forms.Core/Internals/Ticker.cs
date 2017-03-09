@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class Ticker
 	{
 		static Ticker s_ticker;
@@ -23,7 +24,6 @@ namespace Xamarin.Forms.Internals
 			_stopwatch = new Stopwatch();
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetDefault(Ticker ticker) => Default = ticker;
 		public static Ticker Default
 		{

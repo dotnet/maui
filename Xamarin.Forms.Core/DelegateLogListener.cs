@@ -1,8 +1,10 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class DelegateLogListener : LogListener
 	{
 		readonly Action<string, string> _log;

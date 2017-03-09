@@ -6,33 +6,29 @@ using System.Reflection;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class ReflectionExtensions
 	{
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static FieldInfo GetField(this Type type, Func<FieldInfo, bool> predicate)
 		{
 			return GetFields(type).FirstOrDefault(predicate);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static FieldInfo GetField(this Type type, string name)
 		{
 			return type.GetField(fi => fi.Name == name);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IEnumerable<FieldInfo> GetFields(this Type type)
 		{
 			return GetParts(type, i => i.DeclaredFields);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IEnumerable<PropertyInfo> GetProperties(this Type type)
 		{
 			return GetParts(type, ti => ti.DeclaredProperties);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static PropertyInfo GetProperty(this Type type, string name)
 		{
 			Type t = type;
@@ -49,13 +45,11 @@ namespace Xamarin.Forms.Internals
 			return null;
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsAssignableFrom(this Type self, Type c)
 		{
 			return self.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInstanceOfType(this Type self, object o)
 		{
 			return self.GetTypeInfo().IsAssignableFrom(o.GetType().GetTypeInfo());

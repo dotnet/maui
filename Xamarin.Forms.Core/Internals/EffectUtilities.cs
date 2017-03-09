@@ -1,5 +1,8 @@
+using System.ComponentModel;
+
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class EffectUtilities
 	{
 		public static void RegisterEffectControlProvider(IEffectControlProvider self, IElementController oldElement, IElementController newElement)

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class ActionSheetArguments
 	{
 		public ActionSheetArguments(string title, string cancel, string destruction, IEnumerable<string> buttons)

@@ -10,6 +10,9 @@
   </Base>
   <Attributes>
     <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+    <Attribute>
       <AttributeName>System.Flags</AttributeName>
     </Attribute>
   </Attributes>

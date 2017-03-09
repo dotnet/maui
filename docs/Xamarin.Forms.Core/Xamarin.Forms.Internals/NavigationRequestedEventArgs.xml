@@ -9,6 +9,11 @@
     <BaseTypeName>Xamarin.Forms.NavigationEventArgs</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>

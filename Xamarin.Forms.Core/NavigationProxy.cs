@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Internals
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationProxy : INavigation
 	{
 		INavigation _inner;
@@ -13,7 +14,6 @@ namespace Xamarin.Forms.Internals
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public INavigation Inner
 		{
 			get { return _inner; }
@@ -54,67 +54,56 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void InsertPageBefore(Page page, Page before)
 		{
 			OnInsertPageBefore(page, before);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IReadOnlyList<Page> ModalStack
 		{
 			get { return GetModalStack(); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return GetNavigationStack(); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task<Page> PopAsync()
 		{
 			return OnPopAsync(true);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task<Page> PopAsync(bool animated)
 		{
 			return OnPopAsync(animated);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task<Page> PopModalAsync()
 		{
 			return OnPopModal(true);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task<Page> PopModalAsync(bool animated)
 		{
 			return OnPopModal(animated);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PopToRootAsync()
 		{
 			return OnPopToRootAsync(true);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PopToRootAsync(bool animated)
 		{
 			return OnPopToRootAsync(animated);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PushAsync(Page root)
 		{
 			return PushAsync(root, true);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PushAsync(Page root, bool animated)
 		{
 			if (root.RealParent != null)
@@ -122,13 +111,11 @@ namespace Xamarin.Forms.Internals
 			return OnPushAsync(root, animated);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PushModalAsync(Page modal)
 		{
 			return PushModalAsync(modal, true);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task PushModalAsync(Page modal, bool animated)
 		{
 			if (modal.RealParent != null)
@@ -136,7 +123,6 @@ namespace Xamarin.Forms.Internals
 			return OnPushModal(modal, animated);
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void RemovePage(Page page)
 		{
 			OnRemovePage(page);
