@@ -337,12 +337,11 @@ namespace Xamarin.Forms
 					return true;
 
 				Element parent = RealParent;
-				while (parent != null)
+				if (parent != null)
 				{
 					var visualElement = parent as VisualElement;
 					if (visualElement != null && visualElement.IsInNativeLayout)
 						return true;
-					parent = parent.RealParent;
 				}
 
 				return false;

@@ -275,6 +275,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (Element.IsInNativeLayout)
 				return;
+
 			var parent = (FrameworkElement)Container.Parent;
 			parent?.InvalidateMeasure();
 			Container.InvalidateMeasure();

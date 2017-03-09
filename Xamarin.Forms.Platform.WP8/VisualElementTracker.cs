@@ -275,6 +275,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		{
 			if (Model.IsInNativeLayout)
 				return;
+
 			var parent = (FrameworkElement)Element.Parent;
 			parent?.InvalidateMeasure();
 			Element.InvalidateMeasure();
