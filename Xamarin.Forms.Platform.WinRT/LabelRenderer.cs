@@ -35,6 +35,8 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		bool _fontApplied;
 		bool _isInitiallyDefault;
+		SizeRequest _perfectSize;
+		bool _perfectSizeValid;
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{
@@ -59,6 +61,29 @@ namespace Xamarin.Forms.Platform.WinRT
 			rect.Width = finalSize.Width;
 			Control.Arrange(rect);
 			return finalSize;
+		}
+
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (!_perfectSizeValid)
+			{
+				_perfectSize = base.GetDesiredSize(double.PositiveInfinity, double.PositiveInfinity);
+				_perfectSize.Minimum = new Size(Math.Min(10, _perfectSize.Request.Width), _perfectSize.Request.Height);
+				_perfectSizeValid = true;
+			}
+
+			if (widthConstraint >= _perfectSize.Request.Width && heightConstraint >= _perfectSize.Request.Height)
+				return _perfectSize;
+
+			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
+			result.Minimum = new Size(Math.Min(10, result.Request.Width), result.Request.Height);
+			if (Element.LineBreakMode != LineBreakMode.NoWrap)
+			{
+				if (result.Request.Width > widthConstraint || Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap)
+					result.Request = new Size(Math.Max(result.Minimum.Width, widthConstraint), result.Request.Height);
+			}
+
+			return result;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)
@@ -100,6 +125,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateAlign(TextBlock textBlock)
 		{
+			_perfectSizeValid = false;
+
 			if (textBlock == null)
 				return;
 
@@ -129,6 +156,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateFont(TextBlock textBlock)
 		{
+			_perfectSizeValid = false;
+
 			if (textBlock == null)
 				return;
 
@@ -146,6 +175,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateLineBreakMode(TextBlock textBlock)
 		{
+			_perfectSizeValid = false;
+
 			if (textBlock == null)
 				return;
 
@@ -164,6 +195,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					textBlock.TextWrapping = TextWrapping.Wrap;
 					break;
 				case LineBreakMode.HeadTruncation:
+					// TODO: This truncates at the end.
 					textBlock.TextTrimming = TextTrimming.WordEllipsis;
 					textBlock.TextWrapping = TextWrapping.NoWrap;
 					break;
@@ -172,6 +204,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					textBlock.TextWrapping = TextWrapping.NoWrap;
 					break;
 				case LineBreakMode.MiddleTruncation:
+					// TODO: This truncates at the end.
 					textBlock.TextTrimming = TextTrimming.WordEllipsis;
 					textBlock.TextWrapping = TextWrapping.NoWrap;
 					break;
@@ -182,6 +215,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateText(TextBlock textBlock)
 		{
+			_perfectSizeValid = false;
+
 			if (textBlock == null)
 				return;
 
