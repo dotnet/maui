@@ -87,7 +87,8 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.LayoutSubviews();
 
-			if (_scroller == null || (_scroller != null && _scroller.Frame.Width == ContentView.Bounds.Width))
+			// Leave room for 1px of play because the border is 1 or .5px and must be accounted for.
+			if (_scroller == null || (_scroller.Frame.Width == ContentView.Bounds.Width && Math.Abs(_scroller.Frame.Height - ContentView.Bounds.Height) < 1))
 				return;
 
 			Update(_tableView, _cell, ContentCell);
