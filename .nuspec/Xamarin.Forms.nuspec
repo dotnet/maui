@@ -183,6 +183,7 @@
     <file src="..\Xamarin.Forms.Platform.WinRT\bin\$Configuration$\StepperControl.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT" />
 
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\PhoneResources.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
+    <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\FormsProgressBarStyle.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\Resources.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\SearchBox.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
@@ -207,6 +208,7 @@
     <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\Resources.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
     <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\TabletResources.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
     <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
+    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\FormsProgressBarStyle.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\Xamarin.Forms.Core.dll" target="lib\win81" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\win81" />
@@ -222,6 +224,7 @@
     <file src="..\Xamarin.Forms.Platform.UAP\Properties\Xamarin.Forms.Platform.UAP.rd.xml" target="lib\uap10.0\Xamarin.Forms.Platform.UAP\Properties" />
 
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsCommandBarStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
+    <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsProgressBarStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Resources.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />

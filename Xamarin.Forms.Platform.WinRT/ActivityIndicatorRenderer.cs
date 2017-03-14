@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.UWP
 namespace Xamarin.Forms.Platform.WinRT
 #endif
 {
-	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, Windows.UI.Xaml.Controls.ProgressBar>
+	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, FormsProgressBar>
 	{
 #if !WINDOWS_UWP
 		Windows.UI.Xaml.Media.SolidColorBrush _resourceBrush;
@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new Windows.UI.Xaml.Controls.ProgressBar { IsIndeterminate = true });
+					SetNativeControl(new FormsProgressBar { IsIndeterminate = true, Style = Windows.UI.Xaml.Application.Current.Resources["FormsProgressBarStyle"] as Windows.UI.Xaml.Style });
 
 					Control.Loaded += OnControlLoaded;
 				}
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName)
+			if (e.PropertyName == ActivityIndicator.IsRunningProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName)
 				UpdateIsRunning();
 			else if (e.PropertyName == ActivityIndicator.ColorProperty.PropertyName)
 				UpdateColor();
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateIsRunning()
 		{
-			Opacity = Element.IsRunning ? 1 : 0;
+			Control.ElementOpacity = Element.IsRunning ? Element.Opacity : 0;
 		}
 	}
 }

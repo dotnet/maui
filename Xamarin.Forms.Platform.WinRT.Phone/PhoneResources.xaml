@@ -6,6 +6,7 @@
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="Resources.xaml" />
 		<ResourceDictionary Source="FormsTextBoxStyle.xaml" />
+        <ResourceDictionary Source="FormsProgressBarStyle.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 
 	<!-- Fixes button sizing, including background outside the border -->

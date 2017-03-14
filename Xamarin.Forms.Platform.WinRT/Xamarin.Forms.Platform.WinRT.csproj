@@ -102,6 +102,7 @@
     <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="FileImageSourcePathConverter.cs" />
     <Compile Include="FormsButton.cs" />
+    <Compile Include="FormsProgressBar.cs" />
     <Compile Include="FrameRenderer.cs" />
     <Compile Include="ImageConverter.cs" />
     <Compile Include="KeyboardConverter.cs" />
