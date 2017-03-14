@@ -1,194 +1,202 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
-	[Preserve (AllMembers = true)]
-	public class CellForceUpdateSizeGalleryPage : TabbedPage
+	[Preserve(AllMembers = true)]
+	public class CellForceUpdateSizeGalleryPage : NavigationPage
 	{
-		public class ViewCellPage : ContentPage
+		[Preserve(AllMembers = true)]
+		public class MyViewCell : ViewCell
 		{
-			[Preserve (AllMembers = true)]
-			public class MyViewCell : ViewCell
+			Label _Label = new Label();
+			VariableHeightItem _DataItem => BindingContext as VariableHeightItem;
+
+			public MyViewCell()
 			{
-				public MyViewCell ()
-				{
-					var image = new Image {
-						Source = ImageSource.FromFile ("crimson.jpg"),
-						BackgroundColor = Color.Gray,
-						HeightRequest = 50,
-						VerticalOptions = LayoutOptions.Fill,
-						HorizontalOptions = LayoutOptions.Fill
-					};
+				_Label.SetBinding(Label.TextProperty, nameof(_DataItem.Text));
+				_Label.PropertyChanged += UpdateCell;
 
-					var button = new Button { Text = "+" };
-					button.Clicked += (object sender, EventArgs e) =>
-					{
-						image.HeightRequest = image.Height + 100;
-						ForceUpdateSize ();
-					};
-
-					Tapped += (object sender, EventArgs e) =>
-					{
-						image.HeightRequest = image.Height - 100;
-						ForceUpdateSize ();
-					};
-
-					View = new StackLayout { Orientation = StackOrientation.Horizontal, Children = { image, button } };
-				}
+				View = new StackLayout { Children = { _Label } };
 			}
 
-			public ViewCellPage ()
+			void UpdateCell(object sender, PropertyChangedEventArgs e)
 			{
-				var listview = new ListView {
-					HasUnevenRows = true,
-				};
-				var items = Enumerable.Range (0, 10);
-				listview.ItemsSource = items;
-				listview.ItemTemplate = new DataTemplate (typeof (MyViewCell));
-				Content = listview;
-				Title = "View Cell";
+				if (e.PropertyName == Label.TextProperty.PropertyName)
+				{
+					ForceUpdateSize();
+				}
 			}
 		}
 
-		public class ImageCellPage : ContentPage
+		[Preserve(AllMembers = true)]
+		public class MyImageCell : ImageCell
 		{
-			[Preserve (AllMembers = true)]
-			public class MyImageCell : ImageCell
+			VariableHeightItem _DataItem => BindingContext as VariableHeightItem;
+
+			public MyImageCell()
 			{
-				public MyImageCell ()
-				{
-					ImageSource = ImageSource.FromFile ("crimson.jpg");
-					Height = 20;
-					Command = new Command (() =>
-					{
-						Height += 20;
-						ForceUpdateSize ();
-					});
-				}
+				SetBinding(TextProperty, new Binding(nameof(_DataItem.Text)));
+				PropertyChanged += UpdateCell;
 			}
-			public ImageCellPage ()
+
+			void UpdateCell(object sender, PropertyChangedEventArgs e)
 			{
-				var listview = new ListView {
-					HasUnevenRows = true,
-				};
-				var items = Enumerable.Range (0, 10);
-				listview.ItemsSource = items;
-				listview.ItemTemplate = new DataTemplate (typeof (MyImageCell));
-				Content = listview;
-				Title = "Image Cell";
+				if (e.PropertyName == ImageCell.TextProperty.PropertyName)
+				{
+					(sender as ImageCell).Height += 100;
+					ForceUpdateSize();
+				}
 			}
 		}
 
-		public class TextCellPage : ContentPage
+		[Preserve(AllMembers = true)]
+		public class MyTextCell : TextCell
 		{
-			[Preserve (AllMembers = true)]
-			public class MyTextCell : TextCell
+			VariableHeightItem _DataItem => BindingContext as VariableHeightItem;
+
+			public MyTextCell()
 			{
-				public MyTextCell ()
-				{
-					Text = "I am a TextCell, short and stout.";
-					Height = 20;
-					Command = new Command (() =>
-					{
-						Height += 20;
-						ForceUpdateSize ();
-					});
-				}
+				SetBinding(TextProperty, new Binding(nameof(_DataItem.Text)));
+				PropertyChanged += UpdateCell;
 			}
 
-			public TextCellPage ()
+			void UpdateCell(object sender, PropertyChangedEventArgs e)
 			{
-				var listview = new ListView {
-					HasUnevenRows = true,
-				};
-				var items = Enumerable.Range (0, 10);
-				listview.ItemsSource = items;
-				listview.ItemTemplate = new DataTemplate (typeof (MyTextCell));
-				Content = listview;
-				Title = "Text Cell";
+				if (e.PropertyName == TextCell.TextProperty.PropertyName)
+				{
+					(sender as TextCell).Height += 100;
+					ForceUpdateSize();
+				}
 			}
 		}
 
-		public class EntryCellPage : ContentPage
+		[Preserve(AllMembers = true)]
+		public class MyEntryCell : EntryCell
 		{
-			[Preserve (AllMembers = true)]
-			public class MyEntryCell : EntryCell
+			VariableHeightItem _DataItem => BindingContext as VariableHeightItem;
+
+			public MyEntryCell()
 			{
-				public MyEntryCell ()
-				{
-					Text = "I am an EntryCell, short and stout.";
-					Height = 20;
-					Tapped += (object sender, EventArgs e) =>
-					{
-						Height += 20;
-						ForceUpdateSize ();
-					};
-					Completed += (object sender, EventArgs e) =>
-					{
-						Height -= 20;
-						ForceUpdateSize ();
-					};
-				}
+				SetBinding(TextProperty, new Binding(nameof(_DataItem.Text)));
+				PropertyChanged += UpdateCell;
 			}
 
-			public EntryCellPage ()
+			void UpdateCell(object sender, PropertyChangedEventArgs e)
 			{
-				var listview = new ListView {
-					HasUnevenRows = true,
-				};
-				var items = Enumerable.Range (0, 10);
-				listview.ItemsSource = items;
-				listview.ItemTemplate = new DataTemplate (typeof (MyEntryCell));
-				Content = listview;
-				Title = "Entry Cell";
+				if (e.PropertyName == EntryCell.TextProperty.PropertyName)
+				{
+					(sender as EntryCell).Height += 100;
+					ForceUpdateSize();
+				}
 			}
 		}
 
-		public class SwitchCellPage : ContentPage
+		[Preserve(AllMembers = true)]
+		public class MySwitchCell : SwitchCell
 		{
-			[Preserve (AllMembers = true)]
-			public class MySwitchCell : SwitchCell
+			VariableHeightItem _DataItem => BindingContext as VariableHeightItem;
+
+			public MySwitchCell()
 			{
-				public MySwitchCell ()
-				{
-					Text = "I am a SwitchCell, short and stout.";
-					Height = 20;
-					Tapped += (object sender, EventArgs e) =>
-					{
-						Height += 20;
-						ForceUpdateSize ();
-					};
-					OnChanged += (object sender, ToggledEventArgs e) =>
-					{
-						Height -= 20;
-						ForceUpdateSize ();
-					};
-				}
+				SetBinding(TextProperty, new Binding(nameof(_DataItem.Text)));
+				PropertyChanged += UpdateCell;
 			}
 
-			public SwitchCellPage ()
+			void UpdateCell(object sender, PropertyChangedEventArgs e)
 			{
-				var listview = new ListView {
-					HasUnevenRows = true,
-				};
-				var items = Enumerable.Range (0, 10);
-				listview.ItemsSource = items;
-				listview.ItemTemplate = new DataTemplate (typeof (MySwitchCell));
-				Content = listview;
-				Title = "Switch Cell";
+				if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
+				{
+					(sender as SwitchCell).Height += 100;
+					ForceUpdateSize();
+				}
 			}
 		}
 
-		public CellForceUpdateSizeGalleryPage ()
+		public class MyPage<T> : ContentPage where T : Cell
 		{
-			Children.Add (new ViewCellPage ());
-			Children.Add (new ImageCellPage ());
-			Children.Add (new TextCellPage ());
-			Children.Add (new EntryCellPage ());
-			Children.Add (new SwitchCellPage ());
+			private List<VariableHeightItem> _DataSource;
+			public MyPage(ListViewCachingStrategy strategy)
+			{
+				_DataSource = Enumerable.Range(0, 10).Select(n => new VariableHeightItem()).ToList();
+				var listView = new ListView(strategy) { HasUnevenRows = true, ItemsSource = _DataSource, ItemTemplate = new DataTemplate(typeof(T)) };
+				var button = new Button { Text = "Click me" };
+				button.Clicked += async (sender, e) =>
+				{
+					for (int i = 0; i < _DataSource.Count; i++)
+					{
+						var target = _DataSource[i];
+
+						if (Device.RuntimePlatform == Device.iOS)
+						{
+							if (typeof(T) == typeof(MyViewCell))
+								target.Text = "I am an exceptionally long string that should cause the label to wrap, thus increasing the size of the cell such that the entirety of the string is readable by human eyes. Hurrah.";
+							else if (strategy == ListViewCachingStrategy.RetainElement)
+								target.Text = "Look, I'm taller!";
+							else
+								target.Text = $"I'm only taller in {ListViewCachingStrategy.RetainElement} mode. :(";
+						}
+						else
+						{
+							if (typeof(T) == typeof(MyViewCell))
+								target.Text = "I am an exceptionally long string that should cause the label to wrap, thus increasing the size of the cell such that the entirety of the string is readable by human eyes. Hurrah.";
+							else
+								target.Text = "Look, I'm taller!";
+						}
+
+						await Task.Delay(1000);
+					}
+				};
+
+				Content = new StackLayout { Children = { button, listView } };
+				Title = $"{typeof(T).Name} {strategy}";
+			}
+		}
+
+		class VariableHeightItem : ViewModelBase
+		{
+			public VariableHeightItem()
+			{
+				Text = "This is a line of text.";
+			}
+
+			public string Text
+			{
+				get { return GetProperty<string>(); }
+				set { SetProperty(value); }
+			}
+		}
+
+		public CellForceUpdateSizeGalleryPage()
+		{
+			var stackLayout = new StackLayout();
+
+			stackLayout.Children.Add(GetButton<MyViewCell>(ListViewCachingStrategy.RetainElement));
+			stackLayout.Children.Add(GetButton<MyImageCell>(ListViewCachingStrategy.RetainElement));
+			stackLayout.Children.Add(GetButton<MyEntryCell>(ListViewCachingStrategy.RetainElement));
+			stackLayout.Children.Add(GetButton<MyTextCell>(ListViewCachingStrategy.RetainElement));
+			stackLayout.Children.Add(GetButton<MySwitchCell>(ListViewCachingStrategy.RetainElement));
+
+			stackLayout.Children.Add(GetButton<MyViewCell>(ListViewCachingStrategy.RecycleElement));
+			stackLayout.Children.Add(GetButton<MyImageCell>(ListViewCachingStrategy.RecycleElement));
+			stackLayout.Children.Add(GetButton<MyEntryCell>(ListViewCachingStrategy.RecycleElement));
+			stackLayout.Children.Add(GetButton<MyTextCell>(ListViewCachingStrategy.RecycleElement));
+			stackLayout.Children.Add(GetButton<MySwitchCell>(ListViewCachingStrategy.RecycleElement));
+
+			Navigation.PushAsync(new ContentPage { Content = stackLayout });
+		}
+
+		Button GetButton<T>(ListViewCachingStrategy strategy) where T : Cell
+		{
+			return new Button
+			{
+				Text = $"{typeof(T).Name} {strategy}",
+				Command = new Command(async () => await Navigation.PushAsync(new MyPage<T>(strategy)))
+			};
 		}
 	}
 }
