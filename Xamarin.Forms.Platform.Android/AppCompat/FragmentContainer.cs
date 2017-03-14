@@ -120,28 +120,35 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public override void OnPause()
 		{
-			var shouldSendEvent = Application.Current.OnThisPlatform().GetSendDisappearingEventOnPause();
+			bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendDisappearingEventOnPause();
 			if (shouldSendEvent)
-			{
-				Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
-				if (currentPage == null || currentPage == PageController)
-					PageController?.SendDisappearing();
-			}
+				SendLifecycleEvent(false);
 
 			base.OnPause();
 		}
 
 		public override void OnResume()
 		{
-			var shouldSendEvent = Application.Current.OnThisPlatform().GetSendAppearingEventOnResume();
+			bool shouldSendEvent = Application.Current.OnThisPlatform().GetSendAppearingEventOnResume();
 			if (shouldSendEvent)
-			{
-				Page currentPage = (Application.Current.MainPage as IPageContainer<Page>)?.CurrentPage;
-				if (UserVisibleHint && (currentPage == null || currentPage == PageController))
-					PageController?.SendAppearing();
-			}
+				SendLifecycleEvent(true);
 
 			base.OnResume();
+		}
+
+		void SendLifecycleEvent(bool isAppearing)
+		{
+			var masterDetailPage = Application.Current.MainPage as MasterDetailPage;
+			var pageContainer = (masterDetailPage != null ? masterDetailPage.Detail : Application.Current.MainPage) as IPageContainer<Page>;
+			Page currentPage = pageContainer?.CurrentPage;
+
+			if(!(currentPage == null || currentPage == PageController))
+				return;
+
+			if (isAppearing && UserVisibleHint)
+				PageController?.SendAppearing();
+			else if(!isAppearing)
+				PageController?.SendDisappearing();
 		}
 	}
 }
