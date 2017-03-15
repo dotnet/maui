@@ -74,7 +74,8 @@ namespace Xamarin.Forms.Platform.WinRT
 					var cell = item as Cell;
 					if (cell != null)
 					{
-						Controller.Model.RowSelected(cell);
+						if (cell.IsEnabled)
+							Controller.Model.RowSelected(cell);
 						break;
 					}
 				}
