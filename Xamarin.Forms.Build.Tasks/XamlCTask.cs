@@ -176,7 +176,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 						Logger.LogString(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
 						Exception e;
-						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, out e)) {
+						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, resource.Name, out e)) {
 							success = false;
 							Logger.LogLine(2, "failed.");
 							(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
@@ -194,6 +194,8 @@ namespace Xamarin.Forms.Build.Tasks
 							initComp.Body.Optimize();
 							Logger.LogLine(2, "done");
 						}
+
+						Logger.LogLine(2, "");
 
 						if (outputGeneratedILAsCode)
 							Logger.LogLine(2, "   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
@@ -238,45 +240,59 @@ namespace Xamarin.Forms.Build.Tasks
 			return success;
 		}
 
-		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, out Exception exception)
+		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, string resourceId, out Exception exception)
 		{
 			try {
 				var body = new MethodBody(initComp);
+				var module = body.Method.Module;
 				var il = body.GetILProcessor();
 				il.Emit(OpCodes.Nop);
 
 				if (initCompRuntime != null) {
 					// Generating branching code for the Previewer
-					//	IL_0007:  call class [mscorlib]System.Func`2<class [mscorlib]System.Type,string> class [Xamarin.Forms.Xaml.Internals]Xamarin.Forms.Xaml.XamlLoader::get_XamlFileProvider()
-					//  IL_000c:  brfalse IL_0031
-					//  IL_0011:  call class [mscorlib]System.Func`2<class [mscorlib]System.Type,string> class [Xamarin.Forms.Xaml.Internals]Xamarin.Forms.Xaml.XamlLoader::get_XamlFileProvider()
-					//  IL_0016:  ldarg.0 
-					//  IL_0017:  call instance class [mscorlib]System.Type object::GetType()
-					//  IL_001c:  callvirt instance !1 class [mscorlib]System.Func`2<class [mscorlib]System.Type, string>::Invoke(!0)
-					//  IL_0021:  brfalse IL_0031
-					//  IL_0026:  ldarg.0 
-					//  IL_0027:  call instance void class Xamarin.Forms.Xaml.UnitTests.XamlLoaderGetXamlForTypeTests::__InitComponentRuntime()
-					//  IL_002c:  ret
-					//  IL_0031:  nop
 
+					//First using the ResourceLoader
 					var nop = Instruction.Create(OpCodes.Nop);
+					var getResourceProvider = module.ImportReference(module.ImportReference(typeof(Internals.ResourceLoader))
+							 .Resolve()
+							 .Properties.FirstOrDefault(pd => pd.Name == "ResourceProvider")
+							 .GetMethod);
+					il.Emit(OpCodes.Call, getResourceProvider);
+					il.Emit(OpCodes.Brfalse, nop);
+					il.Emit(OpCodes.Call, getResourceProvider);
+					il.Emit(OpCodes.Ldstr, resourceId);
+					var func = module.ImportReference(module.ImportReference(typeof(Func<string, string>))
+							 .Resolve()
+							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
+					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<string, string>)), module);
+					il.Emit(OpCodes.Callvirt, func);
+					il.Emit(OpCodes.Brfalse, nop);
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Call, initCompRuntime);
+					il.Emit(OpCodes.Ret);
+					il.Append(nop);
 
-					var getXamlFileProvider = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(Xamarin.Forms.Xaml.Internals.XamlLoader))
+					//Or using the deprecated XamlLoader
+					nop = Instruction.Create(OpCodes.Nop);
+#pragma warning disable 0618
+					var getXamlFileProvider = module.ImportReference(module.ImportReference(typeof(Xaml.Internals.XamlLoader))
 							.Resolve()
 							.Properties.FirstOrDefault(pd => pd.Name == "XamlFileProvider")
 							.GetMethod);
+#pragma warning restore 0618
+
 					il.Emit(OpCodes.Call, getXamlFileProvider);
 					il.Emit(OpCodes.Brfalse, nop);
 					il.Emit(OpCodes.Call, getXamlFileProvider);
 					il.Emit(OpCodes.Ldarg_0);
-					var getType = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(object))
+					var getType = module.ImportReference(module.ImportReference(typeof(object))
 									  .Resolve()
 									  .Methods.FirstOrDefault(md => md.Name == "GetType"));
 					il.Emit(OpCodes.Call, getType);
-					var func = body.Method.Module.ImportReference(body.Method.Module.ImportReference(typeof(Func<Type, string>))
+					func = module.ImportReference(module.ImportReference(typeof(Func<Type, string>))
 							 .Resolve()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(body.Method.Module.ImportReference(typeof(Func<Type, string>)), body.Method.Module);
+					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<Type, string>)), module);
 					il.Emit(OpCodes.Callvirt, func);
 					il.Emit(OpCodes.Brfalse, nop);
 					il.Emit(OpCodes.Ldarg_0);
@@ -285,7 +301,7 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Append(nop);
 				}
 
-				var visitorContext = new ILContext(il, body, body.Method.Module);
+				var visitorContext = new ILContext(il, body, module);
 
 				rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null);
 				rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);

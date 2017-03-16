@@ -305,8 +305,8 @@ namespace Xamarin.Forms.Xaml
 				return;
 
 			xpe = xpe ?? new XamlParseException($"Cannot assign property \"{localName}\": Property does not exists, or is not assignable, or mismatching type between value and property", lineInfo);
-			if (context.DoNotThrowOnExceptions)
-				System.Diagnostics.Debug.WriteLine(xpe.Message);
+			if (context.ExceptionHandler != null)
+				context.ExceptionHandler(xpe);
 			else
 				throw xpe;
 		}

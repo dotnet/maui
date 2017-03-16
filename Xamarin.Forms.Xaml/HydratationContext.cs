@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal class HydratationContext
+	class HydratationContext
 	{
 		public HydratationContext()
 		{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Xaml
 
 		public HydratationContext ParentContext { get; set; }
 
-		public bool DoNotThrowOnExceptions { get; set; }
+		public Action<Exception> ExceptionHandler { get; set; }
 
 		public object RootElement { get; set; }
 	}

@@ -25,7 +25,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[SetUp]
 			public void SetUp()
 			{
+#pragma warning disable 0618
 				Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = null;
+#pragma warning restore 0618
+
 			}
 
 			[TestCase(false)]
@@ -35,7 +38,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new XamlLoaderGetXamlForTypeTests(useCompiledXaml);
 				Assert.That(layout.Content, Is.TypeOf<Button>());
 
+#pragma warning disable 0618
 				Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = (t) => {
+#pragma warning restore 0618
 					if (t == typeof(XamlLoaderGetXamlForTypeTests))
 						return @"
 	<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
