@@ -15,8 +15,10 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Tells the XAML parser and compiler that they may ignore supplied service providers in methods and constructors in the attributed class.</summary>
+    <remarks>
+      <para>Developers should note that this attribute does not guarantee that the parser will not pass <see langword="null" /> instead of a supplied service provider. It only allows that they may do so.</para>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -28,7 +30,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.Xaml.AcceptEmptyServiceProviderAttribute" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

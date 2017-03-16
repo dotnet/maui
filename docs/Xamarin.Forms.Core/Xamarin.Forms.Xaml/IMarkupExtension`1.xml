@@ -20,7 +20,7 @@
   </Interfaces>
   <Docs>
     <typeparam name="T">To be added.</typeparam>
-    <summary>To be added.</summary>
+    <summary>Provides a base class for XAML markup extension implementations</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -40,8 +40,8 @@
       </Parameters>
       <Docs>
         <param name="serviceProvider">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>When implemented in a derived class, returns an object that is provided as the value of the target property for this markup extension.</summary>
+        <returns>The object that is provided as the value of the target property for this markup extension.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
