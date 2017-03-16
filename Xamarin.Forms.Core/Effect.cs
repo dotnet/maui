@@ -22,7 +22,7 @@ namespace Xamarin.Forms
 		{
 			Type effectType;
 			Effect result = null;
-			if (Registrar.Effects.TryGetValue(name, out effectType))
+			if (Internals.Registrar.Effects.TryGetValue(name, out effectType))
 			{
 				result = (Effect)Activator.CreateInstance(effectType);
 			}

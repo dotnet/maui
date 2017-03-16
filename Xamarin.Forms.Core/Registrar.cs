@@ -4,7 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-
+namespace Xamarin.Forms
+{
+	// Previewer uses reflection to bind to this method; Removal or modification of visibility will break previewer.
+	internal static class Registrar
+	{
+		internal static void RegisterAll(Type[] attrTypes) => Internals.Registrar.RegisterAll(attrTypes);
+	}
+}
 namespace Xamarin.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]

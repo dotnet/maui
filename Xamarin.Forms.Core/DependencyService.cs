@@ -70,9 +70,9 @@ namespace Xamarin.Forms
 			}
 
 			Assembly[] assemblies = Device.GetAssemblies();
-			if (Registrar.ExtraAssemblies != null)
+			if (Internals.Registrar.ExtraAssemblies != null)
 			{
-				assemblies = assemblies.Union(Registrar.ExtraAssemblies).ToArray();
+				assemblies = assemblies.Union(Internals.Registrar.ExtraAssemblies).ToArray();
 			}
 
 			Initialize(assemblies);
