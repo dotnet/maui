@@ -13,6 +13,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			View.BackgroundColor = UIColor.White;
 			View.AddSubview(modal.ViewController.View);
+			TransitioningDelegate = modal.ViewController.TransitioningDelegate;
 			AddChildViewController(modal.ViewController);
 
 			modal.ViewController.DidMoveToParentViewController(this);
