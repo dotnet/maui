@@ -525,7 +525,7 @@ namespace Xamarin.Forms
 		{
 			foreach (Effect effect in _effects)
 			{
-				effect.ClearEffect();
+				effect?.ClearEffect();
 			}
 		}
 
