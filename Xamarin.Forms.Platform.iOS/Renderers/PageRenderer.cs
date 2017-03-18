@@ -229,12 +229,7 @@ namespace Xamarin.Forms.Platform.iOS
 					return false;
 				case (StatusBarHiddenMode.Default):
 				default:
-					{
-						if (Device.info.CurrentOrientation.IsLandscape())
-							return true;
-						else
-							return false;
-					}
+					return base.PrefersStatusBarHidden();
 			}
 		}
 
