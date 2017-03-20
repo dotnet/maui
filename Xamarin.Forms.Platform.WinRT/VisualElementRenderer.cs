@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 #if WINDOWS_UWP
 
@@ -25,6 +26,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool _disposed;
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
+		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 
 		public TNativeElement Control { get; private set; }
 
@@ -477,11 +479,40 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		internal void UnfocusControl(Control control)
 		{
-			if (control == null || !control.IsEnabled)
+			if (control == null || !control.IsEnabled || !control.IsTabStop)
 				return;
 
-			control.IsEnabled = false;
-			control.IsEnabled = true;
+			// "Unfocusing" doesn't really make sense on Windows; for accessibility reasons,
+			// something always has focus. So forcing the unfocusing of a control would normally 
+			// just move focus to the next control, or leave it on the current control if no other
+			// focus targets are available. This is what happens if you use the "disable/enable"
+			// hack. What we *can* do is set the focus to the Page which contains Control;
+			// this will cause Control to lose focus without shifting focus to, say, the next Entry 
+
+			if (_containingPage == null)
+			{
+				// Work our way up the tree to find the containing Page
+				DependencyObject parent = Control as Control;
+				while (parent != null && !(parent is Windows.UI.Xaml.Controls.Page))
+				{
+					parent = VisualTreeHelper.GetParent(parent);
+				}
+				_containingPage = parent as Windows.UI.Xaml.Controls.Page;
+			}
+
+			if (_containingPage != null)
+			{
+				// Cache the tabstop setting
+				var wasTabStop = _containingPage.IsTabStop;
+
+				// Controls can only get focus if they're a tabstop
+				_containingPage.IsTabStop = true;
+				_containingPage.Focus(FocusState.Programmatic);
+
+				// Restore the tabstop setting; that may cause the Page to lose focus,
+				// but it won't restore the focus to Control
+				_containingPage.IsTabStop = wasTabStop;
+			}
 		}
 
 		void OnControlGotFocus(object sender, RoutedEventArgs args)
