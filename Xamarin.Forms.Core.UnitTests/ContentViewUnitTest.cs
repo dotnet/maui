@@ -388,6 +388,21 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual ("Foo", child.BindingContext);
 		}
-	}
 
+        [Test]
+        public void ContentView_should_have_the_InternalChildren_correctly_when_Content_changed()
+        {
+            var sut = new ContentView();
+            IList<Element> internalChildren = ((IControlTemplated)sut).InternalChildren;
+            internalChildren.Add(new VisualElement());
+            internalChildren.Add(new VisualElement());
+            internalChildren.Add(new VisualElement());
+
+            var expected = new View();
+            sut.Content = expected;
+
+            Assert.AreEqual(1, internalChildren.Count);
+            Assert.AreSame(expected, internalChildren[0]);
+        }
+    }
 }
