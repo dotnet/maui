@@ -47,8 +47,8 @@ namespace Xamarin.Forms.Maps.WinRT
 				{
 					SetNativeControl(new MapControl());
 					Control.MapServiceToken = FormsMaps.AuthenticationToken;
-					Control.ZoomLevelChanged += (s, a) => UpdateVisibleRegion();
-					Control.CenterChanged += (s, a) => UpdateVisibleRegion();
+					Control.ZoomLevelChanged += async (s, a) => await UpdateVisibleRegion();
+					Control.CenterChanged += async (s, a) => await UpdateVisibleRegion();
 				}
 
 				MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", async (s, a) => await MoveToRegion(a), mapModel);
@@ -62,9 +62,11 @@ namespace Xamarin.Forms.Maps.WinRT
 				if (mapModel.Pins.Any())
 					LoadPins();
 
-				await UpdateIsShowingUser();
+                		if (Control == null) return;
+
 				await Control.Dispatcher.RunIdleAsync(async (i) => await MoveToRegion(mapModel.LastMoveToRegion, MapAnimationKind.None));
-            }
+				await UpdateIsShowingUser();
+            		}
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -162,7 +164,8 @@ namespace Xamarin.Forms.Maps.WinRT
 
 		async Task UpdateIsShowingUser(bool moveToLocation = true)
 		{
-			
+			if (Control == null || Element == null) return;
+
 			if (Element.IsShowingUser)
 			{
 				var myGeolocator = new Geolocator();
@@ -173,6 +176,8 @@ namespace Xamarin.Forms.Maps.WinRT
 					if (userPosition?.Coordinate != null)
 						LoadUserPosition(userPosition.Coordinate, moveToLocation);
 				}
+
+				if (Control == null || Element == null) return;
 
 				if (_timer == null)
 				{
@@ -186,7 +191,7 @@ namespace Xamarin.Forms.Maps.WinRT
 			}
 			else if (_userPositionCircle != null && Control.Children.Contains(_userPositionCircle))
 			{
-				_timer?.Stop();
+				_timer.Stop();
 				Control.Children.Remove(_userPositionCircle);
 			}
 		}
@@ -207,7 +212,7 @@ namespace Xamarin.Forms.Maps.WinRT
 			await Control.TrySetViewBoundsAsync(boundingBox, null, animation);
 		}
 
-		void UpdateVisibleRegion()
+		async Task UpdateVisibleRegion()
 		{
 			if (Control == null || Element == null)
 				return;
@@ -224,7 +229,10 @@ namespace Xamarin.Forms.Maps.WinRT
 					var center = new Position(boundingBox.Center.Latitude, boundingBox.Center.Longitude);
 					var latitudeDelta = Math.Abs(nw.Position.Latitude - se.Position.Latitude);
 					var longitudeDelta = Math.Abs(nw.Position.Longitude - se.Position.Longitude);
-					Element.VisibleRegion = new MapSpan(center, latitudeDelta, longitudeDelta);
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+					    Element.VisibleRegion = new MapSpan(center, latitudeDelta, longitudeDelta);
+                    });
 				}
             }
 			catch (Exception)
@@ -235,6 +243,8 @@ namespace Xamarin.Forms.Maps.WinRT
 
 		void LoadUserPosition(Geocoordinate userCoordinate, bool center)
 		{
+			if (Control == null || Element == null) return;
+
 			var userPosition = new BasicGeoposition
 			{
 				Latitude = userCoordinate.Point.Position.Latitude,
