@@ -160,6 +160,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BrokenNativeControl.cs" />
+    <Compile Include="CustomRenderer40251.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <None Include="app.config" />

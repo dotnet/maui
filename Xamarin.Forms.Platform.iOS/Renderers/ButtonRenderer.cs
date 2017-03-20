@@ -23,6 +23,8 @@ namespace Xamarin.Forms.Platform.iOS
 		// but under iOS that suggestion won't work
 		readonly nfloat _minimumButtonHeight = 44; // Apple docs
 
+		static readonly UIControlState[] s_controlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
+
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			var result = base.SizeThatFits(size);
@@ -54,9 +56,11 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UIButton(UIButtonType.RoundedRect));
+					SetNativeControl(new UIButton(UIButtonType.System));
 
 					Debug.Assert(Control != null, "Control != null");
+
+					SetControlPropertiesFromProxy();
 
 					_buttonTextColorDefaultNormal = Control.TitleColor(UIControlState.Normal);
 					_buttonTextColorDefaultHighlighted = Control.TitleColor(UIControlState.Highlighted);
@@ -89,7 +93,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == Button.ImageProperty.PropertyName)
 				UpdateImage();
 		}
-
+    
 		protected override void SetAccessibilityLabel()
 		{
 			// If we have not specified an AccessibilityLabel and the AccessibiltyLabel is current bound to the Title,
@@ -103,6 +107,16 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			base.SetAccessibilityLabel();
+		}
+		
+		void SetControlPropertiesFromProxy()
+		{
+			foreach (UIControlState uiControlState in s_controlStates)
+			{
+				Control.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // if new values are null, old values are preserved.
+				Control.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				Control.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+			}
 		}
 
 		void OnButtonTouchUpInside(object sender, EventArgs eventArgs)
@@ -198,9 +212,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void ClearEdgeInsets(UIButton button)
 		{
 			if (button == null)
-			{
 				return;
-			}
 
 			Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
 			Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
@@ -210,9 +222,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void ComputeEdgeInsets(UIButton button, Button.ButtonContentLayout layout)
 		{
 			if (button?.ImageView?.Image == null || string.IsNullOrEmpty(button.TitleLabel?.Text))
-			{
 				return;
-			}
 
 			var position = layout.Position;
 			var spacing = (nfloat)(layout.Spacing / 2);
