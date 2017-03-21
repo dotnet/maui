@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using UIKit;
 using Xamarin.Forms.Internals;
 using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
@@ -385,13 +386,13 @@ namespace Xamarin.Forms.Platform.iOS
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);
 		}
 
-		void SetTabBarItem(IVisualElementRenderer renderer)
+		async void SetTabBarItem(IVisualElementRenderer renderer)
 		{
 			var page = renderer.Element as Page;
 			if(page == null)
 				throw new InvalidCastException($"{nameof(renderer)} must be a {nameof(Page)} renderer.");
 
-			var icons = GetIcon(page);
+			var icons = await GetIcon(page);
 			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
 			{
 				Tag = Tabbed.Children.IndexOf(page),
@@ -408,11 +409,12 @@ namespace Xamarin.Forms.Platform.iOS
 		/// A tuple containing as item1: the unselected version of the icon, item2: the selected version of the icon (item2 can be null),
 		/// or null if no icon should be set.
 		/// </returns>
-		protected virtual Tuple<UIImage, UIImage> GetIcon(Page page)
+		protected virtual async Task<Tuple<UIImage, UIImage>> GetIcon(Page page)
 		{
-		    if (!string.IsNullOrEmpty(page.Icon))
+		    if (!string.IsNullOrEmpty(page.Icon?.File))
 		    {
-		        var icon = new UIImage(page.Icon);
+				var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(page.Icon.GetType());
+				var icon = await source.LoadImageAsync(page.Icon);
 		        return Tuple.Create(icon, (UIImage)null);
 		    }
 		

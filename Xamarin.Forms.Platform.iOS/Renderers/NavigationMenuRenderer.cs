@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (target != null)
 				{
 					cell.Name = target.Title;
-					cell.Icon = target.Icon;
+					cell.Icon = target.Icon?.File;
 					cell.Selected = () => MenuController.SendTargetSelected(target);
 				}
 				else

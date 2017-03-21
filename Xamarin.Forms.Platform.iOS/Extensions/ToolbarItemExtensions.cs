@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.iOS
 				_forceName = forceName;
 				_item = item;
 
-				if (!string.IsNullOrEmpty(item.Icon) && !forceName)
+				if (!string.IsNullOrEmpty(item.Icon?.File) && !forceName)
 					UpdateIconAndStyle();
 				else
 					UpdateTextAndStyle();
@@ -52,14 +52,14 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateIsEnabled();
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 				{
-					if (string.IsNullOrEmpty(_item.Icon) || _forceName)
+					if (string.IsNullOrEmpty(_item.Icon?.File) || _forceName)
 						UpdateTextAndStyle();
 				}
 				else if (e.PropertyName == MenuItem.IconProperty.PropertyName)
 				{
 					if (!_forceName)
 					{
-						if (!string.IsNullOrEmpty(_item.Icon))
+						if (!string.IsNullOrEmpty(_item.Icon?.File))
 							UpdateIconAndStyle();
 						else
 							UpdateTextAndStyle();
@@ -67,9 +67,10 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 			}
 
-			void UpdateIconAndStyle()
+			async void UpdateIconAndStyle()
 			{
-				var image = UIImage.FromBundle(_item.Icon);
+				var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(_item.Icon.GetType());
+				var image = await source.LoadImageAsync(_item.Icon);
 				Image = image;
 				Style = UIBarButtonItemStyle.Plain;
 			}
@@ -123,9 +124,15 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateIsEnabled();
 			}
 
-			void UpdateIcon()
+			async void UpdateIcon()
 			{
-				((SecondaryToolbarItemContent)CustomView).Image = string.IsNullOrEmpty(_item.Icon) ? null : new UIImage(_item.Icon);
+				UIImage image = null;
+				if (!string.IsNullOrEmpty(_item.Icon?.File))
+				{
+					var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(_item.Icon.GetType());
+					image = await source.LoadImageAsync(_item.Icon);
+				}
+				((SecondaryToolbarItemContent)CustomView).Image = image;
 			}
 
 			void UpdateIsEnabled()

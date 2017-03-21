@@ -349,12 +349,11 @@ namespace Xamarin.Forms.Platform.iOS
 			//var pack = Platform.GetRenderer (view).ViewController;
 
 			var titleIcon = NavigationPage.GetTitleIcon(page);
-			if (!string.IsNullOrEmpty(titleIcon))
+			if (!string.IsNullOrEmpty(titleIcon?.File))
 			{
 				try
 				{
-					//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-					pack.NavigationItem.TitleView = new UIImageView(new UIImage(titleIcon));
+					setTitleImage(pack,titleIcon);
 				}
 				catch
 				{
@@ -374,6 +373,14 @@ namespace Xamarin.Forms.Platform.iOS
 			pageRenderer.ViewController.DidMoveToParentViewController(pack);
 
 			return pack;
+		}
+
+		async void setTitleImage(ParentingViewController pack, FileImageSource titleIcon)
+		{
+			var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(titleIcon.GetType());
+			var image = await source.LoadImageAsync(titleIcon);
+			//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
+			pack.NavigationItem.TitleView = new UIImageView(image);
 		}
 
 		void FindParentMasterDetail()
@@ -652,7 +659,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
-		internal static void SetMasterLeftBarButton(UIViewController containerController, MasterDetailPage masterDetailPage)
+		internal static async void SetMasterLeftBarButton(UIViewController containerController, MasterDetailPage masterDetailPage)
 		{
 			if (!masterDetailPage.ShouldShowToolbarButton())
 			{
@@ -667,7 +674,10 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(new UIImage(masterDetailPage.Master.Icon), UIBarButtonItemStyle.Plain, handler);
+
+					var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(masterDetailPage.Master.Icon.GetType());
+					var icon = await source.LoadImageAsync(masterDetailPage.Master.Icon);
+					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, handler);
 				}
 				catch (Exception)
 				{
