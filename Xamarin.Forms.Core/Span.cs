@@ -8,24 +8,68 @@ namespace Xamarin.Forms
 	[ContentProperty("Text")]
 	public sealed class Span : INotifyPropertyChanged, IFontElement
 	{
+		class BindableSpan : BindableObject, IFontElement
+		{
+			Span _span;
+			public BindableSpan(Span span)
+			{
+				_span = span;
+			}
+
+			public Font Font {
+				get { return (Font)GetValue(FontElement.FontProperty); }
+				set { SetValue(FontElement.FontProperty, value); }
+			}
+
+			public FontAttributes FontAttributes {
+				get { return (FontAttributes)GetValue(FontElement.FontAttributesProperty); }
+				set { SetValue(FontElement.FontAttributesProperty, value); }
+			}
+
+			public string FontFamily {
+				get { return (string)GetValue(FontElement.FontFamilyProperty); }
+				set { SetValue(FontElement.FontFamilyProperty, value); }
+			}
+
+			[TypeConverter(typeof(FontSizeConverter))]
+			public double FontSize {
+				get { return (double)GetValue(FontElement.FontSizeProperty); }
+				set { SetValue(FontElement.FontSizeProperty, value); }
+			}
+
+			double IFontElement.FontSizeDefaultValueCreator() =>
+				((IFontElement)_span).FontSizeDefaultValueCreator();
+
+			public void OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+				((IFontElement)_span).OnFontAttributesChanged(oldValue, newValue);
+
+			public void OnFontChanged(Font oldValue, Font newValue) =>
+				((IFontElement)_span).OnFontChanged(oldValue, newValue);
+
+			public void OnFontFamilyChanged(string oldValue, string newValue) =>
+				((IFontElement)_span).OnFontFamilyChanged(oldValue, newValue);
+
+			public void OnFontSizeChanged(double oldValue, double newValue) =>
+				((IFontElement)_span).OnFontSizeChanged(oldValue, newValue);
+
+			protected override void OnPropertyChanged(string propertyName = null)
+			{
+				base.OnPropertyChanged(propertyName);
+				_span.OnPropertyChanged(propertyName);
+			}
+		}
+
 		Color _backgroundColor;
 
-		Font _font;
-		FontAttributes _fontAttributes;
-		string _fontFamily;
-		double _fontSize;
+		BindableObject _fontElement;
 
 		Color _foregroundColor;
-		bool _inUpdate; // if we ever make this thread safe we need to move to a mutex
 
 		string _text;
 
 		public Span()
 		{
-			_fontFamily = null;
-			_fontAttributes = FontAttributes.None;
-			_fontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label), true);
-			_font = Font.SystemFontOfSize(_fontSize);
+			_fontElement = new BindableSpan(this);
 		}
 
 		public Color BackgroundColor
@@ -41,17 +85,9 @@ namespace Xamarin.Forms
 		}
 
 		[Obsolete("Please use the Font properties directly. Obsolete in 1.3.0")]
-		public Font Font
-		{
-			get { return _font; }
-			set
-			{
-				if (_font == value)
-					return;
-				_font = value;
-				OnPropertyChanged();
-				UpdateFontPropertiesFromStruct();
-			}
+		public Font Font {
+			get { return (Font)_fontElement.GetValue(FontElement.FontProperty); }
+			set { _fontElement.SetValue(FontElement.FontProperty, value); }
 		}
 
 		public Color ForegroundColor
@@ -80,46 +116,21 @@ namespace Xamarin.Forms
 
 		public FontAttributes FontAttributes
 		{
-			get { return _fontAttributes; }
-			set
-			{
-				if (_fontAttributes == value)
-					return;
-				var oldValue = _fontAttributes;
-				_fontAttributes = value;
-				OnPropertyChanged();
-
-				((IFontElement)this).OnFontAttributesChanged(oldValue, value);
-			}
+			get { return (FontAttributes)_fontElement.GetValue(FontElement.FontAttributesProperty); }
+			set { _fontElement.SetValue(FontElement.FontAttributesProperty, value); }
 		}
 
 		public string FontFamily
 		{
-			get { return _fontFamily; }
-			set
-			{
-				if (_fontFamily == value)
-					return;
-				var oldValue = _fontFamily;
-				_fontFamily = value;
-				OnPropertyChanged();
-				((IFontElement)this).OnFontFamilyChanged(oldValue, value);
-			}
+			get { return (string)_fontElement.GetValue(FontElement.FontFamilyProperty); }
+			set { _fontElement.SetValue(FontElement.FontFamilyProperty, value); }
 		}
 
 		[TypeConverter(typeof(FontSizeConverter))]
 		public double FontSize
 		{
-			get { return _fontSize; }
-			set
-			{
-				if (_fontSize == value)
-					return;
-				var oldValue = _fontSize;
-				_fontSize = value;
-				OnPropertyChanged();
-				((IFontElement)this).OnFontSizeChanged(oldValue, value);
-			}
+			get { return (double)_fontElement.GetValue(FontElement.FontSizeProperty); }
+			set { _fontElement.SetValue(FontElement.FontSizeProperty, value); }
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -131,71 +142,23 @@ namespace Xamarin.Forms
 				handler(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-#pragma warning disable 0618 // retain until Span.Font removed
-		void UpdateFontPropertiesFromStruct()
-		{
-			if (_inUpdate)
-				return;
-			_inUpdate = true;
-
-			if (Font == Font.Default)
-			{
-				FontSize = Device.GetNamedSize(NamedSize.Default, typeof(Label), true);
-				FontFamily = null;
-				FontAttributes = FontAttributes.None;
-			}
-			else
-			{
-				FontSize = Font.UseNamedSize ? Device.GetNamedSize(Font.NamedSize, typeof(Label), true) : Font.FontSize;
-				FontFamily = Font.FontFamily;
-				FontAttributes = Font.FontAttributes;
-			}
-
-			_inUpdate = false;
-		}
-
-		void OnSomeFontPropertyChanged()
-		{
-			{
-				if (_inUpdate)
-					return;
-				_inUpdate = true;
-
-				if (FontFamily != null)
-					Font = Font.OfSize(FontFamily, FontSize).WithAttributes(FontAttributes);
-				else
-					Font = Font.SystemFontOfSize(FontSize).WithAttributes(FontAttributes);
-
-				_inUpdate = false;
-			}
-		}
-
-#pragma warning restore
-
-		//Those 4 methods are never used as Span isn't a BO, and doesn't compose with FontElement
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
 		{
-			throw new NotImplementedException();
 		}
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
 		{
-			throw new NotImplementedException();
 		}
 
-		double IFontElement.FontSizeDefaultValueCreator()
-		{
-			throw new NotImplementedException();
-		}
+		double IFontElement.FontSizeDefaultValueCreator() =>
+			Device.GetNamedSize(NamedSize.Default, new Label());
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
 		{
-			throw new NotImplementedException();
 		}
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
 		{
-			throw new NotImplementedException();
 		}
 	}
 }
