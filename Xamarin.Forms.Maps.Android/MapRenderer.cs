@@ -16,7 +16,7 @@ using Math = System.Math;
 namespace Xamarin.Forms.Maps.Android
 {
 	public class MapRenderer : ViewRenderer<Map, MapView>,
-		GoogleMap.IOnCameraChangeListener
+		GoogleMap.IOnCameraChangeListener, IOnMapReadyCallback
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 
@@ -35,9 +35,8 @@ namespace Xamarin.Forms.Maps.Android
 
 		protected Map Map => Element;
 
-#pragma warning disable 618
-		protected GoogleMap NativeMap => Control.Map;
-#pragma warning restore 618
+		protected GoogleMap NativeMap;
+
 		internal static Bundle Bundle
 		{
 			set { s_bundle = value; }
@@ -81,7 +80,8 @@ namespace Xamarin.Forms.Maps.Android
  					NativeMap.SetOnCameraChangeListener(null);
  					NativeMap.InfoWindowClick -= MapOnMarkerClick;
  					NativeMap.Dispose();
-  				}		  				
+					NativeMap = null;
+				 }
 
 				Control?.OnDestroy();
 			}
@@ -107,32 +107,17 @@ namespace Xamarin.Forms.Maps.Android
 
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 
-#pragma warning disable 618
-				if (oldMapView.Map != null)
+				if (NativeMap != null)
 				{
-#pragma warning restore 618
-
-#pragma warning disable 618
-					oldMapView.Map.SetOnCameraChangeListener(null);
-#pragma warning restore 618
+					NativeMap.SetOnCameraChangeListener(null);
 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
+					NativeMap = null;
 				}
 
 				oldMapView.Dispose();
 			}
 
-			GoogleMap map = NativeMap;
-			if (map != null)
-			{
-				map.SetOnCameraChangeListener(this);
-				NativeMap.InfoWindowClick += MapOnMarkerClick;
-
-				map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-				map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
-				map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
-				map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = Map.IsShowingUser;
-				SetMapType();
-			}
+			Control.GetMapAsync(this);
 
 			MessagingCenter.Subscribe<Map, MapSpan>(this, MoveMessageName, OnMoveToRegionMessage, Map);
 
@@ -180,13 +165,19 @@ namespace Xamarin.Forms.Maps.Android
 
 			if (_init)
 			{
-				MoveToRegion(Element.LastMoveToRegion, false);
-				OnCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-				_init = false;
+				if (NativeMap != null)
+				{
+					MoveToRegion(Element.LastMoveToRegion, false);
+					OnCollectionChanged(Element.Pins, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+					_init = false;
+				}
 			}
 			else if (changed)
 			{
-				UpdateVisibleRegion(NativeMap.CameraPosition.Target);
+				if (NativeMap != null)
+				{
+					UpdateVisibleRegion(NativeMap.CameraPosition.Target);
+				}
 				MoveToRegion(Element.LastMoveToRegion, false);
 			}
 		}
@@ -371,6 +362,24 @@ namespace Xamarin.Forms.Maps.Android
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
 			Element.VisibleRegion = new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong);
+		}
+
+		void IOnMapReadyCallback.OnMapReady(GoogleMap map)
+		{
+			NativeMap = map;
+			if (map == null)
+			{
+				return;
+			}
+
+			map.SetOnCameraChangeListener(this);
+			map.InfoWindowClick += MapOnMarkerClick;
+
+			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
+			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
+			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+			map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = Map.IsShowingUser;
+			SetMapType();
 		}
 	}
 }
