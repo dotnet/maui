@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Application xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+	x:Class="Xamarin.Forms.Xaml.UnitTests.Bz53381App">
+	<Application.Resources>
+		<ResourceDictionary>
+			<Style TargetType="local:Bz53381">
+				<Setter Property="ControlTemplate">
+				<Setter.Value>
+					<ControlTemplate>
+						<StackLayout>
+							<Label Text="This is the control template. A green Grid and Label should be below." />
+							<ContentPresenter  />
+						</StackLayout>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+			</Style>
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>
