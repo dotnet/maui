@@ -30,16 +30,31 @@ namespace Xamarin.Forms.Platform.MacOS
 				_perfectSizeValid = true;
 			}
 
-			if (widthConstraint >= _perfectSize.Request.Width && heightConstraint >= _perfectSize.Request.Height)
+			var widthFits = widthConstraint >= _perfectSize.Request.Width;
+			var heightFits = heightConstraint >= _perfectSize.Request.Height;
+
+			if (widthFits && heightFits)
 				return _perfectSize;
 
 			var result = base.GetDesiredSize(widthConstraint, heightConstraint);
-			result.Minimum = new Size(Math.Min(10, result.Request.Width), result.Request.Height);
-			if (Element.LineBreakMode != LineBreakMode.NoWrap)
+			var tinyWidth = Math.Min(10, result.Request.Width);
+			result.Minimum = new Size(tinyWidth, result.Request.Height);
+
+			if (widthFits || Element.LineBreakMode == LineBreakMode.NoWrap)
+				return result;
+
+			bool containerIsNotInfinitelyWide = !double.IsInfinity(widthConstraint);
+
+			if (containerIsNotInfinitelyWide)
 			{
-				if (!double.IsInfinity(result.Request.Width) && !double.IsInfinity(widthConstraint))
-					if (result.Request.Width > widthConstraint || Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap)
-						result.Request = new Size(Math.Max(result.Minimum.Width, widthConstraint), result.Request.Height);
+				bool textCouldHaveWrapped = Element.LineBreakMode == LineBreakMode.WordWrap || Element.LineBreakMode == LineBreakMode.CharacterWrap;
+				bool textExceedsContainer = result.Request.Width > widthConstraint;
+
+				if (textExceedsContainer || textCouldHaveWrapped)
+				{
+					var expandedWidth = Math.Max(tinyWidth, widthConstraint);
+					result.Request = new Size(expandedWidth, result.Request.Height);
+				}
 			}
 
 			return result;
