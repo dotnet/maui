@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_dialog.SetCanceledOnTouchOutside(true);
 				_dialog.DismissEvent += (sender, args) =>
 				{
-					((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+					(Element as IElementController)?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 					_dialog.Dispose();
 					_dialog = null;
 				};
