@@ -903,6 +903,10 @@ namespace Xamarin.Forms.Build.Tasks
 			if (implicitOperator != null)
 				return true;
 
+			//as we're in the SetValue Scenario, we can accept value types, they'll be boxed
+			if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
+				return true;
+
 			return varValue.VariableType.InheritsFromOrImplements(bpTypeRef);
 		}
 
