@@ -25,6 +25,10 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		protected override void OnAttached()
 		{
 			Control.BackgroundColor = UIColor.Blue;
+
+			var childLabel = (Element as ScrollView)?.Content as Label;
+			if (childLabel != null)
+				childLabel.Text = "Success";
 		}
 
 		protected override void OnDetached()

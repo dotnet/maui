@@ -39,6 +39,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 		protected override void OnAttached ()
 		{
 			Control.SetBackgroundColor (global::Android.Graphics.Color.Aqua);
+
+			var childLabel = (Element as ScrollView)?.Content as Label;
+			if (childLabel != null)
+				childLabel.Text = "Success";
 		}
 
 		protected override void OnDetached ()
