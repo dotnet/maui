@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
-	public class UnevenListGallery : ContentPage
+    [Preserve(AllMembers = true)]
+    public class UnevenListGallery : ContentPage
 	{
-		public UnevenListGallery ()
+        public UnevenListGallery ()
 		{
 			Padding = new Thickness (0, 20, 0, 0);
 
@@ -67,7 +69,9 @@ For in that sleep of death, what dreams may come",
 			Content =  grd;
 		}
 
-		public class UnevenRowsCell : ViewCell
+
+        [Preserve(AllMembers = true)]
+        public class UnevenRowsCell : ViewCell
 		{
 			public UnevenRowsCell ()
 			{
