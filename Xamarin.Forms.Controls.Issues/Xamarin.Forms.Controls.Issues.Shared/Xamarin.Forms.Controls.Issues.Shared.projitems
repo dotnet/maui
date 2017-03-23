@@ -155,6 +155,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla43867.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla43735.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla43783.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44096.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44176.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44453.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51536.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44940.cs" />
@@ -170,6 +172,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45330.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44955.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45743.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46458.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46494.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44476.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46630.cs" />
@@ -187,6 +190,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52266.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53445.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34727.cs" />
@@ -196,7 +200,7 @@
       <DependentUpon>Bugzilla38416.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)FailImageSource.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)InputTransparentIssue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsInvokeRequiredRaceCondition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsPasswordToggleTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1023.cs" />

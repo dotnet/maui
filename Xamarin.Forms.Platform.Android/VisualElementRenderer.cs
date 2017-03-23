@@ -92,14 +92,20 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)
 		{
-			if (Element.InputTransparent && Element.IsEnabled)
-				return false;
+			if (!Element.IsEnabled || (Element.InputTransparent && Element.IsEnabled))
+				return true;
 
 			return base.OnInterceptTouchEvent(ev);
 		}
 
 		bool AView.IOnTouchListener.OnTouch(AView v, MotionEvent e)
 		{
+			if (!Element.IsEnabled)
+				return true;
+
+			if (Element.InputTransparent)
+				return false;
+
 			var handled = false;
 			if (_pinchGestureHandler.IsPinchSupported)
 			{
@@ -116,7 +122,11 @@ namespace Xamarin.Forms.Platform.Android
 				return handled;
 			}
 
-			return _gestureDetector.Value.OnTouchEvent(e) || handled;
+			// It's very important that the gesture detection happen first here
+			// if we check handled first, we might short-circuit and never check for tap/pan
+			handled = _gestureDetector.Value.OnTouchEvent(e) || handled;
+
+			return handled;
 		}
 
 		VisualElement IVisualElementRenderer.Element => Element;
@@ -191,8 +201,6 @@ namespace Xamarin.Forms.Platform.Android
 				SoundEffectsEnabled = false;
 			}
 
-			InputTransparent = Element.InputTransparent;
-
 			// must be updated AFTER SetOnClickListener is called
 			// SetOnClickListener implicitly calls Clickable = true
 			UpdateGestureRecognizers(true);
@@ -215,6 +223,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			SetContentDescription();
 			SetFocusable();
+			UpdateInputTransparent();
 
 			Performance.Stop();
 		}
@@ -305,14 +314,14 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
-			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
-				InputTransparent = Element.InputTransparent;
 			else if (e.PropertyName == Accessibility.HintProperty.PropertyName)
 				SetContentDescription();
 			else if (e.PropertyName == Accessibility.NameProperty.PropertyName)
 				SetContentDescription();
 			else if (e.PropertyName == Accessibility.IsInAccessibleTreeProperty.PropertyName)
 				SetFocusable();
+			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
+				UpdateInputTransparent();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -396,6 +405,11 @@ namespace Xamarin.Forms.Platform.Android
 				textView.Hint = _defaultHint;
 
 			return true;
+		}
+
+		void UpdateInputTransparent()
+		{
+			InputTransparent = Element.InputTransparent;
 		}
 
 		protected void SetPackager(VisualElementPackager packager)

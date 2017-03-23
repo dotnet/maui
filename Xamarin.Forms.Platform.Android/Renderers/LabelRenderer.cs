@@ -4,8 +4,8 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
 using Android.Util;
+using Android.Views;
 using Android.Widget;
-using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Platform.Android
 		Color _lastUpdateColor = Color.Default;
 		FormsTextView _view;
 		bool _wasFormatted;
+
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public LabelRenderer()
 		{
@@ -97,6 +99,8 @@ namespace Xamarin.Forms.Platform.Android
 				if (e.OldElement.HorizontalTextAlignment != e.NewElement.HorizontalTextAlignment || e.OldElement.VerticalTextAlignment != e.NewElement.VerticalTextAlignment)
 					UpdateGravity();
 			}
+
+			_motionEventHelper.UpdateElement(e.NewElement);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -216,6 +220,14 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			_lastSizeRequest = null;
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent);
 		}
 	}
 }

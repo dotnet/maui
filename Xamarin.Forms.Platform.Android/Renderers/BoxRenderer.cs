@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class BoxRenderer : VisualElementRenderer<BoxView>
 	{
-		bool _isInViewCell;
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public BoxRenderer()
 		{
@@ -16,26 +16,15 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (base.OnTouchEvent(e))
 				return true;
-			return !Element.InputTransparent && !_isInViewCell;
+
+			return _motionEventHelper.HandleMotionEvent(Parent);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
 		{
 			base.OnElementChanged(e);
 
-			if (e.NewElement != null)
-			{
-				var parent = e.NewElement.Parent;
-				while (parent != null)
-				{
-					if (parent is ViewCell)
-					{
-						_isInViewCell = true;
-						break;
-					}
-					parent = parent.Parent;
-				}
-			}
+			_motionEventHelper.UpdateElement(e.NewElement);
 
 			UpdateBackgroundColor();
 		}

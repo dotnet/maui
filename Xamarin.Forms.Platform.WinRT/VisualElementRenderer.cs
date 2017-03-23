@@ -540,6 +540,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			var control = Control as Control;
 			if (control != null)
 				control.IsEnabled = Element.IsEnabled;
+			else
+				IsHitTestVisible = Element.IsEnabled;
 		}
 
 		void UpdateTracker()

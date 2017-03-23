@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Views;
 using AImageView = Android.Widget.ImageView;
 using Xamarin.Forms.Internals;
 
@@ -11,8 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class ImageRenderer : ViewRenderer<Image, AImageView>
 	{
 		bool _isDisposed;
-
-		IElementController ElementController => Element as IElementController;
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public ImageRenderer()
 		{
@@ -43,6 +43,8 @@ namespace Xamarin.Forms.Platform.Android
 				var view = CreateNativeControl();
 				SetNativeControl(view);
 			}
+
+			_motionEventHelper.UpdateElement(e.NewElement);
 
 			UpdateBitmap(e.OldElement);
 			UpdateAspect();
@@ -116,6 +118,14 @@ namespace Xamarin.Forms.Platform.Android
 				((IImageController)Element).SetIsLoading(false);
 				((IVisualElementController)Element).NativeSizeChanged();
 			}
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent);
 		}
 	}
 }
