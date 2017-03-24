@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using UIKit;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -66,8 +67,6 @@ namespace Xamarin.Forms.Platform.iOS
 				((IScrollViewController)element).ScrollToRequested += OnScrollToRequested;
 				if (_packager == null)
 				{
-					DelaysContentTouches = true;
-
 					_packager = new VisualElementPackager(this);
 					_packager.Load();
 
@@ -84,6 +83,7 @@ namespace Xamarin.Forms.Platform.iOS
 					});
 				}
 
+				UpdateDelaysContentTouches();
 				UpdateContentSize();
 				UpdateBackgroundColor();
 
@@ -165,7 +165,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == ScrollView.ContentSizeProperty.PropertyName)
+			if (e.PropertyName == PlatformConfiguration.iOSSpecific.ScrollView.ShouldDelayContentTouchesProperty.PropertyName)
+				UpdateDelaysContentTouches();
+			else if (e.PropertyName == ScrollView.ContentSizeProperty.PropertyName)
 				UpdateContentSize();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
@@ -218,6 +220,11 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			if (!e.ShouldAnimate)
 				Controller.SendScrollFinished();
+		}
+
+		void UpdateDelaysContentTouches()
+		{
+			DelaysContentTouches = ((ScrollView)Element).OnThisPlatform().ShouldDelayContentTouches();
 		}
 
 		void UpdateBackgroundColor()

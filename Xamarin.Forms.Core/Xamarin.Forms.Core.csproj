@@ -102,6 +102,7 @@
     <Compile Include="PlatformConfiguration\iOSSpecific\BlurEffectStyle.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Entry.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\NavigationPage.cs" />
+    <Compile Include="PlatformConfiguration\iOSSpecific\ScrollView.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Picker.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\StatusBarTextColorMode.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Page.cs" />

@@ -131,6 +131,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41415.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41418.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41424.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41778.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41600.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41619.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42000.cs" />
