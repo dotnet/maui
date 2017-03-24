@@ -852,8 +852,16 @@ namespace Xamarin.Forms.Platform.Android
 				int actionbarId = _context.Resources.GetIdentifier("action_bar", "id", "android");
 				if(actionbarId > 0)
 				{
-					var toolbar = (Toolbar)((Activity)_context).FindViewById(actionbarId);
-					actionBarTitleTextView = (TextView)toolbar.GetChildAt(0);
+					Toolbar toolbar = (Toolbar)((Activity)_context).FindViewById(actionbarId);
+					
+					for( int i = 0; i < toolbar.ChildCount; i++ )
+					{
+						if( toolbar.GetChildAt(i) is TextView )
+						{
+							actionBarTitleTextView = (TextView)toolbar.GetChildAt(i);
+							break;
+						}
+					}
 				}
 			}
 			else
