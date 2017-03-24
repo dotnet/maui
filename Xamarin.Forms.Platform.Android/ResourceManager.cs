@@ -17,6 +17,19 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Type ResourceClass { get; set; }
 
+		internal static Drawable GetFormsDrawable(this Resources resource, FileImageSource fileImageSource)
+		{
+			var file = fileImageSource.File;
+			Drawable drawable = resource.GetDrawable(fileImageSource);
+			if(drawable == null)
+			{
+				var bitmap = GetBitmap(resource, file) ?? BitmapFactory.DecodeFile(file);
+				if (bitmap != null)
+					drawable = new BitmapDrawable(resource, bitmap);
+			}
+			return drawable;
+		}
+
 		public static Bitmap GetBitmap(this Resources resource, FileImageSource fileImageSource)
 		{
 			var file = fileImageSource.File;
