@@ -359,10 +359,11 @@ namespace Xamarin.Forms.Platform.Android
 				else
 				{
 					IMenuItem menuItem = menu.Add(item.Text);
-					if (!string.IsNullOrEmpty(item.Icon))
+					var icon = item.Icon;
+					if (!string.IsNullOrEmpty(icon))
 					{
-						var iconBitmap = new BitmapDrawable(_context.Resources, ResourceManager.GetBitmap(_context.Resources, item.Icon));
-						if (iconBitmap != null && iconBitmap.Bitmap != null)
+						Drawable iconBitmap = _context.Resources.GetDrawable(icon) ?? new BitmapDrawable(_context.Resources, ResourceManager.GetBitmap(_context.Resources, icon));
+						if (iconBitmap != null)
 							menuItem.SetIcon(iconBitmap);
 					}
 					menuItem.SetEnabled(controller.IsEnabled);

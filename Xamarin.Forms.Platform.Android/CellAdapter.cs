@@ -195,9 +195,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (action.Icon != null)
 				{
-					var iconBitmap = new BitmapDrawable(_context.Resources, ResourceManager.GetBitmap(_context.Resources, action.Icon));
-					if (iconBitmap != null && iconBitmap.Bitmap != null)
-						item.SetIcon(_context.Resources.GetDrawable(action.Icon));
+					Drawable iconBitmap = _context.Resources.GetDrawable(action.Icon) ?? new BitmapDrawable(_context.Resources, ResourceManager.GetBitmap(_context.Resources, action.Icon));
+					if (iconBitmap != null)
+						item.SetIcon(iconBitmap);
 				}
 
 				action.PropertyChanged += changed;
