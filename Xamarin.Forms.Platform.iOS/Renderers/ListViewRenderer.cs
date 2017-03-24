@@ -644,10 +644,11 @@ namespace Xamarin.Forms.Platform.iOS
 					return DefaultRowHeight;
 				}
 
-				// We're going to base our estimate off of the first cell 
+				// We're going to base our estimate off of the first cell
 				var firstCell = templatedItems.First();
 
-				if (firstCell.Height > 0)
+				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
+				if (firstCell.Height > 0 && !List.IsGroupingEnabled)
 				{
 					// Seems like we've got cells which already specify their height; since the heights are known,
 					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights
