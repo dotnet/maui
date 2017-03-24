@@ -32,49 +32,49 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = listView;
 		}
-	}
 
-	[Preserve(AllMembers = true)]
-	public sealed class ItemViewModel
-	{
-		public string Name { get; set; }
-		public string Description { get; set; }
-	}
-
-	[Preserve(AllMembers = true)]
-	public sealed class ItemViewCell : ViewCell
-	{
-		public Label Label1 { get; set; }
-		public Label Label2 { get; set; }
-
-		public ItemViewCell()
+		[Preserve(AllMembers = true)]
+		public sealed class ItemViewModel
 		{
-			var stackLayout = new StackLayout
-			{
-				Orientation = StackOrientation.Vertical,
-				HorizontalOptions = LayoutOptions.StartAndExpand,
-				VerticalOptions = LayoutOptions.StartAndExpand
-			};
-
-			Label1 = new Label();
-			Label2 = new Label { LineBreakMode = LineBreakMode.WordWrap };
-
-			stackLayout.Children.Add(Label1);
-			stackLayout.Children.Add(Label2);
-
-			View = stackLayout;
+			public string Name { get; set; }
+			public string Description { get; set; }
 		}
 
-		protected override void OnBindingContextChanged()
+		[Preserve(AllMembers = true)]
+		public sealed class ItemViewCell : ViewCell
 		{
-			base.OnBindingContextChanged();
+			public Label Label1 { get; set; }
+			public Label Label2 { get; set; }
 
-			var item = BindingContext as ItemViewModel;
-
-			if (item != null)
+			public ItemViewCell()
 			{
-				Label1.Text = item.Name;
-				Label2.Text = item.Description;
+				var stackLayout = new StackLayout
+				{
+					Orientation = StackOrientation.Vertical,
+					HorizontalOptions = LayoutOptions.StartAndExpand,
+					VerticalOptions = LayoutOptions.StartAndExpand
+				};
+
+				Label1 = new Label();
+				Label2 = new Label { LineBreakMode = LineBreakMode.WordWrap };
+
+				stackLayout.Children.Add(Label1);
+				stackLayout.Children.Add(Label2);
+
+				View = stackLayout;
+			}
+
+			protected override void OnBindingContextChanged()
+			{
+				base.OnBindingContextChanged();
+
+				var item = BindingContext as ItemViewModel;
+
+				if (item != null)
+				{
+					Label1.Text = item.Name;
+					Label2.Text = item.Description;
+				}
 			}
 		}
 	}
