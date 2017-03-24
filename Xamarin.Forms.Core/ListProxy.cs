@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -12,6 +13,7 @@ namespace Xamarin.Forms
 		readonly ICollection _collection;
 		readonly IList _list;
 		readonly int _windowSize;
+		readonly ConditionalWeakTable<ListProxy, WeakNotifyProxy> _sourceToWeakHandlers;
 
 		IEnumerator _enumerator;
 		int _enumeratorIndex;
@@ -30,6 +32,7 @@ namespace Xamarin.Forms
 
 			ProxiedEnumerable = enumerable;
 			_collection = enumerable as ICollection;
+			_sourceToWeakHandlers = new ConditionalWeakTable<ListProxy, WeakNotifyProxy>();
 
 			if (_collection == null && enumerable is IReadOnlyCollection<object>)
 				_collection = new ReadOnlyListAdapter((IReadOnlyCollection<object>)enumerable);
@@ -40,7 +43,7 @@ namespace Xamarin.Forms
 
 			var changed = enumerable as INotifyCollectionChanged;
 			if (changed != null)
-				new WeakNotifyProxy(this, changed);
+				_sourceToWeakHandlers.Add(this, new WeakNotifyProxy(this, changed));
 		}
 
 		public IEnumerable ProxiedEnumerable { get; }
@@ -362,10 +365,15 @@ namespace Xamarin.Forms
 		{
 			readonly WeakReference<INotifyCollectionChanged> _weakCollection;
 			readonly WeakReference<ListProxy> _weakProxy;
+			readonly ConditionalWeakTable<ListProxy, NotifyCollectionChangedEventHandler> _sourceToWeakHandlers;
 
 			public WeakNotifyProxy(ListProxy proxy, INotifyCollectionChanged incc)
 			{
-				incc.CollectionChanged += OnCollectionChanged;
+				_sourceToWeakHandlers = new ConditionalWeakTable<ListProxy, NotifyCollectionChangedEventHandler>();
+				NotifyCollectionChangedEventHandler handler = new NotifyCollectionChangedEventHandler(OnCollectionChanged);
+
+				_sourceToWeakHandlers.Add(proxy, handler);
+				incc.CollectionChanged += handler;
 
 				_weakProxy = new WeakReference<ListProxy>(proxy);
 				_weakCollection = new WeakReference<INotifyCollectionChanged>(incc);

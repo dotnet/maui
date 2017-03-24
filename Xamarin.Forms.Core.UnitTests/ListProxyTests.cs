@@ -422,5 +422,97 @@ namespace Xamarin.Forms.Core.UnitTests
 				return Items.GetEnumerator ();
 			}
 		}
+
+		[Test]
+		public void WeakToWeak()
+		{
+			WeakCollectionChangedList list = new WeakCollectionChangedList();
+			var proxy = new ListProxy(list);
+
+			Assert.True(list.AddObject());
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.IsTrue(list.AddObject());
+
+			proxy = null;
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.IsFalse(list.AddObject());
+		}
+
+		public class WeakCollectionChangedList : List<object>, INotifyCollectionChanged
+		{
+			List<WeakHandler> handlers = new List<WeakHandler>();
+
+			public WeakCollectionChangedList()
+			{
+
+			}
+			public event NotifyCollectionChangedEventHandler CollectionChanged
+			{
+				add { handlers.Add(new WeakHandler(this, value)); }
+				remove { throw new NotImplementedException(); }
+			}
+
+
+			public bool AddObject()
+			{
+				bool invoked = false;
+				var me = new object();
+
+				foreach (var handler in handlers.ToList())
+				{
+					if (handler.IsActive)
+					{
+						invoked = true;
+						handler.Handler.DynamicInvoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, me));
+					}
+					else
+					{
+						handlers.Remove(handler);
+					}
+				}
+
+				return invoked;
+			}
+
+			class WeakHandler
+			{
+				WeakReference source;
+				WeakReference originalHandler;
+
+				public bool IsActive
+				{
+					get { return this.source != null && this.source.IsAlive && this.originalHandler != null && this.originalHandler.IsAlive; }
+				}
+
+				public NotifyCollectionChangedEventHandler Handler
+				{
+					get
+					{
+						if (this.originalHandler == null)
+						{
+							return default(NotifyCollectionChangedEventHandler);
+						}
+						else
+						{
+							return (NotifyCollectionChangedEventHandler)this.originalHandler.Target;
+						}
+					}
+				}
+
+				public WeakHandler(object source, NotifyCollectionChangedEventHandler originalHandler)
+				{
+					this.source = new WeakReference(source);
+					this.originalHandler = new WeakReference(originalHandler);
+				}
+			}
+		}
 	}
 }
