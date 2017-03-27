@@ -200,6 +200,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateStatusBarPrefersHidden()
 		{
+			if (Element == null)
+				return;
+
 			var animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
 			if (animation == PageUIStatusBarAnimation.Fade || animation == PageUIStatusBarAnimation.Slide)
 				UIView.Animate(0.25, () => SetNeedsStatusBarAppearanceUpdate());
