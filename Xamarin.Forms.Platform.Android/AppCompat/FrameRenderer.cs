@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		readonly PinchGestureHandler _pinchGestureHandler;
 		readonly Lazy<ScaleGestureDetector> _scaleDetector;
 		readonly TapGestureHandler _tapGestureHandler;
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -32,6 +33,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		NotifyCollectionChangedEventHandler _collectionChangeHandler;
 
 		bool _inputTransparent;
+		bool _isEnabled;
 
 		public FrameRenderer() : base(Forms.Context)
 		{
@@ -78,6 +80,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return false;
 			}
 
+			if (Element.GestureRecognizers.Count == 0)
+			{
+				return _motionEventHelper.HandleMotionEvent(Parent);
+			}
+
 			return base.OnTouchEvent(e);
 		}
 
@@ -88,6 +95,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		bool IOnTouchListener.OnTouch(AView v, MotionEvent e)
 		{
+			if (!_isEnabled)
+				return true;
+
+			if (_inputTransparent)
+				return false;
+
 			var handled = false;
 			if (_pinchGestureHandler.IsPinchSupported)
 			{
@@ -217,8 +230,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateBackgroundColor();
 				UpdateCornerRadius();
 				UpdateInputTransparent();
+				UpdateIsEnabled();
 				SubscribeGestureRecognizers(e.NewElement);
 			}
+
+			_motionEventHelper.UpdateElement(e.NewElement);
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
@@ -252,6 +268,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateCornerRadius();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled();
+		}
+
+		void UpdateIsEnabled()
+		{
+			_isEnabled = Element.IsEnabled;
 		}
 
 		void UpdateInputTransparent()

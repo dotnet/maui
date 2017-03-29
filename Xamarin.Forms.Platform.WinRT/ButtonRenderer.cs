@@ -99,6 +99,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			return;
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnButtonClick(object sender, RoutedEventArgs e)
 		{
 			((IButtonController)Element)?.SendReleased();

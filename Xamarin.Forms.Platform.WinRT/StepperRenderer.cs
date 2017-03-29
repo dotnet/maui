@@ -52,6 +52,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				Control.ButtonBackgroundColor = Element.BackgroundColor;
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnControlValue(object sender, EventArgs e)
 		{
 			Element.SetValueCore(Stepper.ValueProperty, Control.Value);

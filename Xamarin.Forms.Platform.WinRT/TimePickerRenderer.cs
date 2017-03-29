@@ -65,6 +65,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateTextColor();
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnControlTimeChanged(object sender, TimePickerValueChangedEventArgs e)
 		{
 			Element.Time = e.NewTime;

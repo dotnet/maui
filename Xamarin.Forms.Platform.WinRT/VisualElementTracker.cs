@@ -67,6 +67,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
+		public bool PreventGestureBubbling { get; set; }
+
 		public TNativeElement Control
 		{
 			get { return _control; }
@@ -75,8 +77,19 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (_control == value)
 					return;
 
+				if (_control != null)
+				{
+					_control.Tapped -= HandleTapped;
+					_control.DoubleTapped -= HandleDoubleTapped;
+				}
+
 				_control = value;
 				UpdateNativeControl();
+
+				if (PreventGestureBubbling)
+				{
+					UpdatingGestureRecognizers();
+				}
 			}
 		}
 
@@ -161,6 +174,12 @@ namespace Xamarin.Forms.Platform.WinRT
 					var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
 					oldRecognizers.CollectionChanged -= _collectionChangedHandler;
 				}
+			}
+
+			if (_control != null)
+			{
+				_control.Tapped -= HandleTapped;
+				_control.DoubleTapped -= HandleDoubleTapped;
 			}
 
 			Control = null;
@@ -502,11 +521,29 @@ namespace Xamarin.Forms.Platform.WinRT
 			_container.PointerReleased -= OnPointerReleased;
 			_container.PointerCanceled -= OnPointerCanceled;
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).GetEnumerator().MoveNext())
+			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any())
+			{
 				_container.Tapped += OnTap;
+			}
+			else
+			{
+				if (_control != null && PreventGestureBubbling)
+				{
+					_control.Tapped += HandleTapped;
+				}
+			}
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).GetEnumerator().MoveNext())
+			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).Any())
+			{
 				_container.DoubleTapped += OnDoubleTap;
+			}
+			else
+			{
+				if (_control != null && PreventGestureBubbling)
+				{
+					_control.DoubleTapped += HandleDoubleTapped;
+				}
+			}
 
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPanGesture = gestures.GetGesturesFor<PanGestureRecognizer>().GetEnumerator().MoveNext();
@@ -531,6 +568,16 @@ namespace Xamarin.Forms.Platform.WinRT
 			_container.PointerExited += OnPointerExited;
 			_container.PointerReleased += OnPointerReleased;
 			_container.PointerCanceled += OnPointerCanceled;
+		}
+
+		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+		{
+			tappedRoutedEventArgs.Handled = true;
+		}
+
+		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
+		{
+			doubleTappedRoutedEventArgs.Handled = true;
 		}
 	}
 }

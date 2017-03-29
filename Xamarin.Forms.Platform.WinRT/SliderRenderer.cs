@@ -71,6 +71,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, e.NewValue);

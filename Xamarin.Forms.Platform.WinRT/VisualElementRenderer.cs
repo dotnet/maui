@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		protected bool ArrangeNativeChildren { get; set; }
 
+		protected virtual bool PreventGestureBubbling { get; set; } = false;
+
 		IElementController ElementController => Element as IElementController;
 
 		protected VisualElementTracker<TElement, TNativeElement> Tracker
@@ -549,6 +551,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (_tracker == null)
 				return;
 
+			_tracker.PreventGestureBubbling = PreventGestureBubbling;
 			_tracker.Control = Control;
 			_tracker.Element = Element;
 			_tracker.Container = ContainerElement;

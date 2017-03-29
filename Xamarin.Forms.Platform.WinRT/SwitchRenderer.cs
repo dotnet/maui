@@ -42,6 +42,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnNativeToggled(object sender, RoutedEventArgs routedEventArgs)
 		{
 			((IElementController)Element).SetValueFromRenderer(Switch.IsToggledProperty, Control.IsOn);

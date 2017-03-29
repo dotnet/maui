@@ -70,6 +70,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateTextColor();
 		}
 
+		protected override bool PreventGestureBubbling { get; set; } = true;
+
 		void OnControlDateChanged(object sender, DatePickerValueChangedEventArgs e)
 		{
 			Element.Date = e.NewDate.Date;
