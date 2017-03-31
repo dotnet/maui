@@ -357,8 +357,8 @@ namespace Xamarin.Forms.Platform.iOS
 			return UIAlertAction.Create(text, style,
 					a =>
 					{
-						setResult();
 						window.Hidden = true;
+						setResult();
 					});
 		}
 
