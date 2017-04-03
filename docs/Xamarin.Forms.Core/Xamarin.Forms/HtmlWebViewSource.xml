@@ -121,7 +121,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Backing store for the <see cref="P:Xamarin.Forms.BaseUrl" /> property.</summary>
+        <summary>Backing store for the <see cref="P:Xamarin.Forms.Html" /> property.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -144,8 +144,8 @@
         <Parameter Name="renderer" Type="Xamarin.Forms.IWebViewDelegate" />
       </Parameters>
       <Docs>
-        <param name="renderer">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="renderer">The renderer into which to load html content.</param>
+        <summary>Loads the specified <paramref name="renderer" /> with the current base URL and HTML.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

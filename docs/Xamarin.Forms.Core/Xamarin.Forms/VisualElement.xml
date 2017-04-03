@@ -1384,7 +1384,7 @@
         <param name="widthConstraint">The available width for the element to use.</param>
         <param name="heightConstraint">The available height for the element to use.</param>
         <summary>This method is called during the measure pass of a layout cycle to get the desired size of an element.</summary>
-        <returns>A <see cref="T:Xamarin.Forms.SizeRequest&gt;" /> which contains the desired size of the element.</returns>
+        <returns>A <see cref="T:Xamarin.Forms.SizeRequest" /> which contains the desired size of the element.</returns>
         <remarks>The results of this method will be (-1, -1) if the element has not yet been realized with a platform specific backing control. Overriding this method does not require a call to the base class so long as a valid SizeRequest is returned.</remarks>
       </Docs>
     </Member>
