@@ -44,5 +44,11 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				Control.StopAnimating();
 		}
+
+		internal void PreserveState()
+		{
+			if (Control != null && !Control.IsAnimating && Element != null && Element.IsRunning)
+				Control.StartAnimating();
+		}
 	}
 }
