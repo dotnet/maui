@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -16,6 +16,14 @@
 			<scg:Dictionary x:TypeArguments="sys:String, sys:String"  x:Key="dict"/>
 			<scgs:Queue x:TypeArguments="scg:KeyValuePair(sys:String,sys:String)" x:Key="queue"/>
 			<scg:List x:TypeArguments="x:String" x:Key="stringList"/>
+			<scg:List x:TypeArguments="scg:KeyValuePair(x:String,x:String)" x:Key="TestList" x:Name="TestListMember" >
+				<scg:KeyValuePair x:TypeArguments="x:String,x:String" >
+					<x:Arguments>
+						<x:String>TheKey</x:String>
+						<x:String>TheValue</x:String>
+					</x:Arguments>
+				</scg:KeyValuePair>
+			</scg:List>
 		</ResourceDictionary>
 	</ContentPage.Resources>
 </ContentPage>

@@ -34,11 +34,11 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static void ImportTypes(this MethodReference self, ModuleDefinition module)
 		{
-			if (self.HasParameters)
-			{
-				for (var i = 0; i < self.Parameters.Count; i++)
-					self.Parameters[i].ParameterType = module.ImportReference(self.Parameters[i].ParameterType);
-			}
+			if (!self.HasParameters)
+				return;
+
+			for (var i = 0; i < self.Parameters.Count; i++)
+				self.Parameters[i].ParameterType = module.ImportReference(self.Parameters[i].ParameterType);
 		}
 
 		public static MethodReference MakeGeneric(this MethodReference self, TypeReference declaringType, params TypeReference [] arguments)

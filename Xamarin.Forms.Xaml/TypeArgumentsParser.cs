@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal static class TypeArgumentsParser
+	static class TypeArgumentsParser
 	{
 		public static IList<XmlType> ParseExpression(string expression, IXmlNamespaceResolver resolver, IXmlLineInfo lineInfo)
 		{
@@ -62,6 +62,8 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			var namespaceuri = resolver.LookupNamespace(prefix);
+			if (namespaceuri == null)
+				throw new XamlParseException($"No xmlns declaration for prefix '{prefix}'.", lineinfo, null);
 			return new XmlType(namespaceuri, name, typeArguments);
 		}
 	}

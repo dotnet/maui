@@ -6,28 +6,32 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	static class MethodDefinitionExtensions
 	{
-		public static bool MatchXArguments(this MethodDefinition methodDefinition, ElementNode enode, ModuleDefinition module, ILContext context)
+		public static bool MatchXArguments(this MethodDefinition methodDef, ElementNode enode, TypeReference declaringTypeRef, ModuleDefinition module, ILContext context)
 		{
 			if (!enode.Properties.ContainsKey(XmlName.xArguments))
-				return !methodDefinition.HasParameters;
+				return !methodDef.HasParameters;
 
 			var arguments = new List<INode>();
 			var node = enode.Properties[XmlName.xArguments] as ElementNode;
 			if (node != null)
 				arguments.Add(node);
+
 			var list = enode.Properties[XmlName.xArguments] as ListNode;
 			if (list != null)
-			{
 				foreach (var n in list.CollectionItems)
 					arguments.Add(n);
-			}
 
-			if (methodDefinition.Parameters.Count != arguments.Count)
+			if (methodDef.Parameters.Count != arguments.Count)
 				return false;
 
-			for (var i = 0; i < methodDefinition.Parameters.Count; i++)
+			for (var i = 0; i < methodDef.Parameters.Count; i++)
 			{
-				var paramType = methodDefinition.Parameters[i].ParameterType;
+				var paramType = methodDef.Parameters[i].ParameterType;
+				var genParam = paramType as GenericParameter;
+				if (genParam != null) {
+					var index = genParam.DeclaringType.GenericParameters.IndexOf(genParam);
+					paramType = (declaringTypeRef as GenericInstanceType).GenericArguments[index];
+				}
 				var argType = context.Variables [arguments [i] as IElementNode].VariableType;
 				if (!argType.InheritsFromOrImplements(paramType))
 					return false;

@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Build.Tasks
 				factoryCtorInfo = typedef.AllMethods().FirstOrDefault(md => md.IsConstructor &&
 																			!md.IsStatic &&
 																			md.HasParameters &&
-																			md.MatchXArguments(node, Module, Context));
+																			md.MatchXArguments(node, typeref, Module, Context));
 				if (factoryCtorInfo == null) {
 					throw new XamlParseException(
 						string.Format("No constructors found for {0} with matching x:Arguments", typedef.FullName), node);
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Build.Tasks
 				factoryMethodInfo = typedef.AllMethods().FirstOrDefault(md => !md.IsConstructor &&
 																			  md.Name == factoryMethod &&
 																			  md.IsStatic &&
-																			  md.MatchXArguments(node, Module, Context));
+																			  md.MatchXArguments(node, typeref, Module, Context));
 				if (factoryMethodInfo == null) {
 					throw new XamlParseException(
 						String.Format("No static method found for {0}::{1} ({2})", typedef.FullName, factoryMethod, null), node);
@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Emit(OpCodes.Newobj, ctor);
 					Context.IL.Emit(OpCodes.Stloc, vardef);
 				} else if (ctorInfo != null && node.Properties.ContainsKey(XmlName.xArguments) &&
-						   !node.Properties.ContainsKey(XmlName.xFactoryMethod) && ctorInfo.MatchXArguments(node, Module, Context)) {
+						   !node.Properties.ContainsKey(XmlName.xFactoryMethod) && ctorInfo.MatchXArguments(node, typeref, Module, Context)) {
 //					IL_0008:  ldloca.s 1
 //					IL_000a:  ldc.i4.1 
 //					IL_000b:  call instance void valuetype Test/Foo::'.ctor'(bool)
