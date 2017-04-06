@@ -1168,14 +1168,15 @@ namespace Xamarin.Forms.Platform.iOS
 					RefreshControl = _refresh;
 				}
 			}
-			else if (_refreshAdded)
-			{
-				if (_refresh.Refreshing)
-					_refresh.EndRefreshing();
-
-				RefreshControl = null;
-				_refreshAdded = false;
-			}
+			// https://bugzilla.xamarin.com/show_bug.cgi?id=52962
+			// just because pullToRefresh is being disabled does not mean we should kill an in progress refresh. 
+			// Consider the case where:
+			//   1. User pulls to refresh
+			//   2. App RefreshCommand fires (at this point _refresh.Refreshing is true)
+			//   3. RefreshCommand disables itself via a call to ChangeCanExecute which returns false
+			//			(maybe the command it's attached to a button the app wants disabled)
+			//   4. OnCommandCanExecuteChanged handler sets RefreshAllowed to false because the RefreshCommand is disabled
+			//   5. We end up here; A refresh is in progress while being asked to disable pullToRefresh
 		}
 
 		public void UpdateShowHideRefresh(bool shouldHide)
