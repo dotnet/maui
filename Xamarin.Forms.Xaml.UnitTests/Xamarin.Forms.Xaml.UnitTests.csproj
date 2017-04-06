@@ -461,6 +461,9 @@
     <Compile Include="Issues\Bz53203.xaml.cs">
       <DependentUpon>Bz53203.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TestXmlnsUsing.xaml.cs">
+      <DependentUpon>TestXmlnsUsing.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Issues\Bz54334.xaml.cs">
       <DependentUpon>Bz54334.xaml</DependentUpon>
     </Compile>
@@ -846,6 +849,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz53203.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestXmlnsUsing.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz54334.xaml">

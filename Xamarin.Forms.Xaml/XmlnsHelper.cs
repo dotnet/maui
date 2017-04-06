@@ -20,6 +20,19 @@ namespace Xamarin.Forms.Xaml
 		{
 			typeName = ns = asm = targetPlatform = null;
 
+			xmlns = xmlns.Trim();
+
+			if (xmlns.StartsWith("using:", StringComparison.Ordinal)) {
+				ParseUsing(xmlns, out typeName, out ns, out asm, out targetPlatform);
+				return;
+			}
+			ParseClrNamespace(xmlns, out typeName, out ns, out asm, out targetPlatform);
+		}
+
+		static void ParseClrNamespace(string xmlns, out string typeName, out string ns, out string asm, out string targetPlatform)
+		{
+			typeName = ns = asm = targetPlatform = null;
+
 			foreach (var decl in xmlns.Split(';'))
 			{
 				if (decl.StartsWith("clr-namespace:", StringComparison.Ordinal))
@@ -44,6 +57,18 @@ namespace Xamarin.Forms.Xaml
 				}
 				else
 					typeName = decl;
+			}
+		}
+
+		static void ParseUsing(string xmlns, out string typeName, out string ns, out string asm, out string targetPlatform)
+		{
+			typeName = ns = asm = targetPlatform = null;
+
+			foreach (var decl in xmlns.Split(';')) {
+				if (decl.StartsWith("using:", StringComparison.Ordinal)) {
+					ns = decl.Substring(6, decl.Length - 6);
+					continue;
+				}
 			}
 		}
 	}
