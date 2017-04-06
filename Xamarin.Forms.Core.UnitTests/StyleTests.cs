@@ -8,10 +8,17 @@ namespace Xamarin.Forms.Core.UnitTests
 	public class StyleTests : BaseTestFixture
 	{
 		[SetUp]
-		public void Setup ()
+		public override void Setup ()
 		{
 			base.Setup ();
 			Device.PlatformServices = new MockPlatformServices ();
+		}
+
+		[TearDown]
+		public override void TearDown()
+		{
+			base.TearDown();
+			Application.Current = null;
 		}
 
 		[Test]
@@ -702,6 +709,55 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (Color.Pink, button.TextColor);
 			Assert.AreEqual (20d, button.FontSize);
+		}
+
+		[Test]
+		public void ReplacingResourcesDoesNotOverrideManuallySetProperties()
+		{
+			var label0 = new Label {
+				TextColor = Color.Pink
+			};
+			var label1 = new Label();
+
+			Assume.That(label0.TextColor, Is.EqualTo(Color.Pink));
+			Assume.That(label1.TextColor, Is.EqualTo(Color.Default));
+
+			var rd0 = new ResourceDictionary {
+				new Style (typeof(Label)) {
+					Setters = {
+						new Setter {Property = Label.TextColorProperty, Value = Color.Olive}
+					}
+				}
+			};
+			var rd1 = new ResourceDictionary {
+				new Style (typeof(Label)) {
+					Setters = {
+						new Setter {Property = Label.TextColorProperty, Value = Color.Lavender}
+					}
+				}
+			};
+
+			var mockApp = new MockApplication();
+			Application.Current = mockApp;
+			mockApp.Resources = rd0;
+
+			var layout = new StackLayout { 
+				Children = {
+					label0,
+					label1,
+				}
+			};
+
+			mockApp.MainPage = new ContentPage { Content = layout};
+			//Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
+			//Assert.That(label1.TextColor, Is.EqualTo(Color.Default));
+
+			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
+			Assert.That(label1.TextColor, Is.EqualTo(Color.Olive));
+
+			mockApp.Resources = rd1;
+			Assert.That(label0.TextColor, Is.EqualTo(Color.Pink));
+			Assert.That(label1.TextColor, Is.EqualTo(Color.Lavender));
 		}
 	}
 }

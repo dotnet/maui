@@ -363,9 +363,10 @@ namespace Xamarin.Forms
 				value = property.CoerceValue(this, value);
 
 			BindablePropertyContext context = GetOrCreateContext(property);
-			if (manuallySet)
+			if (manuallySet) {
 				context.Attributes |= BindableContextAttributes.IsManuallySet;
-			else
+				context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
+			} else
 				context.Attributes &= ~BindableContextAttributes.IsManuallySet;
 
 			if (fromStyle)

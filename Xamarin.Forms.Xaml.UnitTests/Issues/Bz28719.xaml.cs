@@ -44,10 +44,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.NotNull (image0);
 
 				cell0.BindingContext = new {IsSelected = true};
-				Assert.AreEqual ("Remove.png", (image0.Source as FileImageSource).File);
+				Assert.AreEqual ("Remove.png", (image0.Source as FileImageSource)?.File);
 
 				cell0.BindingContext = new {IsSelected = false};
-				Assert.AreEqual ("Add.png", (image0.Source as FileImageSource).File);
+				Assert.AreEqual ("Add.png", (image0.Source as FileImageSource)?.File);
 
 				var cell1 = template.CreateContent () as ViewCell;
 				Assert.NotNull (cell1);
@@ -55,10 +55,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.NotNull (image1);
 
 				cell1.BindingContext = new {IsSelected = true};
-				Assert.AreEqual ("Remove.png", (image1.Source as FileImageSource).File);
+				Assert.AreEqual ("Remove.png", (image1.Source as FileImageSource)?.File);
 
 				cell1.BindingContext = new {IsSelected = false};
-				Assert.AreEqual ("Add.png", (image1.Source as FileImageSource).File);
+				Assert.AreEqual ("Add.png", (image1.Source as FileImageSource)?.File);
 			}
 		}
 	}
