@@ -168,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activity1.cs" />
+    <Compile Include="BorderEffect.cs" />
     <Compile Include="BrokenNativeControl.cs" />
     <Compile Include="Properties\MapsKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

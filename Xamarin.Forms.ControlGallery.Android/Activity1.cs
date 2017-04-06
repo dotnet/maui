@@ -1,28 +1,20 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
-
+using System.Globalization;
+using System.IO;
+using System.IO.IsolatedStorage;
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
+using Android.Widget;
+using Java.Interop;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.Android;
 using Xamarin.Forms.Controls;
-using Xamarin.Forms.Maps.Android;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
-using System.IO;
-using System.IO.IsolatedStorage;
-
-using Droid = Android;
-using System.Globalization;
-using Java.Interop;
-using Xamarin.Forms.Controls.Issues;
+using Android.Content;
 
 [assembly: Dependency (typeof (CacheService))]
 [assembly: Dependency (typeof (TestCloudService))]
@@ -34,29 +26,7 @@ using Xamarin.Forms.Controls.Issues;
 
 namespace Xamarin.Forms.ControlGallery.Android
 {
-	public class BorderEffect : PlatformEffect
-	{
-		protected override void OnAttached ()
-		{
-			Control.SetBackgroundColor (global::Android.Graphics.Color.Aqua);
-
-			var childLabel = (Element as ScrollView)?.Content as Label;
-			if (childLabel != null)
-				childLabel.Text = "Success";
-		}
-
-		protected override void OnDetached ()
-		{
-			Control.SetBackgroundColor(global::Android.Graphics.Color.Beige);
-		}
-
-		protected override void OnElementPropertyChanged (PropertyChangedEventArgs args)
-		{
-			base.OnElementPropertyChanged (args);
-		}
-	}
-
-	public class CacheService : ICacheService
+    public class CacheService : ICacheService
 	{
 		public void ClearImageCache ()
 		{

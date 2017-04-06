@@ -2,7 +2,6 @@
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using AdvancedColorPicker;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -328,7 +327,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			uiView.Add(uilabel);
 			sl?.Children.Add(uiView);
 			sl?.Children.Add(uibuttonColor.ToView());
-			var colorPicker = new ColorPickerView(new CGRect(0, 0, width, 300));
+			var colorPicker = new AdvancedColorPicker.ColorPickerView(new CGRect(0, 0, width, 300));
 			colorPicker.SetBinding("SelectedColor", new Binding("NativeLabelColor", BindingMode.TwoWay, nativeColorConverter), "ColorPicked");
 			sl?.Children.Add(colorPicker);
 			page.NativeControlsAdded = true;

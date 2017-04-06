@@ -534,7 +534,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void RemovePage(Page page)
 		{
 			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-			var containerToRemove = (PageContainer)rendererToRemove?.ViewGroup.Parent;
+			var containerToRemove = (PageContainer)rendererToRemove?.View.Parent;
 
 			// Also remove this page from the fragmentStack
 			FilterPageFragment(page);
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			containerToRemove.RemoveFromParent();
 			if (rendererToRemove != null)
 			{
-				rendererToRemove.ViewGroup.RemoveFromParent();
+				rendererToRemove.View.RemoveFromParent();
 				rendererToRemove.Dispose();
 			}
 			containerToRemove?.Dispose();

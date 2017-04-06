@@ -206,11 +206,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (animated)
 				{
-					modalRenderer.ViewGroup.Animate().Alpha(0).ScaleX(0.8f).ScaleY(0.8f).SetDuration(250).SetListener(new GenericAnimatorListener
+					modalRenderer.View.Animate().Alpha(0).ScaleX(0.8f).ScaleY(0.8f).SetDuration(250).SetListener(new GenericAnimatorListener
 					{
 						OnEnd = a =>
 						{
-							modalRenderer.ViewGroup.RemoveFromParent();
+							modalRenderer.View.RemoveFromParent();
 							modalRenderer.Dispose();
 							source.TrySetResult(modal);
 							CurrentPageController?.SendAppearing();
@@ -219,7 +219,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				else
 				{
-					modalRenderer.ViewGroup.RemoveFromParent();
+					modalRenderer.View.RemoveFromParent();
 					modalRenderer.Dispose();
 					source.TrySetResult(modal);
 					CurrentPageController?.SendAppearing();
@@ -534,7 +534,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (layout)
 				view.Layout(new Rectangle(0, 0, _context.FromPixels(_renderer.Width), _context.FromPixels(_renderer.Height)));
 
-			_renderer.AddView(renderView.ViewGroup);
+			_renderer.AddView(renderView.View);
 		}
 
 #pragma warning disable 618 // This may need to be updated to work with TabLayout/AppCompat
@@ -767,19 +767,19 @@ namespace Xamarin.Forms.Platform.Android
 				SetRenderer(modal, modalRenderer);
 
 				if (modal.BackgroundColor == Color.Default && modal.BackgroundImage == null)
-					modalRenderer.ViewGroup.SetWindowBackground();
+					modalRenderer.View.SetWindowBackground();
 			}
 			modalRenderer.Element.Layout(new Rectangle(0, 0, _context.FromPixels(_renderer.Width), _context.FromPixels(_renderer.Height)));
-			_renderer.AddView(modalRenderer.ViewGroup);
+			_renderer.AddView(modalRenderer.View);
 
 			var source = new TaskCompletionSource<bool>();
 			NavAnimationInProgress = true;
 			if (animated)
 			{
-				modalRenderer.ViewGroup.Alpha = 0;
-				modalRenderer.ViewGroup.ScaleX = 0.8f;
-				modalRenderer.ViewGroup.ScaleY = 0.8f;
-				modalRenderer.ViewGroup.Animate().Alpha(1).ScaleX(1).ScaleY(1).SetDuration(250).SetListener(new GenericAnimatorListener
+				modalRenderer.View.Alpha = 0;
+				modalRenderer.View.ScaleX = 0.8f;
+				modalRenderer.View.ScaleY = 0.8f;
+				modalRenderer.View.Animate().Alpha(1).ScaleX(1).ScaleY(1).SetDuration(250).SetListener(new GenericAnimatorListener
 				{
 					OnEnd = a =>
 					{

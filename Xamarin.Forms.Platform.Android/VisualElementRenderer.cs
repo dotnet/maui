@@ -161,8 +161,10 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		public ViewGroup ViewGroup => this;
+		AView IVisualElementRenderer.View => this;
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
+		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		public void SetElement(TElement element)
 		{
@@ -322,6 +324,8 @@ namespace Xamarin.Forms.Platform.Android
 				SetFocusable();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
+
+			ElementPropertyChanged?.Invoke(this, e);
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)

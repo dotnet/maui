@@ -54,12 +54,12 @@ namespace Xamarin.Forms.Platform.Android
 			if (renderer == null)
 				Platform.SetRenderer(childView, renderer = Platform.CreateRenderer(childView));
 
-			if (renderer.ViewGroup.Parent != this)
+			if (renderer.View.Parent != this)
 			{
-				if (renderer.ViewGroup.Parent != null)
-					renderer.ViewGroup.RemoveFromParent();
+				if (renderer.View.Parent != null)
+					renderer.View.RemoveFromParent();
 				SetDefaultBackgroundColor(renderer);
-				AddView(renderer.ViewGroup);
+				AddView(renderer.View);
 				renderer.UpdateLayout();
 			}
 		}
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (ChildView.BackgroundColor == Color.Default)
 			{
 				TypedArray colors = Context.Theme.ObtainStyledAttributes(new[] { global::Android.Resource.Attribute.ColorBackground });
-				renderer.ViewGroup.SetBackgroundColor(new global::Android.Graphics.Color(colors.GetColor(0, 0)));
+				renderer.View.SetBackgroundColor(new global::Android.Graphics.Color(colors.GetColor(0, 0)));
 			}
 		}
 	}

@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android
 				_unevenRows = unevenRows;
 				_rowHeight = rowHeight;
 				_viewCell = viewCell;
-				AddView(view.ViewGroup);
+				AddView(view.View);
 				UpdateIsEnabled();
 			}
 
@@ -123,16 +123,16 @@ namespace Xamarin.Forms.Platform.Android
 					return;
 				}
 
-				RemoveView(_view.ViewGroup);
+				RemoveView(_view.View);
 				Platform.SetRenderer(_viewCell.View, null);
 				_viewCell.View.IsPlatformEnabled = false;
-				_view.ViewGroup.Dispose();
+				_view.View.Dispose();
 
 				_viewCell = cell;
 				_view = Platform.CreateRenderer(_viewCell.View);
 
 				Platform.SetRenderer(_viewCell.View, _view);
-				AddView(_view.ViewGroup);
+				AddView(_view.View);
 
 				UpdateIsEnabled();
 

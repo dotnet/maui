@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Support.V4.App;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -85,6 +86,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			add { ElementChanged += value; }
 			remove { ElementChanged -= value; }
+		}
+
+		event EventHandler<PropertyChangedEventArgs> IVisualElementRenderer.ElementPropertyChanged
+		{
+			add { ElementPropertyChanged += value; }
+			remove { ElementPropertyChanged -= value; }
 		}
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -178,6 +185,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		ViewGroup IVisualElementRenderer.ViewGroup => this;
 
+		AView IVisualElementRenderer.View => this;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && !_disposed)
@@ -266,6 +275,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		}
 
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+		event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		bool HasAncestorNavigationPage(Element element)
 		{
@@ -283,6 +293,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			ElementPropertyChanged?.Invoke(this, e);
 			if (e.PropertyName == "Master")
 				UpdateMaster();
 			else if (e.PropertyName == "Detail")

@@ -125,10 +125,16 @@ namespace Xamarin.Forms.Core.UITests
 			bool isOnParentRenderer = property.Item2;
 
 			var query = ViewQuery;
-			if (isOnParentRenderer &&
-				PlatformViewType != PlatformViews.BoxView &&
-				PlatformViewType != PlatformViews.Frame)
-			{
+			if (isOnParentRenderer && 
+				PlatformViewType != PlatformViews.BoxView && 
+				PlatformViewType != PlatformViews.Frame
+#if __ANDROID__
+				&&
+				PlatformViewType != PlatformViews.Button &&
+				PlatformViewType != PlatformViews.Label &&
+				PlatformViewType != PlatformViews.Image
+#endif               
+				) {
 				query = query + " parent * index:0";
 			}
 

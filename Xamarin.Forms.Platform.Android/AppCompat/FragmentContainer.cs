@@ -83,9 +83,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (_visualElementRenderer != null)
 				{
-					if (_visualElementRenderer.ViewGroup.Handle != IntPtr.Zero)
+					if (_visualElementRenderer.View.Handle != IntPtr.Zero)
 					{
-						_visualElementRenderer.ViewGroup.RemoveFromParent();
+						_visualElementRenderer.View.RemoveFromParent();
 					}
 
 					_visualElementRenderer.Dispose();

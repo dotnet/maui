@@ -17,7 +17,7 @@ using static System.String;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class ButtonRenderer : ViewRenderer<Button, AppCompatButton>, AView.IOnAttachStateChangeListener
+    public class ButtonRenderer : ViewRenderer<Button, AppCompatButton>, AView.IOnAttachStateChangeListener
 	{
 		TextColorSwitcher _textColorSwitcher;
 		float _defaultFontSize;

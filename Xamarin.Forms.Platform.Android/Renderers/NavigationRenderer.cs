@@ -183,13 +183,13 @@ namespace Xamarin.Forms.Platform.Android
 		void RemovePage(Page page)
 		{
 			IVisualElementRenderer rendererToRemove = Platform.GetRenderer(page);
-			PageContainer containerToRemove = rendererToRemove == null ? null : (PageContainer)rendererToRemove.ViewGroup.Parent;
+			PageContainer containerToRemove = rendererToRemove == null ? null : (PageContainer)rendererToRemove.View.Parent;
 
 			containerToRemove.RemoveFromParent();
 
 			if (rendererToRemove != null)
 			{
-				rendererToRemove.ViewGroup.RemoveFromParent();
+				rendererToRemove.View.RemoveFromParent();
 				rendererToRemove.Dispose();
 			}
 
@@ -213,8 +213,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			Page pageToRemove = _current;
 			IVisualElementRenderer rendererToRemove = pageToRemove == null ? null : Platform.GetRenderer(pageToRemove);
-			PageContainer containerToRemove = rendererToRemove == null ? null : (PageContainer)rendererToRemove.ViewGroup.Parent;
-			PageContainer containerToAdd = (PageContainer)rendererToAdd.ViewGroup.Parent ?? new PageContainer(Context, rendererToAdd);
+			PageContainer containerToRemove = rendererToRemove == null ? null : (PageContainer)rendererToRemove.View.Parent;
+			PageContainer containerToAdd = (PageContainer)rendererToAdd.View.Parent ?? new PageContainer(Context, rendererToAdd);
 
 			containerToAdd.SetWindowBackground();
 

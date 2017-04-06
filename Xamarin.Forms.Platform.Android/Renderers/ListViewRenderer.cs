@@ -45,14 +45,14 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_headerRenderer != null)
 				{
-					_headerRenderer.ViewGroup.RemoveAllViews();
+					(_headerRenderer.View as ViewGroup)?.RemoveAllViews();
 					_headerRenderer.Dispose();
 					_headerRenderer = null;
 				}
 
 				if (_footerRenderer != null)
 				{
-					_footerRenderer.ViewGroup.RemoveAllViews();
+					(_footerRenderer.View as ViewGroup)?.RemoveAllViews();
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
 				}
@@ -352,12 +352,12 @@ namespace Xamarin.Forms.Platform.Android
 				set
 				{
 					if (_child != null)
-						RemoveView(_child.ViewGroup);
+						RemoveView(_child.View);
 
 					_child = value;
 
 					if (value != null)
-						AddView(value.ViewGroup);
+						AddView(value.View);
 				}
 			}
 
@@ -389,7 +389,7 @@ namespace Xamarin.Forms.Platform.Android
 				int widthSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(width), MeasureSpecMode.Exactly);
 				int heightSpec = MeasureSpecFactory.MakeMeasureSpec((int)ctx.ToPixels(request.Request.Height), MeasureSpecMode.Exactly);
 
-				_child.ViewGroup.Measure(widthMeasureSpec, heightMeasureSpec);
+				_child.View.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(widthSpec, heightSpec);
 			}
 		}

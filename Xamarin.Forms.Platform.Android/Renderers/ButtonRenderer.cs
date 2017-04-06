@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public ButtonRenderer()
 		{
+			System.Diagnostics.Debug.WriteLine("Slow Button!");
 			AutoPackage = false;
 		}
 

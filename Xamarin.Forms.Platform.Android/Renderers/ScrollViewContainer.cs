@@ -32,10 +32,10 @@ namespace Xamarin.Forms.Platform.Android
 				if ((renderer = Platform.GetRenderer(_childView)) == null)
 					Platform.SetRenderer(_childView, renderer = Platform.CreateRenderer(_childView));
 
-				if (renderer.ViewGroup.Parent != null)
-					renderer.ViewGroup.RemoveFromParent();
+				if (renderer.View.Parent != null)
+					renderer.View.RemoveFromParent();
 
-				AddView(renderer.ViewGroup);
+				AddView(renderer.View);
 			}
 		}
 

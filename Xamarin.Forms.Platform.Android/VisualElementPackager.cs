@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Xamarin.Forms.Internals;
+using Android.Views;
 using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
@@ -99,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 			Performance.Start("Add view");
 			if (!sameChildren)
 			{
-				_renderer.ViewGroup.AddView(renderer.ViewGroup);
+				(_renderer.View as ViewGroup)?.AddView(renderer.View);
 				_childViews.Add(renderer);
 			}
 			Performance.Stop("Add view");
@@ -116,7 +117,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (element != null)
 				{
 					IVisualElementRenderer r = Platform.GetRenderer(element);
-					_renderer.ViewGroup.BringChildToFront(r.ViewGroup);
+					(_renderer.View as ViewGroup)?.BringChildToFront(r.View);
 				}
 			}
 		}
@@ -150,7 +151,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			IVisualElementRenderer renderer = Platform.GetRenderer(view);
 			_childViews.Remove(renderer);
-			renderer.ViewGroup.RemoveFromParent();
+			renderer.View.RemoveFromParent();
 			renderer.Dispose();
 		}
 

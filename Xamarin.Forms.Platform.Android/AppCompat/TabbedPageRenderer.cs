@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					IVisualElementRenderer pageRenderer = Android.Platform.GetRenderer(pageToRemove);
 					if (pageRenderer != null)
 					{
-						pageRenderer.ViewGroup.RemoveFromParent();
+						pageRenderer.View.RemoveFromParent();
 						pageRenderer.Dispose();
 					}
 					pageToRemove.PropertyChanged -= OnPagePropertyChanged;

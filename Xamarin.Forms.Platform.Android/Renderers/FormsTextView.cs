@@ -6,7 +6,7 @@ using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal class FormsTextView : TextView
+	public class FormsTextView : TextView
 	{
 		bool _skip;
 

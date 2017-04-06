@@ -20,6 +20,8 @@
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AndroidTlsProvider>
+    </AndroidTlsProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -100,9 +102,13 @@
     </Compile>
     <Compile Include="AndroidApplicationLifecycleState.cs" />
     <Compile Include="AndroidTitleBarVisibility.cs" />
+    <Compile Include="AppCompat\FrameRenderer.cs" />
+    <Compile Include="FastRenderers\AccessibilityProvider.cs" />
+    <Compile Include="FastRenderers\ButtonRenderer.cs" />
     <Compile Include="AppCompat\FormsViewPager.cs" />
     <Compile Include="AppCompat\FragmentContainer.cs" />
-    <Compile Include="AppCompat\FrameRenderer.cs" />
+    <Compile Include="FastRenderers\EffectControlProvider.cs" />
+    <Compile Include="FastRenderers\FrameRenderer.cs" />
     <Compile Include="AppCompat\IManageFragments.cs" />
     <Compile Include="AppCompat\MasterDetailContainer.cs" />
     <Compile Include="AppCompat\Platform.cs" />
@@ -118,6 +124,9 @@
     <Compile Include="ExportCellAttribute.cs" />
     <Compile Include="ExportImageSourceHandlerAttribute.cs" />
     <Compile Include="ExportRendererAttribute.cs" />
+    <Compile Include="FastRenderers\GestureManager.cs" />
+    <Compile Include="FastRenderers\LabelRenderer.cs" />
+    <Compile Include="FastRenderers\VisualElementRenderer.cs" />
     <Compile Include="FormsApplicationActivity.cs" />
     <Compile Include="AndroidActivity.cs" />
     <Compile Include="AndroidTicker.cs" />
@@ -246,6 +255,8 @@
     <Compile Include="Extensions\NativeBindingExtensions.cs" />
     <Compile Include="NativeValueConverterService.cs" />
     <Compile Include="NativeBindingservice.cs" />
+    <Compile Include="FastRenderers\ImageRenderer.cs" />
+    <Compile Include="Extensions\ImageViewExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

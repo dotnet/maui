@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			IVisualElementRenderer modalRenderer = Android.Platform.GetRenderer(modal);
 			if (modalRenderer != null)
 			{
-				var modalContainer = modalRenderer.ViewGroup.Parent as ModalContainer;
+				var modalContainer = modalRenderer.View.Parent as ModalContainer;
 				if (animated)
 				{
 					modalContainer.Animate().TranslationY(_renderer.Height).SetInterpolator(new AccelerateInterpolator(1)).SetDuration(300).SetListener(new GenericAnimatorListener
@@ -254,7 +254,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (layout)
 				LayoutRootPage((FormsAppCompatActivity)_context, page, _renderer.Width, _renderer.Height);
 
-			_renderer.AddView(renderView.ViewGroup);
+			_renderer.AddView(renderView.View);
 		}
 
 		bool HandleBackPressed(object sender, EventArgs e)
@@ -336,7 +336,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_renderer = Android.Platform.CreateRenderer(modal);
 				Android.Platform.SetRenderer(modal, _renderer);
 
-				AddView(_renderer.ViewGroup);
+				AddView(_renderer.View);
 			}
 
 			protected override void Dispose(bool disposing)

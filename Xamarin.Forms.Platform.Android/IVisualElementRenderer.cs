@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Android.Views;
 using AView = Android.Views.View;
 
@@ -10,9 +11,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		VisualElementTracker Tracker { get; }
 
+		[Obsolete("Use View instead")]
 		ViewGroup ViewGroup { get; }
 
+		AView View { get; }
+
 		event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+
+		event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
 		SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint);
 
