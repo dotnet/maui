@@ -236,7 +236,7 @@ namespace Xamarin.Forms.Platform.Android
 			// counterpart to OnPause
 			base.OnResume();
 
-			if (_application.OnThisPlatform().GetShouldPreserveKeyboardOnResume())
+			if (_application != null && _application.OnThisPlatform().GetShouldPreserveKeyboardOnResume())
 			{
 				if (CurrentFocus != null && (CurrentFocus is EditText || CurrentFocus is TextView || CurrentFocus is SearchView))
 				{
