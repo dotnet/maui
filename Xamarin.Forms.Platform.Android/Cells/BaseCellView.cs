@@ -179,12 +179,6 @@ namespace Xamarin.Forms.Platform.Android
 			LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.MatchParent, (int)(height == -1 ? ViewGroup.LayoutParams.WrapContent : height));
 		}
 
-		protected override void OnDetachedFromWindow()
-		{
-			base.OnDetachedFromWindow();
-			_cell = null;
-		}
-
 		async void UpdateBitmap(ImageSource source, ImageSource previousSource = null)
 		{
 			if (Equals(source, previousSource))
