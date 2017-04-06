@@ -12,7 +12,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal sealed class ListViewAdapter : CellAdapter
+	internal class ListViewAdapter : CellAdapter
 	{
 		const int DefaultGroupHeaderTemplateId = 0;
 		const int DefaultItemTemplateId = 1;
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal static readonly BindableProperty IsSelectedProperty = BindableProperty.CreateAttached("IsSelected", typeof(bool), typeof(Cell), false);
 
 		readonly Context _context;
-		readonly ListView _listView;
+		protected readonly ListView _listView;
 		readonly AListView _realListView;
 		readonly Dictionary<DataTemplate, int> _templateToId = new Dictionary<DataTemplate, int>();
 		int _dataTemplateIncrementer = 2; // lets start at not 0 because
@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 		WeakReference<Cell> _selectedCell;
 
 		IListViewController Controller => _listView;
-		ITemplatedItemsView<Cell> TemplatedItemsView => _listView;
+		protected ITemplatedItemsView<Cell> TemplatedItemsView => _listView;
 
 		public ListViewAdapter(Context context, AListView realListView, ListView listView) : base(context)
 		{
@@ -595,9 +595,10 @@ namespace Xamarin.Forms.Platform.Android
 			Header
 		}
 
-		void InvalidateCount()
+		protected virtual void InvalidateCount()
 		{
 			_listCount = -1;
 		}
 	}
+
 }

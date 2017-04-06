@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 				nativeListView.Focusable = false;
 				nativeListView.DescendantFocusability = DescendantFocusability.AfterDescendants;
 				nativeListView.OnFocusChangeListener = this;
-				nativeListView.Adapter = _adapter = new ListViewAdapter(Context, nativeListView, e.NewElement);
+				nativeListView.Adapter = _adapter = e.NewElement.IsGroupingEnabled && e.NewElement.OnThisPlatform ().IsFastScrollEnabled () ? new GroupedListViewAdapter (Context, nativeListView, e.NewElement) : new ListViewAdapter(Context, nativeListView, e.NewElement);
 				_adapter.HeaderView = _headerView;
 				_adapter.FooterView = _footerView;
 				_adapter.IsAttachedToWindow = _isAttached;
@@ -335,8 +335,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateFastScrollEnabled()
 		{
-			if (Control != null)
-				Control.FastScrollEnabled = Element.OnThisPlatform().IsFastScrollEnabled();
+			if (Control != null) {
+				Control.FastScrollEnabled = Element.OnThisPlatform ().IsFastScrollEnabled ();
+			}
 		}
 
 		internal class Container : ViewGroup
