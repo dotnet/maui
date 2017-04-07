@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		HydratationContext Context { get; }
 		public object TargetObject { get; }
-		public object TargetProperty { get; } = null;
+		public object TargetProperty { get; internal set; } = null;
 
 		IEnumerable<object> IProvideParentValues.ParentObjects
 		{

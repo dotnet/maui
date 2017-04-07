@@ -77,7 +77,8 @@ namespace Xamarin.Forms.Xaml
 		public void Visit(ElementNode node, INode parentNode)
 		{
 			var propertyName = XmlName.Empty;
-			if (TryGetPropertyName(node, parentNode, out propertyName) && propertyName == XmlName._CreateContent){
+
+			if (TryGetPropertyName(node, parentNode, out propertyName) && propertyName == XmlName._CreateContent) {
 				var s0 = Values[parentNode];
 				if (s0 is ElementTemplate) {
 					SetTemplate(s0 as ElementTemplate, node);
@@ -85,21 +86,7 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 
-			var value = Values [node];
 			var parentElement = parentNode as IElementNode;
-			var markupExtension = value as IMarkupExtension;
-			var valueProvider = value as IValueProvider;
-
-			if (markupExtension != null) {
-				var serviceProvider = value.GetType().GetTypeInfo().GetCustomAttribute<AcceptEmptyServiceProviderAttribute>() == null ? new XamlServiceProvider(node, Context) : null;
-				value = markupExtension.ProvideValue(serviceProvider);
-			}
-
-			if (valueProvider != null) {
-				var serviceProvider = value.GetType().GetTypeInfo().GetCustomAttribute<AcceptEmptyServiceProviderAttribute>() == null ? new XamlServiceProvider(node, Context) : null;
-				value = valueProvider.ProvideValue(serviceProvider);
-			}
-
 			propertyName = XmlName.Empty;
 
 			//Simplify ListNodes with single elements
@@ -110,6 +97,15 @@ namespace Xamarin.Forms.Xaml
 				parentElement = parentNode as IElementNode;
 			}
 
+			var value = Values[node];
+
+			var markupExtension = value as IMarkupExtension;
+			var valueProvider = value as IValueProvider;
+			XamlServiceProvider serviceProvider = null;
+			if (markupExtension != null || valueProvider != null)
+				serviceProvider = value.GetType().GetTypeInfo().GetCustomAttribute<AcceptEmptyServiceProviderAttribute>() == null ? new XamlServiceProvider(node, Context) : null;
+
+
 			if (propertyName != XmlName.Empty || TryGetPropertyName(node, parentNode, out propertyName)) {
 				if (Skips.Contains(propertyName))
 					return;
@@ -117,8 +113,21 @@ namespace Xamarin.Forms.Xaml
 					return;
 
 				var source = Values [parentNode];
+				if (serviceProvider != null)
+					((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = GetTargetProperty(source, propertyName, Context, node);
+
+				if (markupExtension != null)
+					value = markupExtension.ProvideValue(serviceProvider);
+				else if (valueProvider != null)
+					value = valueProvider.ProvideValue(serviceProvider);
+
 				SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 			} else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode) {
+				if (markupExtension != null)
+					value = markupExtension.ProvideValue(serviceProvider);
+				else if (valueProvider != null)
+					value = valueProvider.ProvideValue(serviceProvider);
+
 				// Collection element, implicit content, or implicit collection element.
 				string contentProperty;
 				if (typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(Context.Types [parentElement].GetTypeInfo()) && Context.Types[parentElement].GetRuntimeMethods().Any(mi => mi.Name == "Add" && mi.GetParameters().Length == 1)) {
@@ -140,6 +149,11 @@ namespace Xamarin.Forms.Xaml
 				} else
 					throw new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 			} else if (IsCollectionItem(node, parentNode) && parentNode is ListNode) {
+				if (markupExtension != null)
+					value = markupExtension.ProvideValue(serviceProvider);
+				else if (valueProvider != null)
+					value = valueProvider.ProvideValue(serviceProvider);
+
 				var parentList = (ListNode)parentNode;
 				var source = Values [parentNode.Parent];
 
@@ -267,6 +281,22 @@ namespace Xamarin.Forms.Xaml
 			if (throwOnError)
 				throw exception;
 			return null;
+		}
+
+		static object GetTargetProperty(object xamlelement, XmlName propertyName, HydratationContext context, IXmlLineInfo lineInfo)
+		{
+			var localName = propertyName.LocalName;
+			//If it's an attached BP, update elementType and propertyName
+			var bpOwnerType = xamlelement.GetType();
+			GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, context, lineInfo);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+
+			if (property != null)
+				return property;
+			
+			var elementType = xamlelement.GetType();
+			var propertyInfo = elementType.GetRuntimeProperties().FirstOrDefault(p => p.Name == localName);
+			return propertyInfo;
 		}
 
 		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement, INode node, HydratationContext context, IXmlLineInfo lineInfo)
@@ -397,6 +427,9 @@ namespace Xamarin.Forms.Xaml
 			if (property == null)
 				return false;
 
+			if (serviceProvider != null && serviceProvider.IProvideValueTarget != null)
+				((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = property;
+
 			Func<MemberInfo> minforetriever;
 			if (attached)
 				minforetriever = () => property.DeclaringType.GetRuntimeMethod("Get" + property.PropertyName, new [] { typeof(BindableObject) });
@@ -435,6 +468,9 @@ namespace Xamarin.Forms.Xaml
 
 			if (!IsVisibleFrom(setter, context.RootElement))
 				return false;
+
+			if (serviceProvider != null && serviceProvider.IProvideValueTarget != null)
+				((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = propertyInfo;
 
 			object convertedValue = value.ConvertTo(propertyInfo.PropertyType, () => propertyInfo, serviceProvider);
 			if (convertedValue != null && !propertyInfo.PropertyType.IsInstanceOfType(convertedValue))
@@ -475,6 +511,7 @@ namespace Xamarin.Forms.Xaml
 			if (addMethod == null)
 				return false;
 
+			((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = propertyInfo;
 			addMethod.Invoke(collection, new [] { value.ConvertTo(addMethod.GetParameters() [0].ParameterType, (Func<TypeConverter>)null, serviceProvider) });
 			return true;
 		}

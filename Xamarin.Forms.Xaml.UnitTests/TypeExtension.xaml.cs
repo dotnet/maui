@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -46,6 +47,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
+			public void Setup()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
 			[TestCase(false)]
 			[TestCase(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)

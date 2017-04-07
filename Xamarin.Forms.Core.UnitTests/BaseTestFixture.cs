@@ -11,6 +11,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public virtual void Setup ()
 		{
+			Device.PlatformServices = new MockPlatformServices();
+
 #if !WINDOWS_PHONE
 			var culture = Environment.GetEnvironmentVariable ("UNIT_TEST_CULTURE");
 			
@@ -24,7 +26,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[TearDown]
 		public virtual void TearDown ()
 		{
-			
+			Device.PlatformServices = null;
 		}
 	}
 }
