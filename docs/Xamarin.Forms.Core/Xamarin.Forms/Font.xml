@@ -40,7 +40,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("BoldSystemFontOfSize is obsolete, please use SystemFontOfSize (double, FontAttributes)")</AttributeName>
+          <AttributeName>System.Obsolete("BoldSystemFontOfSize is obsolete as of version 1.2.0. Please use SystemFontOfSize (double, FontAttributes) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -72,7 +72,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("BoldSystemFontOfSize is obsolete, please use SystemFontOfSize (NamedSize, FontAttributes)")</AttributeName>
+          <AttributeName>System.Obsolete("BoldSystemFontOfSize is obsolete as of version 1.2.0. Please use SystemFontOfSize (NamedSize, FontAttributes) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

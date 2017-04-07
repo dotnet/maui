@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		}
 	}
 
-	[Obsolete("Deprecated in favor of CellControl")]
+	[Obsolete("CellTemplateSelector is obsolete as of version 1.3.5. Please use CellControl instead.")]
 	public class CellTemplateSelector : DataTemplateSelector
 	{
 		public static readonly DependencyProperty SourceProperty = DependencyProperty.Register("Source", typeof(object), typeof(CellTemplateSelector),

@@ -114,7 +114,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("use ConvertFromInvariantString (string, IServiceProvider)")</AttributeName>
+          <AttributeName>System.Obsolete("IExtendedTypeConverter.ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string, IServiceProvider) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

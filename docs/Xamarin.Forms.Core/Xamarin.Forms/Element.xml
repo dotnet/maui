@@ -466,7 +466,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use Parent")</AttributeName>
+          <AttributeName>System.Obsolete("ParentView is obsolete as of version 2.1.0. Please use Parent instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

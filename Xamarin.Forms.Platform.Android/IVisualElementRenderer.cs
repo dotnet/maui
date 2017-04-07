@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		VisualElementTracker Tracker { get; }
 
-		[Obsolete("Use View instead")]
+		[Obsolete("ViewGroup is obsolete as of version 2.3.5. Please use View instead.")]
 		ViewGroup ViewGroup { get; }
 
 		AView View { get; }

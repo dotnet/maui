@@ -302,7 +302,7 @@ Device.BeginInvokeOnMainThread (() => {
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use switch(RuntimePlatform) instead.")</AttributeName>
+          <AttributeName>System.Obsolete("OnPlatform is obsolete as of version 2.3.4. Please use switch(RuntimePlatform) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -346,7 +346,7 @@ Device.OnPlatform (iOS: () => label.Font = Font.OfSize ("HelveticaNeue-UltraLigh
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use switch(RuntimePlatform) instead.")</AttributeName>
+          <AttributeName>System.Obsolete("OnPlatform&lt;&gt; (generic) is obsolete as of version 2.3.4. Please use switch(RuntimePlatform) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -418,7 +418,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use RuntimePlatform instead.")</AttributeName>
+          <AttributeName>System.Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

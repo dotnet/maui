@@ -84,7 +84,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		[Obsolete("Please use the Font properties directly. Obsolete in 1.3.0")]
+		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font properties directly.")]
 		public Font Font {
 			get { return (Font)_fontElement.GetValue(FontElement.FontProperty); }
 			set { _fontElement.SetValue(FontElement.FontProperty, value); }

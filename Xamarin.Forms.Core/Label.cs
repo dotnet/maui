@@ -12,13 +12,13 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
 			propertyChanged: OnHorizontalTextAlignmentPropertyChanged);
 
-		[Obsolete("XAlignProperty is obsolete. Please use HorizontalTextAlignmentProperty instead.")]
+		[Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")]
 		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
 
 		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start,
 			propertyChanged: OnVerticalTextAlignmentPropertyChanged);
 
-		[Obsolete("YAlignProperty is obsolete. Please use VerticalTextAlignmentProperty instead.")]
+		[Obsolete("YAlignProperty is obsolete as of version 2.0.0. Please use VerticalTextAlignmentProperty instead.")]
 		public static readonly BindableProperty YAlignProperty = VerticalTextAlignmentProperty;
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
@@ -57,7 +57,7 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Label>>(() => new PlatformConfigurationRegistry<Label>(this));
 		}
 
-		[Obsolete("Please use the Font attributes which are on the class itself. Obsoleted in v1.3.0")]
+		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font attributes which are on the class itself.")]
 		public Font Font
 		{
 			get { return (Font)GetValue(FontProperty); }
@@ -100,14 +100,14 @@ namespace Xamarin.Forms
 			set { SetValue(VerticalTextAlignmentProperty, value); }
 		}
 
-		[Obsolete("XAlign is obsolete. Please use HorizontalTextAlignment instead.")]
+		[Obsolete("XAlign is obsolete as of version 2.0.0. Please use HorizontalTextAlignment instead.")]
 		public TextAlignment XAlign
 		{
 			get { return (TextAlignment)GetValue(XAlignProperty); }
 			set { SetValue(XAlignProperty, value); }
 		}
 
-		[Obsolete("YAlign is obsolete. Please use VerticalTextAlignment instead.")]
+		[Obsolete("YAlign is obsolete as of version 2.0.0. Please use VerticalTextAlignment instead.")]
 		public TextAlignment YAlign
 		{
 			get { return (TextAlignment)GetValue(YAlignProperty); }

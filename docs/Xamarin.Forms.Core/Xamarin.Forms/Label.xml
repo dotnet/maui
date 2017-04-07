@@ -163,7 +163,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Please use the Font attributes which are on the class itself. Obsoleted in v1.3.0")</AttributeName>
+          <AttributeName>System.Obsolete("Font is obsolete as of version 1.3.0. Please use the Font attributes which are on the class itself.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -595,7 +595,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("XAlign is obsolete. Please use HorizontalTextAlignment instead.")</AttributeName>
+          <AttributeName>System.Obsolete("XAlign is obsolete as of version 2.0.0. Please use HorizontalTextAlignment instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -623,7 +623,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("XAlignProperty is obsolete. Please use HorizontalTextAlignmentProperty instead.")</AttributeName>
+          <AttributeName>System.Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -751,7 +751,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("YAlign is obsolete. Please use VerticalTextAlignment instead.")</AttributeName>
+          <AttributeName>System.Obsolete("YAlign is obsolete as of version 2.0.0. Please use VerticalTextAlignment instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -779,7 +779,7 @@ public class App : Application
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("YAlignProperty is obsolete. Please use VerticalTextAlignmentProperty instead.")</AttributeName>
+          <AttributeName>System.Obsolete("YAlignProperty is obsolete as of version 2.0.0. Please use VerticalTextAlignmentProperty instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

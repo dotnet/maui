@@ -55,7 +55,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TapGestureRecognizer(Action&lt;View, object&gt; tappedCallback) is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <Parameters>
@@ -83,7 +83,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TapGestureRecognizer(Action&lt;View&gt; tappedCallback) is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <Parameters>
@@ -288,7 +288,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TappedCallback is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -315,7 +315,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TappedCallbackParameter is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -342,7 +342,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TappedCallbackParameterProperty is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -369,7 +369,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Obsolete in 1.0.2. Use Command instead")</AttributeName>
+          <AttributeName>System.Obsolete("TappedCallbackProperty is obsolete as of version 1.0.2. Please use Command instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

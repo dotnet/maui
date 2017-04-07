@@ -169,7 +169,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Generic versions of Create () are no longer supported and deprecated. They will be removed soon.")</AttributeName>
+          <AttributeName>System.Obsolete("Create&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -345,7 +345,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Generic versions of Create () are no longer supported and deprecated. They will be removed soon.")</AttributeName>
+          <AttributeName>System.Obsolete("CreateAttached&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -520,7 +520,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Generic versions of Create () are no longer supported and deprecated. They will be removed soon.")</AttributeName>
+          <AttributeName>System.Obsolete("CreateAttachedReadOnly&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -702,7 +702,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Generic versions of Create () are no longer supported and deprecated. They will be removed soon.")</AttributeName>
+          <AttributeName>System.Obsolete("CreateReadOnly&lt;&gt; (generic) is obsolete as of version 2.1.0 and is no longer supported.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

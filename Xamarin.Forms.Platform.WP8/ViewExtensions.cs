@@ -4,13 +4,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 {
 	public static class ViewExtensions
 	{
-		[Obsolete("Use Platform.GetRenderer")]
+		[Obsolete("GetRenderer is obsolete as of version 2.0.1. Please use Platform.GetRenderer instead.")]
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)
 		{
 			return Platform.GetRenderer(self);
 		}
 
-		[Obsolete("Use Platform.SetRenderer")]
+		[Obsolete("SetRenderer is obsolete as of version 2.0.1. Please use Platform.SetRenderer instead.")]
 		public static void SetRenderer(this VisualElement self, IVisualElementRenderer renderer)
 		{
 			Platform.SetRenderer(self, renderer);

@@ -85,7 +85,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("use ConvertFromInvariantString (string)")</AttributeName>
+          <AttributeName>System.Obsolete("ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -116,7 +116,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("use ConvertFromInvariantString (string)")</AttributeName>
+          <AttributeName>System.Obsolete("ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string) instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

@@ -6,7 +6,7 @@ namespace Xamarin.Forms
 {
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
-		[Obsolete("use ConvertFromInvariantString (string, IServiceProvider)")]
+		[Obsolete("IExtendedTypeConverter.ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string, IServiceProvider) instead.")]
 		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
 		{
 			return ((IExtendedTypeConverter)this).ConvertFromInvariantString(value as string, serviceProvider);

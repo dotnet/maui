@@ -819,7 +819,7 @@ public class MyPage : NavigationPage
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties")</AttributeName>
+          <AttributeName>System.Obsolete("Tint is obsolete as of version 1.2.0. Please use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -848,7 +848,7 @@ public class MyPage : NavigationPage
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties")</AttributeName>
+          <AttributeName>System.Obsolete("TintProperty is obsolete as of version 1.2.0. Please use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

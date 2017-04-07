@@ -17,8 +17,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 
-		[Obsolete("Use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties")] public static readonly BindableProperty TintProperty =
-			BindableProperty.Create("Tint", typeof(Color), typeof(NavigationPage), Color.Default);
+		[Obsolete("TintProperty is obsolete as of version 1.2.0. Please use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties.")] 
+		public static readonly BindableProperty TintProperty = BindableProperty.Create("Tint", typeof(Color), typeof(NavigationPage), Color.Default);
 
 		public static readonly BindableProperty BarBackgroundColorProperty = BindableProperty.Create("BarBackgroundColor", typeof(Color), typeof(NavigationPage), Color.Default);
 
@@ -56,7 +56,7 @@ namespace Xamarin.Forms
 			set { SetValue(BarTextColorProperty, value); }
 		}
 
-		[Obsolete("Use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties")]
+		[Obsolete("Tint is obsolete as of version 1.2.0. Please use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties.")]
 		public Color Tint
 		{
 			get { return (Color)GetValue(TintProperty); }

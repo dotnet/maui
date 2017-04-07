@@ -405,7 +405,8 @@ namespace Xamarin.Forms
 		public static readonly Color FloralWhite = FromRgb(255, 250, 240);
 		public static readonly Color ForestGreen = FromRgb(34, 139, 34);
 		public static readonly Color Fuchsia = FromRgb(255, 0, 255);
-		[Obsolete("Fuschia is obsolete as of version 1.3, please use the correct spelling of Fuchsia")] public static readonly Color Fuschia = FromRgb(255, 0, 255);
+		[Obsolete("Fuschia is obsolete as of version 1.3.0. Please use Fuchsia instead.")]
+		public static readonly Color Fuschia = FromRgb(255, 0, 255);
 		public static readonly Color Gainsboro = FromRgb(220, 220, 220);
 		public static readonly Color GhostWhite = FromRgb(248, 248, 255);
 		public static readonly Color Gold = FromRgb(255, 215, 0);

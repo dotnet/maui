@@ -434,7 +434,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("XAlign is obsolete. Please use HorizontalTextAlignment instead.")</AttributeName>
+          <AttributeName>System.Obsolete("XAlign is obsolete as of version 2.0.0. Please use HorizontalTextAlignment instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
@@ -462,7 +462,7 @@ namespace FormsGallery
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("XAlignProperty is obsolete. Please use HorizontalTextAlignmentProperty instead.")</AttributeName>
+          <AttributeName>System.Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

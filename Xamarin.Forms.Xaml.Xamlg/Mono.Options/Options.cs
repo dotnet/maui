@@ -836,7 +836,7 @@ namespace Mono.Options
 			throw new InvalidOperationException("Option has no names!");
 		}
 
-		[Obsolete("Use KeyedCollection.this[string]")]
+		[Obsolete("GetOptionForName is obsolete as of 1.1.0. Please use KeyedCollection.this[string] instead.")]
 		protected Option GetOptionForName(string option)
 		{
 			if (option == null)

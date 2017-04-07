@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _ignoreSourceChanges;
 		FormsWebChromeClient _webChromeClient;
 
-        IWebViewController ElementController => Element;
+		IWebViewController ElementController => Element;
 
 		public WebViewRenderer()
 		{
@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Platform.Android
 				base.OnPageFinished(view, url);
 			}
 
-			[Obsolete("This method was deprecated in API level 23.")]
+			[Obsolete("OnReceivedError is obsolete as of version 2.3.0. This method was deprecated in API level 23.")]
 			public override void OnReceivedError(AWebView view, ClientError errorCode, string description, string failingUrl)
 			{
 				_navigationResult = WebNavigationResult.Failure;

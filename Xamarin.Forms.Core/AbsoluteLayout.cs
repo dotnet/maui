@@ -74,7 +74,7 @@ namespace Xamarin.Forms
 			base.OnChildRemoved(child);
 		}
 
-		[Obsolete("Use OnMeasure")]
+		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			var bestFitSize = new Size();

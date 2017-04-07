@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool OptimizeIL { get; set; }
 
 		bool outputGeneratedILAsCode;
-		[Obsolete("This option is no longer available")]
+		[Obsolete("OutputGeneratedILAsCode is obsolete as of version 2.3.4. This option is no longer available.")]
 		public bool OutputGeneratedILAsCode {
 			get { return outputGeneratedILAsCode; }
 			set { outputGeneratedILAsCode = value; }

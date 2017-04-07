@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android
 			return base.OnPrepareOptionsMenu(menu);
 		}
 
-		[Obsolete("Please use protected LoadApplication (Application app) instead")]
+		[Obsolete("SetPage is obsolete as of version 1.3.0. Please use protected LoadApplication (Application app) instead.")]
 		public void SetPage(Page page)
 		{
 			var application = new DefaultApplication { MainPage = page };

@@ -1252,7 +1252,7 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Fuschia is obsolete as of version 1.3, please use the correct spelling of Fuchsia")</AttributeName>
+          <AttributeName>System.Obsolete("Fuschia is obsolete as of version 1.3.0. Please use Fuchsia instead.")</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

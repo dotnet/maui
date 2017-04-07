@@ -76,7 +76,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		[Obsolete("Use Parent")]
+		[Obsolete("ParentView is obsolete as of version 2.1.0. Please use Parent instead.")]
 		public VisualElement ParentView
 		{
 			get

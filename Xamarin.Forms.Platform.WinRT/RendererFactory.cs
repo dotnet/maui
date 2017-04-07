@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public static class RendererFactory
 	{
-		[Obsolete("Use Platform.CreateRenderer")]
+		[Obsolete("GetRenderer is obsolete as of version 2.0.1. Please use Platform.CreateRenderer instead.")]
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			return Platform.CreateRenderer(element);
