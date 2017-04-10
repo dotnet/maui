@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Build.Tasks
 						if (initCompRuntime == null) {
 							Logger.LogString(2, "   Creating empty {0}.__InitComponentRuntime ...", typeDef.Name);
 							initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
+							initCompRuntime.Body.InitLocals = true;
 							Logger.LogLine(2, "done.");
 							Logger.LogString(2, "   Copying body of InitializeComponent to __InitComponentRuntime ...", typeDef.Name);
 							initCompRuntime.Body = new MethodBody(initCompRuntime);
@@ -116,6 +117,7 @@ namespace Xamarin.Forms.Build.Tasks
 						}
 
 						var body = new MethodBody(altCtor);
+						body.InitLocals = true;
 						var il = body.GetILProcessor();
 						var br2 = Instruction.Create(OpCodes.Ldarg_0);
 						var ret = Instruction.Create(OpCodes.Ret);
