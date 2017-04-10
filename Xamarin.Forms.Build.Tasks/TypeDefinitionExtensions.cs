@@ -42,6 +42,7 @@ namespace Xamarin.Forms.Build.Tasks
 				CallingConvention = MethodCallingConvention.Default,
 				ImplAttributes = (MethodImplAttributes.IL | MethodImplAttributes.Managed)
 			};
+			ctor.Body.InitLocals = true;
 
 			var IL = ctor.Body.GetILProcessor();
 
