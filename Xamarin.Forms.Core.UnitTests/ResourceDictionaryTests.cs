@@ -289,8 +289,73 @@ namespace Xamarin.Forms.Core.UnitTests
 			rd0.MergedWith = typeof(MyRD);
 
 			object _;
-			Assert.True(rd0.TryGetMergedValue("foo", out _));
+			Assert.True(rd0.TryGetValue("foo", out _));
 			Assert.AreEqual("Foo", _);
+		}
+
+		[Test]
+		public void ThrowOnDuplicateKey()
+		{
+			var rd0 = new ResourceDictionary();
+			rd0.Add("foo", "Foo");
+			try {
+				rd0.Add("foo", "Bar");
+			} catch (ArgumentException ae) {
+				Assert.AreEqual("A resource with the key 'foo' is already present in the ResourceDictionary.", ae.Message);
+				Assert.Pass();
+			}
+			Assert.Fail();
+		}
+
+		[Test]
+		public void ContainsReturnsValuesForMergedRD()
+		{
+			var rd = new ResourceDictionary {
+				{"baz", "BAZ"},
+				{"qux", "QUX"},
+			};
+			rd.MergedWith = typeof(MyRD);
+
+			Assert.That(rd.Contains(new KeyValuePair<string, object>("foo", "Foo")), Is.True);
+		}
+
+		[Test]
+		public void CountDoesNotIncludeMerged()
+		{
+			var rd = new ResourceDictionary {
+				{"baz", "Baz"},
+				{"qux", "Qux"},
+			};
+			rd.MergedWith = typeof(MyRD);
+
+			Assert.That(rd.Count, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void IndexerLookupInMerged()
+		{
+			var rd = new ResourceDictionary {
+				{"baz", "BAZ"},
+				{"qux", "QUX"},
+			};
+			rd.MergedWith = typeof(MyRD);
+
+			Assert.That(() => rd["foo"], Throws.Nothing);
+			Assert.That(rd["foo"], Is.EqualTo("Foo"));
+		}
+
+		[Test]
+		public void TryGetValueLookupInMerged()
+		{
+			var rd = new ResourceDictionary { 
+				{"baz", "BAZ"},
+				{"qux", "QUX"},
+			};
+			rd.MergedWith = typeof(MyRD);
+
+			object _;
+			Assert.That(rd.TryGetValue("foo", out _), Is.True);
+			Assert.That(rd.TryGetValue("baz", out _), Is.True);
 		}
 	}
 }
