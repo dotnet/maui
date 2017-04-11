@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 				var menuItem = item.DataContext as MenuItem;
 				if (menuItem != null)
-					((IMenuItemController)menuItem).Activate();
+					menuItem.Activate();
 			};
 			return item;
 		}

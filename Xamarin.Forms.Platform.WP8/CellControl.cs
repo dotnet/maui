@@ -57,12 +57,12 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (oldCell != null)
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
-				((ICellController)oldCell).SendDisappearing();
+				oldCell.SendDisappearing();
 			}
 
 			if (newCell != null)
 			{
-				((ICellController)newCell).SendAppearing();
+				newCell.SendAppearing();
 
 				if (oldCell == null || oldCell.GetType() != newCell.GetType())
 					ContentTemplate = GetTemplate(newCell);

@@ -17,7 +17,7 @@
 
 		void UpdateBackButton()
 		{
-			bool showBackButton = PageController.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
+			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
 			_container.ShowBackButton = showBackButton;
 		}
 

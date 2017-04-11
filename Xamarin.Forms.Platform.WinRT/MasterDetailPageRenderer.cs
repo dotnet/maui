@@ -57,8 +57,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			set { _container.ToolbarForeground = value; }
 		}
 
-		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
-
 		bool ITitleProvider.ShowTitle
 		{
 			get { return _showTitle; }
@@ -179,7 +177,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool GetIsMasterAPopover()
 		{
 			// TODO: Support tablet being shrunk to a very small size
-			return !MasterDetailPageController.ShouldShowSplitMode;
+			return !Element.ShouldShowSplitMode;
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
@@ -273,8 +271,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (!isPopover)
 				detailWidth -= masterWidth;
 
-			MasterDetailPageController.MasterBounds = new Rectangle(0, 0, masterWidth, constraint.Height);
-			MasterDetailPageController.DetailBounds = new Rectangle(0, 0, detailWidth, constraint.Height);
+			Element.MasterBounds = new Rectangle(0, 0, masterWidth, constraint.Height);
+			Element.DetailBounds = new Rectangle(0, 0, detailWidth, constraint.Height);
 		}
 
 		void UpdateIsPresented()

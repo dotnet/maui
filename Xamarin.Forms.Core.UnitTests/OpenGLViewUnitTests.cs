@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var view = new OpenGLView ();
 			bool displayed = false;
 
-			((IOpenGlViewController)view).DisplayRequested += (s, o) => displayed = true;
+			view.DisplayRequested += (s, o) => displayed = true;
 
 			view.Display ();
 			Assert.True (displayed);

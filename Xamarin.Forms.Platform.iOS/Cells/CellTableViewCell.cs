@@ -19,19 +19,17 @@ namespace Xamarin.Forms.Platform.iOS
 			get { return _cell; }
 			set
 			{
-				if (_cell == value)
+				if (this._cell == value)
 					return;
 
-				ICellController cellController = _cell;
+				if (_cell != null)
+					Device.BeginInvokeOnMainThread(_cell.SendDisappearing);
 
-				if (cellController != null)
-					Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
-
+				this._cell = value;
 				_cell = value;
-				cellController = value;
 
-				if (cellController != null)
-					Device.BeginInvokeOnMainThread(cellController.SendAppearing);
+				if (_cell != null)
+					Device.BeginInvokeOnMainThread(_cell.SendAppearing);
 			}
 		}
 

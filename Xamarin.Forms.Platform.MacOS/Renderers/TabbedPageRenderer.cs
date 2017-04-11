@@ -72,9 +72,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
 
-		IPageController PageController => Element as IPageController;
-
-		IElementController ElementController => Element;
+		Page Page => Element as Page;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -104,7 +102,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				View.Frame = new System.Drawing.RectangleF((float)Element.X, (float)Element.Y, (float)Element.Width, (float)Element.Height);
 
 			var frame = View.Frame;
-			PageController.ContainerArea = new Rectangle(0, 0, frame.Width, frame.Height - TabHolderHeight);
+			Page.ContainerArea = new Rectangle(0, 0, frame.Width, frame.Height - TabHolderHeight);
 
 			if (!_queuedSize.IsZero)
 			{
@@ -129,14 +127,14 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public override void ViewDidAppear()
 		{
-			PageController.SendAppearing();
+			Page.SendAppearing();
 			base.ViewDidAppear();
 		}
 
 		public override void ViewDidDisappear()
 		{
 			base.ViewDidDisappear();
-			PageController.SendDisappearing();
+			Page.SendDisappearing();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -144,7 +142,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (disposing && !_disposed)
 			{
 				_disposed = true;
-				PageController.SendDisappearing();
+				Page.SendDisappearing();
 				Tabbed.PropertyChanged -= OnPropertyChanged;
 				Tabbed.PagesChanged -= OnPagesChanged;
 
@@ -286,9 +284,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		void SetControllers()
 		{
 			_updatingControllers = true;
-			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+			for (var i = 0; i < Element.LogicalChildren.Count; i++)
 			{
-				var child = ElementController.LogicalChildren[i];
+				var child = Element.LogicalChildren[i];
 				var page = child as Page;
 				if (page == null)
 					continue;
@@ -342,7 +340,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				int originalIndex;
 				if (int.TryParse(TabViewItems[i].ViewController.Identifier, out originalIndex))
 				{
-					var page = PageController.InternalChildren[originalIndex];
+					var page = Page.InternalChildren[originalIndex];
 					TabbedPage.SetIndex(page as Page, i);
 				}
 			}
@@ -350,7 +348,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateCurrentPage()
 		{
-			var count = PageController.InternalChildren.Count;
+			var count = Page.InternalChildren.Count;
 			Tabbed.CurrentPage = SelectedTabViewItemIndex >= 0 && SelectedTabViewItemIndex < count
 				? Tabbed.GetPageByIndex((int)SelectedTabViewItemIndex)
 				: null;

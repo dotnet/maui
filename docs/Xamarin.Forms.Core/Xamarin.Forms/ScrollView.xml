@@ -167,6 +167,33 @@ MainPage = new ContentPage
         <remarks>This bindable property is read-only.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetScrollPositionForElement">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Point GetScrollPositionForElement (Xamarin.Forms.VisualElement item, Xamarin.Forms.ScrollToPosition pos);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance valuetype Xamarin.Forms.Point GetScrollPositionForElement(class Xamarin.Forms.VisualElement item, valuetype Xamarin.Forms.ScrollToPosition pos) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Point</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="item" Type="Xamarin.Forms.VisualElement" />
+        <Parameter Name="pos" Type="Xamarin.Forms.ScrollToPosition" />
+      </Parameters>
+      <Docs>
+        <param name="item">To be added.</param>
+        <param name="pos">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="LayoutChildren">
       <MemberSignature Language="C#" Value="protected override void LayoutChildren (double x, double y, double width, double height);" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig virtual instance void LayoutChildren(float64 x, float64 y, float64 width, float64 height) cil managed" />
@@ -375,6 +402,26 @@ MainPage = new ContentPage
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ScrollToRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.ScrollToRequestedEventArgs&gt; ScrollToRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ScrollX">
       <MemberSignature Language="C#" Value="public double ScrollX { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 ScrollX" />
@@ -445,6 +492,53 @@ MainPage = new ContentPage
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SendScrollFinished">
+      <MemberSignature Language="C#" Value="public void SendScrollFinished ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendScrollFinished() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetScrolledPosition">
+      <MemberSignature Language="C#" Value="public void SetScrolledPosition (double x, double y);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SetScrolledPosition(float64 x, float64 y) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="x" Type="System.Double" />
+        <Parameter Name="y" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="x">To be added.</param>
+        <param name="y">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Xamarin.Forms.IScrollViewController.GetScrollPositionForElement">
       <MemberSignature Language="C#" Value="Xamarin.Forms.Point IScrollViewController.GetScrollPositionForElement (Xamarin.Forms.VisualElement item, Xamarin.Forms.ScrollToPosition pos);" />
       <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance valuetype Xamarin.Forms.Point Xamarin.Forms.IScrollViewController.GetScrollPositionForElement(class Xamarin.Forms.VisualElement item, valuetype Xamarin.Forms.ScrollToPosition pos) cil managed" />
@@ -452,7 +546,6 @@ MainPage = new ContentPage
       <AssemblyInfo>
         <AssemblyVersion>1.4.0.0</AssemblyVersion>
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Forms.Point</ReturnType>
@@ -476,7 +569,6 @@ MainPage = new ContentPage
       <AssemblyInfo>
         <AssemblyVersion>1.4.0.0</AssemblyVersion>
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -494,7 +586,6 @@ MainPage = new ContentPage
       <AssemblyInfo>
         <AssemblyVersion>1.4.0.0</AssemblyVersion>
         <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

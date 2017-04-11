@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 			menu.Add (child);
 
-			((INavigationMenuController)menu).SendTargetSelected (child);
+			menu.SendTargetSelected (child);
 
 			Assert.True (pushed);
 			Assert.AreEqual (child, navForm.CurrentPage);

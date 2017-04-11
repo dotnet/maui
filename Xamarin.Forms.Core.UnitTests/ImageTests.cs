@@ -249,9 +249,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			{
 				if (initialLoad && Element.Source != null) {
 					initialLoad = false;
-					((IImageController)Element).SetIsLoading(true);
+					Element.SetIsLoading(true);
 					await (Element.Source as UriImageSource).GetStreamAsync ();
-					((IImageController)Element).SetIsLoading(false);
+					Element.SetIsLoading(false);
 				}
 			}
 

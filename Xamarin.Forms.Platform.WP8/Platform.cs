@@ -537,7 +537,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 			var buttonsToAdd = new List<TaggedAppBarButton>();
 			foreach (ToolbarItem item in items.Where(i => i.Order != ToolbarItemOrder.Secondary))
 			{
-				IMenuItemController controller = item;
 				if (_page.ApplicationBar.Buttons.OfType<TaggedAppBarButton>().Any(b => b.Tag == item))
 					continue;
 
@@ -545,10 +544,10 @@ namespace Xamarin.Forms.Platform.WinPhone
 				{
 					IconUri = new Uri(item.Icon ?? "ApplicationIcon.jpg", UriKind.Relative),
 					Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg",
-					IsEnabled = controller.IsEnabled,
+					IsEnabled = item.IsEnabled,
 					Tag = item
 				};
-				button.Click += (sender, args) => controller.Activate();
+				button.Click += (sender, args) => item.Activate();
 				buttonsToAdd.Add(button);
 			}
 
@@ -559,7 +558,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					continue;
 
 				var button = new TaggedAppBarMenuItem { Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "MenuItem", IsEnabled = true, Tag = item };
-				button.Click += (sender, args) => ((IMenuItemController)item).Activate();
+				button.Click += (sender, args) => item.Activate();
 				menuItemsToAdd.Add(button);
 			}
 
@@ -625,10 +624,8 @@ namespace Xamarin.Forms.Platform.WinPhone
 				if (item == null)
 					return;
 
-				IMenuItemController controller = item;
-
-				if (e.PropertyName == controller.IsEnabledPropertyName)
-					IsEnabled = controller.IsEnabled;
+				if (e.PropertyName == item.IsEnabledPropertyName)
+					IsEnabled = item.IsEnabled;
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 					Text = !string.IsNullOrWhiteSpace(item.Text) ? item.Text : (string)item.Icon ?? "ApplicationIcon.jpg";
 				else if (e.PropertyName == MenuItem.IconProperty.PropertyName)

@@ -133,6 +133,26 @@ namespace opengl
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="DisplayRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler DisplayRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler DisplayRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="HasRenderLoop">
       <MemberSignature Language="C#" Value="public bool HasRenderLoop { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool HasRenderLoop" />

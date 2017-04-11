@@ -33,6 +33,27 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="IsPinching">
+      <MemberSignature Language="C#" Value="public bool IsPinching { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance bool IsPinching" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="PinchUpdated">
       <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.PinchGestureUpdatedEventArgs&gt; PinchUpdated;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.PinchGestureUpdatedEventArgs&gt; PinchUpdated" />
@@ -49,29 +70,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Xamarin.Forms.IPinchGestureController.IsPinching">
-      <MemberSignature Language="C#" Value="bool Xamarin.Forms.IPinchGestureController.IsPinching { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance bool Xamarin.Forms.IPinchGestureController.IsPinching" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Xamarin.Forms.IPinchGestureController.SendPinch">
-      <MemberSignature Language="C#" Value="void IPinchGestureController.SendPinch (Xamarin.Forms.Element sender, double delta, Xamarin.Forms.Point currentScalePoint);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPinchGestureController.SendPinch(class Xamarin.Forms.Element sender, float64 delta, valuetype Xamarin.Forms.Point currentScalePoint) cil managed" />
+    <Member MemberName="SendPinch">
+      <MemberSignature Language="C#" Value="public void SendPinch (Xamarin.Forms.Element sender, double delta, Xamarin.Forms.Point currentScalePoint);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendPinch(class Xamarin.Forms.Element sender, float64 delta, valuetype Xamarin.Forms.Point currentScalePoint) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -88,13 +98,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Xamarin.Forms.IPinchGestureController.SendPinchCanceled">
-      <MemberSignature Language="C#" Value="void IPinchGestureController.SendPinchCanceled (Xamarin.Forms.Element sender);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPinchGestureController.SendPinchCanceled(class Xamarin.Forms.Element sender) cil managed" />
+    <Member MemberName="SendPinchCanceled">
+      <MemberSignature Language="C#" Value="public void SendPinchCanceled (Xamarin.Forms.Element sender);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendPinchCanceled(class Xamarin.Forms.Element sender) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -107,13 +122,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Xamarin.Forms.IPinchGestureController.SendPinchEnded">
-      <MemberSignature Language="C#" Value="void IPinchGestureController.SendPinchEnded (Xamarin.Forms.Element sender);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPinchGestureController.SendPinchEnded(class Xamarin.Forms.Element sender) cil managed" />
+    <Member MemberName="SendPinchEnded">
+      <MemberSignature Language="C#" Value="public void SendPinchEnded (Xamarin.Forms.Element sender);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendPinchEnded(class Xamarin.Forms.Element sender) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -126,13 +146,18 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Xamarin.Forms.IPinchGestureController.SendPinchStarted">
-      <MemberSignature Language="C#" Value="void IPinchGestureController.SendPinchStarted (Xamarin.Forms.Element sender, Xamarin.Forms.Point initialScalePoint);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IPinchGestureController.SendPinchStarted(class Xamarin.Forms.Element sender, valuetype Xamarin.Forms.Point initialScalePoint) cil managed" />
+    <Member MemberName="SendPinchStarted">
+      <MemberSignature Language="C#" Value="public void SendPinchStarted (Xamarin.Forms.Element sender, Xamarin.Forms.Point initialScalePoint);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendPinchStarted(class Xamarin.Forms.Element sender, valuetype Xamarin.Forms.Point initialScalePoint) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>

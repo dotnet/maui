@@ -19,8 +19,6 @@ namespace Xamarin.Forms.Platform.iOS
 			readonly bool _forceName;
 			readonly ToolbarItem _item;
 
-			IMenuItemController Controller => _item;
-
 			public PrimaryToolbarItem(ToolbarItem item, bool forceName)
 			{
 				_forceName = forceName;
@@ -32,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateTextAndStyle();
 				UpdateIsEnabled();
 
-				Clicked += (sender, e) => Controller.Activate();
+				Clicked += (sender, e) => _item.Activate();
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -48,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (e.PropertyName == Controller.IsEnabledPropertyName)
+				if (e.PropertyName == _item.IsEnabledPropertyName)
 					UpdateIsEnabled();
 				else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
 				{
@@ -77,7 +75,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateIsEnabled()
 			{
-				Enabled = Controller.IsEnabled;
+				Enabled = _item.IsEnabled;
 			}
 
 			void UpdateTextAndStyle()
@@ -91,7 +89,6 @@ namespace Xamarin.Forms.Platform.iOS
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
 			readonly ToolbarItem _item;
-			IMenuItemController Controller => _item;
 
 			public SecondaryToolbarItem(ToolbarItem item) : base(new SecondaryToolbarItemContent())
 			{
@@ -100,7 +97,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateIcon();
 				UpdateIsEnabled();
 
-				((SecondaryToolbarItemContent)CustomView).TouchUpInside += (sender, e) => Controller.Activate();
+				((SecondaryToolbarItemContent)CustomView).TouchUpInside += (sender, e) => _item.Activate();
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -120,7 +117,7 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateText();
 				else if (e.PropertyName == MenuItem.IconProperty.PropertyName)
 					UpdateIcon();
-				else if (e.PropertyName == Controller.IsEnabledPropertyName)
+				else if (e.PropertyName == _item.IsEnabledPropertyName)
 					UpdateIsEnabled();
 			}
 
@@ -137,7 +134,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateIsEnabled()
 			{
-				((UIControl)CustomView).Enabled = Controller.IsEnabled;
+				((UIControl)CustomView).Enabled = _item.IsEnabled;
 			}
 
 			void UpdateText()

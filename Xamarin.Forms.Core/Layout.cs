@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms.Internals;
 
@@ -17,7 +18,7 @@ namespace Xamarin.Forms
 			_children = new ElementCollection<T>(InternalChildren);
 		}
 
-		public IList<T> Children
+		public new IList<T> Children
 		{
 			get { return _children; }
 		}
@@ -98,7 +99,8 @@ namespace Xamarin.Forms
 
 		public event EventHandler LayoutChanged;
 
-		IReadOnlyList<Element> ILayoutController.Children
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public IReadOnlyList<Element> Children
 		{
 			get { return InternalChildren; }
 		}

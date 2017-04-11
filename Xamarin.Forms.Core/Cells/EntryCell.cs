@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -65,7 +66,8 @@ namespace Xamarin.Forms
 
 		public event EventHandler Completed;
 
-		void IEntryCellController.SendCompleted()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendCompleted()
 		{
 			EventHandler handler = Completed;
 			if (handler != null)

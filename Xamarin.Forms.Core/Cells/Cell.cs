@@ -79,12 +79,8 @@ namespace Xamarin.Forms
 
 		public event EventHandler Disappearing;
 
-		event EventHandler ForceUpdateSizeRequested;
-		event EventHandler ICellController.ForceUpdateSizeRequested
-		{
-			add { ForceUpdateSizeRequested += value; }
-			remove { ForceUpdateSizeRequested -= value; }
-		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler ForceUpdateSizeRequested;
 
 		public void ForceUpdateSize()
 		{
@@ -156,20 +152,22 @@ namespace Xamarin.Forms
 			base.OnPropertyChanging(propertyName);
 		}
 
-		void ICellController.SendAppearing()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendAppearing()
 		{
 			OnAppearing();
 
-			var container = RealParent as IListViewController;
+			var container = RealParent as ListView;
 			if (container != null)
 				container.SendCellAppearing(this);
 		}
 
-		void ICellController.SendDisappearing()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendDisappearing()
 		{
 			OnDisappearing();
 
-			var container = RealParent as IListViewController;
+			var container = RealParent as ListView;
 			if (container != null)
 				container.SendCellDisappearing(this);
 		}

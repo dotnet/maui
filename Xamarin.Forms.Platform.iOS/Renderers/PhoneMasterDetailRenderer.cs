@@ -24,13 +24,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 		VisualElementTracker _tracker;
 
-		IPageController PageController => Element as IPageController;
+		Page Page => Element as Page;
 
 		public PhoneMasterDetailRenderer()
 		{
 		}
 
-		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
+		MasterDetailPage MasterDetailPage => Element as MasterDetailPage;
 
 		bool Presented
 		{
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.iOS
 				else
 					RemoveClickOffView();
 
-				((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, value);
+				((IElementController)Element).SetValueFromRenderer(Xamarin.Forms.MasterDetailPage.IsPresentedProperty, value);
 			}
 		}
 
@@ -99,13 +99,13 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidAppear(bool animated)
 		{
 			base.ViewDidAppear(animated);
-			PageController.SendAppearing();
+			Page.SendAppearing();
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			PageController?.SendDisappearing();
+			Page?.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (!MasterDetailPageController.ShouldShowSplitMode && _presented)
+			if (!MasterDetailPage.ShouldShowSplitMode && _presented)
 				Presented = false;
 
 			base.WillRotate(toInterfaceOrientation, duration);
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				EmptyContainers();
 
-				PageController.SendDisappearing();
+				Page.SendDisappearing();
 
 				_disposed = true;
 			}
@@ -225,9 +225,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateMasterDetailContainers();
-			else if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
 				Presented = ((MasterDetailPage)Element).IsPresented;
-			else if (e.PropertyName == MasterDetailPage.IsGestureEnabledProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
@@ -259,8 +259,8 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 				_detailController.View.Frame = target;
 
-			MasterDetailPageController.MasterBounds = new Rectangle(0, 0, masterFrame.Width, masterFrame.Height);
-			MasterDetailPageController.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
+			MasterDetailPage.MasterBounds = new Rectangle(0, 0, masterFrame.Width, masterFrame.Height);
+			MasterDetailPage.DetailBounds = new Rectangle(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;

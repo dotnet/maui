@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -39,7 +40,9 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<WebView>>(() => new PlatformConfigurationRegistry<WebView>(this));
 		}
 
-		bool IWebViewController.CanGoBack {
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		bool IWebViewController.CanGoBack 
+		{
 			get { return CanGoBack; }
 			set { SetValue(CanGoBackPropertyKey, value); }
 		}
@@ -49,7 +52,9 @@ namespace Xamarin.Forms
 			get { return (bool)GetValue(CanGoBackProperty); }
 		}
 
-		bool IWebViewController.CanGoForward {
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		bool IWebViewController.CanGoForward 
+		{
 			get { return CanGoForward; }
 			set { SetValue(CanGoForwardPropertyKey, value); }
 		}
@@ -123,28 +128,23 @@ namespace Xamarin.Forms
 			remove { EvalRequested -= value; }
 		}
 
-		event EventHandler<EvalRequested> EvalRequested;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler<EvalRequested> EvalRequested;
 
-		event EventHandler IWebViewController.GoBackRequested {
-			add { GoBackRequested += value; }
-			remove { GoBackRequested -= value; }
-		}
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler GoBackRequested;
 
-		event EventHandler GoBackRequested;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler GoForwardRequested;
 
-		event EventHandler IWebViewController.GoForwardRequested {
-			add { GoForwardRequested += value; }
-			remove { GoForwardRequested -= value; }
-		}
-
-		event EventHandler GoForwardRequested;
-
-		void IWebViewController.SendNavigated(WebNavigatedEventArgs args)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendNavigated(WebNavigatedEventArgs args)
 		{
 			Navigated?.Invoke(this, args);
 		}
 
-		void IWebViewController.SendNavigating(WebNavigatingEventArgs args)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendNavigating(WebNavigatingEventArgs args)
 		{
 			Navigating?.Invoke(this, args);
 		}

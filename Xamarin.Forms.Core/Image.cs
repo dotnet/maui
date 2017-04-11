@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
@@ -160,7 +161,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void IImageController.SetIsLoading(bool isLoading)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetIsLoading(bool isLoading)
 		{
 			SetValue(IsLoadingPropertyKey, isLoading);
 		}

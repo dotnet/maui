@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -13,22 +14,26 @@ namespace Xamarin.Forms
 			set { SetValue(TouchPointsProperty, value); }
 		}
 
-		void IPanGestureController.SendPan(Element sender, double totalX, double totalY, int gestureId)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPan(Element sender, double totalX, double totalY, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Running, gestureId, totalX, totalY));
 		}
 
-		void IPanGestureController.SendPanCanceled(Element sender, int gestureId)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPanCanceled(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Canceled, gestureId));
 		}
 
-		void IPanGestureController.SendPanCompleted(Element sender, int gestureId)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPanCompleted(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Completed, gestureId));
 		}
 
-		void IPanGestureController.SendPanStarted(Element sender, int gestureId)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPanStarted(Element sender, int gestureId)
 		{
 			PanUpdated?.Invoke(sender, new PanUpdatedEventArgs(GestureStatus.Started, gestureId));
 		}

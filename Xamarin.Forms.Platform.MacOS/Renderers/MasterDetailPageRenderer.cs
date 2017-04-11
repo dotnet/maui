@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		VisualElementTracker _tracker;
 		MasterDetailPage _masterDetailPage;
 
-		IPageController PageController => Element as IPageController;
+		Page Page => Element as Page;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (!_disposed && disposing)
 			{
-				PageController?.SendDisappearing();
+				Page?.SendDisappearing();
 
 				if (Element != null)
 				{

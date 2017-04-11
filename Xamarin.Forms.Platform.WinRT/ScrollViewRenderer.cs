@@ -21,11 +21,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			AutoPackage = false;
 		}
 
-		protected IScrollViewController Controller
-		{
-			get { return Element; }
-		}
-
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			SizeRequest result = base.GetDesiredSize(widthConstraint, heightConstraint);
@@ -77,7 +72,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			if (e.OldElement != null)
 			{
-				((IScrollViewController)e.OldElement).ScrollToRequested -= OnScrollToRequested;
+				e.OldElement.ScrollToRequested -= OnScrollToRequested;
 			}
 
 			if (e.NewElement != null)
@@ -89,7 +84,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					Control.ViewChanged += OnViewChanged;
 				}
 
-				Controller.ScrollToRequested += OnScrollToRequested;
+				Element.ScrollToRequested += OnScrollToRequested;
 
 				UpdateOrientation();
 
@@ -136,7 +131,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			ScrollToMode mode = e.Mode;
 			if (mode == ScrollToMode.Element)
 			{
-				Point pos = Controller.GetScrollPositionForElement((VisualElement)e.Element, e.Position);
+				Point pos = Element.GetScrollPositionForElement((VisualElement)e.Element, e.Position);
 				x = pos.X;
 				y = pos.Y;
 				mode = ScrollToMode.Position;
@@ -146,15 +141,15 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				Control.ChangeView(x, y, null, !e.ShouldAnimate);
 			}
-			Controller.SendScrollFinished();
+			Element.SendScrollFinished();
 		}
 
 		void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
-			Controller.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
+			Element.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
 
 			if (!e.IsIntermediate)
-				Controller.SendScrollFinished();
+				Element.SendScrollFinished();
 		}
 
 		void UpdateMargins()

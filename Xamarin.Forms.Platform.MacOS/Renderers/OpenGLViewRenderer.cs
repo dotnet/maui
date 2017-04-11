@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				_displayLink = null;
 
 				if (Element != null)
-					((IOpenGlViewController)Element).DisplayRequested -= Display;
+					Element.DisplayRequested -= Display;
 			}
 
 			base.Dispose(disposing);
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		protected override void OnElementChanged(ElementChangedEventArgs<OpenGLView> e)
 		{
 			if (e.OldElement != null)
-				((IOpenGlViewController)e.OldElement).DisplayRequested -= Display;
+				e.OldElement.DisplayRequested -= Display;
 
 			if (e.NewElement != null)
 			{
@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				var glkView = new MacOSOpenGLView();
 				SetNativeControl(glkView);
 
-				((IOpenGlViewController)e.NewElement).DisplayRequested += Display;
+				e.NewElement.DisplayRequested += Display;
 
 				SetupRenderLoop(false);
 			}

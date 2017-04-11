@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,15 +47,12 @@ namespace Xamarin.Forms
 
 		ReadOnlyCollection<Element> _logicalChildren;
 
-		IPageController PageController => this as IPageController;
-		IElementController ElementController => this as IElementController;
-
 		public Page()
 		{
 			var toolbarItems = new ObservableCollection<ToolbarItem>();
 			toolbarItems.CollectionChanged += OnToolbarItemsCollectionChanged;
 			ToolbarItems = toolbarItems;
-			PageController.InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
+			InternalChildren.CollectionChanged += InternalChildrenOnCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Page>>(() => new PlatformConfigurationRegistry<Page>(this));
 		}
 
@@ -90,7 +88,8 @@ namespace Xamarin.Forms
 
 		public IList<ToolbarItem> ToolbarItems { get; internal set; }
 
-		Rectangle IPageController.ContainerArea
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public Rectangle ContainerArea
 		{
 			get { return _containerArea; }
 			set
@@ -103,16 +102,18 @@ namespace Xamarin.Forms
 			}
 		}
 
-		bool IPageController.IgnoresContainerArea
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public bool IgnoresContainerArea
 		{
 			get { return (bool)GetValue(IgnoresContainerAreaProperty); }
 			set { SetValue(IgnoresContainerAreaProperty, value); }
 		}
 
-		ObservableCollection<Element> IPageController.InternalChildren { get; } = new ObservableCollection<Element>();
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => 
-			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(PageController.InternalChildren));
+			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		public event EventHandler LayoutChanged;
 
@@ -158,7 +159,7 @@ namespace Xamarin.Forms
 			Rectangle originalArea = area;
 			if (_containerAreaSet)
 			{
-				area = PageController.ContainerArea;
+				area = ContainerArea;
 				area.X += Padding.Left;
 				area.Y += Padding.Right;
 				area.Width -= Padding.HorizontalThickness;
@@ -167,14 +168,14 @@ namespace Xamarin.Forms
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = ElementController.LogicalChildren.ToList();
+			List<Element> elements = LogicalChildren.ToList();
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
 				if (child == null)
 					continue;
 				var page = child as Page;
-				if (page != null && ((IPageController)page).IgnoresContainerArea)
+				if (page != null && page.IgnoresContainerArea)
 					Forms.Layout.LayoutChildIntoBoundingRegion(child, originalArea);
 				else
 					Forms.Layout.LayoutChildIntoBoundingRegion(child, area);
@@ -238,8 +239,8 @@ namespace Xamarin.Forms
 			if (!ShouldLayoutChildren())
 				return;
 
-			var startingLayout = new List<Rectangle>(ElementController.LogicalChildren.Count);
-			foreach (VisualElement c in ElementController.LogicalChildren)
+			var startingLayout = new List<Rectangle>(LogicalChildren.Count);
+			foreach (VisualElement c in LogicalChildren)
 			{
 				startingLayout.Add(c.Bounds);
 			}
@@ -251,9 +252,9 @@ namespace Xamarin.Forms
 
 			LayoutChildren(x, y, w, h);
 
-			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+			for (var i = 0; i < LogicalChildren.Count; i++)
 			{
-				var c = (VisualElement)ElementController.LogicalChildren[i];
+				var c = (VisualElement)LogicalChildren[i];
 
 				if (c.Bounds != startingLayout[i])
 				{
@@ -276,9 +277,9 @@ namespace Xamarin.Forms
 			}
 			else
 			{
-				for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+				for (var i = 0; i < LogicalChildren.Count; i++)
 				{
-					var v = ElementController.LogicalChildren[i] as VisualElement;
+					var v = LogicalChildren[i] as VisualElement;
 					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
 						return;
 				}
@@ -292,7 +293,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void IPageController.SendAppearing()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public void SendAppearing()
 		{
 			if (_hasAppeared)
 				return;
@@ -308,10 +310,11 @@ namespace Xamarin.Forms
 				handler(this, EventArgs.Empty);
 
 			var pageContainer = this as IPageContainer<Page>;
-			((IPageController)pageContainer?.CurrentPage)?.SendAppearing();
+			pageContainer?.CurrentPage?.SendAppearing();
 		}
 
-		void IPageController.SendDisappearing()
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public void SendDisappearing()
 		{
 			if (!_hasAppeared)
 				return;
@@ -322,7 +325,7 @@ namespace Xamarin.Forms
 				MessagingCenter.Send(this, BusySetSignalName, false);
 
 			var pageContainer = this as IPageContainer<Page>;
-			((IPageController)pageContainer?.CurrentPage)?.SendDisappearing();
+			pageContainer?.CurrentPage?.SendDisappearing();
 
 			OnDisappearing();
 			EventHandler handler = Disappearing;
@@ -378,21 +381,21 @@ namespace Xamarin.Forms
 
 		bool ShouldLayoutChildren()
 		{
-			if (!ElementController.LogicalChildren.Any() || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
+			if (!LogicalChildren.Any() || Width <= 0 || Height <= 0 || !IsNativeStateConsistent)
 				return false;
 
 			var container = this as IPageContainer<Page>;
 			if (container?.CurrentPage != null)
 			{
-				if (PageController.InternalChildren.Contains(container.CurrentPage))
+				if (InternalChildren.Contains(container.CurrentPage))
 					return container.CurrentPage.IsPlatformEnabled && container.CurrentPage.IsNativeStateConsistent;
 				return true;
 			}
 
 			var any = false;
-			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+			for (var i = 0; i < LogicalChildren.Count; i++)
 			{
-				var v = ElementController.LogicalChildren[i] as VisualElement;
+				var v = LogicalChildren[i] as VisualElement;
 				if (v != null && (!v.IsPlatformEnabled || !v.IsNativeStateConsistent))
 				{
 					any = true;

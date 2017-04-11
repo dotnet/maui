@@ -28,9 +28,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 		}
 
-		IElementController ElementController => Element;
-
-		IPageController PageController => (IPageController)Element;
+		Page Page => (Page)Element;
 
 		public override nint SelectedIndex
 		{
@@ -41,7 +39,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					return;
 				base.SelectedIndex = value;
 				if (Carousel != null)
-					Carousel.CurrentPage = (ContentPage)ElementController.LogicalChildren[(int)SelectedIndex];
+					Carousel.CurrentPage = (ContentPage)Element.LogicalChildren[(int)SelectedIndex];
 			}
 		}
 
@@ -80,7 +78,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 
 			_appeared = true;
-			PageController.SendAppearing();
+			Page.SendAppearing();
 		}
 
 		public override void ViewDidDisappear()
@@ -91,7 +89,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 
 			_appeared = false;
-			PageController.SendDisappearing();
+			Page.SendDisappearing();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -109,7 +107,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (_appeared)
 				{
 					_appeared = false;
-					PageController?.SendDisappearing();
+					Page?.SendDisappearing();
 				}
 
 				if (_events != null)
@@ -163,9 +161,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateSource()
 		{
 			var pages = new List<NSPageContainer>();
-			for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+			for (var i = 0; i < Element.LogicalChildren.Count; i++)
 			{
-				Element element = ElementController.LogicalChildren[i];
+				Element element = Element.LogicalChildren[i];
 				var child = element as ContentPage;
 				if (child != null)
 					pages.Add(new NSPageContainer(child, i));

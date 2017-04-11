@@ -26,8 +26,6 @@ namespace Xamarin.Forms
 
 		T _current;
 
-		ObservableCollection<Element> InternalChildren => ((IPageController)this).InternalChildren;
-
 		protected MultiPage()
 		{
 			_templatedItems = new TemplatedItemsList<MultiPage<T>, T>(this, ItemsSourceProperty, ItemTemplateProperty);

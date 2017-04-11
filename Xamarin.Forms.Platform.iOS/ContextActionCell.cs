@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
 		{
-			var parentListView = cell.RealParent as IListViewController;
+			var parentListView = cell.RealParent as ListView;
 			var recycling = parentListView != null && parentListView.CachingStrategy == ListViewCachingStrategy.RecycleElement;
 			if (_cell != cell && recycling)
 			{
@@ -322,7 +322,7 @@ namespace Xamarin.Forms.Platform.iOS
 						_scroller.SetContentOffset(new PointF(0, 0), true);
 						MenuItem mi;
 						if (weakItem.TryGetTarget(out mi))
-							((IMenuItemController)mi).Activate();
+							mi.Activate();
 					});
 					actionSheet.AddAction(action);
 				}
@@ -399,7 +399,7 @@ namespace Xamarin.Forms.Platform.iOS
 			button.SetTitle(item.Text, UIControlState.Normal);
 			button.TitleEdgeInsets = new UIEdgeInsets(0, 15, 0, 15);
 
-			button.Enabled = ((IMenuItemController)item).IsEnabled;
+			button.Enabled = item.IsEnabled;
 
 			return button;
 		}
@@ -440,7 +440,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				_scroller.SetContentOffset(new PointF(0, 0), true);
-				((IMenuItemController)_cell.ContextActions[(int)button.Tag]).Activate();
+				_cell.ContextActions[(int)button.Tag].Activate();
 			}
 		}
 
@@ -448,7 +448,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.PropertyName == "HasContextActions")
 			{
-				var parentListView = _cell.RealParent as IListViewController;
+				var parentListView = _cell.RealParent as ListView;
 				var recycling = parentListView != null && parentListView.CachingStrategy == ListViewCachingStrategy.RecycleElement;
 				if (!recycling)
 					ReloadRow();
@@ -457,7 +457,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnContextItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var parentListView = _cell.RealParent as IListViewController;
+			var parentListView = _cell.RealParent as ListView;
 			var recycling = parentListView != null && parentListView.CachingStrategy == ListViewCachingStrategy.RecycleElement;
 			if (recycling)
 				Update(_tableView, _cell, ContentCell);
@@ -468,7 +468,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			var parentListView = _cell.RealParent as IListViewController;
+			var parentListView = _cell.RealParent as ListView;
 			var recycling = parentListView != null && parentListView.CachingStrategy == ListViewCachingStrategy.RecycleElement;
 			if (recycling)
 				Update(_tableView, _cell, ContentCell);
@@ -690,7 +690,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				// do not activate a -1 index when dismissing by clicking outside the popover
 				if (buttonIndex >= 0)
-					((IMenuItemController)Items[(int)buttonIndex]).Activate();
+					Items[(int)buttonIndex].Activate();
 			}
 		}
 	}

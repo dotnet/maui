@@ -21,7 +21,8 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(ToolbarItem), true);
 
-		string IMenuItemController.IsEnabledPropertyName
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public string IsEnabledPropertyName
 		{
 			get
 			{
@@ -80,7 +81,8 @@ namespace Xamarin.Forms
 				handler(this, EventArgs.Empty);
 		}
 
-		void IMenuItemController.Activate()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void Activate()
 		{
 			if (Command != null)
 			{

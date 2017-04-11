@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
@@ -76,7 +77,8 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ScrollView>>(() => new PlatformConfigurationRegistry<ScrollView>(this));
 		}
 
-		Point IScrollViewController.GetScrollPositionForElement(VisualElement item, ScrollToPosition pos)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Point GetScrollPositionForElement(VisualElement item, ScrollToPosition pos)
 		{
 			ScrollToPosition position = pos;
 			double y = GetCoordinate(item, "Y", 0);
@@ -114,19 +116,15 @@ namespace Xamarin.Forms
 			return new Point(x, y);
 		}
 
-		event EventHandler<ScrollToRequestedEventArgs> IScrollViewController.ScrollToRequested
-		{
-			add { ScrollToRequested += value; }
-			remove { ScrollToRequested -= value; }
-		}
-
-		void IScrollViewController.SendScrollFinished()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendScrollFinished()
 		{
 			if (_scrollCompletionSource != null)
 				_scrollCompletionSource.TrySetResult(true);
 		}
 
-		void IScrollViewController.SetScrolledPosition(double x, double y)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetScrolledPosition(double x, double y)
 		{
 			if (ScrollX == x && ScrollY == y)
 				return;
@@ -295,6 +293,7 @@ namespace Xamarin.Forms
 				handler(this, e);
 		}
 
-		event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
@@ -139,7 +140,8 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
 		}
 
-		void ISearchBarController.OnSearchButtonPressed()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void OnSearchButtonPressed()
 		{
 			ICommand cmd = SearchCommand;
 

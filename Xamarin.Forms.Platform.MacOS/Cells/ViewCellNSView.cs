@@ -75,14 +75,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateCell(ViewCell cell)
 		{
-			ICellController cellController = _viewCell;
-			if (cellController != null)
-				Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
+			if (_viewCell != null)
+				Device.BeginInvokeOnMainThread(_viewCell.SendDisappearing);
 
 			_viewCell = cell;
-			cellController = cell;
 
-			Device.BeginInvokeOnMainThread(cellController.SendAppearing);
+			Device.BeginInvokeOnMainThread(_viewCell.SendAppearing);
 
 			IVisualElementRenderer renderer;
 			if (_rendererRef == null || !_rendererRef.TryGetTarget(out renderer))

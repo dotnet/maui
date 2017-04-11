@@ -261,9 +261,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (!_wasPanGestureStartedSent)
 				{
-					((IPanGestureController)recognizer).SendPanStarted(view, Application.Current.PanGestureId);
+					recognizer.SendPanStarted(view, Application.Current.PanGestureId);
 				}
-				((IPanGestureController)recognizer).SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, Application.Current.PanGestureId);
+				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, Application.Current.PanGestureId);
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -283,9 +283,9 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (!_wasPinchGestureStartedSent)
 				{
-					((IPinchGestureController)recognizer).SendPinchStarted(view, scaleOriginPoint);
+					recognizer.SendPinchStarted(view, scaleOriginPoint);
 				}
-				((IPinchGestureController)recognizer).SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+				recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
 			}
 			_wasPinchGestureStartedSent = true;
 		}
@@ -413,11 +413,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (success)
 				{
-					((IPanGestureController)recognizer).SendPanCompleted(view, Application.Current.PanGestureId);
+					recognizer.SendPanCompleted(view, Application.Current.PanGestureId);
 				}
 				else
 				{
-					((IPanGestureController)recognizer).SendPanCanceled(view, Application.Current.PanGestureId);
+					recognizer.SendPanCanceled(view, Application.Current.PanGestureId);
 				}
 			}
 
@@ -436,11 +436,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				if (success)
 				{
-					((IPinchGestureController)recognizer).SendPinchEnded(view);
+					recognizer.SendPinchEnded(view);
 				}
 				else
 				{
-					((IPinchGestureController)recognizer).SendPinchCanceled(view);
+					recognizer.SendPinchCanceled(view);
 				}
 			}
 

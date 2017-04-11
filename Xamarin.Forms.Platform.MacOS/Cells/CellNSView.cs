@@ -41,16 +41,13 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (_cell == value)
 					return;
 
-				ICellController cellController = _cell;
-
-				if (cellController != null)
-					Device.BeginInvokeOnMainThread(cellController.SendDisappearing);
+				if (_cell != null)
+					Device.BeginInvokeOnMainThread(_cell.SendDisappearing);
 
 				_cell = value;
-				cellController = value;
 
-				if (cellController != null)
-					Device.BeginInvokeOnMainThread(cellController.SendAppearing);
+				if (_cell != null)
+					Device.BeginInvokeOnMainThread(_cell.SendAppearing);
 			}
 		}
 
@@ -217,7 +214,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (menuItem.Enabled)
 				menuItem.Activated += (sender, e) =>
 				{
-					((IMenuItemController)contextAction).Activate();
+					contextAction.Activate();
 				};
 			if (!string.IsNullOrEmpty(contextAction.Icon))
 				menuItem.Image = new NSImage(contextAction.Icon);

@@ -250,6 +250,26 @@ Content = new TableView
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="ForceUpdateSizeRequested">
+      <MemberSignature Language="C#" Value="public event EventHandler ForceUpdateSizeRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler ForceUpdateSizeRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.EventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="HasContextActions">
       <MemberSignature Language="C#" Value="public bool HasContextActions { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance bool HasContextActions" />
@@ -504,6 +524,48 @@ Content = new TableView
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="SendAppearing">
+      <MemberSignature Language="C#" Value="public void SendAppearing ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendAppearing() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SendDisappearing">
+      <MemberSignature Language="C#" Value="public void SendDisappearing ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SendDisappearing() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Tapped">
       <MemberSignature Language="C#" Value="public event EventHandler Tapped;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler Tapped" />
@@ -524,38 +586,6 @@ Content = new TableView
         <summary>Occurs when the Cell is Tapped.</summary>
         <remarks>
         </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Xamarin.Forms.ICellController.SendAppearing">
-      <MemberSignature Language="C#" Value="void ICellController.SendAppearing ();" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.ICellController.SendAppearing() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>This method is for internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Xamarin.Forms.ICellController.SendDisappearing">
-      <MemberSignature Language="C#" Value="void ICellController.SendDisappearing ();" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.ICellController.SendDisappearing() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>This method is for internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

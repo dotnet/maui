@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -88,7 +89,8 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void IEditorController.SendCompleted()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendCompleted()
 		{
 			EventHandler handler = Completed;
 			if (handler != null)

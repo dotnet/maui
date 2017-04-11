@@ -57,10 +57,6 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			set { Control.ToolbarForeground = value; }
 		}
-		
-		IPageController PageController => Element as IPageController;
-
-		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
 
 		bool ITitleProvider.ShowTitle
 		{
@@ -210,13 +206,13 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Element == null)
 				return;
 
-			PageController.SendAppearing();
+			Element.SendAppearing();
 			UpdateBounds();
 		}
 
 		void OnControlUnloaded(object sender, RoutedEventArgs routedEventArgs)
 		{
-			PageController?.SendDisappearing();
+			Element?.SendDisappearing();
 		}
 
 		void OnDetailPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -247,8 +243,8 @@ namespace Xamarin.Forms.Platform.UWP
 			Windows.Foundation.Size masterSize = Control.MasterSize;
 			Windows.Foundation.Size detailSize = Control.DetailSize;
 
-			MasterDetailPageController.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
-			MasterDetailPageController.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
+			Element.MasterBounds = new Rectangle(0, 0, masterSize.Width, masterSize.Height);
+			Element.DetailBounds = new Rectangle(0, 0, detailSize.Width, detailSize.Height);
 		}
 
 		void UpdateDetail()
@@ -316,7 +312,7 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateDetailTitle();
 			Control.CollapseStyle = Element.OnThisPlatform().GetCollapseStyle();
 			Control.CollapsedPaneWidth = Element.OnThisPlatform().CollapsedPaneWidth();
-			Control.ShouldShowSplitMode = MasterDetailPageController.ShouldShowSplitMode;
+			Control.ShouldShowSplitMode = Element.ShouldShowSplitMode;
 		}
 
 		void UpdateToolbarPlacement()

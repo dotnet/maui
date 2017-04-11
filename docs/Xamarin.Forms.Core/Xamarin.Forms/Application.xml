@@ -540,6 +540,30 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SetAppIndexingProvider">
+      <MemberSignature Language="C#" Value="public void SetAppIndexingProvider (Xamarin.Forms.IAppIndexingProvider provider);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void SetAppIndexingProvider(class Xamarin.Forms.IAppIndexingProvider provider) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="provider" Type="Xamarin.Forms.IAppIndexingProvider" />
+      </Parameters>
+      <Docs>
+        <param name="provider">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="SetCurrentApplication">
       <MemberSignature Language="C#" Value="public static void SetCurrentApplication (Xamarin.Forms.Application value);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetCurrentApplication(class Xamarin.Forms.Application value) cil managed" />
@@ -561,25 +585,6 @@
       <Docs>
         <param name="value">To be added.</param>
         <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Xamarin.Forms.IApplicationController.SetAppIndexingProvider">
-      <MemberSignature Language="C#" Value="void IApplicationController.SetAppIndexingProvider (Xamarin.Forms.IAppIndexingProvider provider);" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.IApplicationController.SetAppIndexingProvider(class Xamarin.Forms.IAppIndexingProvider provider) cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="provider" Type="Xamarin.Forms.IAppIndexingProvider" />
-      </Parameters>
-      <Docs>
-        <param name="provider">To be added.</param>
-        <summary>Internal. Do not use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

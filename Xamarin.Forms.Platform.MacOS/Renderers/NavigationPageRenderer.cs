@@ -18,11 +18,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		VisualElementTracker _tracker;
 		Stack<NavigationChildPageWrapper> _currentStack = new Stack<NavigationChildPageWrapper>();
 
-		IPageController PageController => Element as IPageController;
-
-		IElementController ElementController => Element as IElementController;
-
-		INavigationPageController NavigationController => Element as INavigationPageController;
+		NavigationPage NavigationPage => Element as NavigationPage;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -91,8 +87,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (Element != null)
 				{
-					PageController?.SendDisappearing();
-					((Element as IPageContainer<Page>)?.CurrentPage as IPageController)?.SendDisappearing();
+					NavigationPage?.SendDisappearing();
+					((Element as IPageContainer<Page>)?.CurrentPage as Page)?.SendDisappearing();
 					Element.PropertyChanged -= HandlePropertyChanged;
 					Element = null;
 				}
@@ -115,7 +111,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 			Platform.NativeToolbarTracker.TryHide(Element as NavigationPage);
 			_appeared = false;
-			PageController?.SendDisappearing();
+			NavigationPage?.SendDisappearing();
 		}
 
 		public override void ViewDidAppear()
@@ -126,7 +122,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 
 			_appeared = true;
-			PageController?.SendAppearing();
+			NavigationPage?.SendAppearing();
 		}
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
@@ -181,11 +177,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Platform.NativeToolbarTracker.Navigation = navPage;
 
-			NavigationController.PushRequested += OnPushRequested;
-			NavigationController.PopRequested += OnPopRequested;
-			NavigationController.PopToRootRequested += OnPopToRootRequested;
-			NavigationController.RemovePageRequested += OnRemovedPageRequested;
-			NavigationController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
+			NavigationPage.PushRequested += OnPushRequested;
+			NavigationPage.PopRequested += OnPopRequested;
+			NavigationPage.PopToRootRequested += OnPopToRootRequested;
+			NavigationPage.RemovePageRequested += OnRemovedPageRequested;
+			NavigationPage.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 
 			navPage.Popped += (sender, e) => Platform.NativeToolbarTracker.UpdateToolBar();
 			navPage.PoppedToRoot += (sender, e) => Platform.NativeToolbarTracker.UpdateToolBar();
@@ -197,7 +193,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			_events.LoadEvents(NativeView);
 			_tracker = new VisualElementTracker(this);
 
-			((INavigationPageController)navPage).Pages.ForEach(async p => await PushPageAsync(p, false));
+			navPage.Pages.ForEach(async p => await PushPageAsync(p, false));
 
 			UpdateBackgroundColor();
 		}
@@ -248,7 +244,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void RemovePage(Page page, bool removeFromStack)
 		{
-			(page as IPageController)?.SendDisappearing();
+			page?.SendDisappearing();
 			var target = Platform.GetRenderer(page);
 			target?.NativeView?.RemoveFromSuperview();
 			target?.ViewController?.RemoveFromParentViewController();
@@ -277,7 +273,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				throw new NotSupportedException("Popped page does not appear on top of current navigation stack, please file a bug.");
 
 			_currentStack.Pop();
-			(page as IPageController)?.SendDisappearing();
+			page.SendDisappearing();
 
 			var target = Platform.GetRenderer(page);
 			var previousPage = _currentStack.Peek().Page;
@@ -318,7 +314,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var vco = Platform.GetRenderer(oldPage);
 			AddChildViewController(vc.ViewController);
 			return await this.HandleAsyncAnimation(vco.ViewController, vc.ViewController,
-				NSViewControllerTransitionOptions.SlideForward, () => (page as IPageController)?.SendAppearing(), true);
+				NSViewControllerTransitionOptions.SlideForward, () => page?.SendAppearing(), true);
 		}
 
 		void UpdateBackgroundColor()
@@ -344,9 +340,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_tracker == null)
 				return;
 
-			if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
+			if (e.PropertyName == Xamarin.Forms.NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor();
-			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
+			else if (e.PropertyName == Xamarin.Forms.NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateBarTextColor();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();

@@ -66,7 +66,8 @@ namespace Xamarin.Forms.Internals
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void INavigationMenuController.SendTargetSelected(Page target)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendTargetSelected(Page target)
 		{
 			Navigation.PushAsync(target);
 		}

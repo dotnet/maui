@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			HasVerticalScroller = true;
 		}
 
-		IScrollViewController Controller => Element as IScrollViewController;
+		ScrollView ScrollView => Element as ScrollView;
 
 		public VisualElement Element { get; private set; }
 
@@ -48,13 +48,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (oldElement != null)
 			{
 				oldElement.PropertyChanged -= HandlePropertyChanged;
-				((IScrollViewController)oldElement).ScrollToRequested -= OnScrollToRequested;
+				((ScrollView)oldElement).ScrollToRequested -= OnScrollToRequested;
 			}
 
 			if (element != null)
 			{
 				element.PropertyChanged += HandlePropertyChanged;
-				((IScrollViewController)element).ScrollToRequested += OnScrollToRequested;
+				((ScrollView)element).ScrollToRequested += OnScrollToRequested;
 				if (_tracker == null)
 				{
 					PackContent();
@@ -120,10 +120,10 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			ClearContentRenderer();
 
-			if (Controller.Children.Count == 0 || !(Controller.Children[0] is VisualElement))
+			if (ScrollView.Children.Count == 0 || !(ScrollView.Children[0] is VisualElement))
 				return;
 
-			var content = (VisualElement)Controller.Children[0];
+			var content = (VisualElement)ScrollView.Children[0];
 			if (Platform.GetRenderer(content) == null)
 				Platform.SetRenderer(content, Platform.CreateRenderer(content));
 
@@ -152,7 +152,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void HandleScrollAnimationEnded(object sender, EventArgs e)
 		{
-			Controller.SendScrollFinished();
+			ScrollView.SendScrollFinished();
 		}
 
 		void HandleScrolled(object sender, EventArgs e)
@@ -175,11 +175,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Point scrollPoint = (e.Mode == ScrollToMode.Position)
 				? new Point(e.ScrollX, Element.Height - e.ScrollY)
-				: Controller.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
+				: ScrollView.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
 
 			(DocumentView as NSView)?.ScrollPoint(scrollPoint.ToPointF());
 
-			Controller.SendScrollFinished();
+			ScrollView.SendScrollFinished();
 		}
 
 		void UpdateBackgroundColor()
@@ -202,7 +202,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			var convertedPoint = (DocumentView as NSView)?.ConvertPointFromView(ContentView.Bounds.Location, ContentView);
 			if (convertedPoint.HasValue)
-				Controller.SetScrolledPosition(Math.Max(0, convertedPoint.Value.X), Math.Max(0, convertedPoint.Value.Y));
+				ScrollView.SetScrolledPosition(Math.Max(0, convertedPoint.Value.X), Math.Max(0, convertedPoint.Value.Y));
 		}
 
 		void ClearContentRenderer()

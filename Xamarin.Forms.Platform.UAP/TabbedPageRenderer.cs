@@ -59,8 +59,6 @@ namespace Xamarin.Forms.Platform.UWP
             set { Control.ToolbarForeground = value; }
         }
 
-        IPageController PageController => Element as IPageController;
-
         bool ITitleProvider.ShowTitle
         {
             get { return _showTitle; }
@@ -186,7 +184,7 @@ namespace Xamarin.Forms.Platform.UWP
                 return;
 
             _disposed = true;
-            PageController?.SendDisappearing();
+            Element?.SendDisappearing();
             SetElement(null);
             Tracker = null;
         }
@@ -216,7 +214,7 @@ namespace Xamarin.Forms.Platform.UWP
 
         void OnLoaded(object sender, RoutedEventArgs args)
         {
-            PageController?.SendAppearing();
+            Element?.SendAppearing();
             UpdateBarTextColor();
             UpdateBarBackgroundColor();
         }
@@ -238,14 +236,14 @@ namespace Xamarin.Forms.Platform.UWP
             Page currentPage = Element.CurrentPage;
             if (currentPage == page)
                 return;
-            ((IPageController)currentPage)?.SendDisappearing();
+            currentPage?.SendDisappearing();
             Element.CurrentPage = page;
-            ((IPageController)page)?.SendAppearing();
+            page?.SendAppearing();
         }
 
         void OnUnloaded(object sender, RoutedEventArgs args)
         {
-            PageController?.SendDisappearing();
+            Element?.SendDisappearing();
         }
 
         Brush GetBarBackgroundBrush()

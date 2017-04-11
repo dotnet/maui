@@ -434,7 +434,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void IVisualElementController.NativeSizeChanged()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void NativeSizeChanged()
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}

@@ -33,8 +33,6 @@ namespace Xamarin.Forms.Platform.MacOS
 	{
 		const string ToolBarId = "AwesomeBarToolbar";
 
-		INavigationPageController NavigationController => _navigation;
-
 		readonly string _defaultBackButtonTitle = "Back";
 		readonly ToolbarTracker _toolbarTracker;
 
@@ -153,7 +151,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (NSApplication.SharedApplication.MainWindow == null)
 				return;
 
-			if (NavigationController == null)
+			if (_navigation == null)
 			{
 				if (_toolbar != null)
 					_toolbar.Visible = false;
@@ -161,7 +159,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 			}
 
-			var currentPage = NavigationController.Peek();
+			var currentPage = _navigation.Peek(0);
 
 			if (NavigationPage.GetHasNavigationBar(currentPage))
 			{
@@ -220,7 +218,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		async Task NavigateBackFrombackButton()
 		{
-			var popAsyncInner = NavigationController?.PopAsyncInner(true, true);
+			var popAsyncInner = _navigation?.PopAsyncInner(true, true);
 			if (popAsyncInner != null)
 				await popAsyncInner;
 		}
@@ -235,9 +233,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		bool IsRootPage()
 		{
-			if (NavigationController == null)
+			if (_navigation == null)
 				return true;
-			return NavigationController.StackDepth <= 1;
+			return _navigation.StackDepth <= 1;
 		}
 
 		NSColor GetBackgroundColor()
@@ -259,17 +257,17 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		string GetCurrentPageTitle()
 		{
-			if (NavigationController == null)
+			if (_navigation == null)
 				return string.Empty;
-			return NavigationController.Peek().Title ?? "";
+			return _navigation.Peek(0).Title ?? "";
 		}
 
 		string GetPreviousPageTitle()
 		{
-			if (NavigationController == null || NavigationController.StackDepth <= 1)
+			if (_navigation == null || _navigation.StackDepth <= 1)
 				return string.Empty;
 
-			return NavigationController.Peek(1).Title ?? _defaultBackButtonTitle;
+			return _navigation.Peek(1).Title ?? _defaultBackButtonTitle;
 		}
 
 		List<ToolbarItem> GetToolbarItems()
@@ -316,7 +314,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_toolbar == null || _navigation == null || _toolbarGroup == null)
 				return;
 
-			var currentPage = NavigationController.Peek();
+			var currentPage = _navigation.Peek(0);
 			UpdateGroup(_toolbarGroup, currentPage.ToolbarItems, ToolbarItemWidth, ToolbarItemSpacing);
 		}
 
@@ -387,7 +385,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					var element = toolbarItems[i];
 
 					var item = new NSToolbarItem(element.Text ?? "");
-					item.Activated += (sender, e) => (element as IMenuItemController).Activate();
+					item.Activated += (sender, e) => element.Activate();
 
 					var button = new NSButton();
 					button.Title = element.Text ?? "";
@@ -401,7 +399,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					button.Frame = new CGRect(currentX + i * itemSpacing, 0, buttonWidth, ToolbarItemHeight);
 					currentX += buttonWidth;
 					totalWidth += button.Frame.Width;
-					button.Activated += (sender, e) => (element as IMenuItemController).Activate();
+					button.Activated += (sender, e) => element.Activate();
 
 					button.BezelStyle = NSBezelStyle.TexturedRounded;
 					if (!string.IsNullOrEmpty(element.Icon))

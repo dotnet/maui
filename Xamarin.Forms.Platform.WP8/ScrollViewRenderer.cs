@@ -14,11 +14,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 			AutoPackage = false;
 		}
 
-		protected IScrollViewController Controller
-		{
-			get { return Element; }
-		}
-
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			SizeRequest result = base.GetDesiredSize(widthConstraint, heightConstraint);
@@ -59,7 +54,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
-				((IScrollViewController)e.OldElement).ScrollToRequested -= OnScrollToRequested;
+				e.OldElement.ScrollToRequested -= OnScrollToRequested;
 
 			if (e.NewElement != null)
 			{
@@ -68,7 +63,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					SetNativeControl(new ScrollViewer { ManipulationMode = ManipulationMode.Control });
 					Control.LayoutUpdated += (sender, args) => { UpdateScrollPosition(); };
 				}
-				((IScrollViewController)e.NewElement).ScrollToRequested += OnScrollToRequested;
+				e.NewElement.ScrollToRequested += OnScrollToRequested;
 			}
 
 			SizeChanged += (sender, args) =>
@@ -126,7 +121,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			if (e.Mode == ScrollToMode.Element)
 			{
-				Point itemPosition = Controller.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
+				Point itemPosition = Element.GetScrollPositionForElement(e.Element as VisualElement, e.Position);
 				x = itemPosition.X;
 				y = itemPosition.Y;
 			}
@@ -141,13 +136,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 				animation.Commit(_animatable, "ScrollTo", length: 500, easing: Easing.CubicInOut, finished: (v, d) =>
 				{
 					UpdateScrollOffset(x, y);
-					Controller.SendScrollFinished();
+					Element.SendScrollFinished();
 				});
 			}
 			else
 			{
 				UpdateScrollOffset(x, y);
-				Controller.SendScrollFinished();
+				Element.SendScrollFinished();
 			}
 		}
 
@@ -188,7 +183,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		void UpdateScrollPosition()
 		{
 			if (Element != null)
-				Controller.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
+				Element.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
 		}
 	}
 }

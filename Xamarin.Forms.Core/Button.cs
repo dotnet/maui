@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Xamarin.Forms.Internals;
@@ -109,18 +110,21 @@ namespace Xamarin.Forms
 			set { SetValueCore(IsEnabledProperty, value); }
 		}
 
-		void IButtonController.SendClicked()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendClicked()
 		{
 			Command?.Execute(CommandParameter);
 			Clicked?.Invoke(this, EventArgs.Empty);
 		}
 
-		void IButtonController.SendPressed()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendPressed()
 		{
 			Pressed?.Invoke(this, EventArgs.Empty);
 		}
 
-		void IButtonController.SendReleased()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendReleased()
 		{
 			Released?.Invoke(this, EventArgs.Empty);
 		}

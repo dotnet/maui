@@ -15,20 +15,20 @@ namespace Xamarin.Forms.Platform.UWP
 				if (ActualWidth > 0 && ActualHeight > 0)
 				{
 					var page = (Page)DataContext;
-					((IPageController)page.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
+					((Page)page.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
 				}
 			};
 		}
 
 		void FormsPresenter_Loaded(object sender, RoutedEventArgs e)
 		{
-			var page = (IPageController)DataContext;
+			var page = (Page)DataContext;
 			page.SendAppearing();
 		}
 
 		void FormsPresenter_Unloaded(object sender, RoutedEventArgs e)
 		{
-			var page = (IPageController)DataContext;
+			var page = (Page)DataContext;
 			page.SendDisappearing();
 		}
 	}

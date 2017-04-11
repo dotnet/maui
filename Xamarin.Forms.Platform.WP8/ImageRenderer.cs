@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		async void SetSource(System.Windows.Controls.Image image)
 		{
-			((IImageController)Element).SetIsLoading(true);
+			Element.SetIsLoading(true);
 
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			else
 				image.Source = null;
 
-			((IImageController)Element).SetIsLoading(false);
+			Element.SetIsLoading(false);
 		}
 	}
 

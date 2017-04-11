@@ -15,8 +15,6 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		bool _loaded;
 
-		IPageController PageController => Element as IPageController;
-
 		protected override void Dispose(bool disposing)
 		{
 			if (!disposing || _disposed)
@@ -32,7 +30,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					var visualChild = children[i] as VisualElement;
 					visualChild?.Cleanup();
 				}
-				PageController?.SendDisappearing();
+				Element?.SendDisappearing();
 			}
 
 			base.Dispose();
@@ -42,7 +40,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			base.OnElementChanged(e);
 
-			((IPageController)e.OldElement)?.SendDisappearing();
+			e.OldElement?.SendDisappearing();
 
 			if (e.NewElement != null)
 			{
@@ -55,7 +53,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 
 				if (_loaded)
-					((IPageController)e.NewElement).SendAppearing();
+					e.NewElement.SendAppearing();
 			}
 		}
 
@@ -67,13 +65,13 @@ namespace Xamarin.Forms.Platform.WinRT
 				return;
 			}
 			_loaded = true;
-			PageController?.SendAppearing();
+			Element?.SendAppearing();
 		}
 
 		void OnUnloaded(object sender, RoutedEventArgs args)
 		{
 			_loaded = false;
-			PageController?.SendDisappearing();
+			Element?.SendDisappearing();
 		}
 	}
 }

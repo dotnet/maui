@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
@@ -22,12 +23,6 @@ namespace Xamarin.Forms
 
 		public Action<Rectangle> OnDisplay { get; set; }
 
-		event EventHandler IOpenGlViewController.DisplayRequested
-		{
-			add { DisplayRequested += value; }
-			remove { DisplayRequested -= value; }
-		}
-
 		public void Display()
 		{
 			EventHandler handler = DisplayRequested;
@@ -35,7 +30,8 @@ namespace Xamarin.Forms
 				handler(this, EventArgs.Empty);
 		}
 
-		event EventHandler DisplayRequested;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler DisplayRequested;
 
 		public OpenGLView()
 		{

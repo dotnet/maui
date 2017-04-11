@@ -91,13 +91,13 @@ namespace Xamarin.Forms.Platform.WinRT
 				RefreshImage();
 			}
 
-			((IImageController)Element)?.SetIsLoading(false);
+			Element?.SetIsLoading(false);
 		}
 
 		void OnImageFailed(object sender, ExceptionRoutedEventArgs exceptionRoutedEventArgs)
 		{
 			Log.Warning("Image Loading", $"Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}" );
-			((IImageController)Element)?.SetIsLoading(false);
+			Element?.SetIsLoading(false);
 		}
 
 		void RefreshImage()
@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		async Task UpdateSource()
 		{
-			((IImageController)Element).SetIsLoading(true);
+			Element.SetIsLoading(true);
 
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
@@ -155,7 +155,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			else
 			{
 				Control.Source = null;
-				((IImageController)Element)?.SetIsLoading(false);
+				Element?.SetIsLoading(false);
 			}
 		}
 	}

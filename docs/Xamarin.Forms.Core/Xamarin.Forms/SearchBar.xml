@@ -339,6 +339,27 @@ public class App : Application
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="OnSearchButtonPressed">
+      <MemberSignature Language="C#" Value="public void OnSearchButtonPressed ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void OnSearchButtonPressed() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Placeholder">
       <MemberSignature Language="C#" Value="public string Placeholder { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Placeholder" />
@@ -717,22 +738,6 @@ public class App : Application
         <param name="oldValue">To be added.</param>
         <param name="newValue">To be added.</param>
         <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Xamarin.Forms.ISearchBarController.OnSearchButtonPressed">
-      <MemberSignature Language="C#" Value="void ISearchBarController.OnSearchButtonPressed ();" />
-      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.ISearchBarController.OnSearchButtonPressed() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

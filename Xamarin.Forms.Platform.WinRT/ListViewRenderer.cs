@@ -25,7 +25,6 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
-		IListViewController Controller => Element;
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 
 
@@ -53,13 +52,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (e.OldElement != null)
 			{
 				e.OldElement.ItemSelected -= OnElementItemSelected;
-				((IListViewController)e.OldElement).ScrollToRequested -= OnElementScrollToRequested;
+				e.OldElement.ScrollToRequested -= OnElementScrollToRequested;
 			}
 
 			if (e.NewElement != null)
 			{
 				e.NewElement.ItemSelected += OnElementItemSelected;
-				((IListViewController)e.NewElement).ScrollToRequested += OnElementScrollToRequested;
+				e.NewElement.ScrollToRequested += OnElementScrollToRequested;
 
 				if (List == null)
 				{
@@ -201,12 +200,12 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateFooter()
 		{
-			List.Footer = Controller.FooterElement;
+			List.Footer = Element.FooterElement;
 		}
 
 		void UpdateHeader()
 		{
-			List.Header = Controller.HeaderElement;
+			List.Header = Element.HeaderElement;
 		}
 
 		void UpdateGrouping()
@@ -479,7 +478,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 #endif
 
-			Controller.NotifyRowTapped(index, cell: null);
+			Element.NotifyRowTapped(index, cell: null);
 
 #if !WINDOWS_UWP
 

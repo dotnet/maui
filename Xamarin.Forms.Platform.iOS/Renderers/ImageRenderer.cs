@@ -106,7 +106,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			IImageSourceHandler handler;
 
-			((IImageController)Element).SetIsLoading(true);
+			Element.SetIsLoading(true);
 
 			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
@@ -131,7 +131,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Image = null;
 
 			if (!_isDisposed)
-				((IImageController)Element).SetIsLoading(false);
+				Element.SetIsLoading(false);
 		}
 
 		void SetOpacity()

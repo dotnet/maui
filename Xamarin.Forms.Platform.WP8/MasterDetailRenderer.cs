@@ -20,11 +20,9 @@ namespace Xamarin.Forms.Platform.WinPhone
 			AutoPackage = false;
 		}
 
-		IMasterDetailPageController MasterDetailPageController => Element as IMasterDetailPageController;
-
 		public bool Visible { get; private set; }
 
-		IPageController PageController => Element as IPageController;
+		IPageController PageController => (base.Element as IPageController);
 
 		protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
 		{
@@ -37,10 +35,10 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.OnElementChanged(e);
 
 			if (e.OldElement != null)
-				((IMasterDetailPageController)e.OldElement).BackButtonPressed -= HandleBackButtonPressed;
+				e.OldElement.BackButtonPressed -= HandleBackButtonPressed;
 
 			if (e.NewElement != null)
-				((IMasterDetailPageController)e.NewElement).BackButtonPressed += HandleBackButtonPressed;
+				e.NewElement.BackButtonPressed += HandleBackButtonPressed;
 
 			LoadDetail();
 			LoadMaster();
@@ -49,7 +47,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			Loaded += (sender, args) =>
 			{
-				if (Element.IsPresented)
+				if (base.Element.IsPresented)
 					Toggle();
 				PageController.SendAppearing();
 			};
@@ -58,7 +56,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 				PageController.SendDisappearing();
 				if (Visible)
 				{
-					var platform = (Platform)Element.Platform;
+					var platform = (Platform)base.Element.Platform;
 					Canvas container = platform.GetCanvas();
 
 					container.Children.Remove(_popup);
@@ -82,7 +80,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			}
 			else if (e.PropertyName == MasterDetailPage.IsPresentedProperty.PropertyName)
 			{
-				if (Visible == Element.IsPresented)
+				if (Visible == base.Element.IsPresented)
 					return;
 				Toggle();
 			}
@@ -90,7 +88,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		internal void Toggle()
 		{
-			var platform = Element.Platform as Platform;
+			var platform = base.Element.Platform as Platform;
 			Canvas container = platform.GetCanvas();
 
 			if (_toggleTransition != null)
@@ -124,7 +122,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			Visible = !Visible;
 
-			((IElementController)Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Visible);
+			((IElementController)base.Element).SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, Visible);
 		}
 
 		void HandleBackButtonPressed(object sender, BackButtonPressedEventArgs e)
@@ -141,7 +139,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (_detailRenderer != null)
 				Children.Remove(_detailRenderer.ContainerElement);
 
-			Page detail = Element.Detail;
+			Page detail = base.Element.Detail;
 			if (Platform.GetRenderer(detail) == null)
 				Platform.SetRenderer(detail, Platform.CreateRenderer(detail));
 
@@ -157,7 +155,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (_masterRenderer != null && _popup != null)
 				_popup.Child = null;
 
-			Page master = Element.Master;
+			Page master = base.Element.Master;
 			if (Platform.GetRenderer(master) == null)
 				Platform.SetRenderer(master, Platform.CreateRenderer(master));
 
@@ -172,10 +170,10 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (width <= 0 || height <= 0)
 				return;
 
-			var platform = Element.Platform as Platform;
+			var platform = base.Element.Platform as Platform;
 			Size screenSize = platform.Size;
-			MasterDetailPageController.MasterBounds = new Rectangle(0, 0, screenSize.Width - 20, screenSize.Height - 20);
-			MasterDetailPageController.DetailBounds = new Rectangle(0, 0, width, height);
+			Element.MasterBounds = new Rectangle(0, 0, screenSize.Width - 20, screenSize.Height - 20);
+			Element.DetailBounds = new Rectangle(0, 0, width, height);
 
 			_popup.Width = width - 20;
 			_popup.Height = height - 20;

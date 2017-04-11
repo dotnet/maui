@@ -194,8 +194,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 		System.Windows.Controls.ProgressBar _progressBar;
 
 		ViewportControl _viewport;
-		IListViewController Controller => Element;
-		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
+		ITemplatedItemsView<Cell> TemplatedItemsView => base.Element;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -228,14 +227,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 		{
 			base.OnElementChanged(e);
 
-			Controller.ScrollToRequested += OnScrollToRequested;
+			Element.ScrollToRequested += OnScrollToRequested;
 
-			if (Element.SelectedItem != null)
+			if (base.Element.SelectedItem != null)
 				_itemNeedsSelecting = true;
 
-			_listBox = new FixedLongListSelector
-			{
-				DataContext = Element,
+			_listBox = new FixedLongListSelector {
+				DataContext = base.Element,
 				ItemsSource = (IList)TemplatedItemsView.TemplatedItems,
 				ItemTemplate = (System.Windows.DataTemplate)System.Windows.Application.Current.Resources["CellTemplate"],
 				GroupHeaderTemplate = (System.Windows.DataTemplate)System.Windows.Application.Current.Resources["ListViewHeader"],
@@ -268,7 +266,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == ListView.SelectedItemProperty.PropertyName)
-				OnItemSelected(Element.SelectedItem);
+				OnItemSelected(base.Element.SelectedItem);
 			else if (e.PropertyName == "HeaderElement")
 				UpdateHeader();
 			else if (e.PropertyName == "FooterElement")
@@ -284,7 +282,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			base.UpdateNativeWidget();
 
 			if (_progressBar != null)
-				_progressBar.Width = Element.Width;
+				_progressBar.Width = base.Element.Width;
 		}
 
 		Cell FindCell(GestureEventArgs e, out FrameworkElement element)
@@ -415,11 +413,11 @@ namespace Xamarin.Forms.Platform.WinPhone
 				return;
 
 			var cell = e.Container.DataContext as Cell;
-			if (cell == null || !Equals(cell.BindingContext, Element.SelectedItem))
+			if (cell == null || !Equals(cell.BindingContext, base.Element.SelectedItem))
 				return;
 
 			_itemNeedsSelecting = false;
-			OnItemSelected(Element.SelectedItem);
+			OnItemSelected(base.Element.SelectedItem);
 		}
 
 		void OnItemSelected(object selectedItem)
@@ -463,19 +461,19 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			Cell parentCell = null;
 
-			if (Element.IsGroupingEnabled)
+			if (base.Element.IsGroupingEnabled)
 			{
 				parentCell = cell.GetGroupHeaderContent<ItemsView<Cell>, Cell>();
 			}
 
 			_fromNative = cell.BindingContext;
 
-			if (Element.IsGroupingEnabled)
+			if (base.Element.IsGroupingEnabled)
 			{
-				Controller.NotifyRowTapped(parentCell.GetIndex<ItemsView<Cell>, Cell>(), cell.GetIndex<ItemsView<Cell>, Cell>(), null);
+				Element.NotifyRowTapped(parentCell.GetIndex<ItemsView<Cell>, Cell>(), cell.GetIndex<ItemsView<Cell>, Cell>(), null);
 			}
 			else
-				Controller.NotifyRowTapped(cell.GetIndex<ItemsView<Cell>, Cell>(), null);
+				Element.NotifyRowTapped(cell.GetIndex<ItemsView<Cell>, Cell>(), null);
 		}
 
 		void OnNativeSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -499,22 +497,22 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void OnPullToRefreshCanceled(object sender, EventArgs args)
 		{
-			if (Element.IsPullToRefreshEnabled && Controller.RefreshAllowed)
+			if (base.Element.IsPullToRefreshEnabled && Element.RefreshAllowed)
 				_progressBar.Visibility = Visibility.Collapsed;
 		}
 
 		void OnPullToRefreshCompleted(object sender, EventArgs args)
 		{
-			if (Element.IsPullToRefreshEnabled && Controller.RefreshAllowed)
+			if (base.Element.IsPullToRefreshEnabled && Element.RefreshAllowed)
 			{
 				_progressBar.IsIndeterminate = true;
-				Controller.SendRefreshing();
+				Element.SendRefreshing();
 			}
 		}
 
 		void OnPullToRefreshStarted(object sender, EventArgs args)
 		{
-			if (Element.IsPullToRefreshEnabled && Controller.RefreshAllowed)
+			if (base.Element.IsPullToRefreshEnabled && Element.RefreshAllowed)
 			{
 				_progressBar.Visibility = Visibility.Visible;
 				_progressBar.IsIndeterminate = false;
@@ -524,7 +522,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void OnPullToRefreshStatusUpdated(object sender, EventArgs eventArgs)
 		{
-			if (Element.IsPullToRefreshEnabled && Controller.RefreshAllowed)
+			if (base.Element.IsPullToRefreshEnabled && Element.RefreshAllowed)
 				_progressBar.Value = Math.Max(0, Math.Min(1, _listBox.PullToRefreshStatus));
 		}
 
@@ -575,7 +573,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 			var found = false;
 
-			if (Element.IsGroupingEnabled)
+			if (base.Element.IsGroupingEnabled)
 			{
 				for (var g = 0; g < templatedItems.Count; g++)
 				{
@@ -638,7 +636,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					position = ScrollToPosition.Start;
 			}
 
-			if (position == ScrollToPosition.Start && Element.IsGroupingEnabled)
+			if (position == ScrollToPosition.Start && base.Element.IsGroupingEnabled)
 				y = y - targetHeaderHeight;
 			else if (position == ScrollToPosition.Center)
 				y = y - (_viewport.ActualHeight / 2 + targetHeight / 2);
@@ -688,17 +686,17 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		void UpdateFooter()
 		{
-			Control.ListFooter = Controller.FooterElement;
+			Control.ListFooter = Element.FooterElement;
 		}
 
 		void UpdateHeader()
 		{
-			Control.ListHeader = Controller.HeaderElement;
+			Control.ListHeader = Element.HeaderElement;
 		}
 
 		void UpdateIsRefreshing()
 		{
-			if (Element.IsRefreshing)
+			if (base.Element.IsRefreshing)
 			{
 				_progressBar.Visibility = Visibility.Visible;
 				_progressBar.IsIndeterminate = true;
@@ -706,13 +704,13 @@ namespace Xamarin.Forms.Platform.WinPhone
 			else
 			{
 				_progressBar.IsIndeterminate = false;
-				_progressBar.Visibility = _listBox.IsInPullToRefresh && Element.IsPullToRefreshEnabled && Controller.RefreshAllowed ? Visibility.Visible : Visibility.Collapsed;
+				_progressBar.Visibility = _listBox.IsInPullToRefresh && base.Element.IsPullToRefreshEnabled && Element.RefreshAllowed ? Visibility.Visible : Visibility.Collapsed;
 			}
 		}
 
 		void UpdateJumpList()
 		{
-			if (_listBox.IsGroupingEnabled && Element.GroupShortNameBinding == null)
+			if (_listBox.IsGroupingEnabled && base.Element.GroupShortNameBinding == null)
 				_listBox.JumpListStyle = null;
 			else
 				_listBox.JumpListStyle = (System.Windows.Style)System.Windows.Application.Current.Resources["HeaderJumpStyle"];

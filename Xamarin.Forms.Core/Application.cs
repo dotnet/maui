@@ -123,7 +123,8 @@ namespace Xamarin.Forms
 
 		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		void IApplicationController.SetAppIndexingProvider(IAppIndexingProvider provider)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetAppIndexingProvider(IAppIndexingProvider provider)
 		{
 			_appIndexProvider = provider;
 		}

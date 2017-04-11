@@ -13,7 +13,6 @@ namespace Xamarin.Forms.Platform.WinRT
 	public class TableViewRenderer : ViewRenderer<TableView, Windows.UI.Xaml.Controls.ListView>
 	{
 		bool _ignoreSelectionEvent;
-		ITableViewController Controller => Element;
 
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -26,7 +25,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (e.OldElement != null)
 			{
-				((ITableViewController)e.OldElement).ModelChanged -= OnModelChanged;
+				e.OldElement.ModelChanged -= OnModelChanged;
 			}
 
 			if (e.NewElement != null)
@@ -47,7 +46,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					Control.SelectionChanged += OnSelectionChanged;
 				}
 
-				((ITableViewController)e.NewElement).ModelChanged += OnModelChanged;
+				e.NewElement.ModelChanged += OnModelChanged;
 				OnModelChanged(e.NewElement, EventArgs.Empty);
 			}
 
@@ -75,7 +74,7 @@ namespace Xamarin.Forms.Platform.WinRT
 					if (cell != null)
 					{
 						if (cell.IsEnabled)
-							Controller.Model.RowSelected(cell);
+							Element.Model.RowSelected(cell);
 						break;
 					}
 				}

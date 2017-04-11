@@ -31,8 +31,6 @@ var bases = head.getElementsByTagName('base');
 if(bases.length == 0){
     head.innerHTML = 'baseTag' + head.innerHTML;
 }";
-		IWebViewController ElementController => Element;
-
 		public void LoadHtml(string html, string baseUrl)
 		{
 			if (IsNullOrEmpty(baseUrl))
@@ -99,10 +97,10 @@ if(bases.length == 0){
 
 			if (e.OldElement != null)
 			{
-				var oldElementController = e.OldElement as IWebViewController;
-				oldElementController.EvalRequested -= OnEvalRequested;
-				oldElementController.GoBackRequested -= OnGoBackRequested;
-				oldElementController.GoForwardRequested -= OnGoForwardRequested;
+				var oldElement = e.OldElement;
+				oldElement.EvalRequested -= OnEvalRequested;
+				oldElement.GoBackRequested -= OnGoBackRequested;
+				oldElement.GoForwardRequested -= OnGoForwardRequested;
 			}
 
 			if (e.NewElement != null)
@@ -116,10 +114,10 @@ if(bases.length == 0){
 					SetNativeControl(webView);
 				}
 
-				var newElementController = e.NewElement as IWebViewController;
-				newElementController.EvalRequested += OnEvalRequested;
-				newElementController.GoForwardRequested += OnGoForwardRequested;
-				newElementController.GoBackRequested += OnGoBackRequested;
+				var newElement = e.NewElement;
+				newElement.EvalRequested += OnEvalRequested;
+				newElement.GoForwardRequested += OnGoForwardRequested;
+				newElement.GoBackRequested += OnGoBackRequested;
 
 				Load();
 			}
@@ -193,7 +191,7 @@ if(bases.length == 0){
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = uri.AbsoluteUri }, uri.AbsoluteUri);
 
-				ElementController.SendNavigating(args);
+				Element.SendNavigating(args);
 				e.Cancel = args.Cancel;
 
 				// reset in this case because this is the last event we will get
@@ -208,7 +206,7 @@ if(bases.length == 0){
 			((IElementController)Element).SetValueFromRenderer(WebView.SourceProperty, source);
 			_updating = false;
 
-			ElementController.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
+			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
@@ -216,8 +214,8 @@ if(bases.length == 0){
 
 		void UpdateCanGoBackForward()
 		{
-			ElementController.CanGoBack = Control.CanGoBack;
-			ElementController.CanGoForward = Control.CanGoForward;
+			((IWebViewController)Element).CanGoBack = Control.CanGoBack;
+			((IWebViewController)Element).CanGoForward = Control.CanGoForward;
 		}
 	}
 }

@@ -214,15 +214,9 @@ namespace Xamarin.Forms
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ListViewCachingStrategy CachingStrategy { get; private set; }
-		ListViewCachingStrategy IListViewController.CachingStrategy
-		{
-			get
-			{
-				return CachingStrategy;
-			}
-		}
 
-		bool RefreshAllowed
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool RefreshAllowed
 		{
 			set
 			{
@@ -235,36 +229,36 @@ namespace Xamarin.Forms
 			get { return _refreshAllowed; }
 		}
 
-		Element IListViewController.FooterElement
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Element FooterElement
 		{
 			get { return _footerElement; }
 		}
 
-		Element IListViewController.HeaderElement
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Element HeaderElement
 		{
 			get { return _headerElement; }
 		}
 
-		bool IListViewController.RefreshAllowed
-		{
-			get { return RefreshAllowed; }
-		}
-
-		void IListViewController.SendCellAppearing(Cell cell)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendCellAppearing(Cell cell)
 		{
 			EventHandler<ItemVisibilityEventArgs> handler = ItemAppearing;
 			if (handler != null)
 				handler(this, new ItemVisibilityEventArgs(cell.BindingContext));
 		}
 
-		void IListViewController.SendCellDisappearing(Cell cell)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendCellDisappearing(Cell cell)
 		{
 			EventHandler<ItemVisibilityEventArgs> handler = ItemDisappearing;
 			if (handler != null)
 				handler(this, new ItemVisibilityEventArgs(cell.BindingContext));
 		}
 
-		void IListViewController.SendRefreshing()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendRefreshing()
 		{
 			BeginRefresh();
 		}
@@ -371,12 +365,14 @@ namespace Xamarin.Forms
 			content.Parent = null;
 		}
 
-		Cell IListViewController.CreateDefaultCell(object item)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Cell CreateDefaultCell(object item)
 		{
 			return CreateDefault(item);
 		}
 
-		string IListViewController.GetDisplayTextFromGroup(object cell)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public string GetDisplayTextFromGroup(object cell)
 		{
 			int groupIndex = TemplatedItems.GetGlobalIndexOfGroup(cell);
 			var group = TemplatedItems.GetGroup(groupIndex);
@@ -394,7 +390,8 @@ namespace Xamarin.Forms
 			return displayBinding;
 		}
 
-		internal void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void NotifyRowTapped(int groupIndex, int inGroupIndex, Cell cell = null)
 		{
 			var group = TemplatedItems.GetGroup(groupIndex);
 
@@ -415,7 +412,8 @@ namespace Xamarin.Forms
 			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell.BindingContext));
 		}
 
-		internal void NotifyRowTapped(int index, Cell cell = null)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void NotifyRowTapped(int index, Cell cell = null)
 		{
 			if (IsGroupingEnabled)
 			{
@@ -426,16 +424,6 @@ namespace Xamarin.Forms
 			}
 			else
 				NotifyRowTapped(0, index, cell);
-		}
-
-		void IListViewController.NotifyRowTapped(int index, Cell cell)
-		{
-			NotifyRowTapped(index, cell);
-		}
-
-		void IListViewController.NotifyRowTapped(int index, int inGroupIndex, Cell cell)
-		{
-			NotifyRowTapped(index, inGroupIndex, cell);
 		}
 
 		internal override void OnIsPlatformEnabledChanged()
@@ -449,8 +437,8 @@ namespace Xamarin.Forms
 			}
 		}
 
-		internal event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
-		event EventHandler<ScrollToRequestedEventArgs> IListViewController.ScrollToRequested { add { ScrollToRequested += value; } remove { ScrollToRequested -= value; } }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
 
 		void OnCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{

@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void OnSearchButtonClicked(object sender, EventArgs e)
 		{
-			((ISearchBarController)Element).OnSearchButtonPressed();
+			Element.OnSearchButtonPressed();
 			Control.ResignFirstResponder();
 		}
 

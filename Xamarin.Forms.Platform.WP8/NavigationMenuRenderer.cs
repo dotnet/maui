@@ -10,8 +10,6 @@ namespace Xamarin.Forms.Platform.WinPhone
 	{
 		const int Spacing = 12;
 
-		INavigationMenuController ElementController => Element;
-
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationMenu> e)
 		{
 			base.OnElementChanged(e);
@@ -66,7 +64,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 					hubTile.Background = target.BackgroundColor.ToBrush();
 
 				Page tmp = target;
-				hubTile.Tap += (sender, args) => ElementController.SendTargetSelected(tmp);
+				hubTile.Tap += (sender, args) => Element.SendTargetSelected(tmp);
 
 				hubTile.SetValue(System.Windows.Controls.Grid.RowProperty, y);
 				hubTile.SetValue(System.Windows.Controls.Grid.ColumnProperty, x);

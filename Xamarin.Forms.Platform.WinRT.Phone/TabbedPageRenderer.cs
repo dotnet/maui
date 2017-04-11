@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (ActualWidth > 0 && ActualHeight > 0)
 				{
 					var tab = ((Page)DataContext);
-					((IPageController)tab.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
+					((Page)tab.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
 				}
 			};
 		}
@@ -38,7 +38,6 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool _showTitle;
 
 		ITitleProvider TitleProvider => this;
-		IPageController PageController => Element as IPageController;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -152,7 +151,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			_disposed = true;
 
-			PageController?.SendDisappearing();
+			Element?.SendDisappearing();
 			SetElement(null);
 			Tracker = null;
 		}
@@ -278,14 +277,14 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnLoaded(object sender, RoutedEventArgs args)
 		{
-			PageController?.SendAppearing();
+			Element?.SendAppearing();
 			UpdateBarTextColor();
 			UpdateBarBackgroundColor();
 		}
 
 		void OnUnloaded(object sender, RoutedEventArgs args)
 		{
-			PageController?.SendDisappearing();
+			Element?.SendDisappearing();
 		}
 
 		void OnTrackerUpdated(object sender, EventArgs e)

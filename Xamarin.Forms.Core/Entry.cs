@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -110,7 +111,8 @@ namespace Xamarin.Forms
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
 
-		void IEntryController.SendCompleted()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendCompleted()
 		{
 			Completed?.Invoke(this, EventArgs.Empty);
 		}

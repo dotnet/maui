@@ -42,9 +42,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			Unloaded += (sender, args) =>
 			{
-				ICellController cell = Cell;
-				if (cell != null)
-					cell.SendDisappearing();
+				if (Cell != null)
+					Cell.SendDisappearing();
 			};
 
 			_propertyChangedHandler = OnCellPropertyChanged;
@@ -230,12 +229,10 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 				else
 				{
-					IListViewController listViewController = lv;
-
 					if (isGroupHeader)
-						bindingContext = listViewController.GetDisplayTextFromGroup(bindingContext);
+						bindingContext = lv.GetDisplayTextFromGroup(bindingContext);
 
-					cell = listViewController.CreateDefaultCell(bindingContext);
+					cell = lv.CreateDefaultCell(bindingContext);
 				}
 
 				// A TableView cell should already have its parent,
@@ -258,12 +255,12 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (oldCell != null)
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
-				((ICellController)oldCell).SendDisappearing();
+				oldCell.SendDisappearing();
 			}
 
 			if (newCell != null)
 			{
-				((ICellController)newCell).SendAppearing();
+				newCell.SendAppearing();
 
 				UpdateContent(newCell);
 				SetupContextMenu();
