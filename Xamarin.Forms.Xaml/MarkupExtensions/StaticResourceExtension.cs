@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml
 				var resDict = ve?.Resources ?? p as ResourceDictionary;
 				if (resDict == null)
 					continue;
-				if (resDict.TryGetMergedValue(Key, out resource))
+				if (resDict.TryGetValue(Key, out resource))
 					break;
 			}
 			resource = resource ?? GetApplicationLevelResource(Key, xmlLineInfo);
@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Xaml
 		internal object GetApplicationLevelResource(string key, IXmlLineInfo xmlLineInfo)
 		{
 			object resource;
-			if (Application.Current == null || Application.Current.Resources == null || !Application.Current.Resources.TryGetMergedValue(Key, out resource))
+			if (Application.Current == null || Application.Current.Resources == null || !Application.Current.Resources.TryGetValue(Key, out resource))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 			return resource;
 		}

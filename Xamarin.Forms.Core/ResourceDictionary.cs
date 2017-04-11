@@ -48,7 +48,8 @@ namespace Xamarin.Forms
 
 		bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
 		{
-			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Contains(item);
+			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Contains(item)
+				|| (_mergedInstance != null && _mergedInstance.Contains(item));
 		}
 
 		void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
@@ -91,6 +92,8 @@ namespace Xamarin.Forms
 			{
 				if (_innerDictionary.ContainsKey(index))
 					return _innerDictionary[index];
+				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
+					return _mergedInstance[index];
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -136,11 +139,6 @@ namespace Xamarin.Forms
 		}
 
 		public bool TryGetValue(string key, out object value)
-		{
-			return _innerDictionary.TryGetValue(key, out value);
-		}
-
-		internal bool TryGetMergedValue(string key, out object value)
 		{
 			return _innerDictionary.TryGetValue(key, out value) || (_mergedInstance != null && _mergedInstance.TryGetValue(key, out value));
 		}
