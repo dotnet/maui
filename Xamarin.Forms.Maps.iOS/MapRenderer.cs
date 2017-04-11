@@ -306,6 +306,16 @@ namespace Xamarin.Forms.Maps.MacOS
 		}
 #endif
 
+		protected virtual IMKAnnotation CreateAnnotation(Pin pin)
+		{
+			return new MKPointAnnotation
+			{
+				Title = pin.Label,
+				Subtitle = pin.Address ?? "",
+				Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude)
+			};
+		}
+
 		void UpdateRegion()
 		{
 			if (_shouldUpdateRegion)
@@ -319,10 +329,8 @@ namespace Xamarin.Forms.Maps.MacOS
 		{
 			foreach (Pin pin in pins)
 			{
-				var annotation = new MKPointAnnotation { Title = pin.Label, Subtitle = pin.Address ?? "" };
-
+				var annotation = CreateAnnotation(pin);
 				pin.Id = annotation;
-				annotation.SetCoordinate(new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude));
 				((MKMapView)Control).AddAnnotation(annotation);
 			}
 		}

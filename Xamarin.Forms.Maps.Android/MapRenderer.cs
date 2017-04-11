@@ -181,6 +181,33 @@ namespace Xamarin.Forms.Maps.Android
 				MoveToRegion(Element.LastMoveToRegion, false);
 			}
 		}
+		
+		protected virtual void OnMapReady(GoogleMap map)
+		{
+			if (map == null)
+			{
+				return;
+			}
+			
+			map.SetOnCameraChangeListener(this);
+			map.InfoWindowClick += MapOnMarkerClick;
+			
+			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
+			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
+			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
+			map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = Map.IsShowingUser;
+			SetMapType();
+		}
+		
+		protected virtual MarkerOptions CreateMarker(Pin pin)
+		{
+			var opts = new MarkerOptions();
+			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
+			opts.SetTitle(pin.Label);
+			opts.SetSnippet(pin.Address);
+			
+			return opts;
+		}
 
 		void AddPins(IList pins)
 		{
@@ -198,10 +225,7 @@ namespace Xamarin.Forms.Maps.Android
 			_markers.AddRange(pins.Cast<Pin>().Select(p =>
 			{
 				Pin pin = p;
-				var opts = new MarkerOptions();
-				opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
-				opts.SetTitle(pin.Label);
-				opts.SetSnippet(pin.Address);
+				var opts = CreateMarker(pin);
 				var marker = map.AddMarker(opts);
 
 				// associate pin with marker for later lookup in event handlers
@@ -367,19 +391,7 @@ namespace Xamarin.Forms.Maps.Android
 		void IOnMapReadyCallback.OnMapReady(GoogleMap map)
 		{
 			NativeMap = map;
-			if (map == null)
-			{
-				return;
-			}
-
-			map.SetOnCameraChangeListener(this);
-			map.InfoWindowClick += MapOnMarkerClick;
-
-			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
-			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
-			map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = Map.IsShowingUser;
-			SetMapType();
+			OnMapReady(map);
 		}
 	}
 }

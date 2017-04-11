@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Maps
 {
-	public sealed class Pin : BindableObject
+	public class Pin : BindableObject
 	{
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create("Type", typeof(PinType), typeof(Pin), default(PinType));
 
@@ -10,9 +10,7 @@ namespace Xamarin.Forms.Maps
 
 		public static readonly BindableProperty AddressProperty = BindableProperty.Create("Address", typeof(string), typeof(Pin), default(string));
 
-		// introduced to store the unique id for Android markers
-
-		string _label;
+		public static readonly BindableProperty LabelProperty = BindableProperty.Create("Label", typeof(string), typeof(Pin), default(string));
 
 		public string Address
 		{
@@ -22,14 +20,8 @@ namespace Xamarin.Forms.Maps
 
 		public string Label
 		{
-			get { return _label; }
-			set
-			{
-				if (_label == value)
-					return;
-				_label = value;
-				OnPropertyChanged();
-			}
+			get { return (string)GetValue(LabelProperty); }
+			set { SetValue(LabelProperty, value); }
 		}
 
 		public Position Position
@@ -44,6 +36,7 @@ namespace Xamarin.Forms.Maps
 			set { SetValue(TypeProperty, value); }
 		}
 
+		// introduced to store the unique id for Android markers
 		internal object Id { get; set; }
 
 		public event EventHandler Clicked;
