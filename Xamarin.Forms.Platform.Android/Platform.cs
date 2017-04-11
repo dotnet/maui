@@ -109,11 +109,6 @@ namespace Xamarin.Forms.Platform.Android
 					_currentNavigationPage.PropertyChanged += CurrentNavigationPageOnPropertyChanged;
 					RegisterNavPageCurrent(_currentNavigationPage.CurrentPage);
 				}
-
-				UpdateActionBarBackgroundColor();
-				UpdateActionBarTextColor();
-				UpdateActionBarUpImageColor();
-				UpdateActionBarTitle();
 			}
 		}
 
@@ -304,6 +299,7 @@ namespace Xamarin.Forms.Platform.Android
 		public void UpdateActionBarTextColor()
 		{
 			SetActionBarTextColor();
+			UpdateActionBarUpImageColor();
 		}
 
 		protected override void OnBindingContextChanged()
@@ -429,9 +425,8 @@ namespace Xamarin.Forms.Platform.Android
 		internal void UpdateActionBar()
 		{
 			if (ActionBar == null) //Fullscreen theme doesn't have action bar
-			{
 				return;
-			}
+
 			List<Page> relevantAncestors = AncestorPagesOfPage(_navModel.CurrentPage);
 
 			IEnumerable<NavigationPage> navPages = relevantAncestors.OfType<NavigationPage>();
@@ -453,19 +448,19 @@ namespace Xamarin.Forms.Platform.Android
 				throw new InvalidOperationException("NavigationPage must have a root Page before being used. Either call PushAsync with a valid Page, or pass a Page to the constructor before usage.");
 			}
 
-			UpdateActionBarTitle();
-
-			if (ShouldShowActionBarTitleArea() || tabbedPage != null)
+			if (ShouldShowActionBarTitleArea() || CurrentTabbedPage != null)
 				ShowActionBar();
 			else
 				HideActionBar();
+
 			UpdateMasterDetailToggle();
 		}
 
 		internal void UpdateActionBarBackgroundColor()
 		{
-			if (!((Activity)_context).ActionBar.IsShowing)
+			if (!ShouldShowActionBarTitleArea())
 				return;
+
 			Color colorToUse = Color.Default;
 			if (CurrentNavigationPage != null)
 			{
@@ -513,13 +508,6 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			MasterDetailPageToggle.DrawerIndicatorEnabled = state;
 			MasterDetailPageToggle.SyncState();
-		}
-
-		internal void UpdateNavigationTitleBar()
-		{
-			UpdateActionBarTitle();
-			UpdateActionBar();
-			UpdateActionBarUpImageColor();
 		}
 
 		void AddChild(VisualElement view, bool layout = false)
@@ -593,12 +581,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		void CurrentNavigationPageOnPopped(object sender, NavigationEventArgs eventArg)
 		{
-			UpdateNavigationTitleBar();
+			UpdateActionBar();
 		}
 
 		void CurrentNavigationPageOnPoppedToRoot(object sender, EventArgs eventArgs)
 		{
-			UpdateNavigationTitleBar();
+			UpdateActionBar();
 		}
 
 		void CurrentNavigationPageOnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -610,17 +598,14 @@ namespace Xamarin.Forms.Platform.Android
 			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateActionBarBackgroundColor();
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
-			{
 				UpdateActionBarTextColor();
-				UpdateActionBarUpImageColor();
-			}
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
 				RegisterNavPageCurrent(CurrentNavigationPage.CurrentPage);
 		}
 
 		void CurrentNavigationPageOnPushed(object sender, NavigationEventArgs eventArg)
 		{
-			UpdateNavigationTitleBar();
+			UpdateActionBar();
 		}
 
 		void CurrentTabbedPageChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -918,10 +903,10 @@ namespace Xamarin.Forms.Platform.Android
 		void ShowActionBar()
 		{
 			ReloadToolbarItems();
-			UpdateActionBarHomeAsUp(ActionBar);
-			ActionBar.Show();
+			UpdateActionBarTitle();
 			UpdateActionBarBackgroundColor();
 			UpdateActionBarTextColor();
+			ActionBar.Show();
 		}
 
 		void ToolbarTrackerOnCollectionChanged(object sender, EventArgs eventArgs)

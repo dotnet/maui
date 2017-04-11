@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.Android
 				throw new InvalidOperationException("This should never happen, please file a bug");
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(0), () => {
-				((Platform)Element.Platform).UpdateNavigationTitleBar();
+				((Platform)Element.Platform).UpdateActionBar();
 				return false;
 			});
 		}
@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(0), () =>
 			{
-				((Platform)Element.Platform).UpdateNavigationTitleBar();
+				((Platform)Element.Platform).UpdateActionBar();
 				return false;
 			});
 		}
