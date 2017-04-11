@@ -75,7 +75,7 @@
         <param name="totalX">To be added.</param>
         <param name="totalY">To be added.</param>
         <param name="gestureId">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -101,7 +101,7 @@
       <Docs>
         <param name="sender">To be added.</param>
         <param name="gestureId">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -127,7 +127,7 @@
       <Docs>
         <param name="sender">To be added.</param>
         <param name="gestureId">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -153,7 +153,7 @@
       <Docs>
         <param name="sender">To be added.</param>
         <param name="gestureId">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

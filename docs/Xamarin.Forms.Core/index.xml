@@ -1061,7 +1061,7 @@
           <param name="self">To be added.</param>
           <param name="item">To be added.</param>
           <param name="container">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DataTemplateExtensions" Member="M:Xamarin.Forms.Internals.DataTemplateExtensions.CreateContent(Xamarin.Forms.DataTemplate,System.Object,Xamarin.Forms.BindableObject)" />
       </Member>
@@ -1082,7 +1082,7 @@
         </Parameters>
         <Docs>
           <param name="orientation">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsLandscape(Xamarin.Forms.Internals.DeviceOrientation)" />
       </Member>
@@ -1103,7 +1103,7 @@
         </Parameters>
         <Docs>
           <param name="orientation">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsPortrait(Xamarin.Forms.Internals.DeviceOrientation)" />
       </Member>
@@ -1130,7 +1130,7 @@
           <typeparam name="T">To be added.</typeparam>
           <param name="enumeration">To be added.</param>
           <param name="action">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})" />
       </Member>
@@ -1161,7 +1161,7 @@
           <typeparam name="T">To be added.</typeparam>
           <param name="gestures">To be added.</param>
           <param name="predicate">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.GetGesturesFor``1(System.Collections.Generic.IEnumerable{Xamarin.Forms.IGestureRecognizer},System.Func{``0,System.Boolean})" />
       </Member>
@@ -1188,7 +1188,7 @@
           <typeparam name="T">To be added.</typeparam>
           <param name="enumerable">To be added.</param>
           <param name="item">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0)" />
       </Member>
@@ -1215,7 +1215,7 @@
           <typeparam name="T">To be added.</typeparam>
           <param name="enumerable">To be added.</param>
           <param name="predicate">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})" />
       </Member>
@@ -1242,7 +1242,7 @@
           <typeparam name="T">To be added.</typeparam>
           <param name="enumerable">To be added.</param>
           <param name="item">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.Prepend``1(System.Collections.Generic.IEnumerable{``0},``0)" />
       </Member>
@@ -1346,7 +1346,7 @@
           <param name="self">To be added.</param>
           <param name="min">To be added.</param>
           <param name="max">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Double,System.Double,System.Double)" />
       </Member>
@@ -1371,7 +1371,7 @@
           <param name="self">To be added.</param>
           <param name="min">To be added.</param>
           <param name="max">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Int32,System.Int32,System.Int32)" />
       </Member>
@@ -1394,7 +1394,7 @@
         <Docs>
           <param name="type">To be added.</param>
           <param name="predicate">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.Func{System.Reflection.FieldInfo,System.Boolean})" />
       </Member>
@@ -1417,7 +1417,7 @@
         <Docs>
           <param name="type">To be added.</param>
           <param name="name">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.String)" />
       </Member>
@@ -1438,7 +1438,7 @@
         </Parameters>
         <Docs>
           <param name="type">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetFields(System.Type)" />
       </Member>
@@ -1459,7 +1459,7 @@
         </Parameters>
         <Docs>
           <param name="type">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperties(System.Type)" />
       </Member>
@@ -1482,7 +1482,7 @@
         <Docs>
           <param name="type">To be added.</param>
           <param name="name">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperty(System.Type,System.String)" />
       </Member>
@@ -1505,7 +1505,7 @@
         <Docs>
           <param name="self">To be added.</param>
           <param name="c">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsAssignableFrom(System.Type,System.Type)" />
       </Member>
@@ -1528,7 +1528,7 @@
         <Docs>
           <param name="self">To be added.</param>
           <param name="o">To be added.</param>
-          <summary>To be added.</summary>
+          <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsInstanceOfType(System.Type,System.Object)" />
       </Member>

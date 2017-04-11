@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -40,7 +40,7 @@
         <typeparam name="T">To be added.</typeparam>
         <param name="enumeration">To be added.</param>
         <param name="action">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -74,7 +74,7 @@
         <typeparam name="T">To be added.</typeparam>
         <param name="gestures">To be added.</param>
         <param name="predicate">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -100,7 +100,7 @@
         <typeparam name="T">To be added.</typeparam>
         <param name="enumerable">To be added.</param>
         <param name="predicate">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -126,7 +126,7 @@
         <typeparam name="T">To be added.</typeparam>
         <param name="enumerable">To be added.</param>
         <param name="item">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -157,7 +157,7 @@
         <typeparam name="T">To be added.</typeparam>
         <param name="enumerable">To be added.</param>
         <param name="item">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

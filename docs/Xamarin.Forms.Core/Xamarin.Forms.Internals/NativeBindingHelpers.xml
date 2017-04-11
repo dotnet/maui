@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -46,7 +46,7 @@
         <param name="target">To be added.</param>
         <param name="targetProperty">To be added.</param>
         <param name="binding">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -79,7 +79,7 @@
         <param name="targetProperty">To be added.</param>
         <param name="bindingBase">To be added.</param>
         <param name="propertyChanged">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -112,7 +112,7 @@
         <param name="targetProperty">To be added.</param>
         <param name="bindingBase">To be added.</param>
         <param name="updateSourceEventName">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -143,7 +143,7 @@
         <param name="target">To be added.</param>
         <param name="bindingContext">To be added.</param>
         <param name="getChild">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -174,7 +174,7 @@
         <param name="target">To be added.</param>
         <param name="targetProperty">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -209,7 +209,7 @@
         <typeparam name="TNativeWrapper">To be added.</typeparam>
         <param name="nativeView">To be added.</param>
         <param name="wrapper">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -94,7 +94,7 @@
         <param name="sender">To be added.</param>
         <param name="delta">To be added.</param>
         <param name="currentScalePoint">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -118,7 +118,7 @@
       </Parameters>
       <Docs>
         <param name="sender">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -142,7 +142,7 @@
       </Parameters>
       <Docs>
         <param name="sender">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -168,7 +168,7 @@
       <Docs>
         <param name="sender">To be added.</param>
         <param name="initialScalePoint">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

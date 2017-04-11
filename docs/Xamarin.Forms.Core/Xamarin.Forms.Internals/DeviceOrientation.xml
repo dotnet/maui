@@ -14,7 +14,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -29,7 +29,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="LandscapeLeft">
@@ -43,7 +43,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="LandscapeRight">
@@ -57,7 +57,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="Other">
@@ -71,7 +71,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="Portrait">
@@ -85,7 +85,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="PortraitDown">
@@ -99,7 +99,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
     <Member MemberName="PortraitUp">
@@ -113,7 +113,7 @@
         <ReturnType>Xamarin.Forms.Internals.DeviceOrientation</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
       </Docs>
     </Member>
   </Members>
