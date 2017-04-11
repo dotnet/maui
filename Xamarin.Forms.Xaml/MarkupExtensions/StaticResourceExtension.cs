@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Xaml
 			return resource;
 		}
 
-		internal object GetApplicationLevelResource(string key, IXmlLineInfo xmlLineInfo)
+		internal object GetApplicationLevelResource(string key, IXmlLineInfoProvider xmlLineInfo)
 		{
 			object resource;
 			if (Application.Current == null || Application.Current.Resources == null || !Application.Current.Resources.TryGetValue(Key, out resource))
