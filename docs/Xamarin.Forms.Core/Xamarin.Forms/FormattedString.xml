@@ -88,7 +88,7 @@
       </Parameters>
       <Docs>
         <param name="text">To be added.</param>
-        <summary>Cast a string to a FromattedString that contains a single span with no attribute set.</summary>
+        <summary>Cast a string to a FormattedString that contains a single span with no attribute set.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
