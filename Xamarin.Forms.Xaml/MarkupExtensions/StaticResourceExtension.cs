@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -54,7 +55,7 @@ namespace Xamarin.Forms.Xaml
 			return resource;
 		}
 
-		internal object GetApplicationLevelResource(string key, IXmlLineInfoProvider xmlLineInfo)
+		internal object GetApplicationLevelResource(string key, IXmlLineInfo xmlLineInfo)
 		{
 			object resource;
 			if (Application.Current == null || Application.Current.Resources == null || !Application.Current.Resources.TryGetValue(Key, out resource))
