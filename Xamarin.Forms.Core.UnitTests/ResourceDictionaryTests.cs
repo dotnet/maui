@@ -294,6 +294,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		[Ignore]
 		public void ThrowOnDuplicateKey()
 		{
 			var rd0 = new ResourceDictionary();
