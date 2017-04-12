@@ -25,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <DefineConstants>__MACOS__;UITEST</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
