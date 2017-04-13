@@ -423,29 +423,31 @@ namespace Xamarin.Forms.Core.UnitTests
 			}
 		}
 
+		// Need a member to keep this reference around, otherwise it gets optimized
+		// out early in Release mode during the WeakToWeak test
+#pragma warning disable 0414 // Never accessed, it's just here to prevent GC
+		ListProxy _proxyForWeakToWeakTest;
+#pragma warning restore 0414
+
 		[Test]
-		[Ignore()]
-		//TODO: Need to figure why this is failing on release 
 		public void WeakToWeak()
 		{
 			WeakCollectionChangedList list = new WeakCollectionChangedList();
-			var proxy = new ListProxy(list);
+			_proxyForWeakToWeakTest = new ListProxy(list);
 
-			Assert.True(list.AddObject());
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.IsTrue(list.AddObject());
-
-			proxy = null;
+			Assert.True(list.AddObject(), "GC hasn't run");
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			GC.Collect();
 
-			Assert.IsFalse(list.AddObject());
+			Assert.IsTrue(list.AddObject(), "GC run, but proxy should still hold a reference");
+
+			_proxyForWeakToWeakTest = null;
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.IsFalse(list.AddObject(), "Proxy is gone and GC has run");
 		}
 
 		public class WeakCollectionChangedList : List<object>, INotifyCollectionChanged
@@ -467,7 +469,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			{
 				bool invoked = false;
 				var me = new object();
-
+				Console.WriteLine($"Handler count is {handlers.Count}");
 				foreach (var handler in handlers.ToList())
 				{
 					if (handler.IsActive)
@@ -477,6 +479,7 @@ namespace Xamarin.Forms.Core.UnitTests
 					}
 					else
 					{
+						Console.WriteLine($"Handler is inactive");
 						handlers.Remove(handler);
 					}
 				}
