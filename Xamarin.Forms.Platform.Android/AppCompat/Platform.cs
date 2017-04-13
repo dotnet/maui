@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Views.Animations;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
+using Debug = System.Diagnostics.Debug;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -219,12 +221,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		internal void SetPage(Page newRoot)
 		{
 			var layout = false;
+			List<IVisualElementRenderer> toDispose = null;
+
 			if (Page != null)
 			{
 				_renderer.RemoveAllViews();
 
-				foreach (IVisualElementRenderer rootRenderer in _navModel.Roots.Select(Android.Platform.GetRenderer))
-					rootRenderer.Dispose();
+				toDispose = _navModel.Roots.Select(Android.Platform.GetRenderer).ToList();
+
 				_navModel = new NavigationModel();
 
 				layout = true;
@@ -240,6 +244,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AddChild(Page, layout);
 
 			Application.Current.NavigationProxy.Inner = this;
+
+			if (toDispose?.Count > 0)
+			{
+				// Queue up disposal of the previous renderers after the current layout updates have finished
+				new Handler(Looper.MainLooper).Post(() =>
+				{	
+					foreach (IVisualElementRenderer rootRenderer in toDispose)
+					{
+						rootRenderer.Dispose();
+					}
+				});
+			}
 		}
 
 		void AddChild(Page page, bool layout = false)

@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -86,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				// The renderers for NavigationPage and TabbedPage both host fragments, so they need to be wrapped in a 
 				// FragmentContainer in order to get isolated fragment management
 				Fragment fragment = FragmentContainer.CreateInstance(page);
-
+				
 				var fc = fragment as FragmentContainer;
 
 				fc?.SetOnCreateCallback(pc =>
@@ -112,7 +113,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				_currentFragment = fragment;
 
-				new Handler(Looper.MainLooper).PostAtFrontOfQueue(() => FragmentManager.ExecutePendingTransactions());
+				new Handler(Looper.MainLooper).PostAtFrontOfQueue(() =>
+				{
+					if (_pageContainer == null)
+					{
+						// The view we're hosting in the fragment was never created (possibly we're already 
+						// navigating to another page?) so there's nothing to commit
+						return;
+					}
+
+					FragmentManager.ExecutePendingTransactions();
+				});
 			}
 		}
 

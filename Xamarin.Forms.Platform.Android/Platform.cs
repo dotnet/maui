@@ -9,6 +9,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.OS;
 using Android.Support.V4.App;
 using Android.Util;
 using Android.Views;
@@ -390,12 +391,14 @@ namespace Xamarin.Forms.Platform.Android
 		internal void SetPage(Page newRoot)
 		{
 			var layout = false;
+			List<IVisualElementRenderer> toDispose = null;
+
 			if (Page != null)
 			{
 				_renderer.RemoveAllViews();
 
-				foreach (IVisualElementRenderer rootRenderer in _navModel.Roots.Select(GetRenderer))
-					rootRenderer.Dispose();
+				toDispose = _navModel.Roots.Select(Android.Platform.GetRenderer).ToList();
+
 				_navModel = new NavigationModel();
 
 				layout = true;
@@ -415,6 +418,18 @@ namespace Xamarin.Forms.Platform.Android
 			_toolbarTracker.Target = newRoot;
 
 			UpdateActionBar();
+
+			if (toDispose?.Count > 0)
+			{
+				// Queue up disposal of the previous renderers after the current layout updates have finished
+				new Handler(Looper.MainLooper).Post(() =>
+				{
+					foreach (IVisualElementRenderer rootRenderer in toDispose)
+					{
+						rootRenderer.Dispose();
+					}
+				});
+			}
 		}
 
 		internal static void SetPageContext(BindableObject bindable, Context context)

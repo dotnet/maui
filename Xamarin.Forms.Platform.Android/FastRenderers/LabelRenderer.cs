@@ -132,8 +132,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (disposing)
 			{
-				_disposed = true;
-
 				if (_visualElementTracker != null)
 				{
 					_visualElementTracker.Dispose();

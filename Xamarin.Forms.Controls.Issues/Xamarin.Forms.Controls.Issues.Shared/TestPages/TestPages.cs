@@ -387,6 +387,9 @@ namespace Xamarin.Forms.Controls
 		protected abstract void Init();
 	}
 
+#if UITEST
+	[Category(Core.UITests.UITestCategories.MasterDetailPage)]
+#endif
 	public abstract class TestMasterDetailPage : MasterDetailPage
 	{
 #if UITEST

@@ -17,6 +17,8 @@ namespace Xamarin.Forms.Core.UITests
 
 		public string ContainerQuery { get; private set; }
 
+		public string ContainerLabel { get; private set; }
+
 		public string ContainerDescendents { get; private set; }
 
 		public string EventLabelQuery { get; set; }
@@ -37,6 +39,7 @@ namespace Xamarin.Forms.Core.UITests
 			// Currently tests are failing because the ViewInitilized is setting the renderer and control, fix and then remove index one
 
 			ContainerQuery = string.Format("* marked:'{0}Container'", formsType);
+			ContainerLabel = string.Format("{0}VisualElement_Container", formsType);
 			ContainerDescendents = string.Format("* marked:'{0}Container' child *", formsType);
 
 			ViewQuery = string.Format("* marked:'{0}VisualElement'", formsType);
@@ -120,6 +123,10 @@ namespace Xamarin.Forms.Core.UITests
 
 		public T GetProperty<T>(BindableProperty formProperty)
 		{
+#if __ANDROID__
+			
+#endif
+
 			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery();
 			string[] propertyPath = property.Item1;
 			bool isOnParentRenderer = property.Item2;
@@ -127,15 +134,23 @@ namespace Xamarin.Forms.Core.UITests
 			var query = ViewQuery;
 			if (isOnParentRenderer && 
 				PlatformViewType != PlatformViews.BoxView && 
-				PlatformViewType != PlatformViews.Frame
+				PlatformViewType != PlatformViews.Frame)
+			{
+
 #if __ANDROID__
-				&&
-				PlatformViewType != PlatformViews.Button &&
-				PlatformViewType != PlatformViews.Label &&
-				PlatformViewType != PlatformViews.Image
-#endif               
-				) {
+				// If we're testing the fast renderers, we don't want to check the parent control for
+				// this property (despite `isOnParentRenderer` being true); if we're testing a legacy
+				// renderer, then we *do* need to check the parent control for the property
+				// So we query the control's parent and see if it's a Container (legacy); if so, 
+				// we adjust the query to look at the parent of the current control
+				var parent = App.Query(appQuery => appQuery.Raw(ViewQuery + " parent * index:0"));
+				if (parent.Length > 0 && parent[0].Label.EndsWith(ContainerLabel))
+				{
+					query = query + " parent * index:0";
+				}
+#else
 				query = query + " parent * index:0";
+#endif
 			}
 
 			object prop = null;
