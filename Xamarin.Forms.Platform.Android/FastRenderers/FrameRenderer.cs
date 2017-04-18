@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			return handled ? result : base.OnTouchEvent(e);
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 

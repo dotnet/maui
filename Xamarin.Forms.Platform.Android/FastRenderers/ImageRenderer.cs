@@ -144,7 +144,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 		}
 
-		protected void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
 				this.UpdateBitmap(_element);

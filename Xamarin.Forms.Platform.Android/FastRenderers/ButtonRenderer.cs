@@ -220,7 +220,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
 
-		protected void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Button.TextProperty.PropertyName)
 			{
