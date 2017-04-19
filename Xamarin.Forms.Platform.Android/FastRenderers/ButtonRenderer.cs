@@ -346,7 +346,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void Initialize()
 		{
 			// Fixes issues with AppCompatButton elevation (z-index) 
-			StateListAnimator = null;
+			if (Forms.IsLollipopOrNewer)
+				StateListAnimator = null;
 
 			SoundEffectsEnabled = false;
 			SetOnClickListener(this);
