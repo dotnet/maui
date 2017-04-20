@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public ICommand ProvideValue(IServiceProvider serviceProvider)
 		{
-			return new Command(() => { });
+			return new Command(() => {});
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 	}
 
-	public partial class TypeExtension : ListView
+	public partial class TypeExtension : ContentPage
 	{
 		public TypeExtension()
 		{
@@ -50,7 +50,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true)]
 			public void NestedMarkupExtensionInsideDataTemplate(bool useCompiledXaml)
 			{
-				var listView = new TypeExtension(useCompiledXaml);
+				var page = new TypeExtension(useCompiledXaml);
+				var listView = page.listview;
 				listView.ItemsSource = new string [2];
 
 				var cell = (ViewCell)listView.TemplatedItems [0];
@@ -60,6 +61,16 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				cell = (ViewCell)listView.TemplatedItems [1];
 				button = (Button)cell.View;
 				Assert.IsNotNull(button.Command);
+			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			//https://bugzilla.xamarin.com/show_bug.cgi?id=55027
+			public void TypeExtensionSupportsNamespace(bool useCompiledXaml)
+			{
+				var page=new TypeExtension(useCompiledXaml);
+				var button = page.button0;
+				Assert.That(button.CommandParameter, Is.EqualTo(typeof(TypeExtension)));
 			}
 		}
 	}

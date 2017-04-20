@@ -1,13 +1,19 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ListView xmlns="http://xamarin.com/schemas/2014/forms"
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+		xmlns:localshort="clr-namespace:Xamarin.Forms.Xaml"
 		x:Class="Xamarin.Forms.Xaml.UnitTests.TypeExtension">
-	<ListView.ItemTemplate>
-		<DataTemplate>
-			<ViewCell>
-				<Button Command="{local:Navigate Operation=Forward, Type={x:Type Grid}}" />
-			</ViewCell>
-		</DataTemplate>
-	</ListView.ItemTemplate>
-</ListView>
+	<StackLayout>
+		<ListView x:Name="listview">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<ViewCell>
+						<Button Command="{local:Navigate Operation=Forward, Type={x:Type Grid}}" />
+					</ViewCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+		<Button x:Name="button0" CommandParameter="{x:Type localshort:UnitTests.TypeExtension}" />
+	</StackLayout>
+</ContentPage>
