@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Build.Tasks
 						break;
 
 					var clrNamespace = asm.ClrNamespace;
-					var typeName = name;
+					var typeName = name.Replace('+', '/'); //Nested types
 					var idx = typeName.LastIndexOf('.');
 					if (idx >= 0) {
 						clrNamespace += '.' + typeName.Substring(0, typeName.LastIndexOf('.'));
@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Build.Tasks
 												module.Assembly :
 												module.AssemblyResolver.Resolve(AssemblyNameReference.Parse(asm.AssemblyName));
 
-					type = assemblydefinition.MainModule.GetType(clrNamespace, typeName);
+					type = assemblydefinition.MainModule.GetType(clrNamespace + "." + typeName);
 					if (type == null)
 					{
 						var exportedtype =
