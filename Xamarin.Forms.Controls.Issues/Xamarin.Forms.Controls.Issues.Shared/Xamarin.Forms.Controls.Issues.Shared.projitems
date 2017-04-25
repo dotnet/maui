@@ -200,6 +200,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34727.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ComplexListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomImageRendererErrorHandling.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DefaultColorToggleTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38416.xaml.cs">
       <DependentUpon>Bugzilla38416.xaml</DependentUpon>
@@ -253,7 +254,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ImageLoadingErrorHandling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51173.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla43214.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42602.cs" />

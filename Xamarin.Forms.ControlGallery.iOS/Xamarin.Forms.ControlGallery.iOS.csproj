@@ -159,6 +159,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="BrokenNativeControl.cs" />
     <Compile Include="CustomRenderer40251.cs" />
     <Compile Include="Main.cs" />
@@ -218,6 +219,7 @@
     <Content Include="oasis.jpg" />
     <BundleResource Include="oasissmall.jpg" />
     <Content Include="coffee%402x.png" />
+    <BundleResource Include="Resources\invalidimage.jpg" />
     <Content Include="settings%402x.png" />
     <Content Include="menuIcon%402x.png" />
     <Content Include="crimsonsmall.jpg" />

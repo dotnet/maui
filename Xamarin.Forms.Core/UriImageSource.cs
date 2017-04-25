@@ -92,6 +92,11 @@ namespace Xamarin.Forms
 			return stream;
 		}
 
+		public override string ToString()
+		{
+			return $"Uri: {Uri}";
+		}
+
 		static string GetCacheKey(Uri uri)
 		{
 			return Device.PlatformServices.GetMD5Hash(uri.AbsoluteUri);
