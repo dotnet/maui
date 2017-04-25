@@ -75,6 +75,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="public T Default { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance !T Default" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="iOS">
       <MemberSignature Language="C#" Value="public T iOS { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance !T iOS" />
