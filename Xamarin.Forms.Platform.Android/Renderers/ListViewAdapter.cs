@@ -514,6 +514,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SelectItem(object item)
 		{
+			if (_listView == null)
+				return;
+
 			int position = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(item);
 			AView view = null;
 			if (position != -1)

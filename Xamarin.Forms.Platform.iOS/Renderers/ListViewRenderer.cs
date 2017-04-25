@@ -868,6 +868,9 @@ namespace Xamarin.Forms.Platform.iOS
 					return;
 				}
 
+				if (List == null)
+					return;
+
 				var location = TemplatedItemsView.TemplatedItems.GetGroupAndIndexOfItem(eventArg.SelectedItem);
 				if (location.Item1 == -1 || location.Item2 == -1)
 				{
