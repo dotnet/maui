@@ -249,9 +249,16 @@ namespace Xamarin.Forms.Build.Tasks
 			if (TypeRefComparer.Default.Equals(fromType, toType))
 				return null;
 
-			var implicitOperatorsOnFromType = fromType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit", module);
-			var implicitOperatorsOnToType = toType.GetMethods(md => md.IsPublic && md.IsStatic && md.IsSpecialName && md.Name == "op_Implicit", module);
+			var implicitOperatorsOnFromType = fromType.GetMethods(md =>    md.IsPublic
+																		&& md.IsStatic
+																		&& md.IsSpecialName
+																		&& md.Name == "op_Implicit", module);
+			var implicitOperatorsOnToType = toType.GetMethods(md =>    md.IsPublic
+																	&& md.IsStatic
+																	&& md.IsSpecialName
+																	&& md.Name == "op_Implicit", module);
 			var implicitOperators = implicitOperatorsOnFromType.Concat(implicitOperatorsOnToType).ToList();
+
 			if (implicitOperators.Any()) {
 				foreach (var op in implicitOperators) {
 					var cast = op.Item1;
@@ -260,8 +267,12 @@ namespace Xamarin.Forms.Build.Tasks
 					var returnType = castDef.ReturnType;
 					if (returnType.IsGenericParameter)
 						returnType = ((GenericInstanceType)opDeclTypeRef).GenericArguments [((GenericParameter)returnType).Position];
-					if (returnType.InheritsFromOrImplements(toType))
-						return castDef;
+					if (!returnType.InheritsFromOrImplements(toType))
+						continue;
+					var paramType = cast.Parameters[0].ParameterType;
+					if (!fromType.InheritsFromOrImplements(paramType))
+						continue;
+					return castDef;
 				}
 			}
 			return null;
