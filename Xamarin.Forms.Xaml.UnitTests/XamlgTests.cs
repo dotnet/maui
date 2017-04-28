@@ -26,20 +26,20 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.NotNull (rootType);
 			Assert.NotNull (rootNs);
 			Assert.NotNull (baseType);
-			Assert.NotNull (namesAndTypes);
+			Assert.NotNull (codeMemberFields);
 
 			Assert.AreEqual ("CustomView", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests", rootNs);
 			Assert.AreEqual ("Xamarin.Forms.View", baseType.BaseType);
-			Assert.AreEqual (1, namesAndTypes.Count);
-			Assert.AreEqual ("label0", namesAndTypes.First().Key);
-			Assert.AreEqual ("Xamarin.Forms.Label", namesAndTypes.First().Value.BaseType);
+			Assert.AreEqual (1, codeMemberFields.Count());
+			Assert.AreEqual ("label0", codeMemberFields.First().Name);
+			Assert.AreEqual ("Xamarin.Forms.Label", codeMemberFields.First().Type.BaseType);
 		}
 
 		[Test]
@@ -55,20 +55,20 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.NotNull (rootType);
 			Assert.NotNull (rootNs);
 			Assert.NotNull (baseType);
-			Assert.NotNull (namesAndTypes);
+			Assert.NotNull (codeMemberFields);
 
 			Assert.AreEqual ("CustomView", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Xaml.UnitTests", rootNs);
 			Assert.AreEqual ("Xamarin.Forms.View", baseType.BaseType);
-			Assert.AreEqual (1, namesAndTypes.Count);
-			Assert.AreEqual ("label0", namesAndTypes.First().Key);
-			Assert.AreEqual ("Xamarin.Forms.Label", namesAndTypes.First().Value.BaseType);
+			Assert.AreEqual (1, codeMemberFields.Count());
+			Assert.AreEqual ("label0", codeMemberFields.First().Name);
+			Assert.AreEqual ("Xamarin.Forms.Label", codeMemberFields.First().Type.BaseType);
 		}
 
 		[Test]
@@ -92,13 +92,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
-			Assert.AreEqual (1, namesAndTypes.Count);
-			Assert.AreEqual ("listView", namesAndTypes.First ().Key);
-			Assert.AreEqual ("CustomListViewSample.CustomListView", namesAndTypes.First ().Value.BaseType);
-
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
+			Assert.AreEqual (1, codeMemberFields.Count());
+			Assert.AreEqual ("listView", codeMemberFields.First ().Name);
+			Assert.AreEqual ("CustomListViewSample.CustomListView", codeMemberFields.First ().Type.BaseType);
 		}
 
 		[Test]
@@ -122,12 +121,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
-			Assert.Contains ("included", namesAndTypes.Keys.ToList());
-			Assert.False (namesAndTypes.Keys.Contains ("notincluded"));
-			Assert.AreEqual (1, namesAndTypes.Count);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
+			Assert.Contains ("included", codeMemberFields.Select(cmf => cmf.Name).ToList());
+			Assert.False (codeMemberFields.Select(cmf => cmf.Name).Contains ("notincluded"));
+			Assert.AreEqual (1, codeMemberFields.Count());
 		}
 
 		[Test]
@@ -152,11 +151,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
-			Assert.False (namesAndTypes.Keys.Contains ("notincluded"));
-			Assert.AreEqual (0, namesAndTypes.Count);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
+			Assert.False (codeMemberFields.Select(cmf => cmf.Name).Contains ("notincluded"));
+			Assert.AreEqual (0, codeMemberFields.Count());
 		}
 
 		[Test]
@@ -171,9 +170,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.AreEqual ("FooBar", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Foo`1", baseType.BaseType);
 			Assert.AreEqual (1, baseType.TypeArguments.Count);
@@ -192,9 +191,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.AreEqual ("FooBar", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Foo`2", baseType.BaseType);
 			Assert.AreEqual (2, baseType.TypeArguments.Count);
@@ -214,9 +213,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.AreEqual ("FooBar", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Foo`2", baseType.BaseType);
 			Assert.AreEqual (2, baseType.TypeArguments.Count);
@@ -239,9 +238,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.AreEqual ("FooBar", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Foo`2", baseType.BaseType);
 			Assert.AreEqual (2, baseType.TypeArguments.Count);
@@ -264,9 +263,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var reader = new StringReader (xaml);
 			string rootType, rootNs;
 			CodeTypeReference baseType;
-			IDictionary<string,CodeTypeReference> namesAndTypes;
+			IEnumerable<CodeMemberField> codeMemberFields;
 
-			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+			XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 			Assert.AreEqual ("FooBar", rootType);
 			Assert.AreEqual ("Xamarin.Forms.Foo`2", baseType.BaseType);
 			Assert.AreEqual (2, baseType.TypeArguments.Count);
@@ -288,13 +287,40 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			using (var reader = new StringReader (xaml)) {
 				string rootType, rootNs;
 				CodeTypeReference baseType;
-				IDictionary<string,CodeTypeReference> namesAndTypes;
+				IEnumerable<CodeMemberField> codeMemberFields;
 
-				XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out namesAndTypes);
+				XamlGTask.ParseXaml (reader, out rootType, out rootNs, out baseType, out codeMemberFields);
 				Assert.IsTrue (baseType.Options.HasFlag (CodeTypeReferenceOptions.GlobalReference));
-				Assert.IsTrue (namesAndTypes.Values.First ().Options.HasFlag (CodeTypeReferenceOptions.GlobalReference));
+				Assert.IsTrue (codeMemberFields.Select(cmf => cmf.Type).First ().Options.HasFlag (CodeTypeReferenceOptions.GlobalReference));
+			}
+		}
+
+		[Test]
+		public void FieldModifier()
+		{
+			var xaml = @"
+			<ContentPage xmlns=""http://xamarin.com/schemas/2014/forms""
+			             xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+			             xmlns:local=""clr-namespace:Xamarin.Forms.Xaml.UnitTests""
+			             x:Class=""Xamarin.Forms.Xaml.UnitTests.FieldModifier"">
+				<StackLayout>
+			        <Label x:Name=""privateLabel"" />
+			        <Label x:Name=""internalLabel"" x:FieldModifier=""NotPublic"" />
+			        <Label x:Name=""publicLabel"" x:FieldModifier=""Public"" />
+				</StackLayout>
+			</ContentPage>";
+
+			using (var reader = new StringReader(xaml))
+			{
+				string rootType, rootNs;
+				CodeTypeReference baseType;
+				IEnumerable<CodeMemberField> codeMemberFields;
+
+				XamlGTask.ParseXaml(reader, out rootType, out rootNs, out baseType, out codeMemberFields);
+				Assert.That(codeMemberFields.First(cmf => cmf.Name == "privateLabel").Attributes, Is.EqualTo(MemberAttributes.Private));
+				Assert.That(codeMemberFields.First(cmf => cmf.Name == "internalLabel").Attributes, Is.EqualTo(MemberAttributes.Assembly));
+				Assert.That(codeMemberFields.First(cmf => cmf.Name == "publicLabel").Attributes, Is.EqualTo(MemberAttributes.Public));
 			}
 		}
 	}
 }
-

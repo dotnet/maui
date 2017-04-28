@@ -29,15 +29,11 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			}
 
 			[TestCase (false)]
-			[TestCase (true)]
 			public void ThrowMeaningfulExceptionOnDuplicateXName (bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-					Assert.Throws(new XamlParseExceptionConstraint(8, 10, m => m == "An element with the name \"label0\" already exists in this NameScope"),
-								  () => MockCompiler.Compile(typeof(Issue2450)));
-				else
-					Assert.Throws(new XamlParseExceptionConstraint(8, 10, m => m == "An element with the name \"label0\" already exists in this NameScope"),
-								  () => new Issue2450(useCompiledXaml));
+				var layout = new Issue2450(useCompiledXaml);
+				Assert.Throws(new XamlParseExceptionConstraint(11, 13, m => m == "An element with the name \"label0\" already exists in this NameScope"),
+							  () => (layout.Resources ["foo"] as Forms.DataTemplate).CreateContent());
 			}
 		}
 	}
