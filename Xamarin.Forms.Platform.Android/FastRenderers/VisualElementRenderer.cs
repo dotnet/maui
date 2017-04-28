@@ -36,8 +36,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		public void UpdateBackgroundColor(Color? color = null)
-		{
-			if (Element == null || Control == null)
+		{		
+			if (_disposed || Element == null || Control == null)
 				return;
 
 			Control.SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
