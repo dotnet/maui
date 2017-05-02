@@ -690,8 +690,18 @@ namespace Xamarin.Forms.Platform.iOS
 					foreach (Element descendant in target.Descendants())
 					{
 						IVisualElementRenderer renderer = Platform.GetRenderer(descendant as VisualElement);
+
+						// Clear renderer from descendent; this will not happen in Dispose as normal because we need to
+						// unhook the Element from the renderer before disposing it.
 						descendant.ClearValue(Platform.RendererProperty);
-						renderer?.Dispose();
+
+						if (renderer != null)
+						{
+							// Unhook Element (descendant) from renderer before Disposing so we don't set the Element to null
+							renderer.SetElement(null);
+							renderer.Dispose();
+							renderer = null;
+						}
 					}
 
 					return (nfloat)req.Request.Height;

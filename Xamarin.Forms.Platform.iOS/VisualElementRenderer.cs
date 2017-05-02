@@ -251,9 +251,13 @@ namespace Xamarin.Forms.Platform.MacOS
 					_packager = null;
 				}
 
-				Platform.SetRenderer(Element, null);
-				SetElement(null);
-				Element = null;
+				// The ListView can create renderers and unhook them from the Element before Dispose is called.
+				// Thus, it is possible that this work is already completed.
+				if (Element != null)
+				{
+					Platform.SetRenderer(Element, null);
+					SetElement(null);
+				}
 			}
 			base.Dispose(disposing);
 		}
