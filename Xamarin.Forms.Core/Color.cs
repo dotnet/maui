@@ -332,26 +332,26 @@ namespace Xamarin.Forms
 				var t2 = ToHexD (hex [idx++]);
 				var t3 = ToHexD (hex [idx]);
 
-				return FromRgb (t1, t2, t3);
+				return FromRgb ((int)t1, (int)t2, (int)t3);
 
 			case 4: //#argb => aarrggbb
 				var f1 = ToHexD (hex [idx++]);
 				var f2 = ToHexD (hex [idx++]);
 				var f3 = ToHexD (hex [idx++]);
 				var f4 = ToHexD (hex [idx]);
-				return FromRgba (f2, f3, f4, f1);
+				return FromRgba ((int)f2, (int)f3, (int)f4, (int)f1);
 
 			case 6: //#rrggbb => ffrrggbb
-				return FromRgb (ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
-						ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
-						ToHex (hex [idx++]) << 4 | ToHex (hex [idx]));
+				return FromRgb ((int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
+						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
+						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx])));
 				
 			case 8: //#aarrggbb
 				var a1 = ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]);
-				return FromRgba (ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
-						ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
-						ToHex (hex [idx++]) << 4 | ToHex (hex [idx]),
-						 a1);
+				return FromRgba ((int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
+						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx++])),
+						(int)(ToHex (hex [idx++]) << 4 | ToHex (hex [idx])),
+						(int)a1);
 				
 			default: //everything else will result in unexpected results
 				return Default;
