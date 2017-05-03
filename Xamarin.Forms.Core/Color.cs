@@ -301,25 +301,61 @@ namespace Xamarin.Forms
 			return string.Format(CultureInfo.InvariantCulture, "[Color: A={0}, R={1}, G={2}, B={3}, Hue={4}, Saturation={5}, Luminosity={6}]", A, R, G, B, Hue, Saturation, Luminosity);
 		}
 
-		public static Color FromHex(string hex)
+		static uint ToHex (char c)
 		{
-			hex = hex.Replace("#", "");
-			switch (hex.Length) {
+			ushort x = (ushort)c;
+			if (x >= '0' && x <= '9')
+				return (uint)(x - '0');
+
+			x |= 0x20;
+			if (x >= 'a' && x <= 'f')
+				return (uint)(x - 'a' + 10);
+			return 0;
+		}
+
+		static uint ToHexD (char c)
+		{
+			var j = ToHex (c);
+			return (j << 4) | j;
+		}
+
+		public static Color FromHex (string hex)
+		{
+			// Undefined
+			if (hex.Length < 3)
+				return Default;
+			int idx = (hex [0] == '#') ? 1 : 0;
+
+			switch (hex.Length - idx) {
 			case 3: //#rgb => ffrrggbb
-				hex = string.Format("ff{0}{1}{2}{3}{4}{5}", hex[0], hex[0], hex[1], hex[1], hex[2], hex[2]);
-				break;
+				var t1 = ToHexD (hex [idx++]);
+				var t2 = ToHexD (hex [idx++]);
+				var t3 = ToHexD (hex [idx]);
+
+				return FromRgb (t1, t2, t3);
+
 			case 4: //#argb => aarrggbb
-				hex = string.Format("{0}{1}{2}{3}{4}{5}{6}{7}", hex[0], hex[0], hex[1], hex[1], hex[2], hex[2], hex[3], hex[3]);
-				break;
+				var f1 = ToHexD (hex [idx++]);
+				var f2 = ToHexD (hex [idx++]);
+				var f3 = ToHexD (hex [idx++]);
+				var f4 = ToHexD (hex [idx]);
+				return FromRgba (f2, f3, f4, f1);
+
 			case 6: //#rrggbb => ffrrggbb
-				hex = string.Format("ff{0}", hex);
-				break;
+				return FromRgb (ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
+						ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
+						ToHex (hex [idx++]) << 4 | ToHex (hex [idx]));
+				
 			case 8: //#aarrggbb
-				break;
+				var a1 = ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]);
+				return FromRgba (ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
+						ToHex (hex [idx++]) << 4 | ToHex (hex [idx++]),
+						ToHex (hex [idx++]) << 4 | ToHex (hex [idx]),
+						 a1);
+				
 			default: //everything else will result in unexpected results
 				return Default;
 			}
-			return FromUint(Convert.ToUInt32(hex, 16));
 		}
 
 		public static Color FromUint(uint argb)
