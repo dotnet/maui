@@ -11,6 +11,9 @@ namespace Xamarin.Forms
 
 		public void Register(Type tview, Type trender)
 		{
+			//avoid caching null renderers
+			if (trender == null)
+				return;
 			_handlers[tview] = trender;
 		}
 
@@ -145,7 +148,7 @@ namespace Xamarin.Forms
 					foreach (Attribute attribute in effectAttributes)
 					{
 						var effect = (ExportEffectAttribute)attribute;
-						Effects [resolutionName + "." + effect.Id] = effect.Type;
+						Effects[resolutionName + "." + effect.Id] = effect.Type;
 					}
 				}
 			}

@@ -145,5 +145,22 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (typeof (MockRenderer), registrar.GetHandlerType (typeof (View)));
 		}
+
+		[Test]
+		public void TestGetRendererNullViewRenderer()
+		{
+			var registrar = new Internals.Registrar<MockRenderer>();
+
+			//let's say that we are now registering the view of a viewcell
+			registrar.Register(typeof(View), typeof(MockRenderer));
+			//later we had a view that was registered with null because there's
+			//no default renderer for View
+			registrar.Register(typeof(View), null);
+
+			var renderer = registrar.GetHandler(typeof(View));
+
+			Assert.That(renderer, Is.InstanceOf<MockRenderer>());
+		}
+
 	}
 }
