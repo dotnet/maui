@@ -196,6 +196,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52266.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53445.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55912.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34727.cs" />

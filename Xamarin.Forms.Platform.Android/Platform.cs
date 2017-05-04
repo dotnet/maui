@@ -1070,9 +1070,12 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (result && _notReallyHandled)
 				{
-					// If the child control returned true from its touch event handler but signalled that it was a fake "true", leave the event unhandled
-					// so parent controls have the opportunity
-					return false;
+					// If the child control returned true from its touch event handler but signalled that it was a fake "true", then we
+					// don't consider the event truly "handled" yet. 
+					// Since a child control short-circuited the normal dispatchTouchEvent stuff, this layout never got the chance for
+					// IOnTouchListener.OnTouch and the OnTouchEvent override to try handling the touches; we'll do that now
+
+					return OnTouchEvent(e);
 				}
 
 				return result;
