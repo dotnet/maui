@@ -51,3 +51,5 @@ AndroidNative/local.properties
 AndroidNative/FormsViewGroup/build/
 AndroidNative/build/
 AndroidNative/.gradle/
+AndroidNative/gradlew
+AndroidNative/gradlew.bat
