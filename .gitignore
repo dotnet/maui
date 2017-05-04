@@ -50,3 +50,4 @@ Xamarin.Forms.ControlGallery.Android/Properties/MapsKey.cs
 AndroidNative/local.properties
 AndroidNative/FormsViewGroup/build/
 AndroidNative/build/
+AndroidNative/.gradle/
