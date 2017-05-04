@@ -188,6 +188,9 @@ namespace Xamarin.Forms.Platform.Android
 					e.PropertyName == Frame.OutlineColorProperty.PropertyName ||
 					e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				{
+					if(_normalBitmap == null)
+						return;
+						
 					using (var canvas = new ACanvas(_normalBitmap))
 					{
 						int width = Bounds.Width();
