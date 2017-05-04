@@ -51,11 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 			_view = view;
 			Context = context;
 
-			Controller.ModelChanged += (sender, args) =>
-			{
-				InvalidateCellCache();
-				NotifyDataSetChanged();
-			};
+			Controller.ModelChanged += OnModelChanged;
 
 			listView.OnItemClickListener = this;
 			listView.OnItemLongClickListener = this;
@@ -255,10 +251,19 @@ namespace Xamarin.Forms.Platform.Android
 			_nextIsHeaderCache = null;
 		}
 
+		void OnModelChanged(object sender, EventArgs e)
+		{
+			InvalidateCellCache();
+			NotifyDataSetChanged();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
+			{
 				InvalidateCellCache();
+				Controller.ModelChanged -= OnModelChanged;
+			}
 
 			base.Dispose(disposing);
 		}
