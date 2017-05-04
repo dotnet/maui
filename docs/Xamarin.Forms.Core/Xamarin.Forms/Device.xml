@@ -88,7 +88,7 @@ Device.BeginInvokeOnMainThread (() => {
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -167,7 +167,7 @@ Device.BeginInvokeOnMainThread (() => {
         <param name="size">To be added.</param>
         <param name="targetElementType">To be added.</param>
         <param name="useOldSizes">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -211,7 +211,7 @@ Device.BeginInvokeOnMainThread (() => {
         <ReturnType>Xamarin.Forms.Internals.DeviceInfo</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -231,7 +231,7 @@ Device.BeginInvokeOnMainThread (() => {
         <ReturnType>Xamarin.Forms.Internals.DeviceInfo</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -267,7 +267,7 @@ Device.BeginInvokeOnMainThread (() => {
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -447,7 +447,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <ReturnType>Xamarin.Forms.Internals.IPlatformServices</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -488,7 +488,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -512,7 +512,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

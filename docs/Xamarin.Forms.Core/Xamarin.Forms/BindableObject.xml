@@ -404,7 +404,7 @@ class MyBindable : BindableObject
         <param name="property0">To be added.</param>
         <param name="property1">To be added.</param>
         <param name="property2">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -749,7 +749,7 @@ class MyBindable : BindableObject
         <param name="property">To be added.</param>
         <param name="value">To be added.</param>
         <param name="attributes">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
