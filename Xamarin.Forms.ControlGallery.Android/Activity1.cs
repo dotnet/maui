@@ -15,6 +15,8 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
 using Android.Content;
+using Android.Views;
+using AColor = Android.Graphics.Color;
 
 [assembly: Dependency (typeof (CacheService))]
 [assembly: Dependency (typeof (TestCloudService))]
@@ -286,6 +288,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 			ToolbarResource = Resource.Layout.Toolbar;
 			TabLayoutResource = Resource.Layout.Tabbar;
 
+			// Uncomment the next line to run this as a full screen app (no status bar)
+			//Window.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.TurnScreenOn);
+
 			base.OnCreate (bundle);
 
 			if (!Debugger.IsAttached)
@@ -310,6 +315,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage >(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+
+			// Listen for the message from the status bar color toggle test
+			MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(AColor.Red));
 
 			LoadApplication(app);
 		}

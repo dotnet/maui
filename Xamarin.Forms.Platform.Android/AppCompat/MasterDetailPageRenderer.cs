@@ -113,23 +113,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				oldElement.Disappearing -= MasterDetailPageDisappearing;
 			}
 
-			var statusBarHeight = 0;
-			if (Forms.IsLollipopOrNewer)
-				statusBarHeight = ((FormsAppCompatActivity)Context).GetStatusBarHeight();
-
 			if (newElement != null)
 			{
 				if (_detailLayout == null)
 				{
 					_detailLayout = new MasterDetailContainer(newElement, false, Context)
 					{
-						TopPadding = HasAncestorNavigationPage(Element) ? 0 : statusBarHeight,
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent)
 					};
 
 					_masterLayout = new MasterDetailContainer(newElement, true, Context)
 					{
-						TopPadding = ((IMasterDetailPageController)newElement).ShouldShowSplitMode ? statusBarHeight : 0,
 						LayoutParameters = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = (int)GravityFlags.Start }
 					};
 

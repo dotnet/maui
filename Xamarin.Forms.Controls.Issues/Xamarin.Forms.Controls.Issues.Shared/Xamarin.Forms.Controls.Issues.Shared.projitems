@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AddingMultipleItemsListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AndroidStatusBarColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AppBarIconColors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla21368.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla21501.cs" />
@@ -160,6 +161,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44096.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44176.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44453.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla47548.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53834.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51536.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44940.cs" />
