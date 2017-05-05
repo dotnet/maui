@@ -1,0 +1,15 @@
+To build the FormsViewGroup.jar from the command line; no need to install Android Studio or Eclipse. It works on Windows and macOS. To build a new .jar just navigate to the AndroidNative folder and run:
+ - Windows PowerShell: .\gradlew createJar --rerun-tasks
+ - macOS Terminal: ./gradlew createJar --rerun-tasks
+
+The resulting formsviewgroup.jar will be put in Xamarin.Forms.Platform.Android.FormsViewGroup\Jars.
+
+Before the first time you run it, you'll need to create a local.properties file in the AndroidNative folder so Gradle can find your Android SDK. It needs one line to set the sdk.dir property. For example:
+ - Windows: sdk.dir=C\:\\Users\\cfinley\\AppData\\Local\\Android\\Sdk
+ - macOS: sdk.dir=/Users/cfinley/Library/Developer/Xamarin/android-sdk-macosx
+
+It may download a bunch of stuff the first time it runs; after that it'll be much faster.
+
+If you don't already have Gradle installed:
+- Windows: choco install gradle
+- macOS: brew install gradle
