@@ -12,7 +12,7 @@
     </Interface>
   </Interfaces>
   <Docs>
-    <summary>This interface is for internal use by platform renderers.</summary>
+    <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>

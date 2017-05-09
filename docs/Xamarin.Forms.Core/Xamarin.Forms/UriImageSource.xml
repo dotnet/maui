@@ -126,8 +126,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Returns the path to the file for the image, prefixed with the string, "Uri: ".</summary>
+        <returns>The path to the file for the image, prefixed with the string, "Uri: ".</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -86,8 +86,8 @@
         <ReturnType>T</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the default value to use for the platform.</summary>
+        <value>The default value to use for the platform.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -113,8 +113,8 @@
         <ReturnType>T</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The type as it is implemented on the iOS platform.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets the type as it is implemented on the iOS platform.</summary>
+        <value>The type as it is implemented on the iOS platform.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

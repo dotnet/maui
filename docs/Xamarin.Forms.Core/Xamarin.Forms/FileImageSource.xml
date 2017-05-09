@@ -195,7 +195,7 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Returns the path to the file for the image, prefixed with the string, "File: ".</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

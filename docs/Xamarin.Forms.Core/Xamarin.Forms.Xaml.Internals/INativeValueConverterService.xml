@@ -7,7 +7,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -30,7 +30,7 @@
         <param name="value">To be added.</param>
         <param name="toType">To be added.</param>
         <param name="nativeValue">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

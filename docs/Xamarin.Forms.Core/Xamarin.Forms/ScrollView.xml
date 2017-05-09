@@ -189,7 +189,7 @@ MainPage = new ContentPage
       <Docs>
         <param name="item">To be added.</param>
         <param name="pos">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -418,7 +418,7 @@ MainPage = new ContentPage
         <ReturnType>System.EventHandler&lt;Xamarin.Forms.ScrollToRequestedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -509,7 +509,7 @@ MainPage = new ContentPage
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -535,7 +535,7 @@ MainPage = new ContentPage
       <Docs>
         <param name="x">To be added.</param>
         <param name="y">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -210,7 +210,7 @@ namespace FormsGallery
         <ReturnType>System.EventHandler&lt;Xamarin.Forms.Internals.EvalRequested&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -249,7 +249,7 @@ namespace FormsGallery
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -288,7 +288,7 @@ namespace FormsGallery
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -441,7 +441,7 @@ namespace FormsGallery
       </Parameters>
       <Docs>
         <param name="args">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -465,7 +465,7 @@ namespace FormsGallery
       </Parameters>
       <Docs>
         <param name="args">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

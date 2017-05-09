@@ -584,7 +584,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>The string "WinRT", representing the Windows Runtime platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

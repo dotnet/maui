@@ -7,7 +7,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -30,7 +30,7 @@
         <param name="target">To be added.</param>
         <param name="propertyName">To be added.</param>
         <param name="binding">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -54,7 +54,7 @@
         <param name="target">To be added.</param>
         <param name="property">To be added.</param>
         <param name="binding">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -78,7 +78,7 @@
         <param name="target">To be added.</param>
         <param name="property">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

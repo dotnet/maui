@@ -10,8 +10,8 @@
   </TypeParameters>
   <Interfaces />
   <Docs>
-    <typeparam name="T">To be added.</typeparam>
-    <summary>To be added.</summary>
+    <typeparam name="T">The type of page element that the multipage controller will manage.</typeparam>
+    <summary>Base class for multipage controllers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -29,10 +29,10 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="index">The index of the page to return.</param>
+        <summary>Returns the page that is identified by the provided <paramref name="index" />.</summary>
+        <returns>The specified page, or <see langword="null" /> if there is no page for the provided <paramref name="index" />.</returns>
+        <remarks>This method does not throw an exception if the provided <paramref name="index" /> is out of range. Instead, it returns <see langword="null" /> in that case.</remarks>
       </Docs>
     </Member>
   </Members>

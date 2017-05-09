@@ -1754,8 +1754,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.ListView&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ListView" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabled(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.ListView})" />
       </Member>
@@ -1776,9 +1776,9 @@
           <Parameter Name="value" Type="System.Boolean" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets the attached property that controls whether fast scrolling is enabled.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ListView" Member="M:Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ListView.SetIsFastScrollEnabled(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.ListView},System.Boolean)" />
       </Member>
@@ -2277,9 +2277,9 @@
           <Parameter Name="value" Type="System.Boolean" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <param name="value">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="value">The new property value to assign.</param>
+          <summary>Sets a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.ScrollView" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.ScrollView.SetShouldDelayContentTouches(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.ScrollView},System.Boolean)" />
       </Member>
@@ -2299,8 +2299,8 @@
           <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.ScrollView&gt;" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="config">To be added.</param>
-          <summary>To be added.</summary>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns a Boolean value that tells whether iOS will wait to determine if a touch is intended as a scroll, or scroll immediately.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.ScrollView" Member="M:Xamarin.Forms.PlatformConfiguration.iOSSpecific.ScrollView.ShouldDelayContentTouches(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.ScrollView})" />
       </Member>
