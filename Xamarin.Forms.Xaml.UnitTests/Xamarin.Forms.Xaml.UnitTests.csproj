@@ -76,6 +76,9 @@
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
       <Link>MockPlatformServices.cs</Link>
     </Compile>
+    <Compile Include="Accessibility.xaml.cs">
+      <DependentUpon>Accessibility.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FontConverterTests.cs" />
     <Compile Include="Issues\Bz43450.xaml.cs">
       <DependentUpon>Bz43450.xaml</DependentUpon>
@@ -387,19 +390,19 @@
     <Compile Include="Issues\Bz47703.xaml.cs">
       <DependentUpon>Bz47703.xaml</DependentUpon>
     </Compile>
-     <Compile Include="FactoryMethodMissingCtor.xaml.cs">
-       <DependentUpon>FactoryMethodMissingCtor.xaml</DependentUpon>
-     </Compile>
-     <Compile Include="FactoryMethodMissingMethod.xaml.cs">
-       <DependentUpon>FactoryMethodMissingMethod.xaml</DependentUpon>
-     </Compile>
+    <Compile Include="FactoryMethodMissingCtor.xaml.cs">
+      <DependentUpon>FactoryMethodMissingCtor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FactoryMethodMissingMethod.xaml.cs">
+      <DependentUpon>FactoryMethodMissingMethod.xaml</DependentUpon>
+    </Compile>
     <Compile Include="XamlC\TypeReferenceExtensionsTests.cs" />
     <Compile Include="Issues\Bz46921.xaml.cs">
       <DependentUpon>Bz46921.xaml</DependentUpon>
     </Compile>
-     <Compile Include="I8.xaml.cs">
-       <DependentUpon>I8.xaml</DependentUpon>
-     </Compile>
+    <Compile Include="I8.xaml.cs">
+      <DependentUpon>I8.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Issues\Bz49307.xaml.cs">
       <DependentUpon>Bz49307.xaml</DependentUpon>
     </Compile>
@@ -481,7 +484,7 @@
     </Compile>
     <Compile Include="Issues\Bz55347.xaml.cs">
       <DependentUpon>Bz55347.xaml</DependentUpon>
-    </Compile> 
+    </Compile>
     <Compile Include="FieldModifier.xaml.cs">
       <DependentUpon>FieldModifier.xaml</DependentUpon>
     </Compile>
@@ -917,6 +920,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Issues\Bz43450.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Accessibility.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
