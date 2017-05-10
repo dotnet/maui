@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Platform.iOS
 			// will prevent us from inadvertently breaking UI Tests that are using Query.Marked to get the dynamic Title 
 			// of the Button.
 
-			var elemValue = (string)Element?.GetValue(Accessibility.NameProperty);
+			var elemValue = (string)Element?.GetValue(AutomationProperties.NameProperty);
 			if (string.IsNullOrWhiteSpace(elemValue) && Control?.AccessibilityLabel == Control?.Title(UIControlState.Normal))
 				return;
 

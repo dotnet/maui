@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			OnElementChanged(new ElementChangedEventArgs<CarouselPage>(oldPage, newPage));
 
 			if (!string.IsNullOrEmpty(Element?.AutomationId))
-				SetValue(AutomationProperties.AutomationIdProperty, Element.AutomationId);
+				SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 		}
 
 		protected virtual void Dispose(bool disposing)

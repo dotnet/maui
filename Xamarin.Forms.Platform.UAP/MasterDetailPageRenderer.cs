@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateIsPresented();
 
 				if (!string.IsNullOrEmpty(e.NewElement.AutomationId))
-					Control.SetValue(AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
+					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, e.NewElement.AutomationId);
 
 				((ITitleProvider)this).BarBackgroundBrush = (Brush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 				UpdateToolbarPlacement();

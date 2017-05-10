@@ -135,13 +135,13 @@
       <Type Name="AbsoluteLayout" Kind="Class" />
       <Type Name="AbsoluteLayout+IAbsoluteList`1" DisplayName="AbsoluteLayout+IAbsoluteList&lt;T&gt;" Kind="Interface" />
       <Type Name="AbsoluteLayoutFlags" Kind="Enumeration" />
-      <Type Name="Accessibility" Kind="Class" />
       <Type Name="ActivityIndicator" Kind="Class" />
       <Type Name="Animation" Kind="Class" />
       <Type Name="AnimationExtensions" Kind="Class" />
       <Type Name="Application" Kind="Class" />
       <Type Name="AppLinkEntry" Kind="Class" />
       <Type Name="Aspect" Kind="Enumeration" />
+      <Type Name="AutomationProperties" Kind="Class" />
       <Type Name="BackButtonPressedEventArgs" Kind="Class" />
       <Type Name="BaseMenuItem" Kind="Class" />
       <Type Name="Behavior" Kind="Class" />

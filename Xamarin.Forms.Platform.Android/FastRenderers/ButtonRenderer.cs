@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		bool _isDisposed;
 	    bool _inputTransparent;
 	    readonly Lazy<TextColorSwitcher> _textColorSwitcher;
-        readonly AccessibilityProvider _accessibilityProvider;
+        readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 		VisualElementTracker _tracker;
 
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public ButtonRenderer() : base(Forms.Context)
 		{
-            _accessibilityProvider = new AccessibilityProvider(this);
+            _automationPropertiesProvider = new AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
             _textColorSwitcher = new Lazy<TextColorSwitcher>(() => new TextColorSwitcher(TextColors));
 
@@ -179,7 +179,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				SetOnTouchListener(null);
 				RemoveOnAttachStateChangeListener(this);
 
-				_accessibilityProvider?.Dispose();
+				_automationPropertiesProvider?.Dispose();
 				_tracker?.Dispose();
 
 				if (Element != null)

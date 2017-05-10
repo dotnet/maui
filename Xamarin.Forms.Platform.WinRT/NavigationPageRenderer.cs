@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				Element.InternalChildren.CollectionChanged += OnChildrenChanged;
 
 				if (!string.IsNullOrEmpty(Element.AutomationId))
-					_container.SetValue(AutomationProperties.AutomationIdProperty, Element.AutomationId);
+					_container.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, Element.AutomationId);
 
 				PushExistingNavigationStack();
 			}

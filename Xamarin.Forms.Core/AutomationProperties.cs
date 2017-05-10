@@ -1,9 +1,9 @@
 ﻿﻿
 namespace Xamarin.Forms
 {
-	public class Accessibility
+	public class AutomationProperties
 	{
-		public static readonly BindableProperty HintProperty = BindableProperty.Create("Hint", typeof(string), typeof(Element), default(string));
+		public static readonly BindableProperty HelpTextProperty = BindableProperty.Create("HelpText", typeof(string), typeof(Element), default(string));
 
 		public static readonly BindableProperty IsInAccessibleTreeProperty = BindableProperty.Create("IsInAccessibleTree", typeof(bool?), typeof(Element), null);
 
@@ -11,9 +11,9 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(Element), default(string));
 
-		public static string GetHint(BindableObject bindable)
+		public static string GetHelpText(BindableObject bindable)
 		{
-			return (string)bindable.GetValue(HintProperty);
+			return (string)bindable.GetValue(HelpTextProperty);
 		}
 
 		public static bool? GetIsInAccessibleTree(BindableObject bindable)
@@ -31,9 +31,9 @@ namespace Xamarin.Forms
 			return (string)bindable.GetValue(NameProperty);
 		}
 
-		public static void SetHint(BindableObject bindable, string value)
+		public static void SetHelpText(BindableObject bindable, string value)
 		{
-			bindable.SetValue(HintProperty, value);
+			bindable.SetValue(HelpTextProperty, value);
 		}
 
 		public static void SetIsInAccessibleTree(BindableObject bindable, bool? value)

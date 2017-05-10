@@ -4,7 +4,7 @@ using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	internal class AccessibilityProvider : IDisposable 
+	internal class AutomationPropertiesProvider : IDisposable 
 	{
 		const string GetFromElement = "GetValueFromElement";
 		string _defaultContentDescription;
@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		IVisualElementRenderer _renderer;
 
-		public AccessibilityProvider(IVisualElementRenderer renderer)
+		public AutomationPropertiesProvider(IVisualElementRenderer renderer)
 		{
 			_renderer = renderer;
 			_renderer.ElementPropertyChanged += OnElementPropertyChanged;
@@ -88,8 +88,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			string value = contentDescription;
 			if (value == GetFromElement)
 			{
-				value = string.Join(" ", (string)Element.GetValue(Accessibility.NameProperty),
-					(string)Element.GetValue(Accessibility.HintProperty));
+				value = string.Join(" ", (string)Element.GetValue(AutomationProperties.NameProperty),
+					(string)Element.GetValue(AutomationProperties.HelpTextProperty));
 			}
 
 			if (!string.IsNullOrWhiteSpace(value))
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 
 			Control.Focusable =
-				(bool)(value ?? (bool?)Element.GetValue(Accessibility.IsInAccessibleTreeProperty) ?? _defaultFocusable);
+				(bool)(value ?? (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultFocusable);
 		}
 
 		bool SetHint(string hint = GetFromElement)
@@ -145,8 +145,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			string value = hint;
 			if (value == GetFromElement)
 			{
-				value = string.Join(". ", (string)Element.GetValue(Accessibility.NameProperty),
-					(string)Element.GetValue(Accessibility.HintProperty));
+				value = string.Join(". ", (string)Element.GetValue(AutomationProperties.NameProperty),
+					(string)Element.GetValue(AutomationProperties.HelpTextProperty));
 			}
 
 			textView.Hint = !string.IsNullOrWhiteSpace(value) ? value : _defaultHint;
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (Element == null || Control == null)
 				return;
 
-			var elemValue = (VisualElement)Element.GetValue(Accessibility.LabeledByProperty);
+			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
 
 			if (elemValue != null)
 			{
@@ -193,19 +193,19 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Accessibility.HintProperty.PropertyName)
+			if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 			{
 				SetContentDescription();
 			}
-			else if (e.PropertyName == Accessibility.NameProperty.PropertyName)
+			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
 			{
 				SetContentDescription();
 			}
-			else if (e.PropertyName == Accessibility.IsInAccessibleTreeProperty.PropertyName)
+			else if (e.PropertyName == AutomationProperties.IsInAccessibleTreeProperty.PropertyName)
 			{
 				SetFocusable();
 			}
-			else if (e.PropertyName == Accessibility.LabeledByProperty.PropertyName)
+			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
 			{
 				SetLabeledBy();
 			}

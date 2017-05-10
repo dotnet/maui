@@ -76,8 +76,8 @@
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
       <Link>MockPlatformServices.cs</Link>
     </Compile>
-    <Compile Include="Accessibility.xaml.cs">
-      <DependentUpon>Accessibility.xaml</DependentUpon>
+    <Compile Include="AutomationProperties.xaml.cs">
+      <DependentUpon>AutomationProperties.xaml</DependentUpon>
     </Compile>
     <Compile Include="FontConverterTests.cs" />
     <Compile Include="Issues\Bz43450.xaml.cs">
@@ -924,7 +924,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Accessibility.xaml">
+    <EmbeddedResource Include="AutomationProperties.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
