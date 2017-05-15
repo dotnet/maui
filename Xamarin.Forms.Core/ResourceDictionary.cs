@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace Xamarin.Forms
 {
@@ -17,7 +19,7 @@ namespace Xamarin.Forms
 		[TypeConverter (typeof(TypeTypeConverter))]
 		public Type MergedWith {
 			get { return _mergedWith; }
-			set { 
+			set {
 				if (_mergedWith == value)
 					return;
 
@@ -28,12 +30,66 @@ namespace Xamarin.Forms
 				if (_mergedWith == null)
 					return;
 
-				_mergedInstance = s_instances.GetValue(_mergedWith,(key) => (ResourceDictionary)Activator.CreateInstance(key));
-				OnValuesChanged (_mergedInstance.ToArray());
+				_mergedInstance = s_instances.GetValue(_mergedWith, (key) => (ResourceDictionary)Activator.CreateInstance(key));
+				OnValuesChanged(_mergedInstance.ToArray());
 			}
 		}
 
 		ResourceDictionary _mergedInstance;
+		public ICollection<ResourceDictionary> MergedDictionaries { get; private set; }
+
+		public ResourceDictionary()
+		{
+			var collection = new ObservableCollection<ResourceDictionary>();
+			collection.CollectionChanged += MergedDictionaries_CollectionChanged;
+			MergedDictionaries = collection;
+		}
+
+		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			// Movement of items doesn't affect monitoring of events
+			if (e.Action == NotifyCollectionChangedAction.Move)
+				return;
+
+			// New Items
+			var newItems = e.NewItems?.Cast<ResourceDictionary>();
+			if (newItems != null)
+			{
+				foreach (var item in newItems)
+				{
+					_collectionTrack.Add(item);
+					item.ValuesChanged += Item_ValuesChanged;
+				}
+
+				if (newItems.Count() > 0)
+					OnValuesChanged(newItems.SelectMany(x => x).ToArray());
+			}
+
+			// Old Items
+			var oldItems = e.OldItems?.Cast<ResourceDictionary>();
+			if (oldItems != null)
+				foreach (var item in oldItems)
+				{
+					item.ValuesChanged -= Item_ValuesChanged;
+					_collectionTrack.Remove(item);
+				}
+
+			// Collection has been cleared
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				foreach (var dictionary in _collectionTrack)
+					dictionary.ValuesChanged -= Item_ValuesChanged;
+
+				_collectionTrack.Clear();
+			}
+		}
+
+		IList<ResourceDictionary> _collectionTrack = new List<ResourceDictionary>();
+
+		void Item_ValuesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			OnValuesChanged(e.Values.ToArray());
+		}
 
 		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
 		{
@@ -94,6 +150,10 @@ namespace Xamarin.Forms
 					return _innerDictionary[index];
 				if (_mergedInstance != null && _mergedInstance.ContainsKey(index))
 					return _mergedInstance[index];
+				if (MergedDictionaries != null)
+					foreach (var dict in MergedDictionaries.Reverse())
+						if (dict.ContainsKey(index))
+							return dict[index];
 				throw new KeyNotFoundException($"The resource '{index}' is not present in the dictionary.");
 			}
 			set
@@ -130,6 +190,9 @@ namespace Xamarin.Forms
 
 		internal IEnumerable<KeyValuePair<string, object>> MergedResources {
 			get {
+				if (MergedDictionaries != null)
+					foreach (var r in MergedDictionaries.Reverse().SelectMany(x => x.MergedResources))
+						yield return r;
 				if (_mergedInstance != null)
 					foreach (var r in _mergedInstance.MergedResources)
 						yield return r;
@@ -140,7 +203,19 @@ namespace Xamarin.Forms
 
 		public bool TryGetValue(string key, out object value)
 		{
-			return _innerDictionary.TryGetValue(key, out value) || (_mergedInstance != null && _mergedInstance.TryGetValue(key, out value));
+			return _innerDictionary.TryGetValue(key, out value)
+				|| (_mergedInstance != null && _mergedInstance.TryGetValue(key, out value))
+				|| (MergedDictionaries != null && TryGetMergedDictionaryValue(key, out value));
+		}
+
+		bool TryGetMergedDictionaryValue(string key, out object value)
+		{
+			foreach (var dictionary in MergedDictionaries.Reverse())
+				if (dictionary.TryGetValue(key, out value))
+					return true;
+
+			value = null;
+			return false;
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> IResourceDictionary.ValuesChanged
