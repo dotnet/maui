@@ -218,6 +218,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			_container.SizeChanged -= OnNativeSizeChanged;
 			_container.BackClicked -= OnBackClicked;
 
+#if WINDOWS_UWP
+			if (_parentTabbedPage != null)
+				Element.Appearing -= OnElementAppearing;
+#endif
+
 			SetElement(null);
 			SetPage(null, false, true);
 			_previousPage = null;
@@ -229,9 +234,6 @@ namespace Xamarin.Forms.Platform.WinRT
 				_parentMasterDetailPage.PropertyChanged -= MultiPagePropertyChanged;
 
 #if WINDOWS_UWP
-			if (_parentTabbedPage != null)
-				Element.Appearing -= OnElementAppearing;
-
 			if (_navManager != null)
 			{
 				_navManager.AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;
