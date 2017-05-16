@@ -74,6 +74,7 @@
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
 			DebugSymbols = "$(DebugSymbols)"
+			DebugType = "$(DebugType)"
 			Verbosity = "4"
 			KeepXamlResources = "true"
 			OptimizeIL = "true" />

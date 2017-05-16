@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public string ReferencePath { get; set; }
 		public int Verbosity { get; set; }
 		public bool DebugSymbols { get; set; }
+		public string DebugType { get; set; }
 
 		internal XamlTask()
 		{

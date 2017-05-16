@@ -64,6 +64,7 @@
 			ReferencePath = "@(ReferencePath)"
 			Verbosity = "2"
 			OptimizeIL = "true"
-			DebugSymbols = "$(DebugSymbols)" />
+			DebugSymbols = "$(DebugSymbols)"
+			DebugType = "$(DebugType)"/>
 	</Target>
 </Project>
