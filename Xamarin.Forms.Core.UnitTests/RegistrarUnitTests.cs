@@ -149,7 +149,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestGetRendererNullViewRenderer()
 		{
-			var registrar = new Internals.Registrar<MockRenderer>();
+			var registrar = new Registrar<MockRenderer>();
 
 			//let's say that we are now registering the view of a viewcell
 			registrar.Register(typeof(View), typeof(MockRenderer));
