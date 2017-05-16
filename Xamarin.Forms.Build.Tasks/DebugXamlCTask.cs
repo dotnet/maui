@@ -43,9 +43,12 @@ namespace Xamarin.Forms.Build.Tasks
 					//					resolver.AddAssembly (p);
 				}
 			}
+
+			var debug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none");
+
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly, new ReaderParameters {
 				ReadWrite = true,
-				ReadSymbols = DebugSymbols,
+				ReadSymbols = debug,
 				AssemblyResolver = resolver
 			})) {
 				foreach (var module in assemblyDefinition.Modules) {
@@ -147,7 +150,7 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				Logger.LogString(1, "Writing the assembly... ");
 				assemblyDefinition.Write(new WriterParameters {
-					WriteSymbols = DebugSymbols
+					WriteSymbols = debug
 				});
 			}
 			Logger.LogLine(1, "done.");
