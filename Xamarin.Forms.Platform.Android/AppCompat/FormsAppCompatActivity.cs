@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		AndroidApplicationLifecycleState _previousState;
 
-		bool _renderersAdded, _isFullScreen;
+		bool _renderersAdded;
 
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
@@ -426,29 +426,17 @@ namespace Xamarin.Forms.Platform.Android
 			if (Xamarin.Forms.Application.Current == null || Xamarin.Forms.Application.Current.MainPage == null)
 				return;
 
+			// sync between Window flag and Forms property
 			if (@params.Flags.HasFlag(WindowManagerFlags.Fullscreen))
 			{
 				if (Forms.TitleBarVisibility != AndroidTitleBarVisibility.Never)
 					Forms.TitleBarVisibility = AndroidTitleBarVisibility.Never;
-
-				if (_isFullScreen)
-					return;
 			}
 			else
 			{
 				if (Forms.TitleBarVisibility != AndroidTitleBarVisibility.Default)
 					Forms.TitleBarVisibility = AndroidTitleBarVisibility.Default;
-
-				if (!_isFullScreen)
-					return;
 			}
-
-			_isFullScreen = !_isFullScreen;
-
-			var displayMetrics = Resources.DisplayMetrics;
-			var width = displayMetrics.WidthPixels;
-			var height = displayMetrics.HeightPixels;
-			AppCompat.Platform.LayoutRootPage(this, Xamarin.Forms.Application.Current.MainPage, width, height);
 		}
 
 		void UpdateProgressBarVisibility(bool isBusy)

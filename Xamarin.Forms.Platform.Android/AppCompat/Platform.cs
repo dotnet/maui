@@ -196,7 +196,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (changed)
 			{
-				LayoutRootPage((FormsAppCompatActivity)_context, Page, r - l, b - t);
+				LayoutRootPage(Page, r - l, b - t);
 			}
 
 			Android.Platform.GetRenderer(Page).UpdateLayout();
@@ -269,7 +269,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Android.Platform.SetRenderer(page, renderView);
 
 			if (layout)
-				LayoutRootPage((FormsAppCompatActivity)_context, page, _renderer.Width, _renderer.Height);
+				LayoutRootPage(page, _renderer.Width, _renderer.Height);
 
 			_renderer.AddView(renderView.View);
 		}
@@ -285,8 +285,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return handled;
 		}
 
-		internal static void LayoutRootPage(FormsAppCompatActivity activity, Page page, int width, int height)
+		void LayoutRootPage(Page page, int width, int height)
 		{
+			var activity = (FormsAppCompatActivity)_context;
 			page.Layout(new Rectangle(0, 0, activity.FromPixels(width), activity.FromPixels(height)));
 		}
 
