@@ -109,42 +109,5 @@ namespace Xamarin.Forms.Core.UnitTests
 			collection.Remove (behavior);
 			Assert.Null (behavior.AssociatedObject);
 		}
-
-		[Test]
-		//https://bugzilla.xamarin.com/show_bug.cgi?id=44074
-		public void TestBehaviorsAreDetachedBeforeGarbageCollection()
-		{
-			WeakReference weakBindable = null;
-
-			var attachCount = MockBehavior<VisualElement>.AttachCount;
-
-			int i = 0;
-			Action create = null;
-			create = () =>
-			{
-				if (i++ < 1024)
-				{
-					create();
-					return;
-				}
-
-				var bindable = new MockBindable
-				{
-					Behaviors = {
-						new MockBehavior<VisualElement> ()
-					}
-				};
-				weakBindable = new WeakReference(bindable);
-			};
-
-			create();
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.False(weakBindable.IsAlive);
-			Assert.AreEqual(attachCount, MockBehavior<VisualElement>.AttachCount);
-		}
 	}
 }
