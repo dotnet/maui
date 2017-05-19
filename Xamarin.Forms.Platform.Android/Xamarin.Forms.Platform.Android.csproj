@@ -192,7 +192,6 @@
     <Compile Include="Renderers\ToolbarImageButton.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
     <Compile Include="TapGestureHandler.cs" />
-    <Compile Include="TextViewExtensions.cs" />
     <Compile Include="TextColorSwitcher.cs" />
     <Compile Include="ViewInitializedEventArgs.cs" />
     <Compile Include="VisualElementChangedEventArgs.cs" />

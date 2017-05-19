@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Support.V4.Widget;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -29,7 +30,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetPadding((int)context.ToPixels(15), padding, padding, padding);
 
 			_label = new TextView(context);
-			_label.SetTextAppearanceCompat(context, global::Android.Resource.Style.TextAppearanceSmall);
+			TextViewCompat.SetTextAppearance(_label, global::Android.Resource.Style.TextAppearanceSmall);
 
 			var layoutParams = new LayoutParams(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent) { Gravity = GravityFlags.CenterVertical };
 			using (layoutParams)
