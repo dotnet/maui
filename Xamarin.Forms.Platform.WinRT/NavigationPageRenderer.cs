@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		TabbedPage _parentTabbedPage;
 		bool _showTitle = true;
 		VisualElementTracker<Page, PageControl> _tracker;
-		ContentThemeTransition _transition;
+		EntranceThemeTransition _transition;
 
 		public NavigationPage Element { get; private set; }
 
@@ -440,7 +440,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			if (isAnimated && _transition == null)
 			{
-				_transition = new ContentThemeTransition();
+				_transition = new EntranceThemeTransition();
 				_container.ContentTransitions = new TransitionCollection();
 			}
 
