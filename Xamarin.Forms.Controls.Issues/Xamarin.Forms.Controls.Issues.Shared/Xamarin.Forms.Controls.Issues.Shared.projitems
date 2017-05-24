@@ -550,6 +550,7 @@
       <DependentUpon>Bugzilla54977.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42956.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38731.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
