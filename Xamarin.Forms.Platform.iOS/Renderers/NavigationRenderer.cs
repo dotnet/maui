@@ -525,7 +525,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void RemoveViewControllers(bool animated)
 		{
 			var controller = TopViewController as ParentingViewController;
-			if (controller == null || controller.Child == null)
+			if (controller == null || controller.Child == null || Platform.GetRenderer(controller.Child) == null)
 				return;
 
 			// Gesture in progress, lets not be proactive and just wait for it to finish
