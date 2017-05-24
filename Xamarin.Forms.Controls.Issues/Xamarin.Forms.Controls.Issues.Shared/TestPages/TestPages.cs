@@ -8,7 +8,7 @@ using Xamarin.UITest;
 
 // Apply the default category of "Issues" to all of the tests in this assembly
 // We use this as a catch-all for tests which haven't been individually categorized
-[assembly: NUnit.Framework.Category("Issues")]
+[assembly: Category("Issues")]
 #endif
 
 namespace Xamarin.Forms.Controls
