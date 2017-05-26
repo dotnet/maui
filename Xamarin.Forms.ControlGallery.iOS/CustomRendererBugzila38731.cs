@@ -18,11 +18,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			if (NavigationController.ViewControllers.Length > 1)
 			{
-				NavigationController.TopViewController.NavigationItem.SetLeftBarButtonItem(new UIBarButtonItem(
-					UIImage.FromFile("bank.png"), UIBarButtonItemStyle.Plain, (sender, args) =>
+				var btn = new UIBarButtonItem(UIImage.FromFile("bank.png"), UIBarButtonItemStyle.Plain, (sender, args) =>
 					{
 						NavigationController.PopViewController(true);
-					}), true);
+					});
+				btn.AccessibilityIdentifier = "goback";
+				NavigationController.TopViewController.NavigationItem.SetLeftBarButtonItem(btn, true);
 			}
 		}
 	}

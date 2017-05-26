@@ -16,7 +16,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 38731, "Xamarin.Forms.Platform.iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.Default)]
+	[Issue(IssueTracker.Bugzilla, 38731, "Xamarin.Forms.Platform.iOS.NavigationRenderer.GetAppearedOrDisappearedTask NullReferenceExceptionObject", PlatformAffected.iOS)]
 	public class Bugzilla38731 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
 		protected override void Init()
@@ -113,16 +113,20 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		[Test]
 		public void Bugzilla38731Test ()
 		{
 			RunningApp.Tap(q => q.Marked("btn1"));
 			RunningApp.Tap(q => q.Marked("btn2"));
 			RunningApp.Tap(q => q.Marked("btn3"));
-			RunningApp.Back();
-			RunningApp.Back();
-			RunningApp.Back();
+			if(RunningApp.Query(q => q.Marked("goback")).Length > 0)
+			{
+				RunningApp.Tap(q => q.Marked("goback"));
+				RunningApp.Tap(q => q.Marked("goback"));
+				RunningApp.Tap(q => q.Marked("goback"));
+				RunningApp.Tap(q => q.Marked("goback"));
+			}
 		}
 #endif
 	}
