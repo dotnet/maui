@@ -132,6 +132,11 @@
 											<DiscreteObjectKeyFrame KeyTime="0"
 											                        Value="{Binding BackgroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
 										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background"
+										                               Storyboard.TargetName="BorderElement">
+											<DiscreteObjectKeyFrame KeyTime="0"
+											                        Value="{Binding BackgroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+										</ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="BackgroundElement">
 											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocusedOpacity}" />
 										</ObjectAnimationUsingKeyFrames>
