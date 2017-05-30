@@ -123,7 +123,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			else
 			{
-				var textWithColor = new NSAttributedString(Element.Text ?? "", foregroundColor: color.ToNSColor());
+				var textWithColor = new NSAttributedString(Element.Text ?? "", foregroundColor: color.ToNSColor( ), paragraphStyle: new NSMutableParagraphStyle( ) { Alignment = NSTextAlignment.Center });
 				Control.AttributedTitle = textWithColor;
 			}
 		}
