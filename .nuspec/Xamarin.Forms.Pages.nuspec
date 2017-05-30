@@ -46,11 +46,11 @@
     </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\portable-win+net45+wp80+win81+wpa81" />
 
-		<file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\netstandard1.0" />
 
-		<file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\MonoAndroid10" />
+    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\MonoAndroid10" />
 
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\Xamarin.iOS10" />
 
