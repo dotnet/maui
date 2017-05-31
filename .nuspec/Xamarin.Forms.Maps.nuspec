@@ -30,7 +30,7 @@
       </group>
     </dependencies>
     <references>
-      <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20">
+      <group targetFramework="portable-win+net45+wp80+win81+wpa81">
         <reference file="Xamarin.Forms.Maps.dll" />
       </group>
       <group targetFramework="netstandard1.0">

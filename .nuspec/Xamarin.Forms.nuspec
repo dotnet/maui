@@ -32,7 +32,7 @@
       </group>
     </dependencies>
     <references>
-       <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20">
+       <group targetFramework="portable-win+net45+wp80+win81+wpa81">
         <reference file="Xamarin.Forms.Core.dll" />
         <reference file="Xamarin.Forms.Platform.dll" />
         <reference file="Xamarin.Forms.Xaml.dll" />
