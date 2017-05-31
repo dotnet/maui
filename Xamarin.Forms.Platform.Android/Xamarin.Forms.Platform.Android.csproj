@@ -166,8 +166,7 @@
     <Compile Include="IStartActivityForResult.cs" />
     <Compile Include="Renderers\ConditionalFocusLayout.cs" />
     <Compile Include="Renderers\DescendantFocusToggler.cs" />
-    <Compile Include="Renderers\EditorEditText.cs" />
-    <Compile Include="Renderers\EntryEditText.cs" />
+    <Compile Include="Renderers\FormsEditText.cs" />
     <Compile Include="Renderers\FileImageSourceHandler.cs" />
     <Compile Include="Renderers\FormattedStringExtensions.cs" />
     <Compile Include="Renderers\FormsImageView.cs" />

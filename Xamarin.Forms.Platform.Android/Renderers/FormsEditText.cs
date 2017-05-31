@@ -6,11 +6,11 @@ using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class EditorEditText : EditText, IDescendantFocusToggler
+	public class FormsEditText : EditText, IDescendantFocusToggler
 	{
 		DescendantFocusToggler _descendantFocusToggler;
 
-		internal EditorEditText(Context context) : base(context)
+		internal FormsEditText(Context context) : base(context)
 		{
 		}
 
@@ -24,10 +24,13 @@ namespace Xamarin.Forms.Platform.Android
 		public override bool OnKeyPreIme(Keycode keyCode, KeyEvent e)
 		{
 			if (keyCode != Keycode.Back || e.Action != KeyEventActions.Down)
+			{
 				return base.OnKeyPreIme(keyCode, e);
+			}
 
 			this.HideKeyboard();
-			OnBackKeyboardPressed?.Invoke(this, EventArgs.Empty);
+
+			OnKeyboardBackPressed?.Invoke(this, EventArgs.Empty);
 			return true;
 		}
 
@@ -36,6 +39,6 @@ namespace Xamarin.Forms.Platform.Android
 			return (this as IDescendantFocusToggler).RequestFocus(this, () => base.RequestFocus(direction, previouslyFocusedRect));
 		}
 
-		internal event EventHandler OnBackKeyboardPressed;
+		internal event EventHandler OnKeyboardBackPressed;
 	}
 }
