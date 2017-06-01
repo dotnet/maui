@@ -15,8 +15,10 @@
   </Interfaces>
   <Docs>
     <summary>A deep application link in an app link search index.</summary>
-    <remarks>To be added.</remarks>
-    <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
+    <remarks>
+      <para>For information on setting up deep application linking on the Android platform (and on using deep linking in general), see <format type="text/html"><a href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</a></format>.</para>
+    </remarks>
+    <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</related>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

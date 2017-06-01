@@ -25,153 +25,113 @@
       <example>
         <para>The following example shows how to use an <see cref="T:Xamarin.Forms.AbsoluteLayout" /> with proportional position arguments.</para>
         <code lang="C#"><![CDATA[
-using System;
-using Xamarin.Forms;
 
-namespace AbsoluteLayoutDemo
-{
-    class AbsoluteLayoutDemoPage : ContentPage
+    Label header = new Label
     {
-        //Label topLeftText;
-        Label topLeftLabel, centerLabel, bottomRightLabel;
+        Text = "AbsoluteLayout Demo",
+        FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
+        HorizontalOptions = LayoutOptions.Center
+    };
 
-        public AbsoluteLayoutDemoPage ()
-        {
-            Label header = new Label {
-                Text = "AbsoluteLayout Demo",
-                Font = Font.SystemFontOfSize (NamedSize.Large),
-                HorizontalOptions = LayoutOptions.Center
-            };
+    AbsoluteLayout simpleLayout = new AbsoluteLayout
+    {
+        BackgroundColor = Color.Blue.WithLuminosity(0.9),
+        VerticalOptions = LayoutOptions.FillAndExpand
+    };
 
-            AbsoluteLayout simpleLayout = new AbsoluteLayout {
-                BackgroundColor = Color.Blue.WithLuminosity (0.9),
-                VerticalOptions = LayoutOptions.FillAndExpand
-            };
+    topLeftLabel = new Label
+    {
+        Text = "Top Left",
+        TextColor = Color.Black
+    };
 
-            topLeftLabel = new Label {
-                Text = "Top Left",
-                TextColor = Color.Black
-            };
+    centerLabel = new Label
+    {
+        Text = "Centered",
+        TextColor = Color.Black
+    };
 
-            centerLabel = new Label {
-                Text = "Centered",
-                TextColor = Color.Black
-            };
+    bottomRightLabel = new Label
+    {
+        Text = "Bottom Right",
+        TextColor = Color.Black
+    };
 
-            bottomRightLabel = new Label { 
-                Text = "Bottom Right",
-                TextColor = Color.Black
-            };
+    // PositionProportional flag maps the range (0.0, 1.0) to
+    // the range "flush [left|top]" to "flush [right|bottom]"
+    AbsoluteLayout.SetLayoutFlags(bottomRightLabel,
+        AbsoluteLayoutFlags.PositionProportional);
 
+    AbsoluteLayout.SetLayoutBounds(topLeftLabel,
+        new Rectangle(0f,
+            0f, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 
-            // PositionProportional flag maps the range (0.0, 1.0) to
-            // the range "flush [left|top]" to "flush [right|bottom]"
-            AbsoluteLayout.SetLayoutFlags (bottomRightLabel,
-                AbsoluteLayoutFlags.PositionProportional);
+    AbsoluteLayout.SetLayoutFlags(centerLabel,
+        AbsoluteLayoutFlags.PositionProportional);
 
-            AbsoluteLayout.SetLayoutBounds (topLeftLabel,
-                new Rectangle (0f,
-                    0f, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+    AbsoluteLayout.SetLayoutBounds(centerLabel,
+        new Rectangle(0.5,
+            0.5, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 
-            AbsoluteLayout.SetLayoutFlags (centerLabel,
-                AbsoluteLayoutFlags.PositionProportional);
+    AbsoluteLayout.SetLayoutFlags(bottomRightLabel,
+        AbsoluteLayoutFlags.PositionProportional);
 
-            AbsoluteLayout.SetLayoutBounds (centerLabel,
-                new Rectangle (0.5,
-                    0.5, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+    AbsoluteLayout.SetLayoutBounds(bottomRightLabel,
+        new Rectangle(1f,
+            1f, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
 
-            AbsoluteLayout.SetLayoutFlags (bottomRightLabel,
-                AbsoluteLayoutFlags.PositionProportional);
-
-            AbsoluteLayout.SetLayoutBounds (bottomRightLabel,
-                new Rectangle (1f,
-                    1f, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
-
-            simpleLayout.Children.Add (topLeftLabel);
-            simpleLayout.Children.Add (centerLabel);
-            simpleLayout.Children.Add (bottomRightLabel);
-
-            // Accomodate iPhone status bar.
-            this.Padding = 
-                new Thickness (10, Device.OnPlatform (20, 0, 0), 10, 5);
-
-            // Build the page.
-            this.Content = new StackLayout {
-                Children = {
-                    header,
-                    simpleLayout
-                }
-            };
-
-        }
-    }
-}
-]]></code>
+    simpleLayout.Children.Add(topLeftLabel);
+    simpleLayout.Children.Add(centerLabel);
+    simpleLayout.Children.Add(bottomRightLabel);
+    ]]></code>
         <para>The code sample below shows how to place two labels by specifying device-dependent units.</para>
         <code lang="C#"><![CDATA[
-using System;
-using Xamarin.Forms;
 
-namespace AbsoluteLayoutDemo
-{
-    public class AbsoluteLayoutDeviceUnits : ContentPage
+    AbsoluteLayout simpleLayout = new AbsoluteLayout
     {
-        Label topLeftText, middleText;
 
-        public AbsoluteLayoutDeviceUnits ()
-        {
-            AbsoluteLayout simpleLayout = new AbsoluteLayout {
+        BackgroundColor = Color.Blue.WithLuminosity(0.9),
+        VerticalOptions = LayoutOptions.FillAndExpand
+    };
 
-                BackgroundColor = Color.Blue.WithLuminosity (0.9),
-                VerticalOptions = LayoutOptions.FillAndExpand
-            };
+    Label header = new Label
+    {
+        Text = "Device Units Demo",
+        TextColor = Color.Black,
+        FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label))
+    };
 
-            Label header = new Label {
-                Text = "Device Units Demo",
-                TextColor = Color.Black,
-                Font = Font.SystemFontOfSize (NamedSize.Large)
-            };
+    topLeftText = new Label
+    {
+        Text = "Left",
+        TextColor = Color.Black
+    };
 
-            topLeftText = new Label {
-                Text = "Left",
-                TextColor = Color.Black
-            };
+    AbsoluteLayout.SetLayoutFlags(topLeftText,
+        AbsoluteLayoutFlags.None);
 
-            AbsoluteLayout.SetLayoutFlags (topLeftText,
-                AbsoluteLayoutFlags.None);
+    AbsoluteLayout.SetLayoutBounds(topLeftText,
+        new Rectangle(0f, 0f, 100f, 50f));
 
-            AbsoluteLayout.SetLayoutBounds (topLeftText,
-                new Rectangle (0f, 0f,  100f, 50f));
+    middleText = new Label
+    {
+        Text = "Device-dependent location",
+        TextColor = Color.Black
+    };
 
-            middleText = new Label {
-                Text = "Device-dependent location",
-                TextColor = Color.Black
-            };
+    AbsoluteLayout.SetLayoutFlags(middleText,
+        AbsoluteLayoutFlags.None);
 
-            AbsoluteLayout.SetLayoutFlags (middleText,
-                AbsoluteLayoutFlags.None);
+    AbsoluteLayout.SetLayoutBounds(middleText,
+        new Rectangle(100f, 200f, 200f, 50f));
 
-            AbsoluteLayout.SetLayoutBounds (middleText,
-                new Rectangle (100f, 200f, 200f, 50f));
+    simpleLayout.Children.Add(topLeftText);
+    simpleLayout.Children.Add(middleText);
 
-            simpleLayout.Children.Add (topLeftText);
-            simpleLayout.Children.Add (middleText);
-
-            // Accomodate iPhone status bar.
-            this.Padding = new Thickness (10, Device.OnPlatform (20, 0, 0), 10, 5);
-
-            this.Content = new StackLayout {
-                Children = {
-                    header,
-                    simpleLayout
-                }
-            };
-        }
-    }
-}]]></code>
+    }]]></code>
       </example>
       <para>The following image shows the AbsoluteLayout demo from the <format type="text/html"><a href="http://developer.xamarin.com/samples/tag/Xamarin.Forms/" target="_blank">FormsGallery</a></format> sample.
-</para>
+    </para>
       <para>
         <img href="AbsoluteLayout.TripleScreenShot.png" />
       </para>
@@ -198,15 +158,15 @@ namespace AbsoluteLayoutDemo
         </list>
         <para>Application developers can use XAML to lay out elements with the <see cref="T:Xamarin.Forms.AbsoluteLayout" /> class. The example below places a blue <see cref="T:Xamarin.Forms.BoxView" /> inside an <see cref="T:Xamarin.Forms.AbsoluteLayout" />: </para>
         <code lang="XAML"><![CDATA[<AbsoluteLayout VerticalOptions="FillAndExpand"
-                HorizontalOptions="FillAndExpand">
-    <BoxView    AbsoluteLayout.LayoutBounds="0.25, 0.25, 0.5, 0.5"
-                Color="Blue"
-                AbsoluteLayout.LayoutFlags="All" />
-</AbsoluteLayout>
-]]></code>
+                    HorizontalOptions="FillAndExpand">
+        <BoxView    AbsoluteLayout.LayoutBounds="0.25, 0.25, 0.5, 0.5"
+                    Color="Blue"
+                    AbsoluteLayout.LayoutFlags="All" />
+    </AbsoluteLayout>
+    ]]></code>
       </example>
       <para>The <see cref="T:Xamarin.Forms.AbsoluteLayout" /> class can lay its child elements out in proportional units, device units, or a combination of both. Application developers should remember the following points when specifying a <see cref="T:Xamarin.Forms.Rectangle" /> structure that will define the layout bounds of a child element:
-        <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Xamarin.Forms.Rectangle" /> structure is interpreted according to the <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
+            <list type="bullet"><item><term>For elements whose height and width fit on the screen, proportional position dimensions in the range [0,1] represent elements that are completely on the screen, regardless of whether the height, width, or both are specified in device or proportional units.</term></item><item><term>The above point means that, to specify an element in the lower right hand corner of the screen and that is half as wide and half as all as the screen, with a  <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> value of <c>All</c>, the application developer would specify "1.0, 1.0, 0.5, 0.5".</term></item><item><term>The app developer can inadvertently cause child elements for which one or both size dimensions were specified proportionally to be displayed partially off the screen, or hidden altogether, by specifying device-unit positions that do not leave enough room for the calculated size of the child.</term></item><item><term>Each part of the bounding <see cref="T:Xamarin.Forms.Rectangle" /> structure is interpreted according to the <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> value that controls it. A given rectangle might, for example, have an X-coordinate that is in device units, a Y-coordinate that is in proportional units, a height that is in proportional units, and a width that is in device units, or any other combination of device and proportional units. </term></item><item><term>Rectangles that, when interpreted by using the current <see cref="T:Xamarin.Forms.AbsoluteLayoutFlags" /> set on the child, represent bounding boxes that are partially or wholly off-screen—for example, by having a width that is larger than the screen width—may give unexpected results.</term></item></list></para>
     </remarks>
   </Docs>
   <Members>

@@ -60,9 +60,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Creates a new instance of the BindableProperty class.</summary>
         <returns>A newly created BindableProperty.</returns>
@@ -102,9 +102,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">To be added.</param>
         <param name="defaultValueCreator">A Func used to initialize default value for reference types..</param>
         <summary>Creates a new instance of the BindableProperty class.</summary>
@@ -147,7 +147,7 @@
         <param name="getter">An expression identifying the getter for the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -199,7 +199,7 @@
         <param name="getter">An expression identifying the getter for the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">To be added.</param>
@@ -237,9 +237,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Creates a new instance of the BindableProperty class for an attached property.</summary>
         <returns>A newly created attached BindableProperty.</returns>
@@ -279,9 +279,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <param name="defaultValueCreator">A Func used to initialize default value for reference types..</param>
         <summary>Creates a new instance of the BindableProperty class for an attached property.</summary>
@@ -321,7 +321,7 @@
         <param name="staticgetter">An expression identifying a static method returning the value of the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -371,7 +371,7 @@
         <param name="staticgetter">An expression identifying a static method returning the value of the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -410,9 +410,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Creates a new instance of the BindableProperty class for attached read-only properties.</summary>
         <returns>A newly created attached read-only BindableProperty.</returns>
@@ -453,9 +453,9 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
         <summary>Creates a new instance of the BindableProperty class for attached read-only properties.</summary>
@@ -496,7 +496,7 @@
         <param name="staticgetter">An expression identifying a static method returning the value of the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -546,7 +546,7 @@
         <param name="staticgetter">An expression identifying a static method returning the value of the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -586,7 +586,7 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -630,7 +630,7 @@
         <param name="declaringType">The type of the declaring object.</param>
         <param name="defaultValue">The default value for the property.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
         <param name="propertyChanged">To be added.</param>
         <param name="propertyChanging">To be added.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
@@ -678,9 +678,9 @@
         <param name="getter">An expression identifying the getter for the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <summary>Deprecated. Do not use.</summary>
         <returns>A newly created BindablePropertyKey.</returns>
@@ -732,9 +732,9 @@
         <param name="getter">An expression identifying the getter for the property using this BindableProperty as backing store.</param>
         <param name="defaultValue">Default value for the BindableProperty.</param>
         <param name="defaultBindingMode">The BindingMode to use on SetBinding() if no BindingMode is given. This parameter is optional. Default is BindingMode.OneWay.</param>
-        <param name="validateValue">A delegate to be ran when a value is set. This parameter is optional. Default is null.</param>
-        <param name="propertyChanged">A delegate to be ran when the value has changed. This parameter is optional. Default is null.</param>
-        <param name="propertyChanging">A delegate to be ran when the value will change. This parameter is optional. Default is null.</param>
+        <param name="validateValue">A delegate to be run when a value is set. This parameter is optional. Default is null.</param>
+        <param name="propertyChanged">A delegate to be run when the value has changed. This parameter is optional. Default is null.</param>
+        <param name="propertyChanging">A delegate to be run when the value will change. This parameter is optional. Default is null.</param>
         <param name="coerceValue">A delegate used to coerce the range of a value. This parameter is optional. Default is null.</param>
         <param name="defaultValueCreator">A Func used to initialize default value for reference types.</param>
         <summary>Deprecated. Do not use.</summary>
