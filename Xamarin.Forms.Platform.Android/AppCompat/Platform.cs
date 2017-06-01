@@ -8,7 +8,6 @@ using Android.Views;
 using Android.Views.Animations;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
-using Debug = System.Diagnostics.Debug;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -196,7 +195,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void IPlatformLayout.OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			if (changed)
-				LayoutRootPage((FormsAppCompatActivity)_context, Page, r - l, b - t);
+			{
+				LayoutRootPage(Page, r - l, b - t);
+			}
 
 			Android.Platform.GetRenderer(Page).UpdateLayout();
 
@@ -268,7 +269,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Android.Platform.SetRenderer(page, renderView);
 
 			if (layout)
-				LayoutRootPage((FormsAppCompatActivity)_context, page, _renderer.Width, _renderer.Height);
+				LayoutRootPage(page, _renderer.Width, _renderer.Height);
 
 			_renderer.AddView(renderView.View);
 		}
@@ -284,17 +285,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return handled;
 		}
 
-		internal static void LayoutRootPage(FormsAppCompatActivity activity, Page page, int width, int height)
+		void LayoutRootPage(Page page, int width, int height)
 		{
-			int statusBarHeight = Forms.IsLollipopOrNewer ? activity.GetStatusBarHeight() : 0;
-			statusBarHeight = activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen) || Forms.TitleBarVisibility == AndroidTitleBarVisibility.Never ? 0 : statusBarHeight;
-
-			if (page is MasterDetailPage)
-				page.Layout(new Rectangle(0, 0, activity.FromPixels(width), activity.FromPixels(height)));
-			else
-			{
-				page.Layout(new Rectangle(0, activity.FromPixels(statusBarHeight), activity.FromPixels(width), activity.FromPixels(height - statusBarHeight)));
-			}
+			var activity = (FormsAppCompatActivity)_context;
+			page.Layout(new Rectangle(0, 0, activity.FromPixels(width), activity.FromPixels(height)));
 		}
 
 		Task PresentModal(Page modal, bool animated)
@@ -381,18 +375,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				var activity = (FormsAppCompatActivity)Context;
-				int statusBarHeight = Forms.IsLollipopOrNewer ? activity.GetStatusBarHeight() : 0;
 				if (changed)
 				{
-					if (_modal is MasterDetailPage)
-						_modal.Layout(new Rectangle(0, 0, activity.FromPixels(r - l), activity.FromPixels(b - t)));
-					else
-					{
-						_modal.Layout(new Rectangle(0, activity.FromPixels(statusBarHeight), activity.FromPixels(r - l), activity.FromPixels(b - t - statusBarHeight)));
-					}
+					var activity = (FormsAppCompatActivity)Context;
 
-					_backgroundView.Layout(0, statusBarHeight, r - l, b - t);
+					_modal.Layout(new Rectangle(0, 0, activity.FromPixels(r - l), activity.FromPixels(b - t)));
+					_backgroundView.Layout(0, 0, r - l, b - t);
 				}
 
 				_renderer.UpdateLayout();

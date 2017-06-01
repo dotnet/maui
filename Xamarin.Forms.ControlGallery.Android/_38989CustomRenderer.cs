@@ -30,6 +30,4 @@ namespace Xamarin.Forms.ControlGallery.Android
 			return nativeView;
 		}
 	}
-
-	
 }

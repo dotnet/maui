@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				element.PropertyChanged += OnElementPropertyChanged;
 
 				if (!string.IsNullOrEmpty(element.AutomationId))
-					Control.SetValue(AutomationProperties.AutomationIdProperty, element.AutomationId);
+					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, element.AutomationId);
 			}
 
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));

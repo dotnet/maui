@@ -39,7 +39,17 @@ namespace Xamarin.Forms.Xaml.Internals
 	[Obsolete ("Replaced by ResourceLoader")]
 	public static class XamlLoader
 	{
-		public static Func<Type, string> XamlFileProvider { get; internal set; }
+		static Func<Type, string> xamlFileProvider;
+
+		public static Func<Type, string> XamlFileProvider {
+			get { return xamlFileProvider; }
+			internal set {
+				xamlFileProvider = value;
+				//¯\_(ツ)_/¯ the previewer forgot to set that bool
+				DoNotThrowOnExceptions = value != null;
+			}
+		}
+
 		internal static bool DoNotThrowOnExceptions { get; set; }
 	}
 }

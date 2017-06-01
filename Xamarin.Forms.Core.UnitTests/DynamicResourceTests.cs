@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -17,6 +18,39 @@ namespace Xamarin.Forms.Core.UnitTests
 		public override void TearDown()
 		{
 			Application.Current = null;
+		}
+
+		[Test]
+		public void TestDynamicResourceOverride()
+		{
+			Application.Current.Resources = new ResourceDictionary();
+			Application.Current.Resources.Add("GreenColor", Color.Green);
+			Application.Current.Resources.Add("RedColor", Color.Red);
+
+			var setter = new Setter()
+			{
+				Property = Label.TextColorProperty,
+				Value = new DynamicResource("RedColor")
+			};
+			var style = new Style(typeof(Label));
+			style.Setters.Add(setter);
+			Application.Current.Resources.Add(style);
+
+			var label = new Label()
+			{
+				Text = "Green = :)"
+			};
+			label.SetDynamicResource(Label.TextColorProperty, "GreenColor");
+
+			Application.Current.MainPage = new ContentPage
+			{
+				Content = new StackLayout
+				{
+					Children = { label }
+				}
+			};
+
+			Assert.AreEqual(Color.Green, label.TextColor);
 		}
 
 		[Test]

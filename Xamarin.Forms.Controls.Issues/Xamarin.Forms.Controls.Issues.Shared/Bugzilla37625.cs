@@ -13,13 +13,13 @@ namespace Xamarin.Forms.Controls.Issues
 {
     [Preserve (AllMembers = true)]
     [Issue (IssueTracker.Bugzilla, 37625, "App crashes when quickly adding/removing Image views (Windows UWP)")]
-    public class Bugzilla37625 : TestContentPage // or TestMasterDetailPage, etc ...
+    public class Bugzilla37625 : TestContentPage 
     {
         protected override async void Init ()
         {
             int retry = 5;
             while (retry-- >= 0) {
-                var imageUri = new Uri ("https://xamarin.com/content/images/pages/products/platform.png");
+                var imageUri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
                 Content = new Image () { Source = new UriImageSource () { Uri = imageUri }, BackgroundColor = Color.Black, AutomationId = "success" };
 
                 await Task.Delay (50);

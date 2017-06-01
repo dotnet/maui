@@ -20,10 +20,21 @@ namespace Xamarin.Forms.Build.Tasks
 
 			memberRef = typeTypeRef.MakeArrayType();
 			for (var i = 0; i < n; i++) {
-				instructions.Add(Instruction.Create(OpCodes.Dup));
-				instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
-				instructions.Add(Instruction.Create(OpCodes.Ldloc, context.Variables[node.CollectionItems[i] as IElementNode]));
-				instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+				var vardef = context.Variables[node.CollectionItems[i] as IElementNode];
+				if (typeTypeRef.IsValueType) {
+					instructions.Add(Instruction.Create(OpCodes.Dup));
+					instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
+					instructions.Add(Instruction.Create(OpCodes.Ldelema, typeTypeRef));
+					instructions.Add(Instruction.Create(OpCodes.Ldloc, vardef));
+					if (vardef.VariableType == module.TypeSystem.Object) 
+						instructions.Add(Instruction.Create(OpCodes.Unbox_Any, module.ImportReference(typeTypeRef)));
+					instructions.Add(Instruction.Create(OpCodes.Stobj, typeTypeRef));
+				} else {
+					instructions.Add(Instruction.Create(OpCodes.Dup));
+					instructions.Add(Instruction.Create(OpCodes.Ldc_I4, i));
+					instructions.Add(Instruction.Create(OpCodes.Ldloc, vardef));
+					instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+				}
 			}
 			return instructions;
 		}

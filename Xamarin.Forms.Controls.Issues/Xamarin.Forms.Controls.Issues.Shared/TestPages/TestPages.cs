@@ -6,6 +6,9 @@ using Xamarin.Forms.CustomAttributes;
 using NUnit.Framework;
 using Xamarin.UITest;
 
+// Apply the default category of "Issues" to all of the tests in this assembly
+// We use this as a catch-all for tests which haven't been individually categorized
+[assembly: Category("Issues")]
 #endif
 
 namespace Xamarin.Forms.Controls

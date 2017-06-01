@@ -18,6 +18,11 @@ namespace Xamarin.Forms
 			return Task.FromResult(false);
 		}
 
+		public override string ToString()
+		{
+			return $"File: {File}";
+		}
+
 		public static implicit operator FileImageSource(string file)
 		{
 			return (FileImageSource)FromFile(file);

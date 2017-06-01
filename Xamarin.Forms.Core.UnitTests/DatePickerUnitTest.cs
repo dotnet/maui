@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var datePicker = new DatePicker ();
 			Assert.DoesNotThrow (() => datePicker.SetValue (DatePicker.DateProperty, null));
-			Assert.AreEqual (DatePicker.DateProperty.DefaultValue, datePicker.Date);
+			Assert.AreEqual (DateTime.Today, datePicker.Date);
 		}
 
 		[Test]

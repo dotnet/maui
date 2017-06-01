@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
-		List<KeyValuePair<string, BindableProperty>> _dynamicResources;
+		Dictionary<BindableProperty, string> _dynamicResources;
 
 		IEffectControlProvider _effectControlProvider;
 
@@ -163,9 +163,9 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
-		List<KeyValuePair<string, BindableProperty>> DynamicResources
+		Dictionary<BindableProperty, string> DynamicResources
 		{
-			get { return _dynamicResources ?? (_dynamicResources = new List<KeyValuePair<string, BindableProperty>>(4)); }
+			get { return _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, string>()); }
 		}
 
 		void IElement.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
@@ -427,7 +427,8 @@ namespace Xamarin.Forms
 
 		internal override void OnRemoveDynamicResource(BindableProperty property)
 		{
-			DynamicResources.RemoveAll(kvp => kvp.Value == property);
+			DynamicResources.Remove(property);
+
 			if (DynamicResources.Count == 0)
 				_dynamicResources = null;
 			base.OnRemoveDynamicResource(property);
@@ -452,12 +453,16 @@ namespace Xamarin.Forms
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				List<BindableProperty> changedResources = null;
-				foreach (KeyValuePair<string, BindableProperty> dynR in DynamicResources)
+				foreach (KeyValuePair<BindableProperty, string> dynR in DynamicResources)
 				{
-					if (dynR.Key != value.Key)
+					// when the DynamicResource bound to a BindableProperty is
+					// changing then the BindableProperty needs to be refreshed;
+					// The .Value is the name of DynamicResouce to which the BindableProperty is bound.
+					// The .Key is the name of the DynamicResource whose value is changing.
+					if (dynR.Value != value.Key)
 						continue;
 					changedResources = changedResources ?? new List<BindableProperty>();
-					changedResources.Add(dynR.Value);
+					changedResources.Add(dynR.Key);
 				}
 				if (changedResources == null)
 					continue;
@@ -477,7 +482,7 @@ namespace Xamarin.Forms
 		internal override void OnSetDynamicResource(BindableProperty property, string key)
 		{
 			base.OnSetDynamicResource(property, key);
-			DynamicResources.Add(new KeyValuePair<string, BindableProperty>(key, property));
+			DynamicResources[property] = key;
 			object value;
 			if (this.TryGetResource(key, out value))
 				OnResourceChanged(property, value);

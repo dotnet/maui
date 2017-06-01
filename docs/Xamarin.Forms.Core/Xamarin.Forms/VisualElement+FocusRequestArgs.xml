@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Contains event arguments for the <see cref="F:Xamarin.Forms.VisualElement.FocusChangeRequested" /> event.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -23,7 +23,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.VisualElement+FocusRequestArgs" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -38,8 +38,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets a value that indicates the starting focus state of the element for which a focus change is requested.</summary>
+        <value>A value that indicates the starting focus state of the element for which a focus change is requested.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -54,8 +54,8 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
+        <summary>Gets or sets a value that indicates the ending focus state of the element for which a focus change is requested.</summary>
+        <value>&gt;A value that indicates the ending focus state of the element for which a focus change is requested.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -37,7 +37,7 @@
 				</OnPlatform>
 			</Label.Text>
 			<Label.HeightRequest>
-				<OnPlatform x:TypeArguments="x:Double">
+				<OnPlatform x:TypeArguments="x:Double" Default="63">
 					<On Platform="iOS">21</On>
 					<On Platform="Android, FooBar">42</On>
 				</OnPlatform>

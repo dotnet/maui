@@ -132,6 +132,11 @@
 											<DiscreteObjectKeyFrame KeyTime="0"
 											                        Value="{Binding BackgroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
 										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background"
+										                               Storyboard.TargetName="BorderElement">
+											<DiscreteObjectKeyFrame KeyTime="0"
+											                        Value="{Binding BackgroundFocusBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+										</ObjectAnimationUsingKeyFrames>
 										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="BackgroundElement">
 											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocusedOpacity}" />
 										</ObjectAnimationUsingKeyFrames>
@@ -186,7 +191,7 @@
 						                Content="{TemplateBinding PlaceholderText}"
 						                Foreground="{TemplateBinding PlaceholderForegroundBrush}" IsHitTestVisible="False"
 						                IsTabStop="False" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"
-						                Grid.Row="1"
+						                Grid.Row="1" VerticalAlignment="Bottom"
 						                HorizontalAlignment="{Binding TextAlignment, 
                                             RelativeSource={RelativeSource Mode=TemplatedParent}, 
                                             Converter={StaticResource AlignmentConverter}}" />

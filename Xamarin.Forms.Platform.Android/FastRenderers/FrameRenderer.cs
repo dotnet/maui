@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			return handled ? result : base.OnTouchEvent(e);
 		}
 
-		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 
@@ -197,12 +197,18 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateBackgroundColor()
 		{
+			if (_disposed)
+				return;
+				
 			Color bgColor = Element.BackgroundColor;
 			SetCardBackgroundColor(bgColor.IsDefault ? AColor.White : bgColor.ToAndroid());
 		}
 
 		void UpdateShadow()
 		{
+			if (_disposed)
+				return;
+				
 			float elevation = _defaultElevation;
 
 			if (elevation == -1f)
@@ -216,6 +222,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateCornerRadius()
 		{
+			if (_disposed)
+				return;
+				
 			if (_defaultCornerRadius == -1f)
 			{
 				_defaultCornerRadius = Radius;

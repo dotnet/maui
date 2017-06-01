@@ -21,7 +21,7 @@
       </group>
     </dependencies>
     <references>
-      <group targetFramework="portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10">
+      <group targetFramework="portable-win+net45+wp80+win81+wpa81">
         <reference file="Xamarin.Forms.Pages.Azure.dll" />
       </group>
       <group targetFramework="Xamarin.iOS10">
@@ -45,7 +45,7 @@
     </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\portable-win+net45+wp80+win81+wpa81" />
 
     <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\MonoAndroid10" />
 

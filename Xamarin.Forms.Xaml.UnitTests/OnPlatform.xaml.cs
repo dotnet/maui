@@ -121,7 +121,15 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "FooBar";
 				layout = new OnPlatform(useCompiledXaml);
 				Assert.AreEqual(42, layout.label0.HeightRequest);
+			}
 
+			[TestCase(false)]
+			[TestCase(true)]
+			public void OnPlatformDefault(bool useCompiledXaml)
+			{
+				((MockPlatformServices)Device.PlatformServices).RuntimePlatform = "\ud83d\ude80";
+				var layout = new OnPlatform(useCompiledXaml);
+				Assert.AreEqual(63, layout.label0.HeightRequest);
 			}
 		}
 	}

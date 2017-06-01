@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		public static Run ToRun(this Span span)
 		{
-			var run = new Run { Text = span.Text };
+			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.ForegroundColor != Color.Default)
 				run.Foreground = span.ForegroundColor.ToBrush();

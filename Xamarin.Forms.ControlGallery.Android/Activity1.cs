@@ -15,6 +15,8 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
 using Android.Content;
+using Android.Views;
+using AColor = Android.Graphics.Color;
 
 [assembly: Dependency (typeof (CacheService))]
 [assembly: Dependency (typeof (TestCloudService))]
@@ -158,6 +160,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class Activity1 : FormsApplicationActivity
 	{
+		App _app;
+
 		protected override void OnCreate(Bundle bundle)
 		{
 			//ToolbarResource = Resource.Layout.Toolbar;
@@ -179,7 +183,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			// uncomment to verify turning off title bar works. This is not intended to be dynamic really.
 			//Forms.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
 
-			var app = new App ();
+			var app = _app = new App ();
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
@@ -286,6 +290,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 			ToolbarResource = Resource.Layout.Toolbar;
 			TabLayoutResource = Resource.Layout.Tabbar;
 
+			// Uncomment the next line to run this as a full screen app (no status bar)
+			//Window.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.TurnScreenOn);
+
 			base.OnCreate (bundle);
 
 			if (!Debugger.IsAttached)
@@ -310,6 +317,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage >(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+
+			// Listen for the message from the status bar color toggle test
+			MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(AColor.Red));
 
 			LoadApplication(app);
 		}

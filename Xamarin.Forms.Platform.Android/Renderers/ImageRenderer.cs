@@ -1,10 +1,10 @@
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Android.Graphics;
 using Android.Views;
 using AImageView = Android.Widget.ImageView;
 using Xamarin.Forms.Internals;
-using static Xamarin.Forms.Platform.Android.ImageViewExtensions;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -20,7 +20,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		public ImageRenderer()
 		{
-            System.Diagnostics.Debug.WriteLine(">>>>> Old Image Renderer");
 			AutoPackage = false;
 		}
 
@@ -39,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new FormsImageView(Context);
 		}
 
-		protected override void OnElementChanged(ElementChangedEventArgs<Image> e)
+		protected override async void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			base.OnElementChanged(e);
 
@@ -50,26 +49,61 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			_motionEventHelper.UpdateElement(e.NewElement);
-			
-			Control.UpdateBitmap(e.NewElement, e.OldElement);
+
+			await TryUpdateBitmap(e.OldElement);
 
 			UpdateAspect();
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
-				Control.UpdateBitmap(Element);
+				await TryUpdateBitmap();
 			else if (e.PropertyName == Image.AspectProperty.PropertyName)
 				UpdateAspect();
 		}
 
 		void UpdateAspect()
 		{
+			if (Element == null || Control == null || Control.IsDisposed())
+			{
+				return;
+			}
+
 			AImageView.ScaleType type = Element.Aspect.ToScaleType();
 			Control.SetScaleType(type);
+		}
+
+		protected virtual async Task TryUpdateBitmap(Image previous = null)
+		{
+			// By default we'll just catch and log any exceptions thrown by UpdateBitmap so they don't bring down
+			// the application; a custom renderer can override this method and handle exceptions from
+			// UpdateBitmap differently if it wants to
+
+			try
+			{
+				await UpdateBitmap(previous);
+			}
+			catch (Exception ex)
+			{
+				Log.Warning(nameof(ImageRenderer), "Error loading image: {0}", ex);
+			}
+			finally
+			{
+				((IImageController)Element)?.SetIsLoading(false);
+			}
+		}
+
+		protected async Task UpdateBitmap(Image previous = null)
+		{
+			if (Element == null || Control == null || Control.IsDisposed())
+			{
+				return;
+			}
+
+			await Control.UpdateBitmap(Element, previous);
 		}
 
         public override bool OnTouchEvent(MotionEvent e)

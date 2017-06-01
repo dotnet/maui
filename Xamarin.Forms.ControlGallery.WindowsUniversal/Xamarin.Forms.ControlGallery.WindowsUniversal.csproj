@@ -169,6 +169,7 @@
     </Compile>
     <Compile Include="BrokenNativeControl.cs" />
     <Compile Include="CustomRenderers.cs" />
+    <Compile Include="FocusEffect.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

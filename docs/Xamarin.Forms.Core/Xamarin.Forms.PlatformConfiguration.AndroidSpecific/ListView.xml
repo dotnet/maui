@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>The list view instance that Xamarin.Forms created on the Android platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,9 +28,9 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="element">The platform specific element on which to perform the operation.</param>
+        <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>
+        <returns>A Boolean value that tells whether fast scrolling is enabled.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,9 +48,9 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.ListView&gt;" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>
+        <returns>A Boolean value that tells whether fast scrolling is enabled.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -65,7 +65,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the attached property that controls whether fast scrolling is enabled.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -84,9 +84,9 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <param name="element">The platform specific element on which to perform the operation.</param>
+        <param name="value">The new property value to assign.</param>
+        <summary>Sets the attached property that controls whether fast scrolling is enabled.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -105,10 +105,10 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <param name="value">The new property value to assign.</param>
+        <summary>Sets the attached property that controls whether fast scrolling is enabled.</summary>
+        <returns>The updated configuration object, on which more methods may be called.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AddingMultipleItemsListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AndroidStatusBarColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AppBarIconColors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla21368.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla21501.cs" />
@@ -160,6 +161,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44096.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44176.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44453.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45215.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla47548.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53834.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51536.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44940.cs" />
@@ -196,10 +199,15 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52266.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53445.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55714.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla54649.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56609.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55912.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34727.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ComplexListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CustomImageRendererErrorHandling.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DefaultColorToggleTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38416.xaml.cs">
       <DependentUpon>Bugzilla38416.xaml</DependentUpon>
@@ -253,7 +261,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ImageLoadingErrorHandling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51173.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla33561.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla43214.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42602.cs" />
@@ -275,6 +283,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45874.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Unreported1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53909.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ListViewNRE.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55745.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55365.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla54036.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1075.cs" />
@@ -538,6 +550,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45284.xaml.cs">
       <DependentUpon>Bugzilla45284.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla54977.xaml.cs">
+      <DependentUpon>Bugzilla54977.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla49069.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42956.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla38731.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -648,6 +666,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla45284.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla54977.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

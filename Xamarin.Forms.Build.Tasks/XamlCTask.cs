@@ -16,12 +16,8 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool KeepXamlResources { get; set; }
 		public bool OptimizeIL { get; set; }
 
-		bool outputGeneratedILAsCode;
 		[Obsolete("OutputGeneratedILAsCode is obsolete as of version 2.3.4. This option is no longer available.")]
-		public bool OutputGeneratedILAsCode {
-			get { return outputGeneratedILAsCode; }
-			set { outputGeneratedILAsCode = value; }
-		}
+		public bool OutputGeneratedILAsCode { get; set; }
 
 		internal string Type { get; set; }
 		internal MethodDefinition InitCompForType { get; private set; }
@@ -38,6 +34,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (!string.IsNullOrEmpty(ReferencePath))
 				Logger.LogLine(1, "ReferencePath: \t{0}", ReferencePath.Replace("//", "/"));
 			Logger.LogLine(3, "DebugSymbols:\"{0}\"", DebugSymbols);
+			Logger.LogLine(3, "DebugType:\"{0}\"", DebugType);
 			var skipassembly = true; //change this to false to enable XamlC by default
 			bool success = true;
 
@@ -68,10 +65,12 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 			}
 
+			var debug = DebugSymbols || (!string.IsNullOrEmpty(DebugType) && DebugType.ToLowerInvariant() != "none");
+
 			var readerParameters = new ReaderParameters {
 				AssemblyResolver = resolver,
 				ReadWrite = !ReadOnly,
-				ReadSymbols = DebugSymbols,
+				ReadSymbols = debug,
 			};
 
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Path.GetFullPath(Assembly),readerParameters)) {
@@ -199,9 +198,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 						Logger.LogLine(2, "");
 
-						if (outputGeneratedILAsCode)
+#pragma warning disable 0618
+						if (OutputGeneratedILAsCode)
 							Logger.LogLine(2, "   Decompiling option has been removed. Use a 3rd party decompiler to admire the beauty of the IL generated");
-
+#pragma warning restore 0618
 						resourcesToPrune.Add(resource);
 					}
 					if (!KeepXamlResources) {
@@ -228,7 +228,7 @@ namespace Xamarin.Forms.Build.Tasks
 				Logger.LogString(1, "Writing the assembly... ");
 				try {
 					assemblyDefinition.Write(new WriterParameters {
-						WriteSymbols = DebugSymbols,
+						WriteSymbols = debug,
 					});
 					Logger.LogLine(1, "done.");
 				} catch (Exception e) {

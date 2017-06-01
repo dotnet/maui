@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 					Placeholder = "Username"
 				};
 
-				username.SetValue(Accessibility.LabeledByProperty, instructions1);
+				username.SetValue(AutomationProperties.LabeledByProperty, instructions1);
 
 				var password = new Entry
 				{
@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Controls.Issues
 					IsPassword = true
 				};
 
-				password.SetValue(Accessibility.LabeledByProperty, instructions2);
+				password.SetValue(AutomationProperties.LabeledByProperty, instructions2);
 
 				var button = new Button { Text = "Submit", IsEnabled = false };
 

@@ -184,7 +184,18 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateBackgroundColor()
 		{
-			BackgroundColor = Element.BackgroundColor.ToNSColor(Color.Transparent);
+			if (Element.BackgroundColor == Color.Default)
+			{
+				if (DrawsBackground)
+					DrawsBackground = false;
+				if (BackgroundColor != NSColor.Clear)
+					BackgroundColor = NSColor.Clear;
+			}
+			else
+			{
+				DrawsBackground = true;
+				BackgroundColor = Element.BackgroundColor.ToNSColor();
+			}
 		}
 
 		void UpdateContentSize()

@@ -2,4 +2,5 @@
 <resources>
   <color name="cellback">#FFFFFFE0</color>
   <color name="cellback2">#FFDAFF7F</color>
+  <color name="primary_dark">#1976D2</color>
 </resources>

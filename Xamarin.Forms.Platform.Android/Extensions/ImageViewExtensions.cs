@@ -1,28 +1,33 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Graphics;
-using Java.IO;
 using AImageView = Android.Widget.ImageView;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal static class ImageViewExtensions
 	{
-		public static async void UpdateBitmap(this AImageView imageView, Image newImage, Image previousImage = null)
+		// TODO hartez 2017/04/07 09:33:03 Review this again, not sure it's handling the transition from previousImage to 'null' newImage correctly
+		public static async Task UpdateBitmap(this AImageView imageView, Image newImage, Image previousImage = null)
 		{
+			if (imageView == null || imageView.IsDisposed())
+				return;
+
 			if (Device.IsInvokeRequired)
 				throw new InvalidOperationException("Image Bitmap must not be updated from background thread");
 
 			if (previousImage != null && Equals(previousImage.Source, newImage.Source))
 				return;
 
-			((IImageController)newImage).SetIsLoading(true);
+			var imageController = newImage as IImageController;
 
-			(imageView as IImageRendererController).SkipInvalidate();
+			imageController?.SetIsLoading(true);
+
+			(imageView as IImageRendererController)?.SkipInvalidate();
 
 			imageView.SetImageResource(global::Android.Resource.Color.Transparent);
 
-			ImageSource source = newImage.Source;
+			ImageSource source = newImage?.Source;
 			Bitmap bitmap = null;
 			IImageSourceHandler handler;
 
@@ -34,10 +39,7 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				catch (TaskCanceledException)
 				{
-				}
-				catch (IOException ex)
-				{
-					Internals.Log.Warning("Xamarin.Forms.Platform.Android.ImageRenderer", "Error updating bitmap: {0}", ex);
+					imageController?.SetIsLoading(false);
 				}
 			}
 
@@ -47,14 +49,19 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			if (bitmap == null && source is FileImageSource)
-				imageView.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)source).File));
-			else
-				imageView.SetImageBitmap(bitmap);
+			if (!imageView.IsDisposed())
+			{
+				if (bitmap == null && source is FileImageSource)
+					imageView.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)source).File));
+				else
+				{
+					imageView.SetImageBitmap(bitmap);
+				}
+			}
 
 			bitmap?.Dispose();
 
-			((IImageController)newImage).SetIsLoading(false);
+			imageController?.SetIsLoading(false);
 			((IVisualElementController)newImage).NativeSizeChanged();
 		}
 	}

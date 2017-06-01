@@ -43,9 +43,21 @@ namespace Xamarin.Forms
 			}
 		}
 
+		bool hasDefault;
+		T @default;
+		public T Default {
+			get { return @default; }
+			set {
+				hasDefault = true;
+				@default = value;
+			}
+		}
+
 		public IList<On> Platforms { get; private set; }
 
+#pragma warning disable RECS0108 // Warns about static fields in generic types
 		static readonly IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();
+#pragma warning restore RECS0108 // Warns about static fields in generic types
 
 		public static implicit operator T(OnPlatform<T> onPlatform)
 		{
@@ -60,7 +72,7 @@ namespace Xamarin.Forms
 			}
 
 			if (!onPlatform.useLegacyFallback)
-				return default(T);
+				return onPlatform.hasDefault ? onPlatform.@default : default(T);
 
 			//legacy fallback
 #pragma warning disable 0618, 0612

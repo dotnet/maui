@@ -24,5 +24,7 @@
 				Orientation="{x:Static ScrollOrientation.Both}"/>
 		<Label x:Name="field2"
 				Text="{x:Static local:MockxStatic.MockFieldRef}" />
+		<Label x:Name="nestedField"
+				Text="{x:Static local:MockxStatic+Nested.Foo}" />
 	</StackLayout>
 </ContentPage>

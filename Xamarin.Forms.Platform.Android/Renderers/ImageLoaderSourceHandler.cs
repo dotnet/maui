@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -11,12 +12,19 @@ namespace Xamarin.Forms.Platform.Android
 		public async Task<Bitmap> LoadImageAsync(ImageSource imagesource, Context context, CancellationToken cancelationToken = default(CancellationToken))
 		{
 			var imageLoader = imagesource as UriImageSource;
-			if (imageLoader != null && imageLoader.Uri != null)
+			Bitmap bitmap = null;
+			if (imageLoader?.Uri != null)
 			{
 				using (Stream imageStream = await imageLoader.GetStreamAsync(cancelationToken).ConfigureAwait(false))
-					return await BitmapFactory.DecodeStreamAsync(imageStream).ConfigureAwait(false);
+					bitmap =  await BitmapFactory.DecodeStreamAsync(imageStream).ConfigureAwait(false);
 			}
-			return null;
+
+			if (bitmap == null)
+			{
+				Log.Warning(nameof(ImageLoaderSourceHandler), "Could not retrieve image or image data was invalid: {0}", imageLoader);
+			}
+
+			return bitmap;
 		}
 	}
 }
