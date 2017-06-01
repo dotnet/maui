@@ -28,7 +28,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 #pragma warning disable 0618
 				Xamarin.Forms.Xaml.Internals.XamlLoader.XamlFileProvider = null;
 #pragma warning restore 0618
-
 			}
 
 			[TestCase(false)]
