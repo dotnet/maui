@@ -8,8 +8,10 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
-		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), DateTime.Today, BindingMode.TwoWay, coerceValue: CoerceDate,
-			propertyChanged: DatePropertyChanged);
+		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
+			coerceValue: CoerceDate,
+			propertyChanged: DatePropertyChanged,
+			defaultValueCreator: (bindable) => DateTime.Today);
 
 		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime), typeof(DatePicker), new DateTime(1900, 1, 1),
 			validateValue: ValidateMinimumDate, coerceValue: CoerceMinimumDate);
