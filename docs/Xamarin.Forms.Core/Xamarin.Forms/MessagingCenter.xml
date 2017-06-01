@@ -68,8 +68,8 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
-        <param name="sender">To be added.</param>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
+        <param name="sender">The instance that is sending the message. Typically, this is specified with the <see langword="this" /> keyword used within the sending object.</param>
         <param name="message">To be added.</param>
         <summary>Sends a named message that has no arguments.</summary>
         <remarks>To be added.</remarks>
@@ -105,9 +105,9 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="args" Type="TArgs" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
         <typeparam name="TArgs">To be added.</typeparam>
-        <param name="sender">To be added.</param>
+        <param name="sender">The instance that is sending the message. Typically, this is specified with the <see langword="this" /> keyword used within the sending object.</param>
         <param name="message">To be added.</param>
         <param name="args">To be added.</param>
         <summary>Sends a named message with the specified arguments.</summary>
@@ -144,8 +144,8 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="source" Type="TSender" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
-        <param name="subscriber">To be added.</param>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
+        <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">To be added.</param>
         <param name="callback">To be added.</param>
         <param name="source">To be added.</param>
@@ -184,9 +184,9 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="source" Type="TSender" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
         <typeparam name="TArgs">To be added.</typeparam>
-        <param name="subscriber">To be added.</param>
+        <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">To be added.</param>
         <param name="callback">To be added.</param>
         <param name="source">To be added.</param>
@@ -218,8 +218,8 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
-        <param name="subscriber">To be added.</param>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
+        <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">To be added.</param>
         <summary>Unsubscribes a subscriber from the specified messages that come from the specified sender.</summary>
         <remarks>To be added.</remarks>
@@ -251,9 +251,9 @@ Assert.AreEqual(2, subscriber.IntProperty);
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <typeparam name="TSender">To be added.</typeparam>
+        <typeparam name="TSender">The type of object that sends the message.</typeparam>
         <typeparam name="TArgs">To be added.</typeparam>
-        <param name="subscriber">To be added.</param>
+        <param name="subscriber">The object that is subscribing to the messages. Typically, this is specified with the <see langword="this" /> keyword used within the subscribing object.</param>
         <param name="message">To be added.</param>
         <summary>Unsubscribes from the specified parameterless subscriber messages.</summary>
         <remarks>To be added.</remarks>

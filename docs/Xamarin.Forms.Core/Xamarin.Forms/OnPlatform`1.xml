@@ -97,7 +97,7 @@
         <ReturnType>T</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>The type as it is implemented on the iOS platform.</summary>
+        <summary>Gets or sets the type as it is implemented on the iOS platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -139,7 +139,7 @@
         <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.On&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Gets a list of the available platforms.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

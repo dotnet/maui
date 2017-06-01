@@ -46,10 +46,10 @@
         <Parameter Name="appLink" Type="Xamarin.Forms.IAppLinkEntry" />
       </Parameters>
       <Docs>
-          <param name="appLinkUri">The <see cref="T:Xamarin.Forms.IAppLinkEntry" /> to remove from the app index.</param>
-          <summary>Removes the provided application link from the application index.</summary>
-          <remarks>This method has no effect on the Android platform.</remarks>
-          <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
+        <param name="appLink">The <see cref="T:Xamarin.Forms.IAppLinkEntry" /> to remove from the app index.</param>
+        <summary>Removes the provided application link from the application index.</summary>
+        <remarks>This method has no effect on the Android platform.</remarks>
+        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="RegisterLink">

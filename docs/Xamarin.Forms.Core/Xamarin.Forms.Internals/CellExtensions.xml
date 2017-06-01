@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -44,7 +44,7 @@
         <typeparam name="TView">To be added.</typeparam>
         <typeparam name="TItem">To be added.</typeparam>
         <param name="cell">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -79,7 +79,7 @@
         <typeparam name="TView">To be added.</typeparam>
         <typeparam name="TItem">To be added.</typeparam>
         <param name="cell">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -114,7 +114,7 @@
         <typeparam name="TView">To be added.</typeparam>
         <typeparam name="TItem">To be added.</typeparam>
         <param name="cell">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -149,7 +149,7 @@
         <typeparam name="TView">To be added.</typeparam>
         <typeparam name="TItem">To be added.</typeparam>
         <param name="cell">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -169,7 +169,7 @@
       </Parameters>
       <Docs>
         <param name="cell">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -206,7 +206,7 @@
         <typeparam name="TItem">To be added.</typeparam>
         <param name="cell">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

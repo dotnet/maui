@@ -8,7 +8,7 @@
   </AssemblyInfo>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Interface for value providers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
       </Parameters>
       <Docs>
         <param name="serviceProvider">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>When implemented in a derived class, provides a value with the specified <paramref name="serviceProvider" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

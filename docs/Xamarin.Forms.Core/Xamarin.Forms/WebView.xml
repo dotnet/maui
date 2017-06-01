@@ -302,7 +302,7 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Method that is called when the binding context is changed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

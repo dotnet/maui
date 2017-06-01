@@ -16,7 +16,7 @@
   <Docs>
     <typeparam name="TSource">To be added.</typeparam>
     <typeparam name="TProperty">To be added.</typeparam>
-    <summary>To be added.</summary>
+    <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -36,7 +36,7 @@
         <param name="getter">To be added.</param>
         <param name="setter">To be added.</param>
         <param name="handlers">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

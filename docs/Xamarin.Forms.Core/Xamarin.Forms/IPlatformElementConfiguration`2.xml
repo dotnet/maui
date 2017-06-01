@@ -27,7 +27,7 @@
   <Docs>
     <typeparam name="TPlatform">To be added.</typeparam>
     <typeparam name="TElement">To be added.</typeparam>
-    <summary>To be added.</summary>
+    <summary>Marker interface for returning platform-specific configuration elements.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members />

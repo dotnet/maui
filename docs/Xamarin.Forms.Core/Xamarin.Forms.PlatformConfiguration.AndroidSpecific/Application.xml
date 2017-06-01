@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>The application instance that Xamarin.Forms created on the Android platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,9 +28,9 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="element">The platform specific element on which to perform the operation.</param>
+        <summary>Returns a value that tells whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</summary>
+        <returns>A value that tells whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,9 +48,9 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.Application&gt;" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <summary>Returns a value that tells whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
+        <returns>A value that tells whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -69,9 +69,9 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Sets a value that controls whether the soft input mode of the provided <paramref name="element" /> pans or resizes its content to allow the display of the on-screen input UI.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -90,10 +90,10 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Sets a value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</summary>
+        <returns>A value that controls whether the soft input mode of the provided platform configuration pans or resizes its content to allow the display of the on-screen input UI.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -108,7 +108,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>The backing store for the attached property that controls whether the soft input mode pans or resizes content to allow the display of the on-screen input UI.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

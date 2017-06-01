@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by platform renderers.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
       <Docs>
         <param name="count">To be added.</param>
         <param name="action">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -48,7 +48,7 @@
         <param name="count">To be added.</param>
         <param name="action">To be added.</param>
         <param name="changedItems">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -68,7 +68,7 @@
         <param name="count">To be added.</param>
         <param name="action">To be added.</param>
         <param name="changedItem">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -90,7 +90,7 @@
         <param name="action">To be added.</param>
         <param name="newItems">To be added.</param>
         <param name="oldItems">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -112,7 +112,7 @@
         <param name="action">To be added.</param>
         <param name="changedItems">To be added.</param>
         <param name="startingIndex">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -134,7 +134,7 @@
         <param name="action">To be added.</param>
         <param name="changedItem">To be added.</param>
         <param name="index">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -156,7 +156,7 @@
         <param name="action">To be added.</param>
         <param name="newItem">To be added.</param>
         <param name="oldItem">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -180,7 +180,7 @@
         <param name="newItems">To be added.</param>
         <param name="oldItems">To be added.</param>
         <param name="startingIndex">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -204,7 +204,7 @@
         <param name="changedItems">To be added.</param>
         <param name="index">To be added.</param>
         <param name="oldIndex">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -228,7 +228,7 @@
         <param name="changedItem">To be added.</param>
         <param name="index">To be added.</param>
         <param name="oldIndex">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -252,7 +252,7 @@
         <param name="newItem">To be added.</param>
         <param name="oldItem">To be added.</param>
         <param name="index">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -267,7 +267,7 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>For internal use by platform renderers.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

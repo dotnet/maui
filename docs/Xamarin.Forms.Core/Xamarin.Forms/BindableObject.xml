@@ -146,7 +146,7 @@ public static void OneWayDemo ()
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Apply the bindings to <see cref="P:Xamarin.Forms.BindableObject.BindingContext" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -171,7 +171,7 @@ public static void OneWayDemo ()
       </Parameters>
       <Docs>
         <param name="oldContext">The object that contains the properties that will be targeted by the bound properties that belong to this <see cref="T:Xamarin.Forms.BindableObject" />. This parameter is optional.</param>
-        <summary>Apply the bindings to <c>this</c><see cref="P:Xamarin.Forms.BindableObject.BindingContex" />.</summary>
+        <summary>Apply the bindings to <see cref="P:Xamarin.Forms.BindableObject.BindingContext" />.</summary>
         <remarks>
           <para>If an object is passed for the <paramref name="oldContext" /> argument, bindings are first unapplied from <paramref name="oldContext" />. This method removes any current bindings from the old context, and applies every binding to the current <see cref="P:Xamarin.Forms.BindableObject.BindingContex" />. Application developers could use this method to bind the UI from a new View to an existing ViewModel, while optionally removing the bindings from the old View. Application developers can omit the <paramref name="oldContext" /> argument in order to leave the old bindings in place.</para>
         </remarks>

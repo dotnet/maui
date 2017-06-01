@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>For internal use by the Xaml infrastructure.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -37,7 +37,7 @@
       </Parameters>
       <Docs>
         <param name="filePath">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the Xaml infrastructure.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

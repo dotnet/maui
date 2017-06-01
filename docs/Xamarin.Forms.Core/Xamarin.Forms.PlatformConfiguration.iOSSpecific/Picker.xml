@@ -1,4 +1,4 @@
-﻿<Type Name="Picker" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker">
+<Type Name="Picker" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.Picker">
   <TypeSignature Language="C#" Value="public static class Picker" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Picker extends System.Object" />
   <AssemblyInfo>
@@ -10,7 +10,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
+    <summary>The picker instance that Xamarin.Forms created on the iOS platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -25,7 +25,7 @@
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Backing store for the attached property that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -43,9 +43,9 @@
         <Parameter Name="element" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="element">The platform specific element on which to perform the operation.</param>
+        <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+        <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -64,9 +64,9 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
+        <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>Sets a value that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -84,12 +84,12 @@
         <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt;" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+        <summary>Returns a value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+        <returns>A value that tells whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</returns>
         <remarks>To be added.</remarks>
       </Docs>
-    </Member> 
+    </Member>
     <Member MemberName="SetUpdateMode">
       <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt; SetUpdateMode (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Picker&gt; config, Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode value);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Picker&gt; SetUpdateMode(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Picker&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode value) cil managed" />
@@ -105,10 +105,10 @@
         <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode" />
       </Parameters>
       <Docs>
-        <param name="config">To be added.</param>
+        <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <summary>Sets a value that controls whether elements in the picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
+        <returns>The updated configuration object on which developers can make successive method calls.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

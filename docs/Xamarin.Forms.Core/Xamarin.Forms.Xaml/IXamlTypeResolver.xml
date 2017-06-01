@@ -60,7 +60,7 @@
       <Docs>
         <param name="qualifiedTypeName">To be added.</param>
         <param name="serviceProvider">To be added.</param>
-        <summary>To be added.</summary>
+        <summary>For internal use by the XAML engine.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

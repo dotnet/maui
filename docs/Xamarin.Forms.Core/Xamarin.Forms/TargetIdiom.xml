@@ -37,7 +37,7 @@
         <ReturnType>Xamarin.Forms.TargetIdiom</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Indicates that Forms is running on a UWP app on Windows 10.</summary>
+        <summary>Indicates that Forms is running on a desktop.</summary>
       </Docs>
     </Member>
     <Member MemberName="Phone">

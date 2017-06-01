@@ -1,4 +1,4 @@
-﻿<Type Name="UpdateMode" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode">
+<Type Name="UpdateMode" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode">
   <TypeSignature Language="C#" Value="public enum UpdateMode" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed UpdateMode extends System.Enum" />
   <AssemblyInfo>
@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates values that control whether elements in a picker are continuously updated while scrolling or updated once after scrolling has completed.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Bound properties on picker elements should be updated after scrolling is finished.</summary>
       </Docs>
     </Member>
     <Member MemberName="Immediately">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.UpdateMode</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Bound properties on picker elements should be continuously updated while the user scrolls.</summary>
       </Docs>
     </Member>
   </Members>

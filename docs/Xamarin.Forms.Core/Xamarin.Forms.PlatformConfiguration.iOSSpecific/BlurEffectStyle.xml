@@ -9,7 +9,7 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
+    <summary>Enumerates blur effect styles.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -24,7 +24,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates a dark blur.</summary>
       </Docs>
     </Member>
     <Member MemberName="ExtraLight">
@@ -38,7 +38,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates an extra light blur.</summary>
       </Docs>
     </Member>
     <Member MemberName="Light">
@@ -52,7 +52,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates a light blur.</summary>
       </Docs>
     </Member>
     <Member MemberName="None">
@@ -66,7 +66,7 @@
         <ReturnType>Xamarin.Forms.PlatformConfiguration.iOSSpecific.BlurEffectStyle</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Indicates no blur.</summary>
       </Docs>
     </Member>
   </Members>
