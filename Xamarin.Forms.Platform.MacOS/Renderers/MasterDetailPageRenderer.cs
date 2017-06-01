@@ -126,10 +126,29 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (e.PropertyName == "Master" || e.PropertyName == "Detail")
 				UpdateControllers();
+			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsPresentedProperty.PropertyName)
+				UpdateIsPresented();
+		}
+
+		void UpdateIsPresented()
+		{
+			if (MasterDetailPage == null || SplitView == null)
+				return;
+
+			NSView view = SplitView.Subviews.FirstOrDefault();
+			if (view == null)
+				return;
+
+			if (MasterDetailPage.IsPresented && view.Hidden)
+				view.Hidden = false;
+			else if (!MasterDetailPage.IsPresented && !view.Hidden)
+				view.Hidden = true;
 		}
 
 		void UpdateControllers()
 		{
+			ClearControllers();
+
 			ClearControllers();
 
 			if (Platform.GetRenderer(MasterDetailPage.Master) == null)
@@ -137,16 +156,24 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Platform.GetRenderer(MasterDetailPage.Detail) == null)
 				Platform.SetRenderer(MasterDetailPage.Detail, Platform.CreateRenderer(MasterDetailPage.Detail));
 
+			ViewControllerWrapper masterController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Master));
+			masterController.WillAppear -= MasterController_WillAppear;
+			masterController.WillAppear += MasterController_WillAppear;
+			masterController.WillDisappear -= MasterController_WillDisappear;
+			masterController.WillDisappear += MasterController_WillDisappear;
+			ViewControllerWrapper detailController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Detail));
+
 			AddSplitViewItem(new NSSplitViewItem
 			{
-				ViewController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Master))
+				ViewController = masterController
 			});
 			AddSplitViewItem(new NSSplitViewItem
 			{
-				ViewController = new ViewControllerWrapper(Platform.GetRenderer(MasterDetailPage.Detail))
+				ViewController = detailController
 			});
 
 			UpdateChildrenLayout();
+			UpdateIsPresented();
 		}
 
 		void ClearControllers()
@@ -155,6 +182,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				var splitItem = SplitViewItems.Last();
 				var childVisualRenderer = splitItem.ViewController as ViewControllerWrapper;
+				childVisualRenderer.WillAppear -= MasterController_WillAppear;
+				childVisualRenderer.WillDisappear -= MasterController_WillDisappear;
 				RemoveSplitViewItem(splitItem);
 				IVisualElementRenderer render = null;
 				if (childVisualRenderer.RendererWeakRef.TryGetTarget(out render))
@@ -171,9 +200,29 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 		}
 
+		private void MasterController_WillDisappear(object sender, EventArgs e)
+		{
+			if (Element == null || MasterDetailPage == null)
+				return;
+
+			if (MasterDetailPage.CanChangeIsPresented && MasterDetailPage.IsPresented)
+				Element.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, false);
+		}
+
+		private void MasterController_WillAppear(object sender, EventArgs e)
+		{
+			if (Element == null || MasterDetailPage == null)
+				return;
+
+			if (MasterDetailPage.CanChangeIsPresented && !MasterDetailPage.IsPresented)
+				Element.SetValueFromRenderer(MasterDetailPage.IsPresentedProperty, true);
+		}
+
 		sealed class ViewControllerWrapper : NSViewController
 		{
 			internal WeakReference<IVisualElementRenderer> RendererWeakRef;
+			public event EventHandler WillAppear;
+			public event EventHandler WillDisappear;
 
 			public ViewControllerWrapper(IVisualElementRenderer renderer)
 			{
@@ -189,6 +238,20 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (RendererWeakRef.TryGetTarget(out renderer))
 					renderer?.Element?.Layout(new Rectangle(0, 0, View.Bounds.Width, View.Bounds.Height));
 				base.ViewWillLayout();
+			}
+
+			public override void ViewWillAppear()
+			{
+				base.ViewWillAppear();
+				if (WillAppear != null)
+					WillAppear(this, EventArgs.Empty);
+			}
+
+			public override void ViewWillDisappear()
+			{
+				base.ViewWillDisappear();
+				if (WillDisappear != null)
+					WillDisappear(this, EventArgs.Empty);
 			}
 
 			protected override void Dispose(bool disposing)
