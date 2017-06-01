@@ -287,5 +287,20 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (new Rectangle (80, 20, 100, 160), child.Bounds);
 		}
-	}	
+
+		[Test]
+		public void SettingPaddingThroughStyle()
+		{
+			var frame = new Frame {
+				Style = new Style(typeof(Frame)) {
+					Setters = {
+						new Setter {Property = Layout.PaddingProperty, Value = 0}
+					}
+				}
+			};
+
+			Assert.AreEqual(new Thickness(0), frame.Padding);
+
+		}
+	}
 }
