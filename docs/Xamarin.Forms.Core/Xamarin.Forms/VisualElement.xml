@@ -449,8 +449,8 @@
         <param name="heightConstraint">The available height that a parent element can allocated to a child. Value will be between 0 and double.PositiveInfinity.</param>
         <summary>Returns the <see cref="T:Xamarin.Forms.SizeRequest" /> of the element. Calling this method begins the measure pass of a layout cycle.</summary>
         <returns>A <see cref="T:Xamarin.Forms.SizeRequest" /> which contains a requested size and a minimum size.</returns>
-        <remarks>Calling GetSizeRequest causes a measure pass to occur for the subtree of elements it is called on. It is ideal to only call GetSizeRequest when needed as excessive calls can negatively impact the performance of your app. Overriding GetSizeRequest should only be done if you want to ignore Width/HeightRequest. More likely a subclass would wish to override <see cref="M:Xamarin.Forms.VisualElement.OnSizeRequest (double, double)" />.</remarks>
-        <altmember cref="M:Xamarin.Forms.OnSizeRequest (double, double)" />
+        <remarks>Calling GetSizeRequest causes a measure pass to occur for the subtree of elements it is called on. It is ideal to only call GetSizeRequest when needed as excessive calls can negatively impact the performance of your app. Overriding GetSizeRequest should only be done if you want to ignore Width/HeightRequest. More likely a subclass would wish to override <see cref="M:Xamarin.Forms.VisualElement.OnSizeRequest" />.</remarks>
+        <altmember cref="M:Xamarin.Forms.OnSizeRequest" />
       </Docs>
     </Member>
     <Member MemberName="Height">
@@ -956,12 +956,14 @@
         <Parameter Name="flags" Type="Xamarin.Forms.MeasureFlags" />
       </Parameters>
       <Docs>
-        <param name="widthConstraint">To be added.</param>
-        <param name="heightConstraint">To be added.</param>
-        <param name="flags">To be added.</param>
-        <summary>Measures a visual element for layout operations.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="widthConstraint">The suggested maximum width constraint for the visual element to render.</param>
+        <param name="heightConstraint">The suggested maximum height constraint for the visual element to render.</param>
+        <param name="flags">A value that controls whether margins are included in the returned size.</param>
+        <summary>Returns the minimum size that a visual element needs in order to be displayed on the device.</summary>
+        <returns>The minimum size that a visual element needs in order to be displayed on the device.</returns>
+        <remarks>
+          <para>If the minimum sized that the visual element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either or both of those parameters.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="MeasureInvalidated">

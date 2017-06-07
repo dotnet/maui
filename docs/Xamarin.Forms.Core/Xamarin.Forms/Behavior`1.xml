@@ -24,6 +24,7 @@
     <typeparam name="T">The type of the objects with which this <see cref="T:Xamarin.Forms.Behavior`1" /> can be associated.</typeparam>
     <summary>Base generic class for generalized user-defined behaviors that can respond to arbitrary conditions and events.</summary>
     <remarks>Application developers should specialize this generic class, instead of directly using <see cref="T:Xamarin.Forms.Behavior" />.</remarks>
+    <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/application-fundamentals/behaviors/creating/">Xamarin.Forms Behaviors</related>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

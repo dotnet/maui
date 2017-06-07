@@ -26,8 +26,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public class BugPage : ContentPage
 		{
 			public static int Livecount;
+			public static int Pushedcount;
 
-			public BugPage(IEnumerable<string> items)
+			public BugPage()
 			{
 				Interlocked.Increment(ref Livecount);
 
@@ -35,10 +36,11 @@ namespace Xamarin.Forms.Controls.Issues
 				{
 					Children =
 					{
-						new Label { Text = items.Count() < 3 ? "Running" : Livecount < 3 ? "Success" : "Failure" },
-						new ListView { ItemsSource = items }
+						new Label { Text =  Pushedcount < 2 ? "Testing..." : Livecount < 3 ? "Success" : "Failure" },
 					}
 				};
+
+				Interlocked.Increment(ref Pushedcount);
 			}
 
 			~BugPage()
@@ -51,8 +53,6 @@ namespace Xamarin.Forms.Controls.Issues
 		[Preserve(AllMembers = true)]
 		public class RootPage : ContentPage
 		{
-			readonly List<string> _items = new List<string>();
-
 			public RootPage()
 			{
 				var button = new Button { Text = "Open" };
@@ -66,14 +66,13 @@ namespace Xamarin.Forms.Controls.Issues
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 
-				_items.Add((BugPage.Livecount).ToString());
-				await Navigation.PushAsync(new BugPage(_items));
+				await Navigation.PushAsync(new BugPage());
 			}
 		}
 
 #if UITEST 
 		[Test]
-		public void Issue1Test ()
+		public void PagesAreCollected()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Open"));
 			RunningApp.Tap(q => q.Marked ("Open"));

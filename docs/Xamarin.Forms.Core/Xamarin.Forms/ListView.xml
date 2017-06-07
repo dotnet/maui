@@ -237,7 +237,7 @@ class ListViewDemoPage : ContentPage
         <remarks>
           <para>For memory and performance reasons, application developers should strongly prefer <see cref="F:Xamarin.Forms.ListViewCachingStrategy.RecycleElement" />, when possible. See <see cref="T:Xamarin.Forms.ListViewCachingStrategy" /> for more details.</para>
           <para>
-            <block type="note">When devolopers specify <see cref="F:Xamarin.Forms.ListViewCachingStrategy.RecycleElement" />, <c>OnElementChanged</c> events are not raised when cells are recycled. Instead,  the cell is retained and its property values change when the binding context is updated to that of an available cell, <c>OnElementPropertyChanged</c> events are raised. Application developers should remember to listen for the correct events, and should note that their renderers will need to be updated if the default behavior changes to <see cref="F:Xamarin.Forms.ListViewCachingStrategy.RecycleElement" /> in a future release. </block>
+            <block type="note">When developers specify <see cref="F:Xamarin.Forms.ListViewCachingStrategy.RecycleElement" />, <c>OnElementChanged</c> events are not raised when cells are recycled. Instead,  the cell is retained and its property values change when the binding context is updated to that of an available cell, <c>OnElementPropertyChanged</c> events are raised. Application developers should remember to listen for the correct events, and should note that their renderers will need to be updated if the default behavior changes to <see cref="F:Xamarin.Forms.ListViewCachingStrategy.RecycleElement" /> in a future release. </block>
           </para>
         </remarks>
       </Docs>
