@@ -160,6 +160,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTranslationX();
 			else if (e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
 				UpdateTranslationY();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled();
 		}
 
 		void HandleRedrawNeeded(object sender, EventArg<VisualElement> e)
@@ -380,6 +382,11 @@ namespace Xamarin.Forms.Platform.Android
 			AView aview = _renderer.View;
 
 			aview.TranslationY = _context.ToPixels(view.TranslationY);
+		}
+
+		void UpdateIsEnabled()
+		{
+			_renderer.View.Enabled = _renderer.Element.IsEnabled;
 		}
 
 		class AttachTracker : Object, AView.IOnAttachStateChangeListener
