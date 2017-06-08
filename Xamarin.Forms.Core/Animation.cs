@@ -112,6 +112,12 @@ namespace Xamarin.Forms
 			return result;
 		}
 
+		internal void ResetChildren()
+		{
+			foreach (var anim in _children)
+				anim._finishedTriggered = false;
+		}
+
 		public Animation Insert(double beginAt, double finishAt, Animation animation)
 		{
 			Add(beginAt, finishAt, animation);
