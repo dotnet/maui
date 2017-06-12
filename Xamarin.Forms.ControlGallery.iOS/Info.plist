@@ -104,5 +104,7 @@
 	</dict>
 	<key>CFBundleName</key>
 	<string>XamControl</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>This app needs access to photos.</string>
 </dict>
 </plist>
