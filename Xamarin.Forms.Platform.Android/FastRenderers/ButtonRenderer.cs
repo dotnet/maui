@@ -214,7 +214,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			{
 				_backgroundTracker?.Reset();
 			}
-			if (e.NewElement != null)
+			if (e.NewElement != null && !_isDisposed)
 			{
 				UpdateFont();
 				UpdateText();
