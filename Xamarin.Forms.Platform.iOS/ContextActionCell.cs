@@ -274,6 +274,11 @@ namespace Xamarin.Forms.Platform.iOS
 				for (var i = 0; i < _buttons.Count; i++)
 					_buttons[i].Dispose();
 
+				var handler = new PropertyChangedEventHandler(OnMenuItemPropertyChanged);
+
+				foreach (var item in _menuItems)
+					item.PropertyChanged -= handler;
+
 				_buttons.Clear();
 				_menuItems.Clear();
 
