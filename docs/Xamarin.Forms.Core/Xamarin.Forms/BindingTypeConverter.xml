@@ -16,7 +16,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Type converter that converts from source types to <see cref="T:Xamarin.Forms.Binding" /></summary>
+    <summary>Type converter that converts from strings to <see cref="T:Xamarin.Forms.Binding" /> objects.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -58,10 +58,12 @@
         <Parameter Name="sourceType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="sourceType">To be added.</param>
+        <param name="sourceType">The source type of the object to check.</param>
         <summary>Returns a Boolean value that indicates whether this <see cref="T:Xamarin.Forms.BindingTypeConverter" /> can convert <paramref name="sourceType" /> to <see cref="T:Xamarin.Forms.Binding" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>
+          <see langword="true" /> if <paramref name="sourceType" /> represents a string. Otherwise, <see langword="false" />.</returns>
+        <remarks>
+          <see cref="T:Xamarin.Forms.TypeConverter" /> objects can only convert strings.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFrom">
@@ -84,11 +86,12 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="culture">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="culture">The culture of the object to convert.</param>
+        <param name="value">The object to convert.</param>
         <summary>Converts <paramref name="value" /> to <see cref="T:Xamarin.Forms.Binding" /> by using <paramref name="culture" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>Returns a new <see cref="T:Xamarin.Forms.Binding" /> object for the provided string.</returns>
+        <remarks>
+          <paramref name="value" /> must be a string.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -105,10 +108,11 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The path of the resulting binding.</param>
         <summary>Converts a property path to a binding.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <returns>A binding, with the default binding mode, that binds to the path that was specified with <paramref name="value" />.</returns>
+        <remarks>
+          <paramref name="value" /> must be a string.</remarks>
       </Docs>
     </Member>
   </Members>
