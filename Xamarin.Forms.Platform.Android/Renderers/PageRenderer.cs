@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnAttachedToWindow();
 			var pageContainer = Parent as PageContainer;
-			if (pageContainer != null && pageContainer.IsInFragment)
+			if (pageContainer != null && (pageContainer.IsInFragment || pageContainer.Visibility == ViewStates.Gone))
 				return;
 			PageController.SendAppearing();
 		}
