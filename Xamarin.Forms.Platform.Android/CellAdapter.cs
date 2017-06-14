@@ -295,7 +295,8 @@ namespace Xamarin.Forms.Platform.Android
 		void OnContextItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			_actionModeNeedsUpdates = true;
-			_actionMode.Invalidate();
+			_actionMode?.Invalidate();
+			_supportActionMode?.Invalidate();
 		}
 
 		void OnDestroyActionModeImpl()
