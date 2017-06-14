@@ -541,7 +541,8 @@ namespace Xamarin.Forms.Platform.Android
 			bline = null;
 			if (cellIsBeingReused)
 				return;
-			var makeBline = _listView.SeparatorVisibility == SeparatorVisibility.Default || isHeader && !nextCellIsHeader;
+			bool isSeparatorVisible = _listView.SeparatorVisibility == SeparatorVisibility.Default;
+			var makeBline = isSeparatorVisible || isHeader && isSeparatorVisible && !nextCellIsHeader;
 			if (makeBline)
 			{
 				bline = new AView(_context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };
