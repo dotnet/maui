@@ -98,7 +98,10 @@ namespace Xamarin.Forms
 
 			if ((layoutFlags & AbsoluteLayoutFlags.SizeProportional) == AbsoluteLayoutFlags.SizeProportional)
 			{
-				view.ComputedConstraint = Constraint;
+				if (view.VerticalOptions.Alignment == LayoutAlignment.Fill &&
+					view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+					view.ComputedConstraint = Constraint;
+
 				return;
 			}
 
