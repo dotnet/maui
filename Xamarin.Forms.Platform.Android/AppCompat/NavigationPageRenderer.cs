@@ -534,18 +534,26 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void RemovePage(Page page)
 		{
 			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-			var containerToRemove = (PageContainer)rendererToRemove?.View.Parent;
+
+			if (rendererToRemove != null)
+			{
+				var containerToRemove = (PageContainer)rendererToRemove.View.Parent;
+
+				rendererToRemove.View?.RemoveFromParent();
+
+				rendererToRemove?.Dispose();
+
+				// This causes a NullPointerException in API 25.1+ when we later call ExecutePendingTransactions();
+				// We may want to remove this in the future if it is resolved in the Android SDK.
+				if ((int)Build.VERSION.SdkInt < 25)
+				{
+					containerToRemove?.RemoveFromParent();
+					containerToRemove?.Dispose();
+				}
+			}
 
 			// Also remove this page from the fragmentStack
 			FilterPageFragment(page);
-
-			containerToRemove.RemoveFromParent();
-			if (rendererToRemove != null)
-			{
-				rendererToRemove.View.RemoveFromParent();
-				rendererToRemove.Dispose();
-			}
-			containerToRemove?.Dispose();
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
 			{
