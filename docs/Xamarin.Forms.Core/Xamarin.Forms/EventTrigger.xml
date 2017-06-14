@@ -21,25 +21,51 @@
   <Docs>
     <summary>Class that represents a triggering event and a list of <see cref="T:Xamarin.Forms.TriggerAction" /> objects that will be invoked when the event is raised.</summary>
     <remarks>
-      <para>XAML for Xamarin.Forms supports the following property for the <see cref="T:Xamarin.Forms.EventTrigger" /> class:</para>
-      <list type="table">
-        <listheader>
-          <term>Property</term>
-          <description>Value</description>
-        </listheader>
-        <item>
-          <term>Event</term>
-          <description>
-            <para>The name of the event to which to respond.</para>
-          </description>
-        </item>
-        <item>
-          <term>Object name</term>
-          <description>
-            <para>The qualified name of a <see cref="T:Xamarin.Forms.TriggerAction`1" /> implementation that has been defined by the application developer. This object is instantiated and its <see cref="M:Xamarin.Forms.TriggerAction`1.Invoke" /> method is called when the triggering event is raised. Attributes on this tag set corresponding proptery values on the <see cref="T:Xamarin.Forms.TriggerAction`1" /> implementation</para> before the <see cref="M:Xamarin.Forms.TriggerAction`1.Invoke" /> method is called.</description>
-        </item>
-      </list>
+      <example>
+        <para>The example below shows how developers can use an event trigger to respond to events and update the value of a control property.</para>
+        <para>With the <c>ColorTriggerAction</c> class below defined in the <c>TriggerDemo</c> namespace:</para>
+        <code lang="C#"><![CDATA[public class ColorTriggerAction : TriggerAction<Entry>
+{
+  protected override void Invoke(Entry sender)
+  {
+      Color[] color ={ Color.Red,
+                       Color.Orange,
+                       Color.Yellow,
+                       Color.Green,
+                       Color.Blue,
+                       Color.Indigo,
+                       Color.Violet };
+      sender.TextColor = color[sender.Text.Length % color.Length];
+  }
+}]]></code>
+        <para>the developer can use the XAML below to create a page that cycles the colors of a <see cref="T:Xamarin.Forms.Entry" /> text area through the colors of the rainbow as the user enters text.</para>
+        <code lang="XAML"><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<ContentPage    xmlns="http://xamarin.com/schemas/2014/forms"
+              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:local="clr-namespace:TriggerDemo"
+              x:Class="TriggerDemo.TriggerDemoPage">
+  <StackLayout VerticalOptions="Center">
+      <Label Text="Do you see colors?"
+             VerticalOptions="Center"
+             HorizontalOptions="Center" />
+      <Entry Placeholder="Type stuff here."
+             VerticalOptions="Center"
+             HorizontalOptions="Center"
+             BackgroundColor="Black">
+          <Entry.Triggers>
+              <EventTrigger Event="TextChanged" >
+                  <local:ColorTriggerAction />
+              </EventTrigger>
+          </Entry.Triggers>
+      </Entry>
+  </StackLayout>
+</ContentPage>]]></code>
+      </example>
     </remarks>
+    <altmember cref="T:Xamarin.Forms.Setter" />
+    <altmember cref="T:Xamarin.Forms.PropertyCondition" />
+    <altmember cref="T:Xamarin.Forms.DataTrigger" />
+    <altmember cref="T:Xamarin.Forms.Trigger" />
   </Docs>
   <Members>
     <Member MemberName=".ctor">

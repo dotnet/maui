@@ -553,7 +553,7 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Method that is called when the <see cref="P:Xamarin.Forms.Element.Parent" /> property of this <see cref="Xamarin.Forms.MasterDetailPage" /> is set.</summary>
+        <summary>Method that is called when the <see cref="P:Xamarin.Forms.Element.Parent" /> property of this <see cref="T:Xamarin.Forms.MasterDetailPage" /> is set.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -426,7 +426,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </ReturnValue>
       <Docs>
         <summary>Gets the <see cref="T:Xamarin.Forms.TargetPlatform" /> indicating the OS Xamarin.Forms is working on.</summary>
-        <value>A <see cref="Xamarin.Forms.TargetPlatform" /> that indicates the current OS.</value>
+        <value>A <see cref="T:Xamarin.Forms.TargetPlatform" /> that indicates the current OS.</value>
         <remarks>
         </remarks>
       </Docs>

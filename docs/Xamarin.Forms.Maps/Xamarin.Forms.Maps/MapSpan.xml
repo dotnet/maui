@@ -140,7 +140,7 @@
       <Docs>
         <param name="center">To be added.</param>
         <param name="radius">To be added.</param>
-        <summary>Returns a <see cref="Xamarin.Forms.Maps.MapSpan" /> that displays the area that is defined by <paramref name="center" /> and <paramref name="radius" />.</summary>
+        <summary>Returns a <see cref="T:Xamarin.Forms.Maps.MapSpan" /> that displays the area that is defined by <paramref name="center" /> and <paramref name="radius" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
