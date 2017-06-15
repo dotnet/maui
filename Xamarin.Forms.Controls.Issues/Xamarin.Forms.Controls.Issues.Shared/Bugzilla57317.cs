@@ -1,5 +1,4 @@
 ﻿using System;
-
 using Xamarin.Forms.CustomAttributes;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -9,6 +8,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -43,8 +43,9 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla57317Test ()
 		{
 			RunningApp.WaitForElement (c => c.Marked ("Cell"));
-			var cell = RunningApp.Query (c => c.Marked ("Cell")) [0];
-			RunningApp.TouchAndHoldCoordinates (cell.Rect.CenterX, cell.Rect.CenterY);
+
+			RunningApp.ActivateContextMenu("Cell");
+
 			RunningApp.WaitForElement (c => c.Marked ("Self-Deleting item"));
 			RunningApp.Tap (c => c.Marked ("Self-Deleting item"));
 		}
