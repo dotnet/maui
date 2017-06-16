@@ -564,8 +564,8 @@
           <Parameter Name="handle" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="handle">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
           <summary>Stops the animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AbortAnimation(Xamarin.Forms.IAnimatable,System.String)" />
@@ -595,16 +595,16 @@
           <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="name">To be added.</param>
-          <param name="callback">To be added.</param>
-          <param name="start">To be added.</param>
-          <param name="end">To be added.</param>
-          <param name="rate">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
-          <param name="finished">To be added.</param>
-          <param name="repeat">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+          <param name="callback">An action that is called with successive animation values.</param>
+          <param name="start">The fraction into the current animation at which to start the animation.</param>
+          <param name="end">The fraction into the current animation at which to stop the animation.</param>
+          <param name="rate">The time, in milliseconds, between frames.</param>
+          <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+          <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+          <param name="finished">An action to call when the animation is finished.</param>
+          <param name="repeat">A function that returns true if the animation should continue.</param>
           <summary>Sets the specified parameters and starts the animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,System.Action{System.Double},System.Double,System.Double,System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
@@ -632,14 +632,14 @@
           <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="name">To be added.</param>
-          <param name="callback">To be added.</param>
-          <param name="rate">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
-          <param name="finished">To be added.</param>
-          <param name="repeat">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+          <param name="callback">An action that is called with successive animation values.</param>
+          <param name="rate">The time, in milliseconds, between frames.</param>
+          <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+          <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+          <param name="finished">An action to call when the animation is finished.</param>
+          <param name="repeat">A function that returns true if the animation should continue.</param>
           <summary>Sets the specified parameters and starts the animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,System.Action{System.Double},System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
@@ -667,14 +667,14 @@
           <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="name">To be added.</param>
-          <param name="animation">To be added.</param>
-          <param name="rate">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
-          <param name="finished">To be added.</param>
-          <param name="repeat">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+          <param name="animation">The animation to run.</param>
+          <param name="rate">The time, in milliseconds, between frames.</param>
+          <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+          <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+          <param name="finished">An action to call when the animation is finished.</param>
+          <param name="repeat">A function that returns true if the animation should continue.</param>
           <summary>Sets the specified parameters and starts the animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate(Xamarin.Forms.IAnimatable,System.String,Xamarin.Forms.Animation,System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{System.Double,System.Boolean},System.Func{System.Boolean})" />
@@ -707,15 +707,15 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="self">To be added.</param>
-          <param name="name">To be added.</param>
-          <param name="transform">To be added.</param>
-          <param name="callback">To be added.</param>
-          <param name="rate">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
-          <param name="finished">To be added.</param>
-          <param name="repeat">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+          <param name="transform">A function that maps animation times to new time values.</param>
+          <param name="callback">An action that is called with successive animation values.</param>
+          <param name="rate">The time, in milliseconds, between frames.</param>
+          <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+          <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+          <param name="finished">An action to call when the animation is finished.</param>
+          <param name="repeat">A function that returns true if the animation should continue.</param>
           <summary>Sets the specified parameters and starts the animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.Animate``1(Xamarin.Forms.IAnimatable,System.String,System.Func{System.Double,``0},System.Action{``0},System.UInt32,System.UInt32,Xamarin.Forms.Easing,System.Action{``0,System.Boolean},System.Func{System.Boolean})" />
@@ -741,12 +741,12 @@
           <Parameter Name="finished" Type="System.Action" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="name">To be added.</param>
-          <param name="callback">To be added.</param>
-          <param name="velocity">To be added.</param>
-          <param name="drag">To be added.</param>
-          <param name="finished">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+          <param name="callback">An action that is called with successive animation values.</param>
+          <param name="velocity">The amount that the animation progresses in each animation step. For example, a velocity of <c>1</c> progresses at the default speed.</param>
+          <param name="drag">The amount that the progression speed is reduced per frame. Can be negative.</param>
+          <param name="finished">An action to call when the animation is finished.</param>
           <summary>Sets the specified parameters and starts the kinetic animation.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AnimateKinetic(Xamarin.Forms.IAnimatable,System.String,System.Func{System.Double,System.Double,System.Boolean},System.Double,System.Double,System.Action)" />
@@ -768,8 +768,8 @@
           <Parameter Name="handle" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="handle">To be added.</param>
+          <param name="self">The object on which this method will be run.</param>
+          <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
           <summary>Returns a Boolean value that indicates whether or not the animation that is specified by <paramref name="handle" /> is running.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.AnimationExtensions" Member="M:Xamarin.Forms.AnimationExtensions.AnimationIsRunning(Xamarin.Forms.IAnimatable,System.String)" />

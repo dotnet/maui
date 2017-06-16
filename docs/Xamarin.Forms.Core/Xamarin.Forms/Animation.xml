@@ -64,11 +64,11 @@
         <Parameter Name="finished" Type="System.Action" />
       </Parameters>
       <Docs>
-        <param name="callback">To be added.</param>
-        <param name="start">To be added.</param>
-        <param name="end">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="start">The fraction into the current animation at which to start the animation.</param>
+        <param name="end">The fraction into the current animation at which to end the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Animation" /> object with the specified parameters.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -95,9 +95,9 @@
         <Parameter Name="animation" Type="Xamarin.Forms.Animation" />
       </Parameters>
       <Docs>
-        <param name="beginAt">To be added.</param>
-        <param name="finishAt">To be added.</param>
-        <param name="animation">To be added.</param>
+        <param name="beginAt">The fraction into this animation at which the added child animation will begin animating.</param>
+        <param name="finishAt">The fraction into this animation at which the added child animation will stop animating.</param>
+        <param name="animation">The animation to add.</param>
         <summary>Adds an <see cref="T:Xamarin.Forms.Animation" /> object to this <see cref="T:Xamarin.Forms.Animation" /> that begins at <paramref name="beginAt" /> and finishes at <paramref name="finishAt" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -128,13 +128,13 @@
         <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="owner">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="rate">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
-        <param name="repeat">To be added.</param>
+        <param name="owner">The owning animation that will be animated.</param>
+        <param name="name">The name, or handle, that is used to access and track the animation and its state.</param>
+        <param name="rate">The time, in milliseconds, between frames.</param>
+        <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
+        <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Runs the <paramref name="owner" /> animation with the supplied parameters.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -207,9 +207,9 @@
         <Parameter Name="animation" Type="Xamarin.Forms.Animation" />
       </Parameters>
       <Docs>
-        <param name="beginAt">To be added.</param>
-        <param name="finishAt">To be added.</param>
-        <param name="animation">To be added.</param>
+        <param name="beginAt">The fraction into this animation at which the added child animation will begin animating.</param>
+        <param name="finishAt">The fraction into this animation at which the added child animation will stop animating.</param>
+        <param name="animation">The animation to add.</param>
         <summary>Adds an <see cref="T:Xamarin.Forms.Animation" /> object to this <see cref="T:Xamarin.Forms.Animation" /> that begins at <paramref name="beginAt" /> and finishes at <paramref name="finishAt" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -237,9 +237,9 @@
         <Parameter Name="finishAt" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="animation">To be added.</param>
-        <param name="beginAt">To be added.</param>
-        <param name="finishAt">To be added.</param>
+        <param name="animation">The animation to add.</param>
+        <param name="beginAt">The fraction into this animation at which the added child animation will begin animating.</param>
+        <param name="finishAt">The fraction into this animation at which the added child animation will stop animating.</param>
         <summary>Adds <paramref name="animation" /> to the children of this <see cref="T:Xamarin.Forms.Animation" /> object and sets the start and end times of <paramref name="animation" /> to <paramref name="beginAt" /> and <paramref name="finishAt" />, respectively.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -270,13 +270,13 @@
         <Parameter Name="finishAt" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="callback">To be added.</param>
-        <param name="start">To be added.</param>
-        <param name="end">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="beginAt">To be added.</param>
-        <param name="finishAt">To be added.</param>
-        <summary>Creates a new <see cref="T:Xamarin.Forms.Animation" /> object with the specified parameters, and adds it to the children of this <see cref="T:Xamarin.Forms.Animation" /> object.</summary>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="start">The fraction into the current animation at which to start the animation.</param>
+        <param name="end">The fraction into the current animation at which to end the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="beginAt">The fraction into this animation at which the added child animation will begin animating.</param>
+        <param name="finishAt">The fraction into this animation at which the added child animation will stop animating.</param>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.Animation" /> object with the specified <paramref name="callback" />, and adds it to the children of this <see cref="T:Xamarin.Forms.Animation" /> object.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

@@ -16,7 +16,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Extension methods for <see cref="T:Xamarin.Forms.Animation" />.</summary>
+    <summary>Extension methods for <see cref="T:Xamarin.Forms.IAnimatable" /> objects.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -41,8 +41,8 @@
         <Parameter Name="handle" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="handle">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
         <summary>Stops the animation.</summary>
         <returns>To be added.</returns>
         <remarks>If <paramref name="handle" /> refers to an animation that belongs to this <see cref="T:Xamarin.Forms.IAnimatable" /> instance, then its tweener handlers are removed, the tweener is stopped, the animation is removed from this <see cref="T:Xamarin.Forms.IAnimatable" /> instance, and it is marked as finished. If <paramref name="handle" /> refers to one of the kinetics that belong to this <see cref="T:Xamarin.Forms.IAnimatable" /> instance, then it and its ticker are removed.</remarks>
@@ -75,14 +75,14 @@
         <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="callback">To be added.</param>
-        <param name="rate">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
-        <param name="repeat">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="rate">The time, in milliseconds, between frames.</param>
+        <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
+        <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -114,14 +114,14 @@
         <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="animation">To be added.</param>
-        <param name="rate">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
-        <param name="repeat">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+        <param name="animation">The animation to run.</param>
+        <param name="rate">The time, in milliseconds, between frames.</param>
+        <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
+        <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -155,16 +155,16 @@
         <Parameter Name="repeat" Type="System.Func&lt;System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="callback">To be added.</param>
-        <param name="start">To be added.</param>
-        <param name="end">To be added.</param>
-        <param name="rate">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
-        <param name="repeat">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="start">The fraction into the current animation at which to start the animation.</param>
+        <param name="end">The fraction into the current animation at which to stop the animation.</param>
+        <param name="rate">The time, in milliseconds, between frames.</param>
+        <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
+        <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -201,15 +201,15 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="self">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="transform">To be added.</param>
-        <param name="callback">To be added.</param>
-        <param name="rate">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
-        <param name="finished">To be added.</param>
-        <param name="repeat">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+        <param name="transform">A function that maps animation times to new time values.</param>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="rate">The time, in milliseconds, between frames.</param>
+        <param name="length">The number of milliseconds over which to interpolate the animation.</param>
+        <param name="easing">The easing function to use to transision in, out, or in and out of the animation.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
+        <param name="repeat">A function that returns true if the animation should continue.</param>
         <summary>Sets the specified parameters and starts the animation.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -239,12 +239,12 @@
         <Parameter Name="finished" Type="System.Action" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="name">To be added.</param>
-        <param name="callback">To be added.</param>
-        <param name="velocity">To be added.</param>
-        <param name="drag">To be added.</param>
-        <param name="finished">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="name">An animation key that should be unique among its sibling and parent animations for the duration of the animation.</param>
+        <param name="callback">An action that is called with successive animation values.</param>
+        <param name="velocity">The amount that the animation progresses in each animation step. For example, a velocity of <c>1</c> progresses at the default speed.</param>
+        <param name="drag">The amount that the progression speed is reduced per frame. Can be negative.</param>
+        <param name="finished">An action to call when the animation is finished.</param>
         <summary>Sets the specified parameters and starts the kinetic animation.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -270,8 +270,8 @@
         <Parameter Name="handle" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="handle">To be added.</param>
+        <param name="self">The object on which this method will be run.</param>
+        <param name="handle">An animation key that must be unique among its sibling and parent animations for the duration of the animation.</param>
         <summary>Returns a Boolean value that indicates whether or not the animation that is specified by <paramref name="handle" /> is running.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -300,10 +300,10 @@
         <Parameter Name="reverse" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="start">To be added.</param>
-        <param name="end">To be added.</param>
-        <param name="reverseVal">To be added.</param>
-        <param name="reverse">To be added.</param>
+        <param name="start">The fraction into the current animation at which to start the animation.</param>
+        <param name="end">The fraction into the current animation at which to stop the animation.</param>
+        <param name="reverseVal">The inverse scale factor to use if <paramref name="reverse" /> is <see langword="true" />.</param>
+        <param name="reverse">Whether to use the inverse scale factor in <paramref name="reverseVal" /> to deinterpolate.</param>
         <summary>Returns a function that performs a linear interpolation between <paramref name="start" /> and <paramref name="end" />.</summary>
         <returns>A function that performs a linear interpolation between <paramref name="start" /> and <paramref name="end" />. Application developers can pass values between 0.0f and 1.0f to this function in order to recieve a value that is offset from <paramref name="start" /> or <paramref name="end" />, depending on the value of <paramref name="reverse" />, by the passed value times the distance between <paramref name="start" /> and <paramref name="end" />.</returns>
         <remarks>If <paramref name="reverse" /> is <see langword="true" />, then the interpolation happens between <paramref name="start" /> and <paramref name="reverseVal" />.</remarks>

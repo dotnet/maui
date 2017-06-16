@@ -119,7 +119,7 @@
         <Parameter Name="element" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
+        <param name="element">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -471,7 +471,7 @@
         <Parameter Name="uri" Type="System.Uri" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
+        <param name="uri">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -559,7 +559,7 @@
         <Parameter Name="provider" Type="Xamarin.Forms.IAppIndexingProvider" />
       </Parameters>
       <Docs>
-        <param name="provider">To be added.</param>
+        <param name="provider">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -583,7 +583,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.Application" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

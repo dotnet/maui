@@ -62,7 +62,7 @@
         <Parameter Name="bindable" Type="T" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
+        <param name="bindable">The bindable object to which the behavior was attached.</param>
         <summary>Application developers override this method to implement the behaviors that will be associated with <paramref name="bindable" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -84,7 +84,7 @@
         <Parameter Name="bindable" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
+        <param name="bindable">The bindable object to which the behavior was attached.</param>
         <summary>Attaches to the superclass and then calls the <see cref="M:Xamarin.Forms.Behavior`1.OnAttachedTo(T)" /> method on this object.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -106,7 +106,7 @@
         <Parameter Name="bindable" Type="T" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
+        <param name="bindable">The bindable object from which the behavior was detached.</param>
         <summary>Application developers override this method to remove the behaviors from <paramref name="bindable" /> that were implemented in a previous call to the <see cref="M:Xamarin.Forms.Behavior`1.OnAttachedTo" /> method.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -128,7 +128,7 @@
         <Parameter Name="bindable" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
+        <param name="bindable">The bindable object from which the behavior was detached.</param>
         <summary>Calls the <see cref="M:Xamarin.Forms.Behavior`1.OnDetachingFrom(T)" /> method and then detaches from the superclass.</summary>
         <remarks>To be added.</remarks>
       </Docs>
