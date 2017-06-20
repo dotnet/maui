@@ -32,6 +32,7 @@
 		public const string Maps = "Maps";
 		public const string InputTransparent = "InputTransparent";
 		public const string IsEnabled = "IsEnabled";
+		public const string Gestures = "Gestures";
 
 		public const string ManualReview = "ManualReview";
 	}

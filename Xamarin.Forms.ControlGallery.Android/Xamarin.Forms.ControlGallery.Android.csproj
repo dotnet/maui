@@ -182,6 +182,7 @@
     <Compile Include="ColorPicker.cs" />
     <Compile Include="_38989CustomRenderer.cs" />
     <Compile Include="BrokenImageSourceHandler.cs" />
+    <Compile Include="_57114CustomRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\default.css" />

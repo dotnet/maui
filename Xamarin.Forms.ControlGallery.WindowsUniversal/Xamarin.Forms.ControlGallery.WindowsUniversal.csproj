@@ -120,6 +120,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="_57114Renderer.cs" />
     <Content Include="coffee.png" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
