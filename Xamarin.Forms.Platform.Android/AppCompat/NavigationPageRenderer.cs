@@ -454,12 +454,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			e.Task = PopToRootAsync(e.Page, e.Animated);
 		}
 
-		Task<bool> OnPopToRootAsync(Page page, bool animated)
+		protected virtual Task<bool> OnPopToRootAsync(Page page, bool animated)
 		{
 			return SwitchContentAsync(page, animated, true, true);
 		}
 
-		Task<bool> OnPopViewAsync(Page page, bool animated)
+		protected virtual Task<bool> OnPopViewAsync(Page page, bool animated)
 		{
 			Page pageToShow = ((INavigationPageController)Element).Peek(1);
 			if (pageToShow == null)
@@ -468,7 +468,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return SwitchContentAsync(pageToShow, animated, true);
 		}
 
-		Task<bool> OnPushAsync(Page view, bool animated)
+		protected virtual Task<bool> OnPushAsync(Page view, bool animated)
 		{
 			return SwitchContentAsync(view, animated);
 		}
