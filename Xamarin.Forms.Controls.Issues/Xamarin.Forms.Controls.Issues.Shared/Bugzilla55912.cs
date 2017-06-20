@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 955912, "Tap event not always propagated to containing Grid/StackLayout",
+	[Issue(IssueTracker.Bugzilla, 55912, "Tap event not always propagated to containing Grid/StackLayout",
 		PlatformAffected.Android)]
 	public class Bugzilla55912 : TestContentPage
 	{
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 			layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
-			var testGrid = new Grid { BackgroundColor = Color.Red };
+			var testGrid = new Grid { BackgroundColor = Color.Red, AutomationId = "testgrid"};
 			var gridLabel = new Label
 			{
 				AutomationId = GridLabelId,
@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Grid.SetRow(testGrid, 1);
 			testGrid.Children.Add(gridLabel);
 
-			var testStack = new StackLayout { BackgroundColor = Color.Default };
+			var testStack = new StackLayout { BackgroundColor = Color.Default, AutomationId = "teststack"};
 			var stackLabel = new Label
 			{
 				AutomationId = StackLabelId,

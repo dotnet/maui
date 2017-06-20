@@ -7,9 +7,9 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElement _element;
 		bool _isInViewCell;
 
-		public bool HandleMotionEvent(IViewParent parent)
+		public bool HandleMotionEvent(IViewParent parent, MotionEvent motionEvent)
 		{
-			if (_isInViewCell || _element.InputTransparent)
+			if (_isInViewCell || _element.InputTransparent || motionEvent.Action == MotionEventActions.Cancel)
 			{
 				return false;
 			}

@@ -1034,14 +1034,31 @@ namespace Xamarin.Forms.Platform.Android
 		internal class DefaultRenderer : VisualElementRenderer<View>
 		{
 			bool _notReallyHandled;
+			readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+
 			internal void NotifyFakeHandling()
 			{
 				_notReallyHandled = true;
 			}
 
+			public override bool OnTouchEvent(MotionEvent e)
+			{
+				if (base.OnTouchEvent(e))
+					return true;
+
+				return _motionEventHelper.HandleMotionEvent(Parent, e);
+			}
+
+			protected override void OnElementChanged(ElementChangedEventArgs<View> e)
+			{
+				base.OnElementChanged(e);
+
+				_motionEventHelper.UpdateElement(e.NewElement);
+			}
+
 			public override bool DispatchTouchEvent(MotionEvent e)
 			{
-				#region
+				#region Excessive explanation
 				// Normally dispatchTouchEvent feeds the touch events to its children one at a time, top child first,
 				// (and only to the children in the hit-test area of the event) stopping as soon as one of them has handled
 				// the event. 
@@ -1074,7 +1091,6 @@ namespace Xamarin.Forms.Platform.Android
 					// don't consider the event truly "handled" yet. 
 					// Since a child control short-circuited the normal dispatchTouchEvent stuff, this layout never got the chance for
 					// IOnTouchListener.OnTouch and the OnTouchEvent override to try handling the touches; we'll do that now
-
 					return OnTouchEvent(e);
 				}
 

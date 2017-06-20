@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -478,6 +479,30 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>
 		{
+			public override UIView HitTest(CGPoint point, UIEvent uievent)
+			{
+				// UIview hit testing ignores objects which have an alpha of less than 0.01 
+				// (see https://developer.apple.com/reference/uikit/uiview/1622469-hittest)
+				// To prevent layouts with low opacity from being implicitly input transparent, 
+				// we need to temporarily bump their alpha value during the actual hit testing,
+				// then restore it. If the opacity is high enough or user interaction is disabled, 
+				// we don't have to worry about it.
+
+				nfloat old = Alpha;
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = (nfloat)0.011;
+				}
+
+				var result = base.HitTest(point, uievent);
+
+				if (UserInteractionEnabled && old <= 0.01)
+				{
+					Alpha = old;
+				}
+
+				return result;
+			}
 		}
 	}
 }

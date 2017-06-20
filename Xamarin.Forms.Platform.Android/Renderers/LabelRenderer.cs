@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (base.OnTouchEvent(e))
 				return true;
 
-			return _motionEventHelper.HandleMotionEvent(Parent);
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 	}
 }

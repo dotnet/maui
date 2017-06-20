@@ -548,7 +548,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (control != null)
 				control.IsEnabled = Element.IsEnabled;
 			else
-				IsHitTestVisible = Element.IsEnabled;
+				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
 		}
 
 		void UpdateTracker()

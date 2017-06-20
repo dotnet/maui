@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (View.GestureRecognizers.Count == 0)
 			{
 				handled = true;
-				return _motionEventHelper.HandleMotionEvent(parent);
+				return _motionEventHelper.HandleMotionEvent(parent, e);
 			}
 
 			handled = false;

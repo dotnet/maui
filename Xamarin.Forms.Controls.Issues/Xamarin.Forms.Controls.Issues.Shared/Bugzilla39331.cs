@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.BoxView)]
+	[Category(UITestCategories.InputTransparent)]
 #endif
 
 	[Preserve (AllMembers = true)]
