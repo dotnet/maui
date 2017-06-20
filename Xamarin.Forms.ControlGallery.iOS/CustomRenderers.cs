@@ -20,6 +20,7 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(TabbedPage), typeof(TabbedPageWithCustomBarColorRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla43161.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla36802.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla52700.NoSelectionViewCell), typeof(NoSelectionViewCellRenderer))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
 	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
@@ -579,6 +580,19 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 			// iOS right arrow
 			cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+
+			return cell;
+		}
+	}
+
+	public class NoSelectionViewCellRenderer : ViewCellRenderer
+	{
+		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+		{
+			var cell = base.GetCell(item, reusableCell, tv);
+
+			// remove highlight on selected cell
+			cell.SelectionStyle = UITableViewCellSelectionStyle.None;
 
 			return cell;
 		}
