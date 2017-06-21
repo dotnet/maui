@@ -17,9 +17,9 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new XamlParseException($"The name of the bindable property {bpRef.Name} does not ends with \"Property\". This is the kind of convention the world is build upon, a bit like Planck's constant.", iXmlLineInfo);
 			var bpName = bpRef.Name.Substring(0, bpRef.Name.Length - 8);
 			var owner = bpRef.DeclaringType;
-			TypeReference _;
+			TypeReference declaringTypeRef = null;
 
-			var getter = owner.GetProperty(pd => pd.Name == bpName, out _)?.GetMethod;
+			var getter = owner.GetProperty(pd => pd.Name == bpName, out declaringTypeRef)?.GetMethod;
 			if (getter == null || getter.IsStatic || !getter.IsPublic)
 				getter = null;
 			getter = getter ?? owner.GetMethods(md => md.Name == $"Get{bpName}" &&
@@ -27,18 +27,18 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
 												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
-
 			if (getter == null)
 				throw new XamlParseException($"Missing a public static Get{bpName} or a public instance property getter for the attached property \"{bpRef.DeclaringType}.{bpRef.Name}\"", iXmlLineInfo);
-			return getter.ReturnType;
+			return getter.ResolveGenericReturnType(declaringTypeRef, module);
 		}
 
 		public static TypeReference GetBindablePropertyTypeConverter(this FieldReference bpRef, ModuleDefinition module)
 		{
-			TypeReference _;
+			TypeReference propertyDeclaringType;
 			var owner = bpRef.DeclaringType;
 			var bpName = bpRef.Name.EndsWith("Property", StringComparison.Ordinal) ? bpRef.Name.Substring(0, bpRef.Name.Length - 8) : bpRef.Name;
-			var property = owner.GetProperty(pd => pd.Name == bpName, out _);
+			var property = owner.GetProperty(pd => pd.Name == bpName, out propertyDeclaringType);
+			var propertyType = property?.ResolveGenericPropertyType(propertyDeclaringType, module);
 			var staticGetter = owner.GetMethods(md => md.Name == $"Get{bpName}" &&
 												md.IsStatic &&
 												md.IsPublic &&
@@ -48,8 +48,8 @@ namespace Xamarin.Forms.Build.Tasks
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)
 				attributes.AddRange(property.CustomAttributes);
-			if (property != null && property.PropertyType.Resolve().HasCustomAttributes)
-				attributes.AddRange(property.PropertyType.Resolve().CustomAttributes);
+			if (propertyType != null && propertyType.Resolve().HasCustomAttributes)
+				attributes.AddRange(propertyType.Resolve().CustomAttributes);
 			if (staticGetter != null && staticGetter.HasCustomAttributes)
 				attributes.AddRange(staticGetter.CustomAttributes);
 			if (staticGetter != null && staticGetter.ReturnType.Resolve().HasCustomAttributes)

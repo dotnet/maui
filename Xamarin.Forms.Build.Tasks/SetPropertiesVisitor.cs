@@ -967,7 +967,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return false;
 
 			var vardef = context.Variables [elementNode];
-			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference);
+			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference, module);
 			var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(propertyType, module);
 
 			if (implicitOperator != null)
@@ -998,7 +998,7 @@ namespace Xamarin.Forms.Build.Tasks
 			module.ImportReference(parent.VariableType.Resolve());
 			var propertySetterRef = module.ImportReference(module.ImportReference(propertySetter).ResolveGenericParameters(declaringTypeReference, module));
 			propertySetterRef.ImportTypes(module);
-			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference);
+			var propertyType = property.ResolveGenericPropertyType(declaringTypeReference, module);
 			var valueNode = node as ValueNode;
 			var elementNode = node as IElementNode;
 
