@@ -254,10 +254,50 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		UITapGestureRecognizer CreateTapRecognizer(int numTaps, Action action, int numFingers = 1)
 		{
-			var result = new UITapGestureRecognizer(action);
-			result.NumberOfTouchesRequired = (uint)numFingers;
-			result.NumberOfTapsRequired = (uint)numTaps;
+			var result = new UITapGestureRecognizer(action)
+			{
+				NumberOfTouchesRequired = (uint)numFingers,
+				NumberOfTapsRequired = (uint)numTaps,
+				ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether
+			};
+
 			return result;
+		}
+
+		static bool ShouldRecognizeTapsTogether(NativeGestureRecognizer gesture, NativeGestureRecognizer other)
+		{
+			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
+			// added to the XF Element), we want to allow them to fire simultaneously if they have the same number
+			// of taps and touches
+
+			var tap = gesture as UITapGestureRecognizer;
+			if (tap == null)
+			{
+				return false;
+			}
+
+			var otherTap = other as UITapGestureRecognizer;
+			if (otherTap == null)
+			{
+				return false;
+			}
+
+			if (!Equals(tap.View, otherTap.View))
+			{
+				return false;
+			}
+
+			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
+			{
+				return false;
+			}
+			
+			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
+			{
+				return false;
+			}
+
+			return true;
 		}
 #else
 		NSPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<NSPanGestureRecognizer> action)
