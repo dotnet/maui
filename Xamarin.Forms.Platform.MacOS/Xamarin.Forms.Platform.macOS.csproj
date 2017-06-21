@@ -88,6 +88,7 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\EffectUtilities.cs">
       <Link>EffectUtilities.cs</Link>
     </Compile>
+    <Compile Include="Renderers\FlippedClipView.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />
     <Compile Include="Renderers\DefaultRenderer.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
