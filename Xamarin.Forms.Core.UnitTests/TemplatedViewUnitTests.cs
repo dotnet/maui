@@ -27,5 +27,31 @@ namespace Xamarin.Forms.Core.UnitTests
             {
             }
         }
+
+		public class MyTemplate : StackLayout
+		{
+			public MyTemplate()
+			{
+				Children.Add(new ContentPresenter());
+			}
+		}
+
+		[Test]
+		public void BindingsShouldBeAppliedOnTemplateChange()
+		{
+			var template0 = new ControlTemplate(typeof(MyTemplate));
+			var template1 = new ControlTemplate(typeof(MyTemplate));
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, ".");
+			var cv = new ContentView {
+				ControlTemplate = template0,
+				Content = label
+			};
+			cv.BindingContext = "Foo";
+
+			Assume.That(label.Text, Is.EqualTo("Foo"));
+			cv.ControlTemplate = template1;
+			Assert.That(label.Text, Is.EqualTo("Foo"));
+		}
 	}
 }

@@ -7,5 +7,7 @@ namespace Xamarin.Forms
 		ControlTemplate ControlTemplate { get; set; }
 
 		IList<Element> InternalChildren { get; }
+
+		void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue);
 	}
 }
