@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isScrolling;		
 		float _lastX;
 		float _lastY;
+		bool _disposed;
 
 		Func<bool> _scrollCompleteDelegate;
 		Func<float, float, int, bool> _scrollDelegate;
@@ -23,15 +24,15 @@ namespace Xamarin.Forms.Platform.Android
 									Func<int, bool> scrollStartedDelegate, Func<bool> scrollCompleteDelegate)
 		{
 			if (tapDelegate == null)
-				throw new ArgumentNullException("tapDelegate");
+				throw new ArgumentNullException(nameof(tapDelegate));
 			if (tapGestureRecognizers == null)
-				throw new ArgumentNullException("tapGestureRecognizers");
+				throw new ArgumentNullException(nameof(tapGestureRecognizers));
 			if (scrollDelegate == null)
-				throw new ArgumentNullException("scrollDelegate");
+				throw new ArgumentNullException(nameof(scrollDelegate));
 			if (scrollStartedDelegate == null)
-				throw new ArgumentNullException("scrollStartedDelegate");
+				throw new ArgumentNullException(nameof(scrollStartedDelegate));
 			if (scrollCompleteDelegate == null)
-				throw new ArgumentNullException("scrollCompleteDelegate");
+				throw new ArgumentNullException(nameof(scrollCompleteDelegate));
 
 			_tapDelegate = tapDelegate;
 			_tapGestureRecognizers = tapGestureRecognizers;
@@ -59,8 +60,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTap(MotionEvent e)
 		{
-			if (_tapDelegate == null || _tapGestureRecognizers == null)
+			if (_disposed)
 				return false;
+
 			return _tapDelegate(2);
 		}
 
@@ -71,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
 		{
-			if (_tapDelegate == null || _tapGestureRecognizers == null)
+			if (_disposed)
 				return false;
 
 			// optimization: only wait for a second tap if there is a double tap handler
@@ -90,7 +92,6 @@ namespace Xamarin.Forms.Platform.Android
 		bool GestureDetector.IOnGestureListener.OnFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
 		{
 			EndScrolling();
-
 			return false;
 		}
 
@@ -115,7 +116,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool GestureDetector.IOnGestureListener.OnSingleTapUp(MotionEvent e)
 		{
-			if (_tapDelegate == null || _tapGestureRecognizers == null)
+			if (_disposed)
 				return false;
 
 			// optimization: do not wait for a second tap if there is no double tap handler
@@ -127,6 +128,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			if (disposing)
 			{
 				_tapDelegate = null;

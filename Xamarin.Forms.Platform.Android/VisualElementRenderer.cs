@@ -128,6 +128,8 @@ namespace Xamarin.Forms.Platform.Android
 			// if we check handled first, we might short-circuit and never check for tap/pan
 			handled = _gestureDetector.Value.OnTouchEvent(e) || handled;
 
+			v.EnsureLongClickCancellation(e, handled, Element);
+
 			return handled;
 		}
 
