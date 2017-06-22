@@ -304,33 +304,54 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			bar.Measure(MeasureSpecFactory.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(barHeight, MeasureSpecMode.Exactly));
 
-			int internalHeight = b - t - barHeight;
-			int containerHeight = ToolbarVisible ? internalHeight : b - t;
-			containerHeight -= ContainerPadding;
+			var barOffset = ToolbarVisible ? barHeight : 0;
+			int containerHeight = b - t - ContainerPadding - barOffset;
 
 			PageController.ContainerArea = new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(containerHeight));
+
 			// Potential for optimization here, the exact conditions by which you don't need to do this are complex
 			// and the cost of doing when it's not needed is moderate to low since the layout will short circuit pretty fast
 			Element.ForceLayout();
 
+			bool toolbarLayoutCompleted = false;
 			for (var i = 0; i < ChildCount; i++)
 			{
 				AView child = GetChildAt(i);
-				bool isBar = JNIEnv.IsSameObject(child.Handle, bar.Handle);
 
-				if (ToolbarVisible)
+				Page childPage = (child as PageContainer)?.Child?.Element as Page;
+
+				if (childPage == null)
+					return;
+
+				// We need to base the layout of both the child and the bar on the presence of the NavBar on the child Page itself.
+				// If we layout the bar based on ToolbarVisible, we get a white bar flashing at the top of the screen.
+				// If we layout the child based on ToolbarVisible, we get a white bar flashing at the bottom of the screen.
+				bool childHasNavBar = NavigationPage.GetHasNavigationBar(childPage);
+
+				if (childHasNavBar)
 				{
-					if (isBar)
-						bar.Layout(0, 0, r - l, barHeight);
-					else
-						child.Layout(0, barHeight + ContainerPadding, r, b);
+					bar.Layout(0, 0, r - l, barHeight);
+					child.Layout(0, barHeight + ContainerPadding, r, b);
 				}
 				else
 				{
-					if (isBar)
-						bar.Layout(0, -1000, r, barHeight - 1000);
-					else
-						child.Layout(0, ContainerPadding, r, b);
+					bar.Layout(0, -1000, r, barHeight - 1000);
+					child.Layout(0, ContainerPadding, r, b);
+				}
+				toolbarLayoutCompleted = true;
+			}
+
+			// Making the layout of the toolbar dependant on having a child Page could potentially mean that the toolbar is not laid out.
+			// We'll do one more check to make sure it isn't missed.
+			if (!toolbarLayoutCompleted)
+			{
+				if (ToolbarVisible)
+				{
+					bar.Layout(0, 0, r - l, barHeight);
+				}
+				else
+				{
+					bar.Layout(0, -1000, r, barHeight - 1000);
 				}
 			}
 		}

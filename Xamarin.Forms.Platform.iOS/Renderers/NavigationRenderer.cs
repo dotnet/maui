@@ -914,7 +914,11 @@ namespace Xamarin.Forms.Platform.iOS
 				var hasNavBar = NavigationPage.GetHasNavigationBar(current);
 
 				if (NavigationController.NavigationBarHidden == hasNavBar)
+				{
+					// prevent bottom content "jumping"
+					current.IgnoresContainerArea = !hasNavBar;
 					NavigationController.SetNavigationBarHidden(!hasNavBar, animated);
+				}
 			}
 
 			void UpdateToolbarItems()

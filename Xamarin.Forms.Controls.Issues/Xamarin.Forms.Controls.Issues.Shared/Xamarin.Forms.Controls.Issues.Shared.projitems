@@ -295,6 +295,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53909.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ListViewNRE.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55745.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32830.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla55365.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39802.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53179.cs" />
