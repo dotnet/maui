@@ -381,6 +381,33 @@ class MyBindable : BindableObject
       </Docs>
     </Member>
     <Member MemberName="GetValues">
+      <MemberSignature Language="C#" Value="public object[] GetValues (Xamarin.Forms.BindableProperty property0, Xamarin.Forms.BindableProperty property1);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance object[] GetValues(class Xamarin.Forms.BindableProperty property0, class Xamarin.Forms.BindableProperty property1) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Object[]</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="property0" Type="Xamarin.Forms.BindableProperty" />
+        <Parameter Name="property1" Type="Xamarin.Forms.BindableProperty" />
+      </Parameters>
+      <Docs>
+        <param name="property0">To be added.</param>
+        <param name="property1">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetValues">
       <MemberSignature Language="C#" Value="public object[] GetValues (Xamarin.Forms.BindableProperty property0, Xamarin.Forms.BindableProperty property1, Xamarin.Forms.BindableProperty property2);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance object[] GetValues(class Xamarin.Forms.BindableProperty property0, class Xamarin.Forms.BindableProperty property1, class Xamarin.Forms.BindableProperty property2) cil managed" />
       <MemberType>Method</MemberType>

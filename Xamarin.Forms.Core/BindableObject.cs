@@ -172,7 +172,8 @@ namespace Xamarin.Forms
 			return GetContext(targetProperty) == null;
 		}
 
-		internal object[] GetValues(BindableProperty property0, BindableProperty property1)
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public object[] GetValues(BindableProperty property0, BindableProperty property1)
 		{
 			var values = new object[2];
 
