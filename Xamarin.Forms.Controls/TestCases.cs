@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Controls
 				var untrackedIssueCells = 
 					from issueModel in issueModels
 					where issueModel.IssueTracker == IssueTracker.None
-					orderby issueModel.Description 
+					orderby issueModel.IssueNumber descending, issueModel.Description 
 					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
 
 				var issueCells = bugzillaIssueCells.Concat (githubIssueCells).Concat (untrackedIssueCells);

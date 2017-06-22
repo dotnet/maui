@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public MasterDetailContainer(MasterDetailPage parent, bool isMaster, Context context) : base(parent, isMaster, context)
 		{
-			Id = FormsAppCompatActivity.GetUniqueId();
+			Id = Platform.GenerateViewId();
 			_parent = parent;
 			_isMaster = isMaster;
 		}

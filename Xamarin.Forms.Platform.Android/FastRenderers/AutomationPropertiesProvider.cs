@@ -162,8 +162,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (elemValue != null)
 			{
 				var id = Control.Id;
-				if (id == -1)
-					id = Control.Id = FormsAppCompatActivity.GetUniqueId();
+				if (id == global::Android.Views.View.NoId)
+					id = Control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

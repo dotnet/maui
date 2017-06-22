@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		public NavigationPageRenderer()
 		{
 			AutoPackage = false;
-			Id = FormsAppCompatActivity.GetUniqueId();
+			Id = Platform.GenerateViewId();
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 

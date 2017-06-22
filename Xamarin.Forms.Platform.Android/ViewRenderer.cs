@@ -290,6 +290,10 @@ namespace Xamarin.Forms.Platform.Android
 			_container = container;
 
 			Control = control;
+			if (Control.Id == NoId)
+			{
+				Control.Id = Platform.GenerateViewId();
+			}
 
 			AView toAdd = container == this ? control : (AView)container;
 			AddView(toAdd, LayoutParams.MatchParent);
@@ -310,8 +314,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (elemValue != null)
 			{
 				var id = Control.Id;
-				if (id == -1)
-					id = Control.Id = FormsAppCompatActivity.GetUniqueId();
+				if (id == NoId)
+					id = Control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

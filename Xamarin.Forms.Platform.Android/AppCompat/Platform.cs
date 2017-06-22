@@ -347,6 +347,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Android.Platform.SetRenderer(modal, _renderer);
 
 				AddView(_renderer.View);
+
+				Id = Platform.GenerateViewId();
 			}
 
 			protected override void Dispose(bool disposing)
@@ -385,6 +387,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				_renderer.UpdateLayout();
 			}
+		}
+
+		internal static int GenerateViewId()
+		{
+			return Android.Platform.GenerateViewId();
 		}
 
 		#region Statics

@@ -64,5 +64,18 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 		}
+
+		public static void EnsureId(this AView view)
+		{
+			if (view.IsDisposed())
+			{
+				return;
+			}
+
+			if (view.Id == AView.NoId)
+			{
+				view.Id = Platform.GenerateViewId();
+			}
+		}
 	}
 }

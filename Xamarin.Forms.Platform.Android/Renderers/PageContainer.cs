@@ -10,6 +10,7 @@ namespace Xamarin.Forms.Platform.Android
 			AddView(child.View);
 			Child = child;
 			IsInFragment = inFragment;
+			Id = Platform.GenerateViewId();
 		}
 
 		public IVisualElementRenderer Child { get; set; }
