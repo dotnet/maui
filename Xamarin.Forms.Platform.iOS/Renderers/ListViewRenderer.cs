@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
@@ -364,14 +366,16 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateEstimatedRowHeight()
 		{
-			if (_estimatedRowHeight)
-				return;
-
 			var rowHeight = Element.RowHeight;
 			if (Element.HasUnevenRows && rowHeight == -1)
 			{
 				var source = _dataSource as UnevenListViewDataSource;
-				if (_shouldEstimateRowHeight)
+
+				// We want to make sure we reset the cached defined row heights whenever this is called.
+				// Failing to do this will regress Bugzilla 43313 (strange animation when adding rows with uneven heights)
+				source?.CacheDefinedRowHeights();
+
+				if (_shouldEstimateRowHeight && !_estimatedRowHeight)
 				{
 					if (source != null)
 					{
@@ -386,7 +390,7 @@ namespace Xamarin.Forms.Platform.iOS
 					}
 				}
 			}
-			else
+			else if (!_estimatedRowHeight)
 			{
 				Control.EstimatedRowHeight = 0;
 				_estimatedRowHeight = true;
@@ -623,6 +627,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			IVisualElementRenderer _prototype;
 			bool _disposed;
+			bool _useEstimatedRowHeight;
+
+			ConcurrentDictionary<NSIndexPath, nfloat> _rowHeights = new ConcurrentDictionary<NSIndexPath, nfloat>();
 
 			public UnevenListViewDataSource(ListView list, FormsUITableViewController uiTableViewController) : base(list, uiTableViewController)
 			{
@@ -630,6 +637,24 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public UnevenListViewDataSource(ListViewDataSource source) : base(source)
 			{
+			}
+
+			internal void CacheDefinedRowHeights()
+			{
+				Task.Run(() =>
+				{
+					var templatedItems = TemplatedItemsView.TemplatedItems;
+
+					foreach (var cell in templatedItems)
+					{
+						if (_disposed)
+							return;
+
+						double? cellRenderHeight = cell?.RenderHeight;
+						if (cellRenderHeight > 0)
+							_rowHeights[cell.GetIndexPath()] = (nfloat)cellRenderHeight;
+					}
+				});
 			}
 
 			internal nfloat GetEstimatedRowHeight(UITableView table)
@@ -656,11 +681,28 @@ namespace Xamarin.Forms.Platform.iOS
 				if (firstCell.Height > 0 && !List.IsGroupingEnabled)
 				{
 					// Seems like we've got cells which already specify their height; since the heights are known,
-					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights
+					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights.
+					// However, not setting the EstimatedRowHeight will drastically degrade performance with large lists.
+					// In this case, we will cache the specified cell heights asynchronously, which will be returned one time on
+					// table load by EstimatedHeight. 
+
 					return 0;
 				}
 
 				return CalculateHeightForCell(table, firstCell);
+			}
+
+			public override nfloat EstimatedHeight(UITableView tableView, NSIndexPath indexPath)
+			{
+				if (_useEstimatedRowHeight)
+					return tableView.EstimatedRowHeight;
+
+				// Note: It is *not* an optimization to first check if the array has any values.
+				nfloat specifiedRowHeight;
+				if (_rowHeights.TryGetValue(indexPath, out specifiedRowHeight) && specifiedRowHeight > 0)
+					return specifiedRowHeight;
+
+				return UITableView.AutomaticDimension;
 			}
 
 			public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
@@ -668,9 +710,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var cell = GetCellForPath(indexPath);
 
 				if (List.RowHeight == -1 && cell.Height == -1 && cell is ViewCell)
-				{
 					return UITableView.AutomaticDimension;
-				}
 
 				var renderHeight = cell.RenderHeight;
 				return renderHeight > 0 ? (nfloat)renderHeight : DefaultRowHeight;
@@ -709,6 +749,9 @@ namespace Xamarin.Forms.Platform.iOS
 						}
 					}
 
+					// Let the EstimatedHeight method know to use this value.
+					// Much more efficient than checking the value each time.
+					_useEstimatedRowHeight = true;
 					return (nfloat)req.Request.Height;
 				}
 
