@@ -189,7 +189,7 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">The service provider.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Constraint" /> for this <see cref="T:Xamarin.Forms.ConstraintExpression" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -251,7 +251,7 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">For internal use only.</param>
         <summary>For internal use only.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

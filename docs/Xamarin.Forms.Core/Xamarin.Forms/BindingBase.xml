@@ -40,7 +40,7 @@
         <Parameter Name="collection" Type="System.Collections.IEnumerable" />
       </Parameters>
       <Docs>
-        <param name="collection">To be added.</param>
+        <param name="collection">The collection on which to stop synchronization.</param>
         <summary>Stops synchronization on the <paramref name="collection" />.</summary>
         <remarks>See <see cref="M:Xamarin.Forms.BindingBase.EnableCollectionSynchronization" /> for more information on enabling and disabling synchronization of collections in multithreaded environments.</remarks>
       </Docs>

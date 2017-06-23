@@ -22,8 +22,8 @@
     <ReturnType>System.Boolean</ReturnType>
   </ReturnValue>
   <Docs>
-    <param name="bindable">To be added.</param>
-    <param name="value">To be added.</param>
+    <param name="bindable">The bindable object that contains the property.</param>
+    <param name="value">The default value.</param>
     <summary>Delegate for BindableProperty.ValidateValue.</summary>
     <returns>To be added.</returns>
     <remarks>To be added.</remarks>

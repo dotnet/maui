@@ -42,7 +42,7 @@
         <Parameter Name="implementorType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="implementorType">To be added.</param>
+        <param name="implementorType">The type of the implementor of the dependency.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.DependencyAttribute" /> with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -37,7 +37,7 @@
         <Parameter Name="selectedItem" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="selectedItem">To be added.</param>
+        <param name="selectedItem">The newly selected item.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.SelectedItemChangedEventArgs" /> event that indicates that the user has selected <paramref name="selectedItem" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -48,7 +48,7 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="fetchTarget">To be added.</param>
+        <param name="fetchTarget">The dependency fetch target.</param>
         <summary>Returns the platform-specific implementation of type T.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

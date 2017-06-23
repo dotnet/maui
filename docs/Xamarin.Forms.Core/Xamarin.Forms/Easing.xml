@@ -157,7 +157,7 @@
         <Parameter Name="easingFunc" Type="System.Func&lt;System.Double,System.Double&gt;" />
       </Parameters>
       <Docs>
-        <param name="easingFunc">To be added.</param>
+        <param name="easingFunc">A function that maps animation times.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Easing" /> object with the <paramref name="easingFunc" /> function.</summary>
         <remarks>To be added.</remarks>
       </Docs>

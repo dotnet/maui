@@ -197,8 +197,8 @@ namespace FormsGallery
         <Parameter Name="heightConstraint" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="widthConstraint">To be added.</param>
-        <param name="heightConstraint">To be added.</param>
+        <param name="widthConstraint">The requested width.</param>
+        <param name="heightConstraint">The requested height.</param>
         <summary>Method that is called when a size request is made to the box view.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

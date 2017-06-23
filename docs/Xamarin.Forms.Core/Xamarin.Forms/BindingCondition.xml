@@ -108,8 +108,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>Used by XAML infrastructure.</summary>
+        <param name="serviceProvider">Used by the XAML infrastructure.</param>
+        <summary>Used by the XAML infrastructure.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

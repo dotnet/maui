@@ -23,9 +23,9 @@
     <ReturnType>System.Void</ReturnType>
   </ReturnValue>
   <Docs>
-    <param name="bindable">To be added.</param>
-    <param name="oldValue">To be added.</param>
-    <param name="newValue">To be added.</param>
+    <param name="bindable">The bindable object that contains the property.</param>
+    <param name="oldValue">The old property value.</param>
+    <param name="newValue">The new property value.</param>
     <summary>Delegate for BindableProperty.PropertyChanged.</summary>
     <remarks>To be added.</remarks>
   </Docs>

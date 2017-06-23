@@ -38,8 +38,8 @@
         <Parameter Name="newDate" Type="System.DateTime" />
       </Parameters>
       <Docs>
-        <param name="oldDate">To be added.</param>
-        <param name="newDate">To be added.</param>
+        <param name="oldDate">The old date.</param>
+        <param name="newDate">The new date.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.DateChangedEventArgs" /> object that represents a change from <paramref name="oldDate" /> to <paramref name="newDate" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

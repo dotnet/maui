@@ -428,9 +428,9 @@ class MyBindable : BindableObject
         <Parameter Name="property2" Type="Xamarin.Forms.BindableProperty" />
       </Parameters>
       <Docs>
-        <param name="property0">To be added.</param>
-        <param name="property1">To be added.</param>
-        <param name="property2">To be added.</param>
+        <param name="property0">For internal use by the Xamarin.Forms platform.</param>
+        <param name="property1">For internal use by the Xamarin.Forms platform.</param>
+        <param name="property2">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -773,9 +773,9 @@ class MyBindable : BindableObject
         <Parameter Name="attributes" Type="Xamarin.Forms.Internals.SetValueFlags" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
-        <param name="attributes">To be added.</param>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
+        <param name="attributes">For internal use by the Xamarin.Forms platform..</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -820,9 +820,9 @@ class MyBindable : BindableObject
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="key">To be added.</param>
-        <summary>For internal use only.</summary>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="key">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -842,9 +842,9 @@ class MyBindable : BindableObject
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="key">To be added.</param>
-        <summary>For internal use only.</summary>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="key">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

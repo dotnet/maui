@@ -38,8 +38,8 @@
         <Parameter Name="newTextValue" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="oldTextValue">To be added.</param>
-        <param name="newTextValue">To be added.</param>
+        <param name="oldTextValue">The old text value.</param>
+        <param name="newTextValue">The new text value.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.TextChangedEventArgs" /> with <paramref name="oldTextValue" /> and <paramref name="newTextValue" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
