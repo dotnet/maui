@@ -96,13 +96,12 @@ namespace Xamarin.Forms.Platform.Android
 					_textColorSwitcher = new TextColorSwitcher(button.TextColors);
 					button.AddOnAttachStateChangeListener(this);
 				}
-				if (_backgroundTracker == null)
-					_backgroundTracker = new ButtonBackgroundTracker(Element, Control);
 			}
+
+			if (_backgroundTracker == null)
+				_backgroundTracker = new ButtonBackgroundTracker(Element, Control);
 			else
-			{
 				_backgroundTracker.Button = e.NewElement;
-			}
 
 			UpdateAll();
 		}
@@ -127,7 +126,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void UpdateBackgroundColor()
 		{
-			_backgroundTracker.UpdateBackgroundColor();
+			if (Element == null || Control == null)
+				return;
+
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		void UpdateAll()

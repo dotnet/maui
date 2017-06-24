@@ -140,7 +140,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (Element == null || Control == null)
 				return;
 
-			_backgroundTracker.UpdateBackgroundColor();
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		void UpdateAll()
