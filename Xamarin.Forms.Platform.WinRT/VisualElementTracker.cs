@@ -229,6 +229,10 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				UpdateInputTransparent(Element, Container);
 			}
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
+				UpdateInputTransparent(Element, Container);
+			}
 		}
 
 		protected virtual void UpdateNativeControl()
