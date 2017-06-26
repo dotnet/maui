@@ -83,6 +83,9 @@ namespace Xamarin.Forms
 			get { return _internalList[index]; }
 			set
 			{
+				if(index < _internalList.Count && _internalList[index] != null && index >= 0)
+					_internalList[index].SizeChanged -= OnItemSizeChanged;
+
 				_internalList[index] = value;
 				value.SizeChanged += OnItemSizeChanged;
 				OnItemSizeChanged(this, EventArgs.Empty);
