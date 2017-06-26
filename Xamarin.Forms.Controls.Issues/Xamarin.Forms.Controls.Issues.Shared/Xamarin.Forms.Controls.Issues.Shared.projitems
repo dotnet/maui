@@ -307,6 +307,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56896.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40161.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1075.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1097.cs" />
