@@ -21,9 +21,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		Typeface _defaultTypeface;
 		int _imageHeight = -1;
 		bool _isDisposed;
-	    bool _inputTransparent;
-	    readonly Lazy<TextColorSwitcher> _textColorSwitcher;
-        readonly AutomationPropertiesProvider _automationPropertiesProvider;
+		bool _inputTransparent;
+		readonly Lazy<TextColorSwitcher> _textColorSwitcher;
+		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 		VisualElementTracker _tracker;
 		ButtonBackgroundTracker _backgroundTracker;
@@ -33,9 +33,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public ButtonRenderer() : base(Forms.Context)
 		{
-            _automationPropertiesProvider = new AutomationPropertiesProvider(this);
+			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
 			_effectControlProvider = new EffectControlProvider(this);
-            _textColorSwitcher = new Lazy<TextColorSwitcher>(() => new TextColorSwitcher(TextColors));
+			_textColorSwitcher = new Lazy<TextColorSwitcher>(() => new TextColorSwitcher(TextColors));
 
 			Initialize();
 		}
@@ -145,7 +145,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			SendVisualElementInitialized(element, this);
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
-			
+
 			Performance.Stop();
 		}
 
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_tracker?.Dispose();
 
 				_backgroundTracker?.Dispose();
-		
+
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
@@ -195,15 +195,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			base.Dispose(disposing);
 		}
 
-        public override bool OnTouchEvent(MotionEvent e)
-        {
-            if (!Enabled || (_inputTransparent && Enabled))
-                return false;
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (!Enabled || (_inputTransparent && Enabled))
+				return false;
 
-            return base.OnTouchEvent(e);
-        }
+			return base.OnTouchEvent(e);
+		}
 
-        protected virtual Size MinimumSize()
+		protected virtual Size MinimumSize()
 		{
 			return new Size();
 		}
@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			if (Element == null)
+			if (Element == null || _isDisposed)
 			{
 				return;
 			}
@@ -315,12 +315,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			AddOnAttachStateChangeListener(this);
 			OnFocusChangeListener = this;
 
-			Tag = this; 
-        }
+			Tag = this;
+		}
 
 		void UpdateBitmap()
 		{
-			if (Element == null)
+			if (Element == null || _isDisposed)
 			{
 				return;
 			}
@@ -381,7 +381,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateFont()
 		{
-			if (Element == null)
+			if (Element == null || _isDisposed)
 			{
 				return;
 			}
@@ -413,17 +413,27 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateIsEnabled()
 		{
+			if (Element == null || _isDisposed)
+			{
+				return;
+			}
+
 			Enabled = Element.IsEnabled;
 		}
 
-	    void UpdateInputTransparent()
-	    {
-	        _inputTransparent = Element.InputTransparent;
-	    }
-
-	    void UpdateText()
+		void UpdateInputTransparent()
 		{
-			if (Element == null)
+			if (Element == null || _isDisposed)
+			{
+				return;
+			}
+
+			_inputTransparent = Element.InputTransparent;
+		}
+
+		void UpdateText()
+		{
+			if (Element == null || _isDisposed)
 			{
 				return;
 			}
@@ -440,7 +450,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateTextColor()
 		{
-			if (Element == null)
+			if (Element == null || _isDisposed)
 			{
 				return;
 			}
@@ -450,7 +460,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateDrawable()
 		{
-			_backgroundTracker.UpdateDrawable();
+			_backgroundTracker?.UpdateDrawable();
 		}
 
 	}
