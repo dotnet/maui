@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
 
@@ -604,7 +605,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void PropertyChangeBindingsOccurThroughMainThread()
+		public async Task PropertyChangeBindingsOccurThroughMainThread()
 		{
 			var vm = new MockViewModel { Text = "text" };
 
@@ -613,13 +614,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.BindingContext = vm;
 			bindable.SetBinding(MockBindable.TextProperty, binding);
 
-			bool mainThread = false;
-			Device.PlatformServices = new MockPlatformServices(invokeOnMainThread: a => mainThread = true);
+			Device.PlatformServices = new MockPlatformServices(a => Assert.Pass());
 
 			vm.Text = "updated";
 
-			Assert.IsTrue(mainThread, "Binding did not occur on main thread");
-			Assert.AreNotEqual(vm.Text, bindable.GetValue(MockBindable.TextProperty), "Binding was applied anyway through other means");
+			// If we wait five seconds and Assert.Pass still hasn't been called, something is very wrong
+			await Task.Delay(5000);
+			Assert.Fail();
 		}
 	}
 
