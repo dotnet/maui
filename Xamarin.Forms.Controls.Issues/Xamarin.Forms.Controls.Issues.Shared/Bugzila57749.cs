@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 57749, "After enabling a disabled button it is not clickable", PlatformAffected.UWP)]
-	public class Bugzilla57749 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla57749 : TestContentPage 
 	{
 		protected override void Init()
 		{
@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 			await Task.Delay(500);
 			RunningApp.Tap(c => c.Marked("btnClick"));
 			RunningApp.WaitForElement (q => q.Marked ("Button was clicked"));
+			RunningApp.Tap("Ok");
 		}
 #endif
 	}
