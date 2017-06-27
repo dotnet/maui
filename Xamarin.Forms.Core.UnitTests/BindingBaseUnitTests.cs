@@ -605,7 +605,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public async Task PropertyChangeBindingsOccurThroughMainThread()
+		public void PropertyChangeBindingsOccurThroughMainThread()
 		{
 			var vm = new MockViewModel { Text = "text" };
 
@@ -614,13 +614,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.BindingContext = vm;
 			bindable.SetBinding(MockBindable.TextProperty, binding);
 
-			Device.PlatformServices = new MockPlatformServices(a => Assert.Pass());
+			bool invokeOnMainThreadWasCalled = false;
+			Device.PlatformServices = new MockPlatformServices(a => invokeOnMainThreadWasCalled = true);
 
 			vm.Text = "updated";
 
-			// If we wait five seconds and Assert.Pass still hasn't been called, something is very wrong
-			await Task.Delay(5000);
-			Assert.Fail();
+			// If we wait five seconds and invokeOnMainThreadWasCalled still hasn't been set, something is very wrong
+			Assert.That(invokeOnMainThreadWasCalled, Is.True.After(5000, 10));
 		}
 	}
 
