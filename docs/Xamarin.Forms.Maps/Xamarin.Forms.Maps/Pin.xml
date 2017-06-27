@@ -139,7 +139,7 @@ public static Page GetMapPage ()
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object to compare with.</param>
         <summary>Whether <paramref name="obj" /> with equivalent <see cref="P:Xamarin.Forms.Maps.Pin.Type" />, <see cref="P:Xamarin.Forms.Maps.Pin.Position" />, <see cref="P:Xamarin.Forms.Maps.Pin.Label" /> and <see cref="P:Xamarin.Forms.Maps.Pin.Address" />.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> is a <see cref="T:Xamarin.Forms.Maps.Pin" /> with equivalent <see cref="P:Xamarin.Forms.Maps.Pin.Type" />, <see cref="P:Xamarin.Forms.Maps.Pin.Position" />, <see cref="P:Xamarin.Forms.Maps.Pin.Label" /> and <see cref="P:Xamarin.Forms.Maps.Pin.Address" /> values.</returns>

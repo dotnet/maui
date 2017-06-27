@@ -40,7 +40,7 @@
         <Parameter Name="view" Type="Xamarin.Forms.VisualElement" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
         <summary>Aborts the TranslateTo, LayoutTo, RotateTo, ScaleTo, and FadeTo animations on <paramref name="view" /> element.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -68,10 +68,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="opacity">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="opacity">The opacity to fade to.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name="length" />, and <paramref name="easing" /> parameters.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -100,10 +100,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="bounds">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="bounds">The layout bounds.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that eases the bounds of the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by the <paramref name="view" /> to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -132,10 +132,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="drotation">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="drotation">The relative rotation.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Rotates the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -164,10 +164,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="dscale">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="dscale">The relative scale.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current scale to <paramref name="dscale" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -196,10 +196,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="rotation">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="rotation">The final rotation value.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that performs the rotation that is described by the <paramref name="rotation" />, <paramref name="length" />, and <paramref name="easing" /> parameters..</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -228,10 +228,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="rotation">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="rotation">The final rotation value.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that skews the Y axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -260,10 +260,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="rotation">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="rotation">The final rotation value.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that skews the X axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -292,10 +292,10 @@
         <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="scale">To be added.</param>
-        <param name="length">To be added.</param>
-        <param name="easing">To be added.</param>
+        <param name="view">The view on which this method operates.</param>
+        <param name="scale">The final absolute scale.</param>
+        <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+        <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

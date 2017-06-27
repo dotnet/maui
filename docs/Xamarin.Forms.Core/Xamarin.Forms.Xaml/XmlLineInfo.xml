@@ -46,8 +46,8 @@
         <Parameter Name="lineposition" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="linenumber">To be added.</param>
-        <param name="lineposition">To be added.</param>
+        <param name="linenumber">For internal use by the XAML engine.</param>
+        <param name="lineposition">For internal use by the XAML engine.</param>
         <summary>For internal use by the XAML engine.</summary>
         <remarks>To be added.</remarks>
       </Docs>

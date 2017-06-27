@@ -106,7 +106,7 @@
         <Parameter Name="args" Type="Xamarin.Forms.WebNavigatedEventArgs" />
       </Parameters>
       <Docs>
-        <param name="args">To be added.</param>
+        <param name="args">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -125,7 +125,7 @@
         <Parameter Name="args" Type="Xamarin.Forms.WebNavigatingEventArgs" />
       </Parameters>
       <Docs>
-        <param name="args">To be added.</param>
+        <param name="args">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

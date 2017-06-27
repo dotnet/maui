@@ -25,7 +25,7 @@
         <Parameter Name="userToken" Type="System.Threading.CancellationToken" />
       </Parameters>
       <Docs>
-        <param name="userToken">To be added.</param>
+        <param name="userToken">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -138,7 +138,7 @@
         <Parameter Name="onPlatform" Type="Xamarin.Forms.OnPlatform&lt;T&gt;" />
       </Parameters>
       <Docs>
-        <param name="onPlatform">To be added.</param>
+        <param name="onPlatform">The platform to convert.</param>
         <summary>Casts the type to the version that corresponds to the platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

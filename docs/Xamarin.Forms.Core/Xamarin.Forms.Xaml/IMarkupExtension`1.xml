@@ -39,7 +39,7 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">The service that provides the value.</param>
         <summary>When implemented in a derived class, returns an object that is provided as the value of the target property for this markup extension.</summary>
         <returns>The object that is provided as the value of the target property for this markup extension.</returns>
         <remarks>To be added.</remarks>

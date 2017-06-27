@@ -25,7 +25,7 @@
         <Parameter Name="appIndexing" Type="Xamarin.Forms.IAppIndexingProvider" />
       </Parameters>
       <Docs>
-        <param name="appIndexing">To be added.</param>
+        <param name="appIndexing">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

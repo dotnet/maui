@@ -41,7 +41,7 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value to convert.</param>
         <summary>Converts <paramref name="value" /> to a list.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

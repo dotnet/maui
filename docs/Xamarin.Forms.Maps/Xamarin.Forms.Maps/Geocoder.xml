@@ -56,7 +56,7 @@
         <Parameter Name="position" Type="Xamarin.Forms.Maps.Position" />
       </Parameters>
       <Docs>
-        <param name="position">To be added.</param>
+        <param name="position">The position near which to search.</param>
         <summary>Returns the addresses near <paramref name="position" />, asynchronously.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -81,7 +81,7 @@
         <Parameter Name="address" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="address">To be added.</param>
+        <param name="address">The address for which to return positions.</param>
         <summary>Returns a list of positions for <paramref name="address" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

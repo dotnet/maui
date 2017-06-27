@@ -253,8 +253,8 @@
         <Parameter Name="pt_b" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="ptA">To be added.</param>
-        <param name="ptB">To be added.</param>
+        <param name="ptA">The first point to compare.</param>
+        <param name="ptB">The second point to compare.</param>
         <summary>Whether the two <see cref="T:Xamarin.Forms.Point" />s are equal.</summary>
         <returns>
           <see langword="true" /> if the two <see cref="T:Xamarin.Forms.Point" />s have equal values.</returns>
@@ -308,8 +308,8 @@
         <Parameter Name="pt_b" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="ptA">To be added.</param>
-        <param name="ptB">To be added.</param>
+        <param name="ptA">The first point to compare.</param>
+        <param name="ptB">The second point to compare.</param>
         <summary>Whether two points are not equal.</summary>
         <returns>
           <see langword="true" /> if <paramref name="pt_a" /> and <paramref name="pt_b" /> do not have equivalent X and Y values.</returns>

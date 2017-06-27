@@ -83,7 +83,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -118,7 +118,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -139,8 +139,8 @@
         <Parameter Name="arrayIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="array">To be added.</param>
-        <param name="arrayIndex">To be added.</param>
+        <param name="array">For internal use by the Xamarin.Forms platform.</param>
+        <param name="arrayIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -192,7 +192,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -213,8 +213,8 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -233,7 +233,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -269,8 +269,8 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -289,7 +289,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -309,7 +309,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -360,7 +360,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
@@ -380,7 +380,7 @@
         <Parameter Name="item" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -400,7 +400,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

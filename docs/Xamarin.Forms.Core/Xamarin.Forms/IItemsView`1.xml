@@ -33,7 +33,7 @@
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -54,8 +54,8 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -74,7 +74,7 @@
         <Parameter Name="content" Type="T" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

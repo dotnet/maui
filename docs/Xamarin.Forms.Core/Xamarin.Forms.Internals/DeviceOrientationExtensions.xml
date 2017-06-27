@@ -33,7 +33,7 @@
         <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="orientation">To be added.</param>
+        <param name="orientation">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -53,7 +53,7 @@
         <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="orientation">To be added.</param>
+        <param name="orientation">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

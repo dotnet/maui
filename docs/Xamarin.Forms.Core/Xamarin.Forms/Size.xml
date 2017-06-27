@@ -45,8 +45,8 @@
         <Parameter Name="height" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="width">To be added.</param>
-        <param name="height">To be added.</param>
+        <param name="width">The width of the new size.</param>
+        <param name="height">The height of the new size.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Size" /> object with <paramref name="width" /> and <paramref name="height" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -284,8 +284,8 @@
         <Parameter Name="s2" Type="Xamarin.Forms.Size" />
       </Parameters>
       <Docs>
-        <param name="s1">To be added.</param>
-        <param name="s2">To be added.</param>
+        <param name="s1">The first <see cref="T:Xamarin.Forms.Size" /> to compare.</param>
+        <param name="s2">The second <see cref="T:Xamarin.Forms.Size" /> to compare.</param>
         <summary>Whether two <see cref="T:Xamarin.Forms.Size" />s have unequal values.</summary>
         <returns>
           <see langword="true" /> if <paramref name="s1" /> and <paramref name="s2" /> have unequal values for either <see cref="P:Xamarin.Forms.Size.Height" /> or <see cref="P:Xamarin.Forms.Size.Width" />.</returns>

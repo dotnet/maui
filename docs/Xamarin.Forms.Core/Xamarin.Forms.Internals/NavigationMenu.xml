@@ -56,7 +56,7 @@
         <Parameter Name="target" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -100,7 +100,7 @@
         <Parameter Name="target" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -124,7 +124,7 @@
         <Parameter Name="target" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

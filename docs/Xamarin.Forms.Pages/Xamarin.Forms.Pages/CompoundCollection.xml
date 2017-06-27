@@ -48,7 +48,7 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">Not supported.</param>
         <summary>Not supported.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -137,8 +137,8 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="array">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="array">Not supported.</param>
+        <param name="index">Not supported.</param>
         <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -216,8 +216,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="index">Not supported.</param>
+        <param name="value">Not supported.</param>
         <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -287,7 +287,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">The index of the item to get.</param>
         <summary>Gets the item at the specified <paramref name="index" />. Setting is not supported.</summary>
         <value>When used as an rvalue, the item at the specified <paramref name="index" />. Use as an lvalue is not supported.</value>
         <remarks>To be added.</remarks>
@@ -373,7 +373,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">Not supported.</param>
         <summary>Not supported.</summary>
         <remarks>To be added.</remarks>
       </Docs>

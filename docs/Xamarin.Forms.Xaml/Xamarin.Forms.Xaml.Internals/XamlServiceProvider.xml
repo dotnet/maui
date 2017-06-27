@@ -49,8 +49,8 @@
         <Parameter Name="service" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="service">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
+        <param name="service">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -70,7 +70,7 @@
         <Parameter Name="serviceType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="serviceType">To be added.</param>
+        <param name="serviceType">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

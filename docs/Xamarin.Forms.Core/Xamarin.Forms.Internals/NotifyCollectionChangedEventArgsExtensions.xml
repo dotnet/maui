@@ -36,10 +36,10 @@
         <Parameter Name="reset" Type="System.Action" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="insert">To be added.</param>
-        <param name="removeAt">To be added.</param>
-        <param name="reset">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="insert">For internal use by the Xamarin.Forms platform.</param>
+        <param name="removeAt">For internal use by the Xamarin.Forms platform.</param>
+        <param name="reset">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -65,9 +65,9 @@
       </Parameters>
       <Docs>
         <typeparam name="TFrom">To be added.</typeparam>
-        <param name="self">To be added.</param>
-        <param name="from">To be added.</param>
-        <param name="to">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="from">For internal use by the Xamarin.Forms platform.</param>
+        <param name="to">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -87,8 +87,8 @@
         <Parameter Name="count" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="e">To be added.</param>
-        <param name="count">To be added.</param>
+        <param name="e">For internal use by the Xamarin.Forms platform.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

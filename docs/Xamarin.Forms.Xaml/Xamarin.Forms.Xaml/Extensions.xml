@@ -48,8 +48,8 @@
       </Parameters>
       <Docs>
         <typeparam name="TXaml">To be added.</typeparam>
-        <param name="view">To be added.</param>
-        <param name="callingType">To be added.</param>
+        <param name="view">For internal use by the XAML infrastructure.</param>
+        <param name="callingType">For internal use by the XAML infrastructure.</param>
         <summary>Configures <paramref name="view" /> with the properties that are defined in the application manifest for <paramref name="callingType" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -74,8 +74,8 @@
       </Parameters>
       <Docs>
         <typeparam name="TXaml">To be added.</typeparam>
-        <param name="view">To be added.</param>
-        <param name="callingType">To be added.</param>
+        <param name="view">For internal use by the XAML infrastructure.</param>
+        <param name="callingType">For internal use by the XAML infrastructure.</param>
         <summary>For internal use by the XAML infrastructure.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

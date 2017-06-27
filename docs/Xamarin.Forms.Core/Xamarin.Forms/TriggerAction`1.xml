@@ -103,7 +103,7 @@
         <Parameter Name="sender" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">The object on which to invoke the trigger action.</param>
         <summary>Application developers override this method to provide the action that is performed when the trigger condition is met.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -125,7 +125,7 @@
         <Parameter Name="sender" Type="T" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">The object on which to invoke the trigger action.</param>
         <summary>Application developers override this method to provide the action that is performed when the trigger condition is met.</summary>
         <remarks>To be added.</remarks>
       </Docs>

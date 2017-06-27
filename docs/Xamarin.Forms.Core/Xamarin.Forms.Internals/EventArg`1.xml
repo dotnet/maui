@@ -34,7 +34,7 @@
         <Parameter Name="data" Type="T" />
       </Parameters>
       <Docs>
-        <param name="data">To be added.</param>
+        <param name="data">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

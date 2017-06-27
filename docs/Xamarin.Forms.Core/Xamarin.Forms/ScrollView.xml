@@ -187,8 +187,8 @@ MainPage = new ContentPage
         <Parameter Name="pos" Type="Xamarin.Forms.ScrollToPosition" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
-        <param name="pos">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <param name="pos">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -368,9 +368,9 @@ MainPage = new ContentPage
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="animated">To be added.</param>
+        <param name="x">The X position of the finished scroll.</param>
+        <param name="y">The Y position of the finished scroll.</param>
+        <param name="animated">Whether or not to animate the scroll.</param>
         <summary>Returns a task that scrolls the scroll view to a position asynchronously.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -394,9 +394,9 @@ MainPage = new ContentPage
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
-        <param name="position">To be added.</param>
-        <param name="animated">To be added.</param>
+        <param name="element">The element to scroll.</param>
+        <param name="position">The scroll position.</param>
+        <param name="animated">Whether or not to animate the scroll.</param>
         <summary>Returns a task that scrolls the scroll view to an element asynchronously.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -533,8 +533,8 @@ MainPage = new ContentPage
         <Parameter Name="y" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
+        <param name="x">For internal use by the Xamarin.Forms platform.</param>
+        <param name="y">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -555,9 +555,9 @@ MainPage = new ContentPage
         <Parameter Name="pos" Type="Xamarin.Forms.ScrollToPosition" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
-        <param name="pos">To be added.</param>
-        <summary>Internal.</summary>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <param name="pos">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -575,7 +575,7 @@ MainPage = new ContentPage
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Internal.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -595,9 +595,9 @@ MainPage = new ContentPage
         <Parameter Name="y" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <summary>Internal.</summary>
+        <param name="x">For internal use by the Xamarin.Forms platform.</param>
+        <param name="y">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -61,7 +61,7 @@
         <Parameter Name="uri" Type="System.Uri" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
+        <param name="uri">The URI for the JSON data.</param>
         <summary>Creates a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> from the specified <paramref name="uri" />.</summary>
         <returns>A <see cref="T:Xamarin.Forms.Pages.JsonSource" />.</returns>
         <remarks>To be added.</remarks>

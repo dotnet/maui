@@ -43,9 +43,9 @@
         <Parameter Name="currentScalePoint" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="scale">To be added.</param>
-        <param name="currentScalePoint">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scale">For internal use by the Xamarin.Forms platform.</param>
+        <param name="currentScalePoint">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -64,7 +64,7 @@
         <Parameter Name="sender" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -83,7 +83,7 @@
         <Parameter Name="sender" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -103,8 +103,8 @@
         <Parameter Name="intialScalePoint" Type="Xamarin.Forms.Point" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="intialScalePoint">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
+        <param name="intialScalePoint">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

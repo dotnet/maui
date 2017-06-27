@@ -624,7 +624,7 @@
         <Parameter Name="trigger" Type="Xamarin.Forms.Internals.InvalidationTrigger" />
       </Parameters>
       <Docs>
-        <param name="trigger">To be added.</param>
+        <param name="trigger">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -1244,7 +1244,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child that was added.</param>
         <summary>Application developers can override this method to respond when a child is added.</summary>
         <remarks>Application developers who override this method must call base.OnChildAdded before performing any other actions in their override.</remarks>
       </Docs>
@@ -1264,7 +1264,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child that was removed.</param>
         <summary>Application developers can override this method to respond when a child is removed.</summary>
         <remarks>Application developers who override this method must call base.OnChildRemoved before performing any other actions in their override.</remarks>
       </Docs>
@@ -1306,8 +1306,8 @@
         <Parameter Name="heightConstraint" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="widthConstraint">To be added.</param>
-        <param name="heightConstraint">To be added.</param>
+        <param name="widthConstraint">The width constraint to request.</param>
+        <param name="heightConstraint">The height constraint to request.</param>
         <summary>Method that is called when a layout measurement happens.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -2076,7 +2076,7 @@
         <Parameter Name="trigger" Type="Xamarin.Forms.Internals.InvalidationTrigger" />
       </Parameters>
       <Docs>
-        <param name="trigger">To be added.</param>
+        <param name="trigger">For internal use by the Xamarin.Forms platform.</param>
         <summary>This method is for internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>

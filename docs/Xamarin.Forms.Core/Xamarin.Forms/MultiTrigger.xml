@@ -82,7 +82,7 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="targetType">To be added.</param>
+        <param name="targetType">The type of the trigger target.</param>
         <summary>Initializes a new <see cref="T:Xamarin.Forms.MultiTrigger" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>

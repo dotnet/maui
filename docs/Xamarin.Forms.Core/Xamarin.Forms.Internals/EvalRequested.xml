@@ -30,7 +30,7 @@
         <Parameter Name="script" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="script">To be added.</param>
+        <param name="script">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

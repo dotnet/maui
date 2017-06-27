@@ -50,8 +50,8 @@
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="category">To be added.</param>
-        <param name="message">To be added.</param>
+        <param name="category">For internal use by the Xamarin.Forms platform.</param>
+        <param name="message">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -78,9 +78,9 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="category">To be added.</param>
-        <param name="format">To be added.</param>
-        <param name="args">To be added.</param>
+        <param name="category">For internal use by the Xamarin.Forms platform.</param>
+        <param name="format">For internal use by the Xamarin.Forms platform.</param>
+        <param name="args">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

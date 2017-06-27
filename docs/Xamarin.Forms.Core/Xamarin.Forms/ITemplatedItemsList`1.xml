@@ -62,7 +62,7 @@
         <Parameter Name="group" Type="Xamarin.Forms.ITemplatedItemsList&lt;TItem&gt;" />
       </Parameters>
       <Docs>
-        <param name="group">To be added.</param>
+        <param name="group">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -82,7 +82,7 @@
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -102,7 +102,7 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -122,7 +122,7 @@
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -143,8 +143,8 @@
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="group">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="group">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -165,8 +165,8 @@
         <Parameter Name="leftOver" Type="System.Int32&amp;" RefType="out" />
       </Parameters>
       <Docs>
-        <param name="globalIndex">To be added.</param>
-        <param name="leftOver">To be added.</param>
+        <param name="globalIndex">For internal use by the Xamarin.Forms platform.</param>
+        <param name="leftOver">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -217,7 +217,7 @@
         <Parameter Name="item" Type="TItem" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -317,8 +317,8 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -339,8 +339,8 @@
         <Parameter Name="groupIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="groupIndex">To be added.</param>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
+        <param name="groupIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

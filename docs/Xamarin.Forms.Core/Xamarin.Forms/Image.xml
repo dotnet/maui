@@ -361,8 +361,8 @@ indicator.BindingContext = image;]]></code>
         <Parameter Name="isLoading" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="isLoading">To be added.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="isLoading">Whether the image is loading.</param>
+        <summary>Sets a value that indicates whether the image is currently loading.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -84,7 +84,7 @@
         <Parameter Name="onIdiom" Type="Xamarin.Forms.OnIdiom&lt;T&gt;" />
       </Parameters>
       <Docs>
-        <param name="onIdiom">To be added.</param>
+        <param name="onIdiom">The idiom to convert.</param>
         <summary>Implicitly converts OnIdiom to T, depending on Device.Idiom.</summary>
         <returns>The value of the Phone or Tablet property, depending on the current Device.Idiom.</returns>
         <remarks>

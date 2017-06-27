@@ -585,7 +585,7 @@ namespace FormsGallery
         <Parameter Name="trigger" Type="Xamarin.Forms.Internals.InvalidationTrigger" />
       </Parameters>
       <Docs>
-        <param name="trigger">To be added.</param>
+        <param name="trigger">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

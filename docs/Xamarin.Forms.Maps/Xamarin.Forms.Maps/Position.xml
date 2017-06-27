@@ -61,7 +61,7 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object to compare with.</param>
         <summary>Returns a Boolean value that indicates whether or not <paramref name="obj" /> is another <see cref="T:Xamarin.Forms.Position" /> structure and represents exactly the same latitude and longitude as <see langword="this" /> one.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> is another <see cref="T:Xamarin.Forms.Position" /> structure and represents exactly the same latitude and longitude as <see langword="this" /> one. Otherwise, <see langword="false" />.</returns>

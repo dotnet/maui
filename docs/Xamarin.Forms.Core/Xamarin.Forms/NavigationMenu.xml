@@ -15,7 +15,7 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>For internal use only.</summary>
+    <summary>For internal use by the Xamarin.Forms platform.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -28,7 +28,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>For internal use only.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -46,8 +46,8 @@
         <Parameter Name="target" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
-        <summary>For internal use only.</summary>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -65,8 +65,8 @@
         <Parameter Name="target" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
-        <summary>For internal use only.</summary>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -81,7 +81,7 @@
         <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>For internal use only.</summary>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>

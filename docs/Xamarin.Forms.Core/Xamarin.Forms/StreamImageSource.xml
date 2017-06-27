@@ -64,7 +64,7 @@
         <Parameter Name="propertyName" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="propertyName">To be added.</param>
+        <param name="propertyName">The property that changed.</param>
         <summary>Method that is called when the property that is specified by <paramref name="propertyName" /> is changed..</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -136,8 +136,8 @@
         <Parameter Name="userToken" Type="System.Threading.CancellationToken" />
       </Parameters>
       <Docs>
-        <param name="userToken">To be added.</param>
-        <summary>This method is for internal use.</summary>
+        <param name="userToken">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

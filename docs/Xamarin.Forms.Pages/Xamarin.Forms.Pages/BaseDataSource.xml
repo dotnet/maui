@@ -210,7 +210,7 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
+        <param name="key">For internal use.</param>
         <summary>For internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -237,7 +237,7 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
+        <param name="key">For internal use.</param>
         <summary>For internal use.</summary>
         <remarks>To be added.</remarks>
       </Docs>

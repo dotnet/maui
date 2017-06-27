@@ -35,9 +35,9 @@
         <Parameter Name="container" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="item">To be added.</param>
-        <param name="container">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <param name="container">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -122,7 +122,7 @@
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="animated">To be added.</param>
+        <param name="animated">Whether to animate the pop.</param>
         <summary>Asynchronously removes the most recent <see cref="T:Xamarin.Forms.Page" /> from the navigation stack, with optional animation.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -183,7 +183,7 @@ Debug.WriteLine (Object.ReferenceEquals (modalPage, poppedPage)); //prints "true
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="animated">To be added.</param>
+        <param name="animated">Whether to animate the pop.</param>
         <summary>Asynchronously dismisses the most recent modally presented <see cref="T:Xamarin.Forms.Page" />, with optional animation.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -229,7 +229,7 @@ Debug.WriteLine (Object.ReferenceEquals (modalPage, poppedPage)); //prints "true
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="animated">To be added.</param>
+        <param name="animated">Whether to animate the pop.</param>
         <summary>Pops all but the root <see cref="T:Xamarin.Forms.Page" /> off the navigation stack, with optional animation.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -293,8 +293,8 @@ Debug.WriteLine (Object.ReferenceEquals (newPage, poppedPage)); //prints "true"
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="animated">To be added.</param>
+        <param name="page">The page to push.</param>
+        <param name="animated">Whether to animate the push.</param>
         <summary>Asynchronously adds a <see cref="T:Xamarin.Forms.Page" /> to the top of the navigation stack, with optional animation.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -356,8 +356,8 @@ Debug.WriteLine (Object.ReferenceEquals (modalPage, poppedPage)); //prints "true
         <Parameter Name="animated" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="animated">To be added.</param>
+        <param name="page">The page to push.</param>
+        <param name="animated">Whether to animate the push.</param>
         <summary>Presents a <see cref="T:Xamarin.Forms.Page" /> modally, with optional animation.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -380,7 +380,7 @@ Debug.WriteLine (Object.ReferenceEquals (modalPage, poppedPage)); //prints "true
         <Parameter Name="page" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
+        <param name="page">The page to remove.</param>
         <summary>Removes the specified page from the navigation stack.</summary>
         <remarks>To be added.</remarks>
       </Docs>

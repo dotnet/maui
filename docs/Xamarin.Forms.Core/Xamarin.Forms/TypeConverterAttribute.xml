@@ -61,7 +61,7 @@
         <Parameter Name="typeName" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="typeName">To be added.</param>
+        <param name="typeName">The name of the type that this attribute can decorate.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to the <paramref name="typeName" /> type.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -83,7 +83,7 @@
         <Parameter Name="type" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
+        <param name="type">The type that this attribute can decorate.</param>
         <summary>reates a new <see cref="T:Xamarin.Forms.TypeConverterAttribute" /> object that specifies that the class it decorates converts values to <paramref name="type" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -151,7 +151,7 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object against which to do the comparison.</param>
         <summary>Returns true if <paramref name="obj" /> is a <see cref="T:Xamarin.Forms.TypeConverterAttribute" /> and has the same <see cref="P:Xamarin.Forms.TypeConverterAttribute.ConverterTypeName" /> value.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -69,7 +69,7 @@
         <Parameter Name="implicitStyle" Type="Xamarin.Forms.Style" />
       </Parameters>
       <Docs>
-        <param name="style">To be added.</param>
+        <param name="style">The implicit style to add.</param>
         <summary>
           <para>Add an implicit Style to the ResourceDictionary. Implicit Styles are applied to all VisualElements matching TargetType in the descendants of this ResourceDictionary owner, unless a Style is explicitely applied to the Element.</para>
           <para />
@@ -314,7 +314,7 @@
         <Parameter Name="item" Type="System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">The item to add.</param>
         <summary>Adds an item to the collection.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -339,7 +339,7 @@
         <Parameter Name="item" Type="System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">The item to add.</param>
         <summary>Returns a value that indicates whether the dictionary contains the value in <paramref name="item" />, indexed by the key in <paramref name="item" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -366,9 +366,9 @@
         <Parameter Name="arrayIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="array">To be added.</param>
-        <param name="arrayIndex">To be added.</param>
-        <summary>Copies the values in the dictionary to <paramref name="array" />, starting at position <paramref name="arrayIndex" /> in <paramref name="array" />.</summary>
+        <param name="array">For internal use by the Xamarin.Forms platform.</param>
+        <param name="arrayIndex">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -414,8 +414,8 @@
         <Parameter Name="item" Type="System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
-        <summary>Removes the value in <paramref name="item" />, indexed by the key in <paramref name="item" />, from the dictionary, if present.</summary>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -438,8 +438,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Returns a <see cref="T:System.Collections.IEnumerator" /> of the <see cref="T:Xamarin.Forms.ResourceDictionary" />'s <see cref="T:System.Collections.Generic.KeyValuePair`1" />s.</summary>
-        <returns>An <see cref="T:System.Collections.IEnumerator" /> of the <see cref="T:Xamarin.Forms.ResourceDictionary" />'s <see cref="T:System.Collections.Generic.KeyValuePair`1" />s.</returns>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

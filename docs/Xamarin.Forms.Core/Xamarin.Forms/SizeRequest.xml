@@ -44,8 +44,8 @@
         <Parameter Name="request" Type="Xamarin.Forms.Size" />
       </Parameters>
       <Docs>
-        <param name="request">To be added.</param>
-        <summary>Creates a new <see cref="T:Xamarin.Forms.SizeRequest" /> object with default values.</summary>
+        <param name="request">The size of the request.</param>
+        <summary>Creates a new <see cref="T:Xamarin.Forms.SizeRequest" /> with the specified <paramref name="request" /> size.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -68,8 +68,8 @@
         <Parameter Name="minimum" Type="Xamarin.Forms.Size" />
       </Parameters>
       <Docs>
-        <param name="request">To be added.</param>
-        <param name="minimum">To be added.</param>
+        <param name="request">The size of the request.</param>
+        <param name="minimum">The minimum size for the request.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.SizeRequest" /> object that requests at least the size <paramref name="minimum" />, but preferably the size <paramref name="request" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

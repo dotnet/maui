@@ -35,9 +35,9 @@
         <Parameter Name="newElement" Type="Xamarin.Forms.IElementController" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="oldElement">To be added.</param>
-        <param name="newElement">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldElement">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newElement">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

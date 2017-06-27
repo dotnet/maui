@@ -122,7 +122,7 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="targetType">To be added.</param>
+        <param name="targetType">The view type to which the trigger will be added.</param>
         <summary>Initializes a new <see cref="T:Xamarin.Forms.Trigger" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -201,8 +201,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>This property supports XAML infrastructure and is not intended to be directly used by application developers.</summary>
+        <param name="serviceProvider">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

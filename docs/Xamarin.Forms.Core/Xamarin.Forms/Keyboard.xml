@@ -67,7 +67,7 @@
         <Parameter Name="flags" Type="Xamarin.Forms.KeyboardFlags" />
       </Parameters>
       <Docs>
-        <param name="flags">To be added.</param>
+        <param name="flags">The flags that control the keyboard's appearance and behavior.</param>
         <summary>Returns a new keyboard with the specified <see cref="T:Xamarin.Forms.KeyboardFlags" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

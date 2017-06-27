@@ -44,10 +44,10 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <typeparam name="T">To be added.</typeparam>
-        <param name="element">To be added.</param>
-        <param name="name">To be added.</param>
-        <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="T" /> in the scope that includes <paramref name="element" />.</summary>
+        <typeparam name="T">The type of instance to find.</typeparam>
+        <param name="element">An element in the scope to search.</param>
+        <param name="name">The name of the element to find.</param>
+        <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="name" /> in the scope that includes <paramref name="element" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

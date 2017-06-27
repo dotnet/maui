@@ -94,7 +94,7 @@
         <Parameter Name="timeout" Type="System.Func&lt;System.Int64,System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="timeout">To be added.</param>
+        <param name="timeout">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -114,7 +114,7 @@
         <Parameter Name="handle" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="handle">To be added.</param>
+        <param name="handle">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -133,7 +133,7 @@
         <Parameter Name="timestep" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="timestep">To be added.</param>
+        <param name="timestep">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -152,7 +152,7 @@
         <Parameter Name="ticker" Type="Xamarin.Forms.Internals.Ticker" />
       </Parameters>
       <Docs>
-        <param name="ticker">To be added.</param>
+        <param name="ticker">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

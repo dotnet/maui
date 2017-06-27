@@ -258,7 +258,7 @@ void SetupView()
         <ReturnType>Xamarin.Forms.Internals.TemplatedItemsList&lt;Xamarin.Forms.ItemsView&lt;TVisual&gt;,TVisual&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <summary>Gets the list of templated items.</summary>
         <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
@@ -279,7 +279,7 @@ void SetupView()
         <Parameter Name="content" Type="TVisual" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
+        <param name="content">The content to unhook.</param>
         <summary>Application developers override this method to unregister event handlers for items that they registered in <see cref="M:Xamarin.Forms.ItemsView{TVisual}.SetupContent(`0, int)" />.</summary>
         <remarks>
           <para>Application developers must call <see cref="M:Xamarin.Forms.ItemsView{TVisual}.UnhookContent(`0, int)" /> before performing any other action when overriding this method.</para>
@@ -307,7 +307,7 @@ void SetupView()
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">The item to use.</param>
         <summary>Creates a default TVisual by using <paramref name="item" /></summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -334,9 +334,9 @@ void SetupView()
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="index">To be added.</param>
-        <summary>Configures <paramref name="content" />.</summary>
+        <param name="content">Internal use only.</param>
+        <param name="index">Internal use only.</param>
+        <summary>CInternal use only.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -356,7 +356,7 @@ void SetupView()
         <Parameter Name="content" Type="TVisual" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
+        <param name="content">Internal use only.</param>
         <summary>Internal use only.</summary>
         <remarks>To be added.</remarks>
       </Docs>

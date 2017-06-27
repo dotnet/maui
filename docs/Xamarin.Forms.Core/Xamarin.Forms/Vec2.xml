@@ -38,8 +38,8 @@
         <Parameter Name="y" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
+        <param name="x">The X coordinate of the vector.</param>
+        <param name="y">The Y coordinate of the vector.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Vec2" /> that is defined by <paramref name="x" /> and <paramref name="y" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

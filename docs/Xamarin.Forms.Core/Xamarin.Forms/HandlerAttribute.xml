@@ -43,8 +43,8 @@
         <Parameter Name="target" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="handler">To be added.</param>
-        <param name="target">To be added.</param>
+        <param name="handler">The handler type.</param>
+        <param name="target">The target type.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.HandlerAttribute" /> object that maps events from <paramref name="target" /> to <paramref name="handler" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

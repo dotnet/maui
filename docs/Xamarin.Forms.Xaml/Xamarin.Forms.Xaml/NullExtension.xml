@@ -68,7 +68,7 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">For internal use by the XAML infrastructure.</param>
         <summary>Returns the null object.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

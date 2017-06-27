@@ -871,7 +871,7 @@
         <Docs>
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
-          <param name="cell">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroup``2(``1)" />
@@ -907,7 +907,7 @@
         <Docs>
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
-          <param name="cell">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetGroupHeaderContent``2(``1)" />
@@ -943,7 +943,7 @@
         <Docs>
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
-          <param name="cell">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIndex``2(``1)" />
@@ -979,7 +979,7 @@
         <Docs>
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
-          <param name="cell">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetIsGroupHeader``2(``1)" />
@@ -1000,7 +1000,7 @@
           <Parameter Name="cell" Type="Xamarin.Forms.Cell" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="cell">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.GetPath(Xamarin.Forms.Cell)" />
@@ -1037,8 +1037,8 @@
         <Docs>
           <typeparam name="TView">To be added.</typeparam>
           <typeparam name="TItem">To be added.</typeparam>
-          <param name="cell">To be added.</param>
-          <param name="value">To be added.</param>
+          <param name="cell">For internal use by the Xamarin.Forms platform.</param>
+          <param name="value">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.CellExtensions" Member="M:Xamarin.Forms.Internals.CellExtensions.SetIsGroupHeader``2(``1,System.Boolean)" />
@@ -1061,9 +1061,9 @@
           <Parameter Name="container" Type="Xamarin.Forms.BindableObject" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="item">To be added.</param>
-          <param name="container">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="item">For internal use by the Xamarin.Forms platform.</param>
+          <param name="container">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DataTemplateExtensions" Member="M:Xamarin.Forms.Internals.DataTemplateExtensions.CreateContent(Xamarin.Forms.DataTemplate,System.Object,Xamarin.Forms.BindableObject)" />
@@ -1084,7 +1084,7 @@
           <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="orientation">To be added.</param>
+          <param name="orientation">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsLandscape(Xamarin.Forms.Internals.DeviceOrientation)" />
@@ -1105,7 +1105,7 @@
           <Parameter Name="orientation" Type="Xamarin.Forms.Internals.DeviceOrientation" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="orientation">To be added.</param>
+          <param name="orientation">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.DeviceOrientationExtensions" Member="M:Xamarin.Forms.Internals.DeviceOrientationExtensions.IsPortrait(Xamarin.Forms.Internals.DeviceOrientation)" />
@@ -1131,8 +1131,8 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="enumeration">To be added.</param>
-          <param name="action">To be added.</param>
+          <param name="enumeration">For internal use by the Xamarin.Forms platform.</param>
+          <param name="action">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})" />
@@ -1162,8 +1162,8 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="gestures">To be added.</param>
-          <param name="predicate">To be added.</param>
+          <param name="gestures">For internal use by the Xamarin.Forms platform.</param>
+          <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.GetGesturesFor``1(System.Collections.Generic.IEnumerable{Xamarin.Forms.IGestureRecognizer},System.Func{``0,System.Boolean})" />
@@ -1189,8 +1189,8 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="enumerable">To be added.</param>
-          <param name="item">To be added.</param>
+          <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+          <param name="item">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},``0)" />
@@ -1216,8 +1216,8 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="enumerable">To be added.</param>
-          <param name="predicate">To be added.</param>
+          <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+          <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.IndexOf``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})" />
@@ -1243,8 +1243,8 @@
         </Parameters>
         <Docs>
           <typeparam name="T">To be added.</typeparam>
-          <param name="enumerable">To be added.</param>
-          <param name="item">To be added.</param>
+          <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+          <param name="item">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.EnumerableExtensions" Member="M:Xamarin.Forms.Internals.EnumerableExtensions.Prepend``1(System.Collections.Generic.IEnumerable{``0},``0)" />
@@ -1268,10 +1268,10 @@
           <Parameter Name="reset" Type="System.Action" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="insert">To be added.</param>
-          <param name="removeAt">To be added.</param>
-          <param name="reset">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="insert">For internal use by the Xamarin.Forms platform.</param>
+          <param name="removeAt">For internal use by the Xamarin.Forms platform.</param>
+          <param name="reset">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Action{System.Object,System.Int32,System.Boolean},System.Action{System.Object,System.Int32},System.Action)" />
@@ -1298,9 +1298,9 @@
         </Parameters>
         <Docs>
           <typeparam name="TFrom">To be added.</typeparam>
-          <param name="self">To be added.</param>
-          <param name="from">To be added.</param>
-          <param name="to">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="from">For internal use by the Xamarin.Forms platform.</param>
+          <param name="to">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.Apply``1(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Collections.Generic.IList{``0},System.Collections.Generic.IList{System.Object})" />
@@ -1322,8 +1322,8 @@
           <Parameter Name="count" Type="System.Int32" />
         </Parameters>
         <Docs>
-          <param name="e">To be added.</param>
-          <param name="count">To be added.</param>
+          <param name="e">For internal use by the Xamarin.Forms platform.</param>
+          <param name="count">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by platform renderers.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions" Member="M:Xamarin.Forms.Internals.NotifyCollectionChangedEventArgsExtensions.WithCount(System.Collections.Specialized.NotifyCollectionChangedEventArgs,System.Int32)" />
@@ -1346,9 +1346,9 @@
           <Parameter Name="max" Type="System.Double" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="min">To be added.</param>
-          <param name="max">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="min">For internal use by the Xamarin.Forms platform.</param>
+          <param name="max">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Double,System.Double,System.Double)" />
@@ -1371,9 +1371,9 @@
           <Parameter Name="max" Type="System.Int32" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="min">To be added.</param>
-          <param name="max">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="min">For internal use by the Xamarin.Forms platform.</param>
+          <param name="max">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.NumericExtensions" Member="M:Xamarin.Forms.Internals.NumericExtensions.Clamp(System.Int32,System.Int32,System.Int32)" />
@@ -1395,8 +1395,8 @@
           <Parameter Name="predicate" Type="System.Func&lt;System.Reflection.FieldInfo,System.Boolean&gt;" />
         </Parameters>
         <Docs>
-          <param name="type">To be added.</param>
-          <param name="predicate">To be added.</param>
+          <param name="type">For internal use by the Xamarin.Forms platform.</param>
+          <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.Func{System.Reflection.FieldInfo,System.Boolean})" />
@@ -1418,8 +1418,8 @@
           <Parameter Name="name" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="type">To be added.</param>
-          <param name="name">To be added.</param>
+          <param name="type">For internal use by the Xamarin.Forms platform.</param>
+          <param name="name">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetField(System.Type,System.String)" />
@@ -1440,7 +1440,7 @@
           <Parameter Name="type" Type="System.Type" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="type">To be added.</param>
+          <param name="type">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetFields(System.Type)" />
@@ -1461,7 +1461,7 @@
           <Parameter Name="type" Type="System.Type" RefType="this" />
         </Parameters>
         <Docs>
-          <param name="type">To be added.</param>
+          <param name="type">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperties(System.Type)" />
@@ -1483,8 +1483,8 @@
           <Parameter Name="name" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="type">To be added.</param>
-          <param name="name">To be added.</param>
+          <param name="type">For internal use by the Xamarin.Forms platform.</param>
+          <param name="name">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.GetProperty(System.Type,System.String)" />
@@ -1506,8 +1506,8 @@
           <Parameter Name="c" Type="System.Type" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="c">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="c">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsAssignableFrom(System.Type,System.Type)" />
@@ -1529,8 +1529,8 @@
           <Parameter Name="o" Type="System.Object" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="o">To be added.</param>
+          <param name="self">For internal use by the Xamarin.Forms platform.</param>
+          <param name="o">For internal use by the Xamarin.Forms platform.</param>
           <summary>For internal use by the Xamarin.Forms platform.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.Internals.ReflectionExtensions" Member="M:Xamarin.Forms.Internals.ReflectionExtensions.IsInstanceOfType(System.Type,System.Object)" />
@@ -1555,10 +1555,10 @@
           <Parameter Name="name" Type="System.String" />
         </Parameters>
         <Docs>
-          <typeparam name="T">To be added.</typeparam>
-          <param name="element">To be added.</param>
-          <param name="name">To be added.</param>
-          <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="T" /> in the scope that includes <paramref name="element" />.</summary>
+          <typeparam name="T">The type of instance to find.</typeparam>
+          <param name="element">An element in the scope to search.</param>
+          <param name="name">The name of the element to find.</param>
+          <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="name" /> in the scope that includes <paramref name="element" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.NameScopeExtensions" Member="M:Xamarin.Forms.NameScopeExtensions.FindByName``1(Xamarin.Forms.Element,System.String)" />
       </Member>
@@ -2626,9 +2626,9 @@
           <Parameter Name="value" Type="System.Object" />
         </Parameters>
         <Docs>
-          <param name="setters">To be added.</param>
-          <param name="property">To be added.</param>
-          <param name="value">To be added.</param>
+          <param name="setters">The list of setters to which to add a setter that sets <paramref name="property" /> to <paramref name="value" />.</param>
+          <param name="property">The property to set.</param>
+          <param name="value">The value to which to set the property set.</param>
           <summary>Add a Setter with a value to the IList&lt;Setter&gt;</summary>
         </Docs>
         <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.Add(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,System.Object)" />
@@ -2651,9 +2651,10 @@
           <Parameter Name="binding" Type="Xamarin.Forms.Binding" />
         </Parameters>
         <Docs>
-          <param name="setters">To be added.</param>
+          <param name="setters">The list of setters to which to add a setter that binds <paramref name="property" /> to <paramref name="value" />.</param>
           <param name="property">To be added.</param>
-          <param name="binding">To be added.</param>
+          <param name="binding">The property to set.</param>
+          <param name="binding">The binding to add.</param>
           <summary>Add a Setter with a Binding to the IList&lt;Setter&gt;</summary>
         </Docs>
         <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.AddBinding(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,Xamarin.Forms.Binding)" />
@@ -2676,9 +2677,9 @@
           <Parameter Name="key" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="setters">To be added.</param>
-          <param name="property">To be added.</param>
-          <param name="key">To be added.</param>
+          <param name="setters">The list of setters to which to add the keyed property.</param>
+          <param name="property">The resource to add.</param>
+          <param name="key">The resource key.</param>
           <summary>Add a Setter with a DynamicResource to the IList&lt;Setter&gt;</summary>
         </Docs>
         <Link Type="Xamarin.Forms.SettersExtensions" Member="M:Xamarin.Forms.SettersExtensions.AddDynamicResource(System.Collections.Generic.IList{Xamarin.Forms.Setter},Xamarin.Forms.BindableProperty,System.String)" />
@@ -2701,9 +2702,9 @@
           <Parameter Name="path" Type="System.String" />
         </Parameters>
         <Docs>
-          <param name="self">To be added.</param>
-          <param name="targetProperty">To be added.</param>
-          <param name="path">To be added.</param>
+          <param name="self">The template on which this method operates.</param>
+          <param name="targetProperty">The target property of the binding.</param>
+          <param name="path">The path to the binding.</param>
           <summary>Binds the <paramref name="self" /> object's <paramref name="targetProperty" /> to a new <see cref="T:Xamarin.Forms.Binding" /> instance that was created with <paramref name="path" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.TemplateExtensions" Member="M:Xamarin.Forms.TemplateExtensions.SetBinding(Xamarin.Forms.DataTemplate,Xamarin.Forms.BindableProperty,System.String)" />
@@ -2727,10 +2728,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="opacity">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="opacity">The opacity to fade to.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name="length" />, and <paramref name="easing" /> parameters.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.FadeTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2754,10 +2755,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="bounds">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="bounds">The layout bounds.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that eases the bounds of the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by the <paramref name="view" /> to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.LayoutTo(Xamarin.Forms.VisualElement,Xamarin.Forms.Rectangle,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2781,10 +2782,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="drotation">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="drotation">The relative rotation.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Rotates the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RelRotateTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2808,10 +2809,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="dscale">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="dscale">The relative scale.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> from its current scale to <paramref name="dscale" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RelScaleTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2835,10 +2836,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="rotation">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="rotation">The final rotation value.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that performs the rotation that is described by the <paramref name="rotation" />, <paramref name="length" />, and <paramref name="easing" /> parameters..</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2862,10 +2863,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="rotation">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="rotation">The final rotation value.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that skews the Y axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateXTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2889,10 +2890,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="rotation">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="rotation">The final rotation value.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that skews the X axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.RotateYTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />
@@ -2916,10 +2917,10 @@
           <Parameter Name="easing" Type="Xamarin.Forms.Easing" />
         </Parameters>
         <Docs>
-          <param name="view">To be added.</param>
-          <param name="scale">To be added.</param>
-          <param name="length">To be added.</param>
-          <param name="easing">To be added.</param>
+          <param name="view">The view on which this method operates.</param>
+          <param name="scale">The final absolute scale.</param>
+          <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+          <param name="easing">The easing function to use for the animation.</param>
           <summary>Returns a task that scales the <see cref="T:Xamarin.Forms.VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.ViewExtensions" Member="M:Xamarin.Forms.ViewExtensions.ScaleTo(Xamarin.Forms.VisualElement,System.Double,System.UInt32,Xamarin.Forms.Easing)" />

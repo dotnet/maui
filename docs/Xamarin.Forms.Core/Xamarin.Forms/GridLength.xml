@@ -48,7 +48,7 @@
         <Parameter Name="value" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value of the new grid length.</param>
         <summary>Initializes a new Absolute GridLength.</summary>
         <remarks>This is striclty equivalent to new GridLength (value, GridUnitType.Absolute).</remarks>
       </Docs>

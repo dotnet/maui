@@ -27,7 +27,7 @@
         <Parameter Name="status" Type="Xamarin.Forms.GestureStatus" />
       </Parameters>
       <Docs>
-        <param name="status">To be added.</param>
+        <param name="status">The new gesture status.</param>
         <summary>Constructs a new <see cref="T:Xamarin.Forms.PinchGestureUpdatedEventArgs" /> object with default values.</summary>
         <remarks>To be added.</remarks>
       </Docs>

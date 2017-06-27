@@ -129,7 +129,7 @@ Assert.AreSame (kvp.Value, converter.ConvertFrom (kvp.Key));
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value to convert.</param>
         <summary>Returns a keyboard for a valid keyboard name.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

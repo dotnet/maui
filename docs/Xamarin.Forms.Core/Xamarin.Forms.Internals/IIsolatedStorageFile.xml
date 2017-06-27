@@ -30,7 +30,7 @@
         <Parameter Name="path" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -50,7 +50,7 @@
         <Parameter Name="path" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -70,7 +70,7 @@
         <Parameter Name="path" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -90,7 +90,7 @@
         <Parameter Name="path" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -112,9 +112,9 @@
         <Parameter Name="access" Type="Xamarin.Forms.Internals.FileAccess" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
-        <param name="mode">To be added.</param>
-        <param name="access">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
+        <param name="mode">For internal use by the Xamarin.Forms platform.</param>
+        <param name="access">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -137,10 +137,10 @@
         <Parameter Name="share" Type="Xamarin.Forms.Internals.FileShare" />
       </Parameters>
       <Docs>
-        <param name="path">To be added.</param>
-        <param name="mode">To be added.</param>
-        <param name="access">To be added.</param>
-        <param name="share">To be added.</param>
+        <param name="path">For internal use by the Xamarin.Forms platform.</param>
+        <param name="mode">For internal use by the Xamarin.Forms platform.</param>
+        <param name="access">For internal use by the Xamarin.Forms platform.</param>
+        <param name="share">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

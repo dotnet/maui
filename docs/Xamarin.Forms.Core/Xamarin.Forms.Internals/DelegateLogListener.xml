@@ -30,7 +30,7 @@
         <Parameter Name="log" Type="System.Action&lt;System.String,System.String&gt;" />
       </Parameters>
       <Docs>
-        <param name="log">To be added.</param>
+        <param name="log">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -50,8 +50,8 @@
         <Parameter Name="message" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="category">To be added.</param>
-        <param name="message">To be added.</param>
+        <param name="category">For internal use by the Xamarin.Forms platform.</param>
+        <param name="message">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

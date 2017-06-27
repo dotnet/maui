@@ -26,8 +26,8 @@
         <Parameter Name="baseUrl" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="html">To be added.</param>
-        <param name="baseUrl">To be added.</param>
+        <param name="html">For internal use by the Xamarin.Forms platform.</param>
+        <param name="baseUrl">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -46,7 +46,7 @@
         <Parameter Name="url" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="url">To be added.</param>
+        <param name="url">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
