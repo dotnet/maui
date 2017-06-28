@@ -70,7 +70,8 @@ namespace Xamarin.Forms.Xaml
 
 		public static void Load(object view, string xaml)
 		{
-			using (var reader = XmlReader.Create(new StringReader(xaml)))
+			using (var textReader = new StringReader(xaml))
+			using (var reader = XmlReader.Create(textReader))
 			{
 				while (reader.Read())
 				{
@@ -100,7 +101,8 @@ namespace Xamarin.Forms.Xaml
 		public static object Create (string xaml, bool doNotThrow = false)
 		{
 			object inflatedView = null;
-			using (var reader = XmlReader.Create (new StringReader (xaml))) {
+			using (var textreader = new StringReader(xaml))
+			using (var reader = XmlReader.Create (textreader)) {
 				while (reader.Read ()) {
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
