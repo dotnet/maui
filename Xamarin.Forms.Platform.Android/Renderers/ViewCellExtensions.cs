@@ -22,6 +22,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static void EnsureLongClickCancellation(this AView view, MotionEvent motionEvent, bool handled, VisualElement element)
 		{
+			if (view.IsDisposed())
+			{
+				return;
+			}
+
 			if (motionEvent.Action == MotionEventActions.Up && handled && view.LongClickable && element.IsInViewCell())
 			{
 				// In order for long presses/clicks (for opening context menus) to work in a ViewCell 
