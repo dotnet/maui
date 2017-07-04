@@ -198,8 +198,11 @@ namespace Xamarin.Forms.Maps.MacOS
 				var mkMapView = (MKMapView)Control;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
-				mkMapView.Delegate.Dispose();
-				mkMapView.Delegate = null;
+				if (mkMapView.Delegate != null)
+				{
+					mkMapView.Delegate.Dispose();
+					mkMapView.Delegate = null;
+				}
 				mkMapView.RemoveFromSuperview();
 #if __MOBILE__
 				if (FormsMaps.IsiOs9OrNewer)
