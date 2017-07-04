@@ -326,6 +326,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnElementAppearing(object sender, EventArgs e)
 		{
 			UpdateTitleVisible();
+			UpdateBackButton();
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
