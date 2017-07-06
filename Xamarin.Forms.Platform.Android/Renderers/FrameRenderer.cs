@@ -208,8 +208,6 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (cornerRadius == -1f)
 					cornerRadius = 5f; // default corner radius
-				else
-					cornerRadius = Forms.Context.ToPixels(cornerRadius);
 
 				DrawBackground(canvas, width, height, cornerRadius, pressed);
 				DrawOutline(canvas, width, height, cornerRadius);
