@@ -64,11 +64,10 @@ namespace Xamarin.Forms.Controls.Issues
 			Children.Add (new ContentPage { BackgroundColor = Color.Blue, Title = "Page 2" });
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 		[Test]
 		public void Bugzilla36681Test ()
 		{
-			if (RunningApp is Xamarin.UITest.Android.AndroidApp) {
 				RunningApp.WaitForElement (q => q.Marked ("picker"));
 				RunningApp.Tap ("picker");
 				var ok = RunningApp.Query ("OK");
@@ -82,7 +81,6 @@ namespace Xamarin.Forms.Controls.Issues
 					RunningApp.Tap ("item2");
 				}
 				RunningApp.WaitForElement (q => q.Marked ("Success!"));
-			}
 		}
 #endif
 	}
