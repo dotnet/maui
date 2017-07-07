@@ -156,7 +156,7 @@ namespace Xamarin.Forms
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true))	// Android 5.0+
+				if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer)	// Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
