@@ -217,6 +217,11 @@ namespace Xamarin.Forms.Build.Tasks
 #pragma warning restore 0618
 						resourcesToPrune.Add(resource);
 					}
+					if (hasCompiledXamlResources) {
+						Logger.LogString(2, "  Changing the module MVID...");
+						module.Mvid = Guid.NewGuid();
+						Logger.LogLine(2, "done.");
+					}
 					if (!KeepXamlResources) {
 						if (resourcesToPrune.Any())
 							Logger.LogLine(2, "  Removing compiled xaml resources");
