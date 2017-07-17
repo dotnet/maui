@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
         [Test]
-        public void VerifyNestedStacklayoutTapsBubble(TransparentOverlayTests.TestPoint test)
+        public void VerifyNestedStacklayoutTapsBubble()
         {
             RunningApp.WaitForElement(q => q.Marked(InnerLayout));
             RunningApp.Tap(InnerLayout);
