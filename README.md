@@ -71,6 +71,7 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 
 - We do not use the `private` keyword as it is the default accessibility level in C#.
 - We use hard tabs over spaces. You can change this setting in VS 2015 via `Tools > Options` and navigating to `Text Editor > C#` and selecting the "Keep tabs" radio option.
+- Lines should be limited to a max of 120 characters (or as close as possible within reason). 
 
 ## Contributing ##
 
