@@ -216,6 +216,7 @@
       <DependentUpon>PlatformSpecifics_iOSTranslucentNavBarX.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)PopAfterRemove.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />
