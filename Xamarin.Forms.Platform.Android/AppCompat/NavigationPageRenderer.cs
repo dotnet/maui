@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		FragmentManager FragmentManager	=> _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
 
-		IPageController PageController => Element as IPageController;
+		IPageController PageController => Element;
 
 		bool ToolbarVisible
 		{
@@ -437,11 +437,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				ResetToolbar();
 		}
 
-		void FilterPageFragment(Page page)
-		{
-			_fragmentStack.RemoveAll(f => ((FragmentContainer)f).Page == page);
-		}
-
 		void HandleToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName || e.PropertyName == MenuItem.TextProperty.PropertyName || e.PropertyName == MenuItem.IconProperty.PropertyName)
@@ -552,29 +547,49 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_drawerToggle.DrawerIndicatorEnabled = true;
 		}
 
+		Fragment GetPageFragment(Page page)
+		{
+			for (int n = 0; n < _fragmentStack.Count; n++)
+			{
+				if ((_fragmentStack[n] as FragmentContainer)?.Page == page)
+				{
+					return _fragmentStack[n];
+				}
+			}
+
+			return null;
+		}
+
 		void RemovePage(Page page)
 		{
+			Fragment fragment = GetPageFragment(page);
+
+			if (fragment == null)
+			{
+				return;
+			}
+
+			// Go ahead and take care of the fragment bookkeeping for the page being removed
+			FragmentTransaction transaction = FragmentManager.BeginTransaction();
+			transaction.DisallowAddToBackStack();
+			transaction.Remove(fragment);
+			transaction.CommitAllowingStateLoss();
+			FragmentManager.ExecutePendingTransactions();
+
+			// And remove the fragment from our own stack
+			_fragmentStack.Remove(fragment);
+
+			// Now handle all the XF removal/cleanup
 			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
 
 			if (rendererToRemove != null)
 			{
 				var containerToRemove = (PageContainer)rendererToRemove.View.Parent;
-
 				rendererToRemove.View?.RemoveFromParent();
-
 				rendererToRemove?.Dispose();
-
-				// This causes a NullPointerException in API 25.1+ when we later call ExecutePendingTransactions();
-				// We may want to remove this in the future if it is resolved in the Android SDK.
-				if ((int)Build.VERSION.SdkInt < 25)
-				{
-					containerToRemove?.RemoveFromParent();
-					containerToRemove?.Dispose();
-				}
+				containerToRemove?.RemoveFromParent();
+				containerToRemove?.Dispose();
 			}
-
-			// Also remove this page from the fragmentStack
-			FilterPageFragment(page);
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
 			{
