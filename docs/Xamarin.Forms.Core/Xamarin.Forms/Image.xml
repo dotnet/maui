@@ -192,9 +192,12 @@ indicator.BindingContext = image;]]></code>
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the opacity flag for the image. This is a bindable property.</summary>
-        <value>A <see cref="T:System.Boolean" /> indicating the value for the property. Default is false.</value>
-        <remarks>If true, you'll be able to see through transparent parts of the image.</remarks>
+        <summary>Gets or sets a Boolean value that, if <see langword="true" /> hints to the rendering engine that it may safely omit drawing visual elements behind the image.</summary>
+        <value>The value of the opacity rendering hint.</value>
+        <remarks>
+          <para>When this property is <see langword="true" />, and if the <see cref="P:Xamarin.Forms.Image.Opacity" /> property is set to its default value of <c>1.0</c>, and if the source image is not transparent, then the rendering engine on the target platform can safely ignore those portions of visual elements that appear behind this image when drawing the screen. This can improve performance. However, developers should not set this property to <see langword="true" /> if the alpha channel of the image indicates transparency, if the <see cref="P:Xamarin.Forms.Image.Opacity" /> property is less than <c>1.0</c>, or if the source image itself is transparent. Doing any of these when this property is <see langword="true" /> may result in visual artifacts or other (undefined) behavior. Conversely, developers should ensure that this property is set to <see langword="false" /> if they suspect or know that any of the previously mentioned conditions may indicate that the image will be transparent or partially transparent.</para>
+          <para>Setting this property does not change the opacity of the image. Instead, it indicates whether the rendering engine may treat the image as opaque while rendering.</para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsOpaqueProperty">
@@ -214,7 +217,7 @@ indicator.BindingContext = image;]]></code>
         <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Identifies the IsOpaque bindable property.</summary>
+        <summary>Backing store for the IsOpaque bindable property.</summary>
         <remarks>
         </remarks>
       </Docs>
