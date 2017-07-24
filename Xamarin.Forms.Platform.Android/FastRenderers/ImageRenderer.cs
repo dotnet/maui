@@ -41,6 +41,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				if (_element != null)
 				{
 					_element.PropertyChanged -= OnElementPropertyChanged;
+
+					if (Platform.GetRenderer(_element) == this)
+						_element.ClearValue(Platform.RendererProperty);
 				}
 			}
 
