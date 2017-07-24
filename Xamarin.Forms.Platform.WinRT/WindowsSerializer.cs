@@ -29,8 +29,18 @@ namespace Xamarin.Forms.Platform.WinRT
 					if (stream.Length == 0)
 						return new Dictionary<string, object>(4);
 
-					var serializer = new DataContractSerializer(typeof(IDictionary<string, object>));
-					return (IDictionary<string, object>)serializer.ReadObject(stream);
+					try
+					{
+						var serializer = new DataContractSerializer(typeof(IDictionary<string, object>));
+						return (IDictionary<string, object>)serializer.ReadObject(stream);
+					}
+					catch (Exception e)
+					{
+						Debug.WriteLine("Could not deserialize properties: " + e.Message);
+						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+					}
+
+					return null;
 				}
 			}
 			catch (FileNotFoundException)
