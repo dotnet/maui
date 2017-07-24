@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Maps.WP8
 
 			var boundingRegion = LocationRectangle.CreateBoundingRectangle(topLeft, bottomRight);
 			var result = new MapSpan(center, boundingRegion.HeightInDegrees, boundingRegion.WidthInDegrees);
-			Element.VisibleRegion = result;
+			Element.SetVisibleRegion(result);
 		}
 
 		void LoadPins()

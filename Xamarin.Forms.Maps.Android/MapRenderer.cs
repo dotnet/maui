@@ -385,7 +385,7 @@ namespace Xamarin.Forms.Maps.Android
 			LatLng lr = projection.FromScreenLocation(new global::Android.Graphics.Point(width, height));
 			double dlat = Math.Max(Math.Abs(ul.Latitude - lr.Latitude), Math.Abs(ur.Latitude - ll.Latitude));
 			double dlong = Math.Max(Math.Abs(ul.Longitude - lr.Longitude), Math.Abs(ur.Longitude - ll.Longitude));
-			Element.VisibleRegion = new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong);
+			Element.SetVisibleRegion(new MapSpan(new Position(pos.Latitude, pos.Longitude), dlat, dlong));
 		}
 
 		void IOnMapReadyCallback.OnMapReady(GoogleMap map)

@@ -231,7 +231,7 @@ namespace Xamarin.Forms.Maps.WinRT
 					var longitudeDelta = Math.Abs(nw.Position.Longitude - se.Position.Longitude);
                     await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                     {
-					    Element.VisibleRegion = new MapSpan(center, latitudeDelta, longitudeDelta);
+						Element.SetVisibleRegion(new MapSpan(center, latitudeDelta, longitudeDelta));
                     });
 				}
             }

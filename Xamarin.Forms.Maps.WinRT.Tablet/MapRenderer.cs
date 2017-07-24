@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Maps.WinRT
 
 			var boundingRegion = Control.Bounds;
 			var result = new MapSpan(center, boundingRegion.Height, boundingRegion.Width);
-			Element.VisibleRegion = result;
+			Element.SetVisibleRegion(result);
 		}
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
