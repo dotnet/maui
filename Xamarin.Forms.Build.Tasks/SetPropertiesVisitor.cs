@@ -764,14 +764,16 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static bool CanConnectEvent(VariableDefinition parent, string localName)
 		{
-			return parent.VariableType.GetEvent(ed => ed.Name == localName) != null;
+			TypeReference _;
+			return parent.VariableType.GetEvent(ed => ed.Name == localName, out _) != null;
 		}
 
 		static IEnumerable<Instruction> ConnectEvent(VariableDefinition parent, string localName, INode valueNode, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var elementType = parent.VariableType;
 			var module = context.Body.Method.Module;
-			var eventinfo = elementType.GetEvent(ed => ed.Name == localName);
+			TypeReference eventDeclaringTypeRef;
+			var eventinfo = elementType.GetEvent(ed => ed.Name == localName, out eventDeclaringTypeRef);
 
 //			IL_0007:  ldloc.0 
 //			IL_0008:  ldarg.0 
@@ -810,7 +812,9 @@ namespace Xamarin.Forms.Build.Tasks
 			var ctor = module.ImportReference(eventinfo.EventType.Resolve().GetConstructors().First());
 			ctor = ctor.ResolveGenericParameters(eventinfo.EventType, module);
 			yield return Instruction.Create(OpCodes.Newobj, module.ImportReference(ctor));
-			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(eventinfo.AddMethod));
+			var adder = module.ImportReference(eventinfo.AddMethod);
+			adder = adder.ResolveGenericParameters(eventDeclaringTypeRef, module);
+			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(adder));
 		}
 
 		static bool CanSetDynamicResource(FieldReference bpRef, INode valueNode, ILContext context)
