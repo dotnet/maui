@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isBidirectional;
 		ScrollView _view;
 		int _previousBottom;
+		bool _isEnabled;
 
 		public ScrollViewRenderer() : base(Forms.Context)
 		{
@@ -79,8 +80,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				LoadContent();
 				UpdateBackgroundColor();
-
 				UpdateOrientation();
+				UpdateIsEnabled();
 
 				element.SendViewInitialized(this);
 
@@ -129,6 +130,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent ev)
 		{
+			if (!_isEnabled)
+				return false;
+
 			if (ShouldSkipOnTouch)
 			{
 				ShouldSkipOnTouch = false;
@@ -263,6 +267,18 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateBackgroundColor();
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
 				UpdateOrientation();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled();
+		}
+
+		void UpdateIsEnabled()
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			_isEnabled = Element.IsEnabled;
 		}
 
 		void LoadContent()

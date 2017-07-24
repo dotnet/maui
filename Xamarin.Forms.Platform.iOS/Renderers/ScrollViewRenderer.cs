@@ -81,6 +81,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateDelaysContentTouches();
 				UpdateContentSize();
 				UpdateBackgroundColor();
+				UpdateIsEnabled();
 
 				OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
@@ -166,6 +167,18 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateContentSize();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled();
+		}
+
+		void UpdateIsEnabled()
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			ScrollEnabled = Element.IsEnabled;
 		}
 
 		void HandleScrollAnimationEnded(object sender, EventArgs e)
