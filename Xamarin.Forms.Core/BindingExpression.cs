@@ -361,6 +361,7 @@ namespace Xamarin.Forms
 			}
 		}
 
+		static Type[] DecimalTypes = new[] { typeof(float), typeof(decimal), typeof(double) };
 		bool TryConvert(BindingExpressionPart part, ref object value, Type convertTo, bool toTarget)
 		{
 			if (value == null)
@@ -371,6 +372,16 @@ namespace Xamarin.Forms
 			object original = value;
 			try
 			{
+				var stringValue = value as string ?? string.Empty;
+				// see: https://bugzilla.xamarin.com/show_bug.cgi?id=32871
+				// do not canonicalize "*.[.]"; "1." should not update bound BindableProperty
+				if (stringValue.EndsWith(".") && DecimalTypes.Contains(convertTo))
+					throw new FormatException();
+
+				// do not canonicalize "-0"; user will likely enter a period after "-0"
+				if (stringValue == "-0" && DecimalTypes.Contains(convertTo))
+					throw new FormatException();
+
 				value = Convert.ChangeType(value, convertTo, CultureInfo.InvariantCulture);
 				return true;
 			}
