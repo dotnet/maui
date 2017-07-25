@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				SetNativeControl(new NSProgressIndicator
 				{
 					IsDisplayedWhenStopped = true,
+					Indeterminate = false,
 					Style = NSProgressIndicatorStyle.Bar,
 					MinValue = 0,
 					MaxValue = 1
