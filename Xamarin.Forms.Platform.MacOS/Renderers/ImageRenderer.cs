@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using AppKit;
+using CoreAnimation;
+using CoreGraphics;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	public class ImageRenderer : ViewRenderer<Image, NSImageView>
+	public class ImageRenderer : ViewRenderer<Image, NSView>
 	{
 		bool _isDisposed;
 
@@ -15,8 +17,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (disposing)
 			{
-				NSImage oldUIImage;
-				if (Control != null && (oldUIImage = Control.Image) != null)
+				CGImage oldUIImage;
+				if (Control != null && (oldUIImage = Control.Layer.Contents) != null)
 				{
 					oldUIImage.Dispose();
 				}
@@ -58,8 +60,19 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void SetAspect()
 		{
-			//TODO: Implement set Image Aspect
-			//Control.ContentMode = Element.Aspect.ToUIViewContentMode();
+			switch (Element.Aspect)
+			{
+				case Aspect.AspectFill:
+					Control.Layer.ContentsGravity = CALayer.GravityResizeAspectFill;
+					break;
+				case Aspect.Fill:
+					Control.Layer.ContentsGravity = CALayer.GravityResize;
+					break;
+				case Aspect.AspectFit:
+				default:
+					Control.Layer.ContentsGravity = CALayer.GravityResizeAspect;
+					break;
+			}
 		}
 
 		async void SetImage(Image oldElement = null)
@@ -76,7 +89,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (imageSource != null && source is FileImageSource && imageSource.File == ((FileImageSource)source).File)
 					return;
 
-				Control.Image = null;
+				Control.Layer.Contents = null;
 			}
 
 			IImageSourceHandler handler;
@@ -85,25 +98,27 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
 			{
-				NSImage uiimage;
+				NSImage nsImage;
 				try
 				{
-					uiimage = await handler.LoadImageAsync(source, scale: (float)NSScreen.MainScreen.BackingScaleFactor);
+					nsImage = await handler.LoadImageAsync(source, scale: (float)NSScreen.MainScreen.BackingScaleFactor);
 				}
 				catch (OperationCanceledException)
 				{
-					uiimage = null;
+					nsImage = null;
 				}
 
 				var imageView = Control;
 				if (imageView != null)
-					imageView.Image = uiimage;
+					imageView.Layer.Contents = nsImage != null ? nsImage.CGImage : null;
+				if (nsImage != null)
+					nsImage.Dispose();
 
 				if (!_isDisposed)
 					((IVisualElementController)Element).NativeSizeChanged();
 			}
 			else
-				Control.Image = null;
+				Control.Layer.Contents = null;
 
 			if (!_isDisposed)
 				Element.SetIsLoading(false);
