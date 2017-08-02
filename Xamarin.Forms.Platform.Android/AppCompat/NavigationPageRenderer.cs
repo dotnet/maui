@@ -560,12 +560,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			// Now handle all the XF removal/cleanup
 			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-			var containerToRemove = (PageContainer)rendererToRemove?.ViewGroup.Parent;
 
-			// Also remove this page from the fragmentStack
-			FilterPageFragment(page);
-
-			containerToRemove.RemoveFromParent();
 			if (rendererToRemove != null)
 			{
 				var containerToRemove = (PageContainer)rendererToRemove.ViewGroup.Parent;
