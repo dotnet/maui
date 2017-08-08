@@ -113,7 +113,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly Func<AppQuery, AppQuery> RootPageListView = q => q.Raw("ListViewRenderer index:0");
 		public static readonly Func<AppQuery, AppQuery> GalleryListView = q => q.Raw("ListViewRenderer index:1");
 		public static readonly Func<AppQuery, AppQuery> PageWithoutNavigationBar = q => q.Raw("* id:'content' index:0");
-		//android.support.v7.widget.
+		
 		public static readonly Func<AppQuery, AppQuery> NavigationBarBackButton =
 			q => q.Class("Toolbar").Child("android.widget.ImageButton");
 #endif
