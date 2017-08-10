@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				HorizontalOptions = LayoutOptions.CenterAndExpand
 			};
-			entry.Effects.Add(Effect.Resolve("Xamarin.FocusEffect"));
+			entry.Effects.Add(Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.FocusEffect"));
 
 			Content = new StackLayout
 			{
@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 	public class Bugzilla56609FocusEffect : RoutingEffect
 	{
-		public Bugzilla56609FocusEffect() : base("Xamarin.FocusEffect")
+		public Bugzilla56609FocusEffect() : base($"{Effects.ResolutionGroupName}.FocusEffect")
 		{
 		}
 	}

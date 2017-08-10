@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Controls
 			BackgroundColor = new Color (0.9);
 
 			var normal = new Button { Text = "Normal Button" };
-			normal.Effects.Add (Effect.Resolve ("XamControl.BorderEffect"));
+			normal.Effects.Add (Effect.Resolve ($"{Issues.Effects.ResolutionGroupName}.BorderEffect"));
 
 			var disabled = new Button { Text = "Disabled Button"};
 			var disabledswitch = new Switch ();

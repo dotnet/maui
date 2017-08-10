@@ -191,6 +191,7 @@
     <Compile Include="_38989CustomRenderer.cs" />
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="_57114CustomRenderer.cs" />
+    <Compile Include="_58406EffectRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\default.css" />

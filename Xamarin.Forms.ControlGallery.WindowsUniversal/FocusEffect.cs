@@ -10,7 +10,6 @@ using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Platform.UWP;
 
-[assembly: ResolutionGroupName("Xamarin")]
 [assembly: ExportEffect(typeof(FocusEffect), "FocusEffect")]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {

@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var effect = Effect.Resolve("XamControl.BorderEffect");
+			var effect = Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.BorderEffect");
 
 			var button = new Button { Text = "Click me", AutomationId = ButtonId };
 			button.Clicked += async (sender, e) =>

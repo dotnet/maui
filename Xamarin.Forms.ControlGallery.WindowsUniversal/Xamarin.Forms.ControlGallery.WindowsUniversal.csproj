@@ -121,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="_57114Renderer.cs" />
+    <Compile Include="_58406EffectRenderer.cs" />
     <Content Include="coffee.png" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />

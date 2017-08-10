@@ -37,7 +37,7 @@ using Xamarin.Forms.Controls;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion ("1.0.0.0")]
 [assembly: AssemblyFileVersion ("1.0.0.0")]
-[assembly: Xamarin.Forms.ResolutionGroupName("XamControl")]
+[assembly: Xamarin.Forms.ResolutionGroupName (Xamarin.Forms.Controls.Issues.Effects.ResolutionGroupName)]
 
 // Deliberately broken image source and handler so we can test handling of image loading errors
 [assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]

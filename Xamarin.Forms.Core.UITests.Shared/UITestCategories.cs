@@ -34,6 +34,7 @@
 		public const string IsEnabled = "IsEnabled";
 		public const string Gestures = "Gestures";
 		public const string Navigation = "Navigation";
+		public const string Effects = "Effects";
 
 		public const string ManualReview = "ManualReview";
 	}

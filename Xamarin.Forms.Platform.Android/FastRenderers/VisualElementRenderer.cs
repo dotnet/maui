@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
@@ -23,6 +24,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			_renderer.ElementChanged += OnElementChanged;
 			_gestureManager = new GestureManager(_renderer);
 			_automatiomPropertiesProvider = new AutomationPropertiesProvider(_renderer);
+
 			_effectControlProvider = new EffectControlProvider(_renderer?.View);
 		}
 
@@ -87,6 +89,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 				UpdateBackgroundColor();
 			}
+
+			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
