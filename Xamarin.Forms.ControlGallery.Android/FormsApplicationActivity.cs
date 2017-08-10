@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using Java.Interop;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.Android;
 
@@ -43,6 +44,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			LoadApplication(app);
+		}
+
+		[Export("IsPreAppCompat")]
+		public bool IsPreAppCompat()
+		{
+			return true;
 		}
 	}
 }

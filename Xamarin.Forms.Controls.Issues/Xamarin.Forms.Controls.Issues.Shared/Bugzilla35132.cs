@@ -76,9 +76,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Open"));
 			RunningApp.Tap(q => q.Marked ("Open"));
+			RunningApp.WaitForElement (q => q.Marked ("Testing..."));
 			RunningApp.Back();
 			RunningApp.WaitForElement (q => q.Marked ("Open"));
 			RunningApp.Tap(q => q.Marked ("Open"));
+			RunningApp.WaitForElement (q => q.Marked ("Testing..."));
 			RunningApp.Back();
 			RunningApp.WaitForElement (q => q.Marked ("Open"));
 			RunningApp.Tap(q => q.Marked ("Open"));

@@ -56,8 +56,17 @@ namespace Xamarin.Forms.Controls
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			return ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+			var app = ConfigureApp.Android.ApkFile(AppPaths.ApkPath).Debug().StartApp();
+
+			if (bool.Parse((string)app.Invoke("IsPreAppCompat")))
+			{
+				IsFormsApplicationActivity = true;
+			}
+
+			return app;
 		}
+
+		public static bool IsFormsApplicationActivity { get; private set; }
 #endif
 
 #if __IOS__
