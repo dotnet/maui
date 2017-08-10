@@ -244,10 +244,14 @@ namespace Xamarin.Forms.Platform.MacOS
 				caLayer.Transform = transform;
 			};
 
+#if __MOBILE__
 			if (thread)
 				CADisplayLinkTicker.Default.Invoke(update);
 			else
 				update();
+#else
+			update();
+#endif
 
 			_lastBounds = view.Bounds;
 #if !__MOBILE__
