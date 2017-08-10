@@ -45,9 +45,3 @@ using Xamarin.Forms.Controls.Issues;
 
 // Deliberately broken image source and handler so we can test handling of image loading errors
 [assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
-#if TEST_LEGACY_RENDERERS
-[assembly: ExportRenderer(typeof(Button), typeof(Xamarin.Forms.Platform.Android.AppCompat.ButtonRenderer))]
-[assembly: ExportRenderer(typeof(Image), typeof(Xamarin.Forms.Platform.Android.ImageRenderer))]
-[assembly: ExportRenderer(typeof(Label), typeof(Xamarin.Forms.Platform.Android.LabelRenderer))]
-[assembly: ExportRenderer(typeof(Frame), typeof(Xamarin.Forms.Platform.Android.AppCompat.FrameRenderer))]
-#endif

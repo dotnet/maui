@@ -116,13 +116,22 @@ namespace Xamarin.Forms.Platform.Android
 				RegisterHandlerForDefaultRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
                 RegisterHandlerForDefaultRenderer(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Label), typeof(FastRenderers.LabelRenderer), typeof(LabelRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
+
+				if (Forms.Flags.Contains(Flags.FastRenderersExperimental))
+				{
+					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Label), typeof(FastRenderers.LabelRenderer), typeof(LabelRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
+				}
+				else
+				{
+					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
+				}
 
 				_renderersAdded = true;
 			}

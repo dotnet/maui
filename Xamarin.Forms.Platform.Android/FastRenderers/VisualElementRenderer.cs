@@ -8,7 +8,7 @@ using Object = Java.Lang.Object;
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	// TODO hartez 2017/03/03 14:11:17 It's weird that this class is called VisualElementRenderer but it doesn't implement that interface. The name should probably be different.
-	public class VisualElementRenderer : IDisposable, IEffectControlProvider
+	internal sealed class VisualElementRenderer : IDisposable, IEffectControlProvider
 	{
 		bool _disposed;
 		
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			GC.SuppressFinalize(this);
 		}
 
-		protected void Dispose(bool disposing)
+		void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;

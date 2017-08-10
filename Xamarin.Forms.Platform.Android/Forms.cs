@@ -151,6 +151,19 @@ namespace Xamarin.Forms
 			IsInitialized = true;
 		}
 
+		static IReadOnlyList<string> s_flags;
+		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
+
+		public static void SetFlags(params string[] flags)
+		{
+			if (IsInitialized)
+			{
+				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
+			}
+
+			s_flags = flags.ToList().AsReadOnly();
+		}
+
 		static Color GetAccentColor()
 		{
 			Color rc;

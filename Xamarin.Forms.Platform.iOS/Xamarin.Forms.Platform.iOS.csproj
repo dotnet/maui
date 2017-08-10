@@ -134,6 +134,7 @@
     <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\PlatformConfigurationExtensions.cs" />
+    <Compile Include="Flags.cs" />
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="PlatformEffect.cs" />

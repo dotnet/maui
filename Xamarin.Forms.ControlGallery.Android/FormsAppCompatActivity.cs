@@ -42,7 +42,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (!Debugger.IsAttached)
 				Insights.Initialize(App.InsightsApiKey, ApplicationContext);
 
+#if TEST_EXPERIMENTAL_RENDERERS
+			Forms.SetFlags("FastRenderers_Experimental");
+#endif
+
 			Forms.Init(this, bundle);
+
 			FormsMaps.Init(this, bundle);
 			AndroidAppLinks.Init(this);
 			Forms.ViewInitialized += (sender, e) => {

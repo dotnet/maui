@@ -13,7 +13,7 @@ using static System.String;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class ButtonRenderer : AppCompatButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
+	internal sealed class ButtonRenderer : AppCompatButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
 		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener
 	{
 		float _defaultFontSize;
@@ -206,12 +206,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			return base.OnTouchEvent(e);
 		}
 
-		protected virtual Size MinimumSize()
+		Size MinimumSize()
 		{
 			return new Size();
 		}
 
-		protected virtual void OnElementChanged(ElementChangedEventArgs<Button> e)
+		void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
 			if (e.OldElement != null)
 			{
@@ -234,7 +234,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Button.TextProperty.PropertyName)
 			{
@@ -287,21 +287,21 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			base.OnLayout(changed, l, t, r, b);
 		}
 
-		protected void SetTracker(VisualElementTracker tracker)
+		void SetTracker(VisualElementTracker tracker)
 		{
 			_tracker = tracker;
 		}
 
-		protected void UpdateBackgroundColor()
+		void UpdateBackgroundColor()
 		{
 			_backgroundTracker.UpdateBackgroundColor();
 		}
 
-		internal virtual void OnNativeFocusChanged(bool hasFocus)
+		internal void OnNativeFocusChanged(bool hasFocus)
 		{
 		}
 
-		internal virtual void SendVisualElementInitialized(VisualElement element, AView nativeView)
+		internal void SendVisualElementInitialized(VisualElement element, AView nativeView)
 		{
 			element.SendViewInitialized(nativeView);
 		}

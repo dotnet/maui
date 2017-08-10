@@ -8,7 +8,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController
+	internal sealed class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController
 	{
 		bool _disposed;
 		Image _element;
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			base.Invalidate();
 		}
 
-		protected virtual async void OnElementChanged(ElementChangedEventArgs<Image> e)
+		async void OnElementChanged(ElementChangedEventArgs<Image> e)
 		{
 			await TryUpdateBitmap(e.OldElement);
 			UpdateAspect();
@@ -78,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
             return handled ? result : base.OnTouchEvent(e);
         }
 
-		protected virtual Size MinimumSize()
+		Size MinimumSize()
 		{
 			return new Size();
 		}
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void IImageRendererController.SkipInvalidate() => _skipInvalidate = true;
 
-		protected AImageView Control => this;
+		AImageView Control => this;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -157,7 +157,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 		}
 
-		protected virtual async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Image.SourceProperty.PropertyName)
 				await TryUpdateBitmap();
@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			ElementPropertyChanged?.Invoke(this, e);
 		}
 
-		protected virtual async Task TryUpdateBitmap(Image previous = null)
+		async Task TryUpdateBitmap(Image previous = null)
 		{
 			// By default we'll just catch and log any exceptions thrown by UpdateBitmap so they don't bring down
 			// the application; a custom renderer can override this method and handle exceptions from
@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		protected async Task UpdateBitmap(Image previous = null)
+		async Task UpdateBitmap(Image previous = null)
 		{
 			if (_element == null || _disposed)
 			{

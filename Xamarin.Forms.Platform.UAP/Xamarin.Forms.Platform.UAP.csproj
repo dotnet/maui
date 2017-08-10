@@ -182,7 +182,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutExtensions.cs">
       <Link>LayoutExtensions.cs</Link>
     </Compile>
+    <Compile Include="Flags.cs" />
     <Compile Include="FormsPresenter.cs" />
+    <Compile Include="FormsUWP.cs" />
     <Compile Include="IToolBarForegroundBinder.cs" />
     <Compile Include="NativeBindingService.cs" />
     <Compile Include="NativeValueConverterService.cs" />

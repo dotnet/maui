@@ -8,7 +8,7 @@ using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class GestureManager : Object, global::Android.Views.View.IOnClickListener, global::Android.Views.View.IOnTouchListener
+	internal class GestureManager : Object, global::Android.Views.View.IOnClickListener, global::Android.Views.View.IOnTouchListener
 	{
 		IVisualElementRenderer _renderer;
 		readonly Lazy<GestureDetector> _gestureDetector;

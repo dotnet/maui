@@ -9,7 +9,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class LabelRenderer : FormsTextView, IVisualElementRenderer
+	internal sealed class LabelRenderer : FormsTextView, IVisualElementRenderer
 	{
 		int? _defaultLabelFor;
 		bool _disposed;
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 
-		protected Label Element
+		Label Element
 		{
 			get { return _element; }
 			set
@@ -169,7 +169,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
             return handled ? result : base.OnTouchEvent(e);
         }
 
-        protected virtual void OnElementChanged(ElementChangedEventArgs<Label> e)
+        void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 
@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
 
