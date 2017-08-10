@@ -34,8 +34,6 @@
     <MtouchEnableGenericValueTypeSharing>True</MtouchEnableGenericValueTypeSharing>
     <MtouchUseLlvm>False</MtouchUseLlvm>
     <MtouchUseThumb>False</MtouchUseThumb>
-    <MtouchUseSGen>False</MtouchUseSGen>
-    <MtouchUseRefCounting>False</MtouchUseRefCounting>
     <MtouchOptimizePNGs>False</MtouchOptimizePNGs>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <MtouchEnableBitcode>False</MtouchEnableBitcode>
@@ -79,14 +77,12 @@
     <MtouchEnableGenericValueTypeSharing>True</MtouchEnableGenericValueTypeSharing>
     <MtouchUseLlvm>False</MtouchUseLlvm>
     <MtouchUseThumb>False</MtouchUseThumb>
-    <MtouchUseSGen>False</MtouchUseSGen>
-    <MtouchUseRefCounting>False</MtouchUseRefCounting>
     <MtouchOptimizePNGs>True</MtouchOptimizePNGs>
     <MtouchI18n />
     <BuildIpa>True</BuildIpa>
     <IpaMetadata />
     <IpaPackageName />
-    <CodesignProvision />
+    <CodesignProvision>Automatic</CodesignProvision>
     <CodesignResourceRules />
     <CodesignExtraArgs />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
