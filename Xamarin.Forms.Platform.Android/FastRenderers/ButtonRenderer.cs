@@ -294,7 +294,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateBackgroundColor()
 		{
-			_backgroundTracker.UpdateBackgroundColor();
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		internal void OnNativeFocusChanged(bool hasFocus)
@@ -308,10 +308,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void Initialize()
 		{
-			// Fixes issues with AppCompatButton elevation (z-index) 
-			if (Forms.IsLollipopOrNewer)
-				StateListAnimator = null;
-
 			SoundEffectsEnabled = false;
 			SetOnClickListener(this);
 			SetOnTouchListener(this);

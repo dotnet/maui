@@ -36,6 +36,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateDrawable()
 		{
+			if (_button == null || _nativeButton == null)
+				return;
+
 			if (_button.BackgroundColor == Color.Default)
 			{
 				if (!_drawableEnabled)
@@ -71,15 +74,13 @@ namespace Xamarin.Forms.Platform.Android
 			if (_drawableEnabled)
 			{
 				_drawableEnabled = false;
-				_backgroundDrawable.Reset();
+				_backgroundDrawable?.Reset();
 				_backgroundDrawable = null;
 			}
 		}
 
 		public void UpdateBackgroundColor()
 		{
-			if (_button == null)
-				return;
 			UpdateDrawable();
 		}
 

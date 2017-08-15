@@ -588,6 +588,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56710.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52700.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39407.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ButtonFastRendererTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

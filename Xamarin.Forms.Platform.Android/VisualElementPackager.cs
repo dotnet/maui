@@ -120,6 +120,7 @@ namespace Xamarin.Forms.Platform.Android
 					(_renderer.View as ViewGroup)?.BringChildToFront(r.View);
 				}
 			}
+			(_renderer as Platform.DefaultRenderer)?.InvalidateMinimumElevation();
 		}
 
 		void OnChildAdded(object sender, ElementEventArgs e)
@@ -223,6 +224,7 @@ namespace Xamarin.Forms.Platform.Android
 				//if (renderer.Element.LogicalChildren.Any() && renderer.ViewGroup.ChildCount != renderer.Element.LogicalChildren.Count)
 				//	throw new InvalidOperationException ("SetElement did not create the correct number of children");
 #endif
+				EnsureChildOrder();
 				Performance.Stop("Setup");
 			}
 
