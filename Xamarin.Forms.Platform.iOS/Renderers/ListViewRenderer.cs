@@ -739,14 +739,8 @@ namespace Xamarin.Forms.Platform.iOS
 						// Clear renderer from descendent; this will not happen in Dispose as normal because we need to
 						// unhook the Element from the renderer before disposing it.
 						descendant.ClearValue(Platform.RendererProperty);
-
-						if (renderer != null)
-						{
-							// Unhook Element (descendant) from renderer before Disposing so we don't set the Element to null
-							renderer.SetElement(null);
-							renderer.Dispose();
-							renderer = null;
-						}
+						renderer?.Dispose();
+						renderer = null;
 					}
 
 					// Let the EstimatedHeight method know to use this value.

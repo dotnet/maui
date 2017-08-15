@@ -91,7 +91,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					PushRenderer(childRenderer);
 
-					if (ReferenceEquals(childRenderer, Platform.GetRenderer(childRenderer.Element)))
+					// The ListView CalculateHeightForCell method can create renderers and dispose its child renderers before this is called.
+					// Thus, it is possible that this work is already completed.
+					if (childRenderer.Element != null && ReferenceEquals(childRenderer, Platform.GetRenderer(childRenderer.Element)))
 						childRenderer.Element.ClearValue(Platform.RendererProperty);
 				}
 
