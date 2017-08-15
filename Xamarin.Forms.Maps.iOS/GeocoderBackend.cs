@@ -6,11 +6,9 @@ using CoreLocation;
 
 #if __MOBILE__
 using AddressBookUI;
-using CCLGeocoder = CoreLocation.CLGeocoder;
-#else
-using Xamarin.Forms.Maps.MacOS.Extra;
-using CCLGeocoder = Xamarin.Forms.Maps.MacOS.Extra.CLGeocoder;
 #endif
+
+using CCLGeocoder = CoreLocation.CLGeocoder;
 
 #if __MOBILE__
 namespace Xamarin.Forms.Maps.iOS

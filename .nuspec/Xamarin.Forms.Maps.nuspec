@@ -62,7 +62,6 @@
       <group targetFramework="Xamarin.Mac">
 		<reference file="Xamarin.Forms.Maps.dll" />
         <reference file="Xamarin.Forms.Maps.macOS.dll" />
-        <reference file="Xamarin.Forms.Maps.MacOS.Extra.dll" />
       </group>
     </references>
   </metadata>
@@ -139,7 +138,6 @@
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\uap10.0\Design" />
 
 	<file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
-	<file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.MacOS.Extra.dll" target="lib\Xamarin.Mac" />
 	<file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
   </files>
