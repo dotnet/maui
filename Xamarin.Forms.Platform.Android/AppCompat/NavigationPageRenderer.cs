@@ -574,7 +574,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			transaction.DisallowAddToBackStack();
 			transaction.Remove(fragment);
 			transaction.CommitAllowingStateLoss();
-			FragmentManager.ExecutePendingTransactions();
 
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
