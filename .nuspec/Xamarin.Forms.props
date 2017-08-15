@@ -1,0 +1,16 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!--
+	When using Sdk-style projects and default embedded resource items are enabled, automatically
+	add the XAML files and fix up item metadata to pair them with code files.
+	This is in the props file, not the targets file, so that projects can remove/update these items.
+	The default value for EnableDefaultXamlItems is set in the targets, which works because
+	the property evaluation pass comes before the item evaluation pass.
+	-->
+	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' and '$(EnableDefaultXamlItems)'=='True' and '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+		<None Remove="**\*.xaml" Condition="'$(EnableDefaultNoneItems)'=='True'" />
+		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
+		<EmbeddedResource Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" SubType="Designer" Generator="MSBuild:UpdateDesignTimeXaml" />
+	</ItemGroup>
+
+</Project>
