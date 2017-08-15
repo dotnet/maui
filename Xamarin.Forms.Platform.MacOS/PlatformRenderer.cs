@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.ViewDidLayout();
 			Platform.LayoutSubviews();
+			_platformNavigation?.ModalPageTracker?.LayoutSubviews();
 		}
 
 		public override void ViewWillAppear()

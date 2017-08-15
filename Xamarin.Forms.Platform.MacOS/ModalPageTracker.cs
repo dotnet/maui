@@ -41,6 +41,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			return HideModalAsync(modal, animated);
 		}
 
+		internal void LayoutSubviews()
+		{
+			if (_renderer == null || _renderer.View == null)
+				return;
+			
+			foreach(var modal in _modals)
+			{
+				var modalRenderer = Platform.GetRenderer(modal);
+				if(modalRenderer != null)
+					modalRenderer.SetElementSize(new Size(_renderer.View.Bounds.Width, _renderer.View.Bounds.Height));
+			}
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);
