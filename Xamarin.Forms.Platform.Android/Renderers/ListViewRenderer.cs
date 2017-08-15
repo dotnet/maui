@@ -344,6 +344,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			IVisualElementRenderer _child;
 
+			public Container(IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
+			{
+				// Added default constructor to prevent crash when accessing header/footer row in ListViewAdapter.Dispose
+			}
+
 			public Container(Context context) : base(context)
 			{
 			}

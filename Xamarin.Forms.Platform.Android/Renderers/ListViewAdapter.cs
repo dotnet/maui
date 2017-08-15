@@ -359,6 +359,8 @@ namespace Xamarin.Forms.Platform.Android
 					_lastSelected.Dispose();
 					_lastSelected = null;
 				}
+
+				DisposeCells();
 			}
 
 			base.Dispose(disposing);
@@ -392,6 +394,39 @@ namespace Xamarin.Forms.Platform.Android
 				_fromNative = true;
 			Select(position, view);
 			Controller.NotifyRowTapped(position, cell);
+		}
+
+		void DisposeCells()
+		{
+			var cellCount = _realListView?.ChildCount ?? 0;
+			for (int i = 0; i < cellCount; i++)
+			{
+				var layout = _realListView.GetChildAt(i) as ConditionalFocusLayout;
+
+				// Headers and footers will be skipped. They are disposed elsewhere.
+				if (layout == null || layout.IsDisposed())
+					continue;
+
+				var renderedView = layout?.GetChildAt(0);
+
+				var element = (renderedView as INativeElementView)?.Element;
+
+				var view = (element as ViewCell)?.View;
+
+				if (view != null)
+				{
+					var renderer = Platform.GetRenderer(view);
+
+					if (renderer == renderedView)
+						element.ClearValue(Platform.RendererProperty);
+
+					renderer?.Dispose();
+					renderer = null;
+				}
+
+				renderedView?.Dispose();
+				renderedView = null;
+			}
 		}
 
 		// TODO: We can optimize this by storing the last position, group index and global index
