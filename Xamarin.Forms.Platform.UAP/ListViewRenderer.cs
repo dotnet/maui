@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (List == null)
 				{
-					List = new WListView 
+					List = new WListView
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
@@ -508,6 +508,20 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnListItemClicked(int index)
 		{
+#if !WINDOWS_UWP
+			// If we're on the phone , we need to cache the selected item in case the handler 
+			// we're about to call changes any item indexes;
+			// in some cases, those index changes will throw an exception we can't catch if 
+			// the listview has an item selected
+			object selectedItem = null;
+			if (Device.Idiom == TargetIdiom.Phone)
+			{
+				selectedItem = List.SelectedItem;
+				List.SelectedIndex = -1;
+				_deferSelection = true;
+			}
+#endif
+
 			Element.NotifyRowTapped(index, cell: null);
 			_itemWasClicked = true;
 		}
@@ -525,10 +539,40 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (Element.SelectedItem != List.SelectedItem && !_itemWasClicked)
-				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+			RestorePreviousSelectedVisual();
 
-			_itemWasClicked = false;
+			if (e.AddedItems.Count == 0)
+			{
+				// Deselecting an item is a valid SelectedItem change.
+				if (Element.SelectedItem != List.SelectedItem)
+				{
+					OnListItemClicked(List.SelectedIndex);
+				}
+
+				return;
+			}
+
+			object cell = e.AddedItems[0];
+			if (cell == null)
+				return;
+
+#if !WINDOWS_UWP
+			if (Device.Idiom == TargetIdiom.Phone)
+			{
+				FrameworkElement element = FindElement(cell);
+				if (element != null)
+				{
+					SetSelectedVisual(element);
+				}
+			}
+#endif
+
+			// A11y: Tapped event will not be routed when Narrator is active, so we need to handle it here.
+			// Also handles keyboard selection. 
+			// Default UWP behavior is that items are selected when you navigate to them via the arrow keys
+			// and deselected with the space bar, so this will remain the same.
+			if (Element.SelectedItem != List.SelectedItem)
+				OnListItemClicked(List.SelectedIndex);
 		}
 
 		FrameworkElement FindElement(object cell)
@@ -542,8 +586,71 @@ namespace Xamarin.Forms.Platform.UWP
 			return null;
 		}
 
-		bool _deferSelection = false;
-		Tuple<object, SelectedItemChangedEventArgs> _deferredSelectedItemChangedEvent;
+#if WINDOWS_UWP
+		void RestorePreviousSelectedVisual()
+		{
+		}
+
+		void SetSelectedVisual(FrameworkElement element)
+		{
+		}
+#else
+		void RestorePreviousSelectedVisual()
+		{
+			foreach (BrushedElement highlight in _highlightedElements)
+			{
+				if (highlight.IsBound)
+				{
+					highlight.Element.SetForeground(highlight.BrushBinding);
+				}
+				else
+				{
+					highlight.Element.SetForeground(highlight.Brush);
+				}
+			}
+
+			_highlightedElements.Clear();
+		}
+
+		void SetSelectedVisual(FrameworkElement element)
+		{
+			// Find all labels in children and set their foreground color to accent color
+			IEnumerable<FrameworkElement> elementsToHighlight = FindPhoneHighlights(element);
+			var systemAccentBrush = (Brush)WApp.Current.Resources["SystemColorControlAccentBrush"];
+
+			foreach (FrameworkElement toHighlight in elementsToHighlight)
+			{
+				Brush brush = null;
+				WBinding binding = toHighlight.GetForegroundBinding();
+				if (binding == null)
+					brush = toHighlight.GetForeground();
+
+				var brushedElement = new BrushedElement(toHighlight, binding, brush);
+				_highlightedElements.Add(brushedElement);
+
+				toHighlight.SetForeground(systemAccentBrush);
+			}
+		}
+
+		IEnumerable<FrameworkElement> FindPhoneHighlights(FrameworkElement element)
+		{
+			FrameworkElement parent = element;
+			while (true)
+			{
+				element = parent;
+				if (element is CellControl)
+					break;
+
+				parent = VisualTreeHelper.GetParent(element) as FrameworkElement;
+				if (parent == null)
+				{
+					parent = element;
+					break;
+				}
+			}
+
+			return FindPhoneHighlightCore(parent);
+		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
