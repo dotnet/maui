@@ -399,17 +399,19 @@ namespace Xamarin.Forms
 
 			_previousRowSelected = inGroupIndex;
 			_previousGroupSelected = groupIndex;
-			if (cell == null)
+
+			// A11y: Keyboards and screen readers can deselect items, allowing -1 to be possible
+			if (cell == null && inGroupIndex != -1)
 			{
 				cell = group[inGroupIndex];
 			}
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
-			SetValueCore(SelectedItemProperty, cell.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
+			SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
 
-			cell.OnTapped();
+			cell?.OnTapped();
 
-			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell.BindingContext));
+			ItemTapped?.Invoke(this, new ItemTappedEventArgs(ItemsSource.Cast<object>().ElementAt(groupIndex), cell?.BindingContext));
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
