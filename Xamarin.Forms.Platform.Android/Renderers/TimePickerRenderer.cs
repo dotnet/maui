@@ -24,9 +24,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void TimePickerDialog.IOnTimeSetListener.OnTimeSet(ATimePicker view, int hourOfDay, int minute)
 		{
-			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-
 			ElementController.SetValueFromRenderer(TimePicker.TimeProperty, new TimeSpan(hourOfDay, minute, 0));
+
+			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 			Control.ClearFocus();
 
 			if (Forms.IsLollipopOrNewer)
