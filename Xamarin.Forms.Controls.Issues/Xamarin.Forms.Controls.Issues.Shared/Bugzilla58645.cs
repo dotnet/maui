@@ -53,6 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 		}
 
+		[Preserve(AllMembers = true)]
 		public class LayoutA : ViewCell
 		{
 			public LayoutA()
@@ -81,6 +82,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
+		[Preserve(AllMembers = true)]
 		public class LayoutB : ViewCell
 		{
 			public LayoutB()
@@ -113,6 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
+		[Preserve(AllMembers = true)]
 		public class LayoutTemplateSelector : DataTemplateSelector
 		{
 			public DataTemplate LayoutA { get; set; }
