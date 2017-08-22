@@ -562,17 +562,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
 
-			// Now handle all the XF removal/cleanup
-			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-
-			if (rendererToRemove != null)
-			{
-				var containerToRemove = (PageContainer)rendererToRemove.ViewGroup.Parent;
-				rendererToRemove.ViewGroup?.RemoveFromParent();
-				rendererToRemove?.Dispose();
-				containerToRemove?.RemoveFromParent();
-				containerToRemove?.Dispose();
-			}
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
 			{
