@@ -569,6 +569,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 			}
 
+#if DEBUG
+			// Enables logging of moveToState operations to logcat
+			FragmentManager.EnableDebugLogging(true);
+#endif
+
 			// Go ahead and take care of the fragment bookkeeping for the page being removed
 			FragmentTransaction transaction = FragmentManager.BeginTransaction();
 			transaction.DisallowAddToBackStack();
@@ -577,18 +582,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
-
-			// Now handle all the XF removal/cleanup
-			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-
-			if (rendererToRemove != null)
-			{
-				var containerToRemove = (PageContainer)rendererToRemove.View.Parent;
-				rendererToRemove.View?.RemoveFromParent();
-				rendererToRemove?.Dispose();
-				containerToRemove?.RemoveFromParent();
-				containerToRemove?.Dispose();
-			}
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
 			{
