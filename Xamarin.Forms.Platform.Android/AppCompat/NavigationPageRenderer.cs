@@ -548,6 +548,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 			}
 
+#if DEBUG
+			// Enables logging of moveToState operations to logcat
+			FragmentManager.EnableDebugLogging(true);
+#endif
+
 			// Go ahead and take care of the fragment bookkeeping for the page being removed
 			FragmentTransaction transaction = FragmentManager.BeginTransaction();
 			transaction.DisallowAddToBackStack();
