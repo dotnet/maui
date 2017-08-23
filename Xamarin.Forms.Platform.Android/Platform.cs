@@ -1134,17 +1134,23 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				//On Material design the button states use Elevation property, we need to make sure
 				//we update the elevation of other controls to be over the previous one
-				if (!_minimumElevation.ContainsKey(i))
-					_minimumElevation[i] = GetChildAt(i).Elevation;
-				for (int j = 0; j < _minimumElevation.Count() - 1; j++)
+				if (Forms.IsLollipopOrNewer)
 				{
-					while (_minimumElevation[j] > _minimumElevation[j + 1])
+					if (!_minimumElevation.ContainsKey(i))
 					{
-						_minimumElevation[j + 1] = _minimumElevation[j] + 1;
-						GetChildAt(j + 1).Elevation = _minimumElevation[j + 1];
+						_minimumElevation[i] = GetChildAt(i).Elevation;
 					}
-					if (j == i)
-						break;
+						
+					for (int j = 0; j < _minimumElevation.Count() - 1; j++)
+					{
+						while (_minimumElevation[j] > _minimumElevation[j + 1])
+						{
+							_minimumElevation[j + 1] = _minimumElevation[j] + 1;
+							GetChildAt(j + 1).Elevation = _minimumElevation[j + 1];
+						}
+						if (j == i)
+							break;
+					}
 				}
 				return base.GetChildDrawingOrder(childCount, i);
 			}
