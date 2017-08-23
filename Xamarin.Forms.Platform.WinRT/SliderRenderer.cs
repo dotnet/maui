@@ -71,6 +71,22 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 		}
 
+		protected override void UpdateBackgroundColor()
+		{
+			if (Control != null)
+			{
+				Color backgroundColor = Element.BackgroundColor;
+				if (!backgroundColor.IsDefault)
+				{
+					Control.Background = backgroundColor.ToBrush();
+				}
+				else
+				{
+					Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+				}
+			}
+		}
+
 		protected override bool PreventGestureBubbling { get; set; } = true;
 
 		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
