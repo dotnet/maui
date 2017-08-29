@@ -8,53 +8,10 @@
 	<PropertyGroup>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
-		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
-		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
+		<_DefaultXamlItemsEnabled Condition="'$(EnableDefaultItems)'=='' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">True</_DefaultXamlItemsEnabled>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
-
-	<ItemGroup>
-		<ProjectCapability Include="XamarinForms" />
-	</ItemGroup>
-
-	<!-- Check Tasks ABI and other validations -->
-	<PropertyGroup>
-		<_XFTargetsImportedAgain Condition="'$(_XFTargetsImported)'=='True'">True</_XFTargetsImportedAgain>
-		<_XFTargetsImported>True</_XFTargetsImported>
-		<IsXBuild Condition="'$(MSBuildRuntimeType)' == ''">true</IsXBuild>
-		<IsXBuild Condition="'$(MSBuildRuntimeType)' != ''">false</IsXBuild>
-	</PropertyGroup>
-
-	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
-		<Error
-			Text="Xamarin.Forms targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
-			Code="XF001"
-			Condition="'$(_XFTargetsImportedAgain)' == 'True'" />
-
-		<GetTasksAbi>
-			<Output TaskParameter="AbiVersion" PropertyName="_XFTasksAbi" />
-		</GetTasksAbi >
-
-		<PropertyGroup>
-			<_XFTasksExpectedAbi>4</_XFTasksExpectedAbi>
-		</PropertyGroup>
-
-		<Error
-			Text="Xamarin.Forms tasks do not match targets. Please ensure that all projects reference the same version of Xamarin.Forms, and if the error persists, please restart the IDE."
-			Code="XF002"
-			Condition="'$(_XFTasksAbi)' != '$(_XFTasksExpectedAbi)'" />
-	</Target>
-
-	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
-		<Error
-			Text="Xamarin.Forms require msbuild. xbuild is no longer supported."
-			Code="XF003"
-			Condition="'$(IsXBuild)' == 'true'" />
-	</Target>
-
-	<!-- XamlG -->
-	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
+	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(_DefaultXamlItemsEnabled)'=='True'" />
 
 	<PropertyGroup>
 		<CoreCompileDependsOn>
