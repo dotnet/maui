@@ -14,6 +14,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
+		bool _is24HourFormat;
+		string _timeFormat;
 
 		public TimePickerRenderer()
 		{
@@ -50,7 +52,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
-				_textColorSwitcher = new TextColorSwitcher(textField.TextColors); 
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
+				_is24HourFormat	= DateFormat.Is24HourFormat(Context);
+				_timeFormat = _is24HourFormat ? "HH:mm" : Element.Format;
 			}
 
 			SetTime(e.NewElement.Time);
@@ -92,9 +96,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
-
-			bool is24HourFormat = DateFormat.Is24HourFormat(Context);
-			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, is24HourFormat);
+			
+			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, _is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)
 				_dialog.CancelEvent += OnCancelButtonClicked;
@@ -109,7 +112,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetTime(TimeSpan time)
 		{
-			Control.Text = DateTime.Today.Add(time).ToString(Element.Format);
+			Control.Text = DateTime.Today.Add(time).ToString(_timeFormat);
 		}
 
 		void UpdateTextColor()
