@@ -118,14 +118,15 @@
 
     <!--Xaml PCL Stuff-->
     <file src="Xamarin.Forms.targets" target="build\portable-win+net45+wp80+win81+wpa81\Xamarin.Forms$IdAppend$.targets" />
-    <file src="Xamarin.Forms.props" target="build\portable-win+net45+wp80+win81+wpa81\Xamarin.Forms$IdAppend$.props" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Build.Tasks.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
 
     <!--Xaml netstandard Stuff-->
     <file src="Xamarin.Forms.targets" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.targets" />
+    <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard1.0\Xamarin.Forms.DefaultItems.targets" />
     <file src="Xamarin.Forms.props" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.props" />
+    <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard1.0\Xamarin.Forms.DefaultItems.props" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard1.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="build\netstandard1.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="build\netstandard1.0" />
