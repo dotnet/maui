@@ -1,0 +1,7 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<ItemGroup>
+		<EmbeddedResource Include="**\*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" SubType="Designer" Generator="MSBuild:UpdateDesignTimeXaml" />
+	</ItemGroup>
+
+</Project>
