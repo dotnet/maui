@@ -43,7 +43,17 @@ namespace Xamarin.Forms.Platform.MacOS
 				var alert = NSAlert.WithMessage(arguments.Title, arguments.Cancel, arguments.Destruction, null, "");
 				if (arguments.Buttons != null)
 				{
-					alert.AccessoryView = GetExtraButton(arguments);
+					int maxScrollHeight = (int)(0.6 * NSScreen.MainScreen.Frame.Height);
+					NSView extraButtons = GetExtraButton(arguments);
+					if (extraButtons.Frame.Height > maxScrollHeight) {
+						NSScrollView scrollView = new NSScrollView();
+						scrollView.Frame = new RectangleF(0, 0, extraButtons.Frame.Width, maxScrollHeight);
+						scrollView.DocumentView = extraButtons;
+						scrollView.HasVerticalScroller = true;
+						alert.AccessoryView = scrollView;
+					} else {
+						alert.AccessoryView = extraButtons;
+					}
 					alert.Layout();
 				}
 
