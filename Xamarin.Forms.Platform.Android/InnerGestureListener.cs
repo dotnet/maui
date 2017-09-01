@@ -179,6 +179,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool HasDoubleTapHandler()
 		{
+			if (_tapGestureRecognizers == null)
+				return false;
 			return _tapGestureRecognizers(2).Any();
 		}
 	}
