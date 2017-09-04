@@ -43,6 +43,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 		.nuspec\Xamarin.Forms.Pages.Azure.nuspec = .nuspec\Xamarin.Forms.Pages.Azure.nuspec
 		.nuspec\Xamarin.Forms.Pages.nuspec = .nuspec\Xamarin.Forms.Pages.nuspec
 		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
+		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
+		.nuspec\Xamarin.Forms.DefaultItems.targets = .nuspec\Xamarin.Forms.DefaultItems.targets
+		.nuspec\Xamarin.Forms.DefaultItems.props = .nuspec\Xamarin.Forms.DefaultItems.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.WP8", "Xamarin.Forms.Platform.WP8\Xamarin.Forms.Platform.WP8.csproj", "{517B6AE0-792B-4665-9376-5CA33E539181}"
