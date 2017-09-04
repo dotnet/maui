@@ -10,6 +10,6 @@
 	The actual item groups are in a separate conditionally-imported file as they use constructs that
 	are not compatible with older MSBuild versions.
 	-->
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.props" Condition="'$(_DefaultXamlItemsEnabled)'=='True'" />
+	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.props" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 </Project>
