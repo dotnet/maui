@@ -7,7 +7,7 @@
 	Unfortunately there is no way to work around this without adding a new extension point to
 	the sdk props.
 	-->
-	<ItemGroup>
+	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
 		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
 		<None Remove="**\*.xaml" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>
