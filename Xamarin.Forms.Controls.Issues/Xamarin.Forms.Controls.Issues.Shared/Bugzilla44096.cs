@@ -26,6 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string StackLayout = "stackLayout";
 		const string ContentView = "contentView";
 		const string Grid = "grid";
+		const string RelativeLayout = "relativeLayout";
 
 		protected override void Init()
 		{
@@ -61,6 +62,15 @@ namespace Xamarin.Forms.Controls.Issues
 			};
 			AddTapGesture(result, stackLayout);
 
+			var relativeLayout = new RelativeLayout
+			{
+				IsEnabled = true,
+				WidthRequest = 250,
+				HeightRequest = 50,
+				AutomationId = RelativeLayout
+			};
+			AddTapGesture(result, relativeLayout);
+
 			var color = new Button
 			{
 				Text = "Toggle colors",
@@ -71,12 +81,14 @@ namespace Xamarin.Forms.Controls.Issues
 						grid.BackgroundColor = Color.Red;
 						contentView.BackgroundColor = Color.Blue;
 						stackLayout.BackgroundColor = Color.Yellow;
+						relativeLayout.BackgroundColor = Color.Green;
 					}
 					else
 					{
 						grid.BackgroundColor = Color.Default;
 						contentView.BackgroundColor = Color.Default;
 						stackLayout.BackgroundColor = Color.Default;
+						relativeLayout.BackgroundColor = Color.Default;
 					}
 
 					_flag = !_flag;
@@ -92,6 +104,7 @@ namespace Xamarin.Forms.Controls.Issues
 					grid.IsEnabled = false;
 					contentView.IsEnabled = false;
 					stackLayout.IsEnabled = false;
+					relativeLayout.IsEnabled = false;
 
 					result.Text = Original;
 				}),
@@ -111,7 +124,8 @@ namespace Xamarin.Forms.Controls.Issues
 					result,
 					grid,
 					contentView,
-					stackLayout
+					stackLayout,
+					relativeLayout
 				}
 			};
 
@@ -148,6 +162,12 @@ namespace Xamarin.Forms.Controls.Issues
 		public void TestStackLayout()
 		{
 			TestControl(StackLayout);
+		}
+
+		[Test]
+		public void TestRelativeLayout()
+		{
+			TestControl(RelativeLayout);
 		}
 
 		void TestControl(string control)
