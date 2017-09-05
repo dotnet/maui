@@ -14,7 +14,8 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 44096, "Grid, StackLayout, and ContentView still participate in hit testing on Android after IsEnabled is set to false", PlatformAffected.Android)]
+	[Issue(IssueTracker.Bugzilla, 44096, "Grid, StackLayout, and ContentView still participate in hit testing on " 
+		+ "Android after IsEnabled is set to false", PlatformAffected.Android)]
 	public class Bugzilla44096 : TestContentPage
 	{
 		bool _flag;
