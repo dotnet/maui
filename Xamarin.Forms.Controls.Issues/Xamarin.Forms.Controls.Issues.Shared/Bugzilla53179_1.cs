@@ -14,10 +14,10 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.None, 0101100101, 
+	[Issue(IssueTracker.Bugzilla, 53179, 
 		"PopAsync crashing after RemovePage when support packages are updated to 25.1.1",
-		PlatformAffected.Android)]
-	public class PopAfterRemove : TestNavigationPage
+		PlatformAffected.Android, issueTestNumber: 1)]
+	public class Bugzilla53179_1 : TestNavigationPage
 	{
 		ContentPage _intermediate1;
 		ContentPage _intermediate2;

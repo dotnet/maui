@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Controls
 				typeIssueAttribute.IssueNumber != 1461 &&
 				typeIssueAttribute.IssueNumber != 342)
 			{
-				cellName = typeIssueAttribute.IssueTracker.ToString().Substring(0, 1) + typeIssueAttribute.IssueNumber.ToString();
+				cellName = typeIssueAttribute.DisplayName;
 			}
 			else {
 				cellName = typeIssueAttribute.Description;
