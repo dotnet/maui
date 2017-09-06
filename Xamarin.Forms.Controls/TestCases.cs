@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -93,6 +94,8 @@ namespace Xamarin.Forms.Controls
 				return page;
 			}
 
+			
+
 			public TestCaseScreen ()
 			{
 				AutomationId = "TestCasesIssueList";
@@ -102,28 +105,31 @@ namespace Xamarin.Forms.Controls
 				var assembly = typeof (TestCases).GetTypeInfo ().Assembly;
 
 				var issueModels = 
-					from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
+					(from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
 					where typeInfo.GetCustomAttribute<IssueAttribute> () != null
-					let attribute = (IssueAttribute)typeInfo.GetCustomAttribute<IssueAttribute> ()
+					let attribute = typeInfo.GetCustomAttribute<IssueAttribute> ()
 					select new {
 						IssueTracker = attribute.IssueTracker,
 						IssueNumber = attribute.IssueNumber,
-						Name = attribute.IssueTracker.ToString ().Substring(0, 1) + attribute.IssueNumber.ToString (),
+						IssueTestNumber = attribute.IssueTestNumber,
+						Name = attribute.DisplayName,
 						Description = attribute.Description,
 						Action = ActivatePageAndNavigate (attribute, typeInfo.AsType ())
-					};
+					}).ToList();
 
 				var root = new TableRoot ();
 				var section = new TableSection ("Bug Repro");
 				root.Add (section);
 
 				var duplicates = new HashSet<string> ();
-				issueModels.ForEach (im => {
+				issueModels.ForEach (im =>
+				{
 					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
-						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " + im.IssueTracker.ToString () + im.IssueNumber.ToString ());
-					} else {
-						duplicates.Add (im.Name);
+						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
+							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
 					}
+
+					duplicates.Add (im.Name);
 				});
 
 				var githubIssueCells = 
