@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
@@ -87,60 +89,9 @@ namespace Xamarin.Forms.Controls
 				return page;
 			}
 
-			class IssueModel
-			{
-				public IssueTracker IssueTracker { get; set; }
-				public int IssueNumber { get; set; }
-				public int IssueTestNumber { get; set; }
-				public string Name { get; set; }
-				public string Description {get; set; }
-				public Action Action { get; set; }
+			
 
-				public bool Matches(string filter)
-				{
-					if (string.IsNullOrEmpty(filter))
-					{
-						return true;
-					}
-
-					// If the user has typed something which looks like part of a short issue name 
-					// (e.g. 'B605' or 'G13'), make sure we match that
-					if (string.Compare(Name, 0, filter, 0, filter.Length, StringComparison.OrdinalIgnoreCase) == 0)
-					{
-						return true;
-					}
-
-					if (Description.ToUpper().Contains(filter.ToUpper()))
-					{
-						return true;
-					}
-
-					if (IssueNumber.ToString().Contains(filter))
-					{
-						return true;
-					}
-
-					return false;
-				}
-			}
-
-			readonly List<IssueModel> _issues;
-
-			void VerifyNoDuplicates()
-			{
-				var duplicates = new HashSet<string> ();
-				_issues.ForEach (im =>
-				{
-					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
-						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
-							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
-					}
-
-					duplicates.Add (im.Name);
-				});
-			}
-
-			public TestCaseScreen()
+			public TestCaseScreen ()
 			{
 				AutomationId = "TestCasesIssueList";
 
@@ -148,11 +99,11 @@ namespace Xamarin.Forms.Controls
 
 				var assembly = typeof(TestCases).GetTypeInfo().Assembly;
 
-				_issues = 
+				var issueModels = 
 					(from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
 					where typeInfo.GetCustomAttribute<IssueAttribute> () != null
 					let attribute = typeInfo.GetCustomAttribute<IssueAttribute> ()
-					select new IssueModel {
+					select new {
 						IssueTracker = attribute.IssueTracker,
 						IssueNumber = attribute.IssueNumber,
 						IssueTestNumber = attribute.IssueTestNumber,
@@ -165,27 +116,16 @@ namespace Xamarin.Forms.Controls
 				var section = new TableSection ("Bug Repro");
 				root.Add (section);
 
-				VerifyNoDuplicates();
-
-				FilterIssues();
-			}
-
-			public void FilterTracker(IssueTracker tracker)
-			{
-				switch (tracker)
+				var duplicates = new HashSet<string> ();
+				issueModels.ForEach (im =>
 				{
-					case IssueTracker.Github:
-						_filterGitHub = !_filterGitHub;
-						break;
-					case IssueTracker.Bugzilla:
-						_filterBugzilla = !_filterBugzilla;
-						break;
-					case IssueTracker.None:
-						_filterNone = !_filterNone;
-						break;
-					default:
-						throw new ArgumentOutOfRangeException(nameof(tracker), tracker, null);
-				}
+					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
+						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
+							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
+					}
+
+					duplicates.Add (im.Name);
+				});
 
 				FilterIssues(_filter);
 			}
