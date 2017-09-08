@@ -67,13 +67,15 @@ namespace Xamarin.Forms.Controls.Issues
 				// These controls show a pop-up which we have to cancel/done out of before we can continue
 #if __ANDROID__
 				var cancelButtonText = "Cancel";
+				RunningApp.Back();
 #elif __IOS__
 				var cancelButtonText = "Done";
+				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
+				RunningApp.Tap(q => q.Marked(cancelButtonText));
 #else
 				var cancelButtonText = "X";
 #endif
-				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
-				RunningApp.Tap(q => q.Marked(cancelButtonText));
+
 			}
 
 			if (frameShouldRegisterTap)

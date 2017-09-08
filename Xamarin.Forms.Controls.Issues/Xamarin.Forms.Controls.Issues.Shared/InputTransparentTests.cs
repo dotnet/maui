@@ -65,13 +65,15 @@ namespace Xamarin.Forms.Controls.Issues
 				// These controls show a pop-up which we have to cancel/done out of before we can continue
 #if __ANDROID__
 				var cancelButtonText = "Cancel";
+				System.Threading.Tasks.Task.Delay(1000).Wait();
+				RunningApp.Back();
 #elif __IOS__
 				var cancelButtonText = "Done";
+				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
+				RunningApp.Tap(q => q.Marked(cancelButtonText));
 #else
 				var cancelButtonText = "Cancel";
 #endif
-				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
-				RunningApp.Tap(q => q.Marked(cancelButtonText));
 			}
 
 			// Since InputTransparent is set to false, the start label should not have changed

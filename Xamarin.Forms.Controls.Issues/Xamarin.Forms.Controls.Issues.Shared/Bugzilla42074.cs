@@ -44,15 +44,12 @@ namespace Xamarin.Forms.Controls.Issues
         public void TimePickerCancelShouldUnfocus()
         {
             RunningApp.Tap(q => q.Marked(TimePicker));
-            RunningApp.WaitForElement(q => q.Marked("Cancel"));
 
-            RunningApp.Tap(q => q.Marked("Cancel"));
+			RunningApp.Back();
             RunningApp.WaitForElement(q => q.Marked("Click to focus TimePicker"));
 
             RunningApp.Tap(q => q.Marked("Click to focus TimePicker"));
-            RunningApp.WaitForElement(q => q.Marked("Cancel"));
-
-            RunningApp.Tap(q => q.Marked("Cancel"));
+			RunningApp.Back();
         }
 #endif
 
