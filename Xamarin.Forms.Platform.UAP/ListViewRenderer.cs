@@ -58,6 +58,9 @@ namespace Xamarin.Forms.Platform.UWP
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
+					List.IsItemClickEnabled = true;
+					List.ItemClick += OnListItemClicked;
+
 					List.SelectionChanged += OnControlSelectionChanged;
 
 					List.SetBinding(ItemsControl.ItemsSourceProperty, "");
@@ -125,7 +128,11 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (_disposed)
 			{
-				return;
+				List.ItemClick -= OnListItemClicked;
+				List.SelectionChanged -= OnControlSelectionChanged;
+
+				List.DataContext = null;
+				List = null;
 			}
 
 			_disposed = true;
@@ -537,6 +544,12 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		void OnListItemClicked(object sender, ItemClickEventArgs e)
+		{
+			if (e.ClickedItem != null)
+				OnListItemClicked(((WListView)e.OriginalSource).Items.IndexOf(e.ClickedItem));
+		}
+
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			RestorePreviousSelectedVisual();
@@ -566,13 +579,8 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 #endif
-
-			// A11y: Tapped event will not be routed when Narrator is active, so we need to handle it here.
-			// Also handles keyboard selection. 
-			// Default UWP behavior is that items are selected when you navigate to them via the arrow keys
-			// and deselected with the space bar, so this will remain the same.
 			if (Element.SelectedItem != List.SelectedItem)
-				OnListItemClicked(List.SelectedIndex);
+				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
 		}
 
 		FrameworkElement FindElement(object cell)

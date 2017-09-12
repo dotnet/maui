@@ -219,15 +219,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57758.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57910.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58406.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58833.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51427.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_0.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_1.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60563.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonBackgroundColorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
