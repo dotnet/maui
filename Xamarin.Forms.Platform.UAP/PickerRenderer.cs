@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _fontApplied;
 		bool _isAnimating;
 		Brush _defaultBrush;
-		FontFamily _defaultFontFamily;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -47,10 +46,6 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.OpenAnimationCompleted += ControlOnOpenAnimationCompleted;
 					Control.ClosedAnimationStarted += ControlOnClosedAnimationStarted;
 					Control.Loaded += ControlOnLoaded;
-				}
-				else
-				{
-					WireUpFormsVsm();
 				}
 
 				Control.ItemsSource = ((LockableObservableListWrapper)Element.Items)._list;
