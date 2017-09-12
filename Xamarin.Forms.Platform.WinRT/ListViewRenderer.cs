@@ -72,10 +72,8 @@ namespace Xamarin.Forms.Platform.WinRT
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
-					// In order to support tapping on elements within a list item, we handle
-					// ListView.Tapped (which can be handled by child elements in the list items
-					// and prevented from bubbling up) rather than ListView.ItemClick
-					List.Tapped += ListOnTapped;
+					List.IsItemClickEnabled = true;
+					List.ItemClick += OnListItemClicked;
 
 					List.SelectionChanged += OnControlSelectionChanged;
 
@@ -137,8 +135,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (List != null)
 			{
-				List.Tapped -= ListOnTapped;
-
+				List.ItemClick -= OnListItemClicked;
 				List.SelectionChanged -= OnControlSelectionChanged;
 
 				List.DataContext = null;
@@ -437,32 +434,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			List.SelectedIndex = index;
 		}
 
-		void ListOnTapped(object sender, TappedRoutedEventArgs args)
-		{
-			var orig = args.OriginalSource as DependencyObject;
-			int index = -1;
-
-			// Work our way up the tree until we find the actual list item 
-			// the user tapped on
-			while (orig != null && orig != List)
-			{
-				var lv = orig as ListViewItem;
-
-				if (lv != null)
-				{
-					index = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(lv.Content);
-					break;
-				}
-
-				orig = VisualTreeHelper.GetParent(orig);
-			}
-
-			if (index > -1)
-			{
-				OnListItemClicked(index);
-			}
-		}
-
 		void OnListItemClicked(int index)
 		{
 #if !WINDOWS_UWP
@@ -504,6 +475,12 @@ namespace Xamarin.Forms.Platform.WinRT
 #endif
 		}
 
+		void OnListItemClicked(object sender, ItemClickEventArgs e)
+		{
+			if (e.ClickedItem != null)
+				OnListItemClicked(((WListView)e.OriginalSource).Items.IndexOf(e.ClickedItem));
+		}
+
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			RestorePreviousSelectedVisual();
@@ -533,13 +510,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 			}
 #endif
-
-			// A11y: Tapped event will not be routed when Narrator is active, so we need to handle it here.
-			// Also handles keyboard selection. 
-			// Default UWP behavior is that items are selected when you navigate to them via the arrow keys
-			// and deselected with the space bar, so this will remain the same.
 			if (Element.SelectedItem != List.SelectedItem)
-				OnListItemClicked(List.SelectedIndex);
+				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
 		}
 
 		FrameworkElement FindElement(object cell)
