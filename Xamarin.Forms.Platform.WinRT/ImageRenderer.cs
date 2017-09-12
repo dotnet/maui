@@ -124,7 +124,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			Control.Stretch = GetStretch(Element.Aspect);
-			if (Element.Aspect == Aspect.AspectFill) // Then Center Crop
+			if (Element.Aspect == Aspect.AspectFill || Element.Aspect == Aspect.AspectFit) // Then Center Crop
 			{
 				Control.HorizontalAlignment = HorizontalAlignment.Center;
 				Control.VerticalAlignment = VerticalAlignment.Center;
