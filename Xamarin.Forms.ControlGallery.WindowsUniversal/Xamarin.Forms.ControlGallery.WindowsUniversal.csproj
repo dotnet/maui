@@ -122,12 +122,14 @@
   <ItemGroup>
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
+    <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="coffee.png" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
     <Content Include="local.html" />
     <Content Include="toolbar_close.png" />
     <Content Include="WebImages\XamarinLogo.png" />
+    <Content Include="Assets\Fonts\Lobster-Regular.ttf" />
     <None Include="project.json" />
     <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">
       <Link>bank.png</Link>

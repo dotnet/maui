@@ -214,7 +214,6 @@
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\Xamarin.Forms.Platform.WinRT.Phone.xr.xml" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\wpa81" />
 
-    <file src="..\Xamarin.Forms.Platform.WinRT\bin\$Configuration$\PageControl.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT" />
     <file src="..\Xamarin.Forms.Platform.WinRT\bin\$Configuration$\StepperControl.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT" />
 
     <file src="..\Xamarin.Forms.Platform.WinRT.Phone\bin\$Configuration$\PhoneResources.xbf" target="lib\wpa81\Xamarin.Forms.Platform.WinRT.Phone" />
@@ -237,7 +236,6 @@
     <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.xr.xml" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\win81" />
 
-    <file src="..\Xamarin.Forms.Platform.WinRT\bin\$Configuration$\PageControl.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT" />
     <file src="..\Xamarin.Forms.Platform.WinRT\bin\$Configuration$\StepperControl.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT" />
 
     <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\$Configuration$\Resources.xbf" target="lib\win81\Xamarin.Forms.Platform.WinRT.Tablet" />
@@ -260,7 +258,6 @@
 
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsCommandBarStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsProgressBarStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
-	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\PageControl.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Resources.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\FormsTextBoxStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />
 	<file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\AutoSuggestStyle.xbf" target="lib\uap10.0\Xamarin.Forms.Platform.UAP" />

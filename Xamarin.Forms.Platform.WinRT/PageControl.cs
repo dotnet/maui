@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.UWP
 namespace Xamarin.Forms.Platform.WinRT
 #endif
 {
-    public sealed partial class PageControl : IToolbarProvider
+	public sealed class PageControl : ContentControl, IToolbarProvider
 	{
 		public static readonly DependencyProperty InvisibleBackButtonCollapsedProperty = DependencyProperty.Register("InvisibleBackButtonCollapsed", typeof(bool), typeof(PageControl),
 			new PropertyMetadata(true, OnInvisibleBackButtonCollapsedChanged));
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 	    public PageControl()
 		{
-			InitializeComponent();
+
 		}
 
 		public string BackButtonTitle
