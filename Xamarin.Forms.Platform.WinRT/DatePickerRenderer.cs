@@ -90,13 +90,25 @@ namespace Xamarin.Forms.Platform.WinRT
 		void UpdateMaximumDate()
 		{
 			DateTime maxdate = Element.MaximumDate;
-			Control.MaxYear = new DateTimeOffset(maxdate.Date);
+			Control.MaxYear = new DateTimeOffset(maxdate);
 		}
 
 		void UpdateMinimumDate()
 		{
 			DateTime mindate = Element.MinimumDate;
-			Control.MinYear = new DateTimeOffset(mindate);
+
+			try
+			{
+				Control.MinYear = new DateTimeOffset(mindate);
+			}
+			catch (ArgumentOutOfRangeException)
+			{
+				// This will be thrown when mindate equals DateTime.MinValue and the UTC offset is positive
+				// because the resulting DateTimeOffset.UtcDateTime will be out of range. In that case let's
+				// specify the Kind as UTC so there is no offset.
+				mindate = DateTime.SpecifyKind(mindate, DateTimeKind.Utc);
+				Control.MinYear = new DateTimeOffset(mindate);
+			}
 		}
 
 		void UpdateTextColor()
