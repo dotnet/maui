@@ -14,8 +14,9 @@ namespace Xamarin.Forms
 	{
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
-
+		ResourceDictionary _mergedInstance;
 		Type _mergedWith;
+
 		[TypeConverter (typeof(TypeTypeConverter))]
 		public Type MergedWith {
 			get { return _mergedWith; }
@@ -35,56 +36,59 @@ namespace Xamarin.Forms
 			}
 		}
 
-		ResourceDictionary _mergedInstance;
-		public ICollection<ResourceDictionary> MergedDictionaries { get; private set; }
-
-		public ResourceDictionary()
-		{
-			var collection = new ObservableCollection<ResourceDictionary>();
-			collection.CollectionChanged += MergedDictionaries_CollectionChanged;
-			MergedDictionaries = collection;
+		ICollection<ResourceDictionary> _mergedDictionaries;
+		public ICollection<ResourceDictionary> MergedDictionaries {
+			get {
+				if (_mergedDictionaries == null) {
+					var col = new ObservableCollection<ResourceDictionary>();
+					col.CollectionChanged += MergedDictionaries_CollectionChanged;
+					_mergedDictionaries = col;
+				}
+				return _mergedDictionaries;
+			}
 		}
+
+		IList<ResourceDictionary> _collectionTrack;
 
 		void MergedDictionaries_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			// Movement of items doesn't affect monitoring of events
+			// Move() isn't exposed by ICollection
 			if (e.Action == NotifyCollectionChangedAction.Move)
 				return;
 
-			// New Items
-			var newItems = e.NewItems?.Cast<ResourceDictionary>();
-			if (newItems != null)
-			{
-				foreach (var item in newItems)
-				{
-					_collectionTrack.Add(item);
-					item.ValuesChanged += Item_ValuesChanged;
-				}
-
-				if (newItems.Count() > 0)
-					OnValuesChanged(newItems.SelectMany(x => x).ToArray());
-			}
-
-			// Old Items
-			var oldItems = e.OldItems?.Cast<ResourceDictionary>();
-			if (oldItems != null)
-				foreach (var item in oldItems)
-				{
-					item.ValuesChanged -= Item_ValuesChanged;
-					_collectionTrack.Remove(item);
-				}
-
+			_collectionTrack = _collectionTrack ?? new List<ResourceDictionary>();
 			// Collection has been cleared
-			if (e.Action == NotifyCollectionChangedAction.Reset)
-			{
+			if (e.Action == NotifyCollectionChangedAction.Reset) {
 				foreach (var dictionary in _collectionTrack)
 					dictionary.ValuesChanged -= Item_ValuesChanged;
 
 				_collectionTrack.Clear();
+				return;
+			}
+
+			// New Items
+			if (e.NewItems != null)
+			{
+				foreach (var item in e.NewItems)
+				{
+					var rd = (ResourceDictionary)item;
+					_collectionTrack.Add(rd);
+					rd.ValuesChanged += Item_ValuesChanged;
+					OnValuesChanged(rd.ToArray());
+				}
+			}
+
+			// Old Items
+			if (e.OldItems != null)
+			{
+				foreach (var item in e.OldItems)
+				{
+					var rd = (ResourceDictionary)item;
+					rd.ValuesChanged -= Item_ValuesChanged;
+					_collectionTrack.Remove(rd);
+				}
 			}
 		}
-
-		IList<ResourceDictionary> _collectionTrack = new List<ResourceDictionary>();
 
 		void Item_ValuesChanged(object sender, ResourcesChangedEventArgs e)
 		{

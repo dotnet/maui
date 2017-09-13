@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
+using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -409,6 +410,62 @@ namespace Xamarin.Forms.Core.UnitTests
 			rd.MergedDictionaries.Clear();
 
 			Assert.That(rd.MergedDictionaries.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void AddingMergedRDTriggersValueChanged()
+		{
+			var rd = new ResourceDictionary();
+			var label = new Label {
+				Resources = rd
+			};
+			label.SetDynamicResource(Label.TextProperty, "foo");
+			Assert.That(label.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
+
+			rd.MergedDictionaries.Add(new ResourceDictionary { { "foo", "Foo"} });
+			Assert.That(label.Text, Is.EqualTo("Foo"));
+		}
+
+		[Test]
+		//this is to keep the alignment with resources removed from RD
+		public void RemovingMergedRDDoesntTriggersValueChanged()
+		{
+			var rd = new ResourceDictionary {
+				MergedDictionaries = {
+					new ResourceDictionary {
+						{ "foo", "Foo" }
+					}
+				}
+			};
+			var label = new Label {
+				Resources = rd,
+			};
+
+			label.SetDynamicResource(Label.TextProperty, "foo");
+			Assert.That(label.Text, Is.EqualTo("Foo"));
+
+			rd.MergedDictionaries.Clear();
+			Assert.That(label.Text, Is.EqualTo("Foo"));
+		}
+
+		[Test]
+		public void AddingResourceInMergedRDTriggersValueChanged()
+		{
+			var rd0 = new ResourceDictionary ();
+			var rd = new ResourceDictionary {
+				MergedDictionaries = {
+					rd0
+				}
+			};
+
+			var label = new Label {
+				Resources = rd,
+			};
+			label.SetDynamicResource(Label.TextProperty, "foo");
+			Assert.That(label.Text, Is.EqualTo(Label.TextProperty.DefaultValue));
+
+			rd0.Add("foo", "Foo");
+			Assert.That(label.Text, Is.EqualTo("Foo"));
 		}
 	}
 }
