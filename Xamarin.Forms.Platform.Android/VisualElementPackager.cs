@@ -66,6 +66,8 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				_renderer = null;
 			}
+
+			_element = null;
 		}
 
 		public void Load()
