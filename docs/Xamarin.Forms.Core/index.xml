@@ -182,6 +182,7 @@
       <Type Name="ColumnDefinitionCollection" Kind="Class" />
       <Type Name="Command" Kind="Class" />
       <Type Name="Command`1" DisplayName="Command&lt;T&gt;" Kind="Class" />
+      <Type Name="CompressedLayout" Kind="Class" />
       <Type Name="Condition" Kind="Class" />
       <Type Name="Configuration`2" DisplayName="Configuration&lt;TPlatform,TElement&gt;" Kind="Class" />
       <Type Name="Constraint" Kind="Class" />

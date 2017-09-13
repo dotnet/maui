@@ -78,8 +78,9 @@ namespace Xamarin.Forms.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			var x = (int)_context.ToPixels(view.X);
-			var y = (int)_context.ToPixels(view.Y);
+			var headlessOffset = CompressedLayout.GetHeadlessOffset(view);
+			var x = (int)_context.ToPixels(view.X + headlessOffset.X);
+			var y = (int)_context.ToPixels(view.Y + headlessOffset.Y);
 			var width = Math.Max(0, (int)_context.ToPixels(view.Width));
 			var height = Math.Max(0, (int)_context.ToPixels(view.Height));
 

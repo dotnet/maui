@@ -138,8 +138,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			var scale = (float)view.Scale;
 			var width = (float)view.Width;
 			var height = (float)view.Height;
-			var x = (float)view.X;
-			var y = (float)view.Y;
+			var x = (float)view.X + (float)CompressedLayout.GetHeadlessOffset(view).X;
+			var y = (float)view.Y + (float)CompressedLayout.GetHeadlessOffset(view).Y;
 			var opacity = (float)view.Opacity;
 			var isVisible = view.IsVisible;
 

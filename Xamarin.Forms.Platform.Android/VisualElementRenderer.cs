@@ -338,13 +338,20 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			ReadOnlyCollection<Element> children = ((IElementController)Element).LogicalChildren;
-			foreach (Element element in children)
-			{
+			UpdateLayout(((IElementController)Element).LogicalChildren);
+		}
+
+		static void UpdateLayout(IEnumerable<Element> children)
+		{
+			foreach (Element element in children)  	{
 				var visualElement = element as VisualElement;
 				if (visualElement == null)
 					continue;
 
 				IVisualElementRenderer renderer = Platform.GetRenderer(visualElement);
+				if (renderer == null && CompressedLayout.GetIsHeadless(visualElement))
+					UpdateLayout(visualElement.LogicalChildren);
+
 				renderer?.UpdateLayout();
 			}
 		}

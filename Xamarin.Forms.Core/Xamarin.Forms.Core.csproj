@@ -463,6 +463,7 @@
     <Compile Include="Xaml\TypeConversionExtensions.cs" />
     <Compile Include="Xaml\ValueConverterProvider.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\Page.cs" />
+    <Compile Include="CompressedLayout.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

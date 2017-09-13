@@ -13,16 +13,20 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		bool _isDisposed;
 
-		IElementController ElementController => Renderer.Element as IElementController;
+		IElementController ElementController => _element;
 
-		public VisualElementPackager(IVisualElementRenderer renderer)
+		public VisualElementPackager(IVisualElementRenderer renderer) : this(renderer, null)
+		{
+		}
+
+		VisualElementPackager(IVisualElementRenderer renderer, VisualElement element)
 		{
 			if (renderer == null)
 				throw new ArgumentNullException(nameof(renderer));
 
 			Renderer = renderer;
 			renderer.ElementChanged += OnRendererElementChanged;
-			SetElement(null, renderer.Element);
+			SetElement(null, element ?? renderer.Element);
 		}
 
 		protected IVisualElementRenderer Renderer { get; set; }
@@ -65,16 +69,22 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (_isDisposed)
 				return;
 
-			var viewRenderer = Platform.CreateRenderer(view);
-			Platform.SetRenderer(view, viewRenderer);
+			if (CompressedLayout.GetIsHeadless(view)) {
+				var packager = new VisualElementPackager(Renderer, view);
+				view.IsPlatformEnabled = true;
+				packager.Load();
+			} else {
+				var viewRenderer = Platform.CreateRenderer(view);
+				Platform.SetRenderer(view, viewRenderer);
 
-			var uiview = Renderer.NativeView;
-			uiview.AddSubview(viewRenderer.NativeView);
+				var uiview = Renderer.NativeView;
+				uiview.AddSubview(viewRenderer.NativeView);
 
-			if (Renderer.ViewController != null && viewRenderer.ViewController != null)
-				Renderer.ViewController.AddChildViewController(viewRenderer.ViewController);
+				if (Renderer.ViewController != null && viewRenderer.ViewController != null)
+					Renderer.ViewController.AddChildViewController(viewRenderer.ViewController);
 
-			EnsureChildrenOrder();
+				EnsureChildrenOrder();
+			}
 		}
 
 		protected virtual void OnChildRemoved(VisualElement view)

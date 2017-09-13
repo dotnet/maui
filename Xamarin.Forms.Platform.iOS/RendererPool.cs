@@ -108,10 +108,14 @@ namespace Xamarin.Forms.Platform.MacOS
 				var child = logicalChild as VisualElement;
 				if (child != null)
 				{
-					var renderer = GetFreeRenderer(child) ?? Platform.CreateRenderer(child);
-					Platform.SetRenderer(child, renderer);
-
-					_parent.NativeView.AddSubview(renderer.NativeView);
+					if (CompressedLayout.GetIsHeadless(child)) {
+						child.IsPlatformEnabled = true;
+						FillChildrenWithRenderers(child);
+					} else {
+						var renderer = GetFreeRenderer(child) ?? Platform.CreateRenderer(child);
+						Platform.SetRenderer(child, renderer);
+						_parent.NativeView.AddSubview(renderer.NativeView);
+					}
 				}
 			}
 		}
