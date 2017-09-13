@@ -34,7 +34,9 @@ namespace Xamarin.Forms.Platform.Android
 			if ((inputTypes & InputTypes.NumberFlagDecimal) == 0)
 			{
 				// If decimal isn't allowed, we can just use the Android version
+#pragma warning disable 0618
 				return DigitsKeyListener.GetInstance(inputTypes.HasFlag(InputTypes.NumberFlagSigned), false);
+#pragma warning restore 0618
 			}
 
 			// Figure out what the decimal separator is for the current locale
@@ -43,7 +45,9 @@ namespace Xamarin.Forms.Platform.Android
 			if (decimalSeparator == '.')
 			{
 				// If it's '.', then we can just use the default Android version
+#pragma warning disable 0618
 				return DigitsKeyListener.GetInstance(inputTypes.HasFlag(InputTypes.NumberFlagSigned), true);
+#pragma warning restore 0618
 			}
 
 			// If decimals are enabled and the locale's decimal separator is not '.'
