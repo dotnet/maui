@@ -1,6 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ResourceDictionary xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.SharedResourceDictionary2">
 	<Style x:Key="sharedStyle2" TargetType="Label">
 		<Setter Property="TextColor" Value="Purple"/>
 	</Style>
+    <Color x:Key="AlmostBlack">#111</Color>
+
 </ResourceDictionary>

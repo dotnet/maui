@@ -500,7 +500,10 @@
       <DependentUpon>Bz57574.xaml</DependentUpon>
     </Compile>
     <Compile Include="Issues\Bz58922.xaml.cs">
-			<DependentUpon>Bz58922.xaml</DependentUpon>
+      <DependentUpon>Bz58922.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MergedResourceDictionaries.xaml.cs" >
+      <DependentUpon>MergedResourceDictionaries.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -919,7 +922,10 @@
     <EmbeddedResource Include="Issues\Bz58922.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-	</ItemGroup>
+    <EmbeddedResource Include="MergedResourceDictionaries.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>

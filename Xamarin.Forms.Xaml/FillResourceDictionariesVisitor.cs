@@ -44,7 +44,6 @@ namespace Xamarin.Forms.Xaml
 					return;
 				ApplyPropertiesVisitor.SetPropertyValue(source, propertyName, value, Context.RootElement, node, Context, node);
 			}
-
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
@@ -105,7 +104,7 @@ namespace Xamarin.Forms.Xaml
 			if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName))
 			{
 				if ((propertyName.LocalName == "Resources" ||
-					 propertyName.LocalName == "MergedDictionaries" ||
+				     propertyName.LocalName == "MergedDictionaries" ||
 					 propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) && value is ResourceDictionary)
 				{
 					var source = Values[parentNode];

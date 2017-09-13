@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="using:Xamarin.Forms.Xaml.UnitTests"
+             x:Class="Xamarin.Forms.Xaml.UnitTests.MergedResourceDictionaries">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <local:SharedResourceDictionary/>
+                <ResourceDictionary MergedWith="local:SharedResourceDictionary2"/>
+            </ResourceDictionary.MergedDictionaries>
+            <x:String x:Key="foo">Foo</x:String>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <StackLayout>
+        <Label
+            x:Name="label0"
+            Style="{StaticResource sharedfoo}"
+            Text="{StaticResource foo}"
+            BackgroundColor="{StaticResource AlmostBlack}"/>
+    </StackLayout>
+</ContentPage>

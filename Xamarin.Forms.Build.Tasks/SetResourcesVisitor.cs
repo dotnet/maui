@@ -125,13 +125,20 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 			}
 
-			//Set ResourcesDictionaries to their parents
+			//Set ResourcesDictionaries to their parents and MergedDictionaries
 			XmlName propertyName;
-			if (SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName) &&
-			    (propertyName.LocalName == "Resources" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) &&
-				(Context.Variables[node].VariableType.FullName == "Xamarin.Forms.ResourceDictionary" ||
-					Context.Variables[node].VariableType.Resolve().BaseType.FullName == "Xamarin.Forms.ResourceDictionary"))
+			if (SetPropertiesVisitor.TryGetPropertyName(node, parentNode, out propertyName)) {
+				if ((propertyName.LocalName == "Resources" || propertyName.LocalName == "MergedDictionaries" || propertyName.LocalName.EndsWith(".Resources", StringComparison.Ordinal)) &&
+				(Context.Variables[node].VariableType.FullName == "Xamarin.Forms.ResourceDictionary" || Context.Variables[node].VariableType.Resolve().BaseType.FullName == "Xamarin.Forms.ResourceDictionary"))
 				Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
+			}
+
+			if (IsCollectionItem(node, parentNode) && parentNode is IListNode) {
+				if (SetPropertiesVisitor.TryGetPropertyName(parentNode, parentNode.Parent, out propertyName) && propertyName.LocalName == "MergedDictionaries") {
+					Context.IL.Append(SetPropertiesVisitor.SetPropertyValue(Context.Variables[(IElementNode)parentNode.Parent], propertyName, node, Context, node));
+				}
+			}
+
 		}
 
 		public void Visit(RootNode node, INode parentNode)
