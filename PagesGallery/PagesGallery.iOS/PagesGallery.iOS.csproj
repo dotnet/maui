@@ -99,10 +99,6 @@
     <ITunesArtwork Include="iTunesArtwork@2x" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS %28Forwarders%29.csproj">
-      <Project>{39b3457f-01d8-43d0-8e84-d8c4f73cf48d}</Project>
-      <Name>Xamarin.Forms.Platform.iOS %28Forwarders%29</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57b8b73d-c3b5-4c42-869e-7b2f17d354ac}</Project>
       <Name>Xamarin.Forms.Core</Name>
@@ -129,6 +125,10 @@
       <Name>PagesGallery</Name>
       <Project>{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\Stubs\Xamarin.Forms.Platform.iOS\Xamarin.Forms.Platform.iOS %28Forwarders%29.csproj">
+      <Project>{39B3457F-01D8-43D0-8E84-D8C4F73CF48D}</Project>
+      <Name>Xamarin.Forms.Platform.iOS (Forwarders)</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\Default-568h%402x.png" />
@@ -146,7 +146,6 @@
     <BundleResource Include="Resources\Icon-Small.png" />
     <BundleResource Include="Resources\Icon-Small%402x.png" />
     <BundleResource Include="Resources\Icon-Small%403x.png" />
-    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
