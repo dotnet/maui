@@ -164,6 +164,11 @@ namespace Xamarin.Forms.Platform.Android
 
 				
 			}
+
+			var position = Control.GetPositionForView(viewCell);
+			var id = Control.GetItemIdAtPosition(position);
+
+			_adapter.OnItemLongClick(Control, viewCell, position, id);
 		}
 
 		internal void LongClickOn(AView viewCell)
