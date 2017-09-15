@@ -287,7 +287,10 @@ namespace Xamarin.Forms.Platform.Android
 						}
 						s_currentAnimation = null;
 						tcs.TrySetResult(true);
-						((Platform)Element.Platform).NavAnimationInProgress = false;
+						if (Element?.Platform != null)
+						{
+							((Platform)Element.Platform).NavAnimationInProgress = false;
+						}
 					} });
 				}
 			}

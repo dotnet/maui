@@ -109,7 +109,8 @@ namespace Xamarin.Forms.Controls
 			protected override void OnAppearing ()
 			{
 				base.OnAppearing ();
-				Device.StartTimer (new TimeSpan (200), () => {
+
+				Device.StartTimer (TimeSpan.FromMilliseconds(750), () => {
 					_listMessages.ItemsSource = App.AppearingMessages;
 					return false;
 				});
