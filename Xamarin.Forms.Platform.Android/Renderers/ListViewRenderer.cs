@@ -161,6 +161,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
 				UpdateFastScrollEnabled();
+
+				
 			}
 		}
 
@@ -174,7 +176,6 @@ namespace Xamarin.Forms.Platform.Android
 			var position = Control.GetPositionForView(viewCell);
 			var id = Control.GetItemIdAtPosition(position);
 
-			viewCell.PerformHapticFeedback(FeedbackConstants.ContextClick);
 			_adapter.OnItemLongClick(Control, viewCell, position, id);
 		}
 

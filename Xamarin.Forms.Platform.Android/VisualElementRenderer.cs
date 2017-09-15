@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android.FastRenderers;
 
@@ -21,10 +22,12 @@ namespace Xamarin.Forms.Platform.Android
 		string _defaultContentDescription;
 		bool? _defaultFocusable;
 		string _defaultHint;
-		bool _inputTransparentInherited = true;
-
+		int? _defaultLabelFor;
+		
 		VisualElementPackager _packager;
 		PropertyChangedEventHandler _propertyChangeHandler;
+
+		readonly GestureManager _gestureManager;
 
 		readonly GestureManager _gestureManager;
 
@@ -67,6 +70,38 @@ namespace Xamarin.Forms.Platform.Android
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use VisualElementRenderer(Context) instead.")]
 		protected VisualElementRenderer() : this(Forms.Context)
 		{
+			_gestureManager = new GestureManager(this);
+		}
+
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			return _gestureManager.OnTouchEvent(e);
+		}
+
+		public override bool OnInterceptTouchEvent(MotionEvent ev)
+		{
+			if (!Enabled)
+			{
+				// If Enabled is false, prevent all the events from being dispatched to child Views
+				// and prevent them from being processed by this View as well
+				return true; // IOW, intercepted
+			}
+
+			return base.OnInterceptTouchEvent(ev);
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent e)
+		{
+			if (InputTransparent)
+			{
+				// If the Element is InputTransparent, this ViewGroup will be marked InputTransparent
+				// If we're InputTransparent we should return false on all touch events without
+				// even bothering to send them to the child Views
+
+				return false; // IOW, not handled
+			}
+
+			return base.DispatchTouchEvent(e);
 		}
 
 		public TElement Element { get; private set; }
@@ -283,8 +318,7 @@ namespace Xamarin.Forms.Platform.Android
 				SetFocusable();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
-			else if (e.PropertyName == Xamarin.Forms.Layout.CascadeInputTransparentProperty.PropertyName)
-				UpdateInputTransparentInherited();
+			
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}
@@ -365,6 +399,11 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
-			=> LabelFor = id ?? LabelFor;
+		{
+			if (_defaultLabelFor == null)
+				_defaultLabelFor = LabelFor;
+
+			LabelFor = (int)(id ?? _defaultLabelFor);
+		}
 	}
 }

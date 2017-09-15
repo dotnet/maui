@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 
@@ -55,30 +54,9 @@ namespace Xamarin.Forms.Platform.Android
 				eventConsumed = _scaleDetector.Value.OnTouchEvent(e);
 			}
 
-			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
-				eventConsumed = _tapAndPanDetector.Value.OnTouchEvent(e) || eventConsumed;
+			eventConsumed = _tapAndPanDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
-		}
-
-		public class TapAndPanGestureDetector : GestureDetector
-		{
-			InnerGestureListener _listener;
-			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
-			{
-				_listener = listener;
-			}
-
-			public override bool OnTouchEvent(MotionEvent ev)
-			{
-				if (base.OnTouchEvent(ev))
-					return true;
-
-				if (ev.Action == MotionEventActions.Up)
-					_listener.EndScrolling();
-
-				return false;
-			}
 		}
 
 		public void Dispose()
@@ -107,18 +85,16 @@ namespace Xamarin.Forms.Platform.Android
 
 		GestureDetector InitializeTapAndPanDetector()
 		{
-			var context = Control.Context;
 			var listener = new InnerGestureListener(new TapGestureHandler(() => View),
-				new PanGestureHandler(() => View, context.FromPixels));
+				new PanGestureHandler(() => View, Control.Context.FromPixels));
 
-			return new TapAndPanGestureDetector(context, listener);
+			return new GestureDetector(listener);
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()
 		{
-			var context = Control.Context;
-			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
-			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
+			var listener = new InnerScaleListener(new PinchGestureHandler(() => View));
+			var detector = new ScaleGestureDetector(Control.Context, listener, Control.Handler);
 			ScaleGestureDetectorCompat.SetQuickScaleEnabled(detector, true);
 
 			return detector;

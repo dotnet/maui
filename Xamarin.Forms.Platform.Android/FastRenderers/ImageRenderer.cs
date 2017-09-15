@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+			if (_visualElementRenderer.OnTouchEvent(e))
 			{
 				return true;
 			}
@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_visualElementRenderer = new VisualElementRenderer(this);
 			}
 
-			Performance.Stop(reference);
+			Internals.Performance.Stop();
 			_motionEventHelper.UpdateElement(element);
 			OnElementChanged(new ElementChangedEventArgs<Image>(oldElement, _element));
 

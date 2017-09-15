@@ -77,11 +77,6 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
-		bool GestureDetector.IOnDoubleTapListener.OnDoubleTapEvent(MotionEvent e)
-		{
-			return false;
-		}
-
 		bool GestureDetector.IOnGestureListener.OnDown(MotionEvent e)
 		{
 			SetStartingPosition(e);
@@ -147,7 +142,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (!HasDoubleTapHandler())
 			{
-				// We're not worried about double-tap, so OnSingleTapUp has already run the delegate
+				// We're not worried about double-tap, so OnSingleTap has already run the delegate
 				// there's nothing for us to do here
 				return false;
 			}

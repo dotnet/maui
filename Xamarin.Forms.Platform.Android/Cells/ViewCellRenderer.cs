@@ -91,7 +91,7 @@ namespace Xamarin.Forms.Platform.Android
 						return _longPressGestureDetector;
 					}
 
-					_longPressGestureDetector = new GestureDetector(Context, new LongPressGestureListener(TriggerLongClick));
+					_longPressGestureDetector = new GestureDetector(new LongPressGestureListener(TriggerLongClick));
 					return _longPressGestureDetector;
 				}
 			}
@@ -128,7 +128,12 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (!Enabled)
 					return true;
-				
+
+				if (_watchForLongPress)
+				{
+					LongPressGestureDetector.OnTouchEvent(ev);
+				}
+
 				return base.OnInterceptTouchEvent(ev);
 			}
 
@@ -262,10 +267,20 @@ namespace Xamarin.Forms.Platform.Android
 					&& HasTapGestureRecognizers(vw);
 			}
 
-			static bool HasTapGestureRecognizers(View view)
+			void UpdateWatchForLongPress()
 			{
-				return view.GestureRecognizers.Any(t => t is TapGestureRecognizer) 
-					|| view.LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
+				var vw = _view.Element as Xamarin.Forms.View;
+				if (vw == null)
+				{
+					return;
+				}
+
+				// If the view cell has any context actions and the View itself has any Tap Gestures, they're going
+				// to conflict with one another - the Tap Gesture handling will prevent the ListViewAdapter's
+				// LongClick handling from happening. So we need to watch locally for LongPress and if we see it,
+				// trigger the LongClick manually.
+				_watchForLongPress = _viewCell.ContextActions.Count > 0 
+					&& vw.GestureRecognizers.Any(t => t is TapGestureRecognizer);
 			}
 
 			void TriggerLongClick()

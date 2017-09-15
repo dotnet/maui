@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 		readonly Func<double, double> _fromPixels;
 		Func<Point, bool> _pinchStartedDelegate;
 
-		public InnerScaleListener(PinchGestureHandler pinchGestureHandler, Func<double, double> fromPixels)
+		public InnerScaleListener(PinchGestureHandler pinchGestureHandler)
 		{
 			if (pinchGestureHandler == null)
 			{
@@ -21,7 +21,6 @@ namespace Xamarin.Forms.Platform.Android
 			_pinchDelegate = pinchGestureHandler.OnPinch;
 			_pinchStartedDelegate = pinchGestureHandler.OnPinchStarted;
 			_pinchEndedDelegate = pinchGestureHandler.OnPinchEnded;
-			_fromPixels = fromPixels;
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
