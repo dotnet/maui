@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class InnerGestureListener : Object, GestureDetector.IOnGestureListener, GestureDetector.IOnDoubleTapListener
 	{
+		readonly TapGestureHandler _tapGestureHandler;
+		readonly PanGestureHandler _panGestureHandler;
 		bool _isScrolling;		
 		float _lastX;
 		float _lastY;
@@ -20,25 +22,31 @@ namespace Xamarin.Forms.Platform.Android
 		Func<int, bool> _tapDelegate;
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
 
-		public InnerGestureListener(Func<int, bool> tapDelegate, Func<int, IEnumerable<TapGestureRecognizer>> tapGestureRecognizers, Func<float, float, int, bool> scrollDelegate,
-									Func<int, bool> scrollStartedDelegate, Func<bool> scrollCompleteDelegate)
+		public InnerGestureListener(TapGestureHandler tapGestureHandler, PanGestureHandler panGestureHandler)
 		{
-			if (tapDelegate == null)
-				throw new ArgumentNullException(nameof(tapDelegate));
-			if (tapGestureRecognizers == null)
-				throw new ArgumentNullException(nameof(tapGestureRecognizers));
-			if (scrollDelegate == null)
-				throw new ArgumentNullException(nameof(scrollDelegate));
-			if (scrollStartedDelegate == null)
-				throw new ArgumentNullException(nameof(scrollStartedDelegate));
-			if (scrollCompleteDelegate == null)
-				throw new ArgumentNullException(nameof(scrollCompleteDelegate));
+			if (tapGestureHandler == null)
+			{
+				throw new ArgumentNullException(nameof(tapGestureHandler));
+			}
 
-			_tapDelegate = tapDelegate;
-			_tapGestureRecognizers = tapGestureRecognizers;
-			_scrollDelegate = scrollDelegate;
-			_scrollStartedDelegate = scrollStartedDelegate;
-			_scrollCompleteDelegate = scrollCompleteDelegate;
+			if (panGestureHandler == null)
+			{
+				throw new ArgumentNullException(nameof(panGestureHandler));
+			}
+
+			_tapGestureHandler = tapGestureHandler;
+			_panGestureHandler = panGestureHandler;
+
+			_tapDelegate = tapGestureHandler.OnTap;
+			_tapGestureRecognizers = tapGestureHandler.TapGestureRecognizers;
+			_scrollDelegate = panGestureHandler.OnPan;
+			_scrollStartedDelegate = panGestureHandler.OnPanStarted;
+			_scrollCompleteDelegate = panGestureHandler.OnPanComplete;
+		}
+
+		bool HasAnyGestures()
+		{
+			return _panGestureHandler.HasAnyGestures() || _tapGestureHandler.HasAnyGestures();
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
@@ -46,16 +54,6 @@ namespace Xamarin.Forms.Platform.Android
 		// eagerly to allow easier garbage collection of the renderer
 		internal InnerGestureListener(IntPtr handle, JniHandleOwnership ownership) : base(handle, ownership)
 		{
-		}
-
-		internal void OnTouchEvent(MotionEvent e)
-		{
-			if (e.Action == MotionEventActions.Up)
-				EndScrolling();
-			else if (e.Action == MotionEventActions.Down)
-				SetStartingPosition(e);
-			else if (e.Action == MotionEventActions.Move)
-				StartScrolling(e);
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTap(MotionEvent e)
@@ -71,21 +69,19 @@ namespace Xamarin.Forms.Platform.Android
 			return false;
 		}
 
-		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
-		{
-			if (_disposed)
-				return false;
-
-			// optimization: only wait for a second tap if there is a double tap handler
-			if (!HasDoubleTapHandler())
-				return false;
-
-			return _tapDelegate(1);
-		}
-
 		bool GestureDetector.IOnGestureListener.OnDown(MotionEvent e)
 		{
 			SetStartingPosition(e);
+
+			if (HasAnyGestures())
+			{
+				// If we have any gestures to listen for, we need to return true to show we're interested in the rest
+				// of the events.		
+				return true;
+			}
+
+			// Since we don't have any gestures we're listening for, we return false to show we're not interested
+			// and let parent controls have a whack at the events
 			return false;
 		}
 
@@ -119,10 +115,32 @@ namespace Xamarin.Forms.Platform.Android
 			if (_disposed)
 				return false;
 
-			// optimization: do not wait for a second tap if there is no double tap handler
 			if (HasDoubleTapHandler())
+			{
+				// Because we have a handler for double-tap, we need to wait for
+				// OnSingleTapConfirmed (to verify it's really just a single tap) before running the delegate
+				return false;
+			}
+
+			// A single tap has occurred and there's no handler for double tap to worry about,
+			// so we can go ahead and run the delegate
+			return _tapDelegate(1);
+		}
+
+		bool GestureDetector.IOnDoubleTapListener.OnSingleTapConfirmed(MotionEvent e)
+		{
+			if (_disposed)
 				return false;
 
+			if (!HasDoubleTapHandler())
+			{
+				// We're not worried about double-tap, so OnSingleTap has already run the delegate
+				// there's nothing for us to do here
+				return false;
+			}
+
+			// Since there was a double-tap handler, we had to wait for OnSingleTapConfirmed;
+			// Now that we're sure it's a single tap, we can run the delegate
 			return _tapDelegate(1);
 		}
 

@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue1Test()
+		public void GridIsEnabled()
 		{
 			RunningApp.WaitForElement(q => q.Marked("entry"));
 			RunningApp.Tap(q => q.Marked("entry"));

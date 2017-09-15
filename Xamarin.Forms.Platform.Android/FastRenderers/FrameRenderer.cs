@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		readonly GestureManager _gestureManager;
 		readonly EffectControlProvider _effectControlProvider;
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -68,6 +69,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (frame == null)
 				throw new ArgumentException("Element must be of type Frame");
 			Element = frame;
+			_motionEventHelper.UpdateElement(frame);
 
 			if (!string.IsNullOrEmpty(Element.AutomationId))
 				ContentDescription = Element.AutomationId;
@@ -182,10 +184,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			bool handled;
-			var result = _gestureManager.OnTouchEvent(e, Parent, out handled);
+			if (_gestureManager.OnTouchEvent(e))
+			{
+				return true;
+			}
 
-			return handled ? result : base.OnTouchEvent(e);
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

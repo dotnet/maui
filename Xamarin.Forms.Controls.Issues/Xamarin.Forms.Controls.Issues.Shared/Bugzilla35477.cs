@@ -3,11 +3,16 @@ using Xamarin.Forms.Internals;
 
 #if UITEST
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest.Queries;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 35477, "Tapped event does not fire when added to Frame in Android AppCompat",
 		PlatformAffected.Android)]
