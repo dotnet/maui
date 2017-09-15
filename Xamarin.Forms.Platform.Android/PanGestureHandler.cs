@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
@@ -65,6 +66,12 @@ namespace Xamarin.Forms.Platform.Android
 				result = true;
 			}
 			return result;
+		}
+
+		public bool HasAnyGestures()
+		{
+			var view = GetView();
+			return view != null && view.GestureRecognizers.OfType<PanGestureRecognizer>().Any();
 		}
 	}
 }

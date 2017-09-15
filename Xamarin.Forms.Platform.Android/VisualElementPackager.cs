@@ -131,7 +131,6 @@ namespace Xamarin.Forms.Platform.Android
 						(_renderer.View as ViewGroup)?.BringChildToFront(r.View);
 				}
 			}
-			(_renderer as Platform.DefaultRenderer)?.InvalidateMinimumElevation();
 		}
 
 		void OnChildAdded(object sender, ElementEventArgs e)

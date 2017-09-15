@@ -10,6 +10,12 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.Cells)]
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 46363, "TapGestureRecognizer blocks List View Context Actions", PlatformAffected.Android)]
 	public class Bugzilla46363 : TestContentPage
@@ -17,6 +23,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string Target = "Two";
 		const string ContextAction = "Context Action";
 		const string TapSuccess = "Tap Success";
+		const string TapFailure = "Tap command executed more than once";
 		const string ContextSuccess = "Context Menu Success";
 		const string Testing = "Testing";
 
@@ -25,7 +32,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			var list = new List<string> { "One", Target, "Two", "Three" };
+			var list = new List<string> { "One", Target, "Three", "Four" };
 
 			var lv = new ListView
 			{
@@ -38,7 +45,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 			s_tapCommand = new Command(() =>
 			{
-				result.Text = TapSuccess;
+				if (result.Text == TapSuccess || result.Text == TapFailure)
+				{
+					// We want this test to fail if the tap command is executed more than once
+					result.Text = TapFailure;
+				}
+				else
+				{
+					result.Text = TapSuccess;
+				}
 			});
 
 			s_contextCommand = new Command(() =>

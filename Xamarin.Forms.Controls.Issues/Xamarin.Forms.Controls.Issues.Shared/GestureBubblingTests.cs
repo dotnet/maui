@@ -8,6 +8,7 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest.Queries;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -16,6 +17,10 @@ namespace Xamarin.Forms.Controls.Issues
 	// the same behavior across all the platforms. The question is whether tapping a control inside of a frame
 	// will trigger the frame's tap gesture; for most controls it will not (the control itself absorbs the tap),
 	// but for non-interactive controls (box, frame, image, label) the gesture bubbles up to the container.
+
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+#endif
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 00100100, "Verify that the tap gesture bubbling behavior is consistent across the platforms", PlatformAffected.All)]
