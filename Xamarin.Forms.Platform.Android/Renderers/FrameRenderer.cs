@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Views;
 using AButton = Android.Widget.Button;
 using ACanvas = Android.Graphics.Canvas;
 using GlobalResource = Android.Resource;
@@ -10,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
 		bool _disposed;
+		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
 		protected override void Dispose(bool disposing)
 		{
@@ -22,6 +24,14 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (base.OnTouchEvent(e))
+				return true;
+
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
 		{
 			base.OnElementChanged(e);
@@ -30,6 +40,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateBackground();
 				UpdateCornerRadius();
+				_motionEventHelper.UpdateElement(e.NewElement);
 			}
 		}
 
