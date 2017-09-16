@@ -43,5 +43,29 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="SelectDataTemplate">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.DataTemplate SelectDataTemplate (this Xamarin.Forms.DataTemplate self, object item, Xamarin.Forms.BindableObject container);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.DataTemplate SelectDataTemplate(class Xamarin.Forms.DataTemplate self, object item, class Xamarin.Forms.BindableObject container) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="self" Type="Xamarin.Forms.DataTemplate" RefType="this" />
+        <Parameter Name="item" Type="System.Object" />
+        <Parameter Name="container" Type="Xamarin.Forms.BindableObject" />
+      </Parameters>
+      <Docs>
+        <param name="self">To be added.</param>
+        <param name="item">To be added.</param>
+        <param name="container">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

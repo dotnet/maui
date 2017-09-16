@@ -86,13 +86,18 @@ namespace Xamarin.Forms
 			element.Parent = (Element)bindable;
 		}
 
-		static bool ValidateItemTemplate(BindableObject b, object v)
+		static bool ValidateItemTemplate(BindableObject bindable, object value)
 		{
-			var lv = b as ListView;
-			if (lv == null)
+			var listView = bindable as ListView;
+			if (listView == null)
 				return true;
 
-			return !(lv.CachingStrategy == ListViewCachingStrategy.RetainElement && lv.ItemTemplate is DataTemplateSelector);
+			var isRetainStrategy = listView.CachingStrategy == ListViewCachingStrategy.RetainElement;
+			var isDataTemplateSelector = listView.ItemTemplate is DataTemplateSelector;
+			if (isRetainStrategy && isDataTemplateSelector)
+				return false;
+
+			return true;
 		}
 	}
 }
