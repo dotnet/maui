@@ -8,6 +8,7 @@
 		public const string BoxView = "BoxView";
 		public const string Button = "Button";
 		public const string Cells = "Cells";
+		public const string ContextActions = "ContextActions";
 		public const string DatePicker = "DatePicker";
 		public const string DisplayAlert = "DisplayAlert";
 		public const string Editor = "Editor";
