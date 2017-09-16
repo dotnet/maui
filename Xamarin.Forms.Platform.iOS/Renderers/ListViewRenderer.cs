@@ -739,10 +739,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 			{
-				// iOS may ask for a row we have just deleted and hence cannot rebind in order to measure height.
-				if (!IsValidIndexPath(indexPath))
-					return DefaultRowHeight;
-
 				var cell = GetPrototypicalCell(indexPath);
 
 				if (List.RowHeight == -1 && cell.Height == -1 && cell is ViewCell)
@@ -782,8 +778,7 @@ namespace Xamarin.Forms.Platform.iOS
 					// Let the EstimatedHeight method know to use this value.
 					// Much more efficient than checking the value each time.
 					//_useEstimatedRowHeight = true;
-					var height = (nfloat)req.Request.Height;
-					return height > 1 ? height : DefaultRowHeight;
+					return (nfloat)req.Request.Height;
 				}
 
 				var renderHeight = cell.RenderHeight;
@@ -1086,19 +1081,34 @@ namespace Xamarin.Forms.Platform.iOS
 				_uiTableView.ReloadData();
 			}
 
-			protected bool IsValidIndexPath(NSIndexPath indexPath)
+			protected ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(NSIndexPath indexPath)
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				if (List.IsGroupingEnabled)
-				{
-					var section = indexPath.Section;
-					if (section < 0 || section >= templatedItems.Count)
-						return false;
-
 					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
-				}
 
-				return templatedItems.ListProxy.TryGetValue(indexPath.Row, out var _);
+				return templatedItems;
+			}
+
+			protected DataTemplate GetDataTemplateForPath(NSIndexPath indexPath)
+			{
+				var templatedList = GetTemplatedItemsListForPath(indexPath);
+				var item = templatedList.ListProxy[indexPath.Row];
+				return templatedList.SelectDataTemplate(item);
+			}
+
+			protected Type GetItemTypeForPath(NSIndexPath indexPath)
+			{
+				var templatedList = GetTemplatedItemsListForPath(indexPath);
+				var item = templatedList.ListProxy[indexPath.Row];
+				return item.GetType();
+			}
+
+			protected Cell GetCellForPath(NSIndexPath indexPath)
+			{
+				var templatedItems = GetTemplatedItemsListForPath(indexPath);
+				var cell = templatedItems[indexPath.Row];
+				return cell;
 			}
 
 			protected ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(NSIndexPath indexPath)
