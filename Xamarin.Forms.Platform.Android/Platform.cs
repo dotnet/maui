@@ -909,6 +909,11 @@ namespace Xamarin.Forms.Platform.Android
 			bool hasMasterDetailPage = CurrentMasterDetailPage != null;
 			bool navigated = CurrentNavigationPage != null && ((INavigationPageController)CurrentNavigationPage).StackDepth > 1;
 			bool navigationPageHasNavigationBar = CurrentNavigationPage != null && NavigationPage.GetHasNavigationBar(CurrentNavigationPage.CurrentPage);
+			//if we have MDP and Navigation , we let navigation choose
+			if (CurrentNavigationPage != null && hasMasterDetailPage)
+			{
+				return NavigationPage.GetHasNavigationBar(CurrentNavigationPage.CurrentPage);
+			}
 			return navigationPageHasNavigationBar || (hasMasterDetailPage && !navigated);
 		}
 
