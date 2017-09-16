@@ -9,6 +9,11 @@
   <Base>
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.Flags</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Enumerates caching strategies for a ListView.</summary>
     <remarks>
@@ -46,6 +51,20 @@
       </ReturnValue>
       <Docs>
         <summary>Indicates that unneeded cells will have their binding contexts updated to that of a cell that is needed.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="RecycleElementAndDataTemplate">
+      <MemberSignature Language="C#" Value="RecycleElementAndDataTemplate" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.ListViewCachingStrategy RecycleElementAndDataTemplate = int32(3)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.ListViewCachingStrategy</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="RetainElement">

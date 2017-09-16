@@ -1073,6 +1073,31 @@
     </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
+        <Target Type="T:Xamarin.Forms.DataTemplate" />
+      </Targets>
+      <Member MemberName="SelectDataTemplate">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.DataTemplate SelectDataTemplate (this Xamarin.Forms.DataTemplate self, object item, Xamarin.Forms.BindableObject container);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.DataTemplate SelectDataTemplate(class Xamarin.Forms.DataTemplate self, object item, class Xamarin.Forms.BindableObject container) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.DataTemplate</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="self" Type="Xamarin.Forms.DataTemplate" RefType="this" />
+          <Parameter Name="item" Type="System.Object" />
+          <Parameter Name="container" Type="Xamarin.Forms.BindableObject" />
+        </Parameters>
+        <Docs>
+          <param name="self">To be added.</param>
+          <param name="item">To be added.</param>
+          <param name="container">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Internals.DataTemplateExtensions" Member="M:Xamarin.Forms.Internals.DataTemplateExtensions.SelectDataTemplate(Xamarin.Forms.DataTemplate,System.Object,Xamarin.Forms.BindableObject)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
         <Target Type="T:Xamarin.Forms.Internals.DeviceOrientation" />
       </Targets>
       <Member MemberName="IsLandscape">

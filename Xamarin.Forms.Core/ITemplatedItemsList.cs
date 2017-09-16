@@ -19,6 +19,7 @@ namespace Xamarin.Forms
 
 		IListProxy ListProxy { get; }
 
+		DataTemplate SelectDataTemplate(object item);
 		int GetGlobalIndexForGroup(ITemplatedItemsList<TItem> group);
 		int GetGlobalIndexOfItem(object item);
 		ITemplatedItemsList<TItem> GetGroup(int index);
