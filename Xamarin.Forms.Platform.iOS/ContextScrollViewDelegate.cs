@@ -203,7 +203,9 @@ namespace Xamarin.Forms.Platform.iOS
 				return false;
 
 			UIScrollView scrollViewBeingScrolled;
-			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled) || ReferenceEquals(scrollViewBeingScrolled, scrollView) || !ReferenceEquals(((ContextScrollViewDelegate)scrollViewBeingScrolled.Delegate)._table, ((ContextScrollViewDelegate)scrollView.Delegate)._table))
+			if (!s_scrollViewBeingScrolled.TryGetTarget(out scrollViewBeingScrolled) 
+				|| ReferenceEquals(scrollViewBeingScrolled, scrollView) 
+				|| !ReferenceEquals(((ContextScrollViewDelegate)scrollViewBeingScrolled.Delegate)?._table, ((ContextScrollViewDelegate)scrollView.Delegate)?._table))
 				return false;
 
 			scrollView.SetContentOffset(new PointF(0, 0), false);
@@ -221,6 +223,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				ClosedCallback = null;
 
+				s_scrollViewBeingScrolled = null;
 				_table = null;
 				_backgroundView = null;
 				_container = null;

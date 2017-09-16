@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Category(UITestCategories.Gestures)]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Cells)]
+	[Category(UITestCategories.ContextActions)]
 #endif
 
 	[Preserve(AllMembers = true)]
