@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override void Init()
 		{
 			var page1 = new Page1();
-			Navigation.PushAsync(new NavigationPage(page1));
+			Navigation.PushAsync(page1);
 		}
 
 		[Preserve(AllMembers = true)]
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Back();
 
 #if __ANDROID__
-			RunningApp.Back();
+			RunningApp.Back(); // back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
 #endif
 
 			RunningApp.WaitForElement(q => q.Marked(Button1Id));
