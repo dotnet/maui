@@ -1,4 +1,5 @@
 ﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Shapes;
 
 #if WINDOWS_UWP
@@ -26,6 +27,17 @@ namespace Xamarin.Forms.Platform.WinRT
 					SetNativeControl(rect);
 				}
 			}
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			// We need an automation peer so we can interact with this in automated tests
+			if (Control == null)
+			{
+				return new FrameworkElementAutomationPeer(this);
+			}
+
+			return new FrameworkElementAutomationPeer(Control);
 		}
 	}
 }

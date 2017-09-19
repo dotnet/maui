@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Documents;
 
@@ -37,6 +38,17 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool _isInitiallyDefault;
 		SizeRequest _perfectSize;
 		bool _perfectSizeValid;
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			// We need an automation peer so we can interact with this in automated tests
+			if (Control == null)
+			{
+				return new FrameworkElementAutomationPeer(this);
+			}
+
+			return new FrameworkElementAutomationPeer(Control);
+		}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{

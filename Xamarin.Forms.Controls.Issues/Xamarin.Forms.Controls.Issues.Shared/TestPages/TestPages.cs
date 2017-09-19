@@ -3,6 +3,7 @@ using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
 
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 
@@ -45,6 +46,9 @@ namespace Xamarin.Forms.Controls
 #elif __MACOS__
 			Xamarin.UITest.Desktop.TestAgent.Start();
 			app = InitializeMacOSApp();
+
+#elif __WINDOWS__
+			app = InitializeUWPApp();
 #endif
 			if (app == null)
 				throw new NullReferenceException("App was not initialized.");
@@ -102,6 +106,13 @@ namespace Xamarin.Forms.Controls
 		}
 #endif
 
+#if __WINDOWS__
+		static IApp InitializeUWPApp()
+		{
+			return WindowsTestBase.ConfigureApp();
+		}
+#endif
+
 		public static void NavigateToIssue(Type type, IApp app)
 		{
 			var typeIssueAttribute = type.GetTypeInfo().GetCustomAttribute<IssueAttribute>();
@@ -139,6 +150,14 @@ namespace Xamarin.Forms.Controls
 				{
 					return;
 				}
+#endif
+
+#if __WINDOWS__
+					// Windows doens't have an 'invoke' option right now for us to do the more direct navigation
+					// we're using for Android/iOS
+					// So we're just going to use the 'Reset' method to bounce the app to the opening screen
+					// and then fall back to the old manual navigation
+					WindowsTestBase.Reset();
 #endif
 				}
 				catch (Exception ex)

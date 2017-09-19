@@ -4,9 +4,12 @@ using System;
 using System.Globalization;
 using Windows.Foundation;
 using Windows.Graphics.Display;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms;
 using Xamarin.Forms.ControlGallery.WindowsUniversal;
@@ -42,11 +45,15 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 	/// </summary>
 	public sealed partial class MainPage
 	{
+		Controls.App _app;
+
 		public MainPage()
 		{
 			InitializeComponent();
 
-			var app = new Controls.App();
+			
+
+			_app = new Controls.App();
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
@@ -54,7 +61,18 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
-			LoadApplication(app);
+			LoadApplication(_app);
+
+			CoreWindow.GetForCurrentThread().KeyDown += OnKeyDown;
+		}
+
+		void OnKeyDown(CoreWindow coreWindow, KeyEventArgs args)
+		{
+			if (args.VirtualKey == VirtualKey.Escape)
+			{
+				_app.Reset();
+				args.Handled = true;
+			}
 		}
 
 		void AddNativeControls(NestedNativeControlGalleryPage page)

@@ -68,6 +68,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseViewContainerRemoteMac.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MacOSApp.cs" />
   </ItemGroup>

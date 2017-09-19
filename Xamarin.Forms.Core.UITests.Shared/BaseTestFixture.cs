@@ -105,6 +105,9 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 			App.Invoke("Reset");
 #endif
+#if __WINDOWS__
+			WindowsTestBase.Reset();
+#endif
 		}
 	}
 }

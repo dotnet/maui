@@ -27,6 +27,8 @@ namespace Xamarin.Forms.Controls.Issues
 	public class GestureBubblingTests : TestNavigationPage
 	{
 		const string TargetAutomationId = "controlinsideofframe";
+		const string NoTaps = "No taps yet";
+		const string Tapped = "Frame was tapped";
 		ContentPage _menu;
 
 #if UITEST
@@ -47,7 +49,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			// Find the start label
-			RunningApp.WaitForElement(q => q.Marked("Start"));
+			RunningApp.WaitForElement(q => q.Marked(NoTaps));
 
 			// Find the control we're testing
 			var result = RunningApp.WaitForElement(q => q.Marked(TargetAutomationId));
@@ -78,18 +80,18 @@ namespace Xamarin.Forms.Controls.Issues
 				RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
 				RunningApp.Tap(q => q.Marked(cancelButtonText));
 #else
-				var cancelButtonText = "X";
+				var cancelButtonText = "DismissButton";
 #endif
 
 			}
 
 			if (frameShouldRegisterTap)
 			{
-				RunningApp.WaitForElement(q => q.Marked("Frame was tapped"));
+				RunningApp.WaitForElement(q => q.Marked(Tapped));
 			}
 			else
 			{
-				RunningApp.WaitForElement(q => q.Marked("Start"));
+				RunningApp.WaitForElement(q => q.Marked(NoTaps));
 			}
 		}
 #endif
@@ -101,20 +103,20 @@ namespace Xamarin.Forms.Controls.Issues
 			if (_controlsWhichShouldAllowTheTapToBubbleUp.Contains(view.GetType().Name))
 			{
 				instructions.Text =
-					"Tap the frame below. The label with the text 'No taps yet' should change its text to 'Frame was tapped'.";
+					$"Tap the frame below. The label with the text '{NoTaps}' should change its text to '{Tapped}'.";
 			}
 			else
 			{
 				instructions.Text =
-					"Tap the frame below. The label with the text 'No taps yet' should not change.";
+					$"Tap the frame below. The label with the text '{NoTaps}' should not change.";
 			}
 
-			var label = new Label { Text = "Start" };
+			var label = new Label { Text = NoTaps };
 
 			var frame = new Frame { Content = new StackLayout { Children = { view } } };
 
 			var rec = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
-			rec.Tapped += (s, e) => { label.Text = "Frame was tapped"; };
+			rec.Tapped += (s, e) => { label.Text = Tapped; };
 			frame.GestureRecognizers.Add(rec);
 			
 			var layout = new StackLayout();
