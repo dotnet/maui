@@ -6,6 +6,7 @@ using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 
 namespace Xamarin.Forms.ControlGallery.Android
@@ -22,6 +23,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			if (!Debugger.IsAttached)
 				Insights.Initialize(App.InsightsApiKey, ApplicationContext);
+
+			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
 
 			Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
@@ -42,6 +45,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+
+			SetUpForceRestartTest();
 
 			LoadApplication(app);
 		}
