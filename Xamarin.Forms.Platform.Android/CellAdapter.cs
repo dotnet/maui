@@ -265,7 +265,8 @@ namespace Xamarin.Forms.Platform.Android
 		void OnContextActionCommandCanExecuteChanged(object sender, EventArgs eventArgs)
 		{
 			_actionModeNeedsUpdates = true;
-			_actionMode.Invalidate();
+			_actionMode?.Invalidate();
+			_supportActionMode?.Invalidate();
 		}
 
 		void OnContextActionPropertyChanged(object sender, PropertyChangedEventArgs e)
