@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
 
@@ -552,7 +553,7 @@ namespace Xamarin.Forms
 			bool clearOneWayBindings = (attributes & SetValueFlags.ClearOneWayBindings) != 0;
 			bool clearTwoWayBindings = (attributes & SetValueFlags.ClearTwoWayBindings) != 0;
 
-			bool same = Equals(value, original);
+			bool same = ReferenceEquals(context.Property, BindingContextProperty) ? ReferenceEquals(value, original) : Equals(value, original);
 			if (!silent && (!same || raiseOnEqual))
 			{
 				if (property.PropertyChanging != null)
