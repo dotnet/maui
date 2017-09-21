@@ -45,6 +45,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 #if TEST_EXPERIMENTAL_RENDERERS
 			Forms.SetFlags("FastRenderers_Experimental");
+#else
+			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
 #endif
 
 			Forms.Init(this, bundle);
@@ -70,6 +72,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			// Listen for the message from the status bar color toggle test
 			MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(global::Android.Graphics.Color.Red));
+
+			SetUpForceRestartTest();
 
 			LoadApplication(_app);
 		}

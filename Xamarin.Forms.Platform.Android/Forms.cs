@@ -34,6 +34,7 @@ namespace Xamarin.Forms
 		public static Context Context { get; internal set; }
 
 		public static bool IsInitialized { get; private set; }
+		static bool FlagsSet { get; set; }
 
 		internal static bool IsLollipopOrNewer
 		{
@@ -156,12 +157,20 @@ namespace Xamarin.Forms
 
 		public static void SetFlags(params string[] flags)
 		{
+			if (FlagsSet)
+			{
+				// Don't try to set the flags again if they've already been set
+				// (e.g., during a configuration change where OnCreate runs again)
+				return;
+			}
+
 			if (IsInitialized)
 			{
 				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
 			}
 
 			s_flags = flags.ToList().AsReadOnly();
+			FlagsSet = true;
 		}
 
 		static Color GetAccentColor()
