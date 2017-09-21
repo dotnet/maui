@@ -19,8 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 	public class RestartAppTest : TestContentPage 
 	{
 		public const string ForceRestart = "ForceRestart";
-		public const string Success = "Android CoreGallery";
-		public const string RestartButton = "Restart";
+		public const string Success = "Success";
 
 		protected override void Init()
 		{
