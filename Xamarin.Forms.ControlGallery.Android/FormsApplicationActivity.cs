@@ -23,6 +23,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
 
+			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
+
 			Forms.Init(this, bundle);
 			FormsMaps.Init(this, bundle);
 			Forms.ViewInitialized += (sender, e) => {

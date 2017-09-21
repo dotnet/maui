@@ -39,10 +39,6 @@ namespace Xamarin.Forms
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
-		static bool _ColorButtonNormalSet;
-		static Color _ColorButtonNormal = Color.Default;
-		public static Color ColorButtonNormalOverride { get; set; }
-
 		internal static bool IsLollipopOrNewer
 		{
 			get

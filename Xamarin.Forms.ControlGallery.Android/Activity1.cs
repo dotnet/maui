@@ -169,8 +169,6 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 				// And put things back to normal so we can keep running tests
 				uiModeManager.DisableCarMode(DisableCarModeFlags.None);
-
-				((App)Xamarin.Forms.Application.Current).Reset();
 			});
 		}
 	}
