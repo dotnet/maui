@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Xamarin.Forms;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -30,6 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		{
 			InitializeComponent ();
 		}
+
 		public Bz27299 (bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
@@ -42,6 +44,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void SetUp ()
 			{
 				Bz27299ViewModelLocator.Count = 0;
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
 			}
 
 			[TestCase(true)]

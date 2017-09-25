@@ -37,6 +37,11 @@ namespace Xamarin.Forms.Xaml
 {
 	static class XamlParser
 	{
+		public const string XFUri = "http://xamarin.com/schemas/2014/forms";
+		public const string X2006Uri = "http://schemas.microsoft.com/winfx/2006/xaml";
+		public const string X2009Uri = "http://schemas.microsoft.com/winfx/2009/xaml";
+		public const string McUri = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+
 		public static void ParseXaml(RootNode rootNode, XmlReader reader)
 		{
 			IList<KeyValuePair<string, string>> xmlns;
@@ -79,14 +84,14 @@ namespace Xamarin.Forms.Xaml
 								node.Properties.Add(name, prop);
 						}
 						// 2. Xaml2009 primitives, x:Arguments, ...
-						else if (reader.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml" && reader.LocalName == "Arguments")
+						else if (reader.NamespaceURI == X2009Uri && reader.LocalName == "Arguments")
 						{
 							var prop = ReadNode(reader);
 							if (prop != null)
 								node.Properties.Add(XmlName.xArguments, prop);
 						}
 						// 3. DataTemplate (should be handled by 4.)
-						else if (node.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
+						else if (node.XmlType.NamespaceUri == XFUri &&
 						         (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							var prop = ReadNode(reader, true);
@@ -203,7 +208,7 @@ namespace Xamarin.Forms.Xaml
 
 				object value = reader.Value;
 
-				if (reader.NamespaceURI == "http://schemas.microsoft.com/winfx/2006/xaml")
+				if (reader.NamespaceURI == X2006Uri)
 				{
 					switch (reader.Name) {
 					case "x:Key":
@@ -221,7 +226,7 @@ namespace Xamarin.Forms.Xaml
 					}
                 }
 
-				if (reader.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml")
+				if (reader.NamespaceURI == X2009Uri)
 				{
 					switch (reader.Name) {
 					case "x:Key":

@@ -13,9 +13,6 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	public class XamlGTask : Task
 	{
-		const string XAML2006 = "http://schemas.microsoft.com/winfx/2006/xaml";
-		const string XAML2009 = "http://schemas.microsoft.com/winfx/2009/xaml";
-
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
 
 		[Required]
@@ -66,7 +63,7 @@ namespace Xamarin.Forms.Build.Tasks
 			xmlDoc.Load(xaml);
 
 			var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-			nsmgr.AddNamespace("__f__", "http://xamarin.com/schemas/2014/forms");
+			nsmgr.AddNamespace("__f__", XamlParser.XFUri);
 
 			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 
@@ -89,8 +86,8 @@ namespace Xamarin.Forms.Build.Tasks
 				nsmgr.AddNamespace(attr.LocalName, attr.Value);
 			}
 
-			var rootClass = root.Attributes["Class", XAML2006]
-						 ?? root.Attributes["Class", XAML2009];
+			var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
+			                    ?? root.Attributes["Class", XamlParser.X2009Uri];
 			if (rootClass == null)
 			{
 				rootType = null;
@@ -104,7 +101,7 @@ namespace Xamarin.Forms.Build.Tasks
 			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootNs, out rootAsm, out targetPlatform);
 			namedFields = GetCodeMemberFields(root, nsmgr);
 
-			var typeArguments = GetAttributeValue(root, "TypeArguments", XAML2006, XAML2009);
+			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 			var xmlType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null): null);
 			baseType = GetType(xmlType, root.GetNamespaceOfPrefix);
 		}
@@ -183,7 +180,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static IEnumerable<CodeMemberField> GetCodeMemberFields(XmlNode root, XmlNamespaceManager nsmgr)
 		{
-			var xPrefix = nsmgr.LookupPrefix(XAML2006) ?? nsmgr.LookupPrefix(XAML2009);
+			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 			if (xPrefix == null)
 				yield break;
 
@@ -196,9 +193,9 @@ namespace Xamarin.Forms.Build.Tasks
 				// Don't take the root canvas
 				if (node == root)
 					continue;
-				var name = GetAttributeValue(node, "Name", XAML2006, XAML2009);
-				var typeArguments = GetAttributeValue(node, "TypeArguments", XAML2006, XAML2009);
-				var fieldModifier = GetAttributeValue(node, "FieldModifier", XAML2006, XAML2009);
+				var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri);
+				var typeArguments = GetAttributeValue(node, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
+				var fieldModifier = GetAttributeValue(node, "FieldModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
 
 				var xmlType = new XmlType(node.NamespaceURI, node.LocalName,
 										  typeArguments != null
@@ -258,11 +255,11 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static string GetClrNamespace(string namespaceuri)
 		{
-			if (namespaceuri == "http://xamarin.com/schemas/2014/forms")
+			if (namespaceuri == XamlParser.XFUri)
 				return "Xamarin.Forms";
-			if (namespaceuri == XAML2009)
+			if (namespaceuri == XamlParser.X2009Uri)
 				return "System";
-			if (namespaceuri != XAML2006 && !namespaceuri.Contains("clr-namespace"))
+			if (namespaceuri != XamlParser.X2006Uri && !namespaceuri.Contains("clr-namespace"))
 				throw new Exception($"Can't load types from xmlns {namespaceuri}");
 			return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 		}

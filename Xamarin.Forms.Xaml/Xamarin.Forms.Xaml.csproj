@@ -69,7 +69,7 @@
     <Compile Include="NamescopingVisitor.cs" />
     <Compile Include="CreateValuesVisitor.cs" />
     <Compile Include="ApplyPropertiesVisitor.cs" />
-    <Compile Include="HydratationContext.cs" />
+    <Compile Include="HydrationContext.cs" />
     <Compile Include="RegisterXNamesVisitor.cs" />
     <Compile Include="XamlParser.cs" />
     <Compile Include="MarkupExtensions\BindingExtension.cs" />

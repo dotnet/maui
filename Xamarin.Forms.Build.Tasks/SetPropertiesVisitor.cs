@@ -65,8 +65,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return;
 			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
 				return;
-			if (propertyName.NamespaceURI == "http://schemas.openxmlformats.org/markup-compatibility/2006" &&
-			    propertyName.LocalName == "Ignorable")
+			if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
 				return;
 			Context.IL.Append(SetPropertyValue(Context.Variables [(IElementNode)parentNode], propertyName, node, Context, node));
 		}
@@ -114,8 +113,7 @@ namespace Xamarin.Forms.Build.Tasks
 				Context.Variables[node] = vardef;
 			}
 
-			if (propertyName != XmlName.Empty)
-			{
+			if (propertyName != XmlName.Empty) {
 				if (skips.Contains(propertyName))
 					return;
 				if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
@@ -123,36 +121,68 @@ namespace Xamarin.Forms.Build.Tasks
 				
 				Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], propertyName, node, Context, node));
 			}
-			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode)
-			{
-				// Collection element, implicit content, or implicit collection element.
-				string contentProperty;
+			else if (IsCollectionItem(node, parentNode) && parentNode is IElementNode) {
 				var parentVar = Context.Variables[(IElementNode)parentNode];
-				if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(typeof (IEnumerable))) && parentVar.VariableType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any())
-				{
-					var elementType = parentVar.VariableType;
-					if (elementType.FullName != "Xamarin.Forms.ResourceDictionary" && elementType.Resolve().BaseType.FullName != "Xamarin.Forms.ResourceDictionary")
-					{
-						var adderTuple = elementType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
-						var adderRef = Module.ImportReference(adderTuple.Item1);
-						adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
+				string contentProperty;
 
-						Context.IL.Emit(OpCodes.Ldloc, parentVar);
-						Context.IL.Emit(OpCodes.Ldloc, vardef);
-						Context.IL.Emit(OpCodes.Callvirt, adderRef);
-						if (adderRef.ReturnType.FullName != "System.Void")
-							Context.IL.Emit(OpCodes.Pop);
-					}
+				// Implicit Style Resource in a ResourceDictionary
+				if (IsResourceDictionary((IElementNode)parentNode)
+					&& node.XmlType.Name == "Style"
+					&& !node.Properties.ContainsKey(XmlName.xKey)) {
+					Context.IL.Emit(OpCodes.Ldloc, parentVar);
+					Context.IL.Emit(OpCodes.Ldloc, Context.Variables[node]);
+					Context.IL.Emit(OpCodes.Callvirt,
+						Module.ImportReference(
+							Module.ImportReference(typeof(ResourceDictionary))
+								.Resolve()
+								.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 1)));
 				}
-				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null)
-				{
+				// Resource without a x:Key in a ResourceDictionary
+				else if (IsResourceDictionary((IElementNode)parentNode)
+						 && !node.Properties.ContainsKey(XmlName.xKey)) {
+					throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", node);
+				}
+				// Resource in a ResourceDictionary
+				else if (IsResourceDictionary((IElementNode)parentNode)
+						 && node.Properties.ContainsKey(XmlName.xKey)) {
+//					IL_0013: ldloc.0
+//					IL_0014:  ldstr "key"
+//					IL_0019:  ldstr "foo"
+//					IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
+					Context.IL.Emit(OpCodes.Ldloc, parentVar);
+					Context.IL.Emit(OpCodes.Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
+					var varDef = Context.Variables[node];
+					Context.IL.Emit(OpCodes.Ldloc, varDef);
+					if (varDef.VariableType.IsValueType)
+						Context.IL.Emit(OpCodes.Box, Module.ImportReference(varDef.VariableType));
+					Context.IL.Emit(OpCodes.Callvirt,
+						Module.ImportReference(
+							Module.ImportReference(typeof(ResourceDictionary))
+								.Resolve()
+								.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 2)));
+				}
+				// Collection element, implicit content, or implicit collection element.
+				else if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(typeof (IEnumerable))) && parentVar.VariableType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any()) {
+					var elementType = parentVar.VariableType;
+					var adderTuple = elementType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
+					var adderRef = Module.ImportReference(adderTuple.Item1);
+					adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
+
+					Context.IL.Emit(OpCodes.Ldloc, parentVar);
+					Context.IL.Emit(OpCodes.Ldloc, vardef);
+					Context.IL.Emit(OpCodes.Callvirt, adderRef);
+					if (adderRef.ReturnType.FullName != "System.Void")
+						Context.IL.Emit(OpCodes.Pop);
+				}
+				else if ((contentProperty = GetContentProperty(parentVar.VariableType)) != null) {
 					var name = new XmlName(node.NamespaceURI, contentProperty);
 					if (skips.Contains(name))
 						return;
 					if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
 						return;
 					Context.IL.Append(SetPropertyValue(Context.Variables[(IElementNode)parentNode], name, node, Context, node));
-				} else
+				}
+				else
 					throw new XamlParseException($"Can not set the content of {((IElementNode)parentNode).XmlType.Name} as it doesn't have a ContentPropertyAttribute", node);
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode)
@@ -206,6 +236,13 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ListNode node, INode parentNode)
 		{
+		}
+
+		bool IsResourceDictionary(IElementNode node)
+		{
+			var parentVar = Context.Variables[(IElementNode)node];
+			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
+				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
 		}
 
 		public static bool TryGetPropertyName(INode node, INode parentNode, out XmlName name)
@@ -1177,7 +1214,7 @@ namespace Xamarin.Forms.Build.Tasks
 			node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
 			node.Accept(new SetFieldVisitor(templateContext), null);
 			node.Accept(new SetResourcesVisitor(templateContext), null);
-			node.Accept(new SetPropertiesVisitor(templateContext), null);
+			node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
 
 			templateIl.Emit(OpCodes.Ldloc, templateContext.Variables[node]);
 			templateIl.Emit(OpCodes.Ret);

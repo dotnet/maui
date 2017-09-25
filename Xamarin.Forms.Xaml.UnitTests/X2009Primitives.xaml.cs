@@ -7,7 +7,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
-{	
+{
 	public partial class X2009Primitives : ContentPage
 	{	
 		public X2009Primitives ()

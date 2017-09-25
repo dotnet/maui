@@ -502,7 +502,7 @@
     <Compile Include="Issues\Bz58922.xaml.cs">
       <DependentUpon>Bz58922.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MergedResourceDictionaries.xaml.cs" >
+    <Compile Include="MergedResourceDictionaries.xaml.cs">
       <DependentUpon>MergedResourceDictionaries.xaml</DependentUpon>
     </Compile>
   </ItemGroup>

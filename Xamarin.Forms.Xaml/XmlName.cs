@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Xaml
 		public static readonly XmlName Empty = new XmlName();
 
 		public string NamespaceURI { get; }
-
 		public string LocalName { get; }
 
 		public XmlName(string namespaceUri, string localName)
@@ -34,6 +33,9 @@ namespace Xamarin.Forms.Xaml
 			return NamespaceURI == other.NamespaceURI && LocalName == other.LocalName;
 		}
 
+		public bool Equals(string namespaceUri, string localName)
+			=> Equals(new XmlName(namespaceUri, localName));
+
 		public override int GetHashCode()
 		{
 			unchecked
@@ -48,13 +50,9 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public static bool operator ==(XmlName x1, XmlName x2)
-		{
-			return x1.NamespaceURI == x2.NamespaceURI && x1.LocalName == x2.LocalName;
-		}
+			=> x1.NamespaceURI == x2.NamespaceURI && x1.LocalName == x2.LocalName;
 
 		public static bool operator !=(XmlName x1, XmlName x2)
-		{
-			return !(x1 == x2);
-		}
+			=>  !(x1 == x2);
 	}
 }

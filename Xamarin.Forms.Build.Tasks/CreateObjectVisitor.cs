@@ -308,7 +308,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static bool IsXaml2009LanguagePrimitive(IElementNode node)
 		{
-			if (node.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml") {
+			if (node.NamespaceURI == XamlParser.X2009Uri) {
 				var n = node.XmlType.Name.Split(':') [1];
 				return n != "Array";
 			}

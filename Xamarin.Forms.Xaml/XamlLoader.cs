@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Xaml
 
 					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml (rootnode, reader);
-					Visit (rootnode, new HydratationContext {
+					Visit (rootnode, new HydrationContext {
 						RootElement = view,
 #pragma warning disable 0618
 						ExceptionHandler = ResourceLoader.ExceptionHandler ?? (Internals.XamlLoader.DoNotThrowOnExceptions ? e => { }: (Action<Exception>)null)
@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Xaml
 
 					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
 					XamlParser.ParseXaml (rootnode, reader);
-					var visitorContext = new HydratationContext {
+					var visitorContext = new HydrationContext {
 						ExceptionHandler = doNotThrow ? e => { } : (Action<Exception>)null,
 					};
 					var cvv = new CreateValuesVisitor (visitorContext);
@@ -129,7 +129,7 @@ namespace Xamarin.Forms.Xaml
 			return inflatedView;
 		}
 
-		static void Visit (RootNode rootnode, HydratationContext visitorContext)
+		static void Visit (RootNode rootnode, HydrationContext visitorContext)
 		{
 			rootnode.Accept (new XamlNodeVisitor ((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
 			rootnode.Accept (new ExpandMarkupsVisitor (visitorContext), null);

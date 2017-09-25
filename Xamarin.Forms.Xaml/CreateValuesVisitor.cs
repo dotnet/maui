@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml
 {
 	internal class CreateValuesVisitor : IXamlNodeVisitor
 	{
-		public CreateValuesVisitor(HydratationContext context)
+		public CreateValuesVisitor(HydrationContext context)
 		{
 			Context = context;
 		}
@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Xaml
 			get { return Context.Values; }
 		}
 
-		HydratationContext Context { get; }
+		HydrationContext Context { get; }
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => true;
@@ -275,7 +275,7 @@ namespace Xamarin.Forms.Xaml
 
 		static bool IsXaml2009LanguagePrimitive(IElementNode node)
 		{
-			return node.NamespaceURI == "http://schemas.microsoft.com/winfx/2009/xaml";
+			return node.NamespaceURI == XamlParser.X2009Uri;
 		}
 
 		static object CreateLanguagePrimitive(Type nodeType, IElementNode node)
