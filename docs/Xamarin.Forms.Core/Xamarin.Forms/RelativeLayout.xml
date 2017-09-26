@@ -1,6 +1,6 @@
 <Type Name="RelativeLayout" FullName="Xamarin.Forms.RelativeLayout">
-  <TypeSignature Language="C#" Value="public class RelativeLayout : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit RelativeLayout extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt;" />
+  <TypeSignature Language="C#" Value="public class RelativeLayout : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.RelativeLayout&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit RelativeLayout extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt; implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.RelativeLayout&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,7 +17,11 @@
       <BaseTypeArgument TypeParamName="T">Xamarin.Forms.View</BaseTypeArgument>
     </BaseTypeArguments>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.RelativeLayout&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.Layout`1" /> that uses <see cref="T:Xamarin.Forms.Constraint" />s to layout its children.</summary>
     <remarks>
@@ -333,6 +337,31 @@ public class RelativeLayoutExample : ContentPage
         <param name="width">The width of the rectangle into which the children will be laid out.</param>
         <param name="height">The height of the rectangle into which the children will be laid out.</param>
         <summary>Lays out the <see cref="P:Xamarin.Forms.RelativeLayout.Children" /> in the specified rectangle.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.RelativeLayout&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.RelativeLayout&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.RelativeLayout&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

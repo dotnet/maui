@@ -1,6 +1,6 @@
 <Type Name="Grid" FullName="Xamarin.Forms.Grid">
-  <TypeSignature Language="C#" Value="public class Grid : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;, Xamarin.Forms.IGridController" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt; implements class Xamarin.Forms.IGridController" />
+  <TypeSignature Language="C#" Value="public class Grid : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Grid&gt;, Xamarin.Forms.IGridController" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Grid extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt; implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.Grid&gt;, class Xamarin.Forms.IGridController" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,6 +18,9 @@
     </BaseTypeArguments>
   </Base>
   <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.Grid&gt;</InterfaceName>
+    </Interface>
     <Interface>
       <InterfaceName>Xamarin.Forms.IGridController</InterfaceName>
     </Interface>
@@ -620,6 +623,31 @@ namespace FormsGallery
         <summary>
           <para>Lays out the child elements when the layout is invalidated.</para>
         </summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Grid&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.Grid&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.Grid&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

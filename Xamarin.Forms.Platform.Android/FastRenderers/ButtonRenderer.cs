@@ -229,6 +229,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
 				UpdateDrawable();
+
+				ElevationHelper.SetElevation(this, e.NewElement);
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));

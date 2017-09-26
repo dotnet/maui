@@ -1,5 +1,7 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
 using NUnit.Framework;
@@ -51,17 +53,22 @@ namespace Xamarin.Forms.Controls.Issues
 
 			testButton.Clicked += (sender, args) => outputLabel.Text = CantTouchFailText;
 
+			var boxView = new BoxView
+			{
+				AutomationId = "nontransparentBoxView",
+				Color = Color.Pink.MultiplyAlpha(0.5)
+			};
+
+			// Bump up the elevation on Android so the Button is covered (FastRenderers)
+			boxView.On<Android>().SetElevation(10f);
+
 			var testGrid = new Grid
 			{
 				AutomationId = "testgrid",
 				Children =
 				{
 					testButton,
-					new BoxView
-					{
-						AutomationId = "nontransparentBoxView",
-						Color = Color.Pink.MultiplyAlpha(0.5)
-					}
+					boxView
 				}
 			};
 

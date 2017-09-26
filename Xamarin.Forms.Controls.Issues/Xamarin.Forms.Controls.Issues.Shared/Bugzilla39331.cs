@@ -1,6 +1,8 @@
 ﻿using System;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
 using Xamarin.UITest;
@@ -46,6 +48,10 @@ namespace Xamarin.Forms.Controls.Issues
 				IsVisible = false,
 				InputTransparent = false
 			};
+
+			// Bump up elevation on Android to cover FastRenderer Button
+			((BoxView)_busyBackground).On<Android>().SetElevation(10f);
+
 			layout.Children.Add (_busyBackground, new Rectangle (0, 0, 1, 1), AbsoluteLayoutFlags.SizeProportional);
 
 			Content = layout;

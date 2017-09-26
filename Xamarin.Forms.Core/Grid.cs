@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public partial class Grid : Layout<View>, IGridController
+	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>
 	{
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
@@ -52,10 +52,18 @@ namespace Xamarin.Forms
 			});
 
 		readonly GridElementCollection _children;
+		readonly Lazy<PlatformConfigurationRegistry<Grid>> _platformConfigurationRegistry;
 
 		public Grid()
 		{
 			_children = new GridElementCollection(InternalChildren, this) { Parent = this };
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Grid>>(() => 
+				new PlatformConfigurationRegistry<Grid>(this));
+		}
+
+		public IPlatformElementConfiguration<T, Grid> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		public new IGridList<View> Children

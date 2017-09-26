@@ -103,6 +103,7 @@
     <Compile Include="AndroidTitleBarVisibility.cs" />
     <Compile Include="AppCompat\FrameRenderer.cs" />
     <Compile Include="ButtonBackgroundTracker.cs" />
+    <Compile Include="Elevation.cs" />
     <Compile Include="Extensions\JavaObjectExtensions.cs" />
     <Compile Include="FastRenderers\AutomationPropertiesProvider.cs" />
     <Compile Include="FastRenderers\ButtonRenderer.cs" />

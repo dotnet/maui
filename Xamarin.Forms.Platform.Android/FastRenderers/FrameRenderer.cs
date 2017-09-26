@@ -163,6 +163,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateShadow();
 				UpdateBackgroundColor();
 				UpdateCornerRadius();
+
+				ElevationHelper.SetElevation(this, e.NewElement);
 			}
 		}
 

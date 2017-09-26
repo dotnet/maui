@@ -200,6 +200,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				if (e.OldElement?.HorizontalTextAlignment != e.NewElement.HorizontalTextAlignment
 				 || e.OldElement?.VerticalTextAlignment != e.NewElement.VerticalTextAlignment)
 					UpdateGravity();
+
+				ElevationHelper.SetElevation(this, e.NewElement);
 			}
 		}
 

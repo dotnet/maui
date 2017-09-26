@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.Android
 		public static IVisualElementRenderer GetRenderer(this VisualElement self)
 		{
 			if (self == null)
-				throw new ArgumentNullException("self");
+				throw new ArgumentNullException(nameof(self));
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(self);
 

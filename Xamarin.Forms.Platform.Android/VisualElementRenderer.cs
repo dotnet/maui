@@ -5,7 +5,6 @@ using System.ComponentModel;
 using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Platform.Android.FastRenderers;
 using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
@@ -258,8 +257,10 @@ namespace Xamarin.Forms.Platform.Android
 				handler(this, args);
 
 			ElementChanged?.Invoke(this, e);
-		}
 
+			ElevationHelper.SetElevation(this, e.NewElement);
+		}
+		
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)

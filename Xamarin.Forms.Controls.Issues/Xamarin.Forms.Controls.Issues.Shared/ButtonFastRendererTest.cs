@@ -1,6 +1,8 @@
 ﻿using System;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
 using NUnit.Framework;
@@ -21,6 +23,10 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			var label = new Label { Text = Running };
 			var img = new Image { Source = "cover1.jpg", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+
+			// Give the image sufficient elevation to cover the FastRenderer Button
+			img.On<Android>().SetElevation(9f);
+
 			var btn = new Button { AutomationId = btnId, Text = "hello", HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
 			btn.Clicked += (sender, e) => { label.Text = Success; };
 			var grd = new Grid();

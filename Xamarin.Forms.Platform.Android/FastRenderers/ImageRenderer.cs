@@ -68,6 +68,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			UpdateAspect();
 			this.EnsureId();
 
+			ElevationHelper.SetElevation(this, e.NewElement);
+
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 		}
 

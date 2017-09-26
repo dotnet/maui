@@ -1,6 +1,6 @@
 <Type Name="StackLayout" FullName="Xamarin.Forms.StackLayout">
-  <TypeSignature Language="C#" Value="public class StackLayout : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StackLayout extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt;" />
+  <TypeSignature Language="C#" Value="public class StackLayout : Xamarin.Forms.Layout&lt;Xamarin.Forms.View&gt;, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.StackLayout&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit StackLayout extends Xamarin.Forms.Layout`1&lt;class Xamarin.Forms.View&gt; implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.StackLayout&gt;" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,7 +18,11 @@
       <BaseTypeArgument TypeParamName="T">Xamarin.Forms.View</BaseTypeArgument>
     </BaseTypeArguments>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.StackLayout&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.Layout`1" /> that positions child elements in a single line which can be oriented vertically or horizontally.</summary>
     <remarks>
@@ -211,6 +215,31 @@ var stackLayout = new StackLayout {
         <param name="height">A value representing the height of the child region bounding box.</param>
         <summary>Positions and sizes the children of a StackLayout.</summary>
         <remarks>Implementors wishing to change the default behavior of a StackLayout should override this method. It is suggested to still call the base method and modify its calculated results.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="On&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.StackLayout&gt; On&lt;T&gt; () where T : Xamarin.Forms.IConfigPlatform;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class Xamarin.Forms.IPlatformElementConfiguration`2&lt;!!T, class Xamarin.Forms.StackLayout&gt; On&lt;(class Xamarin.Forms.IConfigPlatform) T&gt;() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;T,Xamarin.Forms.StackLayout&gt;</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <InterfaceName>Xamarin.Forms.IConfigPlatform</InterfaceName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters />
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">

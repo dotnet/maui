@@ -4,6 +4,8 @@ using System.Diagnostics;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Linq;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -155,6 +157,9 @@ namespace Xamarin.Forms.Controls.Issues
 				InputTransparent = inputTransparent,
 				Opacity = opacity
 			};
+
+			// Bump up the elevation to cover FastRenderer buttons
+			layout.On<Android>().SetElevation(10f);
 
 			grid.Children.Add(button);
 			Grid.SetRow(button, 3);
