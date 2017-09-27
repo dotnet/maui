@@ -643,8 +643,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (animated)
 				SetupPageTransition(transaction, !removed);
 
-			transaction.DisallowAddToBackStack();
-
 			if (_fragmentStack.Count == 0)
 			{
 				transaction.Add(Id, fragment);
