@@ -242,7 +242,13 @@ namespace Xamarin.Forms.Platform.Android
 				// LongClick handling from happening. So we need to watch locally for LongPress and if we see it,
 				// trigger the LongClick manually.
 				_watchForLongPress = _viewCell.ContextActions.Count > 0 
-					&& vw.GestureRecognizers.Any(t => t is TapGestureRecognizer);
+					&& HasTapGestureRecognizers(vw);
+			}
+
+			static bool HasTapGestureRecognizers(View view)
+			{
+				return view.GestureRecognizers.Any(t => t is TapGestureRecognizer) 
+					|| view.LogicalChildren.OfType<View>().Any(HasTapGestureRecognizers);
 			}
 
 			void TriggerLongClick()
