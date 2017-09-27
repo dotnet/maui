@@ -118,6 +118,7 @@
 
     <!--Xaml PCL Stuff-->
     <file src="Xamarin.Forms.targets" target="build\portable-win+net45+wp80+win81+wpa81\Xamarin.Forms$IdAppend$.targets" />
+    <file src="Xamarin.Forms.DefaultItems.targets" target="build\portable-win+net45+wp80+win81+wpa81\Xamarin.Forms.DefaultItems.targets" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Build.Tasks.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="build\portable-win+net45+wp80+win81+wpa81" />
