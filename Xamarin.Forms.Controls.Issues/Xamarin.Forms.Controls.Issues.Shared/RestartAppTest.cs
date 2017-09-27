@@ -20,25 +20,31 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		public const string ForceRestart = "ForceRestart";
 		public const string Success = "Success";
+		public const string RestartButton = "Restart";
 
 		protected override void Init()
 		{
+			var restartButton = new Button { Text = "Restart", AutomationId = RestartButton };
+			restartButton.Clicked += (sender, e) => MessagingCenter.Send(this, ForceRestart);
+
 			Content = new StackLayout
 			{
 				Padding = new Thickness(0, 20, 0, 0),
 				Children =
 				{
-					new Label { Text = Success }
+					new Label { Text = Success },
+					restartButton
 				}
 			};
-
-			MessagingCenter.Send(this, ForceRestart);
 		}
 
 #if UITEST
 		[Test]
 		public void ForcingRestartDoesNotCauseCrash()
 		{
+			RunningApp.WaitForElement(RestartButton);
+			RunningApp.Tap(RestartButton);
+
 			// If the app hasn't crashed, this test has passed
 			RunningApp.WaitForElement(Success);
 		}
