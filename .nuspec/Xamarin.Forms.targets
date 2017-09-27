@@ -23,7 +23,11 @@
 			XamlC;
 		</CompileDependsOn>
 	</PropertyGroup>
-  
+
+	<ItemGroup>
+		<ProjectCapability Include="XamarinForms" />
+	</ItemGroup>
+
 	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
   
 	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
