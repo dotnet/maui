@@ -41,10 +41,52 @@
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlC" AfterTargets="AfterCompile" Condition="'$(_XamlCAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_XamlCAlreadyExecuted>true</_XamlCAlreadyExecuted>
-		</PropertyGroup>
+	<ItemGroup>
+		<ProjectCapability Include="XamarinForms" />
+	</ItemGroup>
+
+	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
+  
+	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
+  
+	<PropertyGroup>
+		<XamlGDependsOn>
+			_PreXamlG;
+			_CollectXamlFiles;
+			_CoreXamlG;
+		</XamlGDependsOn>
+	</PropertyGroup>
+  
+	<Target Name="_PreXamlG">
+		<MakeDir Directories="$(IntermediateOutputPath)"/>
+	</Target>
+  
+	<Target Name="_CollectXamlFiles">
+		<ItemGroup>
+			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"/>
+		</ItemGroup>
+		<FixedCreateCSharpManifestResourceName ResourceFiles="@(_XamlResources)" RootNamespace="$(RootNamespace)">
+			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="XamlFiles" />
+		</FixedCreateCSharpManifestResourceName>
+		<ItemGroup>
+			<XamlGFiles Include="@(XamlFiles->'$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)')"/>
+			<Compile Include="@(XamlGFiles)"/>
+			<FileWrites Include="@(XamlGFiles)"/>
+		</ItemGroup>
+	</Target>
+  
+	<Target Name="_CoreXamlG"
+		Inputs = "@(XamlFiles)"
+		Outputs = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+		<XamlGTask
+			Source="@(XamlFiles)"
+			Language = "$(Language)"
+			AssemblyName = "$(AssemblyName)"
+			OutputFile = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+		</XamlGTask>
+	</Target>
+  
+	<Target Name="XamlC">
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
