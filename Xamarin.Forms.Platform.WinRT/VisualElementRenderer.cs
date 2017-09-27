@@ -413,8 +413,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			Control.HorizontalAlignment = HorizontalAlignment.Stretch;
 			Control.VerticalAlignment = VerticalAlignment.Stretch;
 
-			Children.Add(control);
-
 			if (Element == null)
 				throw new InvalidOperationException(
 					"Cannot assign a native control without an Element; Renderer unbound and/or disposed. " +
@@ -425,7 +423,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			control.GotFocus += OnControlGotFocus;
 			control.LostFocus += OnControlLostFocus;
-
+			Children.Add(control);
 			UpdateBackgroundColor();
 
 			if (Element != null && !string.IsNullOrEmpty(Element.AutomationId))
