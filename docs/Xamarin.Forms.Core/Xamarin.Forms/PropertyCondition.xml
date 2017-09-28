@@ -22,28 +22,30 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Class that represents a value comparison with a property.</summary>
+    <summary>Class that represents a value comparison against a property on the control that contains the enclosing <see cref="T:Xamarin.Forms.MultiTrigger" />.</summary>
     <remarks>
-      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.PropertyCondition" /> class:</para>
-      <list type="table">
-        <listheader>
-          <term>Property</term>
-          <description>Value</description>
-        </listheader>
-        <item>
-          <term>Property</term>
-          <description>
-            <para>The name of the property to check.</para>
-          </description>
-        </item>
-        <item>
-          <term>Value</term>
-          <description>
-            <para>The value for which the condition is met.</para>
-          </description>
-        </item>
-      </list>
+      <para>The <see cref="T:Xamarin.Forms.PropertyCondition" /> class is suitable for checking property values on the control that contains the <see cref="T:Xamarin.Forms.MultiTrigger" /> that contains it. To check values on other controls, developers can use the <see cref="T:Xamarin.Forms.BindingCondition" /> class, in addition to any property conditions in the trigger list.</para>
+      <example>
+        <para>The XML example below creates a property condition within a surrounding <see cref="T:Xamarin.Forms.MultiTrigger" /> within a <see cref="T:Xamarin.Forms.TextCell" /> that turns the text green when the secret is typed. The code is turned back to the default color if the user then edits the secret. (Typically, a <see cref="T:Xamarin.Forms.MultiTrigger" /> would have more than one condition; this example is simplified for clarity.)</para>
+        <code lang="XML"><![CDATA[
+<Entry Placeholder="Type the secret!"
+       VerticalOptions="Center"
+       HorizontalOptions="Center">
+      <Entry.Triggers>
+          <MultiTrigger TargetType="Entry" >
+              <MultiTrigger.Conditions>
+                  <PropertyCondition Property="Text"
+                                     Value="The text color is green" />
+              </MultiTrigger.Conditions>
+              <Setter Property="TextColor"
+                  Value="Color.Green" />
+          </MultiTrigger>
+      </Entry.Triggers>
+</Entry>]]></code>
+      </example>
     </remarks>
+    <altmember cref="T:Xamarin.Forms.MultiTrigger" />
+    <altmember cref="T:Xamarin.Forms.BindingCondition" />
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -117,8 +119,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>Provides a value by using the supplied service provider.</summary>
+        <param name="serviceProvider">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

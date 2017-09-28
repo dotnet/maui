@@ -10,20 +10,16 @@ namespace Xamarin.Forms.Platform.Android
 		Action _pinchEndedDelegate;
 		Func<Point, bool> _pinchStartedDelegate;
 
-		public InnerScaleListener(Func<float, Point, bool> pinchDelegate, Func<Point, bool> pinchStarted, Action pinchEnded)
+		public InnerScaleListener(PinchGestureHandler pinchGestureHandler)
 		{
-			if (pinchDelegate == null)
-				throw new ArgumentNullException("pinchDelegate");
+			if (pinchGestureHandler == null)
+			{
+				throw new ArgumentNullException(nameof(pinchGestureHandler));
+			}
 
-			if (pinchStarted == null)
-				throw new ArgumentNullException("pinchStarted");
-
-			if (pinchEnded == null)
-				throw new ArgumentNullException("pinchEnded");
-
-			_pinchDelegate = pinchDelegate;
-			_pinchStartedDelegate = pinchStarted;
-			_pinchEndedDelegate = pinchEnded;
+			_pinchDelegate = pinchGestureHandler.OnPinch;
+			_pinchStartedDelegate = pinchGestureHandler.OnPinchStarted;
+			_pinchEndedDelegate = pinchGestureHandler.OnPinchEnded;
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds

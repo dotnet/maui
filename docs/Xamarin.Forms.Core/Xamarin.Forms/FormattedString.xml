@@ -63,7 +63,7 @@
         <Parameter Name="formatted" Type="Xamarin.Forms.FormattedString" />
       </Parameters>
       <Docs>
-        <param name="formatted">To be added.</param>
+        <param name="formatted">The formatted string to cast.</param>
         <summary>Cast the FormattedString to a string, stripping all the attributes.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -87,7 +87,7 @@
         <Parameter Name="text" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="text">To be added.</param>
+        <param name="text">The text to cast.</param>
         <summary>Cast a string to a FormattedString that contains a single span with no attribute set.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

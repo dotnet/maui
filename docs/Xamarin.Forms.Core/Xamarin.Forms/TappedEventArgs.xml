@@ -37,7 +37,7 @@
         <Parameter Name="parameter" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="parameter">To be added.</param>
+        <param name="parameter">A parameter object for the tapped event.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.TappedEventArgs" /> object with the supplied parameter.</summary>
         <remarks>To be added.</remarks>
       </Docs>

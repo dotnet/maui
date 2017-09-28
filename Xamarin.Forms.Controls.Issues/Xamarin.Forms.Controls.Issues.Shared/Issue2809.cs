@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 #if __ANDROID__
 			//show secondary menu
-			RunningApp.Tap (c => c.Class ("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
+			RunningApp.Tap (c => c.Class ("OverflowMenuButton"));
 #endif
 		}
 

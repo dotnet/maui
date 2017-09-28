@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					{ new XmlName (null, "Baz"), node },
 				}
 			};
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor(context), null);
 			node.Accept (new ApplyPropertiesVisitor (context), rootNode);
 			Assert.AreEqual (baz, bindable.Baz);
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					{ new XmlName (null, "Baz"), node },
 				}
 			};
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor (context), null);
 			Assert.Throws<XamlParseException>(()=> node.Accept (new ApplyPropertiesVisitor (context), rootNode));
 		}
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				}
 			};
 
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor(context), null);
 			node.Accept (new ApplyPropertiesVisitor (context), rootNode);
 			Assert.IsNotNull (bindable.Foo);
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					{ new XmlName (null, "Bar"), node },
 				}
 			};
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor(context), null);
 			node.Accept (new ApplyPropertiesVisitor (context), rootNode);
 			Assert.IsNotNull (bindable.Bar);
@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					{ new XmlName ("clr-namespace:Xamarin.Forms.Xaml.UnitTests;assembly=Xamarin.Forms.Xaml.UnitTests", "Bindable.Qux"), node },
 				}
 			};
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor (context), null);
 			node.Accept (new ApplyPropertiesVisitor (context), rootNode);
 			Assert.IsNotNull (Bindable.GetQux (bindable));
@@ -225,7 +225,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 					{ new XmlName (null, "FooBar"), node },
 				}
 			};
-			var context = new HydratationContext { RootElement = new Label () };
+			var context = new HydrationContext { RootElement = new Label () };
 			rootNode.Accept (new CreateValuesVisitor (context), null);
 			node.Accept (new ApplyPropertiesVisitor (context), rootNode);
 

@@ -31,7 +31,7 @@
         <Parameter Name="modal" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="modal">To be added.</param>
+        <param name="modal">The modal page.</param>
         <summary>Constructs a new <see cref="T:Xamarin.Forms.ModalPoppedEventArgs" /> object for the page that was just popped.</summary>
         <remarks>To be added.</remarks>
       </Docs>

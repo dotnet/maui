@@ -672,8 +672,8 @@ public class App : Application
         <Parameter Name="newValue" Type="Xamarin.Forms.FontAttributes" />
       </Parameters>
       <Docs>
-        <param name="oldValue">To be added.</param>
-        <param name="newValue">To be added.</param>
+        <param name="oldValue">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newValue">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -693,8 +693,8 @@ public class App : Application
         <Parameter Name="newValue" Type="Xamarin.Forms.Font" />
       </Parameters>
       <Docs>
-        <param name="oldValue">To be added.</param>
-        <param name="newValue">To be added.</param>
+        <param name="oldValue">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newValue">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -714,8 +714,8 @@ public class App : Application
         <Parameter Name="newValue" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="oldValue">To be added.</param>
-        <param name="newValue">To be added.</param>
+        <param name="oldValue">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newValue">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -735,8 +735,8 @@ public class App : Application
         <Parameter Name="newValue" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="oldValue">To be added.</param>
-        <param name="newValue">To be added.</param>
+        <param name="oldValue">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newValue">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

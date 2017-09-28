@@ -1,4 +1,5 @@
 <img src="banner.png" alt="Xamarin.Forms banner" height="145" >
+
 # Xamarin.Forms #
 
 Xamarin.Forms provides a way to quickly build native apps for iOS, Android, Windows and macOS, completely in C#.
@@ -7,17 +8,22 @@ Read more about the platform at https://www.xamarin.com/forms.
 
 ## Build Status ##
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_OsxDebug.svg?style=flat&label=OSX%20Debug%20%20%20%20%20 "OSX Debug")  
+![OSX Debug Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_OsxDebug.svg?style=flat&label=OSX%20Debug%20%20%20%20%20 "OSX Debug")  
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_WindowsDebug.svg?style=flat&label=Win%20Debug%20%20%20%20%20%20 "Win Debug")  
+![Windows Debug Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_WindowsDebug.svg?style=flat&label=Win%20Debug%20%20%20%20%20%20 "Win Debug")  
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunAndroid601.svg?style=flat&label=UITest%20Android "Android UI Tests")
+![Android UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunAndroid601.svg?style=flat&label=UITest%20Android "Android UI Tests")
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS8.svg?style=flat&label=UITest%20iOS8%20%20%20%20 "iOS8 UI Tests")  
+![iOS8 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS8.svg?style=flat&label=UITest%20iOS8%20%20%20%20 "iOS8 UI Tests")  
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS9.svg?style=flat&label=UITest%20iOS9%20%20%20%20 "iOS9 UI Tests")  
+![iOS9 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS9.svg?style=flat&label=UITest%20iOS9%20%20%20%20 "iOS9 UI Tests")  
 
-![alt text](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS10.svg?style=flat&label=UITest%20iOS10%20%20 "iOS10 UI Tests") 
+![iOS10 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS10.svg?style=flat&label=UITest%20iOS10%20%20 "iOS10 UI Tests") 
+
+![Visual Studio Team Services Windows Debug](https://img.shields.io/vso/build/devdiv/0bdbc590-a062-4c3f-b0f6-9383f67865ee/6713.svg?style=flat&label=VSTS%20Win%20dbg "Win Debug VSTS")
+
+![Visual Studio Team Services OSX Debug](https://img.shields.io/vso/build/devdiv/0bdbc590-a062-4c3f-b0f6-9383f67865ee/5514.svg?style=flat&label=VSTS%20OSX%20dbg "OSX Debug VSTS") 
+
 
 ## Getting Started ##
 
@@ -64,7 +70,8 @@ You can find out how to obtain a Google Maps API key [here](https://developer.xa
 We follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with two primary exceptions:
 
 - We do not use the `private` keyword as it is the default accessibility level in C#.
-- We use hard tabs over spaces. You can change this setting in VS 2015 via `Tools > Options` and navigating to `Text Editor > C#` and selecting the "Keep tabs" radio option.
+- We use hard tabs over spaces. You can change this setting in VS 2015 via `Tools > Options` and navigating to `Text Editor > C#` and selecting the "Keep tabs" radio option. In Visual Studio for Mac it's set via preferences in `Source Code > Code Formatting > C# source code` and disabling the checkbox for `Convert tabs to spaces`.
+- Lines should be limited to a max of 120 characters (or as close as possible within reason). This may be set in Visual Studio for Mac via preferences in `Source Code > Code Formatting > C# source code` and changing the `Desired file width` to `120`.
 
 ## Contributing ##
 

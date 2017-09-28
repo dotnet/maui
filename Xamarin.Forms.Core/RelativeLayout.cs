@@ -7,7 +7,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class RelativeLayout : Layout<View>
+	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
 	{
 		public static readonly BindableProperty XConstraintProperty = BindableProperty.CreateAttached("XConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);
 
@@ -22,12 +22,21 @@ namespace Xamarin.Forms
 		readonly RelativeElementCollection _children;
 
 		IEnumerable<View> _childrenInSolveOrder;
+		readonly Lazy<PlatformConfigurationRegistry<RelativeLayout>> _platformConfigurationRegistry;
 
 		public RelativeLayout()
 		{
 			VerticalOptions = HorizontalOptions = LayoutOptions.FillAndExpand;
 			_children = new RelativeElementCollection(InternalChildren, this);
 			_children.Parent = this;
+
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RelativeLayout>>(() => 
+				new PlatformConfigurationRegistry<RelativeLayout>(this));
+		}
+
+		public IPlatformElementConfiguration<T, RelativeLayout> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		public new IRelativeList<View> Children

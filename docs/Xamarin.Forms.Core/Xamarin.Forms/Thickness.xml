@@ -45,7 +45,7 @@
         <Parameter Name="uniformSize" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="uniformSize">To be added.</param>
+        <param name="uniformSize">The uniform size of all edges in the new thickness.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Thickness" /> object that represents a uniform thickness of size <paramref name="uniformSize" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -68,8 +68,8 @@
         <Parameter Name="verticalSize" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="horizontalSize">To be added.</param>
-        <param name="verticalSize">To be added.</param>
+        <param name="horizontalSize">The width of the left and right thicknesses.</param>
+        <param name="verticalSize">The height of the top and bottom thicknesses.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Thickness" /> object that has a horizontal thickness of <paramref name="horizontalSize" /> and a vertical thickness of <paramref name="verticalSize" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -94,10 +94,10 @@
         <Parameter Name="bottom" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="top">To be added.</param>
-        <param name="right">To be added.</param>
-        <param name="bottom">To be added.</param>
+        <param name="left">The width of the left thickness.</param>
+        <param name="top">The height of the top thickness.</param>
+        <param name="right">The width of the right thickness.</param>
+        <param name="bottom">The height of the bottom thickness.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Thickness" /> object with thicknesses defined by <paramref name="left" />, <paramref name="top" />, <paramref name="right" />, and <paramref name="bottom" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

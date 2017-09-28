@@ -37,9 +37,9 @@
         <Parameter Name="heightConstraint" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="widthConstraint">To be added.</param>
-        <param name="heightConstraint">To be added.</param>
+        <param name="view">The view for which to request a size.</param>
+        <param name="widthConstraint">The requested width.</param>
+        <param name="heightConstraint">The requested height.</param>
         <summary>Performs a size request on the native platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

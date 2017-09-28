@@ -237,6 +237,11 @@ namespace Xamarin.Forms
 			double w = Math.Max(0, width - Padding.HorizontalThickness);
 			double h = Math.Max(0, height - Padding.VerticalThickness);
 
+			var isHeadless = CompressedLayout.GetIsHeadless(this);
+			var headlessOffset = CompressedLayout.GetHeadlessOffset(this);
+			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
+				CompressedLayout.SetHeadlessOffset((VisualElement)LogicalChildrenInternal[i], isHeadless ? new Point(headlessOffset.X + Bounds.X, headlessOffset.Y + Bounds.Y) : new Point());
+
 			LayoutChildren(x, y, w, h);
 
 			for (var i = 0; i < oldBounds.Length; i++)
@@ -245,9 +250,7 @@ namespace Xamarin.Forms
 				Rectangle newBound = ((VisualElement)LogicalChildrenInternal[i]).Bounds;
 				if (oldBound != newBound)
 				{
-					EventHandler handler = LayoutChanged;
-					if (handler != null)
-						handler(this, EventArgs.Empty);
+					LayoutChanged?.Invoke(this, EventArgs.Empty);
 					return;
 				}
 			}

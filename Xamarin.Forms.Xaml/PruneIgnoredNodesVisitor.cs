@@ -18,8 +18,7 @@ namespace Xamarin.Forms.Xaml
 				var propertyValue = (propertyKvp.Value as ValueNode)?.Value as string;
 				if (propertyValue == null)
 					continue;
-				if (propertyName.NamespaceURI != "http://schemas.openxmlformats.org/markup-compatibility/2006" ||
-					propertyName.LocalName != "Ignorable")
+				if (!propertyName.Equals(XamlParser.McUri, "Ignorable"))
 					continue;
 				(parentNode.IgnorablePrefixes ?? (parentNode.IgnorablePrefixes = new List<string>())).AddRange(propertyValue.Split(','));
 			}

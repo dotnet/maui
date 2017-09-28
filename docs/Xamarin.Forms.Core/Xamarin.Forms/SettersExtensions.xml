@@ -38,9 +38,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="setters">To be added.</param>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="setters">The list of setters to which to add a setter that sets <paramref name="property" /> to <paramref name="value" />.</param>
+        <param name="property">The property to set.</param>
+        <param name="value">The value to which to set the property set.</param>
         <summary>Add a Setter with a value to the IList&lt;Setter&gt;</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -64,9 +64,10 @@
         <Parameter Name="binding" Type="Xamarin.Forms.Binding" />
       </Parameters>
       <Docs>
-        <param name="setters">To be added.</param>
+        <param name="setters">The list of setters to which to add a setter that binds <paramref name="property" /> to <paramref name="value" />.</param>
         <param name="property">To be added.</param>
-        <param name="binding">To be added.</param>
+        <param name="binding">The property to set.</param>
+        <param name="binding">The binding to add.</param>
         <summary>Add a Setter with a Binding to the IList&lt;Setter&gt;</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -90,9 +91,9 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="setters">To be added.</param>
-        <param name="property">To be added.</param>
-        <param name="key">To be added.</param>
+        <param name="setters">The list of setters to which to add the keyed property.</param>
+        <param name="property">The resource to add.</param>
+        <param name="key">The resource key.</param>
         <summary>Add a Setter with a DynamicResource to the IList&lt;Setter&gt;</summary>
         <remarks>To be added.</remarks>
       </Docs>

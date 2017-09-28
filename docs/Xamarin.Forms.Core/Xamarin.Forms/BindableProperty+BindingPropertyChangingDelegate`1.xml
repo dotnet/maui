@@ -30,10 +30,10 @@
     <ReturnType>System.Void</ReturnType>
   </ReturnValue>
   <Docs>
-    <typeparam name="TPropertyType">To be added.</typeparam>
-    <param name="bindable">To be added.</param>
-    <param name="oldValue">To be added.</param>
-    <param name="newValue">To be added.</param>
+    <typeparam name="TPropertyType">The type of the bound property.</typeparam>
+    <param name="bindable">The bindable object that contains the property.</param>
+    <param name="oldValue">The old property value.</param>
+    <param name="newValue">The new property value.</param>
     <summary>Strongly-typed delegate for BindableProperty.PropertyChanging.</summary>
     <remarks>To be added.</remarks>
   </Docs>

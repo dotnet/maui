@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		public NavigationPageRenderer()
 		{
 			AutoPackage = false;
-			Id = FormsAppCompatActivity.GetUniqueId();
+			Id = Platform.GenerateViewId();
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		FragmentManager FragmentManager	=> _fragmentManager ?? (_fragmentManager = ((FormsAppCompatActivity)Context).SupportFragmentManager);
 
-		IPageController PageController => Element as IPageController;
+		IPageController PageController => Element;
 
 		bool ToolbarVisible
 		{
@@ -304,33 +304,54 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			bar.Measure(MeasureSpecFactory.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(barHeight, MeasureSpecMode.Exactly));
 
-			int internalHeight = b - t - barHeight;
-			int containerHeight = ToolbarVisible ? internalHeight : b - t;
-			containerHeight -= ContainerPadding;
+			var barOffset = ToolbarVisible ? barHeight : 0;
+			int containerHeight = b - t - ContainerPadding - barOffset;
 
 			PageController.ContainerArea = new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(containerHeight));
+
 			// Potential for optimization here, the exact conditions by which you don't need to do this are complex
 			// and the cost of doing when it's not needed is moderate to low since the layout will short circuit pretty fast
 			Element.ForceLayout();
 
+			bool toolbarLayoutCompleted = false;
 			for (var i = 0; i < ChildCount; i++)
 			{
 				AView child = GetChildAt(i);
-				bool isBar = JNIEnv.IsSameObject(child.Handle, bar.Handle);
 
-				if (ToolbarVisible)
+				Page childPage = (child as PageContainer)?.Child?.Element as Page;
+
+				if (childPage == null)
+					return;
+
+				// We need to base the layout of both the child and the bar on the presence of the NavBar on the child Page itself.
+				// If we layout the bar based on ToolbarVisible, we get a white bar flashing at the top of the screen.
+				// If we layout the child based on ToolbarVisible, we get a white bar flashing at the bottom of the screen.
+				bool childHasNavBar = NavigationPage.GetHasNavigationBar(childPage);
+
+				if (childHasNavBar)
 				{
-					if (isBar)
-						bar.Layout(0, 0, r - l, barHeight);
-					else
-						child.Layout(0, barHeight + ContainerPadding, r, b);
+					bar.Layout(0, 0, r - l, barHeight);
+					child.Layout(0, barHeight + ContainerPadding, r, b);
 				}
 				else
 				{
-					if (isBar)
-						bar.Layout(0, -1000, r, barHeight - 1000);
-					else
-						child.Layout(0, ContainerPadding, r, b);
+					bar.Layout(0, -1000, r, barHeight - 1000);
+					child.Layout(0, ContainerPadding, r, b);
+				}
+				toolbarLayoutCompleted = true;
+			}
+
+			// Making the layout of the toolbar dependant on having a child Page could potentially mean that the toolbar is not laid out.
+			// We'll do one more check to make sure it isn't missed.
+			if (!toolbarLayoutCompleted)
+			{
+				if (ToolbarVisible)
+				{
+					bar.Layout(0, 0, r - l, barHeight);
+				}
+				else
+				{
+					bar.Layout(0, -1000, r, barHeight - 1000);
 				}
 			}
 		}
@@ -416,11 +437,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				ResetToolbar();
 		}
 
-		void FilterPageFragment(Page page)
-		{
-			_fragmentStack.RemoveAll(f => ((FragmentContainer)f).Page == page);
-		}
-
 		void HandleToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName || e.PropertyName == MenuItem.TextProperty.PropertyName || e.PropertyName == MenuItem.IconProperty.PropertyName)
@@ -454,12 +470,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			e.Task = PopToRootAsync(e.Page, e.Animated);
 		}
 
-		Task<bool> OnPopToRootAsync(Page page, bool animated)
+		protected virtual Task<bool> OnPopToRootAsync(Page page, bool animated)
 		{
 			return SwitchContentAsync(page, animated, true, true);
 		}
 
-		Task<bool> OnPopViewAsync(Page page, bool animated)
+		protected virtual Task<bool> OnPopViewAsync(Page page, bool animated)
 		{
 			Page pageToShow = ((INavigationPageController)Element).Peek(1);
 			if (pageToShow == null)
@@ -468,7 +484,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return SwitchContentAsync(pageToShow, animated, true);
 		}
 
-		Task<bool> OnPushAsync(Page view, bool animated)
+		protected virtual Task<bool> OnPushAsync(Page view, bool animated)
 		{
 			return SwitchContentAsync(view, animated);
 		}
@@ -531,21 +547,41 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_drawerToggle.DrawerIndicatorEnabled = true;
 		}
 
+		Fragment GetPageFragment(Page page)
+		{
+			for (int n = 0; n < _fragmentStack.Count; n++)
+			{
+				if ((_fragmentStack[n] as FragmentContainer)?.Page == page)
+				{
+					return _fragmentStack[n];
+				}
+			}
+
+			return null;
+		}
+
 		void RemovePage(Page page)
 		{
-			IVisualElementRenderer rendererToRemove = Android.Platform.GetRenderer(page);
-			var containerToRemove = (PageContainer)rendererToRemove?.View.Parent;
+			Fragment fragment = GetPageFragment(page);
 
-			// Also remove this page from the fragmentStack
-			FilterPageFragment(page);
-
-			containerToRemove.RemoveFromParent();
-			if (rendererToRemove != null)
+			if (fragment == null)
 			{
-				rendererToRemove.View.RemoveFromParent();
-				rendererToRemove.Dispose();
+				return;
 			}
-			containerToRemove?.Dispose();
+
+#if DEBUG
+			// Enables logging of moveToState operations to logcat
+			FragmentManager.EnableDebugLogging(true);
+#endif
+
+			// Go ahead and take care of the fragment bookkeeping for the page being removed
+			FragmentTransaction transaction = FragmentManager.BeginTransaction();
+			transaction.DisallowAddToBackStack();
+			transaction.Remove(fragment);
+			transaction.CommitAllowingStateLoss();
+
+			// And remove the fragment from our own stack
+			_fragmentStack.Remove(fragment);
 
 			Device.StartTimer(TimeSpan.FromMilliseconds(10), () =>
 			{
@@ -606,8 +642,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (animated)
 				SetupPageTransition(transaction, !removed);
-
-			transaction.DisallowAddToBackStack();
 
 			if (_fragmentStack.Count == 0)
 			{

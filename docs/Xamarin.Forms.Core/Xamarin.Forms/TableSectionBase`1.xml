@@ -102,7 +102,7 @@
         <Parameter Name="title" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="title">To be added.</param>
+        <param name="title">The title of the table section.</param>
         <summary>
             Constructs a new <see cref="T:Xamarin.Forms.TableSection`1" /> instance with the specified <paramref name="title" />.
             </summary>
@@ -250,8 +250,8 @@
         <Parameter Name="arrayIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="array">To be added.</param>
-        <param name="arrayIndex">To be added.</param>
+        <param name="array">The array to which to copy the items.</param>
+        <param name="arrayIndex">The index into <paramref name="array" /> at which to begin placing copied elements.</param>
         <summary>Copies the elements of the current collection to an <see cref="T:System.Array" />, starting at the specified index.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -422,7 +422,7 @@
         <Parameter Name="item" Type="T" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
+        <param name="item">The item to remove.</param>
         <summary>Removes a specified item from this <see cref="T:Xamarin.Forms.TableSectionBase`1" /> object.</summary>
         <returns>
           <see langword="true" />, if item was removed from the current collection; <see langword="false" /> if item was not found in the current collection..</returns>

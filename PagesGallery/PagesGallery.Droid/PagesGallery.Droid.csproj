@@ -25,6 +25,7 @@
     <JavaOptions />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -162,7 +162,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				cell = GetCellForPath(indexPath, isHeader);
 				nativeCell = CellNSView.GetNativeCell(tableView, cell, templateId, isHeader);
 			}
-			else if (cachingStrategy == ListViewCachingStrategy.RecycleElement)
+			else if ((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				nativeCell = tableView.MakeView(templateId, tableView);
 				if (nativeCell == null)

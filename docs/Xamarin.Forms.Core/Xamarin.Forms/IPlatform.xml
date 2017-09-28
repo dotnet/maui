@@ -114,7 +114,7 @@
         <Parameter Name="newRoot" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="newRoot">To be added.</param>
+        <param name="newRoot">The new root page.</param>
         <summary>Sets the root page of the platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -22,5 +22,19 @@ namespace Xamarin.Forms
 				SetInheritedBindingContext(content, BindingContext);
 			}
 		}
+
+		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)
+		{
+			if (oldValue == null)
+				return;
+
+			base.OnControlTemplateChanged(oldValue, newValue);
+			View content = Content;
+			ControlTemplate controlTemplate = ControlTemplate;
+			if (content != null && controlTemplate != null)
+			{
+				SetInheritedBindingContext(content, BindingContext);
+			}
+		}
 	}
 }

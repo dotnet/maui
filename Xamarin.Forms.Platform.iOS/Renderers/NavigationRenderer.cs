@@ -319,6 +319,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual async Task<bool> OnPushAsync(Page page, bool animated)
 		{
+			if(page is MasterDetailPage)
+				System.Diagnostics.Trace.WriteLine($"Pushing a {nameof(MasterDetailPage)} onto a {nameof(NavigationPage)} is not a supported UI pattern on iOS. " +
+					"Please see https://developer.apple.com/documentation/uikit/uisplitviewcontroller for more details.");
+
 			var pack = CreateViewControllerForPage(page);
 			var task = GetAppearedOrDisappearedTask(page);
 
@@ -914,7 +918,11 @@ namespace Xamarin.Forms.Platform.iOS
 				var hasNavBar = NavigationPage.GetHasNavigationBar(current);
 
 				if (NavigationController.NavigationBarHidden == hasNavBar)
+				{
+					// prevent bottom content "jumping"
+					current.IgnoresContainerArea = !hasNavBar;
 					NavigationController.SetNavigationBarHidden(!hasNavBar, animated);
+				}
 			}
 
 			void UpdateToolbarItems()

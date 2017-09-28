@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var scrollView = new ScrollView { Content = label };
 
-			var effect = Effect.Resolve("XamControl.BorderEffect");
+			var effect = Effect.Resolve($"{Issues.Effects.ResolutionGroupName}.BorderEffect");
 
 			scrollView.Effects.Add(effect);
 

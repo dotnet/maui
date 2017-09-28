@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 					entry.EditingDidBegin += OnStarted;
 					entry.EditingDidEnd += OnEnded;
+					entry.EditingChanged += OnEditing;
 
 					_picker = new UIPickerView();
 
@@ -75,8 +76,21 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTextColor();
 		}
 
+		void OnEditing(object sender, EventArgs eventArgs)
+		{
+			// Reset the TextField's Text so it appears as if typing with a keyboard does not work.
+			var selectedIndex = Element.SelectedIndex;
+			var items = Element.Items;
+			Control.Text = selectedIndex == -1 || items == null ? "" : items[selectedIndex];
+		}
+
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
+			var s = (PickerSource)_picker.Model;
+			if (s.SelectedIndex != _picker.SelectedRowInComponent(0))
+			{
+				_picker.Select(s.SelectedIndex, 0, false);
+			}
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 		}
 

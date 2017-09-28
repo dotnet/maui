@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent),
 						Adapter = new FormsFragmentPagerAdapter<ContentPage>(e.NewElement, activity.SupportFragmentManager) { CountOverride = e.NewElement.Children.Count }
 					};
-				pager.Id = FormsAppCompatActivity.GetUniqueId();
+				pager.Id = Platform.GenerateViewId();
 				pager.AddOnPageChangeListener(this);
 
 				ViewGroup.AddView(pager);

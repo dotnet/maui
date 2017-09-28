@@ -53,7 +53,7 @@
         <Parameter Name="sourceType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="sourceType">To be added.</param>
+        <param name="sourceType">The source type to check.</param>
         <summary>Returns a value that indicates if the source type can be converted to a font size.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -76,8 +76,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="culture">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="culture">The culture information to use when performing the conversion.</param>
+        <param name="value">The value to convert.</param>
         <summary>Converts an object into a font size.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -97,7 +97,7 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value to convert.</param>
         <summary>Converts a string representation of a font size into a font size.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -126,9 +126,9 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="culture">To be added.</param>
-        <param name="value">To be added.</param>
-        <param name="serviceProvider">To be added.</param>
+        <param name="culture">For internal use only.</param>
+        <param name="value">For internal use only.</param>
+        <param name="serviceProvider">For internal use only.</param>
         <summary>For internal use only.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -149,8 +149,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="serviceProvider">To be added.</param>
+        <param name="value">For internal use only.</param>
+        <param name="serviceProvider">For internal use only.</param>
         <summary>For internal use only.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

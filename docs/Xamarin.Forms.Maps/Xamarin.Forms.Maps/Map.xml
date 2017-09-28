@@ -77,7 +77,7 @@ var cp = new ContentPage {
         <Parameter Name="region" Type="Xamarin.Forms.Maps.MapSpan" />
       </Parameters>
       <Docs>
-        <param name="region">To be added.</param>
+        <param name="region">The region to show.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Maps.Map" /> object with that shows the region that is specified by <paramref name="region" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -230,6 +230,27 @@ var cp = new ContentPage {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="LastMoveToRegion">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Maps.MapSpan LastMoveToRegion { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Forms.Maps.MapSpan LastMoveToRegion" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Maps.MapSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="MapType">
       <MemberSignature Language="C#" Value="public Xamarin.Forms.Maps.MapType MapType { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Maps.MapType MapType" />
@@ -313,6 +334,30 @@ var cp = new ContentPage {
       <Docs>
         <summary>An <see cref="T:System.Collections.IList`1" /> of the <see cref="T:Xamarin.Forms.Maps.Pin" />s on this <see cref="T:Xamarin.Forms.Maps.Map" />.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetVisibleRegion">
+      <MemberSignature Language="C#" Value="public void SetVisibleRegion (Xamarin.Forms.Maps.MapSpan value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetVisibleRegion(class Xamarin.Forms.Maps.MapSpan value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="value" Type="Xamarin.Forms.Maps.MapSpan" />
+      </Parameters>
+      <Docs>
+        <param name="value">To be added.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

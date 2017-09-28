@@ -1,26 +1,38 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.FixedCreateCSharpManifestResourceName" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-  
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.FixedCreateCSharpManifestResourceName" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+
+	<PropertyGroup>
+		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
+		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
+	</PropertyGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
+
 	<PropertyGroup>
 		<CoreCompileDependsOn>
 			XamlG;
 			$(CoreCompileDependsOn);
 		</CoreCompileDependsOn>
 	</PropertyGroup>
-  
+
 	<PropertyGroup>
 		<CompileDependsOn>
 			$(CompileDependsOn);
 			XamlC;
 		</CompileDependsOn>
 	</PropertyGroup>
-  
+
+	<ItemGroup>
+		<ProjectCapability Include="XamarinForms" />
+	</ItemGroup>
+
 	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
-  
+
 	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
-  
+
 	<PropertyGroup>
 		<XamlGDependsOn>
 			_PreXamlG;
@@ -28,7 +40,32 @@
 			_CoreXamlG;
 		</XamlGDependsOn>
 	</PropertyGroup>
-  
+
+	<PropertyGroup>
+		<_XFTargetsImportedAgain Condition="'$(_XFTargetsImported)'=='True'">True</_XFTargetsImportedAgain>
+		<_XFTargetsImported>True</_XFTargetsImported>
+	</PropertyGroup>
+
+	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
+		<Error
+			Text="Xamarin.Forms targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
+			Code="XF001"
+			Condition="'$(_XFTargetsImportedAgain)' == 'True'" />
+
+		<GetTasksAbi>
+			<Output TaskParameter="AbiVersion" PropertyName="_XFTasksAbi" />
+		</GetTasksAbi >
+
+		<PropertyGroup>
+			<_XFTasksExpectedAbi>1</_XFTasksExpectedAbi>
+		</PropertyGroup>
+
+		<Error
+			Text="Xamarin.Forms tasks do not match targets. Please ensure that all projects reference the same version of Xamarin.Forms, and if the error persists, please restart the IDE."
+			Code="XF002"
+			Condition="'$(_XFTasksAbi)' != '$(_XFTasksExpectedAbi)'" />
+	</Target>
+
 	<Target Name="_PreXamlG">
 		<MakeDir Directories="$(IntermediateOutputPath)"/>
 	</Target>
@@ -46,7 +83,7 @@
 			<FileWrites Include="@(XamlGFiles)"/>
 		</ItemGroup>
 	</Target>
-  
+
 	<Target Name="_CoreXamlG"
 		Inputs = "@(XamlFiles)"
 		Outputs = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
@@ -57,14 +94,19 @@
 			OutputFile = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
 		</XamlGTask>
 	</Target>
-  
+
+	<PropertyGroup>
+		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>
+	</PropertyGroup>
+
 	<Target Name="XamlC">
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
-			Verbosity = "2"
+			Verbosity = "$(XFVerbosity)"
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
-			DebugType = "$(DebugType)"/>
+			DebugType = "$(DebugType)"
+			KeepXamlResources = "$(XFKeepXamlResources)" />
 	</Target>
 </Project>

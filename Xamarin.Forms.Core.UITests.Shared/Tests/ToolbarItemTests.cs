@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 			isSecondaryMenuOpen = true;
 			//show secondary menu
-			App.Tap(c => c.Class("android.support.v7.widget.ActionMenuPresenter$OverflowMenuButton"));
+			App.Tap(c => c.Class("OverflowMenuButton"));
 #endif
 		}
 

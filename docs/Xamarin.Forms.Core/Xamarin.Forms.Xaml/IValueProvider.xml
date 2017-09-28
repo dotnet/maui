@@ -27,7 +27,7 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">The service that provides the value.</param>
         <summary>When implemented in a derived class, provides a value with the specified <paramref name="serviceProvider" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

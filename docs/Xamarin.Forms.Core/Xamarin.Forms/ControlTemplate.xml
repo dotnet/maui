@@ -38,7 +38,7 @@
         <Parameter Name="type" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
+        <param name="type">The type of control for which to create a template.</param>
         <summary>Creates a new control template for the specified control type.</summary>
         <remarks>To be added.</remarks>
       </Docs>

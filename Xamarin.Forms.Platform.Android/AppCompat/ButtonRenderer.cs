@@ -23,7 +23,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public ButtonRenderer()
 		{
-			System.Diagnostics.Debug.WriteLine("Slow Button!");
 			AutoPackage = false;
 		}
 
@@ -141,7 +140,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (Element == null || Control == null)
 				return;
 
-			_backgroundTracker.UpdateBackgroundColor();
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		void UpdateAll()

@@ -10,6 +10,7 @@
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,16 +58,16 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta5\lib\net40\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta5\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta5\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta5\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -488,6 +489,22 @@
     <Compile Include="FieldModifier.xaml.cs">
       <DependentUpon>FieldModifier.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Bz56852.xaml.cs">
+      <DependentUpon>Bz56852.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz53350.xaml.cs">
+      <DependentUpon>Bz53350.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="XamlC\MethodDefinitionExtensionsTests.cs" />
+    <Compile Include="Issues\Bz57574.xaml.cs">
+      <DependentUpon>Bz57574.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Issues\Bz58922.xaml.cs">
+      <DependentUpon>Bz58922.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MergedResourceDictionaries.xaml.cs">
+      <DependentUpon>MergedResourceDictionaries.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -891,6 +908,21 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="FieldModifier.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz56852.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz53350.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz57574.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz58922.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MergedResourceDictionaries.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

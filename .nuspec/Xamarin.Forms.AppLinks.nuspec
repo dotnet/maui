@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Xamarin.Forms.AppLinks$IdAppend$</id>
-    <version>1.0.0</version>
+    <version>$version$</version>
     <authors>Xamarin Inc.</authors>
     <owners>Xamarin Inc.</owners>
     <tags>xamarin forms applinks xamarinforms xamarin.forms</tags>

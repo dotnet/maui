@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+    x:Class="Xamarin.Forms.Xaml.UnitTests.Bz58922">
+    <Grid x:Name="grid">
+        <Grid.HeightRequest>
+            <OnIdiom x:TypeArguments="x:Double"
+                     Phone="320"
+                     Tablet="480" />
+        </Grid.HeightRequest>
+    </Grid>
+</ContentPage>

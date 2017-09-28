@@ -56,9 +56,29 @@
         <Parameter Name="position" Type="Xamarin.Forms.Maps.Position" />
       </Parameters>
       <Docs>
-        <param name="position">To be added.</param>
+        <param name="position">The position near which to search.</param>
         <summary>Returns the addresses near <paramref name="position" />, asynchronously.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetAddressesForPositionFuncAsync">
+      <MemberSignature Language="C#" Value="public static Func&lt;Xamarin.Forms.Maps.Position,System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;string&gt;&gt;&gt; GetAddressesForPositionFuncAsync;" />
+      <MemberSignature Language="ILAsm" Value=".field public static class System.Func`2&lt;valuetype Xamarin.Forms.Maps.Position, class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;string&gt;&gt;&gt; GetAddressesForPositionFuncAsync" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Func&lt;Xamarin.Forms.Maps.Position,System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;System.String&gt;&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -81,9 +101,29 @@
         <Parameter Name="address" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="address">To be added.</param>
+        <param name="address">The address for which to return positions.</param>
         <summary>Returns a list of positions for <paramref name="address" />.</summary>
         <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetPositionsForAddressAsyncFunc">
+      <MemberSignature Language="C#" Value="public static Func&lt;string,System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Maps.Position&gt;&gt;&gt; GetPositionsForAddressAsyncFunc;" />
+      <MemberSignature Language="ILAsm" Value=".field public static class System.Func`2&lt;string, class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Forms.Maps.Position&gt;&gt;&gt; GetPositionsForAddressAsyncFunc" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Func&lt;System.String,System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Maps.Position&gt;&gt;&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

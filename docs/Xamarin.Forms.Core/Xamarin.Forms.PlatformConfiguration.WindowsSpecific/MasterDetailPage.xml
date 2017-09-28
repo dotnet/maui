@@ -162,7 +162,7 @@
       </Parameters>
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
-        <param name="collapsedPaneWidth">To be added.</param>
+        <param name="collapsedPaneWidth">The new width for collapsed panes.</param>
         <summary>Sets the width of collapsed panes.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -183,7 +183,7 @@
       </Parameters>
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
-        <param name="collapseStyle">To be added.</param>
+        <param name="collapseStyle">The new collapse style.</param>
         <summary>Sets a value that controls whether panes collapses fully or partially.</summary>
         <remarks>To be added.</remarks>
       </Docs>

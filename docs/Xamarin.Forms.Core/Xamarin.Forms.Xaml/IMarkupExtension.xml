@@ -61,7 +61,7 @@ public class ColorMarkup : IMarkupExtension
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
+        <param name="serviceProvider">The service that provides the value.</param>
         <summary>Returns the object created from the markup extension.</summary>
         <returns>The object</returns>
         <remarks>

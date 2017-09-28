@@ -58,7 +58,7 @@
         <Parameter Name="renderer" Type="Xamarin.Forms.IWebViewDelegate" />
       </Parameters>
       <Docs>
-        <param name="renderer">To be added.</param>
+        <param name="renderer">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -105,7 +105,7 @@
         <Parameter Name="url" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="url">To be added.</param>
+        <param name="url">The URL to convert.</param>
         <summary>Casts a string that contains a URL to a <see cref="T:Xamarin.Forms.WebViewSource" /> instance.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -131,7 +131,7 @@
         <Parameter Name="url" Type="System.Uri" />
       </Parameters>
       <Docs>
-        <param name="url">To be added.</param>
+        <param name="url">The URL to convert.</param>
         <summary>Casts a <see cref="T:System.Uri" /> object to a <see cref="T:Xamarin.Forms.WebViewSource" /> instance.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

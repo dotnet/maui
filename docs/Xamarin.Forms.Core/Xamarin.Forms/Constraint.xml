@@ -45,7 +45,7 @@
         <Parameter Name="size" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="size">To be added.</param>
+        <param name="size">The constraint size.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Constraint" /> object that constrains an element to <paramref name="size" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -71,7 +71,7 @@
         <Parameter Name="expression" Type="System.Linq.Expressions.Expression&lt;System.Func&lt;System.Double&gt;&gt;" />
       </Parameters>
       <Docs>
-        <param name="expression">To be added.</param>
+        <param name="expression">A Linq expression for the constraint.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Constraint" /> that is calculated from <paramref name="expression" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -97,7 +97,7 @@
         <Parameter Name="measure" Type="System.Func&lt;Xamarin.Forms.RelativeLayout,System.Double&gt;" />
       </Parameters>
       <Docs>
-        <param name="measure">To be added.</param>
+        <param name="measure">A function that returns a <see langword="double" /> when passed a relative layout.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Constraint" /> object that constrains an element relative to its parent's size.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -124,8 +124,10 @@
         <Parameter Name="measure" Type="System.Func&lt;Xamarin.Forms.RelativeLayout,Xamarin.Forms.View,System.Double&gt;" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="measure">To be added.</param>
+        <param name="view">The view for which to compute the constraint.</param>
+        <param name="measure">
+          <param name="measure">A function that returns a <see langword="double" /> when passed a relative layout and a view.</param>
+        </param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Constraint" /> object that constrains an element relative to the <paramref name="view" /> parameter.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

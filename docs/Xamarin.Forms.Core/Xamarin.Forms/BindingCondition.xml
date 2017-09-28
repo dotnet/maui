@@ -23,7 +23,18 @@
   </Attributes>
   <Docs>
     <summary>Class that represents a value comparison with the target of an arbitrary binding.</summary>
-    <remarks>To be added.</remarks>
+    <remarks>
+      <para>The <see cref="T:Xamarin.Forms.BindingCondition" /> class can compare a value a binding on any class within the current scope. Developers who want to compare to a value to a bound property on the control that contains the conditions surrounding <see cref="T:Xamarin.Forms.MultiTrigger" /> may want to use a <see cref="T:Xamarin.Forms.PropertyCondition" /> in addition to any binding conditions in the trigger list. </para>
+      <example>
+        <para>The XML example below creates a binding condition within a surrounding <see cref="T:Xamarin.Forms.MultiTrigger" /> (omitted) that succeeds when the referenced <c>name</c> has a <c>Text.Length</c> property length that is equal to <c>0</c>. (<c>name</c> must refer to an element, such as a <see cref="T:Xamarin.Forms.TextCell" />, that has a <c>Text</c> property that, in turn, has a <c>Length</c> property.)</para>
+        <code lang="XML"><![CDATA[
+    <BindingCondition Binding="{Binding Source={x:Reference name},
+                                    Path=Text.Length}"
+                                    Value="0" />]]></code>
+      </example>
+    </remarks>
+    <altmember cref="T:Xamarin.Forms.MultiTrigger" />
+    <altmember cref="T:Xamarin.Forms.PropertyCondition" />
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -97,8 +108,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>Used by XAML infrastructure.</summary>
+        <param name="serviceProvider">Used by the XAML infrastructure.</param>
+        <summary>Used by the XAML infrastructure.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

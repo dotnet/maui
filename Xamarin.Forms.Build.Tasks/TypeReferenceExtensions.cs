@@ -56,17 +56,42 @@ namespace Xamarin.Forms.Build.Tasks
 			return typeDef.BaseType.GetProperty(predicate, out declaringTypeRef);
 		}
 
-		public static EventDefinition GetEvent(this TypeReference typeRef, Func<EventDefinition, bool> predicate)
+		public static EventDefinition GetEvent(this TypeReference typeRef, Func<EventDefinition, bool> predicate,
+			out TypeReference declaringTypeRef)
 		{
+			declaringTypeRef = typeRef;
 			var typeDef = typeRef.Resolve();
 			var events = typeDef.Events.Where(predicate);
-			if (events.Any())
-				return events.Single();
+			if (events.Any()) {
+				var ev = events.Single();
+				return ev.ResolveGenericEvent(declaringTypeRef);
+			}
 			if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
 				return null;
-			return typeDef.BaseType.GetEvent(predicate);
+			return typeDef.BaseType.GetEvent(predicate, out declaringTypeRef);
 		}
 
+		//this resolves generic eventargs (https://bugzilla.xamarin.com/show_bug.cgi?id=57574)
+		static EventDefinition ResolveGenericEvent(this EventDefinition eventDef, TypeReference declaringTypeRef)
+		{
+			if (eventDef == null)
+				throw new ArgumentNullException(nameof(eventDef));
+			if (declaringTypeRef == null)
+				throw new ArgumentNullException(nameof(declaringTypeRef));
+			if (!eventDef.EventType.IsGenericInstance)
+				return eventDef;
+			if (eventDef.EventType.Resolve().FullName != "System.EventHandler`1")
+				return eventDef;
+
+			var git = eventDef.EventType as GenericInstanceType;
+			var ga = git.GenericArguments.First();
+			ga = ga.ResolveGenericParameters(declaringTypeRef);
+			git.GenericArguments[0] = ga;
+			eventDef.EventType = git;
+
+			return eventDef;
+
+		}
 		public static FieldDefinition GetField(this TypeReference typeRef, Func<FieldDefinition, bool> predicate,
 			out TypeReference declaringTypeRef)
 		{

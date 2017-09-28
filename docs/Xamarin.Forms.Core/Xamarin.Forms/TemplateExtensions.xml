@@ -42,9 +42,9 @@
         <Parameter Name="path" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="targetProperty">To be added.</param>
-        <param name="path">To be added.</param>
+        <param name="self">The template on which this method operates.</param>
+        <param name="targetProperty">The target property of the binding.</param>
+        <param name="path">The path to the binding.</param>
         <summary>Binds the <paramref name="self" /> object's <paramref name="targetProperty" /> to a new <see cref="T:Xamarin.Forms.Binding" /> instance that was created with <paramref name="path" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

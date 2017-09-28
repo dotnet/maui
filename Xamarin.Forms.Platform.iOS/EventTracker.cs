@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		double _previousScale = 1.0;
 #if __MOBILE__
-		UITouchEventArgs _shouldReceive;
+		UITouchEventArgs _shouldReceiveTouch;
 #endif
 
 		public EventTracker(IVisualElementRenderer renderer)
@@ -82,9 +82,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (_disposed)
 				throw new ObjectDisposedException(null);
-#if __MOBILE__
-			_shouldReceive = (r, t) => t.View is IVisualElementRenderer;
-#endif
+
 			_handler = handler;
 			OnElementChanged(this, new VisualElementChangedEventArgs(null, _renderer.Element));
 		}
@@ -256,10 +254,50 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		UITapGestureRecognizer CreateTapRecognizer(int numTaps, Action action, int numFingers = 1)
 		{
-			var result = new UITapGestureRecognizer(action);
-			result.NumberOfTouchesRequired = (uint)numFingers;
-			result.NumberOfTapsRequired = (uint)numTaps;
+			var result = new UITapGestureRecognizer(action)
+			{
+				NumberOfTouchesRequired = (uint)numFingers,
+				NumberOfTapsRequired = (uint)numTaps,
+				ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether
+			};
+
 			return result;
+		}
+
+		static bool ShouldRecognizeTapsTogether(NativeGestureRecognizer gesture, NativeGestureRecognizer other)
+		{
+			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
+			// added to the XF Element), we want to allow them to fire simultaneously if they have the same number
+			// of taps and touches
+
+			var tap = gesture as UITapGestureRecognizer;
+			if (tap == null)
+			{
+				return false;
+			}
+
+			var otherTap = other as UITapGestureRecognizer;
+			if (otherTap == null)
+			{
+				return false;
+			}
+
+			if (!Equals(tap.View, otherTap.View))
+			{
+				return false;
+			}
+
+			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
+			{
+				return false;
+			}
+			
+			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
+			{
+				return false;
+			}
+
+			return true;
 		}
 #else
 		NSPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<NSPanGestureRecognizer> action)
@@ -281,10 +319,19 @@ namespace Xamarin.Forms.Platform.MacOS
 			return result;
 		}
 #endif
+
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
 				return;
+
+#if __MOBILE__
+			if (_shouldReceiveTouch == null)
+			{
+				// Cache this so we don't create a new UITouchEventArgs instance for every recognizer
+				_shouldReceiveTouch = ShouldReceiveTouch;
+			}
+#endif
 
 			foreach (var recognizer in ElementGestureRecognizers)
 			{
@@ -295,7 +342,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (nativeRecognizer != null)
 				{
 #if __MOBILE__
-					nativeRecognizer.ShouldReceiveTouch = _shouldReceive;
+					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 #endif
 					_handler.AddGestureRecognizer(nativeRecognizer);
 
@@ -313,6 +360,31 @@ namespace Xamarin.Forms.Platform.MacOS
 				uiRecognizer.Dispose();
 			}
 		}
+
+#if __MOBILE__
+		bool ShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		{
+			if (touch.View is IVisualElementRenderer)
+			{
+				return true;
+			}
+
+			// If the touch is coming from the UIView our renderer is wrapping (e.g., if it's  
+			// wrapping a UIView which already has a gesture recognizer), then we should let it through
+			// (This goes for children of that control as well)
+			if (_renderer?.NativeView == null)
+			{
+				return false;
+			}
+			
+			if (touch.View.IsDescendantOfView(_renderer.NativeView) && touch.View.GestureRecognizers?.Length > 0)
+			{
+				return true;
+			}
+
+			return false;
+		}
+#endif
 
 		void ModelGestureRecognizersOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{

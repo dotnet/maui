@@ -5,10 +5,15 @@ using System;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls
 {
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 39768, "PanGestureRecognizer sometimes won't fire completed event when dragging very slowly")]
 	public class Bugzilla39768 : TestContentPage

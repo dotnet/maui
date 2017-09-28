@@ -35,9 +35,9 @@
         <Parameter Name="max" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="min">To be added.</param>
-        <param name="max">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="min">For internal use by the Xamarin.Forms platform.</param>
+        <param name="max">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -59,9 +59,9 @@
         <Parameter Name="max" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="min">To be added.</param>
-        <param name="max">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="min">For internal use by the Xamarin.Forms platform.</param>
+        <param name="max">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

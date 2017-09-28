@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
 
@@ -613,13 +614,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.BindingContext = vm;
 			bindable.SetBinding(MockBindable.TextProperty, binding);
 
-			bool mainThread = false;
-			Device.PlatformServices = new MockPlatformServices(invokeOnMainThread: a => mainThread = true);
+			bool invokeOnMainThreadWasCalled = false;
+			Device.PlatformServices = new MockPlatformServices(a => invokeOnMainThreadWasCalled = true);
 
 			vm.Text = "updated";
 
-			Assert.IsTrue(mainThread, "Binding did not occur on main thread");
-			Assert.AreNotEqual(vm.Text, bindable.GetValue(MockBindable.TextProperty), "Binding was applied anyway through other means");
+			// If we wait five seconds and invokeOnMainThreadWasCalled still hasn't been set, something is very wrong
+			Assert.That(invokeOnMainThreadWasCalled, Is.True.After(5000, 10));
 		}
 	}
 

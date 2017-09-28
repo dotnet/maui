@@ -2307,8 +2307,8 @@
         <Parameter Name="color2" Type="Xamarin.Forms.Color" />
       </Parameters>
       <Docs>
-        <param name="color1">To be added.</param>
-        <param name="color2">To be added.</param>
+        <param name="color1">The first color in the comparison.</param>
+        <param name="color2">The second color in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="color1" /> represents the same color as <paramref name="color1" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -2335,8 +2335,8 @@
         <Parameter Name="color2" Type="Xamarin.Forms.Color" />
       </Parameters>
       <Docs>
-        <param name="color1">To be added.</param>
-        <param name="color2">To be added.</param>
+        <param name="color1">The first color in the comparison.</param>
+        <param name="color2">The second color in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="color1" /> does not represent the same color as <paramref name="color1" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -2775,7 +2775,7 @@
         <Parameter Name="value" Type="Xamarin.Forms.Color" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

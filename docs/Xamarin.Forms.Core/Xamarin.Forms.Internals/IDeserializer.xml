@@ -47,7 +47,7 @@
         <Parameter Name="properties" Type="System.Collections.Generic.IDictionary&lt;System.String,System.Object&gt;" />
       </Parameters>
       <Docs>
-        <param name="properties">To be added.</param>
+        <param name="properties">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

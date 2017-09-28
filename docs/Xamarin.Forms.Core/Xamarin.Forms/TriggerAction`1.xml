@@ -24,7 +24,48 @@
     <typeparam name="T">The type of which the <see cref="P:Xamarin.Forms.TriggerAction`1.AttachedObject" /> property must be an instance.</typeparam>
     <summary>A generic base class for user-defined actions that are performed when a trigger condition is met.</summary>
     <remarks>
+      <example>
+        <para>The example below shows how developers can use a trigger to respond to events and update the value of a control property by using <see cref="T:Xamarin.Forms.TriggerAction{T}" /> classes. The example prompts the user to answer a question about the color of the text, and then calls <c>ColorTriggerAction</c> to turn the text red when the user types "The text color is red". Developers should note that, while this example does not change the text back to the default color when the user continues to edit the string, the developer could additionally implement and specify an exit action to obtain that result.</para>
+        <para>With the ColorTriggerAction class below defined in the <c>TriggerDemo</c> namespace:</para>
+        <code lang="C#"><![CDATA[public class ColorTriggerAction : TriggerAction<Entry>
+{
+    protected override void Invoke(Entry sender)
+    {
+        sender.TextColor = Color.Red;
+    }
+}]]></code>
+        <para>the developer can use the XAML below to create the page that responds to the secret string by changing the color of the <see cref="T:Xamarin.Forms.Entry" /> text area to red.</para>
+        <code lang="XAML"><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<ContentPage    xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:local="clr-namespace:TriggerDemo"
+                x:Class="TriggerDemo.TriggerDemoPage">
+    <StackLayout VerticalOptions="Center">
+        <Label Text="What color is &quot;The text&quot;?"
+               VerticalOptions="Center"
+               HorizontalOptions="Center" />
+        <Entry Placeholder="Type answer here."
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               BackgroundColor="White">
+            <Entry.Triggers>
+                <Trigger TargetType="Entry"
+                         Property="Text"
+                         Value="The text is red" >
+                    <Trigger.EnterActions>
+                        <local:ColorTriggerAction />
+                    </Trigger.EnterActions>
+                </Trigger>
+            </Entry.Triggers>
+        </Entry>
+    </StackLayout>
+</ContentPage>
+]]></code>
+      </example>
     </remarks>
+    <altmember cref="T:Xamarin.Forms.Setter" />
+    <altmember cref="T:Xamarin.Forms.PropertyCondition" />
+    <altmember cref="T:Xamarin.Forms.DataTrigger" />
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -62,7 +103,7 @@
         <Parameter Name="sender" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">The object on which to invoke the trigger action.</param>
         <summary>Application developers override this method to provide the action that is performed when the trigger condition is met.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -84,7 +125,7 @@
         <Parameter Name="sender" Type="T" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">The object on which to invoke the trigger action.</param>
         <summary>Application developers override this method to provide the action that is performed when the trigger condition is met.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Xamarin.Forms.Maps
@@ -63,6 +64,8 @@ namespace Xamarin.Forms.Maps
 			get { return _pins; }
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetVisibleRegion(MapSpan value) => VisibleRegion = value;
 		public MapSpan VisibleRegion
 		{
 			get { return _visibleRegion; }
@@ -78,7 +81,8 @@ namespace Xamarin.Forms.Maps
 			}
 		}
 
-		internal MapSpan LastMoveToRegion { get; private set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public MapSpan LastMoveToRegion { get; private set; }
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{

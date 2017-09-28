@@ -7,9 +7,9 @@ namespace Xamarin.Forms.Platform.Android
 		VisualElement _element;
 		bool _isInViewCell;
 
-		public bool HandleMotionEvent(IViewParent parent)
+		public bool HandleMotionEvent(IViewParent parent, MotionEvent motionEvent)
 		{
-			if (_isInViewCell || _element.InputTransparent)
+			if (_isInViewCell || _element.InputTransparent || motionEvent.Action == MotionEventActions.Cancel)
 			{
 				return false;
 			}
@@ -38,16 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			// Determine whether this control is inside a ViewCell;
 			// we don't fake handle the events because ListView needs them for row selection
-			var parent = _element.Parent;
-			while (parent != null)
-			{
-				if (parent is ViewCell)
-				{
-					_isInViewCell = true;
-					break;
-				}
-				parent = parent.Parent;
-			}
+			_isInViewCell = element.IsInViewCell();
 		}
 	}
 }

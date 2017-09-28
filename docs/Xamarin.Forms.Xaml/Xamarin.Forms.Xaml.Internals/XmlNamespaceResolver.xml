@@ -49,8 +49,8 @@
         <Parameter Name="ns" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="prefix">To be added.</param>
-        <param name="ns">To be added.</param>
+        <param name="prefix">For internal use by the Xamarin.Forms platform.</param>
+        <param name="ns">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -70,7 +70,7 @@
         <Parameter Name="scope" Type="System.Xml.XmlNamespaceScope" />
       </Parameters>
       <Docs>
-        <param name="scope">To be added.</param>
+        <param name="scope">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -91,7 +91,7 @@
         <Parameter Name="prefix" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="prefix">To be added.</param>
+        <param name="prefix">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -112,7 +112,7 @@
         <Parameter Name="namespaceName" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="namespaceName">To be added.</param>
+        <param name="namespaceName">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

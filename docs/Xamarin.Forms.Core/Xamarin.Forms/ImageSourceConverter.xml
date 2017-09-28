@@ -65,8 +65,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="culture">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="culture">The culture information to use when performing the conversion.</param>
+        <param name="value">The value to convert.</param>
         <summary>Creates and returns a <see cref="T:Xamarin.Forms.ImageSource" /> for the specified <paramref name="value" /> and <paramref name="culture" />.</summary>
         <returns>A <see cref="T:Xamarin.Forms.ImageSource" /> for the specified <paramref name="value" /> and <paramref name="culture" />.</returns>
         <remarks>To be added.</remarks>
@@ -86,7 +86,7 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value to convert.</param>
         <summary>Returns an image source created from a URI that is contained in <paramref name="value" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

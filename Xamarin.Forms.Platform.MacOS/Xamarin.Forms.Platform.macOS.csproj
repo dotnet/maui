@@ -67,6 +67,9 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Flags.cs">
+      <Link>Flags.cs</Link>
+    </Compile>
     <Compile Include="FormsApplicationDelegate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PlatformRenderer.cs" />
@@ -88,6 +91,7 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\EffectUtilities.cs">
       <Link>EffectUtilities.cs</Link>
     </Compile>
+    <Compile Include="Renderers\FlippedClipView.cs" />
     <Compile Include="Renderers\PageRenderer.cs" />
     <Compile Include="Renderers\DefaultRenderer.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
@@ -195,7 +199,6 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\PlatformEffect.cs">
       <Link>PlatformEffect.cs</Link>
     </Compile>
-    <Compile Include="Controls\NSToolbarItemGroup.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\PlatformConfigurationExtensions.cs">
       <Link>Extensions\PlatformConfigurationExtensions.cs</Link>
     </Compile>

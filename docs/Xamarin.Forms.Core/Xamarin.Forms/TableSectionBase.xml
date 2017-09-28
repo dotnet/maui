@@ -73,7 +73,7 @@
         <Parameter Name="title" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="title">To be added.</param>
+        <param name="title">The title of the table section.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.TableSectionBase" /> object with the specified <paramref name="title" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

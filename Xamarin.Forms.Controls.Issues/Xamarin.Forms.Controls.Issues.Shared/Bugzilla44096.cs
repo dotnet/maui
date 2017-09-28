@@ -14,16 +14,26 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 44096, "Grid, StackLayout, and ContentView still participate in hit testing on Android after IsEnabled is set to false", PlatformAffected.Android)]
+	[Issue(IssueTracker.Bugzilla, 44096, "Grid, StackLayout, and ContentView still participate in hit testing on " 
+		+ "Android after IsEnabled is set to false", PlatformAffected.Android)]
 	public class Bugzilla44096 : TestContentPage
 	{
 		bool _flag;
+		const string Child = "Child";
+		const string Original = "Original";
+		const string ToggleColor = "color";
+		const string ToggleIsEnabled = "disabled";
+
+		const string StackLayout = "stackLayout";
+		const string ContentView = "contentView";
+		const string Grid = "grid";
+		const string RelativeLayout = "relativeLayout";
 
 		protected override void Init()
 		{
 			var result = new Label
 			{
-				Text = "Original"
+				Text = Original
 			};
 
 			var grid = new Grid
@@ -31,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,
-				AutomationId = "grid"
+				AutomationId = Grid
 			};
 			AddTapGesture(result, grid);
 
@@ -40,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,
-				AutomationId = "contentView"
+				AutomationId = ContentView
 			};
 			AddTapGesture(result, contentView);
 
@@ -49,9 +59,18 @@ namespace Xamarin.Forms.Controls.Issues
 				IsEnabled = true,
 				WidthRequest = 250,
 				HeightRequest = 50,
-				AutomationId = "stackLayout"
+				AutomationId = StackLayout
 			};
 			AddTapGesture(result, stackLayout);
+
+			var relativeLayout = new RelativeLayout
+			{
+				IsEnabled = true,
+				WidthRequest = 250,
+				HeightRequest = 50,
+				AutomationId = RelativeLayout
+			};
+			AddTapGesture(result, relativeLayout);
 
 			var color = new Button
 			{
@@ -63,31 +82,34 @@ namespace Xamarin.Forms.Controls.Issues
 						grid.BackgroundColor = Color.Red;
 						contentView.BackgroundColor = Color.Blue;
 						stackLayout.BackgroundColor = Color.Yellow;
+						relativeLayout.BackgroundColor = Color.Green;
 					}
 					else
 					{
 						grid.BackgroundColor = Color.Default;
 						contentView.BackgroundColor = Color.Default;
 						stackLayout.BackgroundColor = Color.Default;
+						relativeLayout.BackgroundColor = Color.Default;
 					}
 
 					_flag = !_flag;
 				}),
-				AutomationId = "color"
+				AutomationId = ToggleColor
 			};
 
 			var disabled = new Button
 			{
-				Text = "Disabled",
+				Text = "Toggle IsEnabled",
 				Command = new Command(() =>
 				{
 					grid.IsEnabled = false;
 					contentView.IsEnabled = false;
 					stackLayout.IsEnabled = false;
+					relativeLayout.IsEnabled = false;
 
-					result.Text = "Original";
+					result.Text = Original;
 				}),
-				AutomationId = "disabled"
+				AutomationId = ToggleIsEnabled
 			};
 
 			var parent = new StackLayout
@@ -103,7 +125,8 @@ namespace Xamarin.Forms.Controls.Issues
 					result,
 					grid,
 					contentView,
-					stackLayout
+					stackLayout,
+					relativeLayout
 				}
 			};
 
@@ -116,72 +139,64 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Command = new Command(() =>
 				{
-					result.Text = "Child";
+					result.Text = Child;
 				})
 			};
 			view.GestureRecognizers.Add(tapGestureRecognizer);
 		}
 
 #if UITEST
+
 		[Test]
-		public void Test()
+		public void TestGrid()
 		{
-			RunningApp.WaitForElement(q => q.Marked("grid"));
-			RunningApp.Tap(q => q.Marked("grid"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+			TestControl(Grid);
+		}
 
-			RunningApp.WaitForElement(q => q.Marked("contentView"));
-			RunningApp.Tap(q => q.Marked("contentView"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+		[Test]
+		public void TestContentView()
+		{
+			TestControl(ContentView);
+		}
 
-			RunningApp.WaitForElement(q => q.Marked("stackLayout"));
-			RunningApp.Tap(q => q.Marked("stackLayout"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+		[Test]
+		public void TestStackLayout()
+		{
+			TestControl(StackLayout);
+		}
 
-			RunningApp.WaitForElement(q => q.Marked("color"));
-			RunningApp.Tap(q => q.Marked("color"));
+		[Test]
+		public void TestRelativeLayout()
+		{
+			TestControl(RelativeLayout);
+		}
 
-			RunningApp.WaitForElement(q => q.Marked("grid"));
-			RunningApp.Tap(q => q.Marked("grid"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+		void TestControl(string control)
+		{
+			RunningApp.WaitForElement(q => q.Marked(control));
+			RunningApp.Tap(q => q.Marked(control));
+			RunningApp.WaitForElement(q => q.Marked(Child));
 
-			RunningApp.WaitForElement(q => q.Marked("contentView"));
-			RunningApp.Tap(q => q.Marked("contentView"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+			RunningApp.WaitForElement(q => q.Marked(ToggleColor));
+			RunningApp.Tap(q => q.Marked(ToggleColor));
 
-			RunningApp.WaitForElement(q => q.Marked("stackLayout"));
-			RunningApp.Tap(q => q.Marked("stackLayout"));
-			RunningApp.WaitForElement(q => q.Marked("Child"));
+			RunningApp.WaitForElement(q => q.Marked(control));
+			RunningApp.Tap(q => q.Marked(control));
+			RunningApp.WaitForElement(q => q.Marked(Child));
 
-			RunningApp.WaitForElement(q => q.Marked("disabled"));
-			RunningApp.Tap(q => q.Marked("disabled"));
+			RunningApp.WaitForElement(q => q.Marked(ToggleIsEnabled));
+			RunningApp.Tap(q => q.Marked(ToggleIsEnabled));
 
-			RunningApp.WaitForElement(q => q.Marked("grid"));
-			RunningApp.Tap(q => q.Marked("grid"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
+			RunningApp.WaitForElement(q => q.Marked(control));
+			RunningApp.Tap(q => q.Marked(control));
+			RunningApp.WaitForElement(q => q.Marked(Original));
 
-			RunningApp.WaitForElement(q => q.Marked("contentView"));
-			RunningApp.Tap(q => q.Marked("contentView"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
+			RunningApp.WaitForElement(q => q.Marked(ToggleColor));
+			RunningApp.Tap(q => q.Marked(ToggleColor));
 
-			RunningApp.WaitForElement(q => q.Marked("stackLayout"));
-			RunningApp.Tap(q => q.Marked("stackLayout"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
-
-			RunningApp.WaitForElement(q => q.Marked("color"));
-			RunningApp.Tap(q => q.Marked("color"));
-
-			RunningApp.WaitForElement(q => q.Marked("grid"));
-			RunningApp.Tap(q => q.Marked("grid"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
-
-			RunningApp.WaitForElement(q => q.Marked("contentView"));
-			RunningApp.Tap(q => q.Marked("contentView"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
-
-			RunningApp.WaitForElement(q => q.Marked("stackLayout"));
-			RunningApp.Tap(q => q.Marked("stackLayout"));
-			RunningApp.WaitForElement(q => q.Marked("Original"));
+			RunningApp.WaitForElement(q => q.Marked(control));
+			RunningApp.Tap(q => q.Marked(control));
+			RunningApp.WaitForElement(q => q.Marked(Original));
 		}
 #endif
 	}

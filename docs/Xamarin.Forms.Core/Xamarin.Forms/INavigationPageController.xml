@@ -56,7 +56,7 @@
         <Parameter Name="depth" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="depth">To be added.</param>
+        <param name="depth">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -77,8 +77,8 @@
         <Parameter Name="fast" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="animated">To be added.</param>
-        <param name="fast">To be added.</param>
+        <param name="animated">For internal use by the Xamarin.Forms platform.</param>
+        <param name="fast">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

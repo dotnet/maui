@@ -25,33 +25,41 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>Class that represents a binding condition and a list of <see cref="T:Xamarin.Forms.Setter" /> objects that will be applied when the condition is met.</summary>
+    <summary>Class that represents a condition on an arbitrary binding, along with a list of <see cref="T:Xamarin.Forms.Setter" /> objects that will be applied when the condition is met.</summary>
     <remarks>
-      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.DataTrigger" /> class:</para>
-      <list type="table">
-        <listheader>
-          <term>Property</term>
-          <description>Value</description>
-        </listheader>
-        <item>
-          <term>Property</term>
-          <description>
-            <para>The name of the property whose value to compare against <c>Value</c>.</para>
-          </description>
-        </item>
-        <item>
-          <term>Value</term>
-          <description>
-            <para>The value of the property that will trigger the setters in <c>Setters</c>.</para>
-          </description>
-        </item>
-        <item>
-          <term>Setters</term>
-          <description>
-            <para>A list of setters that are called when the property condition is met. Each <c>Setter</c> tag or tag pair in the list has a <c>Property</c> and <c>Value</c> that represents the assignments to perform when the condition is met.</para>
-          </description>
-        </item>
-      </list>
+      <para>The <see cref="T:Xamarin.Forms.DataTrigger" /> class is suitable for checking values on other controls, as well as any property on the control to which it has been added. That is, its default binding context is the control to which it has been added.</para>
+      <example>
+        <para>The XML example below prompts the user to type in the secret, which is, "The text color is green". When the user has typed "The", the Entry text changes color to red. When the user completes the secret, the Label text turns green. The code is turned back to the default color if the user then edits the secret. This example shows how to bind to the enclosing control (Entry from Entry), and to an arbitary control (Entry from Label)</para>
+        <code lang="XML"><![CDATA[
+              <?xml version="1.0" encoding="utf-8"?>
+              <ContentPage    xmlns="http://xamarin.com/schemas/2014/forms"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                              xmlns:local="clr-namespace:TriggerDemo"
+                              x:Class="TriggerDemo.TriggerDemoPage">
+                  <StackLayout VerticalOptions="Center">
+                      <Label Text="Can you tell me the secret?" VerticalOptions="Center" HorizontalOptions="Center">
+                          <Label.Triggers>
+                              <DataTrigger TargetType="Label"
+                                  Binding="{Binding Source={x:Reference checkEntry},
+                                                    Path=Text}"
+                                  Value="The text color is green">
+                                  <Setter Property="TextColor" Value="Color.Green" />
+                              </DataTrigger>
+                          </Label.Triggers>
+                      </Label>
+                      <Entry Placeholder="Type the secret here." x:Name="checkEntry" VerticalOptions="Center" HorizontalOptions="Center">
+                          <Entry.Triggers>
+                              <DataTrigger TargetType="Entry"
+                                  Binding="{Binding Text}"
+                                  Value="The">
+                                  <Setter Property="TextColor" Value="Red" />
+                              </DataTrigger>
+                          </Entry.Triggers>
+                      </Entry>
+                  </StackLayout>
+              </ContentPage>
+]]></code>
+      </example>
     </remarks>
   </Docs>
   <Members>
@@ -75,7 +83,7 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="targetType">To be added.</param>
+        <param name="targetType">The type of the object on which the data trigger will be added.</param>
         <summary>Initializes a new <see cref="T:Xamarin.Forms.DataTrigger" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -154,8 +162,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>XAML infrastructure.</summary>
+        <param name="serviceProvider">For internal use by the XAML infrastructure.</param>
+        <summary>For internal use by the XAML infrastructure.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

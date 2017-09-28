@@ -38,6 +38,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false)]
 			public void RDInDataTemplates(bool useCompiledXaml)
 			{
+				if (useCompiledXaml)
+					MockCompiler.Compile(typeof(Bz42531));
 				var p = new Bz42531(useCompiledXaml);
 				ListView lv = p.lv;
 				var template = lv.ItemTemplate;

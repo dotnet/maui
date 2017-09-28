@@ -34,8 +34,8 @@
         <Parameter Name="position" Type="Xamarin.Forms.ScrollToPosition" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
-        <param name="position">To be added.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <param name="position">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -93,8 +93,8 @@
         <Parameter Name="y" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
+        <param name="x">For internal use by the Xamarin.Forms platform.</param>
+        <param name="y">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

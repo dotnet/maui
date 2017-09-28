@@ -49,8 +49,8 @@
         <Parameter Name="sz" Type="Xamarin.Forms.Size" />
       </Parameters>
       <Docs>
-        <param name="loc">To be added.</param>
-        <param name="sz">To be added.</param>
+        <param name="loc">The coordinates of the top left corner.</param>
+        <param name="sz">The height and width.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Rectangle" /> object with its top left corner at <paramref name="loc" /> with a height and width that are specified by <paramref name="sz" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -75,10 +75,10 @@
         <Parameter Name="height" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="width">To be added.</param>
-        <param name="height">To be added.</param>
+        <param name="x">The X coordinate of the top left corner.</param>
+        <param name="y">The Y coordinate of the top left corner.</param>
+        <param name="width">The width.</param>
+        <param name="height">The height.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.Rectangle" /> object with its top left corner at (<paramref name="x" />, <paramref name="y" />) and  <paramref name="width" /> wide and <paramref name="height" /> tall.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -289,10 +289,11 @@
         <Parameter Name="bottom" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="top">To be added.</param>
-        <param name="right">To be added.</param>
-        <param name="bottom">To be added.</param>
+        <param name="left">The X coordinate of the left side.</param>
+        <param name="top">
+        </param>
+        <param name="right">The X coordinate of the right side.</param>
+        <param name="bottom">The Y coordinate of the bottom side.</param>
         <summary>Factory method to create a <see cref="T:Xamarin.Forms.Rectangle" /> from <paramref name="left" />, <paramref name="top" />, <paramref name="right" />, and <paramref name="bottom" />.</summary>
         <returns>A new <see cref="T:Xamarin.Forms.Rectangle" /> whose values are equal to the arguments.</returns>
         <remarks>To be added.</remarks>

@@ -37,7 +37,7 @@
         <Parameter Name="value" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">Whether the toggle is in the On position.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.ToggledEventArgs" /> that indicates that the toggle control was toggled to <paramref name="value" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bool signaled = false;
 			MessagingCenter.Subscribe<Map, MapSpan> (this, "MapMoveToRegion", (s, a) => {
 				signaled = true;
-				map.VisibleRegion = a;
+				map.SetVisibleRegion(a);
 			}, map);
 
 			map.MoveToRegion (new MapSpan (new Position (1, 2), 3, 4));
@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Core.UnitTests
 					signaled = true;
 			};
 
-			map.VisibleRegion = map.VisibleRegion;
+			map.SetVisibleRegion(map.VisibleRegion);
 
 			Assert.False (signaled);
 		}

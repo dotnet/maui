@@ -78,8 +78,9 @@ namespace Xamarin.Forms.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			var x = (int)_context.ToPixels(view.X);
-			var y = (int)_context.ToPixels(view.Y);
+			var headlessOffset = CompressedLayout.GetHeadlessOffset(view);
+			var x = (int)_context.ToPixels(view.X + headlessOffset.X);
+			var y = (int)_context.ToPixels(view.Y + headlessOffset.Y);
 			var width = Math.Max(0, (int)_context.ToPixels(view.Width));
 			var height = Math.Max(0, (int)_context.ToPixels(view.Height));
 
@@ -160,6 +161,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTranslationX();
 			else if (e.PropertyName == VisualElement.TranslationYProperty.PropertyName)
 				UpdateTranslationY();
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				UpdateIsEnabled();
 		}
 
 		void HandleRedrawNeeded(object sender, EventArg<VisualElement> e)
@@ -380,6 +383,11 @@ namespace Xamarin.Forms.Platform.Android
 			AView aview = _renderer.View;
 
 			aview.TranslationY = _context.ToPixels(view.TranslationY);
+		}
+
+		void UpdateIsEnabled()
+		{
+			_renderer.View.Enabled = _renderer.Element.IsEnabled;
 		}
 
 		class AttachTracker : Object, AView.IOnAttachStateChangeListener

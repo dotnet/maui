@@ -38,9 +38,9 @@
         <Parameter Name="handlers" Type="System.Tuple&lt;System.Func&lt;TSource,System.Object&gt;,System.String&gt;[]" />
       </Parameters>
       <Docs>
-        <param name="getter">To be added.</param>
-        <param name="setter">To be added.</param>
-        <param name="handlers">To be added.</param>
+        <param name="getter">For internal use by the Xamarin.Forms platform.</param>
+        <param name="setter">For internal use by the Xamarin.Forms platform.</param>
+        <param name="handlers">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

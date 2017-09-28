@@ -47,8 +47,8 @@
         <Parameter Name="conditional" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="allMembers">To be added.</param>
-        <param name="conditional">To be added.</param>
+        <param name="allMembers">For internal use by the Xamarin.Forms platform.</param>
+        <param name="conditional">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

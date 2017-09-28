@@ -64,7 +64,7 @@
         <Parameter Name="sourceType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="sourceType">To be added.</param>
+        <param name="sourceType">The type to check.</param>
         <summary>When implemented in a derived class, returns a Boolean value that indicates whether or not the derived type converter can convert <paramref name="sourceType" /> to its target type.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -95,7 +95,7 @@
         <Parameter Name="o" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="o">To be added.</param>
+        <param name="o">The object to convert.</param>
         <summary>Calls <see cref="M:Xamarin.Forms.TypeConverter.ConvertFrom(System.Globalization.CultureInfo, object)" /> with the current culture information and <paramref name="o" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -127,8 +127,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="culture">To be added.</param>
-        <param name="o">To be added.</param>
+        <param name="culture">The culture information to use when performing the conversion.</param>
+        <param name="o">The object to convert.</param>
         <summary>When implemented in a derived class, converts an object that is a version of <paramref name="value" /> and that can be cast to the target type.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -148,7 +148,7 @@
         <Parameter Name="value" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">The value to convert.</param>
         <summary>When overriden in a derived class, converts XAML extension syntax into instances of various <see cref="N:Xamarin.Forms" /> types.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

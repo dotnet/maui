@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (e.OldElement == null)
 			{
 				SetNativeControl(Element.NativeElement);
-				Control.LayoutUpdated += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
+				Control.SizeChanged += (sender, args) => { ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged); };
 			}
 		}
 	}

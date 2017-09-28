@@ -34,7 +34,7 @@
         <Parameter Name="qualifiedTypeName" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="qualifiedTypeName">To be added.</param>
+        <param name="qualifiedTypeName">The qualified type name to resolve.</param>
         <summary>Returns the resolved type.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -58,8 +58,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="qualifiedTypeName">To be added.</param>
-        <param name="serviceProvider">To be added.</param>
+        <param name="qualifiedTypeName">The qualified type name to resolve.</param>
+        <param name="serviceProvider">The service that provides the value.</param>
         <summary>For internal use by the XAML engine.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -86,8 +86,8 @@
         <Parameter Name="type" Type="System.Type&amp;" RefType="out" />
       </Parameters>
       <Docs>
-        <param name="qualifiedTypeName">To be added.</param>
-        <param name="type">To be added.</param>
+        <param name="qualifiedTypeName">The qualified type name to resolve.</param>
+        <param name="type">The type to resolve.</param>
         <summary>Tries to resolve a type name, putting the type value in <paramref name="type" />, and returns a Boolean value that indicates whether the operation succeeded.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -32,7 +32,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -54,8 +54,8 @@
         <Parameter Name="scopedElement" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -82,9 +82,9 @@
         <Parameter Name="xmlLineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
-        <param name="xmlLineInfo">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
+        <param name="xmlLineInfo">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -104,7 +104,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -94,7 +94,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">The name of the effect to get.</param>
         <summary>Returns an <see cref="T:Xamarin.Forms.Effect" /> for the specified name, which is of the form <c>ResolutionGroupName.ExportEffect</c>.</summary>
         <returns>The uniquely identified effect.</returns>
         <remarks>The <see cref="T:Xamarin.Forms.Effect.Resolve" /> method takes a string that is the concatenation of a resolution group name (supplied to <see cref="T:Xamarin.Forms.ResolutionGroupNameAttribute" />), <c>'.'</c>, and the unique name that was supplied to <see cref="T:Xamarin.Forms.ExportEffectAttribute" />, and returns the specified effect.</remarks>

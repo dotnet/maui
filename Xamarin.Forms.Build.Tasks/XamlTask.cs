@@ -81,8 +81,8 @@ namespace Xamarin.Forms.Build.Tasks
 				if (root == null)
 					return false;
 
-				var rootClass = root.Attributes ["Class", "http://schemas.microsoft.com/winfx/2006/xaml"] ??
-								root.Attributes ["Class", "http://schemas.microsoft.com/winfx/2009/xaml"];
+				var rootClass = root.Attributes["Class", XamlParser.X2006Uri] ??
+								root.Attributes["Class", XamlParser.X2009Uri];
 				if (rootClass == null)
 					return false;
 				classname = rootClass.Value;

@@ -32,7 +32,7 @@
         <Parameter Name="objectAndParents" Type="System.Object[]" />
       </Parameters>
       <Docs>
-        <param name="objectAndParents">To be added.</param>
+        <param name="objectAndParents">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -49,8 +49,8 @@
         <Parameter Name="targetProperty" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="objectAndParents">To be added.</param>
-        <param name="targetProperty">To be added.</param>
+        <param name="objectAndParents">For internal use by the Xamarin.Forms platform.</param>
+        <param name="targetProperty">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

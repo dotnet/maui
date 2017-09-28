@@ -57,12 +57,13 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.UITest, Version=2.0.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.UITest.2.0.9\lib\Xamarin.UITest.dll</HintPath>
+    <Reference Include="Xamarin.UITest, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.UITest.2.1.2\lib\net45\Xamarin.UITest.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseViewContainerRemoteAndroid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PlatformTests\DisplayAlertUITestsAndroid.cs" />
   </ItemGroup>

@@ -6,17 +6,25 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class AbsoluteLayout : Layout<View>
+	public class AbsoluteLayout : Layout<View>, IElementConfiguration<AbsoluteLayout>
 	{
 		public static readonly BindableProperty LayoutFlagsProperty = BindableProperty.CreateAttached("LayoutFlags", typeof(AbsoluteLayoutFlags), typeof(AbsoluteLayout), AbsoluteLayoutFlags.None);
 
 		public static readonly BindableProperty LayoutBoundsProperty = BindableProperty.CreateAttached("LayoutBounds", typeof(Rectangle), typeof(AbsoluteLayout), new Rectangle(0, 0, AutoSize, AutoSize));
 
 		readonly AbsoluteElementCollection _children;
+		readonly Lazy<PlatformConfigurationRegistry<AbsoluteLayout>> _platformConfigurationRegistry;
 
 		public AbsoluteLayout()
 		{
 			_children = new AbsoluteElementCollection(InternalChildren, this);
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<AbsoluteLayout>>(() => 
+				new PlatformConfigurationRegistry<AbsoluteLayout>(this));
+		}
+
+		public IPlatformElementConfiguration<T, AbsoluteLayout> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
 		public static double AutoSize
@@ -98,7 +106,10 @@ namespace Xamarin.Forms
 
 			if ((layoutFlags & AbsoluteLayoutFlags.SizeProportional) == AbsoluteLayoutFlags.SizeProportional)
 			{
-				view.ComputedConstraint = Constraint;
+				if (view.VerticalOptions.Alignment == LayoutAlignment.Fill &&
+					view.HorizontalOptions.Alignment == LayoutAlignment.Fill)
+					view.ComputedConstraint = Constraint;
+
 				return;
 			}
 

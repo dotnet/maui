@@ -150,7 +150,22 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
 				UpdateFastScrollEnabled();
+
+				
 			}
+		}
+
+		internal void LongClickOn(AView viewCell)
+		{
+			if (Control == null)
+			{
+				return;
+			}
+
+			var position = Control.GetPositionForView(viewCell);
+			var id = Control.GetItemIdAtPosition(position);
+
+			_adapter.OnItemLongClick(Control, viewCell, position, id);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -343,6 +358,11 @@ namespace Xamarin.Forms.Platform.Android
 		internal class Container : ViewGroup
 		{
 			IVisualElementRenderer _child;
+
+			public Container(IntPtr p, global::Android.Runtime.JniHandleOwnership o) : base(p, o)
+			{
+				// Added default constructor to prevent crash when accessing header/footer row in ListViewAdapter.Dispose
+			}
 
 			public Container(Context context) : base(context)
 			{

@@ -97,6 +97,7 @@
     <Compile Include="LockableObservableListWrapper.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\AppCompat\Application.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\Application.cs" />
+    <Compile Include="PlatformConfiguration\AndroidSpecific\Elevation.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\TabbedPage.cs" />
     <Compile Include="PlatformConfiguration\ExtensionPoints.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\BlurEffectStyle.cs" />
@@ -462,6 +463,8 @@
     <Compile Include="Internals\ResourceLoader.cs" />
     <Compile Include="Xaml\TypeConversionExtensions.cs" />
     <Compile Include="Xaml\ValueConverterProvider.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\Page.cs" />
+    <Compile Include="CompressedLayout.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
@@ -477,7 +480,5 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Xaml\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

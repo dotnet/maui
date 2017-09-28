@@ -71,7 +71,18 @@ namespace Xamarin.Forms
 		public static void Animate(this IAnimatable self, string name, Animation animation, uint rate = 16, uint length = 250, Easing easing = null, Action<double, bool> finished = null,
 								   Func<bool> repeat = null)
 		{
-			self.Animate(name, animation.GetCallback(), rate, length, easing, finished, repeat);
+			if (repeat == null)
+				self.Animate(name, animation.GetCallback(), rate, length, easing, finished, null);
+			else {
+				Func<bool> r = () =>
+				{
+					var val = repeat();
+					if (val)
+						animation.ResetChildren();
+					return val;
+				};
+				self.Animate(name, animation.GetCallback(), rate, length, easing, finished, r);
+			}
 		}
 
 		public static void Animate(this IAnimatable self, string name, Action<double> callback, double start, double end, uint rate = 16, uint length = 250, Easing easing = null,
@@ -232,14 +243,14 @@ namespace Xamarin.Forms
 			Info info;
 			if (tweener != null && s_animations.TryGetValue(tweener.Handle, out info))
 			{
-				var repeat = false;
-				if (info.Repeat != null)
-					repeat = info.Repeat();
-
 				IAnimatable owner;
 				if (info.Owner.TryGetTarget(out owner))
 					owner.BatchBegin();
 				info.Callback(tweener.Value);
+
+				var repeat = false;
+				if (info.Repeat != null)
+					repeat = info.Repeat();
 
 				if (!repeat)
 				{

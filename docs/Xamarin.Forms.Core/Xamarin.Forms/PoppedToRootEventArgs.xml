@@ -31,8 +31,8 @@
         <Parameter Name="poppedPages" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.Page&gt;" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="poppedPages">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
+        <param name="poppedPages">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

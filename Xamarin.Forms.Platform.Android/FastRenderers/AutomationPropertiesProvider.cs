@@ -6,7 +6,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	internal class AutomationPropertiesProvider : IDisposable 
 	{
-		const string GetFromElement = "GetValueFromElement";
 		string _defaultContentDescription;
 		bool? _defaultFocusable;
 		string _defaultHint;
@@ -49,18 +48,14 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		void SetAutomationId(string id = GetFromElement)
+		void SetAutomationId()
 		{
 			if (Element == null || Control == null)
 			{
 				return;
 			}
 
-			string value = id;
-			if (value == GetFromElement)
-			{
-				value = Element.AutomationId;
-			}
+			string value = Element.AutomationId;
 
 			if (!string.IsNullOrEmpty(value))
 			{
@@ -68,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		void SetContentDescription(string contentDescription = GetFromElement)
+		void SetContentDescription()
 		{
 			if (Element == null || Control == null)
 			{
@@ -85,12 +80,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_defaultContentDescription = Control.ContentDescription;
 			}
 
-			string value = contentDescription;
-			if (value == GetFromElement)
-			{
-				value = string.Join(" ", (string)Element.GetValue(AutomationProperties.NameProperty),
-					(string)Element.GetValue(AutomationProperties.HelpTextProperty));
-			}
+			string value = ConcatenateNameAndHelpText(Element);
 
 			if (!string.IsNullOrWhiteSpace(value))
 			{
@@ -102,7 +92,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		void SetFocusable(bool? value = null)
+		void SetFocusable()
 		{
 			if (Element == null || Control == null)
 			{
@@ -115,10 +105,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 
 			Control.Focusable =
-				(bool)(value ?? (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultFocusable);
+				(bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultFocusable);
 		}
 
-		bool SetHint(string hint = GetFromElement)
+		bool SetHint()
 		{
 			if (Element == null || Control == null)
 			{
@@ -142,16 +132,24 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_defaultHint = textView.Hint;
 			}
 
-			string value = hint;
-			if (value == GetFromElement)
-			{
-				value = string.Join(". ", (string)Element.GetValue(AutomationProperties.NameProperty),
-					(string)Element.GetValue(AutomationProperties.HelpTextProperty));
-			}
+			string value = ConcatenateNameAndHelpText(Element);
 
 			textView.Hint = !string.IsNullOrWhiteSpace(value) ? value : _defaultHint;
 
 			return true;
+		}
+
+		internal static string ConcatenateNameAndHelpText(Element Element)
+		{
+			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
+			var helpText = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
+
+			if (string.IsNullOrWhiteSpace(name))
+				return helpText;
+			if (string.IsNullOrWhiteSpace(helpText))
+				return name;
+
+			return $"{name}. {helpText}";
 		}
 
 		void SetLabeledBy()
@@ -164,8 +162,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (elemValue != null)
 			{
 				var id = Control.Id;
-				if (id == -1)
-					id = Control.Id = FormsAppCompatActivity.GetUniqueId();
+				if (id == global::Android.Views.View.NoId)
+					id = Control.Id = Platform.GenerateViewId();
 
 				var renderer = elemValue?.GetRenderer();
 				renderer?.SetLabelFor(id);

@@ -333,8 +333,8 @@
         <Parameter Name="right" Type="Xamarin.Forms.Font" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The first font in the comparison.</param>
+        <param name="right">The second font in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="left" /> represents the same font that <paramref name="right" /> represents. Otherwise, <see langword="false" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -361,8 +361,8 @@
         <Parameter Name="right" Type="Xamarin.Forms.Font" />
       </Parameters>
       <Docs>
-        <param name="left">To be added.</param>
-        <param name="right">To be added.</param>
+        <param name="left">The first font in the comparison.</param>
+        <param name="right">The second font in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="left" /> does not represent the same font that <paramref name="right" /> represents. Otherwise, <see langword="false" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

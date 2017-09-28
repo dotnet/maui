@@ -32,9 +32,9 @@
         <Parameter Name="heightConstraint" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="view">To be added.</param>
-        <param name="widthConstraint">To be added.</param>
-        <param name="heightConstraint">To be added.</param>
+        <param name="view">For internal use by the Xamarin.Forms platform.</param>
+        <param name="widthConstraint">For internal use by the Xamarin.Forms platform.</param>
+        <param name="heightConstraint">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

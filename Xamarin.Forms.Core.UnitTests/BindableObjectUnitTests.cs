@@ -123,6 +123,36 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(count, 1);
 		}
 
+		class MockVMEquals {
+			public string Key { get; set; }
+			public string Text { get; set; }
+			public override bool Equals(object obj)
+			{
+				var other = obj as MockVMEquals;
+				if (other == null)
+					return false;
+				return Key == other.Key;
+			}
+
+			public override int GetHashCode()
+			{
+				return base.GetHashCode();
+			}
+		}
+
+		[Test]
+		//https://bugzilla.xamarin.com/show_bug.cgi?id=59507
+		public void BindingContextChangedCompareReferences()
+		{
+			var mock = new MockBindable();
+			mock.BindingContext = new MockVMEquals { Key = "Foo", Text = "Foo" };
+			mock.BindingContextChanged += (sender, args) => Assert.Pass();
+
+			mock.BindingContext = new MockVMEquals { Key = "Foo", Text = "Bar" };
+
+			Assert.Fail("The BindingContextChanged event was not fired.");
+		}
+
 		[Test]
 		public void ParentAndChildBindingContextChanged()
 		{

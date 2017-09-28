@@ -624,8 +624,8 @@
         <Parameter Name="e" Type="System.EventArgs" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="e">To be added.</param>
+        <param name="sender">The object that raised the event.</param>
+        <param name="e">The event arguments.</param>
         <summary>Indicates that the preferred size of a child <see cref="T:Xamarin.Forms.Element" /> has changed.</summary>
         <remarks>To be added.</remarks>
       </Docs>

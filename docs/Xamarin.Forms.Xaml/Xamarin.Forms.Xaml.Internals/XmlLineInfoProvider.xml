@@ -31,7 +31,7 @@
         <Parameter Name="xmlLineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
-        <param name="xmlLineInfo">To be added.</param>
+        <param name="xmlLineInfo">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the XAML platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

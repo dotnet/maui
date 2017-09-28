@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 
 #if WINDOWS_UWP
 
@@ -14,6 +15,12 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool _disposed;
 
 		bool _loaded;
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			// Pages need an automation peer so we can interact with them in automated tests
+			return new FrameworkElementAutomationPeer(this);
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -50,6 +57,11 @@ namespace Xamarin.Forms.Platform.WinRT
 					Unloaded += OnUnloaded;
 
 					Tracker = new BackgroundTracker<FrameworkElement>(BackgroundProperty);
+				}
+
+				if (!string.IsNullOrEmpty(Element.AutomationId))
+				{
+					SetAutomationId(Element.AutomationId);
 				}
 
 				if (_loaded)

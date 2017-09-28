@@ -251,11 +251,11 @@ namespace Xamarin.Forms.Platform.MacOS
 					_packager = null;
 				}
 
-				// The ListView can create renderers and unhook them from the Element before Dispose is called.
+				// The ListView can create renderers and unhook them from the Element before Dispose is called in CalculateHeightForCell.
 				// Thus, it is possible that this work is already completed.
 				if (Element != null)
 				{
-					Platform.SetRenderer(Element, null);
+					Element.ClearValue(Platform.RendererProperty);
 					SetElement(null);
 				}
 			}

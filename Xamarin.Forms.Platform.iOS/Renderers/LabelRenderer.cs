@@ -6,12 +6,14 @@ using SizeF = CoreGraphics.CGSize;
 #if __MOBILE__
 using UIKit;
 using NativeLabel = UIKit.UILabel;
-
-namespace Xamarin.Forms.Platform.iOS
 #else
 using AppKit;
 using NativeLabel = AppKit.NSTextField;
+#endif
 
+#if __MOBILE__
+namespace Xamarin.Forms.Platform.iOS
+#else
 namespace Xamarin.Forms.Platform.MacOS
 #endif
 {
@@ -83,14 +85,26 @@ namespace Xamarin.Forms.Platform.MacOS
 					Control.Frame = new RectangleF(0, 0, (nfloat)Element.Width, labelHeight);
 					break;
 				case TextAlignment.Center:
+
+#if __MOBILE__
 					Control.Frame = new RectangleF(0, 0, (nfloat)Element.Width, (nfloat)Element.Height);
-					break;
-				case TextAlignment.End:
-					nfloat yOffset = 0;
+#else
 					fitSize = Control.SizeThatFits(Element.Bounds.Size.ToSizeF());
 					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
+					var yOffset = (int)(Element.Height / 2 - labelHeight / 2);
+					Control.Frame = new RectangleF(0, 0, (nfloat)Element.Width, (nfloat)Element.Height - yOffset);
+#endif
+					break;
+				case TextAlignment.End:
+					fitSize = Control.SizeThatFits(Element.Bounds.Size.ToSizeF());
+					labelHeight = (nfloat)Math.Min(Bounds.Height, fitSize.Height);
+#if __MOBILE__
+					nfloat yOffset = 0;
 					yOffset = (nfloat)(Element.Height - labelHeight);
 					Control.Frame = new RectangleF(0, yOffset, (nfloat)Element.Width, labelHeight);
+#else
+					Control.Frame = new RectangleF(0, 0, (nfloat)Element.Width, labelHeight);
+#endif
 					break;
 			}
 		}
@@ -110,6 +124,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 
 				UpdateText();
+				UpdateTextColor();
+				UpdateFont();
+
 				UpdateLineBreakMode();
 				UpdateAlignment();
 			}
@@ -126,9 +143,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			else if (e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
 				UpdateLayout();
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
-				UpdateText();
+				UpdateTextColor();
 			else if (e.PropertyName == Label.FontProperty.PropertyName)
-				UpdateText();
+				UpdateFont();
 			else if (e.PropertyName == Label.TextProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.FormattedTextProperty.PropertyName)
@@ -241,6 +258,7 @@ namespace Xamarin.Forms.Platform.MacOS
 #endif
 		}
 
+		bool isTextFormatted;
 		void UpdateText()
 		{
 			_perfectSizeValid = false;
@@ -251,26 +269,57 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 #if __MOBILE__
 				Control.AttributedText = formatted.ToAttributed(Element, (Color)values[2]);
-			}
-			else
-			{
-				Control.Text = (string)values[1];
-				// default value of color documented to be black in iOS docs
-				Control.Font = Element.ToUIFont();
-				Control.TextColor = ((Color)values[2]).ToUIColor(ColorExtensions.Black);
-			}
 #else
 				Control.AttributedStringValue = formatted.ToAttributed(Element, (Color)values[2]);
+#endif
+				isTextFormatted = true;
 			}
 			else
 			{
+				if (isTextFormatted)
+				{
+					UpdateFont();
+					UpdateTextColor();
+				}
+#if __MOBILE__
+				Control.Text = (string)values[1];
+#else
 				Control.StringValue = (string)values[1] ?? "";
-				// default value of color documented to be black in iOS docs
-				Control.Font = Element.ToNSFont();
-				Control.TextColor = ((Color)values[2]).ToNSColor(ColorExtensions.Black);
-			}
 #endif
+				isTextFormatted = false;
+			}
+			UpdateLayout();
+		}
 
+		void UpdateFont()
+		{
+			if(isTextFormatted)
+				return;
+			_perfectSizeValid = false;
+
+#if __MOBILE__
+			Control.Font = Element.ToUIFont();
+#else
+			Control.Font = Element.ToNSFont();
+#endif
+			UpdateLayout();
+		}
+
+		void UpdateTextColor()
+		{
+			if (isTextFormatted)
+				return;
+			
+			_perfectSizeValid = false;
+
+			var textColor = (Color)Element.GetValue(Label.TextColorProperty);
+
+			// default value of color documented to be black in iOS docs
+#if __MOBILE__
+			Control.TextColor = textColor.ToUIColor(ColorExtensions.Black);
+#else
+			Control.TextColor = textColor.ToNSColor(ColorExtensions.Black);
+#endif
 			UpdateLayout();
 		}
 

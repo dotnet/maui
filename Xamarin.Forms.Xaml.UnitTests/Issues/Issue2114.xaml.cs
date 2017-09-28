@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
-{	
+{
 	public partial class Issue2114 : Application
 	{	
 		public Issue2114 ()

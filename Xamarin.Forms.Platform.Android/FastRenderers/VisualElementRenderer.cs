@@ -1,13 +1,14 @@
 using System;
 using System.ComponentModel;
 using Android.Views;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	// TODO hartez 2017/03/03 14:11:17 It's weird that this class is called VisualElementRenderer but it doesn't implement that interface. The name should probably be different.
-	public class VisualElementRenderer : IDisposable, IEffectControlProvider
+	internal sealed class VisualElementRenderer : IDisposable, IEffectControlProvider
 	{
 		bool _disposed;
 		
@@ -23,6 +24,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			_renderer.ElementChanged += OnElementChanged;
 			_gestureManager = new GestureManager(_renderer);
 			_automatiomPropertiesProvider = new AutomationPropertiesProvider(_renderer);
+
 			_effectControlProvider = new EffectControlProvider(_renderer?.View);
 		}
 
@@ -43,9 +45,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			Control.SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
 		}
 
-	    public bool OnTouchEvent(MotionEvent e, IViewParent parent, out bool handled)
+	    public bool OnTouchEvent(MotionEvent e)
 	    {
-	        return _gestureManager.OnTouchEvent(e, parent, out handled);
+	        return _gestureManager.OnTouchEvent(e);
 	    }
 
 	    public void Dispose()
@@ -54,7 +56,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			GC.SuppressFinalize(this);
 		}
 
-		protected void Dispose(bool disposing)
+		void Dispose(bool disposing)
 		{
 			if (_disposed)
 				return;
@@ -87,6 +89,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 				UpdateBackgroundColor();
 			}
+
+			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
 		}
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

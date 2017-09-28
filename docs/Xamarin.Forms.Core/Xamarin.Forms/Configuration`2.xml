@@ -65,7 +65,7 @@
         <Parameter Name="element" Type="TElement" />
       </Parameters>
       <Docs>
-        <param name="element">To be added.</param>
+        <param name="element">The element for which to return a configuration.</param>
         <summary>Creates and returns a new configuration for the specifed <paramref name="element" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

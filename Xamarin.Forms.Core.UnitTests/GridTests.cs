@@ -39,6 +39,164 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Throws<ArgumentNullException> (() => layout.Children.Remove (null));
 		}
 
+		[TestFixture]
+		public class AddDimension : GridTests
+		{
+			[Datapoints]
+			public static IEnumerable<string> Operations = new[]
+			{
+				"HHH",
+				"HHV",
+				"HVH",
+				"HVV",
+				"VHH",
+				"VHV",
+				"VVH",
+				"VVV",
+
+				"RCRHVHVHVHVHV",
+
+				"HHHV",
+				"VVVH",
+
+				"RV",
+				"RH",
+				"CV",
+				"CH",
+
+				"RVRRV",
+				"CHCCH",
+			};
+
+			Grid _grid;
+
+			int _id = 0;
+			int _rowDef = 0;
+			int _colDef = 0;
+			int _totalWidth = 0;
+			int _totalHeight = 0;
+
+			public void AddHoizontal()
+			{
+				// new block gets new id
+				var id = _id++;
+
+				// adding column only increases height if no rows exist
+				if (_totalHeight == 0)
+					_totalHeight = 1;
+
+				// adding column always increased width by 1
+				_totalWidth++;
+
+				// column spans rows 0 to the last row
+				var row = 0;
+				var height = _totalHeight;
+
+				// column is always added at the end with a width of 1
+				var column = _totalWidth - 1;
+				var width = 1;
+
+				_grid.Children.AddHorizontal(
+					new Label()
+					{
+						Text = $"{id}: {column}x{row} {width}x{height}"
+					}
+				);
+			}
+			public void AddVertical()
+			{
+				// new block gets new id
+				var id = _id++;
+
+				// adding row only increases width if no columns exist
+				if (_totalWidth == 0)
+					_totalWidth = 1;
+
+				// adding row always increased height by 1
+				_totalHeight++;
+
+				// row spans columns 0 to the last column
+				var column = 0;
+				var width = _totalWidth;
+
+				// row is always added at the end with a height of 1
+				var row = _totalHeight - 1;
+				var height = 1;
+
+				_grid.Children.AddVertical(
+					new Label()
+					{
+						Text = $"{id}: {column}x{row} {width}x{height}"
+					}
+				);
+			}
+			public void AddRowDef()
+			{
+				_rowDef++;
+				_totalHeight = Math.Max(_rowDef, _totalHeight);
+
+				_grid.RowDefinitions.Add(new RowDefinition());
+			}
+			public void AddColumnDef()
+			{
+				_colDef++;
+				_totalWidth = Math.Max(_colDef, _totalWidth);
+
+				_grid.ColumnDefinitions.Add(new ColumnDefinition());
+			}
+
+			[TearDown]
+			public override void TearDown()
+			{
+				_grid = null;
+
+				_id = 0;
+				_rowDef = 0;
+				_colDef = 0;
+				_totalWidth = 0;
+				_totalHeight = 0;
+			}
+
+			[Theory]
+			public void AddDimensionTheory(string operations)
+			{
+				_grid = new Grid();
+				_grid.Platform = new UnitPlatform();
+
+				foreach (var op in operations)
+				{
+					if (op == 'H')
+						AddHoizontal();
+
+					if (op == 'V')
+						AddVertical();
+
+					if (op == 'R')
+						AddRowDef();
+
+					if (op == 'C')
+						AddColumnDef();
+
+					_grid.Layout(new Rectangle(0, 0, 912, 912));
+				}
+
+				Console.WriteLine($"Operations: {string.Join(string.Empty, operations)}");
+
+				var id = 0;
+				foreach (var view in _grid.Children.Cast<Label>().OrderBy(o => o.Text))
+				{
+					var expected = $"{id++}: " +
+						$"{Grid.GetColumn(view)}x{Grid.GetRow(view)} " +
+						$"{Grid.GetColumnSpan(view)}x{Grid.GetRowSpan(view)}";
+
+					var actual = view.Text;
+
+					Console.WriteLine($"  {expected} == {actual}");
+					Assert.That(expected == actual);
+				}
+			}
+		}
+
 		[Test]
 		public void TestBasicVerticalLayout ()
 		{

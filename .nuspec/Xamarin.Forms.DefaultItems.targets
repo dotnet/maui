@@ -1,0 +1,15 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!--
+	NOTE: we cannot update/remove existing default items in our props file, as it is
+	imported *before* the default items are created by Microsoft.NET.Sdk.DefaultItems.props.
+	Doing it here works, but means that it will override things users do in their csproj.
+	Unfortunately there is no way to work around this without adding a new extension point to
+	the sdk props.
+	-->
+	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
+		<None Remove="**\*.xaml" Condition="'$(EnableDefaultNoneItems)'=='True'" />
+	</ItemGroup>
+
+</Project>

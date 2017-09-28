@@ -71,10 +71,10 @@
         <Parameter Name="gestureId" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="totalX">To be added.</param>
-        <param name="totalY">To be added.</param>
-        <param name="gestureId">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
+        <param name="totalX">For internal use by the Xamarin.Forms platform.</param>
+        <param name="totalY">For internal use by the Xamarin.Forms platform.</param>
+        <param name="gestureId">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -99,8 +99,8 @@
         <Parameter Name="gestureId" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="gestureId">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform..</param>
+        <param name="gestureId">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -125,8 +125,8 @@
         <Parameter Name="gestureId" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="gestureId">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
+        <param name="gestureId">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -151,8 +151,8 @@
         <Parameter Name="gestureId" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
-        <param name="gestureId">To be added.</param>
+        <param name="sender">For internal use by the Xamarin.Forms platform.</param>
+        <param name="gestureId">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-				SetBackgroundColor(Element.BackgroundColor);
+				SetBackgroundColor(Element.Color);
 			else if (e.PropertyName == VisualElement.IsVisibleProperty.PropertyName && Element.IsVisible)
 				SetNeedsDisplayInRect(Bounds);
 		}

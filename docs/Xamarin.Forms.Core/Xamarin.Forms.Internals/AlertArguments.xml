@@ -33,10 +33,10 @@
         <Parameter Name="cancel" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="title">To be added.</param>
-        <param name="message">To be added.</param>
-        <param name="accept">To be added.</param>
-        <param name="cancel">To be added.</param>
+        <param name="title">For internal use by the Xamarin.Forms platform.</param>
+        <param name="message">For internal use by the Xamarin.Forms platform.</param>
+        <param name="accept">For internal use by the Xamarin.Forms platform.</param>
+        <param name="cancel">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -119,7 +119,7 @@
         <Parameter Name="result" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="result">To be added.</param>
+        <param name="result">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

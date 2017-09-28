@@ -34,8 +34,8 @@
         <Parameter Name="predicate" Type="System.Func&lt;System.Reflection.FieldInfo,System.Boolean&gt;" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="predicate">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
+        <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -56,8 +56,8 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="name">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -77,7 +77,7 @@
         <Parameter Name="type" Type="System.Type" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -97,7 +97,7 @@
         <Parameter Name="type" Type="System.Type" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -118,8 +118,8 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="type">To be added.</param>
-        <param name="name">To be added.</param>
+        <param name="type">For internal use by the Xamarin.Forms platform.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -140,8 +140,8 @@
         <Parameter Name="c" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="c">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="c">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -162,8 +162,8 @@
         <Parameter Name="o" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="self">To be added.</param>
-        <param name="o">To be added.</param>
+        <param name="self">For internal use by the Xamarin.Forms platform.</param>
+        <param name="o">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

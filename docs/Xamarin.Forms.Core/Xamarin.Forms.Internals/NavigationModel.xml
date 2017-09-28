@@ -79,8 +79,8 @@
         <Parameter Name="before" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="before">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
+        <param name="before">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -115,7 +115,7 @@
         <Parameter Name="ancestralNav" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="ancestralNav">To be added.</param>
+        <param name="ancestralNav">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -169,7 +169,7 @@
         <Parameter Name="ancestralNav" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="ancestralNav">To be added.</param>
+        <param name="ancestralNav">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -189,8 +189,8 @@
         <Parameter Name="ancestralNav" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="ancestralNav">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
+        <param name="ancestralNav">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -209,7 +209,7 @@
         <Parameter Name="page" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -228,7 +228,7 @@
         <Parameter Name="page" Type="Xamarin.Forms.Page" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

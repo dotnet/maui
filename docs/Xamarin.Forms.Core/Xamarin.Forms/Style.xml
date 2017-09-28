@@ -86,7 +86,7 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="targetType">To be added.</param>
+        <param name="targetType">The type of view to which the style will be applied.</param>
         <summary>Intitializes a new <see cref="T:Xamarin.Forms.Style" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			HandleKeyboardOnFocus = true;
 
-			FormsEditText edit = Control;
+			var edit = Control;
 			if (edit == null)
 			{
 				edit = CreateNativeControl();

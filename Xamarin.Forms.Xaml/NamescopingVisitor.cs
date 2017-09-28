@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		readonly Dictionary<INode, INameScope> scopes = new Dictionary<INode, INameScope>();
 
-		public NamescopingVisitor(HydratationContext context)
+		public NamescopingVisitor(HydrationContext context)
 		{
 			Values = context.Values;
 		}

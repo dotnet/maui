@@ -198,8 +198,11 @@ namespace Xamarin.Forms.Maps.MacOS
 				var mkMapView = (MKMapView)Control;
 				mkMapView.RegionChanged -= MkMapViewOnRegionChanged;
 				mkMapView.GetViewForAnnotation = null;
-				mkMapView.Delegate.Dispose();
-				mkMapView.Delegate = null;
+				if (mkMapView.Delegate != null)
+				{
+					mkMapView.Delegate.Dispose();
+					mkMapView.Delegate = null;
+				}
 				mkMapView.RemoveFromSuperview();
 #if __MOBILE__
 				if (FormsMaps.IsiOs9OrNewer)
@@ -343,7 +346,7 @@ namespace Xamarin.Forms.Maps.MacOS
 			var mapModel = (Map)Element;
 			var mkMapView = (MKMapView)Control;
 
-			mapModel.VisibleRegion = new MapSpan(new Position(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta);
+			mapModel.SetVisibleRegion(new MapSpan(new Position(mkMapView.Region.Center.Latitude, mkMapView.Region.Center.Longitude), mkMapView.Region.Span.LatitudeDelta, mkMapView.Region.Span.LongitudeDelta));
 		}
 
 		void MoveToRegion(MapSpan mapSpan, bool animated = true)

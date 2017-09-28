@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Maps
 {
 	public class Geocoder
 	{
-		internal static Func<string, Task<IEnumerable<Position>>> GetPositionsForAddressAsyncFunc;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Func<string, Task<IEnumerable<Position>>> GetPositionsForAddressAsyncFunc;
 
-		internal static Func<Position, Task<IEnumerable<string>>> GetAddressesForPositionFuncAsync;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static Func<Position, Task<IEnumerable<string>>> GetAddressesForPositionFuncAsync;
 
 		public Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
 		{

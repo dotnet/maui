@@ -38,8 +38,8 @@
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="group">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="group">The item group.</param>
+        <param name="item">The item that was tapped.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.ItemTappedEventArgs" /> object for the specified <paramref name="item" /> that was tapped and the <paramref name="group" /> to which it belongs.</summary>
         <remarks>To be added.</remarks>
       </Docs>

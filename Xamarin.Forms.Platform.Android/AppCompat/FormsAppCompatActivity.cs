@@ -116,11 +116,22 @@ namespace Xamarin.Forms.Platform.Android
 				RegisterHandlerForDefaultRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
                 RegisterHandlerForDefaultRenderer(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
-				RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
+
+				if (Forms.Flags.Contains(Flags.FastRenderersExperimental))
+				{
+					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(FastRenderers.ButtonRenderer), typeof(ButtonRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Label), typeof(FastRenderers.LabelRenderer), typeof(LabelRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Image), typeof(FastRenderers.ImageRenderer), typeof(ImageRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(FastRenderers.FrameRenderer), typeof(FrameRenderer));
+				}
+				else
+				{
+					RegisterHandlerForDefaultRenderer(typeof(Button), typeof(AppCompat.ButtonRenderer), typeof(ButtonRenderer));
+					RegisterHandlerForDefaultRenderer(typeof(Frame), typeof(AppCompat.FrameRenderer), typeof(FrameRenderer));
+				}
 
 				_renderersAdded = true;
 			}
@@ -460,23 +471,6 @@ namespace Xamarin.Forms.Platform.Android
 		public static int TabLayoutResource { get; set; }
 
 		public static int ToolbarResource { get; set; }
-
-		internal static int GetUniqueId()
-		{
-			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
-			if ((int)Build.VERSION.SdkInt >= 17)
-				return global::Android.Views.View.GenerateViewId();
-
-			// Numbers higher than this range reserved for xml
-			// If we roll over, it can be exceptionally problematic for the user if they are still retaining things, android's internal implementation is
-			// basically identical to this except they do a lot of locking we don't have to because we know we only do this
-			// from the UI thread
-			if (s_id >= 0x00ffffff)
-				s_id = 0x00000400;
-			return s_id++;
-		}
-
-		static int s_id = 0x00000400;
 
 		#endregion
 	}

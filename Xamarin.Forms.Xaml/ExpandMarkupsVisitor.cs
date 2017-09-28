@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Xaml
 {
 	internal class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{
-		public ExpandMarkupsVisitor(HydratationContext context)
+		public ExpandMarkupsVisitor(HydrationContext context)
 		{
 			Context = context;
 		}
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Xaml
 			get { return Context.Values; }
 		}
 
-		HydratationContext Context { get; }
+		HydrationContext Context { get; }
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => false;

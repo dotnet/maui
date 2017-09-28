@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Xaml
 {
 	internal class RegisterXNamesVisitor : IXamlNodeVisitor
 	{
-		public RegisterXNamesVisitor(HydratationContext context)
+		public RegisterXNamesVisitor(HydrationContext context)
 		{
 			Values = context.Values;
 		}

@@ -523,13 +523,19 @@ namespace Xamarin.Forms.Internals
 			return GetIndex(item);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public DataTemplate SelectDataTemplate(object item)
+		{
+			return ItemTemplate.SelectDataTemplate(item, _itemsView);
+		}
+
 		public TItem CreateContent(int index, object item, bool insert = false)
 		{
 			TItem content = ItemTemplate != null ? (TItem)ItemTemplate.CreateContent(item, _itemsView) : _itemsView.CreateDefault(item);
 
 			content = UpdateContent(content, index, item);
 
-			if (CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				return content;
 
 			for (int i = _templatedObjects.Count; i <= index; i++)
@@ -891,7 +897,7 @@ namespace Xamarin.Forms.Internals
 
 		void OnGroupingEnabledChanged()
 		{
-			if (CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				_templatedObjects.Clear();
 
 			OnItemsSourceChanged(true);
@@ -963,7 +969,7 @@ namespace Xamarin.Forms.Internals
 				return;
 			}
 
-			if (CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				OnCollectionChanged(e);
 				return;

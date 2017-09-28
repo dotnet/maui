@@ -66,6 +66,7 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="PageControl.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <Compile Include="NavigationPageRendererWinRT.cs" />
@@ -136,9 +137,6 @@
     <Compile Include="CaseConverter.cs" />
     <Compile Include="ListViewRenderer.cs" />
     <Compile Include="NavigationPageRenderer.cs" />
-    <Compile Include="PageControl.xaml.cs">
-      <DependentUpon>PageControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Platform.cs" />
     <Compile Include="ProgressBarRenderer.cs" />
     <Compile Include="RendererFactory.cs" />
@@ -175,10 +173,6 @@
       <Link>NativeValueConverterService.cs</Link>
     </Compile>
     <Compile Include="PlatformConfigurationExtensions.cs" />
-    <Page Include="PageControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="StepperControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

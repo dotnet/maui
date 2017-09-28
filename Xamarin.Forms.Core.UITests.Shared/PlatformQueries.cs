@@ -114,8 +114,10 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly Func<AppQuery, AppQuery> GalleryListView = q => q.Raw("ListViewRenderer index:1");
 		public static readonly Func<AppQuery, AppQuery> PageWithoutNavigationBar = q => q.Raw("* id:'content' index:0");
 
-		public static readonly Func<AppQuery, AppQuery> NavigationBarBackButton =
-			q => q.Class("android.support.v7.widget.Toolbar").Child("android.widget.ImageButton");
+		// TODO hartez 2017/07/18 10:24:50 break out the inspector and see if you can figure out how to get the back button for windows	
+
+    public static readonly Func<AppQuery, AppQuery> NavigationBarBackButton =
+			q => q.Class("Toolbar").Child("android.widget.ImageButton");
 #endif
 
 		// Controls

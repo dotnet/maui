@@ -27,9 +27,9 @@
         <Parameter Name="binding" Type="Xamarin.Forms.BindingBase" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
-        <param name="propertyName">To be added.</param>
-        <param name="binding">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
+        <param name="propertyName">For internal use by the Xamarin.Forms platform.</param>
+        <param name="binding">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -51,9 +51,9 @@
         <Parameter Name="binding" Type="Xamarin.Forms.BindingBase" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
-        <param name="property">To be added.</param>
-        <param name="binding">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="binding">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -75,9 +75,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="target">To be added.</param>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="target">For internal use by the Xamarin.Forms platform.</param>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -34,10 +34,10 @@
         <Parameter Name="result" Type="Xamarin.Forms.WebNavigationResult" />
       </Parameters>
       <Docs>
-        <param name="navigationEvent">To be added.</param>
-        <param name="source">To be added.</param>
-        <param name="url">To be added.</param>
-        <param name="result">To be added.</param>
+        <param name="navigationEvent">The navigation event that was raised.</param>
+        <param name="source">The web view source that originated the event.</param>
+        <param name="url">The URL of the navigation event.</param>
+        <param name="result">The result of the navigation that originated the event.</param>
         <summary>Initializes a new <see cref="E:Xamarin.Forms.WebNavigatedEventArgs" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>

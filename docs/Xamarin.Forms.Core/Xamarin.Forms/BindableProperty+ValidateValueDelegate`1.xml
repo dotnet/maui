@@ -29,9 +29,9 @@
     <ReturnType>System.Boolean</ReturnType>
   </ReturnValue>
   <Docs>
-    <typeparam name="TPropertyType">To be added.</typeparam>
-    <param name="bindable">To be added.</param>
-    <param name="value">To be added.</param>
+    <typeparam name="TPropertyType">The type of the bound property.</typeparam>
+    <param name="bindable">The bindable object that contains the property.</param>
+    <param name="value">The value to validate.</param>
     <summary>Strongly-typed delegate for BindableProperty.ValidateValue.</summary>
     <returns>To be added.</returns>
     <remarks>To be added.</remarks>

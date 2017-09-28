@@ -37,9 +37,9 @@
         <Parameter Name="longitudeDegrees" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="center">To be added.</param>
-        <param name="latitudeDegrees">To be added.</param>
-        <param name="longitudeDegrees">To be added.</param>
+        <param name="center">The center of the new span.</param>
+        <param name="latitudeDegrees">The latitude of the span.</param>
+        <param name="longitudeDegrees">The longitude of the span.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.Maps.MapSpan" /> that is centered on <paramref name="center" /> and extends to <paramref name="latitudeDegress" /> and <paramref name="longitudeDegress" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -111,7 +111,7 @@
         <Parameter Name="obj" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="obj">To be added.</param>
+        <param name="obj">The object with which to compare.</param>
         <summary>Whether <paramref name="obj" /> is a <see cref="T:Xamarin.Forms.MapsSpan" /> with identical position and radius values as this <see cref="T:Xamarin.Forms.Maps.MapSpan" />.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> is a <see cref="T:Xamarin.Forms.MapsSpan" /> with identical position and radius values as this <see cref="T:Xamarin.Forms.Maps.MapSpan" />.</returns>
@@ -138,9 +138,9 @@
         <Parameter Name="radius" Type="Xamarin.Forms.Maps.Distance" />
       </Parameters>
       <Docs>
-        <param name="center">To be added.</param>
-        <param name="radius">To be added.</param>
-        <summary>Returns a <see cref="Xamarin.Forms.Maps.MapSpan" /> that displays the area that is defined by <paramref name="center" /> and <paramref name="radius" />.</summary>
+        <param name="center">The center of the span.</param>
+        <param name="radius">The radius to include in the span.</param>
+        <summary>Returns a <see cref="T:Xamarin.Forms.Maps.MapSpan" /> that displays the area that is defined by <paramref name="center" /> and <paramref name="radius" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

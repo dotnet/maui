@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Android.Views;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -17,7 +18,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (base.OnTouchEvent(e))
 				return true;
 
-			return _motionEventHelper.HandleMotionEvent(Parent);
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)

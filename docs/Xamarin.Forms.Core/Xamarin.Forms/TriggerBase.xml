@@ -116,9 +116,9 @@
         <Parameter Name="bindable" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
-        <summary>Attempts to attach to <paramref name="bindable" />. If successful, calls the <see cref="M:Xamarin.Forms.TriggerBase.OnAttachedTo" /> method.</summary>
-        <remarks>This method throws an exception if <paramref name="bindable" /> is not an instance of <see cref="P:Xamarin.Forms.TriggerBase.TargetType" />. In that case, the <see cref="M:Xamarin.Forms.TriggerBase.OnAttachedTo" /> method is not called.</remarks>
+        <param name="bindable">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Xamarin.Forms.IAttachedObject.DetachFrom">
@@ -138,9 +138,9 @@
         <Parameter Name="bindable" Type="Xamarin.Forms.BindableObject" />
       </Parameters>
       <Docs>
-        <param name="bindable">To be added.</param>
-        <summary>Attempts to detach from <paramref name="bindable" />. If successful, calls <see cref="M:Xamarin.Forms.TriggerBase.OnDetachedFrom" />..</summary>
-        <remarks>This method throws an exception if <paramref name="bindable" /> is <see langword="null" />. In that case, the <see cref="M:Xamarin.Forms.TriggerBase.OnDetachedFrom" /> method is not called.</remarks>
+        <param name="bindable">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

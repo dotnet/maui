@@ -305,7 +305,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -677,8 +677,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -703,8 +703,8 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -748,7 +748,7 @@
         <Parameter Name="onchanged" Type="System.Action&lt;System.Object,Xamarin.Forms.ResourcesChangedEventArgs&gt;" />
       </Parameters>
       <Docs>
-        <param name="onchanged">To be added.</param>
+        <param name="onchanged">For internal use by the Xamarin.Forms platform.</param>
         <summary>Internal.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -769,7 +769,7 @@
         <Parameter Name="onchanged" Type="System.Action&lt;System.Object,Xamarin.Forms.ResourcesChangedEventArgs&gt;" />
       </Parameters>
       <Docs>
-        <param name="onchanged">To be added.</param>
+        <param name="onchanged">For internal use by the Xamarin.Forms platform.</param>
         <summary>Internal.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -832,9 +832,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>Sets a value from a renderer without breaking the binding on a bound property.</summary>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -856,9 +856,9 @@
         <Parameter Name="value" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="property">To be added.</param>
-        <param name="value">To be added.</param>
-        <summary>Sets a value from a renderer without breaking the binding on a bound property.</summary>
+        <param name="property">For internal use by the Xamarin.Forms platform.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -902,9 +902,9 @@
         <Parameter Name="scopedElement" Type="System.Lazy&lt;System.Object&gt;" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
-        <summary>Internal use only.</summary>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -950,9 +950,9 @@
         <Parameter Name="xmlLineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
-        <param name="xmlLineInfo">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
+        <param name="xmlLineInfo">For internal use by the Xamarin.Forms platform.</param>
         <summary>Internal.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -996,7 +996,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use only.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -1018,8 +1018,8 @@
         <Parameter Name="scopedElement" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use only.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -1046,9 +1046,9 @@
         <Parameter Name="xmlLineInfo" Type="System.Xml.IXmlLineInfo" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="scopedElement">To be added.</param>
-        <param name="xmlLineInfo">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
+        <param name="scopedElement">For internal use by the Xamarin.Forms platform.</param>
+        <param name="xmlLineInfo">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use only.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -1068,7 +1068,7 @@
         <Parameter Name="name" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
+        <param name="name">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use only.</summary>
         <remarks>To be added.</remarks>
       </Docs>

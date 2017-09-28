@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 
 #if WINDOWS_UWP
@@ -15,6 +17,17 @@ namespace Xamarin.Forms.Platform.WinRT
 		public FrameRenderer()
 		{
 			AutoPackage = false;
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			// We need an automation peer so we can interact with this in automated tests
+			if (Control == null)
+			{
+				return new FrameworkElementAutomationPeer(this);
+			}
+
+			return new FrameworkElementAutomationPeer(Control);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)

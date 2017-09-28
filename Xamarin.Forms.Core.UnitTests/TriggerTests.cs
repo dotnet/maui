@@ -112,5 +112,34 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.False (enteraction.Invoked);
 			Assert.True (exitaction.Invoked);
 		}
+
+		[Test]
+		// https://bugzilla.xamarin.com/show_bug.cgi?id=32896
+		public void SettersWithBindingsUnappliedIfConditionIsFalse()
+		{
+			var conditionbp = BindableProperty.Create("foo", typeof(string), typeof(BindableObject), null);
+			var setterbp = BindableProperty.Create("bar", typeof(string), typeof(BindableObject), null);
+			var element = new MockElement();
+			var trigger = new Trigger(typeof(VisualElement))
+			{
+				Property = conditionbp,
+				Value = "foobar",
+				Setters = {
+					new Setter { Property = setterbp, Value = new Binding(".", source: "Qux") },
+				}
+			};
+
+			element.SetValue(setterbp, "default");
+			element.Triggers.Add(trigger);
+			Assume.That(element.GetValue(setterbp), Is.EqualTo("default"));
+
+			//sets the condition to true
+			element.SetValue(conditionbp, "foobar");
+			Assume.That(element.GetValue(setterbp), Is.EqualTo("Qux"));
+
+			//unsets the condition
+			element.SetValue(conditionbp, "baz");
+			Assert.That(element.GetValue(setterbp), Is.EqualTo("default"));
+		}
 	}
 }

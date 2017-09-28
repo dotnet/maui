@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml
 
 		public TreeVisitingMode VisitingMode { get; }
 		public bool StopOnDataTemplate { get; }
-		public bool StopOnResourceDictionary { get; private set; }
+		public bool StopOnResourceDictionary { get; }
 		public bool VisitNodeOnDataTemplate { get; }
 
 		public void Visit(ValueNode node, INode parentNode)

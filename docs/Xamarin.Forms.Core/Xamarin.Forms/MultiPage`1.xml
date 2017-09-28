@@ -218,7 +218,7 @@ Children = {
         <Parameter Name="page" Type="T" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -243,7 +243,7 @@ Children = {
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="index">To be added.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -423,7 +423,7 @@ Children = {
         <Parameter Name="e" Type="System.Collections.Specialized.NotifyCollectionChangedEventArgs" />
       </Parameters>
       <Docs>
-        <param name="e">To be added.</param>
+        <param name="e">The event arguments.</param>
         <summary>Called when the pages of the <see cref="T:Xamarin.Forms.MultiPage`1" /> have been changed.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -546,8 +546,8 @@ Children = {
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="page">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="page">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -573,8 +573,8 @@ Children = {
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="content">The content to set up.</param>
+        <param name="index">The content index.</param>
         <summary>When overriden in a derived class, performs initialization of <paramref name="content" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -595,7 +595,7 @@ Children = {
         <Parameter Name="content" Type="T" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
+        <param name="content">The content to unhook.</param>
         <summary>Application developers override this method to unregister event handlers for items that they registered in <see cref="M:Xamarin.Forms.MultiPage{TVisual}.SetupContent(`0, int)" />.</summary>
         <remarks>
           <para>Application developers must call <see cref="M:Xamarin.Forms.MultiPage{TVisual}.UnhookContent(`0, int)" /> before performing any other action when overriding this method.</para>
@@ -623,8 +623,8 @@ Children = {
         <Parameter Name="item" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="item">To be added.</param>
-        <summary>Sets the page that is specified by <paramref name="item" /> as the default page.</summary>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -650,9 +650,9 @@ Children = {
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <param name="index">To be added.</param>
-        <summary>Performs initialization of <paramref name="content" />.</summary>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -672,8 +672,8 @@ Children = {
         <Parameter Name="content" Type="T" />
       </Parameters>
       <Docs>
-        <param name="content">To be added.</param>
-        <summary>Internal use only.</summary>
+        <param name="content">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

@@ -71,7 +71,7 @@
         <Parameter Name="sender" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="sender">To be added.</param>
+        <param name="sender">The object on which to invoke the action.</param>
         <summary>Application developers override this method to provide the behavior that is triggered.</summary>
         <remarks>To be added.</remarks>
       </Docs>

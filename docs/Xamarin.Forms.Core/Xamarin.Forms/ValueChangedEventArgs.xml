@@ -38,8 +38,8 @@
         <Parameter Name="newValue" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="oldValue">To be added.</param>
-        <param name="newValue">To be added.</param>
+        <param name="oldValue">The old value.</param>
+        <param name="newValue">The new value.</param>
         <summary>Creates a new <see cref="T:Xamarin.Forms.ValueChangedEventArgs" /> event with <paramref name="oldValue" /> and <paramref name="newValue" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

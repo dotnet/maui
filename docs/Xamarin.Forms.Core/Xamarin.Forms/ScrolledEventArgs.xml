@@ -30,8 +30,8 @@
         <Parameter Name="y" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
+        <param name="x">The X position of the finished scroll.</param>
+        <param name="y">The Y position of the finished scroll.</param>
         <summary>Constructs a new <see cref="T:Xamarin.Forms.ScrolledEventArgs" /> object for a scroll to <paramref name="x" /> and <paramref name="y" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

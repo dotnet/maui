@@ -27,9 +27,9 @@
         <Parameter Name="nativeValue" Type="System.Object&amp;" RefType="out" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
-        <param name="toType">To be added.</param>
-        <param name="nativeValue">To be added.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
+        <param name="toType">For internal use by the Xamarin.Forms platform.</param>
+        <param name="nativeValue">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

@@ -38,8 +38,8 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="enumeration">To be added.</param>
-        <param name="action">To be added.</param>
+        <param name="enumeration">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -72,8 +72,8 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="gestures">To be added.</param>
-        <param name="predicate">To be added.</param>
+        <param name="gestures">For internal use by the Xamarin.Forms platform.</param>
+        <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -98,8 +98,8 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="enumerable">To be added.</param>
-        <param name="predicate">To be added.</param>
+        <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+        <param name="predicate">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -124,8 +124,8 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="enumerable">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -155,8 +155,8 @@
       </Parameters>
       <Docs>
         <typeparam name="T">To be added.</typeparam>
-        <param name="enumerable">To be added.</param>
-        <param name="item">To be added.</param>
+        <param name="enumerable">For internal use by the Xamarin.Forms platform.</param>
+        <param name="item">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

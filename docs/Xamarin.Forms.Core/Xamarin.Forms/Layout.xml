@@ -510,7 +510,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.View" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child for which to specify whether or not to track invalidation.</param>
         <summary>When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="M:Xamarin.Forms.VisualElement.InvalidateMeasure" />, and to return <see langword="false" /> if it should not.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -533,7 +533,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.View" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child for which to specify whether or not to track invalidation.</param>
         <summary>When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="M:Xamarin.Forms.VisualElement.InvalidateMeasure" /> when it is removed, and to return <see langword="false" /> if it should not.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

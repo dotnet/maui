@@ -30,9 +30,9 @@ namespace Xamarin.Forms.Core.XamlC
 			var parts = value.Split('.');
 			if (parts.Length == 1) {
 				var parent = node.Parent?.Parent as IElementNode;
-				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
+				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri &&
 				    ((node.Parent as ElementNode)?.XmlType.Name == "Setter" || (node.Parent as ElementNode)?.XmlType.Name == "PropertyCondition")) {
-					if (parent.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" &&
+					if (parent.XmlType.NamespaceUri == XamlParser.XFUri &&
 						(parent.XmlType.Name == "Trigger" || parent.XmlType.Name == "DataTrigger" || parent.XmlType.Name == "MultiTrigger" || parent.XmlType.Name == "Style")) {
 						var ttnode = (parent as ElementNode).Properties [new XmlName("", "TargetType")];
 						if (ttnode is ValueNode)
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Core.XamlC
 						else if (ttnode is IElementNode)
 							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties [new XmlName("", "TypeName")] as ValueNode)?.Value as string;
 					}
-				} else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == "http://xamarin.com/schemas/2014/forms" && (node.Parent as ElementNode)?.XmlType.Name == "Trigger")
+				} else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri && (node.Parent as ElementNode)?.XmlType.Name == "Trigger")
 					typeName = ((node.Parent as ElementNode).Properties [new XmlName("", "TargetType")] as ValueNode).Value as string;
 				propertyName = parts [0];
 			} else if (parts.Length == 2) {

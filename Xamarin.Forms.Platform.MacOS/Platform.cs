@@ -31,8 +31,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments arguments) =>
 			{
 				var alert = NSAlert.WithMessage(arguments.Title, arguments.Cancel, arguments.Accept, null, arguments.Message);
-				var result = alert.RunModal();
-				arguments.SetResult(result == 1);
+				var result = alert.RunSheetModal(PlatformRenderer.View.Window);
+				if (arguments.Accept == null)
+					arguments.SetResult(result == 1);
+				else
+					arguments.SetResult(result == 0);
 			});
 
 			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments arguments) =>
@@ -40,11 +43,21 @@ namespace Xamarin.Forms.Platform.MacOS
 				var alert = NSAlert.WithMessage(arguments.Title, arguments.Cancel, arguments.Destruction, null, "");
 				if (arguments.Buttons != null)
 				{
-					alert.AccessoryView = GetExtraButton(arguments);
+					int maxScrollHeight = (int)(0.6 * NSScreen.MainScreen.Frame.Height);
+					NSView extraButtons = GetExtraButton(arguments);
+					if (extraButtons.Frame.Height > maxScrollHeight) {
+						NSScrollView scrollView = new NSScrollView();
+						scrollView.Frame = new RectangleF(0, 0, extraButtons.Frame.Width, maxScrollHeight);
+						scrollView.DocumentView = extraButtons;
+						scrollView.HasVerticalScroller = true;
+						alert.AccessoryView = scrollView;
+					} else {
+						alert.AccessoryView = extraButtons;
+					}
 					alert.Layout();
 				}
 
-				var result = (int)alert.RunSheetModal(NSApplication.SharedApplication.MainWindow);
+				var result = (int)alert.RunSheetModal(PlatformRenderer.View.Window);
 				var titleResult = string.Empty;
 				if (result == 1)
 					titleResult = arguments.Cancel;

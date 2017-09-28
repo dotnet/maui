@@ -218,7 +218,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 				layout = new ConditionalFocusLayout(_context) { Orientation = Orientation.Vertical };
 
-			if (cachingStrategy == ListViewCachingStrategy.RecycleElement && convertView != null)
+			if (((cachingStrategy & ListViewCachingStrategy.RecycleElement) != 0) && convertView != null)
 			{
 				var boxedCell = convertView as INativeElementView;
 				if (boxedCell == null)
@@ -321,7 +321,8 @@ namespace Xamarin.Forms.Platform.Android
 				return leftOver > 0;
 			}
 
-			if (((IListViewController)list).CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			var strategy = ((IListViewController)list).CachingStrategy;
+			if ((strategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				if (_enabledCheckCell == null)
 					_enabledCheckCell = GetCellForPosition(position);
@@ -359,6 +360,8 @@ namespace Xamarin.Forms.Platform.Android
 					_lastSelected.Dispose();
 					_lastSelected = null;
 				}
+
+				DisposeCells();
 			}
 
 			base.Dispose(disposing);
@@ -373,7 +376,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Cell cell = null;
 
-			if (Controller.CachingStrategy == ListViewCachingStrategy.RecycleElement)
+			if ((Controller.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				AView cellOwner = view;
 				var layout = cellOwner as ConditionalFocusLayout;
@@ -392,6 +395,39 @@ namespace Xamarin.Forms.Platform.Android
 				_fromNative = true;
 			Select(position, view);
 			Controller.NotifyRowTapped(position, cell);
+		}
+
+		void DisposeCells()
+		{
+			var cellCount = _realListView?.ChildCount ?? 0;
+			for (int i = 0; i < cellCount; i++)
+			{
+				var layout = _realListView.GetChildAt(i) as ConditionalFocusLayout;
+
+				// Headers and footers will be skipped. They are disposed elsewhere.
+				if (layout == null || layout.IsDisposed())
+					continue;
+
+				var renderedView = layout?.GetChildAt(0);
+
+				var element = (renderedView as INativeElementView)?.Element;
+
+				var view = (element as ViewCell)?.View;
+
+				if (view != null)
+				{
+					var renderer = Platform.GetRenderer(view);
+
+					if (renderer == renderedView)
+						element.ClearValue(Platform.RendererProperty);
+
+					renderer?.Dispose();
+					renderer = null;
+				}
+
+				renderedView?.Dispose();
+				renderedView = null;
+			}
 		}
 
 		// TODO: We can optimize this by storing the last position, group index and global index
@@ -426,7 +462,8 @@ namespace Xamarin.Forms.Platform.Android
 				if (global == position || cells.Count > 0)
 				{
 					//Always create a new cell if we are using the RecycleElement strategy
-					var headerCell = _listView.CachingStrategy == ListViewCachingStrategy.RecycleElement ? GetNewGroupHeaderCell(group) : group.HeaderContent;
+					var recycleElement = (_listView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0;
+					var headerCell = recycleElement ? GetNewGroupHeaderCell(group) : group.HeaderContent;
 					cells.Add(headerCell);
 
 					if (cells.Count == take)
@@ -541,7 +578,8 @@ namespace Xamarin.Forms.Platform.Android
 			bline = null;
 			if (cellIsBeingReused)
 				return;
-			var makeBline = _listView.SeparatorVisibility == SeparatorVisibility.Default || isHeader && !nextCellIsHeader;
+			bool isSeparatorVisible = _listView.SeparatorVisibility == SeparatorVisibility.Default;
+			var makeBline = isSeparatorVisible || isHeader && isSeparatorVisible && !nextCellIsHeader;
 			if (makeBline)
 			{
 				bline = new AView(_context) { LayoutParameters = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 1) };

@@ -159,7 +159,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child that was added.</param>
         <summary>Application developers can override this method to respond when a child is added.</summary>
         <remarks>Application developers who override this method must call base.OnChildAdded before performing any other actions in their override.</remarks>
       </Docs>
@@ -179,7 +179,7 @@
         <Parameter Name="child" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="child">To be added.</param>
+        <param name="child">The child that was removed.</param>
         <summary>Application developers can override this method to respond when a child is removed.</summary>
         <remarks>Application developers who override this method must call base.OnChildRemoved before performing any other actions in their override.</remarks>
       </Docs>

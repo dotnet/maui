@@ -4,7 +4,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class StackLayout : Layout<View>
+	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create("Orientation", typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
@@ -13,6 +13,18 @@ namespace Xamarin.Forms
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
 
 		LayoutInformation _layoutInformation = new LayoutInformation();
+		readonly Lazy<PlatformConfigurationRegistry<StackLayout>> _platformConfigurationRegistry;
+
+		public StackLayout()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<StackLayout>>(() => 
+				new PlatformConfigurationRegistry<StackLayout>(this));
+		}
+
+		public IPlatformElementConfiguration<T, StackLayout> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
+		}
 
 		public StackOrientation Orientation
 		{

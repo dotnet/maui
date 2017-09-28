@@ -9,6 +9,10 @@ using Xamarin.Forms.Core.UITests;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+#endif
+
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 39530, "Frames do not handle pan or pinch gestures under AppCompat", PlatformAffected.Android)]
 	public class Bugzilla39530 : TestContentPage

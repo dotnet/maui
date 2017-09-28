@@ -229,6 +229,10 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				UpdateInputTransparent(Element, Container);
 			}
+			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			{
+				UpdateInputTransparent(Element, Container);
+			}
 		}
 
 		protected virtual void UpdateNativeControl()
@@ -449,7 +453,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		static void UpdateInputTransparent(VisualElement view, FrameworkElement frameworkElement)
 		{
-			frameworkElement.IsHitTestVisible = !view.InputTransparent;
+			frameworkElement.IsHitTestVisible = view.IsEnabled && !view.InputTransparent;
 		}
 
 		static void UpdateOpacity(VisualElement view, FrameworkElement frameworkElement)

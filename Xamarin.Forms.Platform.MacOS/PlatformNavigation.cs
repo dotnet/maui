@@ -18,6 +18,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			_animateModals = true;
 		}
 
+		public ModalPageTracker ModalPageTracker => _modalTracker;
+
 		public IReadOnlyList<Page> ModalStack => _modalTracker.ModalStack;
 
 		public IReadOnlyList<Page> NavigationStack => new List<Page>();

@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Platform.Android
 			_dialog = builder.Create();
 			_dialog.DismissEvent += (sender, args) =>
 			{
-				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+				ElementController?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 			};
 			_dialog.Show();
 		}

@@ -156,6 +156,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Margin = new Thickness(5, 20, 5, 0),
 				Children =
 				{
+					_results,
+					loadingState,
 					_image,
 					instructions,
 					legit,
@@ -164,8 +166,6 @@ namespace Xamarin.Forms.Controls.Issues
 					fakeUri,
 					crashImage,
 					uriInvalidImageData,
-					_results,
-					loadingState,
 					errorMessage
 				}
 			};

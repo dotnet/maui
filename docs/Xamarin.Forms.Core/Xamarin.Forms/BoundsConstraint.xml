@@ -41,8 +41,8 @@
         <Parameter Name="parents" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Forms.View&gt;" />
       </Parameters>
       <Docs>
-        <param name="expression">To be added.</param>
-        <param name="parents">To be added.</param>
+        <param name="expression">The expression from which to compile the constraint.</param>
+        <param name="parents">The parents to consider when compiling the constraint.</param>
         <summary>Returns a <see cref="T:Xamarin.Forms.BoundsConstraint" /> object that contains the compiled version of <paramref name="expression" /> and is relative to either <paramref name="parents" /> or the views referred to in <paramref name="expression" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

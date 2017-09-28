@@ -111,8 +111,8 @@ Device.BeginInvokeOnMainThread (() => {
         <Parameter Name="targetElementType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="size">To be added.</param>
-        <param name="targetElementType">To be added.</param>
+        <param name="size">The named size for which to get the numeric size.</param>
+        <param name="targetElementType">The element type for which to calculate the numeric size.</param>
         <summary>Returns a double that represents the named size for the font that is used on the element on the native platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -136,8 +136,8 @@ Device.BeginInvokeOnMainThread (() => {
         <Parameter Name="targetElement" Type="Xamarin.Forms.Element" />
       </Parameters>
       <Docs>
-        <param name="size">To be added.</param>
-        <param name="targetElement">To be added.</param>
+        <param name="size">The named size for which to get the numeric size.</param>
+        <param name="targetElement">The element for which to calculate the numeric size.</param>
         <summary>Returns a double that represents a font size that corresponds to <paramref name="size" /> on <paramref name="targetElement" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -164,9 +164,9 @@ Device.BeginInvokeOnMainThread (() => {
         <Parameter Name="useOldSizes" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="size">To be added.</param>
-        <param name="targetElementType">To be added.</param>
-        <param name="useOldSizes">To be added.</param>
+        <param name="size">For internal use by the Xamarin.Forms platform.</param>
+        <param name="targetElementType">For internal use by the Xamarin.Forms platform.</param>
+        <param name="useOldSizes">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
@@ -426,7 +426,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
       </ReturnValue>
       <Docs>
         <summary>Gets the <see cref="T:Xamarin.Forms.TargetPlatform" /> indicating the OS Xamarin.Forms is working on.</summary>
-        <value>A <see cref="Xamarin.Forms.TargetPlatform" /> that indicates the current OS.</value>
+        <value>A <see cref="T:Xamarin.Forms.TargetPlatform" /> that indicates the current OS.</value>
         <remarks>
         </remarks>
       </Docs>
@@ -487,7 +487,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <Parameter Name="value" Type="Xamarin.Forms.TargetIdiom" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -511,7 +511,7 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <Parameter Name="value" Type="Xamarin.Forms.TargetIdiom" />
       </Parameters>
       <Docs>
-        <param name="value">To be added.</param>
+        <param name="value">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

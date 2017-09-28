@@ -30,7 +30,7 @@
         <Parameter Name="values" Type="System.Collections.Generic.IEnumerable&lt;System.Collections.Generic.KeyValuePair&lt;System.String,System.Object&gt;&gt;" />
       </Parameters>
       <Docs>
-        <param name="values">To be added.</param>
+        <param name="values">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by the Xamarin.Forms platform.</summary>
         <remarks>To be added.</remarks>
       </Docs>

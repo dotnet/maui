@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -25,15 +25,20 @@
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
     <UseSGen>false</UseSGen>
-    <HttpClientHandler></HttpClientHandler>
-    <TlsProvider></TlsProvider>
-    <LinkMode></LinkMode>
-    <XamMacArch></XamMacArch>
+    <HttpClientHandler>
+    </HttpClientHandler>
+    <TlsProvider>
+    </TlsProvider>
+    <LinkMode>
+    </LinkMode>
+    <XamMacArch>
+    </XamMacArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>false</EnableCodeSigning>
@@ -41,18 +46,19 @@
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
     <UseSGen>false</UseSGen>
-    <HttpClientHandler></HttpClientHandler>
-    <TlsProvider></TlsProvider>
-    <LinkMode></LinkMode>
-    <XamMacArch></XamMacArch>
+    <HttpClientHandler>
+    </HttpClientHandler>
+    <TlsProvider>
+    </TlsProvider>
+    <LinkMode>
+    </LinkMode>
+    <XamMacArch>
+    </XamMacArch>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.Mac" />
-    <Reference Include="Xamarin.Forms.Maps.MacOS.Extra">
-      <HintPath>Libs\Xamarin.Forms.Maps.MacOS.Extra.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,9 +91,6 @@
       <Project>{7D13BAC2-C6A4-416A-B07E-C169B199E52B}</Project>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Libs\Xamarin.Forms.Maps.MacOS.Extra.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

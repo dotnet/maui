@@ -65,11 +65,11 @@
         <Parameter Name="priority" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="name">To be added.</param>
-        <param name="icon">To be added.</param>
-        <param name="activated">To be added.</param>
-        <param name="order">To be added.</param>
-        <param name="priority">To be added.</param>
+        <param name="name">The name of the toolbar item.</param>
+        <param name="icon">The icon for the toolbar item.</param>
+        <param name="activated">The action to perform when the toolbar item is activated.</param>
+        <param name="order">The order for the toolbar item.</param>
+        <param name="priority">The toolbar item priority.</param>
         <summary>Constructs and initializes a new instance of the <see cref="T:Xamarin.Forms.ToolbarItem" /> class.</summary>
         <remarks>
         </remarks>

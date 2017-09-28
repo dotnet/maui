@@ -20,26 +20,46 @@
   <Docs>
     <summary>Class that represents a list of property and binding conditions, and a list of setters that are applied when all of the conditions in the list are met.</summary>
     <remarks>
-      <para>XAML for Xamarin.Forms supports the following properties for the <see cref="T:Xamarin.Forms.MultiTrigger" /> class:</para>
-      <list type="table">
-        <listheader>
-          <term>Property</term>
-          <description>Value</description>
-        </listheader>
-        <item>
-          <term>Conditions</term>
-          <description>
-            <para>A list of <c>PropertyCondition</c> and/or <c>BindingCondition</c> markup instances that specify the conditions that all must be met before all of the setters that are listed in <c>Setters</c> are applied.</para>
-          </description>
-        </item>
-        <item>
-          <term>Setters</term>
-          <description>
-            <para>A list of setters that are applied when all of the property conditions are met. Each <c>Setter</c> tag or tag pair in the list has a <c>Property</c> and <c>Value</c> that represents the assignments to perform when the condition is met.</para>
-          </description>
-        </item>
-      </list>
+      <para>Developers can use a <see cref="T:Xamarin.Forms.MultiTrigger" /> to compare against property values on the control that contains it by using <see cref="T:Xamarin.Forms.PropertyTrigger" /> objects, or on any bound property (including those on the enclosing control) by using <see cref="T:Xamarin.Forms.BindingCondition" /> objects. These can be mixed in the same <see cref="P:Xamarin.Forms.MultiTrigger.Conditions" /> list.</para>
+      <example>
+        <para>The XML example below, when added to a Xamarin.Forms app with the correct project namespace, creates a UI that suggests that the user type in a secret and toggle a switch to check if the secret is correct. If the user enters "The text color is green", and toggles the <see cref="T:Xamarin.Forms.Switch" /> to its <c>On</c> position, then the text that the user typed into the <see cref="T:Xamarin.Forms.Entry" /> turns green. If either the text is altered to something other than the secret or the Switch is toggled to its <c>Off</c> position, the text returns to the default color</para>
+        <code lang="XML"><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:PropertyConditionDemo"
+             x:Class="PropertyConditionDemo.PropertyConditionDemoPage">
+    <StackLayout VerticalOptions="Center">
+        <Label Text="Do you know the secret?"
+               VerticalOptions="Center"
+               HorizontalOptions="Center" />
+        <Entry Placeholder="Type the secret!"
+               VerticalOptions="Center"
+               HorizontalOptions="Center">
+            <Entry.Triggers>
+                <MultiTrigger TargetType="Entry" >
+                    <MultiTrigger.Conditions>
+                        <PropertyCondition Property="Text" Value="The text color is green" />
+                        <BindingCondition Binding="{Binding Source={x:Reference checkSecret},
+                                                            Path=IsToggled}"
+                                          Value="true" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="TextColor"
+                        Value="Color.Green" />
+                </MultiTrigger>
+            </Entry.Triggers>
+        </Entry>
+        <Label Text="Check the secret?"
+               VerticalOptions="Center"
+               HorizontalOptions="Center" />
+        <Switch x:Name="checkSecret"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" />
+    </StackLayout>
+</ContentPage>]]></code>
+      </example>
     </remarks>
+    <altmember cref="T:Xamarin.Forms.PropertyCondition" />
+    <altmember cref="T:Xamarin.Forms.BindingCondition" />
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -62,7 +82,7 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="targetType">To be added.</param>
+        <param name="targetType">The type of the trigger target.</param>
         <summary>Initializes a new <see cref="T:Xamarin.Forms.MultiTrigger" /> instance.</summary>
         <remarks>To be added.</remarks>
       </Docs>

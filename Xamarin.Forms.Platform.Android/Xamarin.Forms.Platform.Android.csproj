@@ -32,8 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>
-    </NoWarn>
+    <NoWarn>CS0109</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -104,6 +103,7 @@
     <Compile Include="AndroidTitleBarVisibility.cs" />
     <Compile Include="AppCompat\FrameRenderer.cs" />
     <Compile Include="ButtonBackgroundTracker.cs" />
+    <Compile Include="Elevation.cs" />
     <Compile Include="Extensions\JavaObjectExtensions.cs" />
     <Compile Include="FastRenderers\AutomationPropertiesProvider.cs" />
     <Compile Include="FastRenderers\ButtonRenderer.cs" />
@@ -126,9 +126,10 @@
     <Compile Include="ExportCellAttribute.cs" />
     <Compile Include="ExportImageSourceHandlerAttribute.cs" />
     <Compile Include="ExportRendererAttribute.cs" />
-    <Compile Include="FastRenderers\GestureManager.cs" />
+    <Compile Include="GestureManager.cs" />
     <Compile Include="FastRenderers\LabelRenderer.cs" />
     <Compile Include="FastRenderers\VisualElementRenderer.cs" />
+    <Compile Include="Flags.cs" />
     <Compile Include="FormsApplicationActivity.cs" />
     <Compile Include="AndroidActivity.cs" />
     <Compile Include="AndroidTicker.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Renderers\StreamImagesourceHandler.cs" />
     <Compile Include="Renderers\ToolbarButton.cs" />
     <Compile Include="Renderers\ToolbarImageButton.cs" />
+    <Compile Include="Renderers\ViewCellExtensions.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
     <Compile Include="TapGestureHandler.cs" />
     <Compile Include="TextColorSwitcher.cs" />

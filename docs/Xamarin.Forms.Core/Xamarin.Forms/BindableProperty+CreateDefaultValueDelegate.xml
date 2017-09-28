@@ -18,7 +18,7 @@
     <ReturnType>System.Object</ReturnType>
   </ReturnValue>
   <Docs>
-    <param name="bindable">To be added.</param>
+    <param name="bindable">The bindable object that contains the property.</param>
     <summary>Strongly typed delegate for BindableProperty.DefaultValueCreator.</summary>
     <returns>To be added.</returns>
     <remarks>To be added.</remarks>

@@ -31,8 +31,8 @@
         <Parameter Name="action" Type="System.Collections.Specialized.NotifyCollectionChangedAction" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -50,9 +50,9 @@
         <Parameter Name="changedItems" Type="System.Collections.IList" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItems">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItems">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -70,9 +70,9 @@
         <Parameter Name="changedItem" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItem">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItem">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -91,10 +91,10 @@
         <Parameter Name="oldItems" Type="System.Collections.IList" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="newItems">To be added.</param>
-        <param name="oldItems">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newItems">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldItems">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -113,10 +113,10 @@
         <Parameter Name="startingIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItems">To be added.</param>
-        <param name="startingIndex">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItems">For internal use by the Xamarin.Forms platform.</param>
+        <param name="startingIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -135,10 +135,10 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItem">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItem">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -157,10 +157,10 @@
         <Parameter Name="oldItem" Type="System.Object" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="newItem">To be added.</param>
-        <param name="oldItem">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newItem">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldItem">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -180,11 +180,11 @@
         <Parameter Name="startingIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="newItems">To be added.</param>
-        <param name="oldItems">To be added.</param>
-        <param name="startingIndex">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newItems">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldItems">For internal use by the Xamarin.Forms platform.</param>
+        <param name="startingIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -204,11 +204,11 @@
         <Parameter Name="oldIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItems">To be added.</param>
-        <param name="index">To be added.</param>
-        <param name="oldIndex">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItems">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -228,11 +228,11 @@
         <Parameter Name="oldIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="changedItem">To be added.</param>
-        <param name="index">To be added.</param>
-        <param name="oldIndex">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="changedItem">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldIndex">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -252,11 +252,11 @@
         <Parameter Name="index" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="count">To be added.</param>
-        <param name="action">To be added.</param>
-        <param name="newItem">To be added.</param>
-        <param name="oldItem">To be added.</param>
-        <param name="index">To be added.</param>
+        <param name="count">For internal use by the Xamarin.Forms platform.</param>
+        <param name="action">For internal use by the Xamarin.Forms platform.</param>
+        <param name="newItem">For internal use by the Xamarin.Forms platform.</param>
+        <param name="oldItem">For internal use by the Xamarin.Forms platform.</param>
+        <param name="index">For internal use by the Xamarin.Forms platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <remarks>To be added.</remarks>
       </Docs>

@@ -70,7 +70,7 @@
       </Parameters>
       <Docs>
         <param name="element">The platform specific element on which to perform the operation.</param>
-        <param name="toolbarPlacement">To be added.</param>
+        <param name="toolbarPlacement">The new toolbar placement.</param>
         <summary>Sets a value that controls the placement of the toolbar.</summary>
         <remarks>To be added.</remarks>
       </Docs>

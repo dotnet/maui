@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		public MasterDetailContainer(MasterDetailPage parent, bool isMaster, Context context) : base(parent, isMaster, context)
 		{
-			Id = FormsAppCompatActivity.GetUniqueId();
+			Id = Platform.GenerateViewId();
 			_parent = parent;
 			_isMaster = isMaster;
 		}
@@ -69,7 +69,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					// But first, if the previous occupant of this container was a fragment, we need to remove it properly
 					FragmentTransaction transaction = FragmentManager.BeginTransaction();
-					transaction.DisallowAddToBackStack();
 					transaction.Remove(_currentFragment);
 					transaction.SetTransition((int)FragmentTransit.None);
 
@@ -97,7 +96,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				});
 
 				FragmentTransaction transaction = FragmentManager.BeginTransaction();
-				transaction.DisallowAddToBackStack();
 
 				if (_currentFragment != null)
 				{
@@ -141,7 +139,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (_currentFragment != null)
 				{
 					FragmentTransaction transaction = FragmentManager.BeginTransaction();
-					transaction.DisallowAddToBackStack();
 					transaction.Remove(_currentFragment);
 					transaction.SetTransition((int)FragmentTransit.None);
 					transaction.CommitAllowingStateLoss();

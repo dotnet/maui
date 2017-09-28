@@ -28,6 +28,7 @@
   <Library Name="Xamarin.Forms.Platform.UAP">
 
   	<!-- add directives for your library here -->
-
+    <Namespace Name="Windows.UI.Xaml.Automation.Peers" MarshalObject="Required All"/>
+  
   </Library>
 </Directives>

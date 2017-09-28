@@ -30,6 +30,11 @@ using Xamarin.Forms.Controls.Issues;
 
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
+//[assembly: ExportRenderer(typeof(AndroidHelpText.HintLabel), typeof(HintLabel))]
+[assembly: ExportRenderer(typeof(Bugzilla57910QuickCollectNavigationPage), typeof(QuickCollectNavigationPage))]
+
+
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
 
 #if PRE_APPLICATION_CLASS
 #elif FORMS_APPLICATION_ACTIVITY
@@ -234,9 +239,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{// no view to re-use, create new
 				view = (context as Activity).LayoutInflater.Inflate(Resource.Layout.NativeAndroidCell, null);
 			}
-			else { // re-use, clear image
-				   // doesn't seem to help
-				   //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
+			else
+			{ // re-use, clear image
+			  // doesn't seem to help
+			  //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
 			}
 
 			view.FindViewById<TextView>(Resource.Id.Text1).Text = x.Name;
@@ -273,7 +279,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 				}, TaskScheduler.FromCurrentSynchronizationContext());
 
 			}
-			else {
+			else
+			{
 				// clear the image
 				view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(null);
 			}
@@ -388,9 +395,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{// no view to re-use, create new
 				view = _context.LayoutInflater.Inflate(Resource.Layout.NativeAndroidListViewCell, null);
 			}
-			else { // re-use, clear image
-				   // doesn't seem to help
-				   //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
+			else
+			{ // re-use, clear image
+			  // doesn't seem to help
+			  //view.FindViewById<ImageView> (Resource.Id.Image).Drawable.Dispose ();
 			}
 			view.FindViewById<TextView>(Resource.Id.Text1).Text = item.Name;
 			view.FindViewById<TextView>(Resource.Id.Text2).Text = item.Category;
@@ -425,7 +433,8 @@ namespace Xamarin.Forms.ControlGallery.Android
 					}
 				}, TaskScheduler.FromCurrentSynchronizationContext());
 			}
-			else {
+			else
+			{
 				// clear the image
 				view.FindViewById<ImageView>(Resource.Id.Image).SetImageBitmap(null);
 			}
@@ -513,6 +522,84 @@ namespace Xamarin.Forms.ControlGallery.Android
 			inputTypes &= ~InputTypes.NumberFlagDecimal;
 
 			return base.GetDigitsKeyListener(inputTypes);
+		}
+	}
+
+	//public class HintLabel : Xamarin.Forms.Platform.Android.AppCompat.LabelRenderer
+	//{
+	//	public HintLabel()
+	//	{
+	//		Hint = AndroidHelpText.HintLabel.Success;
+	//	}
+ // }
+ 
+	public class NoFlashTestNavigationPage 
+#if FORMS_APPLICATION_ACTIVITY
+		: Xamarin.Forms.Platform.Android.NavigationRenderer
+#else
+		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
+#endif
+	{
+#if !FORMS_APPLICATION_ACTIVITY
+		protected override void SetupPageTransition(global::Android.Support.V4.App.FragmentTransaction transaction, bool isPush)
+		{
+			transaction.SetTransition((int)FragmentTransit.None);
+		}
+#endif
+	}
+
+	public class QuickCollectNavigationPage
+#if FORMS_APPLICATION_ACTIVITY
+		: Xamarin.Forms.Platform.Android.NavigationRenderer
+#else
+		: Xamarin.Forms.Platform.Android.AppCompat.NavigationPageRenderer
+#endif
+	{
+		bool _disposed;
+		NavigationPage _page;
+
+		protected override void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
+		{
+			base.OnElementChanged(e);
+
+			if (e.NewElement == null)
+			{
+				if (e.OldElement != null)
+				{
+					((IPageController)e.OldElement).InternalChildren.CollectionChanged -= OnInternalPageCollectionChanged;
+				}
+
+				return;
+			}
+
+			((IPageController)e.NewElement).InternalChildren.CollectionChanged += OnInternalPageCollectionChanged;
+		}
+
+		private void OnInternalPageCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			if (e.OldItems != null)
+			{
+				// Force a collection on popped to simulate the problem.
+				GC.Collect();
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
+			if (disposing && _page != null)
+			{
+				_page.InternalChildren.CollectionChanged -= OnInternalPageCollectionChanged;
+				_page = null;
+			}
+
+			base.Dispose(disposing);
 		}
 	}
 }

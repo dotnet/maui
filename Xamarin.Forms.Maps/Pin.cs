@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Maps
 {
@@ -37,7 +38,8 @@ namespace Xamarin.Forms.Maps
 		}
 
 		// introduced to store the unique id for Android markers
-		internal object Id { get; set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public object Id { get; set; }
 
 		public event EventHandler Clicked;
 
@@ -74,7 +76,8 @@ namespace Xamarin.Forms.Maps
 			return !Equals(left, right);
 		}
 
-		internal bool SendTap()
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool SendTap()
 		{
 			EventHandler handler = Clicked;
 			if (handler == null)

@@ -119,10 +119,8 @@
         <Parameter Name="serviceProvider" Type="System.IServiceProvider" />
       </Parameters>
       <Docs>
-        <param name="serviceProvider">To be added.</param>
-        <summary>
-          <para />
-        </summary>
+        <param name="serviceProvider">For internal use by the Xamarin.Forms platform.</param>
+        <summary>For internal use by the Xamarin.Forms platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

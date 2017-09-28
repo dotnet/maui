@@ -62,7 +62,8 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				if (List == null)
 				{
-					List = new WListView {
+					List = new WListView
+					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
 						HeaderTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["View"],
@@ -71,10 +72,8 @@ namespace Xamarin.Forms.Platform.WinRT
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
-					// In order to support tapping on elements within a list item, we handle
-					// ListView.Tapped (which can be handled by child elements in the list items
-					// and prevented from bubbling up) rather than ListView.ItemClick
-					List.Tapped += ListOnTapped;
+					List.IsItemClickEnabled = true;
+					List.ItemClick += OnListItemClicked;
 
 					List.SelectionChanged += OnControlSelectionChanged;
 
@@ -136,8 +135,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			if (List != null)
 			{
-				List.Tapped -= ListOnTapped;
-
+				List.ItemClick -= OnListItemClicked;
 				List.SelectionChanged -= OnControlSelectionChanged;
 
 				List.DataContext = null;
@@ -436,39 +434,13 @@ namespace Xamarin.Forms.Platform.WinRT
 			List.SelectedIndex = index;
 		}
 
-		void ListOnTapped(object sender, TappedRoutedEventArgs args)
-		{
-			var orig = args.OriginalSource as DependencyObject;
-			int index = -1;
-
-			// Work our way up the tree until we find the actual list item 
-			// the user tapped on
-			while (orig != null && orig != List)
-			{
-				var lv = orig as ListViewItem;
-
-				if (lv != null)
-				{
-					index = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(lv.Content);
-					break;
-				}
-
-				orig = VisualTreeHelper.GetParent(orig);
-			}
-
-			if (index > -1)
-			{
-				OnListItemClicked(index);
-			}
-		}
-
 		void OnListItemClicked(int index)
 		{
 #if !WINDOWS_UWP
-	// If we're on the phone , we need to cache the selected item in case the handler 
-	// we're about to call changes any item indexes;
-	// in some cases, those index changes will throw an exception we can't catch if 
-	// the listview has an item selected
+			// If we're on the phone , we need to cache the selected item in case the handler 
+			// we're about to call changes any item indexes;
+			// in some cases, those index changes will throw an exception we can't catch if 
+			// the listview has an item selected
 			object selectedItem = null;
 			if (Device.Idiom == TargetIdiom.Phone)
 			{
@@ -503,12 +475,26 @@ namespace Xamarin.Forms.Platform.WinRT
 #endif
 		}
 
+		void OnListItemClicked(object sender, ItemClickEventArgs e)
+		{
+			if (e.ClickedItem != null)
+				OnListItemClicked(((WListView)e.OriginalSource).Items.IndexOf(e.ClickedItem));
+		}
+
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			RestorePreviousSelectedVisual();
 
 			if (e.AddedItems.Count == 0)
+			{
+				// Deselecting an item is a valid SelectedItem change.
+				if (Element.SelectedItem != List.SelectedItem)
+				{
+					OnListItemClicked(List.SelectedIndex);
+				}
+
 				return;
+			}
 
 			object cell = e.AddedItems[0];
 			if (cell == null)
@@ -524,10 +510,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 			}
 #endif
-
-			// A11y: Tapped event will not be routed when Narrator is active
-			// Also handles keyboard selection
-			SelectElementItem();
+			if (Element.SelectedItem != List.SelectedItem)
+				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
 		}
 
 		FrameworkElement FindElement(object cell)
@@ -539,15 +523,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			return null;
-		}
-
-		void SelectElementItem()
-		{
-			if (List.SelectedItem != null && Element.SelectedItem != List.SelectedItem)
-			{
-				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List?.SelectedItem);
-				OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element?.SelectedItem));
-			}
 		}
 
 #if WINDOWS_UWP

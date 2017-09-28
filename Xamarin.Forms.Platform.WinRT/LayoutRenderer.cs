@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Media;
 
 #if WINDOWS_UWP
@@ -20,6 +23,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (e.OldElement != null)
 			{
 				SizeChanged -= OnSizeChanged;
+				SetAutomationId(null);
 			}
 
 			if (e.NewElement != null)
@@ -27,7 +31,30 @@ namespace Xamarin.Forms.Platform.WinRT
 				SizeChanged += OnSizeChanged;
 
 				UpdateClipToBounds();
+
+				if (!string.IsNullOrEmpty(Element.AutomationId))
+				{
+					SetAutomationId(Element.AutomationId);
+				}
 			}
+		}
+
+		protected override void UpdateBackgroundColor()
+		{
+			base.UpdateBackgroundColor();
+
+			if (GetValue(BackgroundProperty) == null && Children.Count == 0)
+			{
+				// Forces the layout to take up actual space if it's otherwise empty
+				Background = new SolidColorBrush(Colors.Transparent);
+			}
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			// Since layouts in Forms can be interacted with, we need to create automation peers
+			// for them so we can interact with them in automated tests
+			return new FrameworkElementAutomationPeer(this);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

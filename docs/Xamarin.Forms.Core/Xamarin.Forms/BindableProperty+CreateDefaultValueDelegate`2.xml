@@ -30,9 +30,9 @@
     <ReturnType>TPropertyType</ReturnType>
   </ReturnValue>
   <Docs>
-    <typeparam name="TDeclarer">To be added.</typeparam>
-    <typeparam name="TPropertyType">To be added.</typeparam>
-    <param name="bindable">To be added.</param>
+    <typeparam name="TDeclarer">The type of the object that delared the property.</typeparam>
+    <typeparam name="TPropertyType">The type of the bound property.</typeparam>
+    <param name="bindable">The bindable object that contains the property.</param>
     <summary>Delegate for BindableProperty.DefaultValueCreator.</summary>
     <returns>To be added.</returns>
     <remarks>To be added.</remarks>

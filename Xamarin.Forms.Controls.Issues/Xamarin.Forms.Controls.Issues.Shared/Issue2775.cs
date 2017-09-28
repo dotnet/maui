@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using Xamarin.Forms.Internals;
 
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.InputTransparent)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2775, "ViewCell background conflicts with ListView Semi-Transparent and Transparent backgrounds")]
-	public class Issue2775 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Issue2775 : TestContentPage 
 	{
 		protected override void Init ()
 		{

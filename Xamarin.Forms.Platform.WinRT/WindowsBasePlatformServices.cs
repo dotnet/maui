@@ -78,6 +78,10 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (!assemblies.Contains(thisAssembly))
 				assemblies.Add(thisAssembly);
 
+			Assembly xamlAssembly = typeof(Xamarin.Forms.Xaml.IMarkupExtension).GetTypeInfo().Assembly;
+			if (!assemblies.Contains(xamlAssembly))
+				assemblies.Add(xamlAssembly);
+
 			return assemblies.ToArray();
 		}
 

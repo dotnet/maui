@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -66,8 +67,11 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement (q => q.Marked ("New Page"));
 
 			RunningApp.Tap (q => q.Marked ("New Page"));
+			RunningApp.WaitForElement (q => q.Marked ("Second Page #1"));
 			RunningApp.Back();
+			RunningApp.WaitForElement (q => q.Marked ("Intermediate Page"));
 			RunningApp.Back();
+			RunningApp.Tap(q => q.Marked("Do GC"));
 			RunningApp.Tap(q => q.Marked("Do GC"));
 			RunningApp.Tap(q => q.Marked("Send Message"));
 			RunningApp.Tap(q => q.Marked("Do GC"));
@@ -81,6 +85,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	public class _45926IntermediatePage : ContentPage
 	{
+		public _45926IntermediatePage()
+		{
+			Content = new Label { Text = "Intermediate Page" };
+		}
 	}
 
 	[Preserve(AllMembers = true)]

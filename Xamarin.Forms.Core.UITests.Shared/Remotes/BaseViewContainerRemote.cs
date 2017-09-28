@@ -6,7 +6,7 @@ using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Core.UITests
 {
-	internal abstract class BaseViewContainerRemote
+	internal abstract partial class BaseViewContainerRemote
 	{
 		//bool requiresDismissal;
 		protected IApp App { get; private set; }
@@ -58,11 +58,11 @@ namespace Xamarin.Forms.Core.UITests
 
 		public virtual void GoTo([CallerMemberName] string callerMemberName = "")
 		{
-			var scrollBounds = App.Query(Queries.PageWithoutNavigationBar()).First().Rect;
-
 			// Scroll using gutter to the right of view, avoid scrolling inside of WebView
 			if (PlatformViewType == PlatformViews.WebView)
 			{
+				var scrollBounds = App.Query(Queries.PageWithoutNavigationBar()).First().Rect;
+
 				scrollBounds = new AppRect
 				{
 					X = scrollBounds.Width - 20,
@@ -121,81 +121,50 @@ namespace Xamarin.Forms.Core.UITests
 			return App.Query(q => q.Raw(ContainerDescendents));
 		}
 
-		public T GetProperty<T>(BindableProperty formProperty)
+		string UpdateQueryForParent(string query, bool isOnParentRenderer)
 		{
-#if __ANDROID__
-			
-#endif
-
-			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery();
-			string[] propertyPath = property.Item1;
-			bool isOnParentRenderer = property.Item2;
-
-			var query = ViewQuery;
 			if (isOnParentRenderer && 
 				PlatformViewType != PlatformViews.BoxView && 
 				PlatformViewType != PlatformViews.Frame)
 			{
 
 #if __ANDROID__
-				// If we're testing the fast renderers, we don't want to check the parent control for
-				// this property (despite `isOnParentRenderer` being true); if we're testing a legacy
-				// renderer, then we *do* need to check the parent control for the property
-				// So we query the control's parent and see if it's a Container (legacy); if so, 
-				// we adjust the query to look at the parent of the current control
-				var parent = App.Query(appQuery => appQuery.Raw(ViewQuery + " parent * index:0"));
-				if (parent.Length > 0 && parent[0].Label.EndsWith(ContainerLabel))
-				{
-					query = query + " parent * index:0";
-				}
+				query = AccountForFastRenderers(query);
 #else
 				query = query + " parent * index:0";
 #endif
 			}
 
-			object prop = null;
-			bool found = false;
+			return query;
+		}
 
-			bool isEdgeCase = false;
+		public T GetProperty<T>(BindableProperty formProperty)
+		{
+			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery();
+			string[] propertyPath = property.Item1;
+			bool isOnParentRenderer = property.Item2;
+
+			var query = UpdateQueryForParent(ViewQuery, isOnParentRenderer);
+
+			object prop;
+			T result;
+
 #if __ANDROID__
-			isEdgeCase = (formProperty == View.ScaleProperty);
-#endif
-			if (!isEdgeCase)
+			if (TryConvertViewScale(formProperty, query, out result))
 			{
-				found =
-					MaybeGetProperty<string>(App, query, propertyPath, out prop) ||
-					MaybeGetProperty<float>(App, query, propertyPath, out prop) ||
-					MaybeGetProperty<bool>(App, query, propertyPath, out prop) ||
-					MaybeGetProperty<object>(App, query, propertyPath, out prop);
+				return result;
 			}
+#endif
+			
+			bool found = MaybeGetProperty<string>(App, query, propertyPath, out prop) ||
+						MaybeGetProperty<float>(App, query, propertyPath, out prop) ||
+						MaybeGetProperty<bool>(App, query, propertyPath, out prop) ||
+						MaybeGetProperty<object>(App, query, propertyPath, out prop);
+			
 #if __MACOS__
 			if (!found)
 			{
-
-				if (formProperty == View.IsEnabledProperty)
-				{
-					var view = App.Query((arg) => arg.Raw(query)).FirstOrDefault();
-					found = view != null;
-					prop = view.Enabled;
-				}
-
-				if (formProperty == Button.TextProperty)
-				{
-					var view = App.Query((arg) => arg.Raw(query)).FirstOrDefault();
-					found = view != null;
-					prop = view.Text;
-				}
-			}
-#endif
-
-#if __ANDROID__
-			if (formProperty == View.ScaleProperty) {
-				var matrix = new Matrix ();
-				matrix.M00 = App.Query (q => q.Raw (query).Invoke (propertyPath[0]).Value<float> ()).First ();
-				matrix.M11 = App.Query (q => q.Raw (query).Invoke (propertyPath[1]).Value<float> ()).First ();
-				matrix.M22 = 0.5f;
-				matrix.M33 = 1.0f;
-				return (T)((object)matrix);
+				found = CheckOtherProperties(App, formProperty, query, out prop);
 			}
 #endif
 
@@ -207,33 +176,70 @@ namespace Xamarin.Forms.Core.UITests
 			if (prop.GetType() == typeof(T))
 				return (T)prop;
 
+			if (TryConvertMatrix(prop, out result))
+			{
+				return result;
+			}
+
+			if (TryConvertColor(prop, out result))
+			{
+				return result;
+			}
+
+#if __IOS__
+
+			if (TryConvertFont(prop, out result))
+			{
+				return result;
+			}
+#endif
+
+			if (TryConvertBool(prop, out result))
+			{
+				return result;
+			}
+
+			return result;
+		}
+
+		static bool TryConvertMatrix<T>(object prop, out T result)
+		{
+			result = default(T);
+
 			if (prop.GetType() == typeof(string) && typeof(T) == typeof(Matrix))
 			{
 				Matrix matrix = ParsingUtils.ParseCATransform3D((string)prop);
-				return (T)((object)matrix);
+				result =  (T)((object)matrix);
+				return true;
 			}
+
+			return false;
+		}
+
+		static bool TryConvertColor<T>(object prop, out T result)
+		{
+			result = default(T);
 
 			if (typeof(T) == typeof(Color))
 			{
 #if __IOS__
 				Color color = ParsingUtils.ParseUIColor((string)prop);
-				return (T)((object)color);
+				result = (T)((object)color);
+				return true;
 #else
 				uint intColor = (uint)((float)prop);
-				Color color = Color.FromUint (intColor);
-				return (T)((object)color);
+				Color color = Color.FromUint(intColor);
+				result = (T)((object)color);
+				return true;
 #endif
 			}
 
-#if __IOS__
-			if (prop.GetType() == typeof(string) && typeof(T) == typeof(Font))
-			{
-				Font font = ParsingUtils.ParseUIFont((string)prop);
-				return (T)((object)font);
-			}
-#endif
+			return false;
+		}
 
-			T result = default(T);
+		static bool TryConvertBool<T>(object prop, out T result)
+		{
+			result = default(T);
 
 			var stringToBoolConverter = new StringToBoolConverter();
 			var floatToBoolConverter = new FloatToBoolConverter();
@@ -241,13 +247,16 @@ namespace Xamarin.Forms.Core.UITests
 			if (stringToBoolConverter.CanConvertTo(prop, typeof(bool)))
 			{
 				result = (T)stringToBoolConverter.ConvertTo(prop, typeof(bool));
-			}
-			else if (floatToBoolConverter.CanConvertTo(prop, typeof(bool)))
-			{
-				result = (T)floatToBoolConverter.ConvertTo(prop, typeof(bool));
+				return true;
 			}
 
-			return result;
+			if (floatToBoolConverter.CanConvertTo(prop, typeof(bool)))
+			{
+				result = (T)floatToBoolConverter.ConvertTo(prop, typeof(bool));
+				return true;
+			}
+
+			return false;
 		}
 
 		static bool MaybeGetProperty<T>(IApp app, string query, string[] propertyPath, out object result)

@@ -25,7 +25,7 @@
         <Parameter Name="effectId" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="effectId">To be added.</param>
+        <param name="effectId">The ID for the effect.</param>
         <summary>Creates a new routing effect with the specified <paramref name="effectId" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>

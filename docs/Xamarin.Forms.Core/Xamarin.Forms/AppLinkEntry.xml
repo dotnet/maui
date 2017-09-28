@@ -112,7 +112,7 @@
         <Parameter Name="uri" Type="System.Uri" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
+        <param name="uri">A URI that can be parsed by the target appliction to recreate a specific state.</param>
         <summary>Creates and returns a new <see cref="T:Xamrin.Forms.AppLinkEntry" /> for the specified <paramref name="uri" />.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>

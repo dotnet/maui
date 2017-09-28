@@ -66,6 +66,19 @@ namespace Xamarin.Forms
 		}
 #endif
 
+		static IReadOnlyList<string> s_flags;
+		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
+
+		public static void SetFlags(params string[] flags)
+		{
+			if (IsInitialized)
+			{
+				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
+			}
+
+			s_flags = flags.ToList().AsReadOnly();
+		}
+
 		public static void Init()
 		{
 			if (IsInitialized)
@@ -239,7 +252,7 @@ namespace Xamarin.Forms
 
 			public void OpenUriAction(Uri uri)
 			{
-				var url = NSUrl.FromString(uri.ToString()) ?? new NSUrl(uri.Scheme, uri.Host, uri.LocalPath);
+				var url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
 #if __MOBILE__
 				UIApplication.SharedApplication.OpenUrl(url);
 #else

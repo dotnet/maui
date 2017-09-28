@@ -137,9 +137,9 @@
         <Parameter Name="arrayIndex" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="array">To be added.</param>
-        <param name="arrayIndex">To be added.</param>
-        <summary>Copies <see cref="T:Xamarin.Forms.IDefinition" /> instances from this <see cref="T:Xamarin.Forms.DefinitionCollection`1" /> to an array, starting at the specified index.</summary>
+        <param name="array">The array to which to copy the definitions.</param>
+        <param name="arrayIndex">The index into <paramref name="array" /> at which to begin copying.</param>
+        <summary>Copies <see cref="T:Xamarin.Forms.IDefinition" /> instances from this <see cref="T:Xamarin.Forms.DefinitionCollection`1" /> into an <paramref name="array" />, starting at the specified <paramref name="arrayIndex" /> into <paramref name="array" />.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

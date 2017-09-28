@@ -271,7 +271,7 @@ public class PersonViewModel
 
 var label = new Label ();
 PersonViewModel person;
-label.BindingContext = person = new PersonViewModel { Name = "John Doe", Company= "Xamarin" };
+label.BindingContext = person = new PersonViewModel { Name = "John Doe", Company = "Microsoft" };
 label.SetBinding (Label.TextProperty, Binding.Create<PersonViewModel> (vm => vm.Name));
 Debug.WriteLine (label.Text); //prints "John Doe".
         ]]></code>

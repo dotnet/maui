@@ -6,10 +6,15 @@ using Xamarin.Forms.PlatformConfiguration;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.Gestures)]
+#endif
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44044, "TabbedPage steals swipe gestures", PlatformAffected.Android)]
 	public class Bugzilla44044 : TestTabbedPage

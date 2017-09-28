@@ -366,10 +366,10 @@ namespace FormsGallery
         <Parameter Name="height" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="x">To be added.</param>
-        <param name="y">To be added.</param>
-        <param name="width">To be added.</param>
-        <param name="height">To be added.</param>
+        <param name="x">The X coordinate of the top left corner.</param>
+        <param name="y">The Y coordinate of the top left corner.</param>
+        <param name="width">The width.</param>
+        <param name="height">The height.</param>
         <summary>Lays out the master and detail pages.</summary>
         <remarks>To be added.</remarks>
       </Docs>
@@ -553,7 +553,7 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>Method that is called when the <see cref="P:Xamarin.Forms.Element.Parent" /> property of this <see cref="Xamarin.Forms.MasterDetailPage" /> is set.</summary>
+        <summary>Method that is called when the <see cref="P:Xamarin.Forms.Element.Parent" /> property of this <see cref="T:Xamarin.Forms.MasterDetailPage" /> is set.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
