@@ -281,7 +281,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			UpdateGlobalContext(element);
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
 			renderer.SetElement(element);
 
 			return renderer;
@@ -314,7 +314,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			UpdateGlobalContext(element);
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
 
 			var managesFragments = renderer as IManageFragments;
 			managesFragments?.SetFragmentManager(fragmentManager);

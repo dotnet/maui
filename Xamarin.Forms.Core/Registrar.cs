@@ -65,11 +65,6 @@ namespace Xamarin.Forms.Internals
 			return (TOut)GetHandler(type);
 		}
 
-		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : TRegistrable
-		{
-			return (TOut)GetHandler(type, args);
-		}
-
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable
 		{
 			if (obj == null)
@@ -79,17 +74,6 @@ namespace Xamarin.Forms.Internals
 			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
 
 			return (TOut)GetHandler(type);
-		}
-
-		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : TRegistrable
-		{
-			if (obj == null)
-				throw new ArgumentNullException(nameof(obj));
-
-			var reflectableType = obj as IReflectableType;
-			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
-
-			return (TOut)GetHandler(type, args);
 		}
 
 		public Type GetHandlerType(Type viewType)

@@ -311,7 +311,6 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					if (_footerView != null)
 						_footerView.Child = null;
-					ClearRenderer(_footerRenderer.View);
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
 				}
@@ -343,7 +342,6 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					if (_headerView != null)
 						_headerView.Child = null;
-					ClearRenderer(_headerRenderer.View);
 					_headerRenderer.Dispose();
 					_headerRenderer = null;
 				}

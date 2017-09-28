@@ -941,9 +941,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!List.IsGroupingEnabled)
 					return view;
 
-				var cell = TemplatedItemsView.TemplatedItems[(int)section];
-				if (cell.HasContextActions)
-					throw new NotSupportedException("Header cells do not support context actions");
+					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 
 					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 
