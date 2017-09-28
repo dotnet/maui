@@ -7,6 +7,8 @@ using System.Reflection;
 using Xamarin.Forms.Internals;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Globalization;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -16,13 +18,18 @@ namespace Xamarin.Forms
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
 		ResourceDictionary _mergedInstance;
 		Type _mergedWith;
+		Uri _source;
 
-		[TypeConverter (typeof(TypeTypeConverter))]
+		[TypeConverter(typeof(TypeTypeConverter))]
+		[Obsolete("Use Source")]
 		public Type MergedWith {
 			get { return _mergedWith; }
 			set {
 				if (_mergedWith == value)
 					return;
+
+				if (_source != null)
+					throw new ArgumentException("MergedWith can not be used with Source");
 
 				if (!typeof(ResourceDictionary).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo()))
 					throw new ArgumentException("MergedWith should inherit from ResourceDictionary");
@@ -34,6 +41,28 @@ namespace Xamarin.Forms
 				_mergedInstance = s_instances.GetValue(_mergedWith, (key) => (ResourceDictionary)Activator.CreateInstance(key));
 				OnValuesChanged(_mergedInstance.ToArray());
 			}
+		}
+
+		[TypeConverter(typeof(RDSourceTypeConverter))]
+		public Uri Source {
+			get { return _source; }
+			set {
+				if (_source == value)
+					return;
+				throw new InvalidOperationException("Source can only be set from XAML."); //through the RDSourceTypeConverter
+			}
+		}
+
+		//Used by the XamlC compiled converter
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
+		{
+			_source = value;
+			if (_mergedWith != null)
+				throw new ArgumentException("Source can not be used with MergedWith");
+
+			_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateResourceDictionary(resourceID, assembly, lineInfo);
+			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
 		ICollection<ResourceDictionary> _mergedDictionaries;
@@ -256,5 +285,66 @@ namespace Xamarin.Forms
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+
+		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
+		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
+		{
+			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
+			{
+				if (serviceProvider == null)
+					throw new ArgumentNullException(nameof(serviceProvider));
+
+				var targetRD = (serviceProvider.GetService(typeof(Xaml.IProvideValueTarget)) as Xaml.IProvideValueTarget)?.TargetObject as ResourceDictionary;
+				if (targetRD == null)
+					return null;
+
+				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType().GetTypeInfo();
+				if (rootObjectType == null)
+					return null;
+
+				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
+				var rootResourceId = rootObjectType.GetCustomAttribute<Xaml.XamlResourceIdAttribute>().ResourceId;
+				var rootNs = rootObjectType.GetCustomAttribute<Xaml.XamlResourceIdAttribute>().RootNamespace;
+				var uri = new Uri(value, UriKind.RelativeOrAbsolute);
+				var resourceId = ComputeResourceId(uri, rootResourceId, rootNs);
+				targetRD.SetAndLoadSource(uri, resourceId, rootObjectType.Assembly, lineInfo);
+				return uri;
+			}
+
+			internal static string ComputeResourceId(Uri uri, string rootResourceId, string rootNs)
+			{
+				if (uri.IsAbsoluteUri)
+					return $"{rootNs}{uri.AbsolutePath.Replace('/','.')}";
+
+				var rootResourceIdLength = rootResourceId.Length;
+				rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the .xaml
+				rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the resource name
+
+				var path = uri.OriginalString;
+				var pathStartIndex = 0;
+
+				while (true) {
+					if (path.IndexOf("./", pathStartIndex, 2, StringComparison.OrdinalIgnoreCase) == pathStartIndex)
+						pathStartIndex += 2;
+					else if (path.IndexOf("../", pathStartIndex, 3, StringComparison.OrdinalIgnoreCase) == pathStartIndex) {
+						pathStartIndex += 3;
+						rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the folder
+					}
+					else
+						break;
+				}
+				return $"{rootResourceId.Substring(0,rootResourceIdLength)}.{path.Substring(pathStartIndex).Replace('/', '.')}";
+			}
+
+			object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
+			{
+				throw new NotImplementedException();
+			}
+
+			public override object ConvertFromInvariantString(string value)
+			{
+				throw new NotImplementedException();
+			}
+		}
 	}
 }

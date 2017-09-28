@@ -361,6 +361,7 @@
       <Type Name="RenderWithAttribute" Kind="Class" />
       <Type Name="ResolutionGroupNameAttribute" Kind="Class" />
       <Type Name="ResourceDictionary" Kind="Class" />
+      <Type Name="ResourceDictionary+RDSourceTypeConverter" Kind="Class" />
       <Type Name="RoutingEffect" Kind="Class" />
       <Type Name="RowDefinition" Kind="Class" />
       <Type Name="RowDefinitionCollection" Kind="Class" />

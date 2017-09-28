@@ -48,6 +48,9 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Xaml.ResourcesLoader))</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>
         </Attribute>
         <Attribute>
