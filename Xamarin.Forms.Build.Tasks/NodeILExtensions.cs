@@ -364,10 +364,10 @@ namespace Xamarin.Forms.Build.Tasks
 			if (xmlLineInfo.HasLineInfo()) {
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LinePosition);
-				ctor = module.ImportReferenceCached(typeof(XmlLineInfo).GetConstructor(new[] { typeof(int), typeof(int) }));
+				ctor = module.ImportReference(typeof(XmlLineInfo).GetConstructor(new[] { typeof(int), typeof(int) }));
 			}
 			else
-				ctor = module.ImportReferenceCached(typeof(XmlLineInfo).GetConstructor(new Type[] { }));
+				ctor = module.ImportReference(typeof(XmlLineInfo).GetConstructor(new Type[] { }));
 			yield return Instruction.Create(OpCodes.Newobj, ctor);
 		}
 

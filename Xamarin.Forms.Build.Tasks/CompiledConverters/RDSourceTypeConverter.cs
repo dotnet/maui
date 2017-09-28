@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-using static Mono.Cecil.Cil.Instruction;
-using static Mono.Cecil.Cil.OpCodes;
-
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Xaml;
 
@@ -25,59 +22,39 @@ namespace Xamarin.Forms.Core.XamlC
 
 			var rdNode = node.Parent as IElementNode;
 
-			var rootTargetPath = XamlCTask.GetPathForType(module, ((ILRootNode)rootNode).TypeReference);
-			var uri = new Uri(value, UriKind.Relative);
-
-			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
-
-			//fail early
-			var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
-			if (resourceId == null)
-				throw new XamlParseException($"Resource '{value}' not found.", node);
-
+			var rootNs = ((ILRootNode)rootNode).TypeReference.GetCustomAttribute(module.ImportReference(typeof(XamlResourceIdAttribute))).ConstructorArguments[0].Value as string;
+			var rootResourceId = ((ILRootNode)rootNode).TypeReference.GetCustomAttribute(module.ImportReference(typeof(XamlResourceIdAttribute))).ConstructorArguments[1].Value as string;
+			var uri = new Uri(value, UriKind.RelativeOrAbsolute);
+			var resourceId = ResourceDictionary.RDSourceTypeConverter.ComputeResourceId(uri, rootResourceId, rootNs);
 
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
-			yield return Create(Ldloc, context.Variables[rdNode]); //the resourcedictionary
+			yield return Instruction.Create(OpCodes.Ldloc, context.Variables[rdNode]); //the resourcedictionary
 			foreach (var instruction in (new UriTypeConverter()).ConvertFromString(value, context, node))
 				yield return instruction; //the Uri
 
 			//keep the Uri for later
-			yield return Create(Dup);
-			var uriVarDef = new VariableDefinition(module.ImportReferenceCached(typeof(Uri)));
+			yield return Instruction.Create(OpCodes.Dup);
+			var uriVarDef = new VariableDefinition(module.ImportReference(typeof(Uri)));
 			body.Variables.Add(uriVarDef);
-			yield return Create(Stloc, uriVarDef);
+			yield return Instruction.Create(OpCodes.Stloc, uriVarDef);
 
-			yield return Create(Ldstr, resourcePath); //resourcePath
+			yield return Instruction.Create(OpCodes.Ldstr, resourceId); //resourceId
 
-			var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-			var getTypeInfo = module.ImportReferenceCached(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
-			var getAssembly = module.ImportReferenceCached(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
-			yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
-			yield return Create(Call, module.ImportReference(getTypeFromHandle));
-			yield return Create(Call, module.ImportReference(getTypeInfo));
-			yield return Create(Callvirt, module.ImportReference(getAssembly)); //assembly
+			var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+			var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetGetMethod());
+			yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
+			yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
+			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(getAssembly)); //assembly
 
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
 
-			var setAndLoadSource = module.ImportReferenceCached(typeof(ResourceDictionary).GetMethod("SetAndLoadSource"));
-			yield return Create(Callvirt, module.ImportReference(setAndLoadSource));
+			var setAndLoadSource = module.ImportReference(typeof(ResourceDictionary).GetMethod("SetAndLoadSource"));
+			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(setAndLoadSource));
 
 			//ldloc the stored uri as return value
-			yield return Create(Ldloc, uriVarDef);
-		}
-
-		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
-		{
-			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
-					continue;
-				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
-					continue;
-				return ca.ConstructorArguments[1].Value as string;
-			}
-			return null;
+			yield return Instruction.Create(OpCodes.Ldloc, uriVarDef);
 		}
 	}
 }

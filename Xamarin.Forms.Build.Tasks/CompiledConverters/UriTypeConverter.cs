@@ -5,13 +5,16 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Xamarin.Forms.Xaml;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Core.XamlC
 {
 	class UriTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ModuleDefinition module, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
+			var module = context.Body.Method.Module;
+
 			if (string.IsNullOrWhiteSpace(value)) {
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;

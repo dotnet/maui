@@ -10,7 +10,10 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Xamarin.Forms.Internals;
-using Xamarin.Forms.Xaml;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Globalization;
+using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
@@ -57,18 +60,13 @@ namespace Xamarin.Forms
 
 		//Used by the XamlC compiled converter
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetAndLoadSource(Uri value, string resourcePath, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
+		public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
 		{
 			_source = value;
 			if (_mergedWith != null)
 				throw new ArgumentException("Source can not be used with MergedWith");
 
-			//this will return a type if the RD as an x:Class element, and codebehind
-			var type = XamlResourceIdAttribute.GetTypeForPath(assembly, resourcePath);
-			if (type != null)
-				_mergedInstance = s_instances.GetValue(type, (key) => (ResourceDictionary)Activator.CreateInstance(key));
-			else
-				_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
+			_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateResourceDictionary(resourceID, assembly, lineInfo);
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
@@ -327,28 +325,42 @@ namespace Xamarin.Forms
 				if (targetRD == null)
 					return null;
 
-				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType();
+				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType().GetTypeInfo();
 				if (rootObjectType == null)
 					return null;
 
 				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
-				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
-				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
-				var resourcePath = GetResourcePath(uri, rootTargetPath);
-
-				targetRD.SetAndLoadSource(uri, resourcePath, rootObjectType.GetTypeInfo().Assembly, lineInfo);
+				var rootResourceId = rootObjectType.GetCustomAttribute<Xaml.XamlResourceIdAttribute>().ResourceId;
+				var rootNs = rootObjectType.GetCustomAttribute<Xaml.XamlResourceIdAttribute>().RootNamespace;
+				var uri = new Uri(value, UriKind.RelativeOrAbsolute);
+				var resourceId = ComputeResourceId(uri, rootResourceId, rootNs);
+				targetRD.SetAndLoadSource(uri, resourceId, rootObjectType.Assembly, lineInfo);
 				return uri;
 			}
 
-			internal static string GetResourcePath(Uri uri, string rootTargetPath)
+			internal static string ComputeResourceId(Uri uri, string rootResourceId, string rootNs)
 			{
-				//need a fake scheme so it's not seen as file:// uri, and the forward slashes are valid on all plats
-				var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
-				                     ? new Uri($"pack://{uri.OriginalString}", UriKind.Absolute)
-				                     : new Uri($"pack:///{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
+				if (uri.IsAbsoluteUri)
+					return $"{rootNs}{uri.AbsolutePath.Replace('/','.')}";
 
-				//drop the leading '/'
-				return resourceUri.AbsolutePath.Substring(1);
+				var rootResourceIdLength = rootResourceId.Length;
+				rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the .xaml
+				rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the resource name
+
+				var path = uri.OriginalString;
+				var pathStartIndex = 0;
+
+				while (true) {
+					if (path.IndexOf("./", pathStartIndex, 2, StringComparison.OrdinalIgnoreCase) == pathStartIndex)
+						pathStartIndex += 2;
+					else if (path.IndexOf("../", pathStartIndex, 3, StringComparison.OrdinalIgnoreCase) == pathStartIndex) {
+						pathStartIndex += 3;
+						rootResourceIdLength = rootResourceId.LastIndexOf('.', rootResourceIdLength - 1); //drop the folder
+					}
+					else
+						break;
+				}
+				return $"{rootResourceId.Substring(0,rootResourceIdLength)}.{path.Substring(pathStartIndex).Replace('/', '.')}";
 			}
 
 			object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
