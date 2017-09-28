@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (element == null)
 				throw new ArgumentNullException(nameof(element));
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ??
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ??
 			                                  new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;

@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		Windows.UI.Xaml.DataTemplate GetTemplate(Cell cell)
 		{
-			var renderer = Registrar.Registered.GetHandler<ICellRenderer>(cell.GetType());
+			var renderer = Registrar.Registered.GetHandlerForObject<ICellRenderer>(cell);
 			return renderer.GetTemplate(cell);
 		}
 

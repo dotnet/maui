@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 			if (cell == null)
 				return null;
 
-			var renderer = Registrar.Registered.GetHandler<ICellRenderer>(cell.GetType());
+			var renderer = Registrar.Registered.GetHandlerForObject<ICellRenderer>(cell);
 			return renderer.GetTemplate(cell);
 		}
 

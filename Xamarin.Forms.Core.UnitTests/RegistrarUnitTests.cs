@@ -147,6 +147,27 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void GetHandlerTypeForObject()
+		{
+			var registrar = new Internals.Registrar<MockRenderer>();
+			registrar.Register (typeof (View), typeof (MockRenderer));
+			registrar.Register (typeof (Button), typeof (ButtonMockRenderer));
+
+			Assert.AreEqual (typeof (ButtonMockRenderer), registrar.GetHandlerTypeForObject (new Button ()));
+		}
+
+		[Test]
+		public void GetHandlerForObject()
+		{
+			var registrar = new Internals.Registrar<MockRenderer>();
+			registrar.Register (typeof (View), typeof (MockRenderer));
+			registrar.Register (typeof (Button), typeof (ButtonMockRenderer));
+
+            var buttonRenderer = registrar.GetHandlerForObject<MockRenderer> (new Button ());
+            Assert.That (buttonRenderer, Is.InstanceOf<ButtonMockRenderer> ());
+		}
+
+		[Test]
 		public void TestGetRendererNullViewRenderer()
 		{
 			var registrar = new Internals.Registrar<MockRenderer>();

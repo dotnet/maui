@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				var reusable = tableView.DequeueReusableCell(result.GetType().FullName);
 
-				var cellRenderer = Internals.Registrar.Registered.GetHandler<CellRenderer>(result.GetType());
+				var cellRenderer = Internals.Registrar.Registered.GetHandlerForObject<CellRenderer>(result);
 				return cellRenderer.GetCell(result, reusable, Table);
 			}
 			return null;

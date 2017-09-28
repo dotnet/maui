@@ -378,7 +378,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async void setTitleImage(ParentingViewController pack, FileImageSource titleIcon)
 		{
-			var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(titleIcon.GetType());
+			var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(titleIcon);
 			var image = await source.LoadImageAsync(titleIcon);
 			//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
 			pack.NavigationItem.TitleView = new UIImageView(image);
@@ -676,7 +676,7 @@ namespace Xamarin.Forms.Platform.iOS
 				try
 				{
 
-					var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(masterDetailPage.Master.Icon.GetType());
+					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(masterDetailPage.Master.Icon);
 					var icon = await source.LoadImageAsync(masterDetailPage.Master.Icon);
 					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, handler);
 				}

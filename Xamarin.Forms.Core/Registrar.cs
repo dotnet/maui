@@ -42,6 +42,17 @@ namespace Xamarin.Forms.Internals
 			return (TOut)GetHandler(type);
 		}
 
+		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable
+		{
+			if (obj == null)
+				throw new ArgumentNullException(nameof(obj));
+
+			var reflectableType = obj as IReflectableType;
+			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
+
+			return (TOut)GetHandler(type);
+		}
+
 		public Type GetHandlerType(Type viewType)
 		{
 			Type type;
@@ -75,6 +86,17 @@ namespace Xamarin.Forms.Internals
 			Register(viewType, type); // Register this so we don't have to look for the RenderWith Attibute again in the future
 
 			return type;
+		}
+
+		public Type GetHandlerTypeForObject(object obj)
+		{
+			if (obj == null)
+				throw new ArgumentNullException(nameof(obj));
+
+			var reflectableType = obj as IReflectableType;
+			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
+
+			return GetHandlerType(type);
 		}
 
 		bool LookupHandlerType(Type viewType, out Type handlerType)

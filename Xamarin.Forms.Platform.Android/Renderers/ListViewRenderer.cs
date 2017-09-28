@@ -275,12 +275,17 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateFooter()
 		{
 			var footer = (VisualElement)Controller.FooterElement;
-			if (_footerRenderer != null && (footer == null || Registrar.Registered.GetHandlerType(footer.GetType()) != _footerRenderer.GetType()))
+			if (_footerRenderer != null)
 			{
-				if (_footerView != null)
-					_footerView.Child = null;
-				_footerRenderer.Dispose();
-				_footerRenderer = null;
+				var reflectableType = _footerRenderer as System.Reflection.IReflectableType;
+				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _footerRenderer.GetType();
+				if (footer == null || Registrar.Registered.GetHandlerTypeForObject(footer) != rendererType)
+				{
+					if (_footerView != null)
+						_footerView.Child = null;
+					_footerRenderer.Dispose();
+					_footerRenderer = null;
+				}
 			}
 
 			if (footer == null)
@@ -301,12 +306,17 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateHeader()
 		{
 			var header = (VisualElement)Controller.HeaderElement;
-			if (_headerRenderer != null && (header == null || Registrar.Registered.GetHandlerType(header.GetType()) != _headerRenderer.GetType()))
+			if (_headerRenderer != null)
 			{
-				if (_headerView != null)
-					_headerView.Child = null;
-				_headerRenderer.Dispose();
-				_headerRenderer = null;
+				var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
+				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
+				if (header == null || Registrar.Registered.GetHandlerTypeForObject(header) != rendererType)
+				{
+					if (_headerView != null)
+						_headerView.Child = null;
+					_headerRenderer.Dispose();
+					_headerRenderer = null;
+				}
 			}
 
 			if (header == null)

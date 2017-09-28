@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (view == null)
 				throw new ArgumentNullException("view");
 
-			Type rendererType = Internals.Registrar.Registered.GetHandlerType(view.GetType()) ?? typeof(ViewRenderer);
+			Type rendererType = Internals.Registrar.Registered.GetHandlerTypeForObject(view) ?? typeof(ViewRenderer);
 
 			Stack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers) || renderers.Count == 0)
@@ -79,7 +79,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void PushRenderer(IVisualElementRenderer renderer)
 		{
-			Type rendererType = renderer.GetType();
+			var reflectableType = renderer as System.Reflection.IReflectableType;
+			var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : renderer.GetType();
 
 			Stack<IVisualElementRenderer> renderers;
 			if (!_freeRenderers.TryGetValue(rendererType, out renderers))
