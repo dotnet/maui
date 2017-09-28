@@ -65,11 +65,6 @@ namespace Xamarin.Forms.Internals
 			return (TOut)GetHandler(type);
 		}
 
-		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : TRegistrable
-		{
-			return (TOut)GetHandler(type, args);
-		}
-
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable
 		{
 			if (obj == null)
