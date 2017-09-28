@@ -36,16 +36,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuspec", ".nuspec", "{7E12
 	ProjectSection(SolutionItems) = preProject
 		.nuspec\Xamarin.Forms.AppLinks.nuspec = .nuspec\Xamarin.Forms.AppLinks.nuspec
 		.nuspec\Xamarin.Forms.Debug.targets = .nuspec\Xamarin.Forms.Debug.targets
+		.nuspec\Xamarin.Forms.DefaultItems.props = .nuspec\Xamarin.Forms.DefaultItems.props
+		.nuspec\Xamarin.Forms.DefaultItems.targets = .nuspec\Xamarin.Forms.DefaultItems.targets
 		.nuspec\Xamarin.Forms.Maps.nuspec = .nuspec\Xamarin.Forms.Maps.nuspec
 		.nuspec\Xamarin.Forms.Maps.props = .nuspec\Xamarin.Forms.Maps.props
 		.nuspec\Xamarin.Forms.Maps.targets = .nuspec\Xamarin.Forms.Maps.targets
 		.nuspec\Xamarin.Forms.nuspec = .nuspec\Xamarin.Forms.nuspec
 		.nuspec\Xamarin.Forms.Pages.Azure.nuspec = .nuspec\Xamarin.Forms.Pages.Azure.nuspec
 		.nuspec\Xamarin.Forms.Pages.nuspec = .nuspec\Xamarin.Forms.Pages.nuspec
-		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
 		.nuspec\Xamarin.Forms.props = .nuspec\Xamarin.Forms.props
-		.nuspec\Xamarin.Forms.DefaultItems.targets = .nuspec\Xamarin.Forms.DefaultItems.targets
-		.nuspec\Xamarin.Forms.DefaultItems.props = .nuspec\Xamarin.Forms.DefaultItems.props
+		.nuspec\Xamarin.Forms.targets = .nuspec\Xamarin.Forms.targets
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.WP8", "Xamarin.Forms.Platform.WP8\Xamarin.Forms.Platform.WP8.csproj", "{517B6AE0-792B-4665-9376-5CA33E539181}"
@@ -155,6 +155,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.macOS.UITests", "Xamarin.Forms.Core.macOS.UITests\Xamarin.Forms.Core.macOS.UITests.csproj", "{9DB0CABB-24CC-4538-88EC-6E0A0FE40248}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Xamarin.Forms.Core.UITests.Shared", "Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.Shared.shproj", "{E175485B-3C8C-47D7-8DD5-F7FED627EB25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Platform.GTK", "Xamarin.Forms.Platform.GTK\Xamarin.Forms.Platform.GTK.csproj", "{0D497738-2598-431D-8CAF-8FBF3D9F99EC}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1590,6 +1592,34 @@ Global
 		{9DB0CABB-24CC-4538-88EC-6E0A0FE40248}.Release|x64.Build.0 = Release|Any CPU
 		{9DB0CABB-24CC-4538-88EC-6E0A0FE40248}.Release|x86.ActiveCfg = Release|Any CPU
 		{9DB0CABB-24CC-4538-88EC-6E0A0FE40248}.Release|x86.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|ARM.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|Templates.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|Templates.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Debug|x86.Build.0 = Debug|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|ARM.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|ARM.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|iPhone.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|Templates.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|Templates.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|x64.Build.0 = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|x86.ActiveCfg = Release|Any CPU
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1652,5 +1682,6 @@ Global
 		{C3C24A6D-2D0C-4053-9FCC-E54FF9CA1884} = {132FB9A4-613F-44CE-95D5-758D32D231DD}
 		{9DB0CABB-24CC-4538-88EC-6E0A0FE40248} = {D4D57221-71D6-4031-A6F4-EC66AF0929D9}
 		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {D4D57221-71D6-4031-A6F4-EC66AF0929D9}
+		{0D497738-2598-431D-8CAF-8FBF3D9F99EC} = {29AC50BF-B4FB-450B-9386-0C5AD4B84226}
 	EndGlobalSection
 EndGlobal
