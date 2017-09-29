@@ -9,6 +9,7 @@ using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
 using Xamarin.Forms.Internals;
+using System.Collections;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 		// To prevent a conflict in the event that a ListView supports both templates and non-templates, we will start the DataTemplate key at 2.
 
 		int _listCount = -1; // -1 we need to get count from the list
-		Cell _enabledCheckCell;
+		Dictionary<object, Cell> _prototypicalCellByTypeOrDataTemplate;
 
 		bool _fromNative;
 		AView _lastSelected;
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 			_context = context;
 			_realListView = realListView;
 			_listView = listView;
+			_prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
 
 			if (listView.SelectedItem != null)
 				SelectItem(listView.SelectedItem);
@@ -309,6 +311,68 @@ namespace Xamarin.Forms.Platform.Android
 			return layout;
 		}
 
+		internal void InvalidatePrototypicalCellCache()
+		{
+			_prototypicalCellByTypeOrDataTemplate.Clear();
+		}
+
+		internal ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(int indexPath)
+		{
+			var templatedItems = TemplatedItemsView.TemplatedItems;
+			if (_listView.IsGroupingEnabled)
+				templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath];
+
+			return templatedItems;
+		}
+
+		internal DataTemplate GetDataTemplateForPath(int indexPath)
+		{
+			var templatedItemsList = GetTemplatedItemsListForPath(indexPath);
+			var item = templatedItemsList.ListProxy[indexPath];
+			return templatedItemsList.SelectDataTemplate(item);
+		}
+
+		internal Type GetItemTypeForPath(int indexPath)
+		{
+			var templatedItemsList = GetTemplatedItemsListForPath(indexPath);
+			var item = templatedItemsList.ListProxy[indexPath];
+			return item.GetType();
+		}
+
+		internal Cell GetCellForPath(int indexPath)
+		{
+			var templatedItemsList = GetTemplatedItemsListForPath(indexPath);
+			var cell = templatedItemsList[indexPath];
+			return cell;
+		}
+
+		internal Cell GetPrototypicalCell(int indexPath)
+		{
+			var itemTypeOrDataTemplate = default(object);
+
+			var cachingStrategy = _listView.CachingStrategy;
+			if (cachingStrategy == ListViewCachingStrategy.RecycleElement)
+				itemTypeOrDataTemplate = GetDataTemplateForPath(indexPath);
+
+			else if (cachingStrategy == ListViewCachingStrategy.RecycleElementAndDataTemplate)
+				itemTypeOrDataTemplate = GetItemTypeForPath(indexPath);
+
+			else // ListViewCachingStrategy.RetainElement
+				return GetCellForPosition(indexPath);
+
+			Cell protoCell;
+			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
+			{
+				// cache prototypical cell by item type; Items of the same Type share
+				// the same DataTemplate (this is enforced by RecycleElementAndDataTemplate)
+				protoCell = GetCellForPosition(indexPath);
+				_prototypicalCellByTypeOrDataTemplate[itemTypeOrDataTemplate] = protoCell;
+			}
+
+			var templatedItems = GetTemplatedItemsListForPath(indexPath);
+			return templatedItems.UpdateContent(protoCell, indexPath);
+		}
+
 		public override bool IsEnabled(int position)
 		{
 			ListView list = _listView;
@@ -321,17 +385,7 @@ namespace Xamarin.Forms.Platform.Android
 				return leftOver > 0;
 			}
 
-			var strategy = ((IListViewController)list).CachingStrategy;
-			if ((strategy & ListViewCachingStrategy.RecycleElement) != 0)
-			{
-				if (_enabledCheckCell == null)
-					_enabledCheckCell = GetCellForPosition(position);
-				else
-					templatedItemsView.TemplatedItems.UpdateContent(_enabledCheckCell, position);
-				return _enabledCheckCell.IsEnabled;
-			}
-
-			Cell item = GetCellForPosition(position);
+			Cell item = GetPrototypicalCell(position);
 			return item.IsEnabled;
 		}
 
