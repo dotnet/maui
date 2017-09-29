@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Platform.GTK.Animations
 {
-    public class FloatAnimation : BaseAnimation
+    internal class FloatAnimation : BaseAnimation
     {
         private float _from;
         private float _to;

@@ -4,7 +4,7 @@ using System.Timers;
 
 namespace Xamarin.Forms.Platform.GTK.Animations
 {
-    public abstract class BaseAnimation
+    internal abstract class BaseAnimation
     {
         private const double AnimationInterval = 1000 / 60.0;
 
