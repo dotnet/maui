@@ -13,7 +13,9 @@ namespace Xamarin.Forms
     {
         public const string iOS = "iOS";
         public const string Android = "Android";
+        public const string WinPhone = "WinPhone";
         public const string UWP = "UWP";
+        public const string WinRT = "WinRT";
         public const string macOS = "macOS";
         public const string GTK = "GTK";
         public const string Tizen = "Tizen";
@@ -28,9 +30,8 @@ namespace Xamarin.Forms
         public static void SetIdiom(TargetIdiom value) => Idiom = value;
         public static TargetIdiom Idiom { get; internal set; }
 
-		//TODO: Why are there two of these? This is never used...?
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
         [Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
 #pragma warning disable 0618
@@ -43,7 +44,7 @@ namespace Xamarin.Forms
                     return platform;
 
                 // In the old TargetPlatform, there was no distinction between WinRT/UWP
-                if (RuntimePlatform == UWP)
+                if (RuntimePlatform == UWP || RuntimePlatform == WinRT)
                 {
                     return TargetPlatform.Windows;
                 }
@@ -53,55 +54,42 @@ namespace Xamarin.Forms
         }
 #pragma warning restore 0618
 
-		public static string RuntimePlatform => PlatformServices.RuntimePlatform;
+        public static string RuntimePlatform => PlatformServices.RuntimePlatform;
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static DeviceInfo Info
-		{
-			get
-			{
-				if (info == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
-				return info;
-			}
-			set { info = value; }
-		}
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static DeviceInfo Info
+        {
+            get
+            {
+                if (info == null)
+                    throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+                return info;
+            }
+            set { info = value; }
+        }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
-		public static FlowDirection FlowDirection { get; internal set; }
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static bool IsInvokeRequired
+        {
+            get { return PlatformServices.IsInvokeRequired; }
+        }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static bool IsInvokeRequired
-		{
-			get { return PlatformServices.IsInvokeRequired; }
-		}
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static IPlatformServices PlatformServices
+        {
+            get
+            {
+                if (s_platformServices == null)
+                    throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
+                return s_platformServices;
+            }
+            set { s_platformServices = value; }
+        }
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IPlatformServices PlatformServices
-		{
-			get
-			{
-				if (s_platformServices == null)
-					throw new InvalidOperationException("You MUST call Xamarin.Forms.Init(); prior to using it.");
-				return s_platformServices;
-			}
-			set { s_platformServices = value; }
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static IReadOnlyList<string> Flags { get; private set; }
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static void SetFlags(IReadOnlyList<string> flags)
-		{
-			Flags = flags;
-		}
-
-		public static void BeginInvokeOnMainThread(Action action)
-		{
-			PlatformServices.BeginInvokeOnMainThread(action);
-		}
+        public static void BeginInvokeOnMainThread(Action action)
+        {
+            PlatformServices.BeginInvokeOnMainThread(action);
+        }
 
         public static double GetNamedSize(NamedSize size, Element targetElement)
         {
