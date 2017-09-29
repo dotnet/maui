@@ -112,6 +112,7 @@
     <Compile Include="CompiledMarkupExtensions\TypeExtension.cs" />
     <Compile Include="CompiledMarkupExtensions\NullExtension.cs" />
     <Compile Include="GetTasksAbi.cs" />
+    <Compile Include="CompiledConverters\UriTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
