@@ -369,9 +369,6 @@ namespace Xamarin.Forms.Platform.Android
 			else // ListViewCachingStrategy.RetainElement
 				return GetCellForPosition(indexPath);
 
-			if (itemTypeOrDataTemplate == null)
-				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
-
 			Cell protoCell;
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
 			{
@@ -397,17 +394,7 @@ namespace Xamarin.Forms.Platform.Android
 				return leftOver > 0;
 			}
 
-			var strategy = ((IListViewController)list).CachingStrategy;
-			if ((strategy & ListViewCachingStrategy.RecycleElement) != 0)
-			{
-				if (_enabledCheckCell == null)
-					_enabledCheckCell = GetCellForPosition(position);
-				else
-					templatedItemsView.TemplatedItems.UpdateContent(_enabledCheckCell, position);
-				return _enabledCheckCell.IsEnabled;
-			}
-
-			Cell item = GetCellForPosition(position);
+			Cell item = GetPrototypicalCell(position);
 			return item.IsEnabled;
 		}
 
