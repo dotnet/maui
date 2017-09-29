@@ -4,7 +4,7 @@ using Xamarin.Forms.Platform.GTK.Controls;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
-    public class EntryCell : CellBase
+    internal class EntryCell : CellBase
     {
         private string _label;
         private Gdk.Color _textColor;

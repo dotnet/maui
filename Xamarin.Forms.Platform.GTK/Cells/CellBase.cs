@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
         private IList<MenuItem> _contextActions;
 
         public Action<object, PropertyChangedEventArgs> PropertyChanged;
-        
+
         protected CellBase()
         {
             ButtonReleaseEvent += OnClick;

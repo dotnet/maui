@@ -3,7 +3,7 @@ using System;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
-    public class SwitchCell : CellBase
+    internal class SwitchCell : CellBase
     {
         private string _text;
         private bool _on;

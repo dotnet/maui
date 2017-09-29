@@ -3,7 +3,7 @@ using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
-    public class TextCell : CellBase
+    internal class TextCell : CellBase
     {
         private VBox _root;
         private Gtk.Label _textLabel;

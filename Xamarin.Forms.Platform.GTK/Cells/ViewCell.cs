@@ -3,7 +3,7 @@ using static Xamarin.Forms.Platform.GTK.Platform;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
-    public class ViewCell : CellBase
+    internal class ViewCell : CellBase
     {
         private WeakReference<IVisualElementRenderer> _rendererRef;
         private Gdk.Rectangle _lastAllocation;

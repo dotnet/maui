@@ -3,7 +3,7 @@ using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Cells
 {
-    public class ImageCell : CellBase
+    internal class ImageCell : CellBase
     {
         private HBox _root;
         private VBox _vertical;
