@@ -228,7 +228,6 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 
 			ContentView.Frame = new RectangleF(ContentView.Frame.X, ContentView.Frame.Y, Frame.Width, Frame.Height);
-			ResetNativeNonScroll();
 		}
 
 		private bool ResetNativeNonScroll()
