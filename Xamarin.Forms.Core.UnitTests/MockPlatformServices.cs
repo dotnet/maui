@@ -171,6 +171,11 @@ namespace Xamarin.Forms.Core.UnitTests
 				return Task.FromResult (isolatedStorageFile.GetLastWriteTime (path));
 			}
 		}
+
+		public void QuitApplication()
+		{
+
+		}
 	}
 
 	internal class MockDeserializer : IDeserializer

@@ -135,6 +135,8 @@
       <Type Name="AbsoluteLayout" Kind="Class" />
       <Type Name="AbsoluteLayout+IAbsoluteList`1" DisplayName="AbsoluteLayout+IAbsoluteList&lt;T&gt;" Kind="Interface" />
       <Type Name="AbsoluteLayoutFlags" Kind="Enumeration" />
+      <Type Name="Accelerator" Kind="Class" />
+      <Type Name="AcceleratorTypeConverter" Kind="Class" />
       <Type Name="ActivityIndicator" Kind="Class" />
       <Type Name="Animation" Kind="Class" />
       <Type Name="AnimationExtensions" Kind="Class" />
@@ -173,8 +175,11 @@
       <Type Name="Button+ButtonContentLayout" Kind="Class" />
       <Type Name="Button+ButtonContentLayout+ImagePosition" Kind="Enumeration" />
       <Type Name="Button+ButtonContentTypeConverter" Kind="Class" />
+      <Type Name="ButtonsMask" Kind="Enumeration" />
       <Type Name="CarouselPage" Kind="Class" />
       <Type Name="Cell" Kind="Class" />
+      <Type Name="ClickedEventArgs" Kind="Class" />
+      <Type Name="ClickGestureRecognizer" Kind="Class" />
       <Type Name="CollectionSynchronizationCallback" Kind="Delegate" />
       <Type Name="Color" Kind="Structure" />
       <Type Name="ColorTypeConverter" Kind="Class" />
@@ -316,6 +321,7 @@
       <Type Name="MasterBehavior" Kind="Enumeration" />
       <Type Name="MasterDetailPage" Kind="Class" />
       <Type Name="MeasureFlags" Kind="Enumeration" />
+      <Type Name="Menu" Kind="Class" />
       <Type Name="MenuItem" Kind="Class" />
       <Type Name="MessagingCenter" Kind="Class" />
       <Type Name="ModalEventArgs" Kind="Class" />

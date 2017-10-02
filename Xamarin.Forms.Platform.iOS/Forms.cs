@@ -332,6 +332,15 @@ namespace Xamarin.Forms
 					return Task.FromResult(stream);
 				}
 			}
+
+			public void QuitApplication()
+			{
+#if __MOBILE__
+				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
+#else
+				NSApplication.SharedApplication.Terminate(new NSObject());
+#endif
+			}
 		}
 	}
 }

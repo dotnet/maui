@@ -37,6 +37,11 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 		}
 
+		public void Quit()
+		{
+			Device.PlatformServices?.QuitApplication();
+		}
+
 		public IAppLinks AppLinks
 		{
 			get
