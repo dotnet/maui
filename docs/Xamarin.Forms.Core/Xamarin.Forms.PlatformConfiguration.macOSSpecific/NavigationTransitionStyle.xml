@@ -1,0 +1,129 @@
+<Type Name="NavigationTransitionStyle" FullName="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle">
+  <TypeSignature Language="C#" Value="public enum NavigationTransitionStyle" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed NavigationTransitionStyle extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Enumerates navigation transition styles.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Crossfade">
+      <MemberSignature Language="C#" Value="Crossfade" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle Crossfade = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a crossfade transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="None" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle None = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates no transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideBackward">
+      <MemberSignature Language="C#" Value="SlideBackward" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideBackward = int32(7)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide backward transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideDown">
+      <MemberSignature Language="C#" Value="SlideDown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideDown = int32(3)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide down transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideForward">
+      <MemberSignature Language="C#" Value="SlideForward" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideForward = int32(6)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide forward transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideLeft">
+      <MemberSignature Language="C#" Value="SlideLeft" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideLeft = int32(4)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide left transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideRight">
+      <MemberSignature Language="C#" Value="SlideRight" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideRight = int32(5)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide right transition.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SlideUp">
+      <MemberSignature Language="C#" Value="SlideUp" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle SlideUp = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates a slide up transition.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

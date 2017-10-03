@@ -470,6 +470,8 @@
     <Compile Include="ClickedEventArgs.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="CompressedLayout.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\NavigationPage.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\NavigationTransitionStyle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

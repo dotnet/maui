@@ -7,6 +7,7 @@ using AppKit;
 using CoreAnimation;
 using Foundation;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -263,6 +264,30 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 		}
 
+		NSViewControllerTransitionOptions ToViewControllerTransitionOptions(NavigationTransitionStyle transitionStyle)
+		{
+			switch (transitionStyle)
+			{
+				case NavigationTransitionStyle.Crossfade:
+					return NSViewControllerTransitionOptions.Crossfade;
+				case NavigationTransitionStyle.SlideBackward:
+					return NSViewControllerTransitionOptions.SlideBackward;
+				case NavigationTransitionStyle.SlideDown:
+					return NSViewControllerTransitionOptions.SlideDown;
+				case NavigationTransitionStyle.SlideForward:
+					return NSViewControllerTransitionOptions.SlideForward;
+				case NavigationTransitionStyle.SlideLeft:
+					return NSViewControllerTransitionOptions.SlideLeft;
+				case NavigationTransitionStyle.SlideRight:
+					return NSViewControllerTransitionOptions.SlideRight;
+				case NavigationTransitionStyle.SlideUp:
+					return NSViewControllerTransitionOptions.SlideUp;
+
+				default:
+					return NSViewControllerTransitionOptions.None;
+			}
+		}
+
 		async Task<bool> PopPageAsync(Page page, bool animated)
 		{
 			if (page == null)
@@ -281,8 +306,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (animated)
 			{
 				var previousPageRenderer = Platform.GetRenderer(previousPage);
+				var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPopStyle();
+
 				return await this.HandleAsyncAnimation(target.ViewController, previousPageRenderer.ViewController,
-					NSViewControllerTransitionOptions.SlideBackward, () => Platform.DisposeRendererAndChildren(target), true);
+					ToViewControllerTransitionOptions(transitionStyle), () => Platform.DisposeRendererAndChildren(target), true);
 			}
 
 			RemovePage(page, false);
@@ -313,8 +340,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			var vco = Platform.GetRenderer(oldPage);
 			AddChildViewController(vc.ViewController);
+
+            var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPushStyle();
 			return await this.HandleAsyncAnimation(vco.ViewController, vc.ViewController,
-				NSViewControllerTransitionOptions.SlideForward, () => page?.SendAppearing(), true);
+				ToViewControllerTransitionOptions(transitionStyle), () => page?.SendAppearing(), true);
 		}
 
 		void UpdateBackgroundColor()
