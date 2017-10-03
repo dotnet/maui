@@ -4419,6 +4419,73 @@
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
+      <Member MemberName="GetNavigationTransitionPopStyle">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle GetNavigationTransitionPopStyle (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle GetNavigationTransitionPopStyle(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.macOS, class Xamarin.Forms.NavigationPage&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is popped from the navigation stack.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage.GetNavigationTransitionPopStyle(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="GetNavigationTransitionPushStyle">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle GetNavigationTransitionPushStyle (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle GetNavigationTransitionPushStyle(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.macOS, class Xamarin.Forms.NavigationPage&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <summary>Returns the NavigationTransitionStyle value that tells what transition is used when a page is pushed on the navigation stack.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage.GetNavigationTransitionPushStyle(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetNavigationTransitionStyle">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt; SetNavigationTransitionStyle (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt; config, Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle pushStyle, Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle popStyle);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.macOS, class Xamarin.Forms.NavigationPage&gt; SetNavigationTransitionStyle(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.macOS, class Xamarin.Forms.NavigationPage&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle pushStyle, valuetype Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle popStyle) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
+          <Parameter Name="pushStyle" Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle" />
+          <Parameter Name="popStyle" Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle" />
+        </Parameters>
+        <Docs>
+          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
+          <param name="pushStyle">The new transition style when a page is pushed on the navigation stack.</param>
+          <param name="popStyle">The new transition style when a page is popped from the navigation stack.</param>
+          <summary>Sets the transition style which is used, when popping and pushing pages on the navigation stack.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationPage.SetNavigationTransitionStyle(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.NavigationPage},Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle,Xamarin.Forms.PlatformConfiguration.macOSSpecific.NavigationTransitionStyle)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
       <Member MemberName="GetTabOrder">
         <MemberSignature Language="C#" Value="public static Xamarin.Forms.VisualElement[] GetTabOrder (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.Page&gt; config);" />
         <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.VisualElement[] GetTabOrder(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.macOS, class Xamarin.Forms.Page&gt; config) cil managed" />
