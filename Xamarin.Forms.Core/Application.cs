@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
@@ -15,14 +16,13 @@ namespace Xamarin.Forms
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
 
 		IAppIndexingProvider _appIndexProvider;
-		bool _isSaving;
 
 		ReadOnlyCollection<Element> _logicalChildren;
 
 		Page _mainPage;
 
 		ResourceDictionary _resources;
-		bool _saveAgain;
+		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
 		protected Application()
 		{
@@ -309,16 +309,16 @@ namespace Xamarin.Forms
 
 		async Task SetPropertiesAsync()
 		{
-			if (_isSaving)
-			{
-				_saveAgain = true;
-				return;
-			}
-			_isSaving = true;
-			await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
-			if (_saveAgain)
-				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
-			_isSaving = _saveAgain = false;
+			await SaveSemaphore.WaitAsync();
+            try
+            {
+                await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
+            }
+            finally
+            {
+                SaveSemaphore.Release();
+            }
+
 		}
 
 		class NavigationImpl : NavigationProxy

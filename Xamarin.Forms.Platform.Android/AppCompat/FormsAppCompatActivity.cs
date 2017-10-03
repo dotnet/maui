@@ -22,6 +22,7 @@ using AColor = Android.Graphics.Color;
 using AlertDialog = Android.Support.V7.App.AlertDialog;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
 
 #endregion
 
@@ -162,7 +163,7 @@ namespace Xamarin.Forms.Platform.Android
 				callback(resultCode, data);
 		}
 
-		protected override void OnCreate(Bundle savedInstanceState)
+		protected override async void OnCreate(Bundle savedInstanceState)
 		{
 			if (!AllowFragmentRestore)
 			{
@@ -194,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
 
-			OnStateChanged();
+			await OnStateChanged();
 
 			if (Forms.IsLollipopOrNewer)
 			{
@@ -221,7 +222,7 @@ namespace Xamarin.Forms.Platform.Android
 			CheckForAppLink(intent);
 		}
 
-		protected override void OnPause()
+		protected override async void OnPause()
 		{
 			_layout.HideKeyboard(true);
 
@@ -234,20 +235,20 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
 
-			OnStateChanged();
+			await OnStateChanged();
 		}
 
-		protected override void OnRestart()
+		protected override async void OnRestart()
 		{
 			base.OnRestart();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnRestart;
 
-			OnStateChanged();
+			await OnStateChanged();
 		}
 
-		protected override void OnResume()
+		protected override async void OnResume()
 		{
 			// counterpart to OnPause
 			base.OnResume();
@@ -263,24 +264,24 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
-			OnStateChanged();
+			await OnStateChanged();
 		}
 
-		protected override void OnStart()
+		protected override async void OnStart()
 		{
 			base.OnStart();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnStart;
 
-			OnStateChanged();
+			await OnStateChanged();
 		}
 
 		// Scenarios that stop and restart your app
 		// -- Switches from your app to another app, activity restarts when clicking on the app again.
 		// -- Action in your app that starts a new Activity, the current activity is stopped and the second is created, pressing back restarts the activity
 		// -- The user receives a phone call while using your app on his or her phone
-		protected override void OnStop()
+		protected override async void OnStop()
 		{
 			// writing to storage happens here!
 			// full UI obstruction
@@ -293,7 +294,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnStop;
 
-			OnStateChanged();
+			await OnStateChanged();
 		}
 
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -380,7 +381,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateProgressBarVisibility(_busyCount > 0);
 		}
 
-		async void OnStateChanged()
+		async Task OnStateChanged()
 		{
 			if (_application == null)
 				return;
