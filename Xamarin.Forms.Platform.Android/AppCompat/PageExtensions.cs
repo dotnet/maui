@@ -8,7 +8,6 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public static class PageExtensions
 	{
-#pragma warning disable 618
 		public static Fragment CreateFragment(this ContentPage view, Context context)
 		{
 			if (!Forms.IsInitialized)
@@ -130,6 +129,5 @@ namespace Xamarin.Forms.Platform.Android
 				base.Dispose(disposing);
 			}
 		}
-#pragma warning restore 618
 	}
 }

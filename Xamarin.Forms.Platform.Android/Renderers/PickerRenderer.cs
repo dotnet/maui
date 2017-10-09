@@ -11,8 +11,8 @@ using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
 using Orientation = Android.Widget.Orientation;
+using System.Collections.Specialized;
 using Android.Content;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use PickerRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use PickerRenderer(Context) instead.")]
 		public PickerRenderer()
 		{
 			AutoPackage = false;

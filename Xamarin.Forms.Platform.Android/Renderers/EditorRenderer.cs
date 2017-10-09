@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -25,7 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use EditorRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use EditorRenderer(Context) instead.")]
 		public EditorRenderer()
 		{
 			AutoPackage = false;

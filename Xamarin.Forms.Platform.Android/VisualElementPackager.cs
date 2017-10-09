@@ -97,9 +97,9 @@ namespace Xamarin.Forms.Platform.Android
 					renderer = pool.GetFreeRenderer(view);
 				if (renderer == null)
 				{
-					Performance.Start(reference, "New renderer");
-					renderer = Platform.CreateRenderer(view, _renderer.View.Context);
-					Performance.Stop(reference, "New renderer");
+					Performance.Start("New renderer");
+				renderer = Platform.CreateRenderer(view, _renderer.View.Context);
+					Performance.Stop("New renderer");
 				}
 
 				if (renderer == oldRenderer)

@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use NavigationPageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use NavigationPageRenderer(Context) instead.")]
 		public NavigationPageRenderer()
 		{
 			AutoPackage = false;
@@ -792,7 +792,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				else
 				{
 					IMenuItem menuItem = menu.Add(item.Text);
-					UpdateMenuItemIcon(context, menuItem, item);
+					FileImageSource icon = item.Icon;
+					if (!string.IsNullOrEmpty(icon))
+					{
+						Drawable iconDrawable = context.GetFormsDrawable(icon);
+						if (iconDrawable != null)
+							menuItem.SetIcon(iconDrawable);
+					}
 					menuItem.SetEnabled(controller.IsEnabled);
 					menuItem.SetShowAsAction(ShowAsAction.Always);
 					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));

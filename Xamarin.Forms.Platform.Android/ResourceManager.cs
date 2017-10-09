@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 				var bitmap = GetBitmap(context.Resources, file) ?? BitmapFactory.DecodeFile(file);
 				if (bitmap == null)
 				{
-					var source = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(fileImageSource);
+					var source = Registrar.Registered.GetHandler<IImageSourceHandler>(fileImageSource.GetType());
 					bitmap = source.LoadImageAsync(fileImageSource, context).GetAwaiter().GetResult();
 				}
 				if (bitmap != null)
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass));
 		}
 
-		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. " 
+		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 3.0. " 
 			+ "Please use GetDrawable(this Context, string) instead.")]
 		public static Drawable GetDrawable(this Resources resource, string name)
 		{

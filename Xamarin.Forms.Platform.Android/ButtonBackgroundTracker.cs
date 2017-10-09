@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				if (_backgroundDrawable == null)
-					_backgroundDrawable = new ButtonDrawable(_nativeButton.Context.ToPixels, Forms.GetColorButtonNormal(_nativeButton.Context));
+					_backgroundDrawable = new ButtonDrawable(_nativeButton.Context.ToPixels);
 
 				_backgroundDrawable.Button = _button;
 				_backgroundDrawable.SetPaddingTop(_nativeButton.PaddingTop);

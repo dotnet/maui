@@ -5,11 +5,7 @@ using Android.Util;
 using Android.Widget;
 using System;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 using Android.Content;
-using Object = Java.Lang.Object;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -24,7 +20,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use PickerRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use PickerRenderer(Context) instead.")]
 		public PickerRenderer()
 		{
 			AutoPackage = false;

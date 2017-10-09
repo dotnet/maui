@@ -6,8 +6,10 @@ using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.Resources.Core;
 using Windows.Foundation.Metadata;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.UWP;
@@ -19,6 +21,10 @@ namespace Xamarin.Forms
 		const string LogFormat = "[{0}] {1}";
 
 		static ApplicationExecutionState s_state;
+
+		public static bool IsInitialized { get; private set; }
+
+#if WINDOWS_UWP
 
 		public static bool IsInitialized { get; private set; }
 		
@@ -63,6 +69,7 @@ namespace Xamarin.Forms
 
 			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 			Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
+#endif
 		}
 
 		static Windows.Foundation.Metadata.Platform DetectPlatform()

@@ -58,10 +58,9 @@ namespace Xamarin.Forms.Platform.UWP
 			((ToolbarProvider)_toolbarProvider).CommandBar.Content = page.Title;
 		}
 
-		static void OnPageActionSheet(object sender, ActionSheetArguments options)
-		{ 
-			bool userDidSelect = false;
-			var flyoutContent = new FormsFlyout(options);
+		static async void OnPageActionSheet(object sender, ActionSheetArguments options)
+		{
+			List<string> buttons = options.Buttons.ToList();
 
 			var actionSheet = new Flyout
 			{
@@ -89,12 +88,6 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			string content = options.Message ?? string.Empty;
 			string title = options.Title ?? string.Empty;
-
-			var alertDialog = new ContentDialog
-			{
-				Content = content,
-				Title = title
-			};
 
 			if (options.Cancel != null)
 				alertDialog.SecondaryButtonText = options.Cancel;

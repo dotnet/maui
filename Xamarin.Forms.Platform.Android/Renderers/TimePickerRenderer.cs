@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.App;
 using Android.Content;
-using Android.Util;
+using Android.Content.Res;
 using Android.Widget;
 using Android.Text.Format;
 using ATimePicker = Android.Widget.TimePicker;
@@ -16,17 +16,12 @@ namespace Xamarin.Forms.Platform.Android
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
 
-		bool Is24HourView
-		{
-			get => (DateFormat.Is24HourFormat(Context) && Element.Format == (string)TimePicker.FormatProperty.DefaultValue) || Element.Format == "HH:mm";
-		}
-
 		public TimePickerRenderer(Context context) : base(context)
 		{
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 2.5. Please use TimePickerRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use TimePickerRenderer(Context) instead.")]
 		public TimePickerRenderer()
 		{
 			AutoPackage = false;
