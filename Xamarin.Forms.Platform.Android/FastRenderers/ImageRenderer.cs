@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Content;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 using Android.Views;
@@ -158,6 +159,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
+		public ImageRenderer(Context context) : base(context)
+		{
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ImageRenderer(Context) instead.")]
 		public ImageRenderer() : base(Forms.Context)
 		{
 		}

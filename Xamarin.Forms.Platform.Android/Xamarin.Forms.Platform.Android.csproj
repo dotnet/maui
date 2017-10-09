@@ -98,13 +98,15 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ActivityResultCallbackRegistry.cs" />
     <Compile Include="AndroidApplicationLifecycleState.cs" />
     <Compile Include="AndroidTitleBarVisibility.cs" />
     <Compile Include="AppCompat\FrameRenderer.cs" />
     <Compile Include="ButtonBackgroundTracker.cs" />
     <Compile Include="Elevation.cs" />
-    <Compile Include="Extensions\JavaObjectExtensions.cs" />
     <Compile Include="FastRenderers\AutomationPropertiesProvider.cs" />
+    <Compile Include="AppCompat\PageExtensions.cs" />
+    <Compile Include="Extensions\JavaObjectExtensions.cs" />
     <Compile Include="FastRenderers\ButtonRenderer.cs" />
     <Compile Include="AppCompat\FormsViewPager.cs" />
     <Compile Include="AppCompat\FragmentContainer.cs" />
@@ -156,6 +158,7 @@
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="OnLayoutDelegate.cs" />
     <Compile Include="OnMeasureDelegate.cs" />
+    <Compile Include="PopupManager.cs" />
     <Compile Include="PanGestureHandler.cs" />
     <Compile Include="PinchGestureHandler.cs" />
     <Compile Include="PlatformConfigurationExtensions.cs" />
@@ -164,7 +167,6 @@
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
     <Compile Include="Renderers\ButtonDrawable.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
-    <Compile Include="IStartActivityForResult.cs" />
     <Compile Include="Renderers\ConditionalFocusLayout.cs" />
     <Compile Include="Renderers\DescendantFocusToggler.cs" />
     <Compile Include="Renderers\FormsEditText.cs" />

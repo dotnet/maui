@@ -13,6 +13,9 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	public abstract partial class Platform
 	{
+		ActionSheetArguments _actionSheetOptions;
+		Popup _currentActionSheet;
+
 		CommandBar AddOpenMasterButton(CommandBar commandBar)
 		{
 			if (!_toolbarTracker.HaveMasterDetail)
@@ -74,6 +77,12 @@ namespace Xamarin.Forms.Platform.WinRT
 		void ClearCommandBar()
 		{
 			_page.BottomAppBar = null;
+		}
+
+		internal void SubscribeAlertsAndActionSheets()
+		{
+			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, OnPageAlert);
+			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, OnPageActionSheet);
 		}
 
 		void OnPageActionSheet(Page sender, ActionSheetArguments options)
@@ -174,6 +183,17 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			_currentActionSheet.IsOpen = true;
+		}
+
+		void CancelActionSheet()
+		{
+			if (_currentActionSheet == null)
+				return;
+
+			_actionSheetOptions.SetResult(null);
+			_actionSheetOptions = null;
+			_currentActionSheet.IsOpen = false;
+			_currentActionSheet = null;
 		}
 
 		internal async Task UpdateToolbarItems()

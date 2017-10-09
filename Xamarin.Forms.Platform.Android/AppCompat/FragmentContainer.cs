@@ -64,10 +64,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if (Page != null)
 			{
-				_visualElementRenderer = Android.Platform.CreateRenderer(Page, ChildFragmentManager);
+				_visualElementRenderer = Android.Platform.CreateRenderer(Page, ChildFragmentManager, inflater.Context);
 				Android.Platform.SetRenderer(Page, _visualElementRenderer);
 
-				_pageContainer = new PageContainer(Forms.Context, _visualElementRenderer, true);
+				_pageContainer = new PageContainer(inflater.Context, _visualElementRenderer, true);
 
 				_onCreateCallback?.Invoke(_pageContainer);
 

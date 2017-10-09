@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel;
+using Android.App;
+using Android.Content;
 using Android.Webkit;
 using Android.Widget;
 using Xamarin.Forms.Internals;
@@ -14,6 +16,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		IWebViewController ElementController => Element;
 
+		public WebViewRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use WebViewRenderer(Context) instead.")]
 		public WebViewRenderer()
 		{
 			AutoPackage = false;
@@ -76,7 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 				webView.SetWebViewClient(new WebClient(this));
 
 				_webChromeClient = GetFormsWebChromeClient();
-				_webChromeClient.SetContext(Context as IStartActivityForResult);
+				_webChromeClient.SetContext(Context as Activity);
 				webView.SetWebChromeClient(_webChromeClient);
 
 				webView.Settings.JavaScriptEnabled = true;

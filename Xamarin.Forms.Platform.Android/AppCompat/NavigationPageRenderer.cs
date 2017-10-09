@@ -47,6 +47,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		// The following is based on https://android.googlesource.com/platform/frameworks/support/+/refs/heads/master/v4/java/android/support/v4/app/FragmentManager.java#849
 		const int TransitionDuration = 220;
 
+		public NavigationPageRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+			Id = Platform.GenerateViewId();
+			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use NavigationPageRenderer(Context) instead.")]
 		public NavigationPageRenderer()
 		{
 			AutoPackage = false;
@@ -778,7 +786,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					FileImageSource icon = item.Icon;
 					if (!string.IsNullOrEmpty(icon))
 					{
-						Drawable iconDrawable = context.Resources.GetFormsDrawable(icon);
+						Drawable iconDrawable = context.GetFormsDrawable(icon);
 						if (iconDrawable != null)
 							menuItem.SetIcon(iconDrawable);
 					}

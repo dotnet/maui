@@ -1,10 +1,21 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public class PageRenderer : VisualElementRenderer<Page>
 	{
+		public PageRenderer(Context context) : base(context)
+		{
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use PageRenderer(Context) instead.")]
+		public PageRenderer()
+		{
+		}
+
 		public override bool OnTouchEvent(MotionEvent e)
 		{
 			base.OnTouchEvent(e);
@@ -102,7 +113,7 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateBackgroundImage(Page view)
 		{
 			if (!string.IsNullOrEmpty(view.BackgroundImage))
-				this.SetBackground(Context.Resources.GetDrawable(view.BackgroundImage));
+				this.SetBackground(Context.GetDrawable(view.BackgroundImage));
 		}
 	}
 }

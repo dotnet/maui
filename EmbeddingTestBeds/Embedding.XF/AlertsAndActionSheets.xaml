@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Embedding.XF.AlertsAndActionSheets">
+    <ContentPage.Content>
+        <StackLayout Margin="40">
+            <Label Text="DisplayAlert and DisplayActionSheet" />
+			<Button Text="Show an Alert" x:Name="AlertButton"></Button>
+	        <Button Text="Show an ActionSheet" x:Name="ActionSheetButton"></Button>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

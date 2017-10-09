@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class FormsWebChromeClient : WebChromeClient
 	{
-		IStartActivityForResult _context;
+		Activity _activity;
 		List<int> _requestCodes;
 
 		public override bool OnShowFileChooser(global::Android.Webkit.WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
@@ -20,11 +20,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UnregisterCallbacks()
 		{
-			if (_requestCodes == null || _requestCodes.Count == 0 || _context == null)
+			if (_requestCodes == null || _requestCodes.Count == 0 || _activity == null)
 				return;
 
 			foreach (int requestCode in _requestCodes)
-				_context.UnregisterActivityResultCallback(requestCode);
+			{
+				ActivityResultCallbackRegistry.UnregisterActivityResultCallback(requestCode);
+			}
 
 			_requestCodes = null;
 		}
@@ -42,11 +44,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			_requestCodes = _requestCodes ?? new List<int>();
 
-			int newRequestCode = _context.RegisterActivityResultCallback(callback);
+			int newRequestCode = ActivityResultCallbackRegistry.RegisterActivityResultCallback(callback);
 
 			_requestCodes.Add(newRequestCode);
 
-			_context.StartActivityForResult(Intent.CreateChooser(intent, title), newRequestCode);
+			_activity.StartActivityForResult(Intent.CreateChooser(intent, title), newRequestCode);
 
 			return true;
 		}
@@ -63,12 +65,12 @@ namespace Xamarin.Forms.Platform.Android
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}
 
-		internal void SetContext(IStartActivityForResult startActivityForResult)
+		internal void SetContext(Activity thisActivity)
 		{
-			if (startActivityForResult == null)
-				throw new ArgumentNullException(nameof(startActivityForResult));
+			if (thisActivity == null)
+				throw new ArgumentNullException(nameof(thisActivity));
 
-			_context = startActivityForResult;
+			_activity = thisActivity;
 		}
 	}
 }

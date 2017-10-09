@@ -44,6 +44,12 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		internal static void SubscribeAlertsAndActionSheets()
+		{
+			MessagingCenter.Subscribe<Page, AlertArguments>(Window.Current, Page.AlertSignalName, OnPageAlert);
+			MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window.Current, Page.ActionSheetSignalName, OnPageActionSheet);
+		}
+
 		void UpdateToolbarTitle(Page page)
 		{
 			if (_toolbarProvider == null)
@@ -52,7 +58,7 @@ namespace Xamarin.Forms.Platform.UWP
 			((ToolbarProvider)_toolbarProvider).CommandBar.Content = page.Title;
 		}
 
-		async void OnPageActionSheet(Page sender, ActionSheetArguments options)
+		static async void OnPageActionSheet(object sender, ActionSheetArguments options)
 		{
 			List<string> buttons = options.Buttons.ToList();
 
@@ -89,8 +95,6 @@ namespace Xamarin.Forms.Platform.UWP
 			};
 
 			Window.Current.CoreWindow.CharacterReceived += onEscapeButtonPressed;
-
-			_actionSheetOptions = options;
 
 			if (options.Cancel != null)
 				dialog.SecondaryButtonText = options.Cancel;

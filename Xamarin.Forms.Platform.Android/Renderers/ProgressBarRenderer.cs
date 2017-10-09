@@ -1,10 +1,18 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, AProgressBar>
 	{
+		public ProgressBarRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ProgressBarRenderer(Context) instead.")]
 		public ProgressBarRenderer()
 		{
 			AutoPackage = false;

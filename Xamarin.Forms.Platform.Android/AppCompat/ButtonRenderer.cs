@@ -21,7 +21,13 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _isDisposed;
 		int _imageHeight = -1;
 
-		public ButtonRenderer()
+		public ButtonRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ButtonRenderer(Context) instead.")]
+		public ButtonRenderer() 
 		{
 			AutoPackage = false;
 		}
@@ -174,7 +180,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return;
 			}
 
-			var image = Context.Resources.GetDrawable(imageFile);
+			var image = Context.GetDrawable(imageFile);
 
 			if (IsNullOrEmpty(Element.Text))
 			{

@@ -26,6 +26,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _useAnimations = true;
 		FormsViewPager _viewPager;
 
+		public TabbedPageRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use TabbedPageRenderer(Context) instead.")]
 		public TabbedPageRenderer()
 		{
 			AutoPackage = false;

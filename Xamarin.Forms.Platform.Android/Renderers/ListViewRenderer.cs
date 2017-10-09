@@ -25,6 +25,12 @@ namespace Xamarin.Forms.Platform.Android
 		IListViewController Controller => Element;
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
 
+		public ListViewRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ListViewRenderer(Context) instead.")]
 		public ListViewRenderer()
 		{
 			AutoPackage = false;
@@ -295,7 +301,7 @@ namespace Xamarin.Forms.Platform.Android
 				_footerRenderer.SetElement(footer);
 			else
 			{
-				_footerRenderer = Platform.CreateRenderer(footer);
+				_footerRenderer = Platform.CreateRenderer(footer, Context);
 				if (_footerView != null)
 					_footerView.Child = _footerRenderer;
 			}
@@ -326,7 +332,7 @@ namespace Xamarin.Forms.Platform.Android
 				_headerRenderer.SetElement(header);
 			else
 			{
-				_headerRenderer = Platform.CreateRenderer(header);
+				_headerRenderer = Platform.CreateRenderer(header, Context);
 				if (_headerView != null)
 					_headerView.Child = _headerRenderer;
 			}

@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 
@@ -8,6 +10,12 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		ViewPager _viewPager;
 
+		public CarouselPageRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use CarouselPageRenderer(Context) instead.")]
 		public CarouselPageRenderer()
 		{
 			AutoPackage = false;

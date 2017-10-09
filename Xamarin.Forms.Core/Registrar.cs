@@ -37,9 +37,37 @@ namespace Xamarin.Forms.Internals
 			return (TRegistrable)handler;
 		}
 
+		internal TRegistrable GetHandler(Type type, params object[] args)
+		{
+			if (args.Length == 0)
+			{
+				return GetHandler(type);
+			}
+
+			Type handlerType = GetHandlerType(type);
+			if (handlerType == null)
+				return null;
+
+			// This is by no means a general solution to matching with the correct constructor, but it'll
+			// do for finding Android renderers which need Context (vs older custom renderers which may still use
+			// parameterless constructors)
+			if (handlerType.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == args.Length))
+			{
+				object handler = Activator.CreateInstance(handlerType, args);
+				return (TRegistrable)handler;
+			}
+			
+			return GetHandler(type);
+		}
+
 		public TOut GetHandler<TOut>(Type type) where TOut : TRegistrable
 		{
 			return (TOut)GetHandler(type);
+		}
+
+		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : TRegistrable
+		{
+			return (TOut)GetHandler(type, args);
 		}
 
 		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable

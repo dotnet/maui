@@ -52,7 +52,7 @@ namespace Xamarin.Forms.Platform.Android
 			else
 			{
 				if (_backgroundDrawable == null)
-					_backgroundDrawable = new ButtonDrawable();
+					_backgroundDrawable = new ButtonDrawable(_nativeButton.Context.ToPixels);
 
 				_backgroundDrawable.Button = _button;
 

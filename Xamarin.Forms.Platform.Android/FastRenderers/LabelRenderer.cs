@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -27,7 +28,14 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		bool _wasFormatted;
 
-		public LabelRenderer() : base(Forms.Context)
+		public LabelRenderer(Context context) : base(context)
+		{
+			_labelTextColorDefault = TextColors;
+			_visualElementRenderer = new VisualElementRenderer(this);
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use LabelRenderer(Context) instead.")]
+		public LabelRenderer(): base(Forms.Context)
 		{
 			_labelTextColorDefault = TextColors;
 			_visualElementRenderer = new VisualElementRenderer(this);

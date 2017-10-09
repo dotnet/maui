@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -8,6 +10,12 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class ActivityIndicatorRenderer : ViewRenderer<ActivityIndicator, AProgressBar>
 	{
+		public ActivityIndicatorRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ActivityIndicatorRenderer(Context) instead.")]
 		public ActivityIndicatorRenderer()
 		{
 			AutoPackage = false;

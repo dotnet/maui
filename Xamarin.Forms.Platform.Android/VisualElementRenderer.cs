@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
@@ -26,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		readonly GestureManager _gestureManager;
 
-		protected VisualElementRenderer() : base(Forms.Context)
+		protected VisualElementRenderer(Context context) : base(context)
 		{
 			_gestureManager = new GestureManager(this);
 		}
@@ -60,6 +61,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return base.DispatchTouchEvent(e);
+		}		  		
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use VisualElementRenderer(Context) instead.")]
+		protected VisualElementRenderer() : this(Forms.Context)
+		{
 		}
 
 		public TElement Element { get; private set; }

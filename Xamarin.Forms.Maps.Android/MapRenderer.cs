@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Android.Content;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
@@ -28,6 +29,12 @@ namespace Xamarin.Forms.Maps.Android
 
 		List<Marker> _markers;
 
+		public MapRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use MapRenderer(Context) instead.")]
 		public MapRenderer()
 		{
 			AutoPackage = false;

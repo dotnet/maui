@@ -65,9 +65,9 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
 
-			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, OnPageAlert);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, OnPageActionSheet);
-
+#if !WINDOWS_UWP // UWP gets subscribed in Forms.Init
+			SubscribeAlertsAndActionSheets();
+#endif
 			UpdateBounds();
 
 #if WINDOWS_UWP
@@ -85,6 +85,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			_navModel.Push(newRoot, null);
 			SetCurrent(newRoot, true);
 			Application.Current.NavigationProxy.Inner = this;
+		}
+
+		internal void SetPlatformDisconnected(VisualElement visualElement)
+		{
+			visualElement.Platform = this;
 		}
 
 		public IReadOnlyList<Page> NavigationStack
@@ -235,12 +240,13 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		internal bool BackButtonPressed()
 		{
+#if !WINDOWS_UWP
 			if (_currentActionSheet != null)
 			{
 				CancelActionSheet();
 				return true;
 			}
-
+#endif
 			Page lastRoot = _navModel.Roots.Last();
 
 			bool handled = lastRoot.SendBackButtonPressed();
@@ -256,17 +262,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			return handled;
-		}
-
-		void CancelActionSheet()
-		{
-			if (_currentActionSheet == null)
-				return;
-
-			_actionSheetOptions.SetResult(null);
-			_actionSheetOptions = null;
-			_currentActionSheet.IsOpen = false;
-			_currentActionSheet = null;
 		}
 
 		void OnRendererSizeChanged(object sender, SizeChangedEventArgs sizeChangedEventArgs)
@@ -328,10 +323,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				_toolbarTracker.Target = last;
 		}
 
-		ActionSheetArguments _actionSheetOptions;
-		Popup _currentActionSheet;
-
-		async void OnPageAlert(Page sender, AlertArguments options)
+		static async void OnPageAlert(object sender, AlertArguments options)
 		{
 			string content = options.Message ?? options.Title ?? string.Empty;
 

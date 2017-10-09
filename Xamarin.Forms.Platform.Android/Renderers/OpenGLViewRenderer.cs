@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Opengl;
 using Javax.Microedition.Khronos.Opengles;
 using EGLConfig = Javax.Microedition.Khronos.Egl.EGLConfig;
@@ -11,6 +12,12 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		bool _disposed;
 
+		public OpenGLViewRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use OpenGLViewRenderer(Context) instead.")]
 		public OpenGLViewRenderer()
 		{
 			AutoPackage = false;
