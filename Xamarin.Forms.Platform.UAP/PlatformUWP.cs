@@ -84,11 +84,6 @@ namespace Xamarin.Forms.Platform.UWP
 			actionSheet.ShowAt(((Page)sender).GetOrCreateRenderer().ContainerElement);
 		}
 
-		static async void OnPageAlert(Page sender, AlertArguments options)
-		{
-			string content = options.Message ?? string.Empty;
-			string title = options.Title ?? string.Empty;
-
 			if (options.Cancel != null)
 				alertDialog.SecondaryButtonText = options.Cancel;
 
