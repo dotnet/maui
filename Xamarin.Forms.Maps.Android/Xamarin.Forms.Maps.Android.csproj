@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.props" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -65,37 +66,57 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
-    <Reference Include="Xamarin.Android.Support.Animated.Vector.Drawable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.Android.Support.Animated.Vector.Drawable.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.Animated.Vector.Drawable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xamarin.Android.Support.v4, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.Android.Support.v4.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v4.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xamarin.Android.Support.v7.AppCompat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.Android.Support.v7.AppCompat.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v7.AppCompat.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xamarin.Android.Support.v7.MediaRouter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.Android.Support.v7.MediaRouter.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.v7.MediaRouter.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Xamarin.Android.Support.Vector.Drawable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\lib\MonoAndroid403\Xamarin.Android.Support.Vector.Drawable.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Xamarin.GooglePlayServices.Base, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.GooglePlayServices.Base.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.Base.dll</HintPath>
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Base.42.1021.1\lib\MonoAndroid70\Xamarin.GooglePlayServices.Base.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Xamarin.GooglePlayServices.Basement, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.Basement.dll</HintPath>
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Basement.42.1021.1\lib\MonoAndroid70\Xamarin.GooglePlayServices.Basement.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Xamarin.GooglePlayServices.Maps, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Xamarin.GooglePlayServices.Maps.29.0.0.1\lib\MonoAndroid41\Xamarin.GooglePlayServices.Maps.dll</HintPath>
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Maps.42.1021.1\lib\MonoAndroid70\Xamarin.GooglePlayServices.Maps.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.GooglePlayServices.Tasks, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\lib\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Annotations">
+      <HintPath>..\packages\Xamarin.Android.Support.Annotations.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Compat">
+      <HintPath>..\packages\Xamarin.Android.Support.Compat.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Compat.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Core.UI">
+      <HintPath>..\packages\Xamarin.Android.Support.Core.UI.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Core.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Core.Utils">
+      <HintPath>..\packages\Xamarin.Android.Support.Core.Utils.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Core.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Media.Compat">
+      <HintPath>..\packages\Xamarin.Android.Support.Media.Compat.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Media.Compat.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Fragment">
+      <HintPath>..\packages\Xamarin.Android.Support.Fragment.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Fragment.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v4">
+      <HintPath>..\packages\Xamarin.Android.Support.v4.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.Palette">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.Palette.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.v7.Palette.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Vector.Drawable">
+      <HintPath>..\packages\Xamarin.Android.Support.Vector.Drawable.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Vector.Drawable.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.Animated.Vector.Drawable">
+      <HintPath>..\packages\Xamarin.Android.Support.Animated.Vector.Drawable.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Animated.Vector.Drawable.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.AppCompat">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.AppCompat.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.v7.AppCompat.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Android.Support.v7.MediaRouter">
+      <HintPath>..\packages\Xamarin.Android.Support.v7.MediaRouter.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.v7.MediaRouter.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -130,13 +151,22 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.GooglePlayServices.Basement.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Basement.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.GooglePlayServices.Basement.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Basement.targets'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.targets'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.GooglePlayServices.Base.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Base.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.GooglePlayServices.Base.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Base.targets'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.GooglePlayServices.Maps.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Maps.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.GooglePlayServices.Maps.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Maps.targets'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.props'))" />
+    <Error Condition="!Exists('..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.targets'))" />
   </Target>
+  <Import Project="..\packages\Xamarin.GooglePlayServices.Basement.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Basement.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Basement.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Basement.targets')" />
+  <Import Project="..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.targets')" />
+  <Import Project="..\packages\Xamarin.GooglePlayServices.Base.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Base.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Base.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Base.targets')" />
+  <Import Project="..\packages\Xamarin.GooglePlayServices.Maps.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Maps.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Maps.42.1021.1\build\MonoAndroid70\Xamarin.GooglePlayServices.Maps.targets')" />
+  <Import Project="..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.targets" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.7\build\Xamarin.Build.Download.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -144,4 +174,15 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Project="..\packages\Xamarin.Android.Support.Compat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Compat.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Compat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Compat.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Core.UI.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Core.UI.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Core.UI.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Core.UI.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Core.Utils.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Core.Utils.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Core.Utils.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Core.Utils.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Media.Compat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Media.Compat.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Media.Compat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Media.Compat.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Fragment.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Fragment.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Fragment.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Fragment.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.v4.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v4.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v4.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v4.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.v7.Palette.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.Palette.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v7.Palette.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.Palette.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Vector.Drawable.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Vector.Drawable.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.Animated.Vector.Drawable.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Animated.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Animated.Vector.Drawable.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.Animated.Vector.Drawable.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.v7.AppCompat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.AppCompat.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v7.AppCompat.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.AppCompat.targets')" />
+  <Import Project="..\packages\Xamarin.Android.Support.v7.MediaRouter.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.MediaRouter.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v7.MediaRouter.25.4.0.2\build\MonoAndroid70\Xamarin.Android.Support.v7.MediaRouter.targets')" />
 </Project>

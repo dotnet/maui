@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (_tabLayout != null)
 				{
-					_tabLayout.SetOnTabSelectedListener(null);
+					_tabLayout.AddOnTabSelectedListener(null);
 					_tabLayout.Dispose();
 					_tabLayout = null;
 				}
@@ -278,7 +278,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				tabs.SetupWithViewPager(pager);
 				UpdateTabIcons();
-				tabs.SetOnTabSelectedListener(this);
+				tabs.AddOnTabSelectedListener(this);
 			}
 
 			UpdateIgnoreContainerAreas();
