@@ -1,7 +1,6 @@
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using System;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -137,7 +136,7 @@ namespace Xamarin.Forms.Platform.Android
 				float inset = borderWidth / 2;
 
 				// adjust border radius so outer edge of stroke is same radius as border radius of background
-				float borderRadius = Math.Max(Forms.Context.ToPixels(Button.BorderRadius) - inset, 0);
+				float borderRadius = Forms.Context.ToPixels(Button.BorderRadius) - inset;
 
 				path.AddRoundRect(new RectF(inset, inset, width - inset, height - inset), borderRadius, borderRadius, Path.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
