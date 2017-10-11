@@ -93,6 +93,7 @@ namespace Xamarin.Forms
 #else
 			Device.SetIdiom(TargetIdiom.Desktop);
 #endif
+			Device.SetFlags(s_flags);
 			Device.PlatformServices = new IOSPlatformServices();
 			Device.Info = new IOSDeviceInfo();
 
