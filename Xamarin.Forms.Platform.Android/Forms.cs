@@ -131,6 +131,7 @@ namespace Xamarin.Forms
 			}
 
 			Device.Info = new AndroidDeviceInfo(activity);
+			Device.SetFlags(s_flags);
 
 			var ticker = Ticker.Default as AndroidTicker;
 			if (ticker != null)
