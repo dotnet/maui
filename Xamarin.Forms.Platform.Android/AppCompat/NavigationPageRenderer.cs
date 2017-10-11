@@ -131,6 +131,20 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				_disposed = true;
 
+				// API only exists on newer android YAY
+				if ((int)Build.VERSION.SdkInt >= 17)
+				{
+					FragmentManager fm = FragmentManager;
+
+					if (!fm.IsDestroyed)
+					{
+						FragmentTransaction trans = fm.BeginTransaction();
+						foreach (Fragment fragment in _fragmentStack)
+							trans.Remove(fragment);
+						trans.CommitAllowingStateLoss();
+						fm.ExecutePendingTransactions();
+					}
+				}
 
 				if (_toolbarTracker != null)
 				{
