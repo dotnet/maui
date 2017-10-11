@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -80,6 +81,15 @@ namespace Xamarin.Forms
 				return s_platformServices;
 			}
 			set { s_platformServices = value; }
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IReadOnlyList<string> Flags { get; private set; }
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetFlags(IReadOnlyList<string> flags)
+		{
+			Flags = flags;
 		}
 
 		public static void BeginInvokeOnMainThread(Action action)

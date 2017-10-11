@@ -149,6 +149,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because Device.Info watches for orientation changes and we need a current activity for that
 			Device.Info = new AndroidDeviceInfo(activity);
+			Device.SetFlags(s_flags);
 
 			var ticker = Ticker.Default as AndroidTicker;
 			if (ticker != null)

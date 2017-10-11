@@ -49,6 +49,9 @@ namespace Xamarin.Forms
 
 			Device.SetIdiom(TargetIdiom.Tablet);
 			Device.PlatformServices = new WindowsPlatformServices(Window.Current.Dispatcher);
+#if WINDOWS_UWP
+			Device.SetFlags(s_flags);
+#endif
 			Device.Info = new WindowsDeviceInfo();
 
 #if WINDOWS_UWP
