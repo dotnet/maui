@@ -30,12 +30,14 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = grd;
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 		[Test]
 		public void TestButtonUsingElevation ()
 		{
 			RunningApp.WaitForElement(Running);
-			RunningApp.Tap(btnId);
+			var btnQuqery = RunningApp.Query(c => c.Marked(btnId));
+			if (btnQuqery.Length > 0)
+				RunningApp.Tap(btnId);
 			RunningApp.WaitForNoElement(Success);
 		}
 #endif
