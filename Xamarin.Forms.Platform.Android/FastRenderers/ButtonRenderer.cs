@@ -237,7 +237,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
-			if (e.NewElement != null)
+			if (e.NewElement != null && !_isDisposed)
 			{
 				this.EnsureId();
 
@@ -251,6 +251,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateIsEnabled();
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
+
+				ElevationHelper.SetElevation(this, e.NewElement);
 			}
 
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
