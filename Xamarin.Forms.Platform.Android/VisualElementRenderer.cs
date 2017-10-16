@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			return _gestureManager.OnTouchEvent(e);
+			return _gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e);
 		}
 
 		public override bool OnInterceptTouchEvent(MotionEvent ev)

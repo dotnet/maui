@@ -162,6 +162,7 @@
     <Compile Include="AppDelegate.cs" />
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_60122ImageRenderer.cs" />
     <None Include="app.config" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
