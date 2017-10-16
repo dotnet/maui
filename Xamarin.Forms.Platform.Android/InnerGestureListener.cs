@@ -61,7 +61,20 @@ namespace Xamarin.Forms.Platform.Android
 			if (_disposed)
 				return false;
 
-			return _tapDelegate(2);
+			if (HasDoubleTapHandler())
+			{
+				return _tapDelegate(2);
+			}
+
+			if (HasSingleTapHandler())
+			{
+				// If we're registering double taps and we don't actually have a double-tap handler,
+				// but we _do_ have a single-tap handler, then we're really just seeing two singles in a row
+				// Fire off the delegate for the second single-tap (OnSingleTapUp already did the first one)
+				return _tapDelegate(1);
+			}
+
+			return false;
 		}
 
 		bool GestureDetector.IOnDoubleTapListener.OnDoubleTapEvent(MotionEvent e)
@@ -134,7 +147,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (!HasDoubleTapHandler())
 			{
-				// We're not worried about double-tap, so OnSingleTap has already run the delegate
+				// We're not worried about double-tap, so OnSingleTapUp has already run the delegate
 				// there's nothing for us to do here
 				return false;
 			}
@@ -200,6 +213,13 @@ namespace Xamarin.Forms.Platform.Android
 			if (_tapGestureRecognizers == null)
 				return false;
 			return _tapGestureRecognizers(2).Any();
+		}
+
+		bool HasSingleTapHandler()
+		{
+			if (_tapGestureRecognizers == null)
+				return false;
+			return _tapGestureRecognizers(1).Any();
 		}
 	}
 }
