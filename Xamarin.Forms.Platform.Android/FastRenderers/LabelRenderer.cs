@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
         public override bool OnTouchEvent(MotionEvent e)
         {
-	        if (_visualElementRenderer.OnTouchEvent(e))
+	        if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
 	        {
 		        return true;
 	        }
