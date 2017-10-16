@@ -29,6 +29,8 @@
 
   	<!-- add directives for your library here -->
     <Namespace Name="Windows.UI.Xaml.Automation.Peers" MarshalObject="Required All"/>
-  
+    <Type Name="Xamarin.Forms.Platform.UWP.WindowsPlatformServices" Activate="Required All"/>
+    <Type Name="Xamarin.Forms.Platform.UWP.WindowsBasePlatformServices" Activate="Required All"/>
+    <Type Name="Xamarin.Forms.Platform.UWP.WindowsPlatform" Activate="Required All"/>
   </Library>
 </Directives>
