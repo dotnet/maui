@@ -1,7 +1,7 @@
+using System;
 using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
-using System;
 
 namespace Xamarin.Forms.Platform.Android
 {
