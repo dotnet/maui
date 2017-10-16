@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Controls
 			// Running on a device
 			var app = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug()
 				//Uncomment to run from a specific iOS SIM, get the ID from XCode -> Devices
-				.StartApp();
+				.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			// Running on the simulator
 			//var app = ConfigureApp.iOS
