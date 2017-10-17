@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				UpdateContentSize();
 				UpdateBackgroundColor();
-				UpdateOrientation();
+
 				RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 			}
 
@@ -116,7 +116,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void RaiseElementChanged(VisualElementChangedEventArgs e)
 		{
+			OnElementChanged(e);
 			ElementChanged?.Invoke(this, e);
+		}
+
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
+		{
 		}
 
 		void PackContent()
