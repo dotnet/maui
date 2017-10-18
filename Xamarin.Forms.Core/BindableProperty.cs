@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
@@ -321,14 +322,9 @@ namespace Xamarin.Forms
 			}
 			else if (!ReturnTypeInfo.IsAssignableFrom(valueType.GetTypeInfo()))
 			{
-				// Is there an implicit cast operator ?
-				MethodInfo cast = type.GetRuntimeMethod("op_Implicit", new[] { valueType });
-				if (cast != null && cast.ReturnType != type)
-					cast = null;
-				if (cast == null)
-					cast = valueType.GetRuntimeMethod("op_Implicit", new[] { valueType });
-				if (cast != null && cast.ReturnType != type)
-					cast = null;
+				var cast = type.GetImplicitConversionOperator(fromType: valueType, toType: type)
+						?? valueType.GetImplicitConversionOperator(fromType: valueType, toType: type);
+
 				if (cast == null)
 					return false;
 
