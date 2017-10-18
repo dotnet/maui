@@ -378,21 +378,13 @@ namespace Xamarin.Forms.Platform.UWP
 			// when the Windows.UI.XAML.VisualStateManager moves to the "Focused" state. So we have to force a 
 			// "refresh" of the Focused state by going to that state again
 
-			if (!(dependencyObject is Control control) || control.FocusState == FocusState.Unfocused)
+			var control = dependencyObject as Control;
+			if (control == null || control.FocusState == FocusState.Unfocused)
 			{
 				return;
 			}
 
-			WVisualStateManager.GoToState(control, "Focused", false);
-		}
-
-		internal void UpdateEnabled()
-		{
-			if (UseFormsVsm)
-			{
-				var state = IsEnabled ? "FormsNormal" : "FormsDisabled";
-				WVisualStateManager.GoToState(this, state, true);
-			}
+			VisualStateManager.GoToState(control, "Focused", false);
 		}
 	}
 }
