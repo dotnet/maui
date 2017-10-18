@@ -172,8 +172,8 @@ namespace Xamarin.Forms.Xaml
 					return Decimal.Parse(str, CultureInfo.InvariantCulture);
 			}
 
-			//if the value is not assignable and there's an implicit conversion, convert
-			if (value != null && !toType.IsAssignableFrom(value.GetType())) {
+			//if there's an implicit conversion, convert
+			if (value != null) {
 				var opImplicit =   value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
 								?? toType.GetImplicitConversionOperator(fromType: value.GetType(), toType: toType);
 
@@ -194,12 +194,7 @@ namespace Xamarin.Forms.Xaml
 
 		internal static MethodInfo GetImplicitConversionOperator(this Type onType, Type fromType, Type toType)
 		{
-#if NETSTANDARD1_0
 			var mi = onType.GetRuntimeMethod("op_Implicit", new[] { fromType });
-#else
-			var bindingFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-			var mi = onType.GetMethod("op_Implicit", bindingFlags, null, new[] { fromType }, null);
-#endif
 			if (mi == null) return null;
 			if (!mi.IsSpecialName) return null;
 			if (!mi.IsPublic) return null;

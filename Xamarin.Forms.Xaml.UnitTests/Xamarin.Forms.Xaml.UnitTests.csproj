@@ -528,54 +528,6 @@
     <Compile Include="Issues\Bz59818.xaml.cs">
       <DependentUpon>Bz59818.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResourceDictionaryWithSource.xaml.cs">
-      <DependentUpon>ResourceDictionaryWithSource.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ResourceDictionaryWithInvalidSource.xaml.cs">
-      <DependentUpon>ResourceDictionaryWithInvalidSource.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Bz60575.xaml.cs">
-      <DependentUpon>Bz60575.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ResourceLoader.xaml.cs">
-      <DependentUpon>ResourceLoader.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Bz60203.xaml.cs">
-      <DependentUpon>Bz60203.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Bz55862.xaml.cs">
-      <DependentUpon>Bz55862.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ImplicitResourceDictionaries.xaml.cs">
-      <DependentUpon>ImplicitResourceDictionaries.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="AutoMergedResourceDictionaries.xaml.cs">
-      <DependentUpon>AutoMergedResourceDictionaries.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh1346.xaml.cs">
-      <DependentUpon>Gh1346.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="StyleSheet.xaml.cs">
-      <DependentUpon>StyleSheet.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="SetStyleIdFromXName.xaml.cs">
-      <DependentUpon>SetStyleIdFromXName.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="InlineCSS.xaml.cs">
-      <DependentUpon>InlineCSS.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh1497.xaml.cs">
-      <DependentUpon>Gh1497.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh1554.xaml.cs">
-      <DependentUpon>Gh1554.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh1566.xaml.cs">
-      <DependentUpon>Gh1566.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh1766.xaml.cs">
-      <DependentUpon>Gh1766.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -985,48 +937,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz59818.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ResourceDictionaryWithSource.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AppResources\Colors.xaml" />
-    <EmbeddedResource Include="AppResources\CompiledColors.xaml" />
-    <EmbeddedResource Include="ResourceDictionaryWithInvalidSource.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz60575.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ResourceLoader.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz60203.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz55862.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ImplicitResourceDictionaries.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="AutoMergedResourceDictionaries.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Gh1346.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Gh1497.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Gh1554.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Gh1566.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Gh1766.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
