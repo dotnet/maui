@@ -72,6 +72,10 @@
       <HintPath>..\packages\Xamarin.UITest.2.1.4\lib\net45\Xamarin.UITest.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Xamarin.UITest, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.UITest.2.1.4\lib\net45\Xamarin.UITest.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
