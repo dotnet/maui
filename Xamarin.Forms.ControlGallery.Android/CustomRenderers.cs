@@ -590,7 +590,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
-	public class QuickCollectNavigationPage
+	public class QuickCollectNavigationPageRenderer
 #if FORMS_APPLICATION_ACTIVITY
 		: Xamarin.Forms.Platform.Android.NavigationRenderer
 #else
