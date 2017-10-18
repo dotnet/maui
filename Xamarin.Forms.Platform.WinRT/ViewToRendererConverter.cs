@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			throw new NotSupportedException();
 		}
 
-		class WrapperControl : Canvas
+		class WrapperControl : Panel
 		{
 			readonly View _view;
 
