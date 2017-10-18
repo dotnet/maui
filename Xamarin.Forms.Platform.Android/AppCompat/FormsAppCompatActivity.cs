@@ -126,6 +126,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			application.PropertyChanged += AppOnPropertyChanged;
 
+			var iver = Platform.GetRenderer(application.MainPage);
+			if (iver != null)
+			{
+				iver.Dispose();
+				application.MainPage.ClearValue(Platform.RendererProperty);
+			}
+
 			SetMainPage();
 		}
 
