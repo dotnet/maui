@@ -498,12 +498,6 @@
     <Compile Include="Issues\Bz57574.xaml.cs">
       <DependentUpon>Bz57574.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Bz58922.xaml.cs">
-      <DependentUpon>Bz58922.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MergedResourceDictionaries.xaml.cs">
-      <DependentUpon>MergedResourceDictionaries.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Issues\Bz59818.xaml.cs">
       <DependentUpon>Bz59818.xaml</DependentUpon>
     </Compile>
@@ -919,12 +913,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz57574.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz58922.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MergedResourceDictionaries.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz59818.xaml">
