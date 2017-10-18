@@ -3,6 +3,7 @@ using Xamarin.Forms.Internals;
 using System;
 using System.Linq;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 #if UITEST
 using Xamarin.UITest;
@@ -13,7 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 57910, "ObjectDisposedException in Xamarin.Forms.Platform.Android.Renderers.ProgressBarRenderer", PlatformAffected.Android)]
-	public class Bugzilla57910 : Bugzilla57910QuickCollectNavigationPage
+	public class Bugzilla57910 : QuickCollectNavigationPage
 	{
 		const string ButtonId = "btnPush";
 		const string Button2Id = "btnPop";
@@ -58,6 +59,93 @@ namespace Xamarin.Forms.Controls.Issues
 				progressBar.Triggers.Add(newDataTrigger);
 
 				View = new ContentView { Content = new StackLayout { Children = { progressBar } } };
+			}
+		}
+
+		[Preserve(AllMembers = true)]
+		class ListHeaderView : ContentView
+		{
+			public ListHeaderView()
+			{
+				Label newLabel = new Label();
+				newLabel.SetBinding(Label.TextProperty, nameof(ListPageViewModel.Header));
+				Content = newLabel;
+			}
+		}
+
+		[Preserve(AllMembers = true)]
+		class ListFooterView : ContentView
+		{
+			public ListFooterView()
+			{
+				Label newLabel = new Label();
+				newLabel.SetBinding(Label.TextProperty, nameof(ListPageViewModel.Footer));
+
+				var stack = new StackLayout { Children = { newLabel } };
+				Content = stack;
+			}
+		}
+
+		[Preserve(AllMembers = true)]
+		class ListPageViewModel : INotifyPropertyChanged
+		{
+			ObservableCollection<ListItemViewModel> _items;
+			string _footer;
+			string _header;
+
+			int _counter;
+			public ListPageViewModel()
+			{
+				_header = "Header!";
+				_footer = "Footer!";
+				_counter = 0;
+				_items = new ObservableCollection<ListItemViewModel>(Enumerable.Range(0, 100).Select(c => new ListItemViewModel()));
+
+				// Need an asynchronous action that happens sometime between creation of the Element and Pop of the containing page
+				Device.StartTimer(TimeSpan.FromMilliseconds((100)), () =>
+				{
+					Header = $"Header! {_counter++}";
+					Footer = $"Footer! {_counter++}";
+
+					return true;
+				});
+			}
+
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			public ObservableCollection<ListItemViewModel> Items
+			{
+				get { return _items; }
+				set
+				{
+					_items = value;
+					OnPropertyChanged(nameof(Items));
+				}
+			}
+
+			public string Header
+			{
+				get { return _header; }
+				set
+				{
+					_header = value;
+					OnPropertyChanged(nameof(Header));
+				}
+			}
+
+			public string Footer
+			{
+				get { return _footer; }
+				set
+				{
+					_footer = value;
+					OnPropertyChanged(nameof(Footer));
+				}
+			}
+
+			protected virtual void OnPropertyChanged(string propertyName)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 
@@ -128,12 +216,20 @@ namespace Xamarin.Forms.Controls.Issues
 				ListView listView = new ListView(ListViewCachingStrategy.RecycleElement)
 				{
 					RowHeight = 70,
-					ItemsSource = Enumerable.Range(0, 100).Select(c => new ListItemViewModel()),
-					ItemTemplate = new DataTemplate(typeof(ListItemView))
+					ItemTemplate = new DataTemplate(typeof(ListItemView)),
+					HeaderTemplate = new DataTemplate(typeof(ListHeaderView)),
+					FooterTemplate = new DataTemplate(typeof(ListFooterView)),
 				};
+
+				listView.SetBinding(ListView.ItemsSourceProperty, nameof(ListPageViewModel.Items));
+				listView.SetBinding(ListView.HeaderProperty, ".");
+				listView.SetBinding(ListView.FooterProperty, ".");
+
 				Button newButton = new Button { Text = "Pop", AutomationId = Button2Id };
 				newButton.Clicked += NewButton_Clicked;
 				Content = new StackLayout { Children = { new Label { Text = Instructions2 }, newButton, listView } };
+
+				BindingContext = new ListPageViewModel();
 			}
 
 			void NewButton_Clicked(object sender, EventArgs e)
@@ -155,13 +251,5 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 #endif
-	}
-
-	[Preserve(AllMembers = true)]
-	public class Bugzilla57910QuickCollectNavigationPage : TestNavigationPage
-	{
-		protected override void Init()
-		{
-		}
 	}
 }
