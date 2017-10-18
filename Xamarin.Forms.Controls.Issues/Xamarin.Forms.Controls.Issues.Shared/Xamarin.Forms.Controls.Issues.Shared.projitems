@@ -289,6 +289,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53179_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestartAppTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPages\QuickCollectNavigationPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />

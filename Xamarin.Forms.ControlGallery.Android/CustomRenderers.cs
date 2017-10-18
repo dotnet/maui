@@ -31,7 +31,7 @@ using Xamarin.Forms.Controls.Issues;
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
 //[assembly: ExportRenderer(typeof(AndroidHelpText.HintLabel), typeof(HintLabel))]
-[assembly: ExportRenderer(typeof(Bugzilla57910QuickCollectNavigationPage), typeof(QuickCollectNavigationPage))]
+[assembly: ExportRenderer(typeof(QuickCollectNavigationPage), typeof(QuickCollectNavigationPageRenderer))]
 
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
@@ -590,7 +590,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
-	public class QuickCollectNavigationPage
+	public class QuickCollectNavigationPageRenderer
 #if FORMS_APPLICATION_ACTIVITY
 		: Xamarin.Forms.Platform.Android.NavigationRenderer
 #else
