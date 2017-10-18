@@ -178,7 +178,7 @@
 						                  Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontWeight="Normal"
 						                  Margin="0,0,0,8" Grid.Row="0" Visibility="Collapsed" x:DeferLoadStrategy="Lazy" />
 						<ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw"
-                                      Foreground="{TemplateBinding ForegroundFocusBrush}"
+                                     
 						              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
 						              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 						              IsTabStop="False" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
