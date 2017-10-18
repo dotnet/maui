@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -130,11 +129,12 @@ namespace Xamarin.Forms.Controls
 			try
 			{
 				var responseString = string.Empty;
-				using (var httpClient = new HttpClient())
-				{
-					var feed = "http://feeds.hanselman.com/ScottHanselman";
-					responseString = await httpClient.GetStringAsync(feed);
-				}
+				//TODO: get feed and 
+				//using (var httpClient = new HttpClient())
+				//{
+				//	var feed = "http://feeds.hanselman.com/ScottHanselman";
+				//	responseString = await httpClient.GetStringAsync(feed);
+				//}
 
 				FeedItems.Clear();
 				var items = await ParseFeed(responseString);

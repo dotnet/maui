@@ -46,8 +46,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="Xamarin.UITest">
-      <HintPath>..\packages\Xamarin.UITest.2.1.1\lib\net45\Xamarin.UITest.dll</HintPath>
+    <Reference Include="WebDriver, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.WebDriver.3.0.1\lib\net40\WebDriver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="WebDriver.Support, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.Support.3.0.1\lib\net40\WebDriver.Support.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xamarin.UITest, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.UITest.2.1.4\lib\net45\Xamarin.UITest.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
