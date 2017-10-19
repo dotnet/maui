@@ -536,6 +536,8 @@
     </Namespace>
     <Namespace Name="Xamarin.Forms.PlatformConfiguration.WindowsSpecific">
       <Type Name="CollapseStyle" Kind="Enumeration" />
+      <Type Name="ListView" Kind="Class" />
+      <Type Name="ListViewSelectionMode" Kind="Enumeration" />
       <Type Name="MasterDetailPage" Kind="Class" />
       <Type Name="Page" Kind="Class" />
       <Type Name="ToolbarPlacement" Kind="Enumeration" />
@@ -2651,6 +2653,50 @@
           <summary>Sets tab display to the respond to user swipes.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.macOSSpecific.TabbedPage.ShowTabsOnNavigation(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.TabbedPage})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="GetSelectionMode">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode GetSelectionMode (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode GetSelectionMode(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.ListView&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView.GetSelectionMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetSelectionMode">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt; SetSelectionMode (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt; config, Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.ListView&gt; SetSelectionMode(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.ListView&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView&gt;" RefType="this" />
+          <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView.SetSelectionMode(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.ListView},Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>

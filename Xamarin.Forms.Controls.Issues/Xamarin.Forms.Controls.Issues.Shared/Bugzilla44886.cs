@@ -71,7 +71,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
 		{
+			if (e.SelectedItem == null)
+			{
+				return; //ItemSelected is called on deselection, which results in SelectedItem being set to null
+			}
+
 			_vm.Count++;
+
+			ListView lst = (ListView)sender;
+			lst.SelectedItem = null;
 		}
 
 #if UITEST
