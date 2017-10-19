@@ -10,6 +10,7 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	public class XamlGTask : Task
 	{
+		internal static CodeDomProvider Provider = new CSharpCodeProvider();
 		List<ITaskItem> _generatedCodeFiles = new List<ITaskItem>();
 
 		[Required]
@@ -24,12 +25,66 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public override bool Execute()
 		{
-			bool success = true;
-			Log.LogMessage(MessageImportance.Normal, "Generating code behind for XAML files");
+			bool result = true;
 
 			if (XamlFiles == null) {
 				Log.LogMessage("Skipping XamlG");
 				return true;
+			}
+
+			foreach (var xamlFile in XamlFiles) {
+				var targetPath = Path.Combine(OutputPath, xamlFile.GetMetadata("TargetPath") + ".g.cs");
+				result &= Execute(xamlFile, targetPath);
+			}
+
+			return result;
+		}
+
+		internal bool Execute(ITaskItem xamlFile, string targetPath)
+		{
+			Log.LogMessage("Source: {0}", xamlFile.ItemSpec);
+			Log.LogMessage("Language: {0}", Language);
+			Log.LogMessage("AssemblyName: {0}", AssemblyName);
+			Log.LogMessage("OutputFile {0}", targetPath);
+
+			try
+			{
+				GenerateFile(xamlFile.ItemSpec, targetPath);
+				_generatedCodeFiles.Add(new TaskItem(Microsoft.Build.Evaluation.ProjectCollection.Escape(targetPath)));
+				return true;
+			}
+			catch (XmlException xe)
+			{
+				Log.LogError(null, null, null, xamlFile.ItemSpec, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
+
+				return false;
+			}
+			catch (Exception e)
+			{
+				Log.LogError(null, null, null, xamlFile.ItemSpec, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);
+				return false;
+			}
+		}
+
+		internal static void ParseXaml(TextReader xaml, out string rootType, out string rootNs, out CodeTypeReference baseType,
+			out IEnumerable<CodeMemberField> namedFields)
+		{
+			var xmlDoc = new XmlDocument();
+			xmlDoc.Load(xaml);
+
+			var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+			nsmgr.AddNamespace("__f__", XamlParser.XFUri);
+
+			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
+
+			if (root == null)
+			{
+				Console.Error.WriteLine("{0}: No root node found");
+				rootType = null;
+				rootNs = null;
+				baseType = null;
+				namedFields = null;
+				return;
 			}
 
 			foreach (var xamlFile in XamlFiles) {
@@ -49,9 +104,57 @@ namespace Xamarin.Forms.Build.Tasks
 					if (generator.Execute())
 						_generatedCodeFiles.Add(new TaskItem(Microsoft.Build.Evaluation.ProjectCollection.Escape(outputFile)));
 				}
-				catch (XmlException xe) {
-					Log.LogError(null, null, null, xamlFile.ItemSpec, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
-					success = false;
+				if (attr.Prefix != "xmlns")
+					continue;
+				nsmgr.AddNamespace(attr.LocalName, attr.Value);
+			}
+
+			var rootClass = root.Attributes["Class", XamlParser.X2006Uri]
+			                    ?? root.Attributes["Class", XamlParser.X2009Uri];
+			if (rootClass == null)
+			{
+				rootType = null;
+				rootNs = null;
+				baseType = null;
+				namedFields = null;
+				return;
+			}
+
+			string rootAsm, targetPlatform;
+			XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootNs, out rootAsm, out targetPlatform);
+			namedFields = GetCodeMemberFields(root, nsmgr);
+
+			var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
+			var xmlType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null): null);
+			baseType = GetType(xmlType, root.GetNamespaceOfPrefix);
+		}
+
+		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
+			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
+						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
+						new CodeAttributeArgument(new CodePrimitiveExpression("0.0.0.0")));
+
+		internal static void GenerateCode(string rootType, string rootNs, CodeTypeReference baseType,
+		                                  IEnumerable<CodeMemberField> namedFields, string xamlFile, string outFile)
+		{
+			//Create the target directory if required
+			Directory.CreateDirectory(Path.GetDirectoryName(outFile));
+
+			if (rootType == null)
+			{
+				File.WriteAllText(outFile, "");
+				return;
+			}
+
+			var ccu = new CodeCompileUnit();
+			var declNs = new CodeNamespace(rootNs);
+			ccu.Namespaces.Add(declNs);
+
+			var declType = new CodeTypeDeclaration(rootType) {
+				IsPartial = true,
+				CustomAttributes = {
+					new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlFilePathAttribute).FullName}"),
+						 new CodeAttributeArgument(new CodePrimitiveExpression(xamlFile)))
 				}
 				catch (Exception e) {
 					Log.LogError(null, null, null, xamlFile.ItemSpec, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);

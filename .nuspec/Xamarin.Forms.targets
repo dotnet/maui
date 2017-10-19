@@ -1,9 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll"/>
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 
 	<PropertyGroup>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
@@ -12,6 +10,48 @@
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
+	<ItemGroup>
+		<ProjectCapability Include="XamarinForms" />
+	</ItemGroup>
+
+	<!-- Check Tasks ABI and other validations -->
+	<PropertyGroup>
+		<_XFTargetsImportedAgain Condition="'$(_XFTargetsImported)'=='True'">True</_XFTargetsImportedAgain>
+		<_XFTargetsImported>True</_XFTargetsImported>
+		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' == ''">true</IsXBuild>
+		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' != ''">false</IsXBuild>
+	</PropertyGroup>
+
+	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
+		<Error
+			Text="Xamarin.Forms targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
+			Code="XF001"
+			Condition="'$(_XFTargetsImportedAgain)' == 'True'" />
+
+		<GetTasksAbi>
+			<Output TaskParameter="AbiVersion" PropertyName="_XFTasksAbi" />
+		</GetTasksAbi >
+
+		<PropertyGroup>
+			<_XFTasksExpectedAbi>2</_XFTasksExpectedAbi>
+		</PropertyGroup>
+
+		<Error
+			Text="Xamarin.Forms tasks do not match targets. Please ensure that all projects reference the same version of Xamarin.Forms, and if the error persists, please restart the IDE."
+			Code="XF002"
+			Condition="'$(_XFTasksAbi)' != '$(_XFTasksExpectedAbi)'" />
+	</Target>
+
+	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+		<Error
+			Text="Xamarin.Forms require msbuild. xbuild is no longer supported."
+			Code="XF003"
+			Condition="'$(IsXBuild)' == 'true'" />
+	</Target>
+
+	<!-- XamlG -->
+	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
+
 	<PropertyGroup>
 		<CoreCompileDependsOn>
 			XamlG;
@@ -19,10 +59,7 @@
 		</CoreCompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
-		</PropertyGroup>
+	<Target Name="XamlG">
 		<XamlGTask
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
@@ -41,51 +78,10 @@
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<ProjectCapability Include="XamarinForms" />
-	</ItemGroup>
-
-	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
-  
-	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
-  
 	<PropertyGroup>
-		<XamlGDependsOn>
-			_PreXamlG;
-			_CollectXamlFiles;
-			_CoreXamlG;
-		</XamlGDependsOn>
+		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>
 	</PropertyGroup>
-  
-	<Target Name="_PreXamlG">
-		<MakeDir Directories="$(IntermediateOutputPath)"/>
-	</Target>
-  
-	<Target Name="_CollectXamlFiles">
-		<ItemGroup>
-			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"/>
-		</ItemGroup>
-		<FixedCreateCSharpManifestResourceName ResourceFiles="@(_XamlResources)" RootNamespace="$(RootNamespace)">
-			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="XamlFiles" />
-		</FixedCreateCSharpManifestResourceName>
-		<ItemGroup>
-			<XamlGFiles Include="@(XamlFiles->'$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)')"/>
-			<Compile Include="@(XamlGFiles)"/>
-			<FileWrites Include="@(XamlGFiles)"/>
-		</ItemGroup>
-	</Target>
-  
-	<Target Name="_CoreXamlG"
-		Inputs = "@(XamlFiles)"
-		Outputs = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
-		<XamlGTask
-			Source="@(XamlFiles)"
-			Language = "$(Language)"
-			AssemblyName = "$(AssemblyName)"
-			OutputFile = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
-		</XamlGTask>
-	</Target>
-  
+
 	<Target Name="XamlC">
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
@@ -94,26 +90,5 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
 			KeepXamlResources = "$(XFKeepXamlResources)" />
-	</Target>
-
-	<!-- CssG -->
-	<PropertyGroup>
-		<CoreCompileDependsOn>
-			CssG;
-			$(CoreCompileDependsOn);
-		</CoreCompileDependsOn>
-	</PropertyGroup>
-	<Target Name="CssG" BeforeTargets="BeforeCompile" Condition="'$(_CssGAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_CssGAlreadyExecuted>true</_CssGAlreadyExecuted>
-		</PropertyGroup>
-		<CssGTask
-			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
-			Language = "$(Language)"
-			AssemblyName = "$(AssemblyName)"
-			OutputPath = "$(IntermediateOutputPath)">
-			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
-			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
-		</CssGTask>
 	</Target>
 </Project>
