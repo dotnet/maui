@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Platform.iOS
 				readonly UIImageView _imageView;
 				readonly UILabel _label;
 
-				public SecondaryToolbarItemContent() : base(new RectangleF(0, 0, 75, 20))
+				public SecondaryToolbarItemContent()
 				{
 					BackgroundColor = UIColor.Clear;
 					_imageView = new UIImageView { BackgroundColor = UIColor.Clear };
