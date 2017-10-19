@@ -370,7 +370,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if (Forms.IsiOS11OrNewer)
+					if(Forms.IsiOS11OrNewer)
 					{
 						await Task.Delay(1);
 					}
