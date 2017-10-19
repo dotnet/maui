@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
 
-			IVisualElementRenderer view = Platform.CreateRenderer(cell.View);
+			IVisualElementRenderer view = Platform.CreateRenderer(cell.View, context);
 			Platform.SetRenderer(cell.View, view);
 			cell.View.IsPlatformEnabled = true;
 			var c = new ViewCellContainer(context, view, cell, ParentView, unevenRows, rowHeight);
@@ -141,8 +141,10 @@ namespace Xamarin.Forms.Platform.Android
 				Performance.Start();
 
 				var renderer = GetChildAt(0) as IVisualElementRenderer;
-				var viewHandlerType = Registrar.Registered.GetHandlerType(cell.View.GetType()) ?? typeof(Platform.DefaultRenderer);
-				if (renderer != null && renderer.GetType() == viewHandlerType)
+				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(Platform.DefaultRenderer);
+				var reflectableType = renderer as System.Reflection.IReflectableType;
+				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
+				if (renderer != null && rendererType == viewHandlerType)
 				{
 					Performance.Start("Reuse");
 					_viewCell = cell;
@@ -178,7 +180,7 @@ namespace Xamarin.Forms.Platform.Android
 				_view.View.Dispose();
 
 				_viewCell = cell;
-				_view = Platform.CreateRenderer(_viewCell.View);
+				_view = Platform.CreateRenderer(_viewCell.View, Context);
 
 				Platform.SetRenderer(_viewCell.View, _view);
 				AddView(_view.View);

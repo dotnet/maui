@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var source = deepLinkUri.Thumbnail;
 			IImageSourceHandler handler;
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				UIImage uiimage;
 				try

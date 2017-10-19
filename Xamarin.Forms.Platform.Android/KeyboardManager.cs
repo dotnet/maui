@@ -11,13 +11,10 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		internal static void HideKeyboard(this AView inputView, bool overrideValidation = false)
 		{
-			if (Forms.Context == null)
-				throw new InvalidOperationException("Call Forms.Init() before HideKeyboard");
-
 			if (inputView == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
 
-			using (var inputMethodManager = (InputMethodManager)Forms.Context.GetSystemService(Context.InputMethodService))
+			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService))
 			{
 				if (!overrideValidation && !(inputView is EditText || inputView is TextView || inputView is SearchView))
 					throw new ArgumentException("inputView should be of type EditText, SearchView, or TextView");
@@ -30,13 +27,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static void ShowKeyboard(this AView inputView)
 		{
-			if (Forms.Context == null)
-				throw new InvalidOperationException("Call Forms.Init() before ShowKeyboard");
-
 			if (inputView == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
 
-			using (var inputMethodManager = (InputMethodManager)Forms.Context.GetSystemService(Context.InputMethodService))
+			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService))
 			{
 				if (inputView is EditText || inputView is TextView || inputView is SearchView)
 				{

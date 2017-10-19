@@ -6,7 +6,7 @@ namespace Xamarin.Forms.Build.Tasks
 	public class GetTasksAbi : Task
 	{
 		[Output]
-		public string AbiVersion { get; } = "1";
+		public string AbiVersion { get; } = "2";
 
 		public override bool Execute()
 			=> true;

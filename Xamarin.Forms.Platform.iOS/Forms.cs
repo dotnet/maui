@@ -93,6 +93,7 @@ namespace Xamarin.Forms
 #else
 			Device.SetIdiom(TargetIdiom.Desktop);
 #endif
+			Device.SetFlags(s_flags);
 			Device.PlatformServices = new IOSPlatformServices();
 			Device.Info = new IOSDeviceInfo();
 
@@ -331,6 +332,15 @@ namespace Xamarin.Forms
 						(System.IO.FileShare)share);
 					return Task.FromResult(stream);
 				}
+			}
+
+			public void QuitApplication()
+			{
+#if __MOBILE__
+				Log.Warning(nameof(IOSPlatformServices), "Platform doesn't implement QuitApp");
+#else
+				NSApplication.SharedApplication.Terminate(new NSObject());
+#endif
 			}
 		}
 	}

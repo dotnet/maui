@@ -50,6 +50,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AbsoluteLayoutFlags.cs" />
+    <Compile Include="Accelerator.cs" />
+    <Compile Include="AcceleratorTypeConverter.cs" />
     <Compile Include="AutomationProperties.cs" />
     <Compile Include="ActionSheetArguments.cs" />
     <Compile Include="AlertArguments.cs" />
@@ -464,7 +466,12 @@
     <Compile Include="Xaml\TypeConversionExtensions.cs" />
     <Compile Include="Xaml\ValueConverterProvider.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\Page.cs" />
+    <Compile Include="ClickGestureRecognizer.cs" />
+    <Compile Include="ClickedEventArgs.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="CompressedLayout.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\NavigationPage.cs" />
+    <Compile Include="PlatformConfiguration\macOSSpecific\NavigationTransitionStyle.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

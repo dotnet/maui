@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
 
@@ -6,6 +8,12 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class TabbedRenderer : VisualElementRenderer<TabbedPage>
 	{
+		public TabbedRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use TabbedRenderer(Context) instead.")]
 		public TabbedRenderer()
 		{
 			AutoPackage = false;
@@ -69,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			if (Platform.GetRenderer(view) == null)
-				Platform.SetRenderer(view, Platform.CreateRenderer(view));
+				Platform.SetRenderer(view, Platform.CreateRenderer(view, Context));
 
 			AddView(Platform.GetRenderer(view).View);
 		}

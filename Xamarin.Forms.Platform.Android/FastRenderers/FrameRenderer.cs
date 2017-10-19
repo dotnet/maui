@@ -28,6 +28,13 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
 
+		public FrameRenderer(Context context) : base(context)
+		{
+			_gestureManager = new GestureManager(this);
+			_effectControlProvider = new EffectControlProvider(this);
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use FrameRenderer(Context) instead.")]
 		public FrameRenderer() : base(Forms.Context)
 		{
 			_gestureManager = new GestureManager(this);
@@ -186,7 +193,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public override bool OnTouchEvent(MotionEvent e)
 		{
-			if (_gestureManager.OnTouchEvent(e))
+			if (_gestureManager.OnTouchEvent(e) || base.OnTouchEvent(e))
 			{
 				return true;
 			}

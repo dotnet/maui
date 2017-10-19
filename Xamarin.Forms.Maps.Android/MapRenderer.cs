@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Android.Content;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
@@ -15,8 +16,7 @@ using Math = System.Math;
 
 namespace Xamarin.Forms.Maps.Android
 {
-	public class MapRenderer : ViewRenderer<Map, MapView>,
-		GoogleMap.IOnCameraChangeListener, IOnMapReadyCallback
+	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback 
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 
@@ -28,6 +28,12 @@ namespace Xamarin.Forms.Maps.Android
 
 		List<Marker> _markers;
 
+		public MapRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use MapRenderer(Context) instead.")]
 		public MapRenderer()
 		{
 			AutoPackage = false;
@@ -40,11 +46,6 @@ namespace Xamarin.Forms.Maps.Android
 		internal static Bundle Bundle
 		{
 			set { s_bundle = value; }
-		}
-
-		public void OnCameraChange(CameraPosition pos)
-		{
-			UpdateVisibleRegion(pos.Target);
 		}
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -77,7 +78,7 @@ namespace Xamarin.Forms.Maps.Android
 				if (NativeMap != null)
  				{
  					NativeMap.MyLocationEnabled = false;
- 					NativeMap.SetOnCameraChangeListener(null);
+ 					NativeMap.SetOnCameraMoveListener(null);
  					NativeMap.InfoWindowClick -= MapOnMarkerClick;
  					NativeMap.Dispose();
 					NativeMap = null;
@@ -109,7 +110,7 @@ namespace Xamarin.Forms.Maps.Android
 
 				if (NativeMap != null)
 				{
-					NativeMap.SetOnCameraChangeListener(null);
+					NativeMap.SetOnCameraMoveListener(null);
 					NativeMap.InfoWindowClick -= MapOnMarkerClick;
 					NativeMap = null;
 				}
@@ -189,7 +190,7 @@ namespace Xamarin.Forms.Maps.Android
 				return;
 			}
 			
-			map.SetOnCameraChangeListener(this);
+			map.SetOnCameraMoveListener(this);
 			map.InfoWindowClick += MapOnMarkerClick;
 			
 			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
@@ -392,6 +393,11 @@ namespace Xamarin.Forms.Maps.Android
 		{
 			NativeMap = map;
 			OnMapReady(map);
+		}
+
+		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
+		{
+			UpdateVisibleRegion(NativeMap.CameraPosition.Target);
 		}
 	}
 }

@@ -167,7 +167,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				Windows.UI.Xaml.Media.ImageSource imagesource;
 

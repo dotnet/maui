@@ -222,6 +222,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51427.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60122.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_0.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonBackgroundColorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
@@ -284,6 +289,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53179_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestartAppTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPages\QuickCollectNavigationPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42277.cs" />
@@ -601,6 +607,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52700.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39407.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonFastRendererTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DesktopSupportTestPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58779.cs" />
   </ItemGroup>
   <ItemGroup>

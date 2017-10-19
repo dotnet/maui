@@ -37,8 +37,47 @@ namespace Xamarin.Forms.Internals
 			return (TRegistrable)handler;
 		}
 
+		internal TRegistrable GetHandler(Type type, params object[] args)
+		{
+			if (args.Length == 0)
+			{
+				return GetHandler(type);
+			}
+
+			Type handlerType = GetHandlerType(type);
+			if (handlerType == null)
+				return null;
+
+			// This is by no means a general solution to matching with the correct constructor, but it'll
+			// do for finding Android renderers which need Context (vs older custom renderers which may still use
+			// parameterless constructors)
+			if (handlerType.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == args.Length))
+			{
+				object handler = Activator.CreateInstance(handlerType, args);
+				return (TRegistrable)handler;
+			}
+			
+			return GetHandler(type);
+		}
+
 		public TOut GetHandler<TOut>(Type type) where TOut : TRegistrable
 		{
+			return (TOut)GetHandler(type);
+		}
+
+		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : TRegistrable
+		{
+			return (TOut)GetHandler(type, args);
+		}
+
+		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable
+		{
+			if (obj == null)
+				throw new ArgumentNullException(nameof(obj));
+
+			var reflectableType = obj as IReflectableType;
+			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
+
 			return (TOut)GetHandler(type);
 		}
 
@@ -75,6 +114,17 @@ namespace Xamarin.Forms.Internals
 			Register(viewType, type); // Register this so we don't have to look for the RenderWith Attibute again in the future
 
 			return type;
+		}
+
+		public Type GetHandlerTypeForObject(object obj)
+		{
+			if (obj == null)
+				throw new ArgumentNullException(nameof(obj));
+
+			var reflectableType = obj as IReflectableType;
+			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
+
+			return GetHandlerType(type);
 		}
 
 		bool LookupHandlerType(Type viewType, out Type handlerType)

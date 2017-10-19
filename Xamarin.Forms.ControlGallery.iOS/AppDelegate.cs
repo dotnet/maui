@@ -154,7 +154,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
-			App.IOSVersion = int.Parse(UIDevice.CurrentDevice.SystemVersion.Substring(0, 1));
+			var versionPart = UIDevice.CurrentDevice.SystemVersion.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+			App.IOSVersion = int.Parse(versionPart[0]);
 
 			Xamarin.Calabash.Start();
 			Forms.Init();
@@ -386,6 +387,12 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		{
 			_app.Reset();
 			return String.Empty;
+		}
+
+		[Export("iOSVersion")]
+		public int iOSVersion()
+		{
+			return App.IOSVersion;
 		}
 	}
 

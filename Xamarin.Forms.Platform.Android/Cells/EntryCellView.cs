@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 
 			_labelTextColor = color;
-			_label.SetTextColor(color.ToAndroid(defaultColorResourceId));
+			_label.SetTextColor(color.ToAndroid(defaultColorResourceId, _label.Context));
 		}
 
 		public void SetRenderHeight(double height)

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using AImageView = Android.Widget.ImageView;
@@ -18,6 +19,12 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isDisposed;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
+		public ImageRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ImageRenderer(Context) instead.")]
 		public ImageRenderer()
 		{
 			AutoPackage = false;

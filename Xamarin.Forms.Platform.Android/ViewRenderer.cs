@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.App;
+using Android.Content;
 using Android.OS;
 using Android.Views;
 using AView = Android.Views.View;
@@ -9,10 +10,27 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public abstract class ViewRenderer : ViewRenderer<View, AView>
 	{
+		protected ViewRenderer(Context context) : base(context)
+		{
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ViewRenderer(Context) instead.")]
+		protected ViewRenderer()
+		{
+		}
 	}
 
 	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
+		protected ViewRenderer(Context context) : base(context)
+		{
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use ViewRenderer(Context) instead.")]
+		protected ViewRenderer() 
+		{
+		}
+
 		protected virtual TNativeView CreateNativeControl()
 		{
 			return default(TNativeView);

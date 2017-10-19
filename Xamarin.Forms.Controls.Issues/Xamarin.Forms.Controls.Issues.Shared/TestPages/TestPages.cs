@@ -79,7 +79,12 @@ namespace Xamarin.Forms.Controls
 			// Running on a device
 			var app = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug()
 				//Uncomment to run from a specific iOS SIM, get the ID from XCode -> Devices
-				.StartApp();
+				.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
+			int _iosVersion;
+			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
+			{
+				iOSVersion = _iosVersion;
+			}
 
 			// Running on the simulator
 			//var app = ConfigureApp.iOS
@@ -90,6 +95,8 @@ namespace Xamarin.Forms.Controls
 
 			return app;
 		}
+
+		public static int iOSVersion { get; private set; }
 #endif
 
 #if __MACOS__

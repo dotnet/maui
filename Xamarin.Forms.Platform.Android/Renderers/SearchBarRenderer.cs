@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
@@ -18,6 +19,12 @@ namespace Xamarin.Forms.Platform.Android
 		InputTypes _inputType;
 		ColorStateList _textColorDefault;
 
+		public SearchBarRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use SearchBarRenderer(Context) instead.")]
 		public SearchBarRenderer()
 		{
 			AutoPackage = false;
