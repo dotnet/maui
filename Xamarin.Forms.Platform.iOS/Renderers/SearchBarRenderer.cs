@@ -119,6 +119,14 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateCancelButton();
 		}
 
+		public override CoreGraphics.CGSize SizeThatFits(CoreGraphics.CGSize size)
+		{
+			if (nfloat.IsInfinity(size.Width) && Forms.IsiOS11OrNewer)
+				size.Width = nfloat.MaxValue;
+			
+			return base.SizeThatFits(size);
+		}
+
 		void OnCancelClicked(object sender, EventArgs args)
 		{
 			ElementController.SetValueFromRenderer(SearchBar.TextProperty, null);
