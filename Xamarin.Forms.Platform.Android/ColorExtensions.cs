@@ -1,3 +1,5 @@
+using System;
+using Android.Content;
 using Android.Content.Res;
 using Android.Support.V4.Content;
 using AColor = Android.Graphics.Color;
@@ -13,11 +15,22 @@ namespace Xamarin.Forms.Platform.Android
 			return new AColor((byte)(byte.MaxValue * self.R), (byte)(byte.MaxValue * self.G), (byte)(byte.MaxValue * self.B), (byte)(byte.MaxValue * self.A));
 		}
 
+		[Obsolete("ToAndroid(this Color, int) is obsolete as of version 3.0. Please use ToAndroid(this Color, int, Context) instead.")]
 		public static AColor ToAndroid(this Color self, int defaultColorResourceId)
 		{
 			if (self == Color.Default)
 			{
 				return new AColor(ContextCompat.GetColor(Forms.Context, defaultColorResourceId));
+			}
+
+			return ToAndroid(self);
+		}
+
+		public static AColor ToAndroid(this Color self, int defaultColorResourceId, Context context)
+		{
+			if (self == Color.Default)
+			{
+				return new AColor(ContextCompat.GetColor(context, defaultColorResourceId));
 			}
 
 			return ToAndroid(self);

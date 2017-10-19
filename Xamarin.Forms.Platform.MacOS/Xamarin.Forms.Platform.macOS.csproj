@@ -226,6 +226,7 @@
     <Compile Include="..\Xamarin.Forms.Platform.iOS\VisualElementRenderer.cs">
       <Link>VisualElementRenderer.cs</Link>
     </Compile>
+    <Compile Include="Extensions\NSMenuExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj">

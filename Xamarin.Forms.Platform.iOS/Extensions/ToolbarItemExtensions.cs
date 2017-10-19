@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			async void UpdateIconAndStyle()
 			{
-				var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(_item.Icon.GetType());
+				var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(_item.Icon);
 				var image = await source.LoadImageAsync(_item.Icon);
 				Image = image;
 				Style = UIBarButtonItemStyle.Plain;
@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UIImage image = null;
 				if (!string.IsNullOrEmpty(_item.Icon?.File))
 				{
-					var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(_item.Icon.GetType());
+					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(_item.Icon);
 					image = await source.LoadImageAsync(_item.Icon);
 				}
 				((SecondaryToolbarItemContent)CustomView).Image = image;
@@ -147,7 +147,7 @@ namespace Xamarin.Forms.Platform.iOS
 				readonly UIImageView _imageView;
 				readonly UILabel _label;
 
-				public SecondaryToolbarItemContent() : base(new RectangleF(0, 0, 75, 20))
+				public SecondaryToolbarItemContent()
 				{
 					BackgroundColor = UIColor.Clear;
 					_imageView = new UIImageView { BackgroundColor = UIColor.Clear };

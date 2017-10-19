@@ -9,6 +9,7 @@ using Android.Widget;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
 using Android.Graphics.Drawables;
+using Android.Support.V7.App;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -191,12 +192,11 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				MenuItem action = ActionModeContext.ContextActions[i];
 
-				IMenuItem item = menu.Add(Menu.None, i, Menu.None, action.Text);
-
+				IMenuItem item = menu.Add(global::Android.Views.Menu.None, i,global::Android.Views.Menu.None, action.Text);
 				var icon = action.Icon;
 				if (icon != null)
 				{
-					Drawable iconDrawable = _context.Resources.GetFormsDrawable(icon);
+					Drawable iconDrawable = _context.GetFormsDrawable(icon);
 					if (iconDrawable != null)
 						item.SetIcon(iconDrawable);
 				}
@@ -242,9 +242,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				ActionModeContext = cell;
 
-				var appCompatActivity = Forms.Context as FormsAppCompatActivity;
+				var appCompatActivity = view.Context as AppCompatActivity;
 				if (appCompatActivity == null)
-					_actionMode = ((Activity)Forms.Context).StartActionMode(this);
+					_actionMode = ((Activity)view.Context).StartActionMode(this);
 				else
 					_supportActionMode = appCompatActivity.StartSupportActionMode(this);
 			}

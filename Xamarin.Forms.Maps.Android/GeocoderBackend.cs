@@ -9,23 +9,31 @@ namespace Xamarin.Forms.Maps.Android
 {
 	internal class GeocoderBackend
 	{
-		public static void Register(Context context)
+		readonly Context _context;
+
+		AGeocoder _geocoder;
+		AGeocoder AndroidGeocoder => _geocoder ?? (_geocoder = new AGeocoder(_context));
+
+		public GeocoderBackend(Context context)
+		{
+			_context = context;
+		}
+
+		public void Register()
 		{
 			Geocoder.GetPositionsForAddressAsyncFunc = GetPositionsForAddressAsync;
 			Geocoder.GetAddressesForPositionFuncAsync = GetAddressesForPositionAsync;
 		}
 
-		public static async Task<IEnumerable<Position>> GetPositionsForAddressAsync(string address)
+		public async Task<IEnumerable<Position>> GetPositionsForAddressAsync(string address)
 		{
-			var geocoder = new AGeocoder(Forms.Context);
-			IList<Address> addresses = await geocoder.GetFromLocationNameAsync(address, 5);
+			IList<Address> addresses = await AndroidGeocoder.GetFromLocationNameAsync(address, 5);
 			return addresses.Select(p => new Position(p.Latitude, p.Longitude));
 		}
 
-		public static async Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
+		public async Task<IEnumerable<string>> GetAddressesForPositionAsync(Position position)
 		{
-			var geocoder = new AGeocoder(Forms.Context);
-			IList<Address> addresses = await geocoder.GetFromLocationAsync(position.Latitude, position.Longitude, 5);
+			IList<Address> addresses = await AndroidGeocoder.GetFromLocationAsync(position.Latitude, position.Longitude, 5);
 			return addresses.Select(p =>
 			{
 				IEnumerable<string> lines = Enumerable.Range(0, p.MaxAddressLineIndex + 1).Select(p.GetAddressLine);

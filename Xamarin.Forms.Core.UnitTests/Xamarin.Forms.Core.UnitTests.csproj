@@ -63,6 +63,8 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcceleratorTypeConverterUnitTests.cs" />
+    <Compile Include="AcceleratorUnitTests.cs" />
     <Compile Include="AnimatableKeyTests.cs" />
     <Compile Include="BaseTestFixture.cs" />
     <Compile Include="AbsoluteLayoutTests.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="ColorUnitTests.cs" />
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
+    <Compile Include="MenuUnitTests.cs" />
     <Compile Include="TemplatedViewUnitTests.cs" />
     <Compile Include="TemplatedPageUnitTests.cs" />
     <Compile Include="ContentFormUnitTests.cs" />

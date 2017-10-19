@@ -13,6 +13,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 {
 	public class _57114CustomRenderer : Platform.Android.AppCompat.ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{
+		public _57114CustomRenderer(Context context) : base(context)
+		{
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Bugzilla57114._57114View> e)
 		{
 			if (e.NewElement != null && Control == null)

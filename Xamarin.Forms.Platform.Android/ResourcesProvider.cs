@@ -1,4 +1,3 @@
-using Android.Content;
 using Android.Content.Res;
 using Android.Util;
 using Xamarin.Forms.Internals;
@@ -27,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 			global::Android.Graphics.Color defaultColor = global::Android.Graphics.Color.Argb(0, 0, 0, 0);
 			global::Android.Graphics.Color androidColor = defaultColor;
 
-			Context context = Forms.Context;
+			var context = Forms.ApplicationContext;
 			using (var value = new TypedValue())
 			{
 				if (context.Theme.ResolveAttribute(style, value, true))

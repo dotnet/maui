@@ -1,8 +1,10 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Views;
 using Android.Widget;
-using Java.Lang;
 using AButton = Android.Widget.Button;
+using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -11,6 +13,12 @@ namespace Xamarin.Forms.Platform.Android
 		AButton _downButton;
 		AButton _upButton;
 
+		public StepperRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use StepperRenderer(Context) instead.")]
 		public StepperRenderer()
 		{
 			AutoPackage = false;

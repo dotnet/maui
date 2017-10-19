@@ -10,6 +10,7 @@ using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
 using Orientation = Android.Widget.Orientation;
 using System.Collections.Specialized;
+using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -19,6 +20,12 @@ namespace Xamarin.Forms.Platform.Android
 		bool _isDisposed;
 		TextColorSwitcher _textColorSwitcher;
 
+		public PickerRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use PickerRenderer(Context) instead.")]
 		public PickerRenderer()
 		{
 			AutoPackage = false;

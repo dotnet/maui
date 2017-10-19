@@ -24,19 +24,27 @@ namespace Xamarin.Forms.Platform.WinRT
 	{
 		const char ObfuscationCharacter = '●';
 
-		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register(nameof(PlaceholderForegroundBrush), typeof(Brush), typeof(FormsTextBox),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = 
+			DependencyProperty.Register(nameof(PlaceholderForegroundBrush), typeof(Brush), typeof(FormsTextBox),
+				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty = DependencyProperty.Register(nameof(PlaceholderForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
-			new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty = 
+			DependencyProperty.Register(nameof(PlaceholderForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
+				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty ForegroundFocusBrushProperty = DependencyProperty.Register(nameof(ForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty ForegroundFocusBrushProperty = 
+			DependencyProperty.Register(nameof(ForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox), 
+				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty BackgroundFocusBrushProperty = DependencyProperty.Register(nameof(BackgroundFocusBrush), typeof(Brush), typeof(FormsTextBox), new PropertyMetadata(default(Brush)));
+		public static readonly DependencyProperty BackgroundFocusBrushProperty = 
+			DependencyProperty.Register(nameof(BackgroundFocusBrush), typeof(Brush), typeof(FormsTextBox), 
+				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register(nameof(IsPassword), typeof(bool), typeof(FormsTextBox), new PropertyMetadata(default(bool), OnIsPasswordChanged));
+		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register(nameof(IsPassword), 
+			typeof(bool), typeof(FormsTextBox), new PropertyMetadata(default(bool), OnIsPasswordChanged));
 
-		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
+		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), 
+			typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
 
 		InputScope passwordInputScope;
 		Border _borderElement;
@@ -373,6 +381,22 @@ namespace Xamarin.Forms.Platform.WinRT
 				IsSpellCheckEnabled = _cachedSpellCheckSetting;
 				IsTextPredictionEnabled = _cachedPredictionsSetting;
 			}
+		}
+
+		static void FocusPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+		{
+			// If we're modifying the properties related to the focus state of the control (e.g., 
+			// ForegroundFocusBrush), the changes won't be reflected immediately because they are only applied
+			// when the Windows.UI.XAML.VisualStateManager moves to the "Focused" state. So we have to force a 
+			// "refresh" of the Focused state by going to that state again
+
+			var control = dependencyObject as Control;
+			if (control == null || control.FocusState == FocusState.Unfocused)
+			{
+				return;
+			}
+
+			VisualStateManager.GoToState(control, "Focused", false);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.ComponentModel;
 using AppKit;
 using CoreGraphics;
+using Xamarin.Forms.Platform.macOS.Extensions;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -121,7 +122,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			NSView nativeCell;
 			if (reusable == null || !isRecycle)
 			{
-				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
+				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 				nativeCell = renderer.GetCell(cell, null, tableView);
 			}
 			else
@@ -198,28 +199,12 @@ namespace Xamarin.Forms.Platform.MacOS
 				for (int i = 0; i < contextActionsCount; i++)
 				{
 					var contextAction = contextActionCell.ContextActions[i];
-					var nsMenuItem = GetNSMenuItem(i, contextAction);
+					var nsMenuItem = contextAction.ToNSMenuItem(i);
 					menu.AddItem(nsMenuItem);
 				}
 
 				NSMenu.PopUpContextMenu(menu, theEvent, this);
 			}
-		}
-
-		static NSMenuItem GetNSMenuItem(int i, MenuItem contextAction)
-		{
-			var menuItem = new NSMenuItem(contextAction.Text ?? "");
-			menuItem.Tag = i;
-			menuItem.Enabled = contextAction.IsEnabled;
-			if (menuItem.Enabled)
-				menuItem.Activated += (sender, e) =>
-				{
-					contextAction.Activate();
-				};
-			if (!string.IsNullOrEmpty(contextAction.Icon))
-				menuItem.Image = new NSImage(contextAction.Icon);
-
-			return menuItem;
 		}
 	}
 }

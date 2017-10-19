@@ -1,4 +1,5 @@
 using System;
+using Android.Content;
 using Android.Support.V7.Widget;
 using Android.Widget;
 
@@ -8,6 +9,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	{
 		bool _disposed;
 
+		public SwitchRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use SwitchRenderer(Context) instead.")]
 		public SwitchRenderer()
 		{
 			AutoPackage = false;

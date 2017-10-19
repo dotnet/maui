@@ -13,7 +13,7 @@ namespace Xamarin.Forms
 
 		public static void SetFlags(params string[] flags)
 		{
-			if (s_isInitialized)
+			if (IsInitialized)
 			{
 				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
 			}

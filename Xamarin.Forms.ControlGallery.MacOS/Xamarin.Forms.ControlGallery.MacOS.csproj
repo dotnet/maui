@@ -105,7 +105,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Platform.MacOS\Xamarin.Forms.Platform.MacOS.csproj">
       <Project>{C0059C45-EA1E-42F3-8A0E-794BB547EC3C}</Project>
-      <Name>Xamarin.Forms.Platform.macOS</Name>
+      <Name>Xamarin.Forms.Platform.MacOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
       <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
@@ -113,7 +113,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Maps.MacOS\Xamarin.Forms.Maps.MacOS.csproj">
       <Project>{C3C24A6D-2D0C-4053-9FCC-E54FF9CA1884}</Project>
-      <Name>Xamarin.Forms.Maps.macOS</Name>
+      <Name>Xamarin.Forms.Maps.MacOS</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -390,6 +390,9 @@
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Images\Vegetables%402x.jpg">
       <Link>Images\Vegetables%402x.jpg</Link>
     </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
 </Project>

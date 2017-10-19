@@ -1,7 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.FixedCreateCSharpManifestResourceName" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
 
 	<PropertyGroup>
@@ -11,39 +10,16 @@
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
-	<PropertyGroup>
-		<CoreCompileDependsOn>
-			XamlG;
-			$(CoreCompileDependsOn);
-		</CoreCompileDependsOn>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<CompileDependsOn>
-			$(CompileDependsOn);
-			XamlC;
-		</CompileDependsOn>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<ProjectCapability Include="XamarinForms" />
 	</ItemGroup>
 
-	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
-
-	<Target Name="XamlG" DependsOnTargets="$(XamlGDependsOn)"/>
-
-	<PropertyGroup>
-		<XamlGDependsOn>
-			_PreXamlG;
-			_CollectXamlFiles;
-			_CoreXamlG;
-		</XamlGDependsOn>
-	</PropertyGroup>
-
+	<!-- Check Tasks ABI and other validations -->
 	<PropertyGroup>
 		<_XFTargetsImportedAgain Condition="'$(_XFTargetsImported)'=='True'">True</_XFTargetsImportedAgain>
 		<_XFTargetsImported>True</_XFTargetsImported>
+		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' == ''">true</IsXBuild>
+		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' != ''">false</IsXBuild>
 	</PropertyGroup>
 
 	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
@@ -57,7 +33,7 @@
 		</GetTasksAbi >
 
 		<PropertyGroup>
-			<_XFTasksExpectedAbi>1</_XFTasksExpectedAbi>
+			<_XFTasksExpectedAbi>2</_XFTasksExpectedAbi>
 		</PropertyGroup>
 
 		<Error
@@ -66,34 +42,41 @@
 			Condition="'$(_XFTasksAbi)' != '$(_XFTasksExpectedAbi)'" />
 	</Target>
 
-	<Target Name="_PreXamlG">
-		<MakeDir Directories="$(IntermediateOutputPath)"/>
-	</Target>
-  
-	<Target Name="_CollectXamlFiles">
-		<ItemGroup>
-			<_XamlResources Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"/>
-		</ItemGroup>
-		<FixedCreateCSharpManifestResourceName ResourceFiles="@(_XamlResources)" RootNamespace="$(RootNamespace)">
-			<Output TaskParameter="ResourceFilesWithManifestResourceNames" ItemName="XamlFiles" />
-		</FixedCreateCSharpManifestResourceName>
-		<ItemGroup>
-			<XamlGFiles Include="@(XamlFiles->'$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)')"/>
-			<Compile Include="@(XamlGFiles)"/>
-			<FileWrites Include="@(XamlGFiles)"/>
-		</ItemGroup>
+	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+		<Error
+			Text="Xamarin.Forms require msbuild. xbuild is no longer supported."
+			Code="XF003"
+			Condition="'$(IsXBuild)' == 'true'" />
 	</Target>
 
-	<Target Name="_CoreXamlG"
-		Inputs = "@(XamlFiles)"
-		Outputs = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+	<!-- XamlG -->
+	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
+
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			XamlG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="XamlG">
 		<XamlGTask
-			Source="@(XamlFiles)"
+			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
 			AssemblyName = "$(AssemblyName)"
-			OutputFile = "$(IntermediateOutputPath)%(ManifestResourceName).g$(DefaultLanguageSourceExtension)">
+			OutputPath = "$(IntermediateOutputPath)">
+			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
+			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
 		</XamlGTask>
 	</Target>
+
+	<!-- XamlC -->
+	<PropertyGroup>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			XamlC;
+		</CompileDependsOn>
+	</PropertyGroup>
 
 	<PropertyGroup>
 		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>

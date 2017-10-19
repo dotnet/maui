@@ -412,7 +412,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 		    if (!string.IsNullOrEmpty(page.Icon?.File))
 		    {
-				var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(page.Icon.GetType());
+				var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(page.Icon);
 				var icon = await source.LoadImageAsync(page.Icon);
 		        return Tuple.Create(icon, (UIImage)null);
 		    }

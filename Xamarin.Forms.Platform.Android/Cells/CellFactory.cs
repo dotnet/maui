@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android
 			CellRenderer renderer = CellRenderer.GetRenderer(item);
 			if (renderer == null)
 			{
-				renderer = Registrar.Registered.GetHandler<CellRenderer>(item.GetType());
+				renderer = Registrar.Registered.GetHandlerForObject<CellRenderer>(item);
 				renderer.ParentView = view;
 			}
 

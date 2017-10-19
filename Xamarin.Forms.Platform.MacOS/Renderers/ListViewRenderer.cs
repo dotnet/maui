@@ -181,7 +181,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				//Header reuse is not working for now , problem with size of something that is not inside a layout
 				//if (_headerRenderer != null)
 				//{
-				//	if (header != null && _headerRenderer.GetType() == Registrar.Registered.GetHandlerType(header.GetType()))
+				//	var reflectableType = _headerRenderer as System.Reflection.IReflectableType;
+				//	var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : _headerRenderer.GetType();
+				//	if (header != null && rendererType == Registrar.Registered.GetHandlerTypeForObject(header))
 				//	{
 				//		_headerRenderer.SetElement(headerView);
 				//		_table.HeaderView = new CustomNSTableHeaderView(Bounds.Width, _headerRenderer);

@@ -29,6 +29,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="Xamarin.UITest, Version=2.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.UITest.2.1.4\lib\net45\Xamarin.UITest.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Xamarin.UITest.Desktop">
       <HintPath>..\packages\Xamarin.UITest.Desktop.0.0.7\lib\net45\Xamarin.UITest.Desktop.dll</HintPath>
     </Reference>
@@ -63,9 +67,6 @@
     <Reference Include="ServiceStack.Client">
       <HintPath>..\packages\ServiceStack.Client.4.5.12\lib\net45\ServiceStack.Client.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.UITest">
-      <HintPath>..\packages\Xamarin.UITest.2.1.2\lib\net45\Xamarin.UITest.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseViewContainerRemoteMac.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="MacOSApp.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

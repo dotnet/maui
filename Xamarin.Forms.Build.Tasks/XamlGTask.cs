@@ -14,44 +14,57 @@ namespace Xamarin.Forms.Build.Tasks
 	public class XamlGTask : Task
 	{
 		internal static CodeDomProvider Provider = new CSharpCodeProvider();
+		List<ITaskItem> _generatedCodeFiles = new List<ITaskItem>();
 
 		[Required]
-		public string Source { get; set; }
-
-		public string Language { get; set; }
-
-		public string AssemblyName { get; set; }
+		public ITaskItem[] XamlFiles { get; set; }
 
 		[Output]
-		public string OutputFile { get; set; }
+		public ITaskItem[] GeneratedCodeFiles => _generatedCodeFiles.ToArray();
+
+		public string Language { get; set; }
+		public string AssemblyName { get; set; }
+		public string OutputPath { get; set; }
 
 		public override bool Execute()
 		{
-			if (Source == null || OutputFile == null)
-			{
+			bool result = true;
+
+			if (XamlFiles == null) {
 				Log.LogMessage("Skipping XamlG");
 				return true;
 			}
 
-			Log.LogMessage("Source: {0}", Source);
+			foreach (var xamlFile in XamlFiles) {
+				var targetPath = Path.Combine(OutputPath, xamlFile.GetMetadata("TargetPath") + ".g.cs");
+				result &= Execute(xamlFile, targetPath);
+			}
+
+			return result;
+		}
+
+		internal bool Execute(ITaskItem xamlFile, string targetPath)
+		{
+			Log.LogMessage("Source: {0}", xamlFile.ItemSpec);
 			Log.LogMessage("Language: {0}", Language);
 			Log.LogMessage("AssemblyName: {0}", AssemblyName);
-			Log.LogMessage("OutputFile {0}", OutputFile);
+			Log.LogMessage("OutputFile {0}", targetPath);
 
 			try
 			{
-				GenerateFile(Source, OutputFile);
+				GenerateFile(xamlFile.ItemSpec, targetPath);
+				_generatedCodeFiles.Add(new TaskItem(Microsoft.Build.Evaluation.ProjectCollection.Escape(targetPath)));
 				return true;
 			}
 			catch (XmlException xe)
 			{
-				Log.LogError(null, null, null, Source, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
+				Log.LogError(null, null, null, xamlFile.ItemSpec, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
 
 				return false;
 			}
 			catch (Exception e)
 			{
-				Log.LogError(null, null, null, Source, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);
+				Log.LogError(null, null, null, xamlFile.ItemSpec, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);
 				return false;
 			}
 		}
@@ -114,6 +127,9 @@ namespace Xamarin.Forms.Build.Tasks
 		internal static void GenerateCode(string rootType, string rootNs, CodeTypeReference baseType,
 		                                  IEnumerable<CodeMemberField> namedFields, string xamlFile, string outFile)
 		{
+			//Create the target directory if required
+			Directory.CreateDirectory(Path.GetDirectoryName(outFile));
+
 			if (rootType == null)
 			{
 				File.WriteAllText(outFile, "");

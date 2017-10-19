@@ -17,6 +17,7 @@ using AppKit;
 using NativeView = AppKit.NSView;
 using NativeViewController = AppKit.NSViewController;
 using NativeColor = AppKit.NSColor;
+using Xamarin.Forms.Platform.macOS.Extensions;
 
 namespace Xamarin.Forms.Platform.MacOS
 #endif
@@ -224,6 +225,15 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (Element.InputTransparent || inViewCell)
 				base.MouseDown(theEvent);
+		}
+
+		public override void RightMouseUp(NSEvent theEvent)
+		{
+			var menu = Xamarin.Forms.Element.GetMenu(Element);
+			if (menu != null && NativeView != null)
+				NSMenu.PopUpContextMenu(menu.ToNSMenu(), theEvent, NativeView);
+		
+			base.RightMouseUp(theEvent);
 		}
 #endif
 

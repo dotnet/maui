@@ -26,6 +26,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _useAnimations = true;
 		FormsViewPager _viewPager;
 
+		public TabbedPageRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use TabbedPageRenderer(Context) instead.")]
 		public TabbedPageRenderer()
 		{
 			AutoPackage = false;
@@ -113,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (_tabLayout != null)
 				{
-					_tabLayout.SetOnTabSelectedListener(null);
+					_tabLayout.AddOnTabSelectedListener(null);
 					_tabLayout.Dispose();
 					_tabLayout = null;
 				}
@@ -272,7 +278,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				tabs.SetupWithViewPager(pager);
 				UpdateTabIcons();
-				tabs.SetOnTabSelectedListener(this);
+				tabs.AddOnTabSelectedListener(this);
 			}
 
 			UpdateIgnoreContainerAreas();

@@ -187,6 +187,22 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="QuitApplication">
+      <MemberSignature Language="C#" Value="public void QuitApplication ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void QuitApplication() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RuntimePlatform">
       <MemberSignature Language="C#" Value="public string RuntimePlatform { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string RuntimePlatform" />

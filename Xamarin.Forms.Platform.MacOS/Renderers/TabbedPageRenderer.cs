@@ -42,7 +42,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (oldElement != null)
 			{
-				oldElement.PropertyChanged -= OnPropertyChanged;
+				oldElement.PropertyChanged -= OnElementPropertyChanged;
 				var tabbedPage = oldElement as TabbedPage;
 				if (tabbedPage != null) tabbedPage.PagesChanged -= OnPagesChanged;
 			}
@@ -56,13 +56,13 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 			}
 
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			ConfigureTabView();
 
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
-			Tabbed.PropertyChanged += OnPropertyChanged;
+			Tabbed.PropertyChanged += OnElementPropertyChanged;
 			Tabbed.PagesChanged += OnPagesChanged;
 
 			UpdateBarBackgroundColor();
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				_disposed = true;
 				Page.SendDisappearing();
-				Tabbed.PropertyChanged -= OnPropertyChanged;
+				Tabbed.PropertyChanged -= OnElementPropertyChanged;
 				Tabbed.PagesChanged -= OnPagesChanged;
 
 				if (_tracker != null)
@@ -187,9 +187,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			TabView.TabViewType = NSTabViewType.NSNoTabsNoBorder;
 		}
 
+		void RaiseElementChanged(VisualElementChangedEventArgs e)
+		{
+			OnElementChanged(e);
+			ElementChanged?.Invoke(this, e);
+		}
+
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
-			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual NSTabViewItem GetTabViewItem(Page page, IVisualElementRenderer pageRenderer)
@@ -263,7 +268,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			SetSelectedTabViewItem();
 		}
 
-		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 			{

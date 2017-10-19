@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Init();
 
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 		}
 
 		public void SetElementSize(Size size)
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (Carousel != null)
 				{
-					Carousel.PropertyChanged -= OnPropertyChanged;
+					Carousel.PropertyChanged -= OnElementPropertyChanged;
 					Carousel.PagesChanged -= OnPagesChanged;
 				}
 
@@ -129,9 +129,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			base.Dispose(disposing);
 		}
 
-		void OnElementChanged(VisualElementChangedEventArgs e)
+		void RaiseElementChanged(VisualElementChangedEventArgs e)
 		{
+			OnElementChanged(e);
 			ElementChanged?.Invoke(this, e);
+		}
+
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
+		{
 		}
 
 		void ConfigureNSPageController()
@@ -154,7 +159,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateBackground();
 			UpdateSource();
 
-			Carousel.PropertyChanged += OnPropertyChanged;
+			Carousel.PropertyChanged += OnElementPropertyChanged;
 			Carousel.PagesChanged += OnPagesChanged;
 		}
 
@@ -178,7 +183,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateSource();
 		}
 
-		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 				UpdateCurrentPage();

@@ -7,6 +7,7 @@ using Android.Text;
 using Android.Widget;
 using Object = Java.Lang.Object;
 using System.Collections.Specialized;
+using Android.Content;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -16,6 +17,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
 
+		public PickerRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use PickerRenderer(Context) instead.")]
 		public PickerRenderer()
 		{
 			AutoPackage = false;

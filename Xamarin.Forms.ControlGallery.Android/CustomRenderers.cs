@@ -31,7 +31,7 @@ using Xamarin.Forms.Controls.Issues;
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoDecimal), typeof(EntryRendererNoDecimal))]
 [assembly: ExportRenderer(typeof(Bugzilla42000._42000NumericEntryNoNegative), typeof(EntryRendererNoNegative))]
 //[assembly: ExportRenderer(typeof(AndroidHelpText.HintLabel), typeof(HintLabel))]
-[assembly: ExportRenderer(typeof(Bugzilla57910QuickCollectNavigationPage), typeof(QuickCollectNavigationPage))]
+[assembly: ExportRenderer(typeof(QuickCollectNavigationPage), typeof(QuickCollectNavigationPageRenderer))]
 
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
@@ -47,6 +47,13 @@ namespace Xamarin.Forms.ControlGallery.Android
 	{
 		MasterDetailPage _page;
 		bool _disposed;
+
+#pragma warning disable 618
+		public NativeDroidMasterDetail()
+#pragma warning restore 618
+		{
+			System.Diagnostics.Debug.WriteLine($">>>>> NativeDroidMasterDetail NativeDroidMasterDetail 53: This is the obsolete constructor being selected");
+		}
 
 		protected override void OnElementChanged(VisualElement oldElement, VisualElement newElement)
 		{
@@ -115,13 +122,18 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class NativeListViewRenderer : ViewRenderer<NativeListView, global::Android.Widget.ListView>
 	{
+#pragma warning disable 618 
 		public NativeListViewRenderer()
+#pragma warning restore 618
 		{
 		}
 
 		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
+#pragma warning disable 618
+			// Disabled the warning so we have a test that this obsolete stuff still works
 			return new global::Android.Widget.ListView(Forms.Context);
+#pragma warning restore 618
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView> e)
@@ -143,7 +155,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{
 				// subscribe
 
+#pragma warning disable 618
+				// Disabled the warning so we have a test that this obsolete stuff still works
 				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, e.NewElement);
+#pragma warning restore 618
 				Control.ItemClick += Clicked;
 			}
 		}
@@ -160,7 +175,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{
 				// update the Items list in the UITableViewSource
 
+#pragma warning disable 618
+				// Disabled the warning so we have a test that this obsolete stuff still works
 				Control.Adapter = new NativeListViewAdapter(Forms.Context as Activity, Element);
+#pragma warning restore 618
 			}
 		}
 	}
@@ -291,13 +309,19 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	public class NativeAndroidListViewRenderer : ViewRenderer<NativeListView2, global::Android.Widget.ListView>
 	{
+
+#pragma warning disable 618
 		public NativeAndroidListViewRenderer()
+#pragma warning restore 618
 		{
 		}
 
 		protected override global::Android.Widget.ListView CreateNativeControl()
 		{
+#pragma warning disable 618
+			// Disabled the warning so we have a test that this obsolete stuff still works
 			return new global::Android.Widget.ListView(Forms.Context);
+#pragma warning restore 618
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NativeListView2> e)
@@ -318,7 +342,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			if (e.NewElement != null)
 			{
 				// subscribe
+#pragma warning disable 618
+				// Disabled the warning so we have a test that this obsolete stuff still works
 				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, e.NewElement);
+#pragma warning restore 618
 				Control.ItemClick += Clicked;
 			}
 		}
@@ -340,7 +367,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 			{
 				// update the Items list in the UITableViewSource
 
+#pragma warning disable 618
+				// Disabled the warning so we have a test that this obsolete stuff still works
 				Control.Adapter = new NativeAndroidListViewAdapter(Forms.Context as Activity, Element);
+#pragma warning restore 618
 			}
 		}
 	}
@@ -446,8 +476,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 	[Preserve]
 	public class CustomContentRenderer : ViewRenderer
 	{
+#pragma warning disable 618
 		[Preserve]
 		public CustomContentRenderer()
+#pragma warning restore 618
 		{
 			AutoPackage = true;
 		}
@@ -482,7 +514,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
+#pragma warning disable 618
 	public class CustomButtonRenderer : ButtonRenderer
+#pragma warning restore 618
 	{
 		protected override AButton CreateNativeControl()
 		{
@@ -503,7 +537,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 	// Custom renderers for Bugzilla42000 demonstration purposes
 
+#pragma warning disable 618
 	public class EntryRendererNoNegative : EntryRenderer
+#pragma warning restore 618
 	{
 		protected override NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
 		{
@@ -514,7 +550,9 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
+#pragma warning disable 618
 	public class EntryRendererNoDecimal : EntryRenderer
+#pragma warning restore 618
 	{
 		protected override NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
 		{
@@ -525,14 +563,16 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 	}
 
+
 	//public class HintLabel : Xamarin.Forms.Platform.Android.AppCompat.LabelRenderer
 	//{
 	//	public HintLabel()
 	//	{
 	//		Hint = AndroidHelpText.HintLabel.Success;
 	//	}
- // }
- 
+	// }
+
+#pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
 	public class NoFlashTestNavigationPage 
 #if FORMS_APPLICATION_ACTIVITY
 		: Xamarin.Forms.Platform.Android.NavigationRenderer
@@ -547,8 +587,10 @@ namespace Xamarin.Forms.ControlGallery.Android
 		}
 #endif
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 
-	public class QuickCollectNavigationPage
+#pragma warning disable CS0618 // Leaving in old constructor so we can verify it works
+	public class QuickCollectNavigationPageRenderer
 #if FORMS_APPLICATION_ACTIVITY
 		: Xamarin.Forms.Platform.Android.NavigationRenderer
 #else
@@ -602,5 +644,6 @@ namespace Xamarin.Forms.ControlGallery.Android
 			base.Dispose(disposing);
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }
 

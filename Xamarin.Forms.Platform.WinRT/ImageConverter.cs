@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			var source = (ImageSource)value;
 			IImageSourceHandler handler;
 
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				Task<Windows.UI.Xaml.Media.ImageSource> task = handler.LoadImageAsync(source);
 				return new AsyncValue<Windows.UI.Xaml.Media.ImageSource>(task, null);

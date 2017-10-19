@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Element.SetIsLoading(true);
 
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				NSImage nsImage;
 				try

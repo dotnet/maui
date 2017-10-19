@@ -17,9 +17,8 @@
         <dependency id="Xamarin.Android.Support.v4" version="[23.3.0]"/>
         <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="[29.0.0.1]"/>
       </group>
-      <group targetFramework="MonoAndroid70">
-        <dependency id="Xamarin.Android.Support.v4" version="23.3.0"/>
-        <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="29.0.0.1"/>
+      <group targetFramework="MonoAndroid71">
+        <dependency id="Xamarin.GooglePlayServices.AppIndexing" version="42.1021.1"/>
       </group>
     </dependencies>
     <references>
