@@ -17,6 +17,8 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
 
+#if WINDOWS_UWP
+
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
@@ -25,7 +27,22 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _itemWasClicked;
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
-		bool _disposed;
+
+
+#if !WINDOWS_UWP
+		public static readonly DependencyProperty HighlightWhenSelectedProperty = DependencyProperty.RegisterAttached("HighlightWhenSelected", typeof(bool), typeof(ListViewRenderer),
+			new PropertyMetadata(false));
+
+		public static bool GetHighlightWhenSelected(DependencyObject dependencyObject)
+		{
+			return (bool)dependencyObject.GetValue(HighlightWhenSelectedProperty);
+		}
+
+		public static void SetHighlightWhenSelected(DependencyObject dependencyObject, bool value)
+		{
+			dependencyObject.SetValue(HighlightWhenSelectedProperty, value);
+		}
+#endif
 
 		protected WListView List { get; private set; }
 
@@ -57,11 +74,6 @@ namespace Xamarin.Forms.Platform.UWP
 						ItemContainerStyle = (Windows.UI.Xaml.Style)WApp.Current.Resources["FormsListViewItem"],
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
-
-					// In order to support tapping on elements within a list item, we handle
-					// ListView.Tapped (which can be handled by child elements in the list items
-					// and prevented from bubbling up) rather than ListView.ItemClick
-					List.Tapped += ListOnTapped;
 
 					List.SelectionChanged += OnControlSelectionChanged;
 
@@ -130,8 +142,16 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (_disposed)
 			{
-				List.Tapped -= ListOnTapped;
-
+				if (_subscribedToTapped)
+				{
+					_subscribedToTapped = false;
+					List.Tapped -= ListOnTapped;
+				}
+				if (_subscribedToItemClick)
+				{
+					_subscribedToItemClick = false;
+					List.ItemClick -= OnListItemClicked;
+				}
 				List.SelectionChanged -= OnControlSelectionChanged;
 
 				List.DataContext = null;
@@ -560,6 +580,28 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Element.NotifyRowTapped(index, cell: null);
 			_itemWasClicked = true;
+
+#if !WINDOWS_UWP
+
+			if (Device.Idiom != TargetIdiom.Phone || List == null)
+			{
+				return;
+			}
+
+			_deferSelection = false;
+
+			if (_deferredSelectedItemChangedEvent != null)
+			{
+				// If there was a selection change attempt while RowTapped was being handled, replay it
+				OnElementItemSelected(_deferredSelectedItemChangedEvent.Item1, _deferredSelectedItemChangedEvent.Item2);
+				_deferredSelectedItemChangedEvent = null;
+			}
+			else if (List?.SelectedIndex == -1 && selectedItem != null)
+			{
+				// Otherwise, set the selection back to whatever it was before all this started
+				List.SelectedItem = selectedItem;
+			}
+#endif
 		}
 
 		void OnListItemClicked(object sender, ItemClickEventArgs e)
@@ -575,6 +617,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+#if !WINDOWS_UWP
 			RestorePreviousSelectedVisual();
 
 			if (e.AddedItems.Count == 0)
@@ -592,7 +635,6 @@ namespace Xamarin.Forms.Platform.UWP
 			if (cell == null)
 				return;
 
-#if !WINDOWS_UWP
 			if (Device.Idiom == TargetIdiom.Phone)
 			{
 				FrameworkElement element = FindElement(cell);
@@ -602,13 +644,10 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 			}
 #endif
+			if (Element.SelectedItem != List.SelectedItem && !_itemWasClicked)
+				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
 
-			// A11y: Tapped event will not be routed when Narrator is active, so we need to handle it here.
-			// Also handles keyboard selection. 
-			// Default UWP behavior is that items are selected when you navigate to them via the arrow keys
-			// and deselected with the space bar, so this will remain the same.
-			if (Element.SelectedItem != List.SelectedItem)
-				OnListItemClicked(List.SelectedIndex);
+			_itemWasClicked = false;
 		}
 
 		FrameworkElement FindElement(object cell)
@@ -622,15 +661,8 @@ namespace Xamarin.Forms.Platform.UWP
 			return null;
 		}
 
-#if WINDOWS_UWP
-		void RestorePreviousSelectedVisual()
-		{
-		}
+#if !WINDOWS_UWP
 
-		void SetSelectedVisual(FrameworkElement element)
-		{
-		}
-#else
 		void RestorePreviousSelectedVisual()
 		{
 			foreach (BrushedElement highlight in _highlightedElements)
