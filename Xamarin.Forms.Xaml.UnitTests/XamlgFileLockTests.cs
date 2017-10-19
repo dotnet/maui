@@ -3,6 +3,7 @@ using System.IO;
 using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
+using Microsoft.Build.Utilities;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -30,11 +31,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var generator = new XamlGTask ();
 			generator.BuildEngine = new DummyBuildEngine ();
 			generator.AssemblyName = "Test";
-			generator.Source = xamlInputFile;
-			generator.OutputFile = xamlOutputFile;
 			generator.Language = "C#";
 
-			generator.Execute();
+			generator.Execute(new TaskItem(xamlInputFile), xamlOutputFile);
 			File.Delete (xamlOutputFile);
 
 			Assert.DoesNotThrow (() => File.Delete (xamlInputFile));

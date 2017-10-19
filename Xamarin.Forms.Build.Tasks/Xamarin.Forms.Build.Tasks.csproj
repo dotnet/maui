@@ -86,7 +86,6 @@
     <Compile Include="FieldReferenceExtensions.cs" />
     <Compile Include="PropertyDefinitionExtensions.cs" />
     <Compile Include="XamlCAssemblyResolver.cs" />
-    <Compile Include="FixedCreateCSharpManifestResourceName.cs" />
     <Compile Include="MethodDefinitionExtensions.cs" />
     <Compile Include="CompiledMarkupExtensions\StaticExtension.cs" />
     <Compile Include="CompiledMarkupExtensions\ICompiledMarkupExtension.cs" />
