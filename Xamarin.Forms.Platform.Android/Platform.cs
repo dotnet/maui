@@ -32,8 +32,6 @@ namespace Xamarin.Forms.Platform.Android
 					view.IsPlatformEnabled = newvalue != null;
 			});
 
-		internal static readonly BindableProperty PageContextProperty = BindableProperty.CreateAttached("PageContext", typeof(Context), typeof(Platform), null);
-
 		IMasterDetailPageController MasterDetailPageController => CurrentMasterDetailPage as IMasterDetailPageController;
 
 		readonly Context _context;
@@ -54,13 +52,33 @@ namespace Xamarin.Forms.Platform.Android
 		Page _navigationPageCurrentPage;
 		NavigationModel _navModel = new NavigationModel();
 
-		internal Platform(Context context)
+		readonly bool _embedded;
+
+		internal Platform(Context context, bool embedded = false)
 		{
+			_embedded = embedded;
 			_context = context;
 
-			_defaultActionBarTitleTextColor = SetDefaultActionBarTitleTextColor();
-
+			if (!embedded)
+			{
+				_defaultActionBarTitleTextColor = SetDefaultActionBarTitleTextColor();
+			}
+			
 			_renderer = new PlatformRenderer(context, this);
+
+			if (embedded)
+			{
+				// Set up handling of DisplayAlert/DisplayActionSheet/UpdateProgressBarVisibility
+				var activity = context as Activity;
+				if (activity == null)
+				{
+					// Can't show dialogs if it's not an activity
+					return;
+				}
+
+				PopupManager.Subscribe(activity);
+				return;
+			}
 
 			FormsApplicationActivity.BackPressed += HandleBackPressed;
 
@@ -156,6 +174,11 @@ namespace Xamarin.Forms.Platform.Android
 			_disposed = true;
 
 			SetPage(null);
+
+			if (_embedded)
+			{
+				PopupManager.Unsubscribe(_context);
+			}
 
 			FormsApplicationActivity.BackPressed -= HandleBackPressed;
 			_toolbarTracker.CollectionChanged -= ToolbarTrackerOnCollectionChanged;
@@ -277,11 +300,16 @@ namespace Xamarin.Forms.Platform.Android
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
 		}
 
+		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 3.0. Please use CreateRenderer(VisualElement, Context) instead.")]
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			UpdateGlobalContext(element);
+			return CreateRenderer(element, Forms.Context);
+		}
 
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultRenderer();
+		public static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
+		{
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType(), context) 
+				?? new DefaultRenderer(context);
 			renderer.SetElement(element);
 
 			return renderer;
@@ -299,6 +327,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateActionBarTextColor()
 		{
+			if (_embedded)
+			{
+				return;
+			}
+
 			SetActionBarTextColor();
 			UpdateActionBarUpImageColor();
 		}
@@ -310,11 +343,9 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnBindingContextChanged();
 		}
 
-		internal static IVisualElementRenderer CreateRenderer(VisualElement element, FragmentManager fragmentManager)
+		internal static IVisualElementRenderer CreateRenderer(VisualElement element, FragmentManager fragmentManager, Context context)
 		{
-			UpdateGlobalContext(element);
-
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultRenderer();
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType(), context) ?? new DefaultRenderer(context);
 
 			var managesFragments = renderer as IManageFragments;
 			managesFragments?.SetFragmentManager(fragmentManager);
@@ -324,11 +355,6 @@ namespace Xamarin.Forms.Platform.Android
 			return renderer;
 		}
 
-		internal static Context GetPageContext(BindableObject bindable)
-		{
-			return (Context)bindable.GetValue(PageContextProperty);
-		}
-
 		internal ViewGroup GetViewGroup()
 		{
 			return _renderer;
@@ -336,6 +362,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void PrepareMenu(IMenu menu)
 		{
+			if (_embedded)
+			{
+				return;
+			}
+
 			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems)
 				item.PropertyChanged -= HandleToolbarItemPropertyChanged;
 			menu.Clear();
@@ -359,7 +390,7 @@ namespace Xamarin.Forms.Platform.Android
 					var icon = item.Icon;
 					if (!string.IsNullOrEmpty(icon))
 					{
-						Drawable iconDrawable = _context.Resources.GetFormsDrawable(icon);
+						Drawable iconDrawable = _context.GetFormsDrawable(icon);
 						if (iconDrawable != null)
 							menuItem.SetIcon(iconDrawable);
 					}
@@ -432,14 +463,9 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		internal static void SetPageContext(BindableObject bindable, Context context)
-		{
-			bindable.SetValue(PageContextProperty, context);
-		}
-
 		internal void UpdateActionBar()
 		{
-			if (ActionBar == null) //Fullscreen theme doesn't have action bar
+			if (ActionBar == null || _embedded) //Fullscreen theme doesn't have action bar
 				return;
 
 			List<Page> relevantAncestors = AncestorPagesOfPage(_navModel.CurrentPage);
@@ -530,8 +556,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (GetRenderer(view) != null)
 				return;
 
-			SetPageContext(view, _context);
-			IVisualElementRenderer renderView = CreateRenderer(view);
+			IVisualElementRenderer renderView = CreateRenderer(view, _context);
 			SetRenderer(view, renderView);
 
 			if (layout)
@@ -762,8 +787,7 @@ namespace Xamarin.Forms.Platform.Android
 			IVisualElementRenderer modalRenderer = GetRenderer(modal);
 			if (modalRenderer == null)
 			{
-				SetPageContext(modal, _context);
-				modalRenderer = CreateRenderer(modal);
+				modalRenderer = CreateRenderer(modal, _context);
 				SetRenderer(modal, modalRenderer);
 
 				if (modal.BackgroundColor == Color.Default && modal.BackgroundImage == null)
@@ -903,7 +927,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool ShouldShowActionBarTitleArea()
 		{
-			if (Forms.TitleBarVisibility == AndroidTitleBarVisibility.Never)
+			var activity = _context as Activity;
+
+			if (activity == null)
+				return false;
+
+			if (activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
 				return false;
 
 			bool hasMasterDetailPage = CurrentMasterDetailPage != null;
@@ -1025,21 +1054,6 @@ namespace Xamarin.Forms.Platform.Android
 				actionBarUpImageView.SetColorFilter(null);
 		}
 
-		static void UpdateGlobalContext(VisualElement view)
-		{
-			Element parent = view;
-			while (!Application.IsApplicationOrNull(parent.RealParent))
-				parent = parent.RealParent;
-
-			var rootPage = parent as Page;
-			if (rootPage != null)
-			{
-				Context context = GetPageContext(rootPage);
-				if (context != null)
-					Forms.Context = context;
-			}
-		}
-
 		internal static int GenerateViewId()
 		{
 			// getting unique Id's is an art, and I consider myself the Jackson Pollock of the field
@@ -1061,11 +1075,17 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			bool _notReallyHandled;
 
+			[Obsolete("This constructor is obsolete as of version 3.0. Please use DefaultRenderer(Context) instead.")]
 			public DefaultRenderer()
 			{
 			}
 
 			readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+
+			public DefaultRenderer(Context context) : base(context)
+			{
+				ChildrenDrawingOrderEnabled = true;
+			}
 
 			internal void NotifyFakeHandling()
 			{

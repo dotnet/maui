@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Android.Content;
 using Xamarin.Forms.Internals;
 using Android.Views;
 using AView = Android.Views.View;
@@ -93,7 +94,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (renderer == null)
 				{
 					Performance.Start("New renderer");
-					renderer = Platform.CreateRenderer(view);
+				renderer = Platform.CreateRenderer(view, _renderer.View.Context);
 					Performance.Stop("New renderer");
 				}
 

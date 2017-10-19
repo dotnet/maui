@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Content.Res;
 using Android.Text;
 using Android.Text.Method;
@@ -19,6 +20,12 @@ namespace Xamarin.Forms.Platform.Android
 		ColorStateList _textColorDefault;
 		bool _disposed;
 
+		public EntryRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use EntryRenderer(Context) instead.")]
 		public EntryRenderer()
 		{
 			AutoPackage = false;

@@ -1,3 +1,5 @@
+using System;
+using Android.Content;
 using Android.Views;
 using AView = Android.Views.View;
 using AListView = Android.Widget.ListView;
@@ -6,6 +8,12 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class TableViewRenderer : ViewRenderer<TableView, AListView>
 	{
+		public TableViewRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use TableViewRenderer(Context) instead.")]
 		public TableViewRenderer()
 		{
 			AutoPackage = false;

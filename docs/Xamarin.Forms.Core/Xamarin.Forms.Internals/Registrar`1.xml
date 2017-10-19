@@ -23,7 +23,7 @@
   </Attributes>
   <Docs>
     <typeparam name="TRegistrable">To be added.</typeparam>
-    <summary>For internal use by the Xamarin.Forms platform.</summary>
+    <summary>To be added.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
@@ -36,7 +36,7 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -62,8 +62,72 @@
       </Parameters>
       <Docs>
         <typeparam name="TOut">To be added.</typeparam>
-        <param name="type">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="type">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHandler&lt;TOut&gt;">
+      <MemberSignature Language="C#" Value="public TOut GetHandler&lt;TOut&gt; (Type type, object[] args) where TOut : TRegistrable;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance !!TOut GetHandler&lt;(!TRegistrable) TOut&gt;(class System.Type type, object[] args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>TOut</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TOut">
+          <Constraints>
+            <BaseTypeName>TRegistrable</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="type" Type="System.Type" />
+        <Parameter Name="args" Type="System.Object[]">
+          <Attributes>
+            <Attribute>
+              <AttributeName>System.ParamArray</AttributeName>
+            </Attribute>
+          </Attributes>
+        </Parameter>
+      </Parameters>
+      <Docs>
+        <typeparam name="TOut">To be added.</typeparam>
+        <param name="type">To be added.</param>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHandlerForObject&lt;TOut&gt;">
+      <MemberSignature Language="C#" Value="public TOut GetHandlerForObject&lt;TOut&gt; (object obj) where TOut : TRegistrable;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance !!TOut GetHandlerForObject&lt;(!TRegistrable) TOut&gt;(object obj) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>TOut</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TOut">
+          <Constraints>
+            <BaseTypeName>TRegistrable</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <typeparam name="TOut">To be added.</typeparam>
+        <param name="obj">To be added.</param>
+        <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -82,8 +146,28 @@
         <Parameter Name="viewType" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="viewType">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="viewType">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHandlerTypeForObject">
+      <MemberSignature Language="C#" Value="public Type GetHandlerTypeForObject (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Type GetHandlerTypeForObject(object obj) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Type</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">To be added.</param>
+        <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
@@ -103,9 +187,9 @@
         <Parameter Name="trender" Type="System.Type" />
       </Parameters>
       <Docs>
-        <param name="tview">For internal use by the Xamarin.Forms platform.</param>
-        <param name="trender">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="tview">To be added.</param>
+        <param name="trender">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

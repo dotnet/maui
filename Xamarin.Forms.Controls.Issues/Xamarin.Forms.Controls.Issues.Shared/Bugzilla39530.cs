@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Controls.Issues
 			// index out of bounds exceptions if the query for the frame and its Rect run quickly enough
 			RunningApp.WaitForElement(q => q.Marked("frame"));
 			AppRect frameBounds = RunningApp.Query (q => q.Marked ("frame"))[0].Rect;
-			RunningApp.Pan (new Drag (frameBounds, frameBounds.X + 10, frameBounds.Y + 10, frameBounds.X + 100, frameBounds.Y + 100, Drag.Direction.LeftToRight));
+			RunningApp.Pan (new Drag (frameBounds, frameBounds.CenterX, frameBounds.Y + 10, frameBounds.X + 100, frameBounds.Y + 100, Drag.Direction.LeftToRight));
 
 			RunningApp.WaitForElement (q => q.Marked ("Panning: Completed"));
 		}

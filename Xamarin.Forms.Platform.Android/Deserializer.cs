@@ -20,22 +20,28 @@ namespace Xamarin.Forms.Platform.Android
 			return Task.Run(() =>
 			{
 				using (IsolatedStorageFile store = IsolatedStorageFile.GetUserStoreForApplication())
-				using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.OpenOrCreate))
-				using (XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
 				{
-					if (stream.Length == 0)
+					if (!store.FileExists(PropertyStoreFile))
 						return null;
 
-					try
+					using (IsolatedStorageFileStream stream = store.OpenFile(PropertyStoreFile, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+					using (XmlDictionaryReader reader = XmlDictionaryReader.CreateBinaryReader(stream, XmlDictionaryReaderQuotas.Max))
 					{
-						var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
-						return (IDictionary<string, object>)dcs.ReadObject(reader);
+						if (stream.Length == 0)
+							return null;
+
+						try
+						{
+							var dcs = new DataContractSerializer(typeof(Dictionary<string, object>));
+							return (IDictionary<string, object>)dcs.ReadObject(reader);
+						}
+						catch (Exception e)
+						{
+							Debug.WriteLine("Could not deserialize properties: " + e.Message);
+							Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
+						}
 					}
-					catch (Exception e)
-					{
-						Debug.WriteLine("Could not deserialize properties: " + e.Message);
-						Log.Warning("Xamarin.Forms PropertyStore", $"Exception while reading Application properties: {e}");
-					}
+
 				}
 
 				return null;

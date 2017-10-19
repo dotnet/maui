@@ -122,6 +122,7 @@
   <ItemGroup>
     <Compile Include="_57114Renderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_60122ImageRenderer.cs" />
     <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="coffee.png" />
     <Content Include="default.css" />

@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ContentPage child = _page.Children.ElementAt(position);
 			if (Platform.GetRenderer(child) == null)
-				Platform.SetRenderer(child, Platform.CreateRenderer(child));
+				Platform.SetRenderer(child, Platform.CreateRenderer(child, _context));
 
 			IVisualElementRenderer renderer = Platform.GetRenderer(child);
 			renderer.View.RemoveFromParent();

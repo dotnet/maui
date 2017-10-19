@@ -28,6 +28,12 @@
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="23.3.0"/>
         <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
+      <group targetFramework="MonoAndroid71">
+        <dependency id="Xamarin.GooglePlayServices.Maps" version="42.1021.1"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="25.4.0.2"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="25.4.0.2"/>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+      </group>
     </dependencies>
     <references>
       <group targetFramework="portable-win+net45+wp80+win81+wpa81">

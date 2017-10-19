@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.Widget;
 using AView = Android.Views.View;
@@ -14,6 +15,14 @@ namespace Xamarin.Forms.Platform.Android
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
 
+		public DatePickerRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+			if (Forms.IsLollipopOrNewer)
+				Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use DatePickerRenderer(Context) instead.")]
 		public DatePickerRenderer()
 		{
 			AutoPackage = false;

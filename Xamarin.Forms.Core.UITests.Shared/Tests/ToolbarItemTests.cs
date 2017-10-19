@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Xamarin.Forms.Controls;
 using Xamarin.Forms.CustomAttributes;
 
 using Xamarin.UITest.Queries;
@@ -40,6 +41,11 @@ namespace Xamarin.Forms.Core.UITests
 #if __IOS__
 			btn1Id = "menuIcon";
 			btn4Id = "tb4";
+			if (AppSetup.iOSVersion  >= 9)
+			{
+				btn1Id = "toolbaritem_primary";
+				btn4Id = "toolbaritem_secondary2";
+			}
 #endif
 		}
 
@@ -50,6 +56,7 @@ namespace Xamarin.Forms.Core.UITests
 #if __MACOS__
 			App.Tap(c => c.Button().Index(4));
 #else
+			App.WaitForElement(btn1Id);
 			App.Tap(c => c.Marked(btn1Id));
 #endif
 			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
@@ -64,6 +71,7 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 			//App.Query (c => c.Marked (btn4Id))[0];
 #else
+			App.WaitForElement(btn4Id);
 			App.Tap(c => c.Marked(btn4Id));
 			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
 			Assert.False(textLabel.Text == "tb4");

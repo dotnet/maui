@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Content.Res;
 using Android.Text;
 using Android.Text.Method;
@@ -16,6 +17,12 @@ namespace Xamarin.Forms.Platform.Android
 		ColorStateList _defaultColors;
 		bool _disposed;
 
+		public EditorRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use EditorRenderer(Context) instead.")]
 		public EditorRenderer()
 		{
 			AutoPackage = false;

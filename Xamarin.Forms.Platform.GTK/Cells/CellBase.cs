@@ -118,14 +118,14 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
         private void OpenContextMenu()
         {
-            var menu = new Menu();
+            var menu = new Gtk.Menu();
 
             SetupMenuItems(menu);
             menu.ShowAll();
             menu.Popup();
         }
 
-        private void SetupMenuItems(Menu menu)
+        private void SetupMenuItems(Gtk.Menu menu)
         {
             foreach (MenuItem item in Cell.ContextActions)
             {

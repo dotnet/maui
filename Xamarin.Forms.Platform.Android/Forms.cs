@@ -27,11 +27,13 @@ namespace Xamarin.Forms
 	{
 		const int TabletCrossover = 600;
 
-		static bool? s_supportsProgress;
-
 		static bool? s_isLollipopOrNewer;
 
+		[Obsolete("Context is obsolete as of version 3.0. Please use a local context instead.")]
 		public static Context Context { get; internal set; }
+
+		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
+		internal static Context ApplicationContext { get; private set; }
 
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
@@ -45,25 +47,6 @@ namespace Xamarin.Forms
 				return s_isLollipopOrNewer.Value;
 			}
 		}
-
-		internal static bool SupportsProgress
-		{
-			get
-			{
-				var activity = Context as Activity;
-				if (!s_supportsProgress.HasValue)
-				{
-					int progressCircularId = Context.Resources.GetIdentifier("progress_circular", "id", "android");
-					if (progressCircularId > 0 && activity != null)
-						s_supportsProgress = activity.FindViewById(progressCircularId) != null;
-					else
-						s_supportsProgress = true;
-				}
-				return s_supportsProgress.Value;
-			}
-		}
-
-		internal static AndroidTitleBarVisibility TitleBarVisibility { get; set; }
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
 		// Why is bundle a param if never used?
@@ -82,14 +65,14 @@ namespace Xamarin.Forms
 		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
+		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 3.0. " 
+			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
 			if((Activity)Context == null)
 				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
 
-			TitleBarVisibility = visibility;
-
-			if (TitleBarVisibility == AndroidTitleBarVisibility.Never)
+			if (visibility == AndroidTitleBarVisibility.Never)
 			{
 				if (!((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
 					((Activity)Context).Window.AddFlags(WindowManagerFlags.Fullscreen);
@@ -98,6 +81,20 @@ namespace Xamarin.Forms
 			{
 				if (((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
 					((Activity)Context).Window.ClearFlags(WindowManagerFlags.Fullscreen);
+			}
+		}
+
+		public static void SetTitleBarVisibility(Activity activity, AndroidTitleBarVisibility visibility)
+		{
+			if (visibility == AndroidTitleBarVisibility.Never)
+			{
+				if (!activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
+			}
+			else
+			{
+				if (activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+					activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
 			}
 		}
 
@@ -112,17 +109,36 @@ namespace Xamarin.Forms
 
 		static void SetupInit(Context activity, Assembly resourceAssembly)
 		{
+			if (!IsInitialized)
+			{
+				// Only need to get this once; it won't change
+				ApplicationContext = activity.ApplicationContext;
+			}
+
+#pragma warning disable 618 // Still have to set this up so obsolete code can function
 			Context = activity;
-
-			ResourceManager.Init(resourceAssembly);
-
-			Color.SetAccent(GetAccentColor());
+#pragma warning restore 618
 
 			if (!IsInitialized)
+			{
+				// Only need to do this once
+				ResourceManager.Init(resourceAssembly);
+			}
+
+			// We want this to be updated when we have a new activity (e.g. on a configuration change)
+			// This could change if the UI mode changes (e.g., if night mode is enabled)
+			Color.SetAccent(GetAccentColor(activity));
+
+			if (!IsInitialized)
+			{
+				// Only need to do this once
 				Internals.Log.Listeners.Add(new DelegateLogListener((c, m) => Trace.WriteLine(m, c)));
+			}
 
-			Device.PlatformServices = new AndroidPlatformServices();
-
+			// We want this to be updated when we have a new activity (e.g. on a configuration change)
+			// because AndroidPlatformServices needs a current activity to launch URIs from
+			Device.PlatformServices = new AndroidPlatformServices(activity);
+			
 			// use field and not property to avoid exception in getter
 			if (Device.info != null)
 			{
@@ -130,7 +146,10 @@ namespace Xamarin.Forms
 				Device.info = null;
 			}
 
+			// We want this to be updated when we have a new activity (e.g. on a configuration change)
+			// because Device.Info watches for orientation changes and we need a current activity for that
 			Device.Info = new AndroidDeviceInfo(activity);
+			Device.SetFlags(s_flags);
 
 			var ticker = Ticker.Default as AndroidTicker;
 			if (ticker != null)
@@ -139,11 +158,12 @@ namespace Xamarin.Forms
 
 			if (!IsInitialized)
 			{
+				// Only need to do this once
 				Registrar.RegisterAll(new[] { typeof(ExportRendererAttribute), typeof(ExportCellAttribute), typeof(ExportImageSourceHandlerAttribute) });
 			}
 
-			int minWidthDp = Context.Resources.Configuration.SmallestScreenWidthDp;
-
+			// This could change as a result of a config change, so we need to check it every time
+			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
 
 			if (ExpressionSearch.Default == null)
@@ -173,16 +193,16 @@ namespace Xamarin.Forms
 			FlagsSet = true;
 		}
 
-		static Color GetAccentColor()
+		static Color GetAccentColor(Context context)
 		{
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (Context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer)	// Android 5.0+
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer)	// Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
-				else if(Context.Theme.ResolveAttribute(Context.Resources.GetIdentifier("colorAccent", "attr", Context.PackageName), value, true))	// < Android 5.0
+				else if(context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorAccent", "attr", context.PackageName), value, true))	// < Android 5.0
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
@@ -208,7 +228,7 @@ namespace Xamarin.Forms
 
 		class AndroidDeviceInfo : DeviceInfo
 		{
-			bool disposed;
+			bool _disposed;
 			readonly Context _formsActivity;
 			readonly Size _pixelScreenSize;
 			readonly double _scalingFactor;
@@ -217,18 +237,22 @@ namespace Xamarin.Forms
 
 			public AndroidDeviceInfo(Context formsActivity)
 			{
-				_formsActivity = formsActivity;
-				CheckOrientationChanged(_formsActivity.Resources.Configuration.Orientation);
-				// This will not be an implementation of IDeviceInfoProvider when running inside the context
-				// of layoutlib, which is what the Android Designer does.
-				if (_formsActivity is IDeviceInfoProvider)
-					((IDeviceInfoProvider) _formsActivity).ConfigurationChanged += ConfigurationChanged;
-
 				using (DisplayMetrics display = formsActivity.Resources.DisplayMetrics)
 				{
 					_scalingFactor = display.Density;
 					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
 					ScaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Width / _scalingFactor);
+				}
+
+				CheckOrientationChanged(formsActivity.Resources.Configuration.Orientation);
+
+				// This will not be an implementation of IDeviceInfoProvider when running inside the context
+				// of layoutlib, which is what the Android Designer does.
+				// It also won't be IDeviceInfoProvider when using Page Embedding
+				if (formsActivity is IDeviceInfoProvider)
+				{
+					_formsActivity = formsActivity;
+					((IDeviceInfoProvider)_formsActivity).ConfigurationChanged += ConfigurationChanged;
 				}
 			}
 
@@ -246,11 +270,20 @@ namespace Xamarin.Forms
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && !disposed) {
-					disposed = true;
-					if (_formsActivity is IDeviceInfoProvider)
-						((IDeviceInfoProvider) _formsActivity).ConfigurationChanged -= ConfigurationChanged;
+				if (_disposed)
+				{
+					return;
 				}
+
+				_disposed = true;
+
+				if (disposing)
+				{
+					var provider = _formsActivity as IDeviceInfoProvider;
+					if (provider != null)
+						provider.ConfigurationChanged -= ConfigurationChanged;
+				}
+
 				base.Dispose(disposing);
 			}
 
@@ -308,6 +341,13 @@ namespace Xamarin.Forms
 			double _smallSize;
 
 			static Handler s_handler;
+
+			readonly Context _context;
+
+			public AndroidPlatformServices(Context context)
+			{
+				_context = context;
+			}
 
 			public void BeginInvokeOnMainThread(Action action)
 			{
@@ -435,7 +475,11 @@ namespace Xamarin.Forms
 			{
 				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
 				var intent = new Intent(Intent.ActionView, aUri);
-				Context.StartActivity(intent);
+				
+				// This seems to work fine even if the context has been destroyed (while another activity is in the
+				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
+				// make sure this uses the active activity when launching the Intent
+				_context.StartActivity(intent);
 			}
 
 			public void StartTimer(TimeSpan interval, Func<bool> callback)
@@ -469,20 +513,20 @@ namespace Xamarin.Forms
 				return 'a' + v - 10;
 			}
 
-			static bool TryGetTextAppearance(int appearance, out double val)
+			bool TryGetTextAppearance(int appearance, out double val)
 			{
 				val = 0;
 				try
 				{
 					using (var value = new TypedValue())
 					{
-						if (Context.Theme.ResolveAttribute(appearance, value, true))
+						if (_context.Theme.ResolveAttribute(appearance, value, true))
 						{
 							var textSizeAttr = new[] { Resource.Attribute.TextSize };
 							const int indexOfAttrTextSize = 0;
-							using (TypedArray array = Context.ObtainStyledAttributes(value.Data, textSizeAttr))
+							using (TypedArray array = _context.ObtainStyledAttributes(value.Data, textSizeAttr))
 							{
-								val = Context.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
+								val = _context.FromPixels(array.GetDimensionPixelSize(indexOfAttrTextSize, -1));
 								return true;
 							}
 						}
@@ -493,6 +537,11 @@ namespace Xamarin.Forms
 					Internals.Log.Warning("Xamarin.Forms.Platform.Android.AndroidPlatformServices", "Error retrieving text appearance: {0}", ex);
 				}
 				return false;
+			}
+
+			public void QuitApplication()
+			{
+				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
 			}
 
 			public class _IsolatedStorageFile : IIsolatedStorageFile

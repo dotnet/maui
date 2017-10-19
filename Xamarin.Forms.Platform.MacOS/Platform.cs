@@ -108,8 +108,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			var t = element.GetType();
-			var renderer = Internals.Registrar.Registered.GetHandler<IVisualElementRenderer>(t) ?? new DefaultRenderer();
+			var renderer = Internals.Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
 			renderer.SetElement(element);
 			return renderer;
 		}

@@ -1,4 +1,5 @@
 using System;
+using Android.Content;
 using Android.Widget;
 using ASwitch = Android.Widget.Switch;
 
@@ -6,6 +7,12 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
+		public SwitchRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use SwitchRenderer(Context) instead.")]
 		public SwitchRenderer()
 		{
 			AutoPackage = false;

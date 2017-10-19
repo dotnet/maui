@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Platform.Android
 			Bitmap bitmap = null;
 			IImageSourceHandler handler;
 
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				try
 				{

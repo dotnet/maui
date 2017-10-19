@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Reflection;
@@ -83,10 +84,19 @@ namespace Xamarin.Forms
             set { s_platformServices = value; }
         }
 
-        public static void BeginInvokeOnMainThread(Action action)
-        {
-            PlatformServices.BeginInvokeOnMainThread(action);
-        }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IReadOnlyList<string> Flags { get; private set; }
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetFlags(IReadOnlyList<string> flags)
+		{
+			Flags = flags;
+		}
+
+		public static void BeginInvokeOnMainThread(Action action)
+		{
+			PlatformServices.BeginInvokeOnMainThread(action);
+		}
 
         public static double GetNamedSize(NamedSize size, Element targetElement)
         {

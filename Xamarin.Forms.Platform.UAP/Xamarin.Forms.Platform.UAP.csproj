@@ -189,6 +189,7 @@
     <Compile Include="NativeBindingService.cs" />
     <Compile Include="NativeValueConverterService.cs" />
     <Compile Include="NavigationPageRendererUWP.cs" />
+    <Compile Include="PageExtensions.cs" />
     <Compile Include="PlatformUWP.cs" />
     <Compile Include="SearchBarRenderer.cs" />
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextAlignmentToHorizontalAlignmentConverter.cs">
@@ -468,6 +469,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="TabbedPageStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FormsEmbeddedPageWrapper.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

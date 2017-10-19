@@ -1,4 +1,6 @@
+using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
@@ -10,6 +12,12 @@ namespace Xamarin.Forms.Platform.Android
 		double _max, _min;
 		bool _progressChangedOnce;
 
+		public SliderRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use SliderRenderer(Context) instead.")]
 		public SliderRenderer()
 		{
 			AutoPackage = false;

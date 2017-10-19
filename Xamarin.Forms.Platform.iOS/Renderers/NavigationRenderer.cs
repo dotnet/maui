@@ -378,7 +378,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		async void setTitleImage(ParentingViewController pack, FileImageSource titleIcon)
 		{
-			var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(titleIcon.GetType());
+			var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(titleIcon);
 			var image = await source.LoadImageAsync(titleIcon);
 			//UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
 			pack.NavigationItem.TitleView = new UIImageView(image);
@@ -676,7 +676,7 @@ namespace Xamarin.Forms.Platform.iOS
 				try
 				{
 
-					var source = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(masterDetailPage.Master.Icon.GetType());
+					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(masterDetailPage.Master.Icon);
 					var icon = await source.LoadImageAsync(masterDetailPage.Master.Icon);
 					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, handler);
 				}
@@ -717,22 +717,29 @@ namespace Xamarin.Forms.Platform.iOS
 				base.LayoutSubviews();
 				if (Items == null || Items.Length == 0)
 					return;
-				nfloat padding = 11f;
-				var itemWidth = (Bounds.Width - padding) / Items.Length - padding;
+				LayoutToolbarItems(Bounds.Width, Bounds.Height, 0);
+			}
+
+			void LayoutToolbarItems(nfloat toolbarWidth, nfloat toolbarHeight, nfloat padding)
+			{
 				var x = padding;
-				var itemH = Bounds.Height - 10;
+				var y = 0;
+				var itemH = toolbarHeight;
+				var itemW = toolbarWidth / Items.Length;
+
 				foreach (var item in Items)
 				{
-					var frame = new RectangleF(x, 5, itemWidth, itemH);
+					var frame = new RectangleF(x, y, itemW, itemH);
 					item.CustomView.Frame = frame;
-					x += itemWidth + padding;
+					x += itemW + padding;
 				}
-				x = itemWidth + padding * 1.5f;
-				var y = Bounds.GetMidY();
+
+				x = itemW + padding * 1.5f;
+				y = (int)Bounds.GetMidY();
 				foreach (var l in _lines)
 				{
 					l.Center = new PointF(x, y);
-					x += itemWidth + padding;
+					x += itemW + padding;
 				}
 			}
 

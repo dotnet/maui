@@ -211,7 +211,7 @@ namespace Xamarin.Forms.Platform.WinPhone
 
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer result = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new ViewRenderer();
+			IVisualElementRenderer result = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new ViewRenderer();
 			result.SetElement(element);
 			return result;
 		}

@@ -7,6 +7,7 @@ using AppKit;
 using CoreAnimation;
 using Foundation;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.macOSSpecific;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -56,7 +57,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Init();
 
-			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+			RaiseElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 		}
@@ -89,7 +90,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					NavigationPage?.SendDisappearing();
 					((Element as IPageContainer<Page>)?.CurrentPage as Page)?.SendDisappearing();
-					Element.PropertyChanged -= HandlePropertyChanged;
+					Element.PropertyChanged -= OnElementPropertyChanged;
 					Element = null;
 				}
 
@@ -125,15 +126,20 @@ namespace Xamarin.Forms.Platform.MacOS
 			NavigationPage?.SendAppearing();
 		}
 
-		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
+		void RaiseElementChanged(VisualElementChangedEventArgs e)
 		{
 			if (e.OldElement != null)
-				e.OldElement.PropertyChanged -= HandlePropertyChanged;
+				e.OldElement.PropertyChanged -= OnElementPropertyChanged;
 
 			if (e.NewElement != null)
-				e.NewElement.PropertyChanged += HandlePropertyChanged;
+				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 
+			OnElementChanged(e);
 			ElementChanged?.Invoke(this, e);
+		}
+
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
+		{
 		}
 
 		protected virtual void ConfigurePageRenderer()
@@ -263,6 +269,30 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 		}
 
+		NSViewControllerTransitionOptions ToViewControllerTransitionOptions(NavigationTransitionStyle transitionStyle)
+		{
+			switch (transitionStyle)
+			{
+				case NavigationTransitionStyle.Crossfade:
+					return NSViewControllerTransitionOptions.Crossfade;
+				case NavigationTransitionStyle.SlideBackward:
+					return NSViewControllerTransitionOptions.SlideBackward;
+				case NavigationTransitionStyle.SlideDown:
+					return NSViewControllerTransitionOptions.SlideDown;
+				case NavigationTransitionStyle.SlideForward:
+					return NSViewControllerTransitionOptions.SlideForward;
+				case NavigationTransitionStyle.SlideLeft:
+					return NSViewControllerTransitionOptions.SlideLeft;
+				case NavigationTransitionStyle.SlideRight:
+					return NSViewControllerTransitionOptions.SlideRight;
+				case NavigationTransitionStyle.SlideUp:
+					return NSViewControllerTransitionOptions.SlideUp;
+
+				default:
+					return NSViewControllerTransitionOptions.None;
+			}
+		}
+
 		async Task<bool> PopPageAsync(Page page, bool animated)
 		{
 			if (page == null)
@@ -281,8 +311,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (animated)
 			{
 				var previousPageRenderer = Platform.GetRenderer(previousPage);
+				var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPopStyle();
+
 				return await this.HandleAsyncAnimation(target.ViewController, previousPageRenderer.ViewController,
-					NSViewControllerTransitionOptions.SlideBackward, () => Platform.DisposeRendererAndChildren(target), true);
+					ToViewControllerTransitionOptions(transitionStyle), () => Platform.DisposeRendererAndChildren(target), true);
 			}
 
 			RemovePage(page, false);
@@ -313,8 +345,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			var vco = Platform.GetRenderer(oldPage);
 			AddChildViewController(vc.ViewController);
+
+            var transitionStyle = NavigationPage.OnThisPlatform().GetNavigationTransitionPushStyle();
 			return await this.HandleAsyncAnimation(vco.ViewController, vc.ViewController,
-				NSViewControllerTransitionOptions.SlideForward, () => page?.SendAppearing(), true);
+				ToViewControllerTransitionOptions(transitionStyle), () => page?.SendAppearing(), true);
 		}
 
 		void UpdateBackgroundColor()
@@ -335,7 +369,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			Platform.NativeToolbarTracker.UpdateToolBar();
 		}
 
-		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
+		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (_tracker == null)
 				return;

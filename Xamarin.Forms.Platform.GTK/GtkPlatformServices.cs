@@ -105,5 +105,10 @@ namespace Xamarin.Forms.Platform.GTK
                 return '0' + v;
             return 'a' + v - 10;
         }
-    }
+
+		public void QuitApplication()
+		{
+			Gtk.Application.Quit();
+		}
+	}
 }

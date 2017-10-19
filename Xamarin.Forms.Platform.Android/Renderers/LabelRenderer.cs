@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
@@ -25,6 +26,12 @@ namespace Xamarin.Forms.Platform.Android
 
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
 
+		public LabelRenderer(Context context) : base(context)
+		{
+			AutoPackage = false;
+		}
+
+		[Obsolete("This constructor is obsolete as of version 3.0. Please use LabelRenderer(Context) instead.")]
 		public LabelRenderer()
 		{
 			AutoPackage = false;
