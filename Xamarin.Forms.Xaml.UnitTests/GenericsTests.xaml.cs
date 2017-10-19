@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			//this stub will be replaced at compile time
 		}
 
-		[Ignore("Ignore for now because is failing on VSTS with the adapter")]
 		[TestFixture]
 		public class Tests
 		{
@@ -80,9 +79,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.NotNull (dict);
 				Assert.That (dict, Is.TypeOf<Dictionary<string,string>> ());
 
-				var queue = layout.Resources ["queue"];
+				var queue = layout.Resources ["genericsquaredlist"];
 				Assert.NotNull (dict);
-				Assert.That (queue, Is.TypeOf<Queue<KeyValuePair<string,string>>> ());
+				Assert.That (queue, Is.TypeOf<List<KeyValuePair<string,string>>> ());
 			}
 
 			[TestCase (false)]
