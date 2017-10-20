@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use NativeViewWrapperRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use NativeViewWrapperRenderer(Context) instead.")]
 		public NativeViewWrapperRenderer()
 		{
 		}

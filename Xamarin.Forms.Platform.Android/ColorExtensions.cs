@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 			return new AColor((byte)(byte.MaxValue * self.R), (byte)(byte.MaxValue * self.G), (byte)(byte.MaxValue * self.B), (byte)(byte.MaxValue * self.A));
 		}
 
-		[Obsolete("ToAndroid(this Color, int) is obsolete as of version 3.0. Please use ToAndroid(this Color, int, Context) instead.")]
+		[Obsolete("ToAndroid(this Color, int) is obsolete as of version 2.5. Please use ToAndroid(this Color, int, Context) instead.")]
 		public static AColor ToAndroid(this Color self, int defaultColorResourceId)
 		{
 			if (self == Color.Default)
