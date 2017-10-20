@@ -300,7 +300,7 @@ namespace Xamarin.Forms.Platform.Android
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
 		}
 
-		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 3.0. Please use CreateRenderer(VisualElement, Context) instead.")]
+		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRenderer(VisualElement, Context) instead.")]
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
 			return CreateRenderer(element, Forms.Context);
@@ -1075,7 +1075,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			bool _notReallyHandled;
 
-			[Obsolete("This constructor is obsolete as of version 3.0. Please use DefaultRenderer(Context) instead.")]
+			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
 			public DefaultRenderer()
 			{
 			}

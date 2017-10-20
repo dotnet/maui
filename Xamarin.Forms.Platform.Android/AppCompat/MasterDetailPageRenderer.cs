@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use MasterDetailPageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use MasterDetailPageRenderer(Context) instead.")]
 		public MasterDetailPageRenderer() : base(Forms.Context)
 		{
 		}

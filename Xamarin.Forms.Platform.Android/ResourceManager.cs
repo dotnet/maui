@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.Android
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass));
 		}
 
-		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 3.0. " 
+		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. " 
 			+ "Please use GetDrawable(this Context, string) instead.")]
 		public static Drawable GetDrawable(this Resources resource, string name)
 		{
