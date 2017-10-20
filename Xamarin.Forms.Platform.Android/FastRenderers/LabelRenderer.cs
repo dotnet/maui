@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			_visualElementRenderer = new VisualElementRenderer(this);
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use LabelRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
 		public LabelRenderer(): base(Forms.Context)
 		{
 			_labelTextColorDefault = TextColors;

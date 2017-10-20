@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Android
 			return base.DispatchTouchEvent(e);
 		}		  		
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use VisualElementRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use VisualElementRenderer(Context) instead.")]
 		protected VisualElementRenderer() : this(Forms.Context)
 		{
 		}

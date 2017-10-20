@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use CarouselPageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use CarouselPageRenderer(Context) instead.")]
 		public CarouselPageRenderer()
 		{
 			AutoPackage = false;

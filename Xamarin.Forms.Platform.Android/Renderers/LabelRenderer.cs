@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use LabelRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
 		public LabelRenderer()
 		{
 			AutoPackage = false;

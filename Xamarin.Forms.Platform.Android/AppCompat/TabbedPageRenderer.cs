@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use TabbedPageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use TabbedPageRenderer(Context) instead.")]
 		public TabbedPageRenderer()
 		{
 			AutoPackage = false;

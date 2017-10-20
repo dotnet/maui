@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use NavigationPageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use NavigationPageRenderer(Context) instead.")]
 		public NavigationPageRenderer()
 		{
 			AutoPackage = false;
