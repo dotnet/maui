@@ -33,7 +33,7 @@
 		</GetTasksAbi >
 
 		<PropertyGroup>
-			<_XFTasksExpectedAbi>2</_XFTasksExpectedAbi>
+			<_XFTasksExpectedAbi>3</_XFTasksExpectedAbi>
 		</PropertyGroup>
 
 		<Error

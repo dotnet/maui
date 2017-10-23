@@ -44,12 +44,13 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			Log.LogMessage("Source: {0}", xamlFile.ItemSpec);
 			Log.LogMessage("Language: {0}", Language);
+			Log.LogMessage("ResourceID: {0}", xamlFile.GetMetadata("ManifestResourceName"));
 			Log.LogMessage("AssemblyName: {0}", AssemblyName);
 			Log.LogMessage("OutputFile {0}", targetPath);
 
 			try
 			{
-				GenerateFile(xamlFile.ItemSpec, targetPath);
+				GenerateFile(xamlFile.ItemSpec, xamlFile.GetMetadata("ManifestResourceName"), targetPath);
 				_generatedCodeFiles.Add(new TaskItem(Microsoft.Build.Evaluation.ProjectCollection.Escape(targetPath)));
 				return true;
 			}
@@ -135,7 +136,7 @@ namespace Xamarin.Forms.Build.Tasks
 						new CodeAttributeArgument(new CodePrimitiveExpression("0.0.0.0")));
 
 		internal static void GenerateCode(string rootType, string rootNs, CodeTypeReference baseType,
-		                                  IEnumerable<CodeMemberField> namedFields, string xamlFile, string outFile)
+		                                  IEnumerable<CodeMemberField> namedFields, string xamlFile, string resourceId, string outFile)
 		{
 			//Create the target directory if required
 			Directory.CreateDirectory(Path.GetDirectoryName(outFile));
@@ -154,11 +155,101 @@ namespace Xamarin.Forms.Build.Tasks
 				IsPartial = true,
 				CustomAttributes = {
 					new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlFilePathAttribute).FullName}"),
-						 new CodeAttributeArgument(new CodePrimitiveExpression(xamlFile)))
+						 new CodeAttributeArgument(new CodePrimitiveExpression(xamlFile))),
+					new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
+					                             new CodeAttributeArgument(new CodePrimitiveExpression(rootNs)),
+					                             new CodeAttributeArgument(new CodePrimitiveExpression(resourceId))),
 				}
-				catch (Exception e) {
-					Log.LogError(null, null, null, xamlFile.ItemSpec, 0, 0, 0, 0, e.Message, e.HelpLink, e.Source);
-					success = false;
+			};
+			declType.BaseTypes.Add(baseType);
+
+			declNs.Types.Add(declType);
+
+			var initcomp = new CodeMemberMethod {
+				Name = "InitializeComponent",
+				CustomAttributes = { GeneratedCodeAttrDecl }
+			};
+
+			declType.Members.Add(initcomp);
+
+			initcomp.Statements.Add(new CodeMethodInvokeExpression(
+				new CodeTypeReferenceExpression(new CodeTypeReference($"global::{typeof(Extensions).FullName}")),
+				"LoadFromXaml", new CodeThisReferenceExpression(), new CodeTypeOfExpression(declType.Name)));
+
+			foreach (var namedField in namedFields)
+			{
+				declType.Members.Add(namedField);
+
+				var find_invoke = new CodeMethodInvokeExpression(
+					new CodeMethodReferenceExpression(
+						new CodeTypeReferenceExpression(new CodeTypeReference($"global::{typeof(NameScopeExtensions).FullName}")),
+						"FindByName", namedField.Type),
+					new CodeThisReferenceExpression(), new CodePrimitiveExpression(namedField.Name));
+
+				CodeAssignStatement assign = new CodeAssignStatement(
+					new CodeVariableReferenceExpression(namedField.Name), find_invoke);
+
+				initcomp.Statements.Add(assign);
+			}
+
+			using (var writer = new StreamWriter(outFile))
+				Provider.GenerateCodeFromCompileUnit(ccu, writer, new CodeGeneratorOptions());
+		}
+
+		internal static void GenerateFile(string xamlFile, string resourceId, string outFile)
+		{
+			string rootType, rootNs;
+			CodeTypeReference baseType;
+			IEnumerable<CodeMemberField> namedFields;
+
+			using (StreamReader reader = File.OpenText(xamlFile))
+				ParseXaml(reader, out rootType, out rootNs, out baseType, out namedFields);
+
+			GenerateCode(rootType, rootNs, baseType, namedFields, Path.GetFullPath(xamlFile), resourceId, outFile);
+		}
+
+		static IEnumerable<CodeMemberField> GetCodeMemberFields(XmlNode root, XmlNamespaceManager nsmgr)
+		{
+			var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
+			if (xPrefix == null)
+				yield break;
+
+			XmlNodeList names =
+				root.SelectNodes(
+				"//*[@" + xPrefix + ":Name" +
+					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style)]", nsmgr);
+			foreach (XmlNode node in names)
+			{
+				// Don't take the root canvas
+				if (node == root)
+					continue;
+				var name = GetAttributeValue(node, "Name", XamlParser.X2006Uri, XamlParser.X2009Uri);
+				var typeArguments = GetAttributeValue(node, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
+				var fieldModifier = GetAttributeValue(node, "FieldModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
+
+				var xmlType = new XmlType(node.NamespaceURI, node.LocalName,
+										  typeArguments != null
+										  ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null)
+										  : null);
+
+				var access = MemberAttributes.Private;
+				if (fieldModifier!=null) {
+					switch (fieldModifier.ToLowerInvariant()){
+					default:
+					case "private":
+						access = MemberAttributes.Private;
+						break;
+					case "public":
+						access = MemberAttributes.Public;
+						break;
+					case "protected":
+						access = MemberAttributes.Family;
+						break;
+					case "internal":
+					case "notpublic": //WPF syntax
+						access = MemberAttributes.Assembly;
+						break;
+					}
 				}
 			}
 
