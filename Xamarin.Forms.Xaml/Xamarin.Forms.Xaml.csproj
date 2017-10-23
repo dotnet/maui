@@ -40,7 +40,6 @@
     <Compile Include="TypeArgumentsParser.cs" />
     <Compile Include="PruneIgnoredNodesVisitor.cs" />
     <Compile Include="XamlFilePathAttribute.cs" />
-    <Compile Include="ResourcesLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
