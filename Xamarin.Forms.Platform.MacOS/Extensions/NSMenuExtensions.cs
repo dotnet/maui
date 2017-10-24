@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Platform.macOS.Extensions
 			if (accelerator == null)
 				return;
 
-			bool hasModifierMask = accelerator.Modifiers.Count() > 1;
+			bool hasModifierMask = accelerator.Modifiers?.Count() > 1;
 
 			if (hasModifierMask)
 			{
