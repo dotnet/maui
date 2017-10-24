@@ -222,7 +222,4 @@
       <LogicalName>Images/crimson.jpg</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="StyleSheets\" />
-  </ItemGroup>
 </Project>

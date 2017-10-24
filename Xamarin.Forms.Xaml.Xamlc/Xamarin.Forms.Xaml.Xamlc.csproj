@@ -33,7 +33,6 @@
     <Externalconsole>true</Externalconsole>
     <AssemblyName>xamlc</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
