@@ -57,11 +57,12 @@ namespace Xamarin.Forms.Xaml
 
 			//Special case for https://bugzilla.xamarin.com/show_bug.cgi?id=59818
 			//On OnPlatform, check for an opImplicit from the targetType
-				if (Xamarin.Forms.Device.Flags.Contains("xamlDoubleImplicitOpHack")
-				    && resource.GetType().GetTypeInfo().IsGenericType
-				    && (resource.GetType().GetGenericTypeDefinition() == typeof(OnPlatform<>))) {
+			if (   Device.Flags != null
+				&& Device.Flags.Contains("xamlDoubleImplicitOpHack")
+				&& resource.GetType().GetTypeInfo().IsGenericType
+				&& (resource.GetType().GetGenericTypeDefinition() == typeof(OnPlatform<>))) {
 				var tType = resource.GetType().GenericTypeArguments[0];
-				var opImplicit =   tType.GetImplicitConversionOperator(fromType: tType, toType: propertyType)
+				var opImplicit = tType.GetImplicitConversionOperator(fromType: tType, toType: propertyType)
 								?? propertyType.GetImplicitConversionOperator(fromType: tType, toType: propertyType);
 
 				if (opImplicit != null) {
