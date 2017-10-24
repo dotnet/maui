@@ -238,9 +238,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True (fired);
 		}
 
-		[Test]
-		public void TestBoundsTypeConverter ()
+		[TestCase("en-US"), TestCase("tr-TR")]
+		public void TestBoundsTypeConverter (string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+
 			var converter = new BoundsTypeConverter ();
 
 			Assert.IsTrue (converter.CanConvertFrom (typeof(string)));
@@ -249,17 +251,10 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (new Rectangle (3, 4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString ("3, 4, AutoSize, AutoSize"));
 			Assert.AreEqual (new Rectangle (3, 4, AbsoluteLayout.AutoSize, 30), converter.ConvertFromInvariantString ("3, 4, AutoSize, 30"));
 			Assert.AreEqual (new Rectangle (3, 4, 20, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString ("3, 4, 20, AutoSize"));
-		}
-
-		[Test]
-		public void TurkeyTestBoundsTypeConverter ()
-		{
-			var converter = new BoundsTypeConverter ();
 
 			var autoSize = "AutoSize";
-
-			Assert.AreEqual (new Rectangle (3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString ("3.3, 4.4, " + autoSize + ", AutoSize"));
-			Assert.AreEqual (new Rectangle (3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString ("3.3, 4.4, 5.5, 6.6"));
+			Assert.AreEqual(new Rectangle(3.3, 4.4, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize), converter.ConvertFromInvariantString("3.3, 4.4, " + autoSize + ", AutoSize"));
+			Assert.AreEqual(new Rectangle(3.3, 4.4, 5.5, 6.6), converter.ConvertFromInvariantString("3.3, 4.4, 5.5, 6.6"));
 		}
 	}
 }

@@ -49,9 +49,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (NamedSize.Medium, font.NamedSize);
 		}
 
-		[Test]
-		public void CultureTestSystemFontOfSizeDouble ()
+		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
+		public void CultureTestSystemFontOfSizeDouble (string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+
 			var font = Font.SystemFontOfSize (12.7);
 			Assert.AreEqual (null, font.FontFamily);
 			Assert.AreEqual (12.7, font.FontSize);

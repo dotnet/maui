@@ -31,13 +31,6 @@
     <AssemblyName>xamlc</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Turkey|AnyCPU' ">
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Turkey</OutputPath>
-    <WarningLevel>4</WarningLevel>
-    <AssemblyName>Xamarin.Forms.Xaml.Xamlc</AssemblyName>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />

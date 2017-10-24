@@ -797,10 +797,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[Test]
-		[SetUICulture("pt-PT")]
-		public void ValueConverterCulture()
+		[TestCase("en-US"), TestCase("pt-PT")]
+		public void ValueConverterCulture(string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture =new System.Globalization.CultureInfo(culture);
+
 			var converter = new TestConverterCulture();
 			var vm = new MockViewModel();
 			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
@@ -814,7 +815,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			bindable.SetBinding(property, binding);
 			bindable.BindingContext = vm;
 
-			Assert.AreEqual("pt-PT", vm.Text);
+			Assert.AreEqual(culture, vm.Text);
 		}
 #endif
 
@@ -1137,11 +1138,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 #if !WINDOWS_PHONE
-		[Test]
-		[SetCulture("pt-PT")]
-		[SetUICulture("pt-PT")]
-		public void ConvertIsCultureInvariant()
+		[TestCase("en-US"), TestCase("pt-PT")]
+		public void ConvertIsCultureInvariant(string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+
 			var slider = new Slider();
 			var vm = new MockViewModel { Text = "0.5" };
 			slider.BindingContext = vm;

@@ -163,9 +163,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (() => binding.StringFormat = "{0}", Throws.InvalidOperationException);
 		}
 
-		[Test]
-		public void StringFormatNonStringType()
+		[TestCase("en-US"), TestCase("tr-TR")]
+		public void StringFormatNonStringType(string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
 			var binding = new Binding("Value", stringFormat: "{0:P2}");
 
@@ -173,7 +175,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			if (System.Threading.Thread.CurrentThread.CurrentCulture.Name == "tr-TR")
+			if (culture == "tr-TR")
 				Assert.That(bo.GetValue(property), Is.EqualTo("%95,00"));
 			else
 				Assert.That(bo.GetValue(property), Is.EqualTo("95.00 %"));
