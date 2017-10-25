@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Core.XamlC
 
 			var parts = value.Split('.');
 			if (parts.Length == 1) {
-				var parent = node.Parent?.Parent as IElementNode;
+				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
 				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri &&
 				    ((node.Parent as ElementNode)?.XmlType.Name == "Setter" || (node.Parent as ElementNode)?.XmlType.Name == "PropertyCondition")) {
 					if (parent.XmlType.NamespaceUri == XamlParser.XFUri &&
