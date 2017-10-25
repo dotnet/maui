@@ -20,6 +20,7 @@ using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
 using System.Threading.Tasks;
 
+
 #endregion
 
 namespace Xamarin.Forms.Platform.Android
@@ -120,11 +121,13 @@ namespace Xamarin.Forms.Platform.Android
 
 			application.PropertyChanged += AppOnPropertyChanged;
 
-			var iver = Platform.GetRenderer(application.MainPage);
-			if (iver != null)
+			if (application?.MainPage != null)
 			{
-				iver.Dispose();
-				application.MainPage.ClearValue(Platform.RendererProperty);
+				var iver = Platform.GetRenderer(application.MainPage);
+				if (iver != null) {
+					iver.Dispose();
+					application.MainPage.ClearValue(Platform.RendererProperty);
+				}
 			}
 
 			SetMainPage();
