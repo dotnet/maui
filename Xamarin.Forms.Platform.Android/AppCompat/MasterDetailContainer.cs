@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (disposing)
 			{
-				if (_currentFragment != null)
+				if (_currentFragment != null && !FragmentManager.IsDestroyed)
 				{
 					FragmentTransaction transaction = FragmentManager.BeginTransaction();
 					transaction.Remove(_currentFragment);
