@@ -85,16 +85,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		GestureDetector InitializeTapAndPanDetector()
 		{
+			var context = Control.Context;
 			var listener = new InnerGestureListener(new TapGestureHandler(() => View),
-				new PanGestureHandler(() => View, Control.Context.FromPixels));
+				new PanGestureHandler(() => View, context.FromPixels));
 
-			return new GestureDetector(listener);
+			return new GestureDetector(context, listener);
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()
 		{
-			var listener = new InnerScaleListener(new PinchGestureHandler(() => View));
-			var detector = new ScaleGestureDetector(Control.Context, listener, Control.Handler);
+			var context = Control.Context;
+			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
+			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
 			ScaleGestureDetectorCompat.SetQuickScaleEnabled(detector, true);
 
 			return detector;
