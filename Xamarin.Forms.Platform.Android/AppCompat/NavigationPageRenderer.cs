@@ -128,13 +128,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				_disposed = true;
 
+				var activity = (FormsAppCompatActivity)Context;
+
 				// API only exists on newer android YAY
 				if ((int)Build.VERSION.SdkInt >= 17)
 				{
-					FragmentManager fm = FragmentManager;
-
-					if (!fm.IsDestroyed)
+					if (!activity.IsDestroyed)
 					{
+						FragmentManager fm = FragmentManager;
 						FragmentTransaction trans = fm.BeginTransaction();
 						foreach (Fragment fragment in _fragmentStack)
 							trans.Remove(fragment);
