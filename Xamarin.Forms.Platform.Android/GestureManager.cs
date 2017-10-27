@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Platform.Android
 		ScaleGestureDetector InitializeScaleDetector()
 		{
 			var context = Control.Context;
-			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
+			var listener = new InnerScaleListener(new PinchGestureHandler(() => View));
 			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
 			ScaleGestureDetectorCompat.SetQuickScaleEnabled(detector, true);
 
