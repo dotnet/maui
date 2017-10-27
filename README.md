@@ -75,7 +75,7 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 
 ## Contributing ##
 
-- [How to Contribute](https://github.com/xamarin/xamarin.forms/wiki/Contributing-Code)
+- [How to Contribute](https://github.com/xamarin/Xamarin.Forms/wiki/How-to-Contribute)
 
 ### Xamarin.Forms Evolution
 
