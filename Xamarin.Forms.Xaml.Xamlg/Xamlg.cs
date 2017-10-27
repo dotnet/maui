@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Xaml
 				else
 					n = string.Concat(Path.GetFileName(f), ".g.", XamlGTask.Provider.FileExtension);
 
-				XamlGTask.GenerateFile(f, f, n);
+				XamlGTask.GenerateFile(f, f, f, n);
 			}
 		}
 

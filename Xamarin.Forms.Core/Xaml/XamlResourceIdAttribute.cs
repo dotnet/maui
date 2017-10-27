@@ -2,16 +2,18 @@
 
 namespace Xamarin.Forms.Xaml
 {
-	[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = true)]
 	public sealed class XamlResourceIdAttribute : Attribute
 	{
-		public string RootNamespace { get; set; }
 		public string ResourceId { get; set; }
+		public string Path { get; set; }
+		public Type Type { get; set; }
 
-		public XamlResourceIdAttribute(string rootNamespace, string resourceId)
+		public XamlResourceIdAttribute(string resourceId, string path, Type type)
 		{
-			RootNamespace = rootNamespace;
 			ResourceId = resourceId;
+			Path = path;
+			Type = type;
 		}
 	}
 }

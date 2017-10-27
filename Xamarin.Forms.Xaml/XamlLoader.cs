@@ -152,7 +152,15 @@ namespace Xamarin.Forms.Xaml
 
 			var typeInfo = type.GetTypeInfo();
 			var assembly = typeInfo.Assembly;
-			var resourceId = typeInfo.GetCustomAttribute<XamlResourceIdAttribute>()?.ResourceId;
+
+			string resourceId = null;
+			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>()) {
+				if (xria.Type != type)
+					continue;
+				resourceId = xria.ResourceId;
+				break;
+			}
+
 			if (resourceId == null)
 				return LegacyGetXamlForType(type);
 
