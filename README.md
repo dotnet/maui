@@ -89,7 +89,11 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 
 ## Contributing ##
 
-- [How to Contribute](https://github.com/xamarin/Xamarin.Forms/blob/master/CONTRIBUTING.md)
+- [How to Contribute](https://github.com/xamarin/Xamarin.Forms/wiki/How-to-Contribute)
+
+### Xamarin.Forms Evolution
+
+To discuss this project and participate in the design, we use the [Xamarin.Forms Evolution](https://forums.xamarin.com/categories/xamarin-forms-evolution) discussion board.   
 
 ### Reporting Bugs
 
