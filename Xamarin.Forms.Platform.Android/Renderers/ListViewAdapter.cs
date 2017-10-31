@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ListViewAdapter : CellAdapter
 	{
+		static readonly object DefaultItemTypeOrDataTemplate = new object();
 		const int DefaultGroupHeaderTemplateId = 0;
 		const int DefaultItemTemplateId = 1;
 
@@ -359,6 +360,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			else // ListViewCachingStrategy.RetainElement
 				return GetCellForPosition(indexPath);
+
+			if (itemTypeOrDataTemplate == null)
+				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
 
 			Cell protoCell;
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
