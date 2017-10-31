@@ -369,6 +369,9 @@ namespace Xamarin.Forms.Platform.Android
 			else // ListViewCachingStrategy.RetainElement
 				return GetCellForPosition(indexPath);
 
+			if (itemTypeOrDataTemplate == null)
+				itemTypeOrDataTemplate = DefaultItemTypeOrDataTemplate;
+
 			Cell protoCell;
 			if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
 			{
