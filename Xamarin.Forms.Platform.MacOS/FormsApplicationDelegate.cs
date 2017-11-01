@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using AppKit;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.macOS.Extensions;
 
 namespace Xamarin.Forms.Platform.MacOS
@@ -89,10 +90,11 @@ namespace Xamarin.Forms.Platform.MacOS
 		void UpdateMainMenu()
 		{
 			var mainMenu = Element.GetMenu(_application);
+			var nsMenu = NSApplication.SharedApplication.MainMenu;
 			if (mainMenu != null)
 				SetMainMenu(mainMenu);
-			else if (NSApplication.SharedApplication.MainMenu.Count >= 2)
-				ClearMainMenu();
+			else if (nsMenu != null && nsMenu.Count >= 2)
+				ClearNSMenu(nsMenu);
 		}
 
 		void SetMainMenu(Menu mainMenu)
@@ -104,15 +106,22 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void MainMenuOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			ClearMainMenu();
-			Element.GetMenu(_application).ToNSMenu(NSApplication.SharedApplication.MainMenu);
+			var nsMenu = NSApplication.SharedApplication.MainMenu;
+			if (nsMenu == null)
+			{
+				Log.Warning("FormsApplicationDelegate", "Please provide a Main.storyboard to handle menus");
+				return;
+			}
+				
+			ClearNSMenu(nsMenu);
+			Element.GetMenu(_application).ToNSMenu(nsMenu);
 		}
 
-		static void ClearMainMenu()
+		static void ClearNSMenu(NSMenu menu)
 		{
 			//for now we can't remove the 1st menu item		
-			for (var i = NSApplication.SharedApplication.MainMenu.Count - 1; i > 0; i--)
-				NSApplication.SharedApplication.MainMenu.RemoveItemAt(i);
+			for (var i = menu.Count - 1; i > 0; i--)
+				menu.RemoveItemAt(i);
 		}
 	}
 }
