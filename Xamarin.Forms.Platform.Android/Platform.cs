@@ -306,7 +306,7 @@ namespace Xamarin.Forms.Platform.Android
 			return CreateRenderer(element, Forms.Context);
 		}
 
-		public static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
+		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
 		{
 			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType(), context) 
 				?? new DefaultRenderer(context);
