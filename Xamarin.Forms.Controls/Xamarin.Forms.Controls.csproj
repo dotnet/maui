@@ -250,9 +250,6 @@
     <Compile Include="GalleryPages\MacTwitterDemo.xaml.cs">
       <DependentUpon>MacTwitterDemo.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CompressedLayout.xaml.cs">
-      <DependentUpon>CompressedLayout.xaml</DependentUpon>
-    </Compile>
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\LargeTitlesPageiOS.cs" />
     <Compile Include="GalleryPages\PlatformSpecificsGalleries\SafeAreaPageiOS.cs" />
   </ItemGroup>
