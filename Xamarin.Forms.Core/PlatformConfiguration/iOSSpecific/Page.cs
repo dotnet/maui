@@ -1,5 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
+	using System.ComponentModel;
 	using FormsElement = Forms.Page;
 
 	public static class Page
@@ -136,6 +137,7 @@
 			return GetSafeAreaInsets(config.Element);
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetSafeAreaInsets(this IPlatformElementConfiguration<iOS, FormsElement> config, Thickness value)
 		{
 			SetSafeAreaInsets(config.Element, value);
