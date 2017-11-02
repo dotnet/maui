@@ -71,5 +71,28 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 		#endregion
+
+		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
+
+		public static bool GetPrefersLargeTitles(BindableObject element)
+		{
+			return (bool)element.GetValue(PrefersLargeTitlesProperty);
+		}
+
+		public static void SetPrefersLargeTitles(BindableObject element, bool value)
+		{
+			element.SetValue(PrefersLargeTitlesProperty, value);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetPrefersLargeTitles(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetPrefersLargeTitles(config.Element, value);
+			return config;
+		}
+
+		public static bool PrefersLargeTitles(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetPrefersLargeTitles(config.Element);
+		}
 	}
 }
