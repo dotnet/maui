@@ -10,6 +10,7 @@ using Xamarin.Forms.Controls;
 using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms.Platform.Android.AppLinks;
+using System.Linq;
 
 namespace Xamarin.Forms.ControlGallery.Android
 {
@@ -84,6 +85,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			SetUpForceRestartTest();
 
 			LoadApplication(_app);
+			if (Forms.Flags.Contains("FastRenderers_Experimental"))
+			{
+				var masterPage = ((_app.MainPage as MasterDetailPage)?.Master as ContentPage);
+				if (masterPage != null)
+					masterPage.Content = new Label { Text = "Fast Renderers" };
+			}
 		}
 
 		
