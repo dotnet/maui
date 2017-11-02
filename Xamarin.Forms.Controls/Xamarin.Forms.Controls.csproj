@@ -265,6 +265,8 @@
     <Compile Include="CompressedLayout.xaml.cs">
       <DependentUpon>CompressedLayout.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\LargeTitlesPageiOS.cs" />
+    <Compile Include="GalleryPages\PlatformSpecificsGalleries\SafeAreaPageiOS.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.targets" />
