@@ -7,7 +7,6 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
-using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
 
 namespace Xamarin.Forms.Controls
 {

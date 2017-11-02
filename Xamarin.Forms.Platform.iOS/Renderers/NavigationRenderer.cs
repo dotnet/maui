@@ -160,15 +160,16 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 			UpdateToolBarVisible();
 
-			var navBarFrameBottom = Math.Min(NavigationBar.Frame.Bottom, 140);
-			_navigationBottom = (nfloat)navBarFrameBottom;
+			//var navBarFrameBotton = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : NavigationBar.Frame.Bottom;
+			var navBarFrameBotton = NavigationBar.Frame.Bottom;
+
 			var toolbar = _secondaryToolbar;
 
 			//save the state of the Current page we are calculating, this will fire before Current is updated
 			_hasNavigationBar = NavigationPage.GetHasNavigationBar(Current);
 
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBotton;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
@@ -468,14 +469,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 				UpdateUseLargeTitles();
-		}
-
-		void ValidateNavbarExists(Page newCurrentPage)
-		{
-			//if the last time we did ViewDidLayoutSubviews we had other value for _hasNavigationBar
-			//we will need to relayout. This is because Current is updated async of the layout happening
-			if(_hasNavigationBar != NavigationPage.GetHasNavigationBar(newCurrentPage))
-				ViewDidLayoutSubviews();
+			
 		}
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
@@ -492,6 +486,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (Forms.IsiOS11OrNewer && navPage != null)
 				NavigationBar.PrefersLargeTitles = navPage.OnThisPlatform().PrefersLargeTitles();
 		}	
+
 
 		void UpdateTranslucent()
 		{
@@ -635,6 +630,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				NavigationBar.LargeTitleTextAttributes = NavigationBar.TitleTextAttributes;      
 			}
+
 
 			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();
 
