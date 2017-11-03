@@ -529,11 +529,18 @@ namespace Xamarin.Forms.Internals
 			return ItemTemplate.SelectDataTemplate(item, _itemsView);
 		}
 
-		public TItem CreateContent(int index, object item, bool insert = false)
+		public TItem ActivateContent(int index, object item)
 		{
 			TItem content = ItemTemplate != null ? (TItem)ItemTemplate.CreateContent(item, _itemsView) : _itemsView.CreateDefault(item);
 
 			content = UpdateContent(content, index, item);
+
+			return content;
+		}
+
+		public TItem CreateContent(int index, object item, bool insert = false)
+		{
+			var content = ActivateContent(index, item);
 
 			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 				return content;

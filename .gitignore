@@ -8,6 +8,7 @@ classic_obj
 *.log
 *.userprefs
 *.suo
+_docs.xml
 UpgradeLog*
 *UpgradeReport*
 *.user
