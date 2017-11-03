@@ -678,16 +678,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				// We're going to base our estimate off of the first cell
-				var isGroupingEnabled = List.IsGroupingEnabled;
-
-				if (isGroupingEnabled)
-					templatedItems = templatedItems.GetGroup(0);
-
-				object item = null;
-				if (templatedItems == null || templatedItems.ListProxy.TryGetValue(0, out item) == false)
-					return DefaultRowHeight;
-
-				var firstCell = templatedItems.ActivateContent(0, item);
+				var firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
 
 				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
 				if (firstCell?.Height > 0 && !isGroupingEnabled)
@@ -778,7 +769,8 @@ namespace Xamarin.Forms.Platform.iOS
 					// Let the EstimatedHeight method know to use this value.
 					// Much more efficient than checking the value each time.
 					//_useEstimatedRowHeight = true;
-					return (nfloat)req.Request.Height;
+					var height = (nfloat)req.Request.Height;
+					return height > 1 ? height : DefaultRowHeight;
 				}
 
 				var renderHeight = cell.RenderHeight;
