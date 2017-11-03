@@ -24,7 +24,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Device.PlatformServices = new MockPlatformServices();
 				Application.Current = new MockApplication {
 					Resources = new ResourceDictionary {
+#pragma warning disable 618
 						MergedWith = typeof(MyRD)
+#pragma warning restore 618
 					}
 				};
 			}

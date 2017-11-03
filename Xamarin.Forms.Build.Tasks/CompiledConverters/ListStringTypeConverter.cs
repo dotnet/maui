@@ -12,8 +12,10 @@ namespace Xamarin.Forms.Core.XamlC
 {
 	class ListStringTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ModuleDefinition module, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
+			var module = context.Body.Method.Module;
+
 			if (value == null) {
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;

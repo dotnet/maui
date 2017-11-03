@@ -12,8 +12,10 @@ namespace Xamarin.Forms.Core.XamlC
 {
 	class TypeTypeConverter : ICompiledTypeConverter
 	{
-		public IEnumerable<Instruction> ConvertFromString(string value, ModuleDefinition module, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
+			var module = context.Body.Method.Module;
+
 			if (string.IsNullOrEmpty(value))
 				goto error;
 
@@ -40,5 +42,4 @@ namespace Xamarin.Forms.Core.XamlC
 			throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Type)}", node);
 		}
 	}
-
 }

@@ -47,7 +47,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			{
 				Application.Current = new MockApplication {
 					Resources = new ResourceDictionary {
+#pragma warning disable 618
 						MergedWith = typeof(Bz43733Rd),
+#pragma warning restore 618
 					}
 				};
 				var p = new Bz43733(useCompiledXaml);

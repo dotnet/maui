@@ -7,13 +7,16 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 using Xamarin.Forms.Xaml;
+using Xamarin.Forms.Build.Tasks;
 
 namespace Xamarin.Forms.Core.XamlC
 {
 	class BoundsTypeConverter : ICompiledTypeConverter
 	{
-		IEnumerable<Instruction> ICompiledTypeConverter.ConvertFromString(string value, ModuleDefinition module, BaseNode node)
+		IEnumerable<Instruction> ICompiledTypeConverter.ConvertFromString(string value, ILContext context, BaseNode node)
 		{
+			var module = context.Body.Method.Module;
+
 			if (string.IsNullOrEmpty(value))
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Rectangle)}", node);
 
