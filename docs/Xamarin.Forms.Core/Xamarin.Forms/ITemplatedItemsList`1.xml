@@ -32,6 +32,28 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
+    <Member MemberName="ActivateContent">
+      <MemberSignature Language="C#" Value="public TItem ActivateContent (int index, object item = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance !TItem ActivateContent(int32 index, object item) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>TItem</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="index" Type="System.Int32" />
+        <Parameter Name="item" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="index">To be added.</param>
+        <param name="item">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="BindingContext">
       <MemberSignature Language="C#" Value="public object BindingContext { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance object BindingContext" />
