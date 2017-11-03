@@ -58,16 +58,16 @@ namespace Xamarin.Forms.Controls.Issues
 				// first and second taps
 				if (_x == 0)
 				{
-					if (args.ScrollX != 0 && args.ScrollX != 100)
+					if (Math.Round(args.ScrollX) != 0 && Math.Round(args.ScrollX) != 100)
 						_didXChange = true;
-					if (args.ScrollY != 0 && args.ScrollY != 100)
+					if (Math.Round(args.ScrollY) != 0 && Math.Round(args.ScrollY) != 100)
 						_didYChange = true;
 				}
 				else if (_x == 100)
 				{
-					if (args.ScrollX != _x && args.ScrollX != _x + 100)
+					if (Math.Round(args.ScrollX) != _x && Math.Round(args.ScrollX) != _x + 100)
 						_didXChange = true;
-					if (args.ScrollY != 100)
+					if (Math.Round(args.ScrollY) != 100)
 						_didYChange = true;
 				}
 
