@@ -142,7 +142,7 @@ namespace Xamarin.Forms.Build.Tasks
 			ccu.AssemblyCustomAttributes.Add(
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
 										 new CodeAttributeArgument(new CodePrimitiveExpression(resourceId)),
-										 new CodeAttributeArgument(new CodePrimitiveExpression(targetPath)),
+										 new CodeAttributeArgument(new CodePrimitiveExpression(targetPath.Replace('\\', '/'))), //use forward slashes, paths are uris-like
 										 new CodeAttributeArgument(new CodeTypeOfExpression($"global::{rootNs}.{rootType}"))
 										));
 			var declNs = new CodeNamespace(rootNs);
