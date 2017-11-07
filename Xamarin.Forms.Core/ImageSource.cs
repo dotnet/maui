@@ -107,6 +107,9 @@ namespace Xamarin.Forms
 
 		public static implicit operator ImageSource(Uri uri)
 		{
+			if (uri == null)
+				return null;
+
 			if (!uri.IsAbsoluteUri)
 				throw new ArgumentException("uri is relative");
 			return FromUri(uri);

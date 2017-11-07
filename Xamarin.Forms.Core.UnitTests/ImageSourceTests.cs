@@ -56,6 +56,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestImplicitStringConversionWhenNull()
+		{
+			string s = null;
+			var sut = (ImageSource)s;
+			Assert.That (sut, Is.InstanceOf<FileImageSource> ());
+			Assert.IsNull (((FileImageSource)sut).File);
+		}
+
+		[Test]
 		public void TestImplicitUriConversion ()
 		{
 			var image = new Image { Source = new Uri ("http://xamarin.com/img.png") };
@@ -74,10 +83,18 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestImplicitUriConversionWhenNull()
+		{
+			Uri u = null;
+			var sut = (ImageSource)u;
+			Assert.IsNull(sut);
+		}
+
+		[Test]
 		public void TestSetStringValue ()
 		{
 			var image = new Image ();
-			image.SetValue (Image.SourceProperty, "foo.png");		
+			image.SetValue (Image.SourceProperty, "foo.png");
 			Assert.IsNotNull (image.Source);
 			Assert.That (image.Source, Is.InstanceOf<FileImageSource> ());
 			Assert.AreEqual ("foo.png", ((FileImageSource)(image.Source)).File);
@@ -92,7 +109,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			image.BindingContext = "foo.png";
 			Assert.IsNotNull (image.Source);
 			Assert.That (image.Source, Is.InstanceOf<FileImageSource> ());
-			Assert.AreEqual ("foo.png", ((FileImageSource)(image.Source)).File);		
+			Assert.AreEqual ("foo.png", ((FileImageSource)(image.Source)).File);
 		}
 
 		[Test]
@@ -119,7 +136,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual ("http://xamarin.com/img.png", ((UriImageSource)(image.Source)).Uri.AbsoluteUri);
 		}
 
-		class MockImageSource : ImageSource 
+		class MockImageSource : ImageSource
 		{
 		}
 
