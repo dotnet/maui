@@ -72,18 +72,22 @@ namespace Xamarin.Forms.Xaml
 			foreach (var file in extra)
 			{
 				var f = file;
-				var n = "";
 
-				var sub = file.IndexOf(",", StringComparison.InvariantCulture);
-				if (sub > 0)
-				{
-					n = f.Substring(sub + 1);
-					f = f.Substring(0, sub);
-				}
-				else
-					n = string.Concat(Path.GetFileName(f), ".g.", XamlGTask.Provider.FileExtension);
+				var item = new TaskItem(f);
+				item.SetMetadata("TargetPath", f);
+				var generator = new XamlGTask() {
+					BuildEngine = new DummyBuildEngine(),
+					AssemblyName = "test",
+					Language = "C#",
+					XamlFiles = new[] { item },
+					OutputPath = Path.GetDirectoryName(f),
+				};
 
-				XamlGTask.GenerateFile(f, f, f, n);
+
+				new XamlGTask { 
+					XamlFiles = new[] { new TaskItem(f)}
+				}.Execute();
+
 			}
 		}
 

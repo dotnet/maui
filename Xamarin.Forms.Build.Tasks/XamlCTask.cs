@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Build.Tasks
 						Logger.LogString(MessageImportance.Low, "  Resource: {0}... ", resource.Name);
 						string classname;
 						if (!resource.IsXaml(module, out classname)) {
-							Logger.LogLine(MessageImportance.Low, "skipped.");
+							Logger.LogLine(2, "skipped.");
 							continue;
 						}
 						TypeDefinition typeDef = module.GetType(classname);

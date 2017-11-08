@@ -49,7 +49,6 @@ namespace Xamarin.Forms.Build.Tasks
 		bool GenerateDefaultCtor { get; set; }
 		bool AddXamlCompilationAttribute { get; set; }
 		bool HideFromIntellisense { get; set; }
-		bool XamlResourceIdOnly { get; set; }
 		internal IEnumerable<CodeMemberField> NamedFields { get; set; }
 		internal CodeTypeReference BaseType { get; set; }
 
@@ -74,12 +73,12 @@ namespace Xamarin.Forms.Build.Tasks
 		//returns true if a file is generated
 		public bool Execute()
 		{
-			Logger?.LogMessage(MessageImportance.Low, "Source: {0}", XamlFile);
-			Logger?.LogMessage(MessageImportance.Low, " Language: {0}", Language);
-			Logger?.LogMessage(MessageImportance.Low, " ResourceID: {0}", ResourceId);
-			Logger?.LogMessage(MessageImportance.Low, " TargetPath: {0}", TargetPath);
-			Logger?.LogMessage(MessageImportance.Low, " AssemblyName: {0}", AssemblyName);
-			Logger?.LogMessage(MessageImportance.Low, " OutputFile {0}", OutputFile);
+			Logger?.LogMessage("Source: {0}", XamlFile);
+			Logger?.LogMessage(" Language: {0}", Language);
+			Logger?.LogMessage(" ResourceID: {0}", ResourceId);
+			Logger?.LogMessage(" TargetPath: {0}", TargetPath);
+			Logger?.LogMessage(" AssemblyName: {0}", AssemblyName);
+			Logger?.LogMessage(" OutputFile {0}", OutputFile);
 
 			using (StreamReader reader = File.OpenText(XamlFile))
 				if (!ParseXaml(reader))
@@ -107,7 +106,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 			if (root == null) {
-				Logger?.LogMessage(MessageImportance.Low, " No root node found");
+				Logger?.LogWarning(" No root node found");
 				return false;
 			}
 
@@ -136,8 +135,8 @@ namespace Xamarin.Forms.Build.Tasks
 				HideFromIntellisense = true;
 			}
 			else { // rootClass == null && !hasXamlCompilationProcessingInstruction) {
-				XamlResourceIdOnly = true; //only generate the XamlResourceId assembly attribute
-				return true;
+				Logger?.LogMessage(" no x:Class on root element and no xaml-comp processing instruction: Skipping");
+				return false;
 			}
 
 			NamedFields = GetCodeMemberFields(root, nsmgr);
@@ -148,30 +147,26 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
-		static Version version = typeof(XamlGenerator).Assembly.GetName().Version;
 		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
 						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
-						new CodeAttributeArgument(new CodePrimitiveExpression($"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}")));
+						new CodeAttributeArgument(new CodePrimitiveExpression("0.0.0.0")));
 
 		void GenerateCode()
 		{
 			//Create the target directory if required
 			Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
 
-			var ccu = new CodeCompileUnit();
-			ccu.AssemblyCustomAttributes.Add(
-				new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
-											 new CodeAttributeArgument(new CodePrimitiveExpression(ResourceId)),
-											 new CodeAttributeArgument(new CodePrimitiveExpression(TargetPath.Replace('\\', '/'))), //use forward slashes, paths are uris-like
-											 new CodeAttributeArgument(RootType == null ? (CodeExpression)new CodePrimitiveExpression(null) : new CodeTypeOfExpression($"global::{RootClrNamespace}.{RootType}"))
-											));
-			if (XamlResourceIdOnly)
-				goto writeAndExit;
-
 			if (RootType == null)
 				throw new Exception("Something went wrong while executing XamlG");
 
+			var ccu = new CodeCompileUnit();
+			ccu.AssemblyCustomAttributes.Add(
+			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
+										 new CodeAttributeArgument(new CodePrimitiveExpression(ResourceId)),
+										 new CodeAttributeArgument(new CodePrimitiveExpression(TargetPath.Replace('\\', '/'))), //use forward slashes, paths are uris-like
+										 new CodeAttributeArgument(new CodeTypeOfExpression($"global::{RootClrNamespace}.{RootType}"))
+										));
 			var declNs = new CodeNamespace(RootClrNamespace);
 			ccu.Namespaces.Add(declNs);
 
@@ -236,7 +231,6 @@ namespace Xamarin.Forms.Build.Tasks
 				initcomp.Statements.Add(assign);
 			}
 
-		writeAndExit:
 			//write the result
 			using (var writer = new StreamWriter(OutputFile))
 				Provider.GenerateCodeFromCompileUnit(ccu, writer, new CodeGeneratorOptions());
@@ -251,7 +245,7 @@ namespace Xamarin.Forms.Build.Tasks
 			XmlNodeList names =
 				root.SelectNodes(
 				"//*[@" + xPrefix + ":Name" +
-					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)]", nsmgr);
+					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style)]", nsmgr);
 			foreach (XmlNode node in names) {
 				// Don't take the root canvas
 				if (node == root)
