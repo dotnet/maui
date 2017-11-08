@@ -45,7 +45,6 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 				catch (XmlException xe) {
 					Log.LogError(null, null, null, xamlFile.ItemSpec, xe.LineNumber, xe.LinePosition, 0, 0, xe.Message, xe.HelpLink, xe.Source);
-
 					success = false;
 				}
 				catch (Exception e) {

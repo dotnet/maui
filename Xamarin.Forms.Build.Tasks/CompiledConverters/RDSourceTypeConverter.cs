@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Core.XamlC
 			var uri = new Uri(value, UriKind.Relative);
 
 			var resourceId = ResourceDictionary.RDSourceTypeConverter.GetResourceId(uri, rootTargetPath, s => GetResourceIdForPath(module, s));
+			if (resourceId == null)
+				throw new XamlParseException($"Resource '{value}' not found.", node);
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
 			yield return Create(Ldloc, context.Variables[rdNode]); //the resourcedictionary
