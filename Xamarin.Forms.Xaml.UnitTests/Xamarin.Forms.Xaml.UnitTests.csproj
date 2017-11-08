@@ -495,7 +495,7 @@
     <Compile Include="Issues\Bz59818.xaml.cs">
       <DependentUpon>Bz59818.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResourceDictionaryWithSource.xaml.cs" >
+    <Compile Include="ResourceDictionaryWithSource.xaml.cs">
       <DependentUpon>ResourceDictionaryWithSource.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -924,6 +924,7 @@
     <EmbeddedResource Include="ResourceDictionaryWithSource.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="RDWithoutCodeBehind.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

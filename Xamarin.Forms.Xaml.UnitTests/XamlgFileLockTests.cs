@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Xamarin.Forms.Build.Tasks;
 using Xamarin.Forms.Core.UnitTests;
@@ -27,13 +28,19 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void XamlFileShouldNotBeLockedAfterFileIsGenerated ()
 		{
 			string xamlInputFile = CreateXamlInputFile ();
-			string xamlOutputFile = Path.ChangeExtension (xamlInputFile, ".xaml.g.cs");
-			var generator = new XamlGTask ();
-			generator.BuildEngine = new DummyBuildEngine ();
-			generator.AssemblyName = "Test";
-			generator.Language = "C#";
+			var item = new TaskItem(xamlInputFile);
+			item.SetMetadata("TargetPath", xamlInputFile);
+			var generator = new XamlGTask() {
+				BuildEngine= new DummyBuildEngine(),
+				AssemblyName = "test",
+				Language = "C#",
+				XamlFiles = new[] { item},
+				OutputPath = Path.GetDirectoryName(xamlInputFile),
+			};
 
-			generator.Execute(new TaskItem(xamlInputFile), xamlOutputFile);
+			generator.Execute();
+
+			string xamlOutputFile = generator.GeneratedCodeFiles.First().ItemSpec;
 			File.Delete (xamlOutputFile);
 
 			Assert.DoesNotThrow (() => File.Delete (xamlInputFile));

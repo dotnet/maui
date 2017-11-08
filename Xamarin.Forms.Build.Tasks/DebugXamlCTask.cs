@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Build.Tasks
 					foreach (var resource in module.Resources.OfType<EmbeddedResource>()) {
 						Logger.LogString(2, "  Resource: {0}... ", resource.Name);
 						string classname;
-						if (!resource.IsXaml(out classname)) {
+						if (!resource.IsXaml(module, out classname)) {
 							Logger.LogLine(2, "skipped.");
 							continue;
 						} else
