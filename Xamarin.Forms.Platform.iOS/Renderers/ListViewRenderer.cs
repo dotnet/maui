@@ -512,10 +512,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
 
-			var lastIndex = Control.NumberOfRowsInSection(section);
-			if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
-				throw new ArgumentException(
-					$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+			if (!groupReset)
+			{
+				var lastIndex = Control.NumberOfRowsInSection(section);
+				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
+					throw new ArgumentException(
+						$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+			}
 
 			switch (e.Action)
 			{
