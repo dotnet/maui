@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -124,8 +125,22 @@ namespace Xamarin.Forms.Platform.WinRT
 			UpdateMargins();
 		}
 
-		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
+		async void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
+			// Adding items into the view while scrolling to the end can cause it to fail, as
+			// the items have not actually been laid out and return incorrect scroll position
+			// values. The ScrollViewRenderer for Android does something similar by waiting up
+			// to 10ms for layout to occur.
+			int cycle = 0;
+			while (!Element.IsInNativeLayout)
+			{
+				await Task.Delay(TimeSpan.FromMilliseconds(1));
+				cycle++;
+
+				if (cycle >= 10)
+					break;
+			}
+
 			double x = e.ScrollX, y = e.ScrollY;
 
 			ScrollToMode mode = e.Mode;
