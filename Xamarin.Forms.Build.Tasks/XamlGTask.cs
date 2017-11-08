@@ -37,6 +37,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 			foreach (var xamlFile in XamlFiles) {
 				var targetPath = Path.Combine(OutputPath, xamlFile.GetMetadata("TargetPath") + ".g.cs");
+				if (Path.DirectorySeparatorChar == '/' && targetPath.Contains(@"\"))
+					targetPath = targetPath.Replace('\\','/');
+				else if (Path.DirectorySeparatorChar == '\\' && targetPath.Contains(@"/"))
+					targetPath = targetPath.Replace('/', '\\');
 				result &= Execute(xamlFile, targetPath);
 			}
 
