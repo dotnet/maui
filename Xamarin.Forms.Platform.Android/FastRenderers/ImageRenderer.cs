@@ -163,7 +163,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use ImageRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use ImageRenderer(Context) instead.")]
 		public ImageRenderer() : base(Forms.Context)
 		{
 		}

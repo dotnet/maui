@@ -160,7 +160,7 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException("element");
 
 			if (!CheckElementBelongsToScrollViewer(element))
-				throw new ArgumentException("element does not belong to this ScrollVIew", "element");
+				throw new ArgumentException("element does not belong to this ScrollView", "element");
 
 			var args = new ScrollToRequestedEventArgs(element, position, animated);
 			OnScrollToRequested(args);

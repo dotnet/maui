@@ -112,8 +112,8 @@ namespace Xamarin.Forms.Controls.Issues
 			var refresh = new Button() { Text = "REFRESH" };
 			refresh.Clicked += (object sender, EventArgs e) =>
 			{
-				height.Text = $"h={image.Height}";
-				width.Text = $"w={image.Width}";
+				height.Text = $"h={Math.Round(image.Height)}";
+				width.Text = $"w={Math.Round(image.Width)}";
 				counter.Text = $"step={count++}";
 			};
 			stack.Children.Add(refresh);

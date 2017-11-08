@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var compiledConverter = Activator.CreateInstance (compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
 				var instructions = (IEnumerable<Instruction>)converter.Invoke (compiledConverter, new object[] {
-					node.Value as string, context.Body.Method.Module, node as BaseNode});
+					node.Value as string, context, node as BaseNode});
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
@@ -310,20 +310,18 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = context.Body.Method.Module;
 
 			var xmlLineInfo = node as IXmlLineInfo;
-			if (xmlLineInfo == null)
-			{
+			if (xmlLineInfo == null) {
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;
 			}
 			MethodReference ctor;
-			if (xmlLineInfo.HasLineInfo())
-			{
+			if (xmlLineInfo.HasLineInfo()) {
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LineNumber);
 				yield return Instruction.Create(OpCodes.Ldc_I4, xmlLineInfo.LinePosition);
-				ctor = module.ImportReference(typeof (XmlLineInfo).GetConstructor(new[] { typeof (int), typeof (int) }));
+				ctor = module.ImportReference(typeof(XmlLineInfo).GetConstructor(new[] { typeof(int), typeof(int) }));
 			}
 			else
-				ctor = module.ImportReference(typeof (XmlLineInfo).GetConstructor(new Type[] { }));
+				ctor = module.ImportReference(typeof(XmlLineInfo).GetConstructor(new Type[] { }));
 			yield return Instruction.Create(OpCodes.Newobj, ctor);
 		}
 

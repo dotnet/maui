@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use FrameRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use FrameRenderer(Context) instead.")]
 		public FrameRenderer()
 		{
 			AutoPackage = false;

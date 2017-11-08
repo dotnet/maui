@@ -12,7 +12,7 @@ namespace Xamarin
 	{
 		public static bool IsInitialized { get; private set; }
 
-		[Obsolete("Context is obsolete as of version 3.0. Please use a local context instead.")]
+		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		public static Context Context { get; private set; }
 
 		public static void Init(Activity activity, Bundle bundle)

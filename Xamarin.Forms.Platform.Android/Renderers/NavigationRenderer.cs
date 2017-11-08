@@ -19,7 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use NavigationRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use NavigationRenderer(Context) instead.")]
 		public NavigationRenderer()
 		{
 			AutoPackage = false;
@@ -237,7 +237,10 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					// animate out
 					if (containerToAdd.Parent != this)
-						AddView(containerToAdd, ((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
+					{
+						var indexRenderToAdd = Math.Min(ChildCount,((IElementController)Element).LogicalChildren.IndexOf(rendererToAdd.Element));
+						AddView(containerToAdd, indexRenderToAdd);
+					}						
 					else
 						((IPageController)rendererToAdd.Element).SendAppearing();
 					containerToAdd.Visibility = ViewStates.Visible;

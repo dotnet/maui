@@ -29,7 +29,7 @@ namespace Xamarin.Forms
 
 		static bool? s_isLollipopOrNewer;
 
-		[Obsolete("Context is obsolete as of version 3.0. Please use a local context instead.")]
+		[Obsolete("Context is obsolete as of version 2.5. Please use a local context instead.")]
 		public static Context Context { get; internal set; }
 
 		// One per process; does not change, suitable for loading resources (e.g., ResourceProvider)
@@ -65,7 +65,7 @@ namespace Xamarin.Forms
 		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 3.0. " 
+		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. " 
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{

@@ -14,6 +14,8 @@ using WListView = Windows.UI.Xaml.Controls.ListView;
 using WBinding = Windows.UI.Xaml.Data.Binding;
 using WApp = Windows.UI.Xaml.Application;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
 
 #if WINDOWS_UWP
 
@@ -26,6 +28,9 @@ namespace Xamarin.Forms.Platform.WinRT
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
+		bool _itemWasClicked;
+		bool _subscribedToItemClick;
+		bool _subscribedToTapped;
 
 
 #if !WINDOWS_UWP
@@ -72,9 +77,6 @@ namespace Xamarin.Forms.Platform.WinRT
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
-					List.IsItemClickEnabled = true;
-					List.ItemClick += OnListItemClicked;
-
 					List.SelectionChanged += OnControlSelectionChanged;
 
 					List.SetBinding(ItemsControl.ItemsSourceProperty, "");
@@ -92,6 +94,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateGrouping();
 				UpdateHeader();
 				UpdateFooter();
+				UpdateSelectionMode();
 				ClearSizeEstimate();
 			}
 		}
@@ -129,13 +132,26 @@ namespace Xamarin.Forms.Platform.WinRT
 				ClearSizeEstimate();
 				((CollectionViewSource)List.DataContext).Source = Element.ItemsSource;
 			}
+			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
+			{
+				UpdateSelectionMode();
+			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			if (List != null)
 			{
-				List.ItemClick -= OnListItemClicked;
+				if (_subscribedToTapped)
+				{
+					_subscribedToTapped = false;
+					List.Tapped -= ListOnTapped;
+				}
+				if (_subscribedToItemClick)
+				{
+					_subscribedToItemClick = false;
+					List.ItemClick -= OnListItemClicked;
+				}
 				List.SelectionChanged -= OnControlSelectionChanged;
 
 				List.DataContext = null;
@@ -243,6 +259,44 @@ namespace Xamarin.Forms.Platform.WinRT
 					_zoom.CanChangeViews = false;
 				else if (List != Control)
 					SetNativeControl(List);
+			}
+		}
+
+		void UpdateSelectionMode()
+		{
+			if (Element.OnThisPlatform().GetSelectionMode() == PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Accessible)
+			{
+				// Using Tapped will disable the ability to use the Enter key
+				List.IsItemClickEnabled = true;
+				if (!_subscribedToItemClick)
+				{
+					_subscribedToItemClick = true;
+					List.ItemClick += OnListItemClicked;
+				}
+
+				if (_subscribedToTapped)
+				{
+					_subscribedToTapped = false;
+					List.Tapped -= ListOnTapped;
+				}
+			}
+			else
+			{
+				// In order to support tapping on elements within a list item, we handle 
+				// ListView.Tapped (which can be handled by child elements in the list items 
+				// and prevented from bubbling up) rather than ListView.ItemClick 
+				if (!_subscribedToTapped)
+				{
+					_subscribedToTapped = true;
+					List.Tapped += ListOnTapped;
+				}
+
+				List.IsItemClickEnabled = false;
+				if (_subscribedToItemClick)
+				{
+					_subscribedToItemClick = false;
+					List.ItemClick -= OnListItemClicked;
+				}
 			}
 		}
 
@@ -399,6 +453,32 @@ namespace Xamarin.Forms.Platform.WinRT
 			return _scrollViewer;
 		}
 
+		void ListOnTapped(object sender, TappedRoutedEventArgs args)
+		{
+			var orig = args.OriginalSource as DependencyObject;
+			int index = -1;
+
+			// Work our way up the tree until we find the actual list item
+			// the user tapped on
+
+			while (orig != null && orig != List)
+			{
+				var lv = orig as ListViewItem;
+				if (lv != null)
+				{
+					index = TemplatedItemsView.TemplatedItems.GetGlobalIndexOfItem(lv.Content);
+					break;
+				}
+
+				orig = VisualTreeHelper.GetParent(orig);
+			}
+
+			if (index > -1)
+			{
+				OnListItemClicked(index);
+			}
+		}
+
 		void OnElementItemSelected(object sender, SelectedItemChangedEventArgs e)
 		{
 			if (Element == null)
@@ -451,6 +531,7 @@ namespace Xamarin.Forms.Platform.WinRT
 #endif
 
 			Element.NotifyRowTapped(index, cell: null);
+			_itemWasClicked = true;
 
 #if !WINDOWS_UWP
 
@@ -483,6 +564,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+#if !WINDOWS_UWP
 			RestorePreviousSelectedVisual();
 
 			if (e.AddedItems.Count == 0)
@@ -500,7 +582,6 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (cell == null)
 				return;
 
-#if !WINDOWS_UWP
 			if (Device.Idiom == TargetIdiom.Phone)
 			{
 				FrameworkElement element = FindElement(cell);
@@ -510,8 +591,10 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 			}
 #endif
-			if (Element.SelectedItem != List.SelectedItem)
+			if (Element.SelectedItem != List.SelectedItem && !_itemWasClicked)
 				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+
+			_itemWasClicked = false;
 		}
 
 		FrameworkElement FindElement(object cell)
@@ -525,15 +608,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			return null;
 		}
 
-#if WINDOWS_UWP
-		void RestorePreviousSelectedVisual()
-		{
-		}
+#if !WINDOWS_UWP
 
-		void SetSelectedVisual(FrameworkElement element)
-		{
-		}
-#else
 		void RestorePreviousSelectedVisual()
 		{
 			foreach (BrushedElement highlight in _highlightedElements)

@@ -1,12 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using System.Reflection;
-using Xamarin.Forms.Internals;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
@@ -16,13 +20,18 @@ namespace Xamarin.Forms
 		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
 		ResourceDictionary _mergedInstance;
 		Type _mergedWith;
+		Uri _source;
 
-		[TypeConverter (typeof(TypeTypeConverter))]
+		[TypeConverter(typeof(TypeTypeConverter))]
+		[Obsolete("Use Source")]
 		public Type MergedWith {
 			get { return _mergedWith; }
 			set {
 				if (_mergedWith == value)
 					return;
+
+				if (_source != null)
+					throw new ArgumentException("MergedWith can not be used with Source");
 
 				if (!typeof(ResourceDictionary).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo()))
 					throw new ArgumentException("MergedWith should inherit from ResourceDictionary");
@@ -34,6 +43,33 @@ namespace Xamarin.Forms
 				_mergedInstance = s_instances.GetValue(_mergedWith, (key) => (ResourceDictionary)Activator.CreateInstance(key));
 				OnValuesChanged(_mergedInstance.ToArray());
 			}
+		}
+
+		[TypeConverter(typeof(RDSourceTypeConverter))]
+		public Uri Source {
+			get { return _source; }
+			set {
+				if (_source == value)
+					return;
+				throw new InvalidOperationException("Source can only be set from XAML."); //through the RDSourceTypeConverter
+			}
+		}
+
+		//Used by the XamlC compiled converter
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
+		{
+			_source = value;
+			if (_mergedWith != null)
+				throw new ArgumentException("Source can not be used with MergedWith");
+
+			//this will return a type if the RD as an x:Class element, and codebehind
+			var type = XamlResourceIdAttribute.GetTypeForResourceId(assembly, resourceID);
+			if (type != null)
+				_mergedInstance = s_instances.GetValue(type, (key) => (ResourceDictionary)Activator.CreateInstance(key));
+			else
+				_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateResourceDictionary(resourceID, assembly, lineInfo);
+			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
 		ICollection<ResourceDictionary> _mergedDictionaries;
@@ -256,5 +292,57 @@ namespace Xamarin.Forms
 		}
 
 		event EventHandler<ResourcesChangedEventArgs> ValuesChanged;
+
+		[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.RDSourceTypeConverter")]
+		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
+		{
+			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
+			{
+				if (serviceProvider == null)
+					throw new ArgumentNullException(nameof(serviceProvider));
+
+				var targetRD = (serviceProvider.GetService(typeof(Xaml.IProvideValueTarget)) as Xaml.IProvideValueTarget)?.TargetObject as ResourceDictionary;
+				if (targetRD == null)
+					return null;
+
+				var rootObjectType = (serviceProvider.GetService(typeof(Xaml.IRootObjectProvider)) as Xaml.IRootObjectProvider)?.RootObject.GetType();
+				if (rootObjectType == null)
+					return null;
+
+				var lineInfo = (serviceProvider.GetService(typeof(Xaml.IXmlLineInfoProvider)) as Xaml.IXmlLineInfoProvider)?.XmlLineInfo;
+				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
+				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
+				var resourceId = GetResourceId(uri, rootTargetPath,
+											   s => XamlResourceIdAttribute.GetResourceIdForPath(rootObjectType.GetTypeInfo().Assembly, s));
+				if (resourceId == null)
+					throw new XamlParseException($"Resource '{value}' not found.", lineInfo);
+
+				targetRD.SetAndLoadSource(uri, resourceId, rootObjectType.GetTypeInfo().Assembly, lineInfo);
+				return uri;
+			}
+
+			internal static string GetResourceId(Uri uri, string rootTargetPath, Func<string, string> getResourceIdForPath)
+			{
+				//need a fake scheme so it's not seen as file:// uri, and the forward slashes are valid on all plats
+				var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
+				                     ? new Uri($"pack://{uri.OriginalString}", UriKind.Absolute)
+				                     : new Uri($"pack:///{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
+
+				//drop the leading '/'
+				var resourcePath = resourceUri.AbsolutePath.Substring(1);
+
+				return getResourceIdForPath(resourcePath);
+			}
+
+			object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)
+			{
+				throw new NotImplementedException();
+			}
+
+			public override object ConvertFromInvariantString(string value)
+			{
+				throw new NotImplementedException();
+			}
+		}
 	}
 }

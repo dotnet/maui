@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.Android
 			AutoPackage = false;
 		}
 
-		[Obsolete("This constructor is obsolete as of version 3.0. Please use WebViewRenderer(Context) instead.")]
+		[Obsolete("This constructor is obsolete as of version 2.5. Please use WebViewRenderer(Context) instead.")]
 		public WebViewRenderer()
 		{
 			AutoPackage = false;

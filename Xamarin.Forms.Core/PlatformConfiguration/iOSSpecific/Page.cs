@@ -1,5 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 {
+	using System.ComponentModel;
 	using FormsElement = Forms.Page;
 
 	public static class Page
@@ -56,5 +57,92 @@
 			SetPreferredStatusBarUpdateAnimation(config.Element, value);
 			return config;
 		}
+
+		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), false, propertyChanged: (bindable, oldValue, newValue) =>
+		{
+			var page = bindable as Xamarin.Forms.Page;
+			if ((bool)oldValue && !(bool)newValue)
+			{
+				page.Padding = default(Thickness);
+			}
+		});
+
+		public static bool GetUseSafeArea(BindableObject element)
+		{
+			return (bool)element.GetValue(UseSafeAreaProperty);
+		}
+
+		public static void SetUseSafeArea(BindableObject element, bool value)
+		{
+			element.SetValue(UseSafeAreaProperty, value);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetUseSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetUseSafeArea(config.Element, value);
+			return config;
+		}
+
+		public static bool UsingSafeArea(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetUseSafeArea(config.Element);
+		}
+
+		public static readonly BindableProperty LargeTitleDisplayProperty = BindableProperty.Create(nameof(LargeTitleDisplay), typeof(LargeTitleDisplayMode), typeof(Page), LargeTitleDisplayMode.Automatic);
+
+		public static LargeTitleDisplayMode GetLargeTitleDisplay(BindableObject element)
+		{
+			return (LargeTitleDisplayMode)element.GetValue(LargeTitleDisplayProperty);
+		}
+
+		public static void SetLargeTitleDisplay(BindableObject element, LargeTitleDisplayMode value)
+		{
+			element.SetValue(LargeTitleDisplayProperty, value);
+		}
+
+		public static LargeTitleDisplayMode LargeTitleDisplay(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetLargeTitleDisplay(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetLargeTitleDisplay(this IPlatformElementConfiguration<iOS, FormsElement> config, LargeTitleDisplayMode value)
+		{
+			SetLargeTitleDisplay(config.Element, value);
+			return config;
+		}
+
+		static readonly BindablePropertyKey SafeAreaInsetsPropertyKey = BindableProperty.CreateReadOnly(nameof(SafeAreaInsets), typeof(Thickness), typeof(Page), default(Thickness), propertyChanged: (bindable, oldValue, newValue) =>
+		{
+			var page = bindable as Xamarin.Forms.Page;
+			if (page.On<iOS>().UsingSafeArea())
+			{
+				page.Padding = (Thickness)newValue;
+			}
+		});
+
+		public static readonly BindableProperty SafeAreaInsetsProperty = SafeAreaInsetsPropertyKey.BindableProperty;
+
+		public static Thickness GetSafeAreaInsets(BindableObject element)
+		{
+			return (Thickness)element.GetValue(SafeAreaInsetsProperty);
+		}
+
+		static void SetSafeAreaInsets(BindableObject element, Thickness value)
+		{
+			element.SetValue(SafeAreaInsetsPropertyKey, value);
+		}
+
+		public static Thickness SafeAreaInsets(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetSafeAreaInsets(config.Element);
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetSafeAreaInsets(this IPlatformElementConfiguration<iOS, FormsElement> config, Thickness value)
+		{
+			SetSafeAreaInsets(config.Element, value);
+			return config;
+		}
+
 	}
 }

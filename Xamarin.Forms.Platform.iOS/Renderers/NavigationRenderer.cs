@@ -8,6 +8,7 @@ using UIKit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.Page;
+using static Xamarin.Forms.PlatformConfiguration.iOSSpecific.NavigationPage;
 using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
@@ -148,11 +149,12 @@ namespace Xamarin.Forms.Platform.iOS
 			base.ViewDidLayoutSubviews();
 			UpdateToolBarVisible();
 
-			var navBarFrame = NavigationBar.Frame;
+			//var navBarFrameBotton = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : NavigationBar.Frame.Bottom;
+			var navBarFrameBotton = NavigationBar.Frame.Bottom;
 
 			var toolbar = _secondaryToolbar;
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrame.Bottom;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBotton;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
@@ -205,6 +207,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateTint();
 			UpdateBarBackgroundColor();
 			UpdateBarTextColor();
+			UpdateUseLargeTitles();
 
 			// If there is already stuff on the stack we need to push it
 			navPage.Pages.ForEach(async p => await PushPageAsync(p, false));
@@ -442,6 +445,9 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTranslucent();
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
+			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
+				UpdateUseLargeTitles();
+			
 		}
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
@@ -451,6 +457,14 @@ namespace Xamarin.Forms.Platform.iOS
 			PageUIStatusBarAnimation animation = PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimation(((Page)Element).OnThisPlatform());
 			PlatformConfiguration.iOSSpecific.Page.SetPreferredStatusBarUpdateAnimation(Current.OnThisPlatform(), animation);
 		}
+
+		void UpdateUseLargeTitles()
+		{
+			var navPage = (Element as NavigationPage);
+			if (Forms.IsiOS11OrNewer && navPage != null)
+				NavigationBar.PrefersLargeTitles = navPage.OnThisPlatform().PrefersLargeTitles();
+		}	
+
 
 		void UpdateTranslucent()
 		{
@@ -598,6 +612,12 @@ namespace Xamarin.Forms.Platform.iOS
 					: barTextColor.ToUIColor();
 				NavigationBar.TitleTextAttributes = titleAttributes;
 			}
+
+			if(Forms.IsiOS11OrNewer)
+			{
+				NavigationBar.LargeTitleTextAttributes = NavigationBar.TitleTextAttributes;      
+			}
+
 
 			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();
 
@@ -789,6 +809,7 @@ namespace Xamarin.Forms.Platform.iOS
 						_child.PropertyChanged += HandleChildPropertyChanged;
 
 					UpdateHasBackButton();
+					UpdateLargeTitles();
 				}
 			}
 
@@ -894,6 +915,8 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateHasBackButton();
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
 					UpdatePrefersStatusBarHidden();
+				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
+					UpdateLargeTitles();
 			}
 
 			void UpdatePrefersStatusBarHidden()
@@ -963,6 +986,27 @@ namespace Xamarin.Forms.Platform.iOS
 				NavigationRenderer n;
 				if (_navigation.TryGetTarget(out n))
 					n.UpdateToolBarVisible();
+			}
+
+			void UpdateLargeTitles()
+			{
+				var page = Child;
+				if (page != null && Forms.IsiOS11OrNewer)
+				{
+					var largeTitleDisplayMode = page.OnThisPlatform().LargeTitleDisplay();
+					switch (largeTitleDisplayMode)
+					{
+						case LargeTitleDisplayMode.Always:
+							NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Always;
+							break;
+						case LargeTitleDisplayMode.Automatic:
+							NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Automatic;
+							break;
+						case LargeTitleDisplayMode.Never:
+							NavigationItem.LargeTitleDisplayMode = UINavigationItemLargeTitleDisplayMode.Never;
+							break;
+					}
+				}
 			}
 
 			public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()

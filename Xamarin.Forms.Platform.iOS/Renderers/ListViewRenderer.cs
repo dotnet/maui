@@ -333,7 +333,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.TableHeaderView = _headerRenderer.NativeView;
 		}
 
-		void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
+		async void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
 			if (Superview == null)
 			{
@@ -357,6 +357,11 @@ namespace Xamarin.Forms.Platform.iOS
 				if (index != -1)
 				{
 					Control.Layer.RemoveAllAnimations();
+					//iOS11 hack
+					if(Forms.IsiOS11OrNewer)
+					{
+						await Task.Delay(1);
+					}
 					Control.ScrollToRow(NSIndexPath.FromRowSection(index, 0), position, e.ShouldAnimate);
 				}
 			}
@@ -507,10 +512,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
 
-			var lastIndex = Control.NumberOfRowsInSection(section);
-			if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
-				throw new ArgumentException(
-					$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+			if (!groupReset)
+			{
+				var lastIndex = Control.NumberOfRowsInSection(section);
+				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
+					throw new ArgumentException(
+						$"Index '{Math.Max(e.NewStartingIndex, e.OldStartingIndex)}' is greater than the number of rows '{lastIndex}'.");
+			}
 
 			switch (e.Action)
 			{
@@ -658,7 +666,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				// We're going to base our estimate off of the first cell
-				var firstCell = templatedItems.First();
+				var firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
 
 				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
 				if (firstCell.Height > 0 && !List.IsGroupingEnabled)
@@ -749,7 +757,8 @@ namespace Xamarin.Forms.Platform.iOS
 					// Let the EstimatedHeight method know to use this value.
 					// Much more efficient than checking the value each time.
 					//_useEstimatedRowHeight = true;
-					return (nfloat)req.Request.Height;
+					var height = (nfloat)req.Request.Height;
+					return height > 1 ? height : DefaultRowHeight;
 				}
 
 				var renderHeight = cell.RenderHeight;

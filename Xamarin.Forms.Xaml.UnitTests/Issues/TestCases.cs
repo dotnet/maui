@@ -3,6 +3,7 @@ using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
 using Xamarin.Forms.Core.UnitTests;
+using System.Globalization;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -14,17 +15,22 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	[TestFixture]
 	public class TestCases
 	{
+		CultureInfo _defaultCulture;
+
 		[SetUp]
-		public void Setup ()
+		public virtual void Setup()
 		{
-			Device.PlatformServices = new MockPlatformServices ();
+			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
+			Device.PlatformServices = new MockPlatformServices();
 		}
 
 		[TearDown]
-		public void Teardown ()
+		public virtual void TearDown()
 		{
 			Device.PlatformServices = null;
+			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 		}
+
 
 		public static readonly BindableProperty InnerViewProperty = 
 #pragma warning disable 618
@@ -195,11 +201,12 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.AreEqual ("oof", label.Text);
 		}
 
-		[Test]
+		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
 		//only happens in european cultures
-		[SetCulture ("fr-FR")]
-		public void Issue1493 ()
+		public void Issue1493 (string culture)
 		{
+			System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(culture);
+
 			var xaml = @"<?xml version=""1.0"" encoding=""utf-8"" ?>
 						<View 
 							xmlns=""http://xamarin.com/schemas/2014/forms"" 

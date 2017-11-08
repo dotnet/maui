@@ -11,8 +11,8 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create("IsGestureEnabled", typeof(bool), typeof(MasterDetailPage), true);
 
-		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create("IsPresented", typeof(bool), typeof(MasterDetailPage), default(bool),
-			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging);
+		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create("IsPresented", typeof(bool), typeof(MasterDetailPage),default(bool),
+			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator : GetDefaultValue);
 
 		public static readonly BindableProperty MasterBehaviorProperty = BindableProperty.Create("MasterBehavior", typeof(MasterBehavior), typeof(MasterDetailPage), default(MasterBehavior),
 			propertyChanged: OnMasterBehaviorPropertyChanged);
@@ -238,6 +238,11 @@ namespace Xamarin.Forms
 		{
 			var page = (MasterDetailPage)sender;
 			UpdateMasterBehavior(page);
+		}
+
+		static object GetDefaultValue(BindableObject bindable)
+		{
+			return Device.RuntimePlatform == Device.macOS;
 		}
 
 		public MasterDetailPage()

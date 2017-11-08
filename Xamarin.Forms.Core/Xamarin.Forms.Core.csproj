@@ -36,18 +36,6 @@
     <NoWarn>
     </NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Turkey|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Turkey\</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>
-    </NoWarn>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="AbsoluteLayoutFlags.cs" />
     <Compile Include="Accelerator.cs" />
@@ -113,6 +101,7 @@
     <Compile Include="PlatformConfiguration\iOSSpecific\UIStatusBarAnimation.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\UpdateMode.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\VisualElement.cs" />
+    <Compile Include="PlatformConfiguration\WindowsSpecific\ListView.cs" />
     <Compile Include="PlatformConfiguration\WindowsSpecific\MasterDetailPage.cs" />
     <Compile Include="PlatformConfiguration\WindowsSpecific\CollapseStyle.cs" />
     <Compile Include="Configuration.cs" />
@@ -472,6 +461,9 @@
     <Compile Include="CompressedLayout.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\NavigationPage.cs" />
     <Compile Include="PlatformConfiguration\macOSSpecific\NavigationTransitionStyle.cs" />
+    <Compile Include="Xaml\IResourcesLoader.cs" />
+    <Compile Include="Xaml\XamlResourceIdAttribute.cs" />
+    <Compile Include="PlatformConfiguration\iOSSpecific\LargeTitleDisplayMode.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

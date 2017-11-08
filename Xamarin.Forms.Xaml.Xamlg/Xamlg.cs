@@ -29,17 +29,20 @@
 // Copyright 2013 Mobile Inception
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Mono.Options;
 using Xamarin.Forms.Build.Tasks;
+using Microsoft.Build.Utilities;
+using Microsoft.Build.Framework;
 
 namespace Xamarin.Forms.Xaml
 {
 	public class Xamlg
 	{
 		static readonly string HelpString = "xamlg.exe - a utility for generating partial classes from XAML.\n" +
-		                                    "xamlg.exe xamlfile[,outputfile]...\n\n" +
+		                                    "xamlg.exe xamlfile...\n\n" +
 		                                    "If an outputfile is not specified one will be created using the format <xamlfile>.g.cs\n\n";
 
 		public static void Main(string[] args)
@@ -69,18 +72,22 @@ namespace Xamarin.Forms.Xaml
 			foreach (var file in extra)
 			{
 				var f = file;
-				var n = "";
 
-				var sub = file.IndexOf(",", StringComparison.InvariantCulture);
-				if (sub > 0)
-				{
-					n = f.Substring(sub + 1);
-					f = f.Substring(0, sub);
-				}
-				else
-					n = string.Concat(Path.GetFileName(f), ".g.", XamlGTask.Provider.FileExtension);
+				var item = new TaskItem(f);
+				item.SetMetadata("TargetPath", f);
+				var generator = new XamlGTask() {
+					BuildEngine = new DummyBuildEngine(),
+					AssemblyName = "test",
+					Language = "C#",
+					XamlFiles = new[] { item },
+					OutputPath = Path.GetDirectoryName(f),
+				};
 
-				XamlGTask.GenerateFile(f, n);
+
+				new XamlGTask { 
+					XamlFiles = new[] { new TaskItem(f)}
+				}.Execute();
+
 			}
 		}
 
@@ -88,6 +95,46 @@ namespace Xamarin.Forms.Xaml
 		{
 			Console.WriteLine(HelpString);
 			ops.WriteOptionDescriptions(Console.Out);
+		}
+	}
+
+	public class DummyBuildEngine : IBuildEngine
+	{
+		public void LogErrorEvent(BuildErrorEventArgs e)
+		{
+		}
+
+		public void LogWarningEvent(BuildWarningEventArgs e)
+		{
+		}
+
+		public void LogMessageEvent(BuildMessageEventArgs e)
+		{
+		}
+
+		public void LogCustomEvent(CustomBuildEventArgs e)
+		{
+		}
+
+		public bool BuildProjectFile(string projectFileName, string[] targetNames, IDictionary globalProperties, IDictionary targetOutputs)
+		{
+			return false;
+		}
+
+		public bool ContinueOnError {
+			get { return false; }
+		}
+
+		public int LineNumberOfTaskNode {
+			get { return 1; }
+		}
+
+		public int ColumnNumberOfTaskNode {
+			get { return 1; }
+		}
+
+		public string ProjectFileOfTaskNode {
+			get { return String.Empty; }
 		}
 	}
 }

@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Xamarin.Forms.Controls.GalleryPages;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Controls
 {
@@ -33,6 +35,7 @@ namespace Xamarin.Forms.Controls
 	{
 		public CoreContentPage ()
 		{
+			On<iOS>().SetUseSafeArea(true);
 			AutomationId = "ContentPageRoot";
 			Content = new StackLayout { Children = { new CoreRootView (), new CorePageView (this, NavigationBehavior.PushModalAsync) } };
 		}
@@ -80,6 +83,8 @@ namespace Xamarin.Forms.Controls
 				return false;
 			});
 
+			On<iOS>().SetPrefersLargeTitles(true);
+		
 			Navigation.PushAsync (new CoreRootPage (this));
 		}
 	}
