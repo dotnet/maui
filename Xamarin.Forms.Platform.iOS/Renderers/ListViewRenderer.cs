@@ -358,7 +358,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					Control.Layer.RemoveAllAnimations();
 					//iOS11 hack
-					if(Forms.IsiOS11OrNewer)
+					if (Forms.IsiOS11OrNewer)
 					{
 						await Task.Delay(1);
 					}
@@ -666,10 +666,16 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				// We're going to base our estimate off of the first cell
-				var firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
+				Cell firstCell;
+				var isGroupingEnabled = List.IsGroupingEnabled;
+
+				if (isGroupingEnabled)
+					firstCell = templatedItems.ActivateContent(0, templatedItems.GetGroup(0)?.ListProxy[0]);
+				else
+					firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
 
 				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
-				if (firstCell.Height > 0 && !List.IsGroupingEnabled)
+				if (firstCell?.Height > 0 && !isGroupingEnabled)
 				{
 					// Seems like we've got cells which already specify their height; since the heights are known,
 					// we don't need to use estimatedRowHeight at all; zero will disable it and use the known heights.
@@ -886,7 +892,7 @@ namespace Xamarin.Forms.Platform.iOS
 				PreserveActivityIndicatorState(cell);
 				return nativeCell;
 			}
-		
+
 			public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 			{
 				if (List.IsGroupingEnabled)
