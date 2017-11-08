@@ -193,6 +193,21 @@ Device.BeginInvokeOnMainThread (() => {
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GTK">
+      <MemberSignature Language="C#" Value="public const string GTK;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string GTK" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Idiom">
       <MemberSignature Language="C#" Value="public static Xamarin.Forms.TargetIdiom Idiom { get; }" />
       <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Forms.TargetIdiom Idiom" />
