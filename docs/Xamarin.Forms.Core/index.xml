@@ -2134,9 +2134,141 @@
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
-      <Member MemberName="GetElevation">
-        <MemberSignature Language="C#" Value="public static Nullable&lt;float&gt; GetElevation (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Android,Xamarin.Forms.VisualElement&gt; config);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.Nullable`1&lt;float32&gt; GetElevation(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Android, class Xamarin.Forms.VisualElement&gt; config) cil managed" />
+      <Member MemberName="GetHasCornerRadius">
+        <MemberSignature Language="C#" Value="public static bool GetHasCornerRadius (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool GetHasCornerRadius(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.BoxView&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Boolean</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.BoxView" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.BoxView.GetHasCornerRadius(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetHasCornerRadius">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt; SetHasCornerRadius (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt; config, bool value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.BoxView&gt; SetHasCornerRadius(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.BoxView&gt; config, bool value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView&gt;" RefType="this" />
+          <Parameter Name="value" Type="System.Boolean" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.BoxView" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.BoxView.SetHasCornerRadius(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.BoxView},System.Boolean)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="GetBackButtonIcon">
+        <MemberSignature Language="C#" Value="public static string GetBackButtonIcon (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig string GetBackButtonIcon(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.NavigationPage&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.String</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.NavigationPage.GetBackButtonIcon(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetBackButtonIcon">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt; SetBackButtonIcon (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt; config, string value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.NavigationPage&gt; SetBackButtonIcon(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.NavigationPage&gt; config, string value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage&gt;" RefType="this" />
+          <Parameter Name="value" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.NavigationPage" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.NavigationPage.SetBackButtonIcon(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.NavigationPage},System.String)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="GetTabPosition">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition GetTabPosition (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition GetTabPosition(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.TabbedPage&gt; config) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabbedPage.GetTabPosition(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage})" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="SetTabPosition">
+        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt; SetTabPosition (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt; config, Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition value);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.TabbedPage&gt; SetTabPosition(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.GTK, class Xamarin.Forms.TabbedPage&gt; config, valuetype Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition value) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt;</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage&gt;" RefType="this" />
+          <Parameter Name="value" Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition" />
+        </Parameters>
+        <Docs>
+          <param name="config">To be added.</param>
+          <param name="value">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabbedPage.SetTabPosition(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.GTK,Xamarin.Forms.TabbedPage},Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
+      </Targets>
+      <Member MemberName="AdjustsFontSizeToFitWidth">
+        <MemberSignature Language="C#" Value="public static bool AdjustsFontSizeToFitWidth (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.iOS,Xamarin.Forms.Entry&gt; config);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool AdjustsFontSizeToFitWidth(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.iOS, class Xamarin.Forms.Entry&gt; config) cil managed" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Nullable&lt;System.Single&gt;</ReturnType>

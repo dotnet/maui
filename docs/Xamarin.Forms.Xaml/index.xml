@@ -42,9 +42,6 @@
           <AttributeName>Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Xaml.ResourcesLoader))</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>Xamarin.Forms.Dependency(typeof(Xamarin.Forms.Xaml.ResourcesLoader))</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>
         </Attribute>
         <Attribute>
