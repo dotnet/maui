@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Build.Tasks
 		bool GenerateDefaultCtor { get; set; }
 		bool AddXamlCompilationAttribute { get; set; }
 		bool HideFromIntellisense { get; set; }
+		bool XamlResourceIdOnly { get; set; }
 		internal IEnumerable<CodeMemberField> NamedFields { get; set; }
 		internal CodeTypeReference BaseType { get; set; }
 
@@ -135,8 +136,8 @@ namespace Xamarin.Forms.Build.Tasks
 				HideFromIntellisense = true;
 			}
 			else { // rootClass == null && !hasXamlCompilationProcessingInstruction) {
-				Logger?.LogMessage(" no x:Class on root element and no xaml-comp processing instruction: Skipping");
-				return false;
+				XamlResourceIdOnly = true; //only generate the XamlResourceId assembly attribute
+				return true;
 			}
 
 			NamedFields = GetCodeMemberFields(root, nsmgr);
@@ -157,16 +158,19 @@ namespace Xamarin.Forms.Build.Tasks
 			//Create the target directory if required
 			Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
 
+			var ccu = new CodeCompileUnit();
+			ccu.AssemblyCustomAttributes.Add(
+				new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
+											 new CodeAttributeArgument(new CodePrimitiveExpression(ResourceId)),
+											 new CodeAttributeArgument(new CodePrimitiveExpression(TargetPath.Replace('\\', '/'))), //use forward slashes, paths are uris-like
+											 new CodeAttributeArgument(RootType == null ? (CodeExpression)new CodePrimitiveExpression(null) : new CodeTypeOfExpression($"global::{RootClrNamespace}.{RootType}"))
+											));
+			if (XamlResourceIdOnly)
+				goto writeAndExit;
+
 			if (RootType == null)
 				throw new Exception("Something went wrong while executing XamlG");
 
-			var ccu = new CodeCompileUnit();
-			ccu.AssemblyCustomAttributes.Add(
-			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(XamlResourceIdAttribute).FullName}"),
-										 new CodeAttributeArgument(new CodePrimitiveExpression(ResourceId)),
-										 new CodeAttributeArgument(new CodePrimitiveExpression(TargetPath.Replace('\\', '/'))), //use forward slashes, paths are uris-like
-										 new CodeAttributeArgument(new CodeTypeOfExpression($"global::{RootClrNamespace}.{RootType}"))
-										));
 			var declNs = new CodeNamespace(RootClrNamespace);
 			ccu.Namespaces.Add(declNs);
 
@@ -231,6 +235,7 @@ namespace Xamarin.Forms.Build.Tasks
 				initcomp.Statements.Add(assign);
 			}
 
+		writeAndExit:
 			//write the result
 			using (var writer = new StreamWriter(OutputFile))
 				Provider.GenerateCodeFromCompileUnit(ccu, writer, new CodeGeneratorOptions());

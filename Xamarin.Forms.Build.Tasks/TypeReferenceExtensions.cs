@@ -21,6 +21,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public bool Equals(TypeReference x, TypeReference y)
 		{
+			if (x == null)
+				return y == null;
+			if (y == null)
+				return x == null;
 			if (x.FullName != y.FullName)
 				return false;
 			var xasm = GetAssembly(x);

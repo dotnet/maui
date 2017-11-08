@@ -8,6 +8,8 @@
             <ResourceDictionary Source="./SharedResourceDictionary.xaml" x:Key="relURI"/>
             <ResourceDictionary Source="/SharedResourceDictionary.xaml" x:Key="absURI"/>
             <ResourceDictionary Source="SharedResourceDictionary.xaml" x:Key="shortURI"/>
+            <ResourceDictionary Source="./AppResources/Colors.xaml" x:Key="Colors" />
+            <ResourceDictionary Source="./AppResources/CompiledColors.xaml" x:Key="CompiledColors" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <Label x:Name="label" Style="{StaticResource sharedfoo}"/>

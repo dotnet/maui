@@ -314,6 +314,9 @@ namespace Xamarin.Forms
 				var uri = new Uri(value, UriKind.Relative); //we don't want file:// uris, even if they start with '/'
 				var resourceId = GetResourceId(uri, rootTargetPath,
 											   s => XamlResourceIdAttribute.GetResourceIdForPath(rootObjectType.GetTypeInfo().Assembly, s));
+				if (resourceId == null)
+					throw new XamlParseException($"Resource '{value}' not found.", lineInfo);
+
 				targetRD.SetAndLoadSource(uri, resourceId, rootObjectType.GetTypeInfo().Assembly, lineInfo);
 				return uri;
 			}
