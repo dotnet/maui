@@ -593,8 +593,7 @@ namespace Xamarin.Forms
 
 				OnPropertyChanged(property.PropertyName);
 
-				if (property.PropertyChanged != null)
-					property.PropertyChanged(this, original, value);
+				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}
 

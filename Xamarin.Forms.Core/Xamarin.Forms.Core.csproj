@@ -77,7 +77,9 @@
     <Compile Include="DataTemplateSelector.cs" />
     <Compile Include="DateChangedEventArgs.cs" />
     <Compile Include="DelegateLogListener.cs" />
+    <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="IEditorController.cs" />
+    <Compile Include="IFlowDirectionController.cs" />
     <Compile Include="IGridController.cs" />
     <Compile Include="IWebViewController.cs" />
     <Compile Include="INavigationMenuController.cs" />
@@ -110,6 +112,8 @@
     <Compile Include="IElementConfiguration.cs" />
     <Compile Include="IPlatformElementConfiguration.cs" />
     <Compile Include="PlatformConfigurationRegistry.cs" />
+    <Compile Include="EffectiveFlowDirection.cs" />
+    <Compile Include="FlowDirection.cs" />
     <Compile Include="IFontElement.cs" />
     <Compile Include="DependencyAttribute.cs" />
     <Compile Include="DependencyFetchTarget.cs" />

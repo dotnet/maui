@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 			var result = (BaseCellView)base.GetCellCore(item, convertView, parent, context);
 
 			UpdateImage();
+			UpdateFlowDirection();
 
 			return result;
 		}
@@ -20,6 +21,8 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnCellPropertyChanged(sender, args);
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
 				UpdateImage();
+			else if (args.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 
 		void UpdateImage()
@@ -32,6 +35,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 				View.SetImageVisible(false);
+		}
+
+		void UpdateFlowDirection()
+		{
+			View.UpdateFlowDirection(ParentView);
 		}
 	}
 }

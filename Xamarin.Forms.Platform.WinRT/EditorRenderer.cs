@@ -44,6 +44,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateInputScope();
 				UpdateTextColor();
 				UpdateFont();
+				UpdateTextAlignment();
+				UpdateFlowDirection();
 			}
 
 			base.OnElementChanged(e);
@@ -83,6 +85,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			else if (e.PropertyName == Editor.TextProperty.PropertyName)
 			{
 				UpdateText();
+			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+				UpdateTextAlignment();
+				UpdateFlowDirection();
 			}
 		}
 
@@ -174,6 +181,11 @@ namespace Xamarin.Forms.Platform.WinRT
 			Control.SelectionStart = Control.Text.Length;
 		}
 
+		void UpdateTextAlignment()
+		{
+			Control.UpdateTextAlignment(Element);
+		}
+
 		void UpdateTextColor()
 		{
 			Color textColor = Element.TextColor;
@@ -183,6 +195,11 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 	}
 }

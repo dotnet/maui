@@ -27,6 +27,7 @@ namespace Xamarin.Forms
 		public static void SetIdiom(TargetIdiom value) => Idiom = value;
 		public static TargetIdiom Idiom { get; internal set; }
 
+		//TODO: Why are there two of these? This is never used...?
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
@@ -64,6 +65,10 @@ namespace Xamarin.Forms
 			}
 			set { info = value; }
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
+		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired

@@ -147,6 +147,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateFont(Control);
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode(Control);
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateAlign(Control);
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -162,7 +164,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (label == null)
 				return;
 
-			textBlock.TextAlignment = label.HorizontalTextAlignment.ToNativeTextAlignment();
+			textBlock.TextAlignment = label.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 			textBlock.VerticalAlignment = label.VerticalTextAlignment.ToNativeVerticalAlignment();
 		}
 

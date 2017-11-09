@@ -16,7 +16,7 @@
 	<uses-permission android:name="android.permission.READ_LOGS" />
 	<uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" />
 	<uses-feature android:glEsVersion="0x00020000" android:required="true" />
-	<application android:label="AndroidControlGallery">
+	<application android:label="AndroidControlGallery" android:supportsRtl="true">
 		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 	</application>
 </manifest>

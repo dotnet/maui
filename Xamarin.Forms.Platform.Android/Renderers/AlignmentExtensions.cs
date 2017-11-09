@@ -1,9 +1,23 @@
 using Android.Views;
+using ATextAlignment = Android.Views.TextAlignment;
 
 namespace Xamarin.Forms.Platform.Android
 {
 	internal static class AlignmentExtensions
 	{
+		internal static ATextAlignment ToTextAlignment(this TextAlignment alignment)
+		{
+			switch (alignment)
+			{
+				case TextAlignment.Center:
+					return ATextAlignment.Center;
+				case TextAlignment.End:
+					return ATextAlignment.ViewEnd;
+				default:
+					return ATextAlignment.ViewStart;
+			}
+		}
+
 		internal static GravityFlags ToHorizontalGravityFlags(this TextAlignment alignment)
 		{
 			switch (alignment)
@@ -11,9 +25,9 @@ namespace Xamarin.Forms.Platform.Android
 				case TextAlignment.Center:
 					return GravityFlags.CenterHorizontal;
 				case TextAlignment.End:
-					return GravityFlags.Right;
+					return GravityFlags.End;
 				default:
-					return GravityFlags.Left;
+					return GravityFlags.Start;
 			}
 		}
 

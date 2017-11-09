@@ -1,4 +1,5 @@
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 
 #if WINDOWS_UWP
 
@@ -10,16 +11,23 @@ namespace Xamarin.Forms.Platform.WinRT
 {
 	internal static class AlignmentExtensions
 	{
-		internal static Windows.UI.Xaml.TextAlignment ToNativeTextAlignment(this TextAlignment alignment)
+		internal static Windows.UI.Xaml.TextAlignment ToNativeTextAlignment(this TextAlignment alignment, EffectiveFlowDirection flowDirection = default(EffectiveFlowDirection))
 		{
+			var isLtr = flowDirection.IsLeftToRight();
 			switch (alignment)
 			{
 				case TextAlignment.Center:
 					return Windows.UI.Xaml.TextAlignment.Center;
 				case TextAlignment.End:
-					return Windows.UI.Xaml.TextAlignment.Right;
+					if (isLtr)
+						return Windows.UI.Xaml.TextAlignment.Right;
+					else
+						return Windows.UI.Xaml.TextAlignment.Left;
 				default:
-					return Windows.UI.Xaml.TextAlignment.Left;
+					if (isLtr)
+						return Windows.UI.Xaml.TextAlignment.Left;
+					else
+						return Windows.UI.Xaml.TextAlignment.Right;
 			}
 		}
 

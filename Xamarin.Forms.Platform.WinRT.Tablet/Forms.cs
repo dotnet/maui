@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.Resources.Core;
 using Windows.Foundation.Metadata;
 using Windows.UI;
 using Windows.UI.Core;
@@ -48,6 +49,7 @@ namespace Xamarin.Forms
 			Windows.UI.Xaml.Application.Current.Resources.MergedDictionaries.Add(GetTabletResources());
 
 			Device.SetIdiom(TargetIdiom.Tablet);
+			Device.SetFlowDirection(GetFlowDirection());
 			Device.PlatformServices = new WindowsPlatformServices(Window.Current.Dispatcher);
 #if WINDOWS_UWP
 			Device.SetFlags(s_flags);
@@ -94,6 +96,17 @@ namespace Xamarin.Forms
 				return Windows.Foundation.Metadata.Platform.WindowsPhone;
 #endif
 			return Windows.Foundation.Metadata.Platform.Windows;
+		}
+
+		static FlowDirection GetFlowDirection()
+		{
+			string resourceFlowDirection = ResourceContext.GetForCurrentView().QualifierValues["LayoutDirection"];
+			if (resourceFlowDirection == "LTR")
+				return FlowDirection.LeftToRight;
+			else if (resourceFlowDirection == "RTL")
+				return FlowDirection.RightToLeft;
+
+			return FlowDirection.MatchParent;
 		}
 
 		static Windows.UI.Xaml.ResourceDictionary GetTabletResources()

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using UIKit;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -46,7 +45,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _disposed;
 		EventTracker _events;
 		InnerDelegate _innerDelegate;
-
+		nfloat _masterWidth = 0;
 		EventedViewController _masterController;
 
 		MasterDetailPage _masterDetailPage;
@@ -184,8 +183,10 @@ namespace Xamarin.Forms.Platform.iOS
 			var detailsBounds = _detailController.View.Frame;
 			var masterBounds = _masterController.View.Frame;
 
+			_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
+
 			if (!masterBounds.IsEmpty)
-				MasterDetailPage.MasterBounds = new Rectangle(0, 0, masterBounds.Width, masterBounds.Height);
+				MasterDetailPage.MasterBounds = new Rectangle(_masterWidth, 0, _masterWidth, masterBounds.Height);
 
 			if (!detailsBounds.IsEmpty)
 				MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);
@@ -195,6 +196,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			UpdateBackground();
+			UpdateFlowDirection();
 			_tracker = new VisualElementTracker(this);
 			_events = new EventTracker(this);
 			_events.LoadEvents(NativeView);
@@ -249,6 +251,8 @@ namespace Xamarin.Forms.Platform.iOS
 			var changed = ElementChanged;
 			if (changed != null)
 				changed(this, e);
+
+			_masterWidth = 0;
 		}
 
 		void ClearControllers()
@@ -283,6 +287,8 @@ namespace Xamarin.Forms.Platform.iOS
 				ToggleMaster();
 			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				base.PresentsWithGesture = this.MasterDetailPage.IsGestureEnabled;
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
 		}
 
@@ -344,6 +350,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_detailController.View.AddSubview(detail.View);
 			_detailController.AddChildViewController(detail);
+		}
+
+		void UpdateFlowDirection()
+		{
+			NativeView.UpdateFlowDirection(Element);
 		}
 
 		class InnerDelegate : UISplitViewControllerDelegate

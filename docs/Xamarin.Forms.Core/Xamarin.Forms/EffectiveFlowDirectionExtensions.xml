@@ -1,0 +1,103 @@
+<Type Name="EffectiveFlowDirectionExtensions" FullName="Xamarin.Forms.EffectiveFlowDirectionExtensions">
+  <TypeSignature Language="C#" Value="public static class EffectiveFlowDirectionExtensions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit EffectiveFlowDirectionExtensions extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsExplicit">
+      <MemberSignature Language="C#" Value="public static bool IsExplicit (this Xamarin.Forms.EffectiveFlowDirection self);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsExplicit(valuetype Xamarin.Forms.EffectiveFlowDirection self) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="self" Type="Xamarin.Forms.EffectiveFlowDirection" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="self">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsImplicit">
+      <MemberSignature Language="C#" Value="public static bool IsImplicit (this Xamarin.Forms.EffectiveFlowDirection self);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsImplicit(valuetype Xamarin.Forms.EffectiveFlowDirection self) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="self" Type="Xamarin.Forms.EffectiveFlowDirection" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="self">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsLeftToRight">
+      <MemberSignature Language="C#" Value="public static bool IsLeftToRight (this Xamarin.Forms.EffectiveFlowDirection self);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsLeftToRight(valuetype Xamarin.Forms.EffectiveFlowDirection self) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="self" Type="Xamarin.Forms.EffectiveFlowDirection" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="self">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsRightToLeft">
+      <MemberSignature Language="C#" Value="public static bool IsRightToLeft (this Xamarin.Forms.EffectiveFlowDirection self);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsRightToLeft(valuetype Xamarin.Forms.EffectiveFlowDirection self) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="self" Type="Xamarin.Forms.EffectiveFlowDirection" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="self">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

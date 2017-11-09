@@ -29,6 +29,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 
 				Control.IsOn = Element.IsToggled;
+
+				UpdateFlowDirection();
 			}
 		}
 
@@ -40,6 +42,10 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				Control.IsOn = Element.IsToggled;
 			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection();
+			}
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -47,6 +53,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnNativeToggled(object sender, RoutedEventArgs routedEventArgs)
 		{
 			((IElementController)Element).SetValueFromRenderer(Switch.IsToggledProperty, Control.IsOn);
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 	}
 }

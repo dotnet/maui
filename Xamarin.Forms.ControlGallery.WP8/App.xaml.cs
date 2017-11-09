@@ -209,7 +209,7 @@ namespace Xamarin.Forms.ControlGallery.WP8
 				//
 				// If a compiler error is hit then ResourceFlowDirection is missing from
 				// the resource file.
-				FlowDirection flow = (FlowDirection)Enum.Parse(typeof(FlowDirection), AppResources.ResourceFlowDirection);
+				System.Windows.FlowDirection flow = (System.Windows.FlowDirection)Enum.Parse(typeof(System.Windows.FlowDirection), AppResources.ResourceFlowDirection);
 				RootFrame.FlowDirection = flow;
 			}
 			catch

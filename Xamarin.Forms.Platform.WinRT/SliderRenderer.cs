@@ -53,6 +53,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 10, 1);
 				Control.StepFrequency = stepping;
 				Control.SmallChange = stepping;
+				UpdateFlowDirection();
 			}
 		}
 
@@ -69,6 +70,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				if (Control.Value != Element.Value)
 					Control.Value = Element.Value;
 			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -85,6 +88,11 @@ namespace Xamarin.Forms.Platform.WinRT
 					Control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
