@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls
 			SetMainPage(CreateDefaultMainPage());
 
 			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
-			//MainPage = new Bugzilla44596SplashPage(() =>
+			//SetMainPage(new Bugzilla44596SplashPage(() =>
 			//{
 			//	var newTabbedPage = new TabbedPage();
 			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
@@ -43,7 +43,10 @@ namespace Xamarin.Forms.Controls
 			//		Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
 			//		Detail = newTabbedPage
 			//	};
-			//});
+			//}));
+
+			//// Uncomment to verify that there is no crash when switching MainPage from MDP inside NavPage
+			//SetMainPage(new Bugzilla45702());
 		}
 
 		public Page CreateDefaultMainPage()
