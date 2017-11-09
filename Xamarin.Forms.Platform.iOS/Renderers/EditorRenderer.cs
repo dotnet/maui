@@ -71,7 +71,6 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateEditable();
 			UpdateTextAlignment();
-			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -96,8 +95,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateTextAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
 		}
 
 		void HandleChanged(object sender, EventArgs e)

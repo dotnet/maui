@@ -57,9 +57,9 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
-
-				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
-				_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
+				_is24HourFormat = DateFormat.Is24HourFormat(Context);
+				_timeFormat = _is24HourFormat ? "HH:mm" : Element.Format;
 			}
 
 			SetTime(e.NewElement.Time);
@@ -73,7 +73,8 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == TimePicker.TimeProperty.PropertyName || e.PropertyName == TimePicker.FormatProperty.PropertyName)
+			if (e.PropertyName == TimePicker.TimeProperty.PropertyName ||
+				e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				SetTime(Element.Time);
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
@@ -105,7 +106,7 @@ namespace Xamarin.Forms.Platform.Android
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, Is24HourView);
+			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, _is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)
 				_dialog.CancelEvent += OnCancelButtonClicked;

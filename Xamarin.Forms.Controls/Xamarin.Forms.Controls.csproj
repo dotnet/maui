@@ -75,6 +75,7 @@
     <Compile Include="Bugzilla44596SplashPage.cs" />
     <Compile Include="ControlGalleryPages\AutomationPropertiesGallery.cs" />
     <Compile Include="ControlGalleryPages\CellForceUpdateSizeGalleryPage.cs" />
+    <Compile Include="ControlGalleryPages\FlowDirectionGallery.cs" />
     <Compile Include="ControlGalleryPages\LayoutAddPerformance.xaml.cs">
       <DependentUpon>LayoutAddPerformance.xaml</DependentUpon>
     </Compile>

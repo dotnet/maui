@@ -88,8 +88,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
-			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
-				UpdateFont();
 		}
 
 		void HandleValueChanged(object sender, EventArgs e)
@@ -118,11 +116,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateFlowDirection()
 		{
 			(Control as UITextField).UpdateTextAlignment(Element);
-		}
-		
-		void UpdateFont()
-		{
-			Control.Font = Element.ToUIFont();
 		}
 
 		void UpdateMaximumDate()

@@ -96,8 +96,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTime();
 			else if (e.PropertyName == TimePicker.TextColorProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
-			else if (e.PropertyName == TimePicker.FontAttributesProperty.PropertyName || e.PropertyName == TimePicker.FontFamilyProperty.PropertyName || e.PropertyName == TimePicker.FontSizeProperty.PropertyName)
-				UpdateFont();
 
 			if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
@@ -121,11 +119,6 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateFlowDirection()
 		{
 			(Control as UITextField).UpdateTextAlignment(Element);
-		}
-		
-		void UpdateFont()
-		{
-			Control.Font = Element.ToUIFont();
 		}
 
 		void UpdateTextColor()

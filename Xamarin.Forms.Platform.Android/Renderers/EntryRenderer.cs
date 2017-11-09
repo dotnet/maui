@@ -10,7 +10,6 @@ using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using Java.Lang;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -156,10 +155,6 @@ namespace Xamarin.Forms.Platform.Android
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
-			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)
-				UpdateImeOptions();
 
 			base.OnElementPropertyChanged(sender, e);
 		}

@@ -128,6 +128,7 @@
     <Compile Include="ExportCellAttribute.cs" />
     <Compile Include="ExportImageSourceHandlerAttribute.cs" />
     <Compile Include="ExportRendererAttribute.cs" />
+    <Compile Include="Extensions\FlowDirectionExtensions.cs" />
     <Compile Include="GestureManager.cs" />
     <Compile Include="FastRenderers\LabelRenderer.cs" />
     <Compile Include="FastRenderers\VisualElementRenderer.cs" />

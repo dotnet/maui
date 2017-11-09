@@ -66,10 +66,10 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-   
+    <Compile Include="FlowDirectionExtensions.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
-	<Compile Include="PageControl.cs" />
+    <Compile Include="PageControl.cs" />
     <Compile Include="NavigationPageRendererWinRT.cs" />
     <Compile Include="PlatformWinRT.cs" />
     <Compile Include="BrushHelpers.cs" />

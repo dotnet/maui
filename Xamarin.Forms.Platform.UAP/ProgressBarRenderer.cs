@@ -61,28 +61,6 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.Value = Element.Progress;
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
-			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
-				UpdateProgressColor();
-		}
-
-		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
-		{
-			_foregroundDefault = Control.GetForegroundCache();
-			UpdateProgressColor();
-		}
-
-		void UpdateProgressColor()
-		{
-			Color color = Element.ProgressColor;
-
-			if (color.IsDefault)
-			{
-				Control.RestoreForegroundCache(_foregroundDefault);
-			}
-			else
-			{
-				Control.Foreground = color.ToBrush();
-			}
 		}
 
 		void ProgressBarOnValueChanged(object sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)

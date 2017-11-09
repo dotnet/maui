@@ -89,8 +89,6 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
 
 			base.OnElementPropertyChanged(sender, e);
 		}

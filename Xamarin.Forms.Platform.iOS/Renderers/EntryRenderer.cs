@@ -141,8 +141,6 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
 
 			base.OnElementPropertyChanged(sender, e);
 		}

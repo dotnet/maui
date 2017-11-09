@@ -90,8 +90,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
-			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
-				UpdateFont();
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -150,6 +148,11 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			_fontApplied = true;
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 
 		void UpdateMaximumDate()

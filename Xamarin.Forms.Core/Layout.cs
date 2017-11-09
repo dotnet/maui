@@ -54,10 +54,12 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty = BindableProperty.Create("IsClippedToBounds", typeof(bool), typeof(Layout), false);
 
-		public static readonly BindableProperty CascadeInputTransparentProperty = BindableProperty.Create(
-			nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
-
-		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+		public static readonly BindableProperty PaddingProperty = BindableProperty.Create("Padding", typeof(Thickness), typeof(Layout), default(Thickness),
+									propertyChanged: (bindable, old, newValue) =>
+									{
+										var layout = (Layout)bindable;
+										layout.UpdateChildrenLayout();
+									}, defaultValueCreator: (bindable) => ((Layout)bindable).CreateDefaultPadding());
 
 		static IList<KeyValuePair<Layout, int>> s_resolutionList = new List<KeyValuePair<Layout, int>>();
 		static bool s_relayoutInProgress;

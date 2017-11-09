@@ -9,31 +9,29 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-    public static class Device
-    {
-        public const string iOS = "iOS";
-        public const string Android = "Android";
-        public const string WinPhone = "WinPhone";
-        public const string UWP = "UWP";
-        public const string WinRT = "WinRT";
-        public const string macOS = "macOS";
-        public const string GTK = "GTK";
-        public const string Tizen = "Tizen";
-		public const string WPF = "WPF";
+	public static class Device
+	{
+		public const string iOS = "iOS";
+		public const string Android = "Android";
+		public const string WinPhone = "WinPhone";
+		public const string UWP = "UWP";
+		public const string WinRT = "WinRT";
+		public const string macOS = "macOS";
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public static DeviceInfo info;
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static DeviceInfo info;
 
-        static IPlatformServices s_platformServices;
+		static IPlatformServices s_platformServices;
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetIdiom(TargetIdiom value) => Idiom = value;
-        public static TargetIdiom Idiom { get; internal set; }
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetIdiom(TargetIdiom value) => Idiom = value;
+		public static TargetIdiom Idiom { get; internal set; }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
+		//TODO: Why are there two of these? This is never used...?
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetTargetIdiom(TargetIdiom value) => Idiom = value;
 
-        [Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
+		[Obsolete("TargetPlatform is obsolete as of version 2.3.4. Please use RuntimePlatform instead.")]
 #pragma warning disable 0618
         public static TargetPlatform OS
         {
@@ -67,6 +65,10 @@ namespace Xamarin.Forms
 			}
 			set { info = value; }
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public static void SetFlowDirection(FlowDirection value) => FlowDirection = value;
+		public static FlowDirection FlowDirection { get; internal set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static bool IsInvokeRequired

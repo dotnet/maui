@@ -196,9 +196,10 @@ namespace Xamarin.Forms.Platform.iOS
 				var masterBounds = _masterController.View.Frame;
 				_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
 
-				if (!masterBounds.IsEmpty)
-					MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
-			}
+			_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
+
+			if (!masterBounds.IsEmpty)
+				MasterDetailPage.MasterBounds = new Rectangle(_masterWidth, 0, _masterWidth, masterBounds.Height);
 
 			if (layoutDetails)
 			{
@@ -212,7 +213,7 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.ViewDidLoad();
 			UpdateBackground();
-			UpdateMasterBehavior(View.Bounds.Size);
+			UpdateFlowDirection();
 			_tracker = new VisualElementTracker(this);
 			_events = new EventTracker(this);
 			_events.LoadEvents(NativeView);
@@ -339,9 +340,8 @@ namespace Xamarin.Forms.Platform.iOS
 				ToggleMaster();
 			else if (e.PropertyName == Xamarin.Forms.MasterDetailPage.IsGestureEnabledProperty.PropertyName)
 				base.PresentsWithGesture = this.MasterDetailPage.IsGestureEnabled;
-			else if (e.PropertyName == MasterDetailPage.MasterBehaviorProperty.PropertyName)
-				UpdateMasterBehavior(View.Bounds.Size);
-
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 			MessagingCenter.Send<IVisualElementRenderer>(this, NavigationRenderer.UpdateToolbarButtons);
 		}
 
@@ -409,6 +409,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_detailController.View.AddSubview(detail.View);
 			_detailController.AddChildViewController(detail);
+		}
+
+		void UpdateFlowDirection()
+		{
+			NativeView.UpdateFlowDirection(Element);
 		}
 
 		class InnerDelegate : UISplitViewControllerDelegate

@@ -91,10 +91,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
-			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
-				UpdateDetectReadingOrderFromContent();
 		}
 
 		protected override void UpdateBackgroundColor()

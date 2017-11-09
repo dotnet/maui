@@ -800,22 +800,6 @@ namespace Xamarin.Forms
 			self.NotifyFlowDirectionChanged();
 		}
 
-		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var element = (VisualElement)bindable;
-
-			if (element == null)
-			{
-				return;
-			}
-
-			var isEnabled = (bool)newValue;
-
-			VisualStateManager.GoToState(element, isEnabled 
-				? VisualStateManager.CommonStates.Normal 
-				: VisualStateManager.CommonStates.Disabled);
-		}
-
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			var element = (VisualElement)bindable;

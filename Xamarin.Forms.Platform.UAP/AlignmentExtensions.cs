@@ -1,4 +1,5 @@
 using Windows.UI.Xaml;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {

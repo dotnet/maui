@@ -72,8 +72,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == Specifics.IsSpellCheckEnabledProperty.PropertyName)
-				UpdateIsSpellCheckEnabled();
 		}
 
 		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)

@@ -146,8 +146,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateLineBreakMode(Control);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlign(Control);
-			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
-				UpdateDetectReadingOrderFromContent(Control);
 
 			base.OnElementPropertyChanged(sender, e);
 		}

@@ -43,29 +43,70 @@
     </NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ColorExtensions.cs" />
-    <Compile Include="FormsCancelButton.cs" />
-    <Compile Include="FormsPivot.cs" />
-    <Compile Include="AlignmentExtensions.cs" />
-    <Compile Include="BrushHelpers.cs" />
-    <Compile Include="FlowDirectionExtensions.cs" />
-    <Compile Include="FormsProgressBar.cs" />
-    <Compile Include="FormsTextBox.cs" />
-    <Compile Include="FormsComboBox.cs" />
-    <Compile Include="InterceptVisualStateManager.cs" />
-    <Compile Include="HorizontalTextAlignmentConverter.cs" />
-    <Compile Include="ITitleProvider.cs" />
-    <Compile Include="IToolbarProvider.cs" />
-    <Compile Include="NativeBindingExtensions.cs" />
-    <Compile Include="NativeEventWrapper.cs" />
-    <Compile Include="NativePropertyListener.cs" />
-    <Compile Include="NativeViewWrapper.cs" />
-    <Compile Include="NativeViewWrapperRenderer.cs" />
-    <Compile Include="PlatformConfigurationExtensions.cs" />
-    <Compile Include="PlatformEffect.cs" />
-    <Compile Include="UriImageSourceHandler.cs" />
-    <Compile Include="ViewExtensions.cs" />
-    <Compile Include="LayoutExtensions.cs" />
+    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Phone\FormsPivot.cs">
+      <Link>FormsPivot.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
+      <Link>AlignmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BrushHelpers.cs">
+      <Link>BrushHelpers.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FlowDirectionExtensions.cs">
+      <Link>FlowDirectionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsProgressBar.cs">
+      <Link>FormsProgressBar.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
+      <Link>FormsTextBox.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsComboBox.cs">
+      <Link>FormsComboBox.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\HorizontalTextAlignmentConverter.cs">
+      <Link>HorizontalTextAlignmentConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ITitleProvider.cs">
+      <Link>ITitleProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IToolbarProvider.cs">
+      <Link>IToolbarProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeBindingExtensions.cs">
+      <Link>NativeBindingExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeEventWrapper.cs">
+      <Link>NativeEventWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativePropertyListener.cs">
+      <Link>NativePropertyListener.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapper.cs">
+      <Link>NativeViewWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapperRenderer.cs">
+      <Link>NativeViewWrapperRenderer.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformConfigurationExtensions.cs">
+      <Link>PlatformConfigurationExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformEffect.cs">
+      <Link>PlatformEffect.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\UriImageSourceHandler.cs">
+      <Link>UriImageSourceHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewExtensions.cs">
+      <Link>ViewExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutExtensions.cs">
+      <Link>LayoutExtensions.cs</Link>
+    </Compile>
     <Compile Include="Flags.cs" />
     <Compile Include="FormsFlyout.xaml.cs">
       <DependentUpon>FormsFlyout.xaml</DependentUpon>

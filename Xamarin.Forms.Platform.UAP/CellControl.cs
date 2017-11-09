@@ -324,55 +324,12 @@ namespace Xamarin.Forms.Platform.UWP
 			((FrameworkElement)Content).DataContext = newCell;
 		}
 
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			return new FrameworkElementAutomationPeer(this);
-		}
-
 		void UpdateFlowDirection(Cell newCell)
 		{
 			if (newCell is ViewCell)
 				return;
 
 			this.UpdateFlowDirection(newCell.Parent as VisualElement);
-		}
-
-		static Cell RealizeGroupedHeaderTemplate(TemplatedItemsList<ItemsView<Cell>, Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var index = templatedItems.GetGlobalIndexOfGroup(context);
-			if (index > -1)
-			{
-				return templatedItems[index];
-			}
-
-			return template.CreateContent() as Cell;
-		}
-
-		static Cell RealizeGroupedItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var indices = templatedItems.GetGroupAndIndexOfItem(context);
-
-			if (indices.Item1 > -1 && indices.Item2 > -1)
-			{
-				var group = templatedItems.GetGroup(indices.Item1);
-				return group[indices.Item2];
-			}
-
-			return template.CreateContent() as Cell;
-		}
-
-		static Cell RealizeItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var index = templatedItems.GetGlobalIndexOfItem(context);
-			if (index > -1)
-			{
-				return templatedItems[index];
-			}
-
-			return template.CreateContent() as Cell;
 		}
 	}
 }
