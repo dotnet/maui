@@ -73,9 +73,14 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			foreach (var page in rootPages)
 			{
+#if __WINDOWS__
+				App.ScrollDownTo(page.ButtonId, "ChoosePageScrollView");
+#else
 				var scrollViewArea = App.Query(q => q.Marked("ChoosePageScrollView")).First().Rect;
 				App.ScrollForElement(string.Format("* marked:'{0}'", page.ButtonId),
 					new Drag(scrollViewArea, Drag.Direction.BottomToTop, Drag.DragLength.Long));
+#endif
+
 				App.Tap(q => q.Marked(page.ButtonId));
 
 				bool ios = false;

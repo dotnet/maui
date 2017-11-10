@@ -63,8 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap (q => q.Marked ("btnModal"));
 			RunningApp.Tap (q => q.Marked ("btnPop"));
 			await Task.Delay (1000);
-			var lbl = RunningApp.WaitForElement (c => c.Marked("lblCount"));
-			Assert.AreEqual ("1", lbl [0].Text);
+			RunningApp.WaitForElement ("1");
 		}
 #endif
 	}

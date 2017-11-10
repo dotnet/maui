@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
@@ -319,6 +320,11 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			((FrameworkElement)Content).DataContext = newCell;
 		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new FrameworkElementAutomationPeer(this);
+    }
 
 		void UpdateFlowDirection(Cell newCell)
 		{

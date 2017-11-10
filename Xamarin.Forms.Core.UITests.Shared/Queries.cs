@@ -102,7 +102,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static AppRect RootViewRect (this IApp app)
 		{
 #if __WINDOWS__
-			return app.Query("Xamarin.Forms.ControlGallery.WindowsUniversal")[0].Rect;
+			return app.Query(WinDriverApp.AppName)[0].Rect;
 #else
 			return app.Query (q => q.Raw ("* index:0"))[0].Rect;
 #endif

@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var listView = new ListView {
+				AutomationId = CellTypeList.CellTestContainerId,
 				ItemsSource = Enumerable.Range (0, 100).Select (i => new EntryCellTest {
 					Label = "Label " + i,
 					LabelColor =  i % 2 == 0 ? Color.Red : Color.Blue,

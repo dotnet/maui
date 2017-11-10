@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Controls
 			dataTemplate.SetBinding (TextCell.DetailColorProperty, new Binding ("DetailColor"));
 
 			var listView = new ListView {
+				AutomationId = CellTypeList.CellTestContainerId,
 				ItemsSource = Enumerable.Range (0, 100).Select (i => new TextCellTest {
 					Text = "Text " + i,
 					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,

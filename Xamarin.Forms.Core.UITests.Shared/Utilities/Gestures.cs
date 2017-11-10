@@ -9,11 +9,11 @@ namespace Xamarin.Forms.Core.UITests
 	{
 		public static bool ScrollForElement (this IApp app, string query, Drag drag, int maxSteps = 25)
 		{
+			Func<AppQuery, AppQuery> elementQuery = q => q.Raw (query);
+
 			int count = 0;
 
 			int centerTolerance = 50;
-
-			Func<AppQuery, AppQuery> elementQuery = q => q.Raw (query);
 
 			// Visible elements
 			if (app.Query (elementQuery).Length > 1) {
@@ -117,10 +117,27 @@ namespace Xamarin.Forms.Core.UITests
 				rect.CenterY, 
 				rect.X + (0.25f * rect.Width),
 				rect.CenterY);
-#else
+#elif __ANDROID__
 			app.TouchAndHold(target);
+#elif __WINDOWS__
+			// Since we know we're on desktop for the moment, just use ContextClick. If we get this running
+			// on actual touch devices at some point, we'll need to check for that and use TouchAndHold
+			app.Invoke("ContextClick", target);
 #endif
 
+		}
+
+		public static void DismissContextMenu(this IApp app)
+		{
+#if __IOS__
+			var screenbounds = app.RootViewRect();
+			app.TapCoordinates (screenbounds.CenterX, screenbounds.CenterY);
+#elif __ANDROID__
+			app.Back();
+#elif __WINDOWS__
+			var screenbounds = app.RootViewRect();
+			app.TapCoordinates (screenbounds.CenterX, screenbounds.CenterY);
+#endif
 		}
 	}
 }

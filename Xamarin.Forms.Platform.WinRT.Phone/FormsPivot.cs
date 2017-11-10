@@ -1,5 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
@@ -85,7 +88,35 @@ namespace Xamarin.Forms.Platform.WinRT
 #endif
 
 			TaskCompletionSource<CommandBar> tcs = _commandBarTcs;
-		    tcs?.SetResult(_commandBar);
+			tcs?.SetResult(_commandBar); 
+		}
+
+		protected override DependencyObject GetContainerForItemOverride()
+		{
+			var containerItem = base.GetContainerForItemOverride();
+
+			var pivotItem = containerItem as PivotItem;
+
+			if (pivotItem != null)
+			{
+				// We need to know when the data context changes so we can set the automation name to the page title
+				pivotItem.DataContextChanged += SetPivotItemAutomationName;
+			}
+
+			return containerItem;
+		}
+
+		static void SetPivotItemAutomationName(FrameworkElement frameworkElement, 
+			DataContextChangedEventArgs dataContextChangedEventArgs)
+		{
+			var pivotItem = frameworkElement as PivotItem;
+			var page = dataContextChangedEventArgs.NewValue as Page;
+
+			if (pivotItem != null && page?.Title != null)
+			{
+				// This way we can find tabs with automation (for testing, etc.)
+				Windows.UI.Xaml.Automation.AutomationProperties.SetName(pivotItem, page.Title);	
+			}
 		}
 	}
 }
