@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls
 
 			var listView = new ListView {
 				AutomationId = CellTypeList.CellTestContainerId,
-				ItemsSource = Enumerable.Range (0, albums.Length).Select (i => new UrlImageViewCellListPageModel {
+				ItemsSource = Enumerable.Range (0, albums.Length).Select (i => new {
 					Text = "Text " + i,
 					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,
 					Image = albums[i]

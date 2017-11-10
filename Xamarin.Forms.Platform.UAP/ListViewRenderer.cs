@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -727,5 +729,18 @@ namespace Xamarin.Forms.Platform.UWP
 				: new ListViewAutomationPeer(List);
 		}
 
+		bool _deferSelection = false;
+		Tuple<object, SelectedItemChangedEventArgs> _deferredSelectedItemChangedEvent;
+
+#if WINDOWS_UWP
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return List == null
+				? new FrameworkElementAutomationPeer(this)
+				: new ListViewAutomationPeer(List);
+		}
+
+#endif
 	}
 }

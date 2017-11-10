@@ -92,8 +92,9 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.EnterText ("4");
 
 			var entry2 = RunningApp.Query (q => q.Text("1234"));
-			Assert.That(entry2.Length, Is.GreaterThanOrEqualTo(1), "The entry text should now be '1234'.");
-		}
+			Assert.That(entry2.Length >= 1);
+
+			RunningApp.ClearText("36171Entry");
 
 		[Test]
 #if __MACOS__

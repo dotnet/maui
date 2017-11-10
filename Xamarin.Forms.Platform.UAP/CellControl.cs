@@ -324,6 +324,11 @@ namespace Xamarin.Forms.Platform.UWP
 			((FrameworkElement)Content).DataContext = newCell;
 		}
 
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new FrameworkElementAutomationPeer(this);
+    }
+
 		void UpdateFlowDirection(Cell newCell)
 		{
 			if (newCell is ViewCell)
