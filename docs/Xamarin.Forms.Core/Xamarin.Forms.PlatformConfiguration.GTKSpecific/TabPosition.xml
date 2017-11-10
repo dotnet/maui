@@ -1,0 +1,59 @@
+<Type Name="TabPosition" FullName="Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition">
+  <TypeSignature Language="C#" Value="public enum TabPosition" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed TabPosition extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Bottom">
+      <MemberSignature Language="C#" Value="Bottom" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition Bottom = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition Default = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Top">
+      <MemberSignature Language="C#" Value="Top" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition Top = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.GTKSpecific.TabPosition</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
