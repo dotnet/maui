@@ -32,7 +32,12 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			foreach (var xamlFile in XamlFiles) {
-				var outputFile = Path.Combine(OutputPath, $"{xamlFile.GetMetadata("TargetPath")}.g.cs");
+				//when invoked from `UpdateDesigntimeXaml` target, the `TargetPath` isn't set, use a random one instead
+				var targetPath = xamlFile.GetMetadata("TargetPath");
+				if (string.IsNullOrWhiteSpace(targetPath))
+					targetPath = $".{Path.GetRandomFileName()}";
+
+				var outputFile = Path.Combine(OutputPath, $"{targetPath}.g.cs");
 				if (Path.DirectorySeparatorChar == '/' && outputFile.Contains(@"\"))
 					outputFile = outputFile.Replace('\\','/');
 				else if (Path.DirectorySeparatorChar == '\\' && outputFile.Contains(@"/"))
