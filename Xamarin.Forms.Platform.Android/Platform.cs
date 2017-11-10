@@ -1126,8 +1126,6 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				return result;
-					{
-					}
 			}
 		}
 
