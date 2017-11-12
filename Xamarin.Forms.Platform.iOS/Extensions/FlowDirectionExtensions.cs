@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		internal static void UpdateFlowDirection(this UIView view, IVisualElementController controller)
 		{
-			if (controller == null || view == null)
+			if (controller == null || view == null || !Forms.IsiOS9OrNewer)
 				return;
 
 
