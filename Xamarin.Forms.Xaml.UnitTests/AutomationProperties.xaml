@@ -9,7 +9,7 @@
 			AutomationProperties.Name="Name"
 			AutomationProperties.HelpText="Sets your name"
 			AutomationProperties.IsInAccessibleTree="true"
-			AutomationProperties.LabeledBy="{x:Reference label}"
+			AutomationProperties.LabeledBy="label"
 		 />
 	</StackLayout>
 

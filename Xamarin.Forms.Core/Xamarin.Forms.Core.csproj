@@ -472,6 +472,8 @@
     <Compile Include="Xaml\IResourcesLoader.cs" />
     <Compile Include="Xaml\XamlResourceIdAttribute.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\LargeTitleDisplayMode.cs" />
+    <Compile Include="Internals\INamescopeProvider.cs" />
+    <Compile Include="ReferenceTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

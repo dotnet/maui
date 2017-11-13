@@ -359,6 +359,7 @@
       <Type Name="PropertyCondition" Kind="Class" />
       <Type Name="Rectangle" Kind="Structure" />
       <Type Name="RectangleTypeConverter" Kind="Class" />
+      <Type Name="ReferenceTypeConverter" Kind="Class" />
       <Type Name="RelativeLayout" Kind="Class" />
       <Type Name="RelativeLayout+IRelativeList`1" DisplayName="RelativeLayout+IRelativeList&lt;T&gt;" Kind="Interface" />
       <Type Name="RenderWithAttribute" Kind="Class" />
