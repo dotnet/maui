@@ -109,7 +109,7 @@
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\" ContinueOnError="true" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\" ContinueOnError="true" Retries="0" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
