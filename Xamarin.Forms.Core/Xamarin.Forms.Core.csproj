@@ -474,6 +474,8 @@
     <Compile Include="PlatformConfiguration\iOSSpecific\LargeTitleDisplayMode.cs" />
     <Compile Include="Internals\INamescopeProvider.cs" />
     <Compile Include="ReferenceTypeConverter.cs" />
+    <Compile Include="ITextAlignmentElement.cs" />
+    <Compile Include="TextAlignmentElement.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

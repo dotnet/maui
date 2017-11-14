@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Xamarin.Forms
 {
-	public class EntryCell : Cell, IEntryCellController
+	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(EntryCell), null, BindingMode.TwoWay);
 
@@ -15,16 +15,15 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty KeyboardProperty = BindableProperty.Create("Keyboard", typeof(Keyboard), typeof(EntryCell), Keyboard.Default);
 
-		public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create("HorizontalTextAlignment", typeof(TextAlignment), typeof(EntryCell), TextAlignment.Start,
-			propertyChanged: OnHorizontalTextAlignmentPropertyChanged);
+		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		[Obsolete("XAlignProperty is obsolete as of version 2.0.0. Please use HorizontalTextAlignmentProperty instead.")] 
 		public static readonly BindableProperty XAlignProperty = HorizontalTextAlignmentProperty;
 
 		public TextAlignment HorizontalTextAlignment
 		{
-			get { return (TextAlignment)GetValue(HorizontalTextAlignmentProperty); }
-			set { SetValue(HorizontalTextAlignmentProperty, value); }
+			get { return (TextAlignment)GetValue(TextAlignmentElement.HorizontalTextAlignmentProperty); }
+			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
 		public Keyboard Keyboard
@@ -74,11 +73,10 @@ namespace Xamarin.Forms
 				handler(this, EventArgs.Empty);
 		}
 
-		static void OnHorizontalTextAlignmentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
-			var label = (EntryCell)bindable;
 #pragma warning disable 0618 // retain until XAlign removed
-			label.OnPropertyChanged(nameof(XAlign));
+			OnPropertyChanged(nameof(XAlign));
 #pragma warning restore
 		}
 	}
