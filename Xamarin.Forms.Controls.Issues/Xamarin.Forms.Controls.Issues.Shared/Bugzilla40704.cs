@@ -229,11 +229,11 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		public void Bugzilla40704Test()
 		{
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap("btnCollappse");
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap("btnCollappse");
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap("btnCollappse");
 			RunningApp.WaitForElement("Menu - 2");
 			RunningApp.WaitForElement("Menu - 1");
