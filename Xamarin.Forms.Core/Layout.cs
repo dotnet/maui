@@ -55,7 +55,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty IsClippedToBoundsProperty = BindableProperty.Create("IsClippedToBounds", typeof(bool), typeof(Layout), false);
 
 		public static readonly BindableProperty PaddingProperty = BindableProperty.Create("Padding", typeof(Thickness), typeof(Layout), default(Thickness),
-									propertyChanged: (bindable, old, newValue) => {
+									propertyChanged: (bindable, old, newValue) =>
+									{
 										var layout = (Layout)bindable;
 										layout.UpdateChildrenLayout();
 									}, defaultValueCreator: (bindable) => ((Layout)bindable).CreateDefaultPadding());
@@ -125,6 +126,11 @@ namespace Xamarin.Forms
 
 		public static void LayoutChildIntoBoundingRegion(VisualElement child, Rectangle region)
 		{
+			var parent = child.Parent as IFlowDirectionController;
+			bool isRightToLeft = false;
+			if (parent != null && (isRightToLeft = parent.EffectiveFlowDirection.IsRightToLeft()))
+				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
+
 			var view = child as View;
 			if (view == null)
 			{
@@ -137,7 +143,10 @@ namespace Xamarin.Forms
 			{
 				SizeRequest request = child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 				double diff = Math.Max(0, region.Width - request.Request.Width);
-				region.X += (int)(diff * horizontalOptions.Alignment.ToDouble());
+				double horizontalAlign = horizontalOptions.Alignment.ToDouble();
+				if (isRightToLeft)
+					horizontalAlign = 1 - horizontalAlign;
+				region.X += (int)(diff * horizontalAlign);
 				region.Width -= diff;
 			}
 
@@ -260,23 +269,33 @@ namespace Xamarin.Forms
 
 		internal static void LayoutChildIntoBoundingRegion(View child, Rectangle region, SizeRequest childSizeRequest)
 		{
+			var parent = child.Parent as IFlowDirectionController;
+			bool isRightToLeft = false;
+			if (parent != null && (isRightToLeft = parent.EffectiveFlowDirection.IsRightToLeft()))
+				region = new Rectangle(parent.Width - region.Right, region.Y, region.Width, region.Height);
+
 			if (region.Size != childSizeRequest.Request)
 			{
 				bool canUseAlreadyDoneRequest = region.Width >= childSizeRequest.Request.Width && region.Height >= childSizeRequest.Request.Height;
 
-				if (child.HorizontalOptions.Alignment != LayoutAlignment.Fill)
+				LayoutOptions horizontalOptions = child.HorizontalOptions;
+				if (horizontalOptions.Alignment != LayoutAlignment.Fill)
 				{
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 					double diff = Math.Max(0, region.Width - request.Request.Width);
-					region.X += (int)(diff * child.HorizontalOptions.Alignment.ToDouble());
+					double horizontalAlign = horizontalOptions.Alignment.ToDouble();
+					if (isRightToLeft)
+						horizontalAlign = 1 - horizontalAlign;
+					region.X += (int)(diff * horizontalAlign);
 					region.Width -= diff;
 				}
 
-				if (child.VerticalOptions.Alignment != LayoutAlignment.Fill)
+				LayoutOptions verticalOptions = child.VerticalOptions;
+				if (verticalOptions.Alignment != LayoutAlignment.Fill)
 				{
 					SizeRequest request = canUseAlreadyDoneRequest ? childSizeRequest : child.Measure(region.Width, region.Height, MeasureFlags.IncludeMargins);
 					double diff = Math.Max(0, region.Height - request.Request.Height);
-					region.Y += (int)(diff * child.VerticalOptions.Alignment.ToDouble());
+					region.Y += (int)(diff * verticalOptions.Alignment.ToDouble());
 					region.Height -= diff;
 				}
 			}

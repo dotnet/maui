@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
@@ -692,5 +695,16 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		bool _deferSelection = false;
 		Tuple<object, SelectedItemChangedEventArgs> _deferredSelectedItemChangedEvent;
+
+#if WINDOWS_UWP
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return List == null
+				? new FrameworkElementAutomationPeer(this)
+				: new ListViewAutomationPeer(List);
+		}
+
+#endif
 	}
 }

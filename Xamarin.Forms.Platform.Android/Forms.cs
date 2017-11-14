@@ -20,6 +20,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Android;
 using Resource = Android.Resource;
 using Trace = System.Diagnostics.Trace;
+using ALayoutDirection = Android.Views.LayoutDirection;
 
 namespace Xamarin.Forms
 {
@@ -69,7 +70,7 @@ namespace Xamarin.Forms
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
-			if((Activity)Context == null)
+			if ((Activity)Context == null)
 				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
 
 			if (visibility == AndroidTitleBarVisibility.Never)
@@ -138,7 +139,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Device.PlatformServices = new AndroidPlatformServices(activity);
-			
+
 			// use field and not property to avoid exception in getter
 			if (Device.info != null)
 			{
@@ -165,6 +166,7 @@ namespace Xamarin.Forms
 			// This could change as a result of a config change, so we need to check it every time
 			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
+			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();
@@ -198,11 +200,11 @@ namespace Xamarin.Forms
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer)	// Android 5.0+
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
-				else if(context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorAccent", "attr", context.PackageName), value, true))	// < Android 5.0
+				else if (context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorAccent", "attr", context.PackageName), value, true))  // < Android 5.0
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
@@ -475,7 +477,7 @@ namespace Xamarin.Forms
 			{
 				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
 				var intent = new Intent(Intent.ActionView, aUri);
-				
+
 				// This seems to work fine even if the context has been destroyed (while another activity is in the
 				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
 				// make sure this uses the active activity when launching the Intent

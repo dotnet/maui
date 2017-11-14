@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				}
 
 				UpdateTime();
+				UpdateFlowDirection();
 			}
 		}
 
@@ -63,6 +64,9 @@ namespace Xamarin.Forms.Platform.WinRT
 
 			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
+
+			if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -71,6 +75,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		{
 			Element.Time = e.NewTime;
 			((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.SizeRequestChanged);
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 
 		void UpdateTime()

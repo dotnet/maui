@@ -116,7 +116,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		void Back()
 		{
-#if __IOS__
+#if __IOS__ || __WINDOWS__
 			RunningApp.Tap (q => q.Marked ("Toggle"));
 #else
 			RunningApp.Back();

@@ -11,6 +11,7 @@ using AColor = Android.Graphics.Color;
 using AColorDraw = Android.Graphics.Drawables.ColorDrawable;
 using Xamarin.Forms.Internals;
 using Android.Support.V4.Widget;
+using Android.OS;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -80,6 +81,12 @@ namespace Xamarin.Forms.Platform.Android
 
 			SetMinimumHeight((int)context.ToPixels(DefaultMinHeight));
 			_androidDefaultTextColor = Color.FromUint((uint)_mainText.CurrentTextColor);
+
+			if ((int)Build.VERSION.SdkInt > 16)
+			{
+				_mainText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+				_detailText.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
+			}
 		}
 
 		public AView AccessoryView { get; private set; }

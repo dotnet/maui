@@ -115,6 +115,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateTextColor();
 			else if (e.PropertyName == SearchBar.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateAlignment();
 		}
 
 		internal override void OnNativeFocusChanged(bool hasFocus)
@@ -130,7 +132,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_editText == null)
 				return;
 
-			_editText.Gravity = Element.HorizontalTextAlignment.ToHorizontalGravityFlags() | Xamarin.Forms.TextAlignment.Center.ToVerticalGravityFlags();
+			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment);
 		}
 
 		void UpdateCancelButtonColor()

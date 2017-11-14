@@ -98,6 +98,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateColor();
 				UpdatePlaceholder();
 			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateAlignment();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -152,7 +154,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateAlignment()
 		{
-			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+			Control.Alignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		void UpdateColor()

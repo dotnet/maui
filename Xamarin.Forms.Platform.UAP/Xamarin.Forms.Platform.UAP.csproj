@@ -134,6 +134,9 @@
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\BrushHelpers.cs">
       <Link>BrushHelpers.cs</Link>
     </Compile>
+    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FlowDirectionExtensions.cs">
+      <Link>FlowDirectionExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsProgressBar.cs">
       <Link>FormsProgressBar.cs</Link>
     </Compile>

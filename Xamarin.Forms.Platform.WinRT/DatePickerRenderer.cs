@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateMinimumDate();
 				UpdateMaximumDate();
 				UpdateDate(e.NewElement.Date);
+				UpdateFlowDirection();
 			}
 
 			base.OnElementChanged(e);
@@ -68,6 +69,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateMinimumDate();
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -85,6 +88,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		void UpdateDate(DateTime date)
 		{
 			Control.Date = date;
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 
 		void UpdateMaximumDate()

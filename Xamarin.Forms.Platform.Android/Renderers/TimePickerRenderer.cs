@@ -8,6 +8,7 @@ using Android.Text.Format;
 using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
+using Android.OS;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -60,12 +61,15 @@ namespace Xamarin.Forms.Platform.Android
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
 				_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
-				_is24HourFormat	= DateFormat.Is24HourFormat(Context);
+				_is24HourFormat = DateFormat.Is24HourFormat(Context);
 				_timeFormat = _is24HourFormat ? "HH:mm" : Element.Format;
 			}
 
 			SetTime(e.NewElement.Time);
 			UpdateTextColor();
+
+			if ((int)Build.VERSION.SdkInt > 16)
+				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -73,7 +77,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == TimePicker.TimeProperty.PropertyName ||
-			    e.PropertyName == TimePicker.FormatProperty.PropertyName)
+				e.PropertyName == TimePicker.FormatProperty.PropertyName)
 				SetTime(Element.Time);
 
 			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName)
@@ -103,7 +107,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
-			
+
 			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, _is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)

@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
@@ -142,6 +143,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				SetupContextMenu();
 			}
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection(Cell);
 		}
 
 		void OnClick(object sender, PointerRoutedEventArgs e)
@@ -263,6 +266,7 @@ namespace Xamarin.Forms.Platform.WinRT
 				newCell.SendAppearing();
 
 				UpdateContent(newCell);
+				UpdateFlowDirection(newCell);
 				SetupContextMenu();
 
 				newCell.PropertyChanged += _propertyChangedHandler;
@@ -315,6 +319,19 @@ namespace Xamarin.Forms.Platform.WinRT
 			}
 
 			((FrameworkElement)Content).DataContext = newCell;
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new FrameworkElementAutomationPeer(this);
+    }
+
+		void UpdateFlowDirection(Cell newCell)
+		{
+			if (newCell is ViewCell)
+				return;
+
+			this.UpdateFlowDirection(newCell.Parent as VisualElement);
 		}
 	}
 }

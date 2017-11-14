@@ -71,6 +71,9 @@
     <Compile Include="ColorUnitTests.cs" />
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
+    <Compile Include="EffectiveFlowDirectionExtensions.cs" />
+    <Compile Include="FlowDirectionTests.cs" />
+    <Compile Include="LayoutChildIntoBoundingRegionTests.cs" />
     <Compile Include="MenuUnitTests.cs" />
     <Compile Include="TemplatedViewUnitTests.cs" />
     <Compile Include="TemplatedPageUnitTests.cs" />

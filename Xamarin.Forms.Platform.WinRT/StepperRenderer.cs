@@ -26,7 +26,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateMaximum();
 				UpdateMinimum();
 				UpdateValue();
-				UpdateIncrement();
+				UpdateIncrement(); 
+				UpdateFlowDirection();
 			}
 		}
 
@@ -44,6 +45,8 @@ namespace Xamarin.Forms.Platform.WinRT
 				UpdateIncrement();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -57,6 +60,11 @@ namespace Xamarin.Forms.Platform.WinRT
 		void OnControlValue(object sender, EventArgs e)
 		{
 			Element.SetValueCore(Stepper.ValueProperty, Control.Value);
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 
 		void UpdateIncrement()

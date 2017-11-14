@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 
 using System.Drawing;
+using CoreGraphics;
+using Foundation;
 using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
@@ -12,21 +14,27 @@ namespace Xamarin.Forms.Platform.iOS
 		UIColor _defaultTextColor;
 		bool _disposed;
 
-		public EntryRenderer()
+		static readonly int baseHeight = 30;
+		static CGSize initialSize = CGSize.Empty;
+
+		public EntryRenderer() 
 		{
 			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) 
 		{
-			//with borderStyle set to RoundedRect, iOS always returns a height of 30
-			//https://stackoverflow.com/a/36569247/1063783
-			//we get the current value, and restor it, to allow custom renderers to change the border style
-			var borderStyle = Control.BorderStyle;
-			Control.BorderStyle = UITextBorderStyle.None;
-			var size = Control.GetSizeRequest(widthConstraint, double.PositiveInfinity);
-			Control.BorderStyle = borderStyle;
-			return size;
+			var baseResult = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			if (Forms.IsiOS11OrNewer)
+				return baseResult;
+
+			NSString testString = new NSString("Tj");
+			var testSize = testString.GetSizeUsingAttributes(new UIStringAttributes { Font = Control.Font });
+			double height = baseHeight + testSize.Height - initialSize.Height;
+			height = Math.Round(height);
+
+			return new SizeRequest(new Size(baseResult.Request.Width, height));
 		}
 
 		IElementController ElementController => Element as IElementController;
@@ -114,6 +122,8 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName)
 				UpdateAdjustsFontSizeToFitWidth();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateAlignment();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -148,7 +158,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateAlignment()
 		{
-			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment();
+			Control.TextAlignment = Element.HorizontalTextAlignment.ToNativeTextAlignment(((IVisualElementController)Element).EffectiveFlowDirection);
 		}
 
 		void UpdateColor()
@@ -168,6 +178,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFont()
 		{
+			if (initialSize == CGSize.Empty)
+			{
+				NSString testString = new NSString("Tj");
+				initialSize = testString.StringSize(Control.Font);
+			}
+
 			Control.Font = Element.ToUIFont();
 		}
 

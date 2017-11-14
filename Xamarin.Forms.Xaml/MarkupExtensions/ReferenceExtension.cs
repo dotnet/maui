@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Xaml
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
-				throw new ArgumentNullException("serviceProvider");
+				throw new ArgumentNullException(nameof(serviceProvider));
 			var valueProvider = serviceProvider.GetService(typeof (IProvideValueTarget)) as IProvideParentValues;
 			if (valueProvider == null)
 				throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");

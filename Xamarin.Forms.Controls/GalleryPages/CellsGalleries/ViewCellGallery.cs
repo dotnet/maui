@@ -93,6 +93,7 @@ namespace Xamarin.Forms.Controls
 			var label = new Label { Text = "I have not been selected" };
 
 			var listView = new ListView {
+				AutomationId = CellTypeList.CellTestContainerId,
 				ItemsSource = Enumerable.Range (0, albums.Length).Select (i => new {
 					Text = "Text " + i,
 					TextColor = i % 2 == 0 ? Color.Red : Color.Blue,

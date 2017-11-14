@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init ()
 		{
-			var entry = new Entry ();
+			var entry = new Entry { AutomationId = "36171Entry" };
 			var editor = new Editor();
 			var focuseEntryButton = new Button { Text = "Start Entry" };
 			var focuseEditorButton = new Button { Text = "Start Editor" };
@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Controls.Issues
 			var entry2 = RunningApp.Query (q => q.Text("1234"));
 			Assert.That(entry2.Length >= 1);
 
-			RunningApp.ClearText();
+			RunningApp.ClearText("36171Entry");
 
 			RunningApp.WaitForElement ("Start Editor");
 			RunningApp.Tap ("Start Editor");

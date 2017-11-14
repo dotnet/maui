@@ -3,7 +3,6 @@ using System.ComponentModel;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
-using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
@@ -14,7 +13,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		
 		IVisualElementRenderer _renderer;
 		readonly GestureManager _gestureManager;
-		readonly AutomationPropertiesProvider _automatiomPropertiesProvider;
+		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 
 		public VisualElementRenderer(IVisualElementRenderer renderer)
@@ -23,13 +22,13 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			_renderer.ElementPropertyChanged += OnElementPropertyChanged;
 			_renderer.ElementChanged += OnElementChanged;
 			_gestureManager = new GestureManager(_renderer);
-			_automatiomPropertiesProvider = new AutomationPropertiesProvider(_renderer);
+			_automationPropertiesProvider = new AutomationPropertiesProvider(_renderer);
 
 			_effectControlProvider = new EffectControlProvider(_renderer?.View);
 		}
 
 		VisualElement Element => _renderer?.Element;
-		
+
 		AView Control => _renderer?.View;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
@@ -45,7 +44,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			Control.SetBackgroundColor((color ?? Element.BackgroundColor).ToAndroid());
 		}
 
-	    public bool OnTouchEvent(MotionEvent e)
+		void UpdateFlowDirection()
+		{
+			if (_disposed)
+				return;
+
+			Control.UpdateFlowDirection(Element);
+		}
+
+		public bool OnTouchEvent(MotionEvent e)
 	    {
 	        return _gestureManager.OnTouchEvent(e);
 	    }
@@ -66,7 +73,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (disposing)
 			{
 				_gestureManager?.Dispose();
-				_automatiomPropertiesProvider?.Dispose();
+				_automationPropertiesProvider?.Dispose();
 
 				if (_renderer != null)
 				{
@@ -88,6 +95,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			{
 				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 				UpdateBackgroundColor();
+				UpdateFlowDirection();
 			}
 
 			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
@@ -97,6 +105,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateFlowDirection();
 		}
 	}
 }

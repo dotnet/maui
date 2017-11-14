@@ -80,6 +80,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateHorizontalTextAlignment(realCell, entryCell);
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, entryCell);
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				UpdateHorizontalTextAlignment(realCell, entryCell);
 		}
 
 		static void OnTextFieldTextChanged(object sender, EventArgs eventArgs)
@@ -101,9 +103,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		static void UpdateHorizontalTextAlignment(CellNSView cell, EntryCell entryCell)
 		{
+			IVisualElementController viewController = entryCell.Parent as VisualElement;
+
 			var nsTextField = cell.AccessoryView.Subviews[0] as NSTextField;
 			if (nsTextField != null)
-				nsTextField.Alignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment();
+				nsTextField.Alignment = entryCell.HorizontalTextAlignment.ToNativeTextAlignment(viewController?.EffectiveFlowDirection ?? default(EffectiveFlowDirection));
 		}
 
 		static void UpdateIsEnabled(CellNSView cell, EntryCell entryCell)

@@ -77,7 +77,9 @@
     <Compile Include="DataTemplateSelector.cs" />
     <Compile Include="DateChangedEventArgs.cs" />
     <Compile Include="DelegateLogListener.cs" />
+    <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="IEditorController.cs" />
+    <Compile Include="IFlowDirectionController.cs" />
     <Compile Include="IGridController.cs" />
     <Compile Include="IWebViewController.cs" />
     <Compile Include="INavigationMenuController.cs" />
@@ -90,6 +92,10 @@
     <Compile Include="PlatformConfiguration\AndroidSpecific\Elevation.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\TabbedPage.cs" />
     <Compile Include="PlatformConfiguration\ExtensionPoints.cs" />
+    <Compile Include="PlatformConfiguration\GTKSpecific\BoxView.cs" />
+    <Compile Include="PlatformConfiguration\GTKSpecific\NavigationPage.cs" />
+    <Compile Include="PlatformConfiguration\GTKSpecific\TabbedPage.cs" />
+    <Compile Include="PlatformConfiguration\GTKSpecific\TabPosition.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\BlurEffectStyle.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\Entry.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\NavigationPage.cs" />
@@ -110,6 +116,8 @@
     <Compile Include="IElementConfiguration.cs" />
     <Compile Include="IPlatformElementConfiguration.cs" />
     <Compile Include="PlatformConfigurationRegistry.cs" />
+    <Compile Include="EffectiveFlowDirection.cs" />
+    <Compile Include="FlowDirection.cs" />
     <Compile Include="IFontElement.cs" />
     <Compile Include="DependencyAttribute.cs" />
     <Compile Include="DependencyFetchTarget.cs" />
@@ -464,6 +472,8 @@
     <Compile Include="Xaml\IResourcesLoader.cs" />
     <Compile Include="Xaml\XamlResourceIdAttribute.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\LargeTitleDisplayMode.cs" />
+    <Compile Include="Internals\INamescopeProvider.cs" />
+    <Compile Include="ReferenceTypeConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

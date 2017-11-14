@@ -1,5 +1,4 @@
 ﻿using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Automation.Peers;
 
 #if WINDOWS_UWP
@@ -24,6 +23,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			if (e.NewElement != null)
 			{
 				UpdateBackgroundColor();
+				UpdateFlowDirection();
 			}
 		}
 
@@ -130,6 +130,11 @@ namespace Xamarin.Forms.Platform.WinRT
 				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
 			else
 				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+		}
+
+		void UpdateFlowDirection()
+		{
+			Control.UpdateFlowDirection(Element);
 		}
 	}
 }
