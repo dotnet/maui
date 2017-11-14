@@ -34,8 +34,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(false), TestCase(true)]
 			public void RDWithSourceAreFound(bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-					MockCompiler.Compile(typeof(ResourceDictionaryWithSource));
 				var layout = new ResourceDictionaryWithSource(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.Pink));
 			}

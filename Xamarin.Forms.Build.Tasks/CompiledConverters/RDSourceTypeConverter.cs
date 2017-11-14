@@ -26,12 +26,17 @@ namespace Xamarin.Forms.Core.XamlC
 
 			var rdNode = node.Parent as IElementNode;
 
-			var rootTargetPath = GetPathForType(module, ((ILRootNode)rootNode).TypeReference);
+			var rootTargetPath = XamlCTask.GetPathForType(module, ((ILRootNode)rootNode).TypeReference);
 			var uri = new Uri(value, UriKind.Relative);
 
-			var resourceId = ResourceDictionary.RDSourceTypeConverter.GetResourceId(uri, rootTargetPath, s => GetResourceIdForPath(module, s));
+			var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
+
+			//fail early
+			var resourceId = XamlCTask.GetResourceIdForPath(module, resourcePath);
 			if (resourceId == null)
 				throw new XamlParseException($"Resource '{value}' not found.", node);
+
+
 			//abuse the converter, produce some side effect, but leave the stack untouched
 			//public void SetAndLoadSource(Uri value, string resourceID, Assembly assembly, System.Xml.IXmlLineInfo lineInfo)
 			yield return Create(Ldloc, context.Variables[rdNode]); //the resourcedictionary
@@ -44,7 +49,7 @@ namespace Xamarin.Forms.Core.XamlC
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
 
-			yield return Create(Ldstr, resourceId); //resourceId
+			yield return Create(Ldstr, resourcePath); //resourcePath
 
 			var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
 			var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetGetMethod());
@@ -60,30 +65,6 @@ namespace Xamarin.Forms.Core.XamlC
 
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
-		}
-
-		static string GetPathForType(ModuleDefinition module, TypeReference type)
-		{
-			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
-					continue;
-				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
-					continue;
-				return ca.ConstructorArguments[1].Value as string;
-			}
-			return null;
-		}
-
-		static string GetResourceIdForPath(ModuleDefinition module, string path)
-		{
-			foreach (var ca in module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
-					continue;
-				if (ca.ConstructorArguments[1].Value as string != path)
-					continue;
-				return ca.ConstructorArguments[0].Value as string;
-			}
-			return null;
 		}
 	}
 }

@@ -501,8 +501,11 @@
     <Compile Include="ResourceDictionaryWithInvalidSource.xaml.cs">
       <DependentUpon>ResourceDictionaryWithInvalidSource.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Bz60575.xaml.cs" >
+    <Compile Include="Issues\Bz60575.xaml.cs">
       <DependentUpon>Bz60575.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ResourceLoader.xaml.cs" >
+      <DependentUpon>ResourceLoader.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -936,6 +939,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz60575.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ResourceLoader.xaml" >
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

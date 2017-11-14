@@ -314,8 +314,8 @@
       </Docs>
     </Member>
     <Member MemberName="SetAndLoadSource">
-      <MemberSignature Language="C#" Value="public void SetAndLoadSource (Uri value, string resourceID, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndLoadSource(class System.Uri value, string resourceID, class System.Reflection.Assembly assembly, class System.Xml.IXmlLineInfo lineInfo) cil managed" />
+      <MemberSignature Language="C#" Value="public void SetAndLoadSource (Uri value, string resourcePath, System.Reflection.Assembly assembly, System.Xml.IXmlLineInfo lineInfo);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void SetAndLoadSource(class System.Uri value, string resourcePath, class System.Reflection.Assembly assembly, class System.Xml.IXmlLineInfo lineInfo) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -336,7 +336,7 @@
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <param name="resourceID">To be added.</param>
+        <param name="resourcePath">To be added.</param>
         <param name="assembly">To be added.</param>
         <param name="lineInfo">To be added.</param>
         <summary>To be added.</summary>

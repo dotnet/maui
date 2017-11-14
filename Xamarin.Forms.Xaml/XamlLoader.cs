@@ -168,7 +168,7 @@ namespace Xamarin.Forms.Xaml
 					xaml = null;
 			}
 
-			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(resourceId);
+			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(XamlResourceIdAttribute.GetPathForType(type));
 			return alternateXaml ?? xaml;
 		}
 
