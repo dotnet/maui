@@ -143,38 +143,19 @@ namespace Xamarin.Forms.Xaml
 				if (Skips.Contains(parentList.XmlName))
 					return;
 
-				var elementType = source.GetType();
-				var localname = parentList.XmlName.LocalName;
+				var collection = GetPropertyValue(source, parentList.XmlName, Context, parentList) as IEnumerable;
+				if (collection == null)
+					throw new XamlParseException($"Property {parentList.XmlName.LocalName} is null or is not IEnumerable", node);
 
-				GetRealNameAndType(ref elementType, parentList.XmlName.NamespaceURI, ref localname, Context, node);
-
-				PropertyInfo propertyInfo = null;
-				try {
-					propertyInfo = elementType.GetRuntimeProperty(localname);
-				} catch (AmbiguousMatchException) {
-					// Get most derived instance of property
-					foreach (var property in elementType.GetRuntimeProperties().Where(prop => prop.Name == localname)) {
-						if (propertyInfo == null || propertyInfo.DeclaringType.IsAssignableFrom(property.DeclaringType))
-							propertyInfo = property;
-					}
-				}
-				if (propertyInfo == null)
-					throw new XamlParseException(Format("Property {0} not found", localname), node);
-				MethodInfo getter;
-				if (!propertyInfo.CanRead || (getter = propertyInfo.GetMethod) == null)
-					throw new XamlParseException(Format("Property {0} does not have an accessible getter", localname), node);
-				IEnumerable collection;
-				if ((collection = getter.Invoke(source, new object [] { }) as IEnumerable) == null)
-					throw new XamlParseException(Format("Property {0} is null or is not IEnumerable", localname), node);
-				MethodInfo addMethod;
-				if (
-					(addMethod =
-						collection.GetType().GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1)) == null)
-					throw new XamlParseException(Format("Value of {0} does not have a Add() method", localname), node);
+				MethodInfo addMethod = collection.GetType().GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1);
+				if (addMethod == null)
+					throw new XamlParseException($"Value of {parentList.XmlName.LocalName} does not have a Add() method", node);
 
 				addMethod.Invoke(collection, new [] { Values [node] });
 			}
 		}
+
+
 
 		public void Visit(RootNode node, INode parentNode)
 		{
@@ -345,6 +326,34 @@ namespace Xamarin.Forms.Xaml
 				throw xpe;
 		}
 
+		public static object GetPropertyValue(object xamlElement, XmlName propertyName, HydrationContext context, IXmlLineInfo lineInfo)
+		{
+			var localName = propertyName.LocalName;
+			Exception xpe = null;
+			object value;
+
+			//If it's an attached BP, update elementType and propertyName
+			var bpOwnerType = xamlElement.GetType();
+			var attached = GetRealNameAndType(ref bpOwnerType, propertyName.NamespaceURI, ref localName, context, lineInfo);
+			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
+
+			//If it's a BindableProberty, GetValue
+			if (xpe == null && TryGetValue(xamlElement, property, attached, out value, lineInfo, out xpe))
+				return value;
+
+			//If it's a normal property, get it
+			if (xpe == null && TryGetProperty(xamlElement, localName, out value, lineInfo, context, out xpe))
+				return value;
+
+			xpe = xpe ?? new XamlParseException($"Property {localName} is not found or does not have an accessible getter", lineInfo);
+			if (context.ExceptionHandler != null)
+				context.ExceptionHandler(xpe);
+			else
+				throw xpe;
+
+			return null;
+		}
+
 		static bool TryConnectEvent(object element, string localName, object value, object rootElement, IXmlLineInfo lineInfo, out Exception exception)
 		{
 			exception = null;
@@ -460,6 +469,24 @@ namespace Xamarin.Forms.Xaml
 			return false;
 		}
 
+		static bool TryGetValue(object element, BindableProperty property, bool attached, out object value, IXmlLineInfo lineInfo, out Exception exception)
+		{
+			exception = null;
+			value = null;
+
+			var elementType = element.GetType();
+			var bindable = element as BindableObject;
+
+			if (property == null)
+				return false;
+
+			if (bindable == null)
+				return false;
+
+			value = bindable.GetValue(property);
+			return true;
+		}
+
 		static bool TrySetProperty(object element, string localName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, HydrationContext context, out Exception exception)
 		{
 			exception = null;
@@ -484,15 +511,42 @@ namespace Xamarin.Forms.Xaml
 			return true;
 		}
 
-		static bool IsVisibleFrom(MethodInfo setter, object rootElement)
+		static bool TryGetProperty(object element, string localName, out object value, IXmlLineInfo lineInfo, HydrationContext context, out Exception exception)
 		{
-			if (setter.IsPublic)
+			exception = null;
+			value = null;
+
+			var elementType = element.GetType();
+			PropertyInfo propertyInfo = null;
+			try {
+				propertyInfo = elementType.GetRuntimeProperty(localName);
+			} catch (AmbiguousMatchException) {
+				// Get most derived instance of property
+				foreach (var property in elementType.GetRuntimeProperties().Where(prop => prop.Name == localName)) {
+					if (propertyInfo == null || propertyInfo.DeclaringType.IsAssignableFrom(property.DeclaringType))
+						propertyInfo = property;
+				}
+			}
+			MethodInfo getter;
+			if (propertyInfo == null || !propertyInfo.CanRead || (getter = propertyInfo.GetMethod) == null)
+				return false;
+
+			if (!IsVisibleFrom(getter, context.RootElement))
+				return false;
+
+			value = getter.Invoke(element, new object[] { });
+			return true;
+		}
+
+		static bool IsVisibleFrom(MethodInfo method, object rootElement)
+		{
+			if (method.IsPublic)
 				return true;
-			if (setter.IsPrivate && setter.DeclaringType == rootElement.GetType())
+			if (method.IsPrivate && method.DeclaringType == rootElement.GetType())
 				return true;
-			if ((setter.IsAssembly || setter.IsFamilyOrAssembly) && setter.DeclaringType.AssemblyQualifiedName == rootElement.GetType().AssemblyQualifiedName)
+			if ((method.IsAssembly || method.IsFamilyOrAssembly) && method.DeclaringType.AssemblyQualifiedName == rootElement.GetType().AssemblyQualifiedName)
 				return true;
-			if (setter.IsFamily && setter.DeclaringType.IsAssignableFrom(rootElement.GetType()))
+			if (method.IsFamily && method.DeclaringType.IsAssignableFrom(rootElement.GetType()))
 				return true;
 			return false;
 		}

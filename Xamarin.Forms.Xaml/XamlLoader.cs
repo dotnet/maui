@@ -76,8 +76,9 @@ namespace Xamarin.Forms.Xaml
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
-					if (reader.NodeType != XmlNodeType.Element)
-					{
+					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+						continue;
+					if (reader.NodeType != XmlNodeType.Element) {
 						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
@@ -105,8 +106,10 @@ namespace Xamarin.Forms.Xaml
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
+					if (reader.NodeType == XmlNodeType.XmlDeclaration)
+						continue;
 					if (reader.NodeType != XmlNodeType.Element) {
-						Debug.WriteLine ("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
+						Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
 						continue;
 					}
 
@@ -165,7 +168,7 @@ namespace Xamarin.Forms.Xaml
 					xaml = null;
 			}
 
-			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(resourceId);
+			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(XamlResourceIdAttribute.GetPathForType(type));
 			return alternateXaml ?? xaml;
 		}
 

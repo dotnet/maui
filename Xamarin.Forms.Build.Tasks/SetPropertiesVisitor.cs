@@ -202,31 +202,17 @@ namespace Xamarin.Forms.Build.Tasks
 				var elementType = parent.VariableType;
 				var localname = parentList.XmlName.LocalName;
 
-				GetNameAndTypeRef(ref elementType, parentList.XmlName.NamespaceURI, ref localname, Context, node);
+				TypeReference propertyType;
+				Context.IL.Append(GetPropertyValue(parent, parentList.XmlName, Context, node, out propertyType));
 
-				TypeReference propertyDeclaringType;
-				var property = elementType.GetProperty(pd => pd.Name == localname, out propertyDeclaringType);
-				MethodDefinition propertyGetter;
+				var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
+				var adderRef = Module.ImportReference(adderTuple.Item1);
+				adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
 
-				if (property != null && (propertyGetter = property.GetMethod) != null && propertyGetter.IsPublic)
-				{
-					var propertyGetterRef = Module.ImportReference(propertyGetter);
-					propertyGetterRef = Module.ImportReference(propertyGetterRef.ResolveGenericParameters(propertyDeclaringType, Module));
-					var propertyType = propertyGetterRef.ReturnType.ResolveGenericParameters(propertyDeclaringType);
-
-					var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
-					var adderRef = Module.ImportReference(adderTuple.Item1);
-					adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
-
-					Context.IL.Emit(OpCodes.Ldloc, parent);
-					Context.IL.Emit(OpCodes.Callvirt, propertyGetterRef);
-					Context.IL.Emit(OpCodes.Ldloc, vardef);
-					Context.IL.Emit(OpCodes.Callvirt, adderRef);
-					if (adderRef.ReturnType.FullName != "System.Void")
+				Context.IL.Emit(OpCodes.Ldloc, vardef);
+				Context.IL.Emit(OpCodes.Callvirt, adderRef);
+				if (adderRef.ReturnType.FullName != "System.Void")
 						Context.IL.Emit(OpCodes.Pop);
-				} else
-					throw new XamlParseException(string.Format("Property {0} not found", localname), node);
-
 			}
 		}
 
@@ -780,6 +766,24 @@ namespace Xamarin.Forms.Build.Tasks
 			throw new XamlParseException($"No property, bindable property, or event found for '{localName}', or mismatching type between value and property.", iXmlLineInfo);
 		}
 
+		public static IEnumerable<Instruction> GetPropertyValue(VariableDefinition parent, XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference propertyType)
+		{
+			var module = context.Body.Method.Module;
+			var localName = propertyName.LocalName;
+			bool attached;
+			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out attached, context, lineInfo);
+
+			//If it's a BP, GetValue ()
+			if (CanGetValue(parent, bpRef, attached, lineInfo, context))
+				return GetValue(parent, bpRef, lineInfo, context, out propertyType);
+
+			//If it's a property, set it
+			if (CanGet(parent, localName, context))
+				return Get(parent, localName, lineInfo, context, out propertyType);
+
+			throw new XamlParseException($"Property {localName} is not found or does not have an accessible getter", lineInfo);
+		}
+
 		static FieldReference GetBindablePropertyReference(VariableDefinition parent, string namespaceURI, ref string localName, out bool attached, ILContext context, IXmlLineInfo iXmlLineInfo)
 		{
 			var module = context.Body.Method.Module;
@@ -954,6 +958,19 @@ namespace Xamarin.Forms.Build.Tasks
 			return varValue.VariableType.InheritsFromOrImplements(bpTypeRef);
 		}
 
+		static bool CanGetValue(VariableDefinition parent, FieldReference bpRef, bool attached, IXmlLineInfo iXmlLineInfo, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+
+			if (bpRef == null)
+				return false;
+
+			if (!parent.VariableType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))))
+				return false;
+
+			return true;
+		}
+
 		static IEnumerable<Instruction> SetValue(VariableDefinition parent, FieldReference bpRef, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var setValue = typeof(BindableObject).GetMethod("SetValue", new [] { typeof(BindableProperty), typeof(object) });
@@ -987,6 +1004,19 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(setValue));
+		}
+
+		static IEnumerable<Instruction> GetValue(VariableDefinition parent, FieldReference bpRef, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
+		{
+			var getValue = typeof(BindableObject).GetMethod("GetValue", new[] { typeof(BindableProperty) });
+			var module = context.Body.Method.Module;
+			propertyType = bpRef.GetBindablePropertyType(iXmlLineInfo, module);
+
+			return new[] {
+				Instruction.Create(OpCodes.Ldloc, parent),
+				Instruction.Create(OpCodes.Ldsfld, bpRef),
+				Instruction.Create(OpCodes.Callvirt, module.ImportReference(getValue)),
+			};
 		}
 
 		static bool CanSet(VariableDefinition parent, string localName, INode node, ILContext context)
@@ -1023,6 +1053,20 @@ namespace Xamarin.Forms.Build.Tasks
 				return true;
 
 			return false;
+		}
+
+		static bool CanGet(VariableDefinition parent, string localName, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			TypeReference declaringTypeReference;
+			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			if (property == null)
+				return false;
+			var propertyGetter = property.GetMethod;
+			if (propertyGetter == null || !propertyGetter.IsPublic || propertyGetter.IsStatic)
+				return false;
+
+			return true;
 		}
 
 		static IEnumerable<Instruction> Set(VariableDefinition parent, string localName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
@@ -1072,6 +1116,30 @@ namespace Xamarin.Forms.Build.Tasks
 				else
 					yield return Instruction.Create(OpCodes.Callvirt, propertySetterRef);
 			}
+		}
+
+		static IEnumerable<Instruction> Get(VariableDefinition parent, string localName, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
+		{
+			var module = context.Body.Method.Module;
+			TypeReference declaringTypeReference;
+			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			var propertyGetter = property.GetMethod;
+
+			module.ImportReference(parent.VariableType.Resolve());
+			var propertyGetterRef = module.ImportReference(module.ImportReference(propertyGetter).ResolveGenericParameters(declaringTypeReference, module));
+			propertyGetterRef.ImportTypes(module);
+			propertyType = propertyGetterRef.ReturnType.ResolveGenericParameters(declaringTypeReference);
+
+			if (parent.VariableType.IsValueType)
+				return new[] {
+					Instruction.Create(OpCodes.Ldloca, parent),
+					Instruction.Create(OpCodes.Call, propertyGetterRef),
+				};
+			else
+				return new[] {
+					Instruction.Create(OpCodes.Ldloc, parent),
+					Instruction.Create(OpCodes.Callvirt, propertyGetterRef),
+				};
 		}
 
 		static bool CanAdd(VariableDefinition parent, string localName, INode node, ILContext context)

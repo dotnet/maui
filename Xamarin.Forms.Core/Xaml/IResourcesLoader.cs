@@ -6,6 +6,6 @@ namespace Xamarin.Forms
 {
 	interface IResourcesLoader
 	{
-		ResourceDictionary CreateResourceDictionary(string resourceID, Assembly assembly, IXmlLineInfo lineInfo);
+		ResourceDictionary CreateResourceDictionary(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo);
 	}
 }

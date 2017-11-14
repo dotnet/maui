@@ -190,7 +190,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 						Logger.LogString(2, "   Replacing {0}.InitializeComponent ()... ", typeDef.Name);
 						Exception e;
-						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, resource.Name, out e)) {
+						if (!TryCoreCompile(initComp, initCompRuntime, rootnode, out e)) {
 							success = false;
 							Logger.LogLine(2, "failed.");
 							(thrownExceptions = thrownExceptions ?? new List<Exception>()).Add(e);
@@ -260,13 +260,15 @@ namespace Xamarin.Forms.Build.Tasks
 			return success;
 		}
 
-		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, string resourceId, out Exception exception)
+		bool TryCoreCompile(MethodDefinition initComp, MethodDefinition initCompRuntime, ILRootNode rootnode, out Exception exception)
 		{
 			try {
 				var body = new MethodBody(initComp);
 				var module = body.Method.Module;
 				body.InitLocals = true;
 				var il = body.GetILProcessor();
+				var resourcePath = GetPathForType(module, initComp.DeclaringType);
+
 				il.Emit(OpCodes.Nop);
 
 				if (initCompRuntime != null) {
@@ -281,7 +283,7 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(OpCodes.Call, getResourceProvider);
 					il.Emit(OpCodes.Brfalse, nop);
 					il.Emit(OpCodes.Call, getResourceProvider);
-					il.Emit(OpCodes.Ldstr, resourceId);
+					il.Emit(OpCodes.Ldstr, resourcePath);
 					var func = module.ImportReference(module.ImportReference(typeof(Func<string, string>))
 							 .Resolve()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
@@ -341,6 +343,30 @@ namespace Xamarin.Forms.Build.Tasks
 				exception = e;
 				return false;
 			}
+		}
+
+		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
+		{
+			foreach (var ca in type.Module.GetCustomAttributes()) {
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+					continue;
+				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
+					continue;
+				return ca.ConstructorArguments[1].Value as string;
+			}
+			return null;
+		}
+
+		internal static string GetResourceIdForPath(ModuleDefinition module, string path)
+		{
+			foreach (var ca in module.GetCustomAttributes()) {
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+					continue;
+				if (ca.ConstructorArguments[1].Value as string != path)
+					continue;
+				return ca.ConstructorArguments[0].Value as string;
+			}
+			return null;
 		}
 	}
 }
