@@ -501,6 +501,9 @@
     <Compile Include="ResourceDictionaryWithInvalidSource.xaml.cs">
       <DependentUpon>ResourceDictionaryWithInvalidSource.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Bz60575.xaml.cs" >
+      <DependentUpon>Bz60575.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -930,6 +933,9 @@
     <EmbeddedResource Include="AppResources\Colors.xaml" />
     <EmbeddedResource Include="AppResources\CompiledColors.xaml" />
     <EmbeddedResource Include="ResourceDictionaryWithInvalidSource.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Bz60575.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
