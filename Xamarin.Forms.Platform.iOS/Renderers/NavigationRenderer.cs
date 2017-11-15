@@ -874,6 +874,15 @@ namespace Xamarin.Forms.Platform.iOS
 					n.ValidateInsets();
 			}
 
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				NavigationRenderer n;
+				if (_navigation.TryGetTarget(out n))
+					n.ValidateInsets();
+			}
+
 			public override void ViewDidLayoutSubviews()
 			{
 				IVisualElementRenderer childRenderer;
