@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Controls
 
 		public PlatformSpecificsGallery()
 		{
+			Title = "PlatformSpecificsGallery";
 			var mdpiOSButton = new Button { Text = "MasterDetailPage (iOS)" };
 			var mdpWindowsButton = new Button { Text = "MasterDetailPage (Windows)" };
 			var npiOSButton = new Button() { Text = "NavigationPage (iOS)" };
