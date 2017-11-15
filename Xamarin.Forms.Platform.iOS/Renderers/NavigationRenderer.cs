@@ -26,6 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 		UIViewController[] _removeControllers;
 		UIToolbar _secondaryToolbar;
 		VisualElementTracker _tracker;
+		nfloat _navigationBottom = 0;
+
 
 		public NavigationRenderer()
 		{
@@ -147,14 +149,15 @@ namespace Xamarin.Forms.Platform.iOS
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+			if (Current == null)
+				return;
 			UpdateToolBarVisible();
 
-			//var navBarFrameBotton = Forms.IsiOS11OrNewer ? View.SafeAreaInsets.Top : NavigationBar.Frame.Bottom;
-			var navBarFrameBotton = NavigationBar.Frame.Bottom;
-
+			var navBarFrameBottom = Math.Min(NavigationBar.Frame.Bottom, 140);
+			_navigationBottom = (nfloat)navBarFrameBottom;
 			var toolbar = _secondaryToolbar;
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBotton;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
@@ -713,6 +716,14 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		internal void ValidateInsets()
+		{
+			nfloat navBottom = NavigationBar.Frame.Bottom;
+
+			if (_navigationBottom != navBottom && Current != null)
+				ViewDidLayoutSubviews();
+		}
+
 		class SecondaryToolbar : UIToolbar
 		{
 			readonly List<UIView> _lines = new List<UIView>();
@@ -840,6 +851,15 @@ namespace Xamarin.Forms.Platform.iOS
 				var handler = Disappearing;
 				if (handler != null)
 					handler(this, EventArgs.Empty);
+			}
+
+			public override void ViewWillLayoutSubviews()
+			{
+				base.ViewWillLayoutSubviews();
+
+				NavigationRenderer n;
+				if (_navigation.TryGetTarget(out n))
+					n.ValidateInsets();
 			}
 
 			public override void ViewDidLayoutSubviews()
