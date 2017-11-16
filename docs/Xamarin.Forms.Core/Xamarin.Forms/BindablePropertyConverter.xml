@@ -14,6 +14,11 @@
       <InterfaceName>Xamarin.Forms.IExtendedTypeConverter</InterfaceName>
     </Interface>
   </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.BindableProperty))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.TypeConverter" /> for bindable properties.</summary>
     <remarks>To be added.</remarks>

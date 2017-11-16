@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Xamarin.Forms
 {
+	[Xaml.TypeConversion(typeof(Font))]
 	public sealed class FontTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

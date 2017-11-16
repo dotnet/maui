@@ -9,6 +9,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.Button/ButtonContentLayout))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Class that the XAML parser uses to convert strings to <see cref="T:Xamarin.Forms.Button+ButtonContentLayout" /> objects.</summary>
     <remarks>To be added.</remarks>

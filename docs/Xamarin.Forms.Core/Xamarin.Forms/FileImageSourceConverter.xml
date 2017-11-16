@@ -10,6 +10,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.FileImageSource))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.TypeConverter" /> that converts to <see cref="P:Xamarin.Forms.FileImageSource" />.</summary>
     <remarks>To be added.</remarks>

@@ -16,6 +16,11 @@
       <InterfaceName>Xamarin.Forms.IExtendedTypeConverter</InterfaceName>
     </Interface>
   </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(System.Double))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Converts a string into a font size.</summary>
     <remarks>To be added.</remarks>

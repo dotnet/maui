@@ -14,6 +14,11 @@
       <InterfaceName>Xamarin.Forms.IExtendedTypeConverter</InterfaceName>
     </Interface>
   </Interfaces>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(System.Type))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Class that takes a string representation of a <see cref="T:System.Type" /> and returns a corresponding <see cref="T:System.Type" />.</summary>
     <remarks>To be added.</remarks>

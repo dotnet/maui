@@ -9,6 +9,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.Pages.JsonSource))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Converter that returns a <see cref="T:Xamarin.Forms.Pages.JsonSource" /> for a JSON string or a URI string.</summary>
     <remarks>To be added.</remarks>

@@ -15,6 +15,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(System.Uri))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.TypeConverter" /> that converts from a string or <see cref="T:System.Uri" /> to a <see cref="T:System.Uri" />.</summary>
     <remarks>To be added.</remarks>

@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Xamarin.Forms
 {
+	[Xaml.TypeConversion(typeof(GridLength))]
 	public class GridLengthTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

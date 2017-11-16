@@ -273,6 +273,7 @@ namespace Xamarin.Forms
 			}
 		}
 
+		[Xaml.TypeConversion(typeof(ButtonContentLayout))]
 		public sealed class ButtonContentTypeConverter : TypeConverter
 		{
 			public override object ConvertFromInvariantString(string value)
