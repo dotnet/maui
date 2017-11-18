@@ -316,11 +316,7 @@ namespace Xamarin.Forms
 				}
 			}
 			else
-			{
-				property = sourceType.GetDeclaredProperty(part.Content);
-				if (property == null)
-					property = sourceType.BaseType.GetProperty(part.Content);
-			}
+				property = sourceType.GetDeclaredProperty(part.Content) ?? sourceType.BaseType?.GetProperty(part.Content);
 
 			if (property != null)
 			{
