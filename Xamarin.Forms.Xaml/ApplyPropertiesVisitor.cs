@@ -143,7 +143,8 @@ namespace Xamarin.Forms.Xaml
 				if (Skips.Contains(parentList.XmlName))
 					return;
 
-				var collection = GetPropertyValue(source, parentList.XmlName, Context, parentList) as IEnumerable;
+				object _;
+				var collection = GetPropertyValue(source, parentList.XmlName, Context, parentList, out _) as IEnumerable;
 				if (collection == null)
 					throw new XamlParseException($"Property {parentList.XmlName.LocalName} is null or is not IEnumerable", node);
 
@@ -316,7 +317,7 @@ namespace Xamarin.Forms.Xaml
 				return;
 
 			//If it's an already initialized property, add to it
-			if (xpe == null && TryAddToProperty(xamlelement, localName, value, lineInfo, serviceProvider, out xpe))
+			if (xpe == null && TryAddToProperty(xamlelement, propertyName, value, lineInfo, serviceProvider, context, out xpe))
 				return;
 
 			xpe = xpe ?? new XamlParseException($"Cannot assign property \"{localName}\": Property does not exists, or is not assignable, or mismatching type between value and property", lineInfo);
@@ -326,11 +327,12 @@ namespace Xamarin.Forms.Xaml
 				throw xpe;
 		}
 
-		public static object GetPropertyValue(object xamlElement, XmlName propertyName, HydrationContext context, IXmlLineInfo lineInfo)
+		public static object GetPropertyValue(object xamlElement, XmlName propertyName, HydrationContext context, IXmlLineInfo lineInfo, out object targetProperty)
 		{
 			var localName = propertyName.LocalName;
 			Exception xpe = null;
 			object value;
+			targetProperty = null;
 
 			//If it's an attached BP, update elementType and propertyName
 			var bpOwnerType = xamlElement.GetType();
@@ -338,11 +340,11 @@ namespace Xamarin.Forms.Xaml
 			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
 
 			//If it's a BindableProberty, GetValue
-			if (xpe == null && TryGetValue(xamlElement, property, attached, out value, lineInfo, out xpe))
+			if (xpe == null && TryGetValue(xamlElement, property, attached, out value, lineInfo, out xpe, out targetProperty))
 				return value;
 
 			//If it's a normal property, get it
-			if (xpe == null && TryGetProperty(xamlElement, localName, out value, lineInfo, context, out xpe))
+			if (xpe == null && TryGetProperty(xamlElement, localName, out value, lineInfo, context, out xpe, out targetProperty))
 				return value;
 
 			xpe = xpe ?? new XamlParseException($"Property {localName} is not found or does not have an accessible getter", lineInfo);
@@ -469,11 +471,11 @@ namespace Xamarin.Forms.Xaml
 			return false;
 		}
 
-		static bool TryGetValue(object element, BindableProperty property, bool attached, out object value, IXmlLineInfo lineInfo, out Exception exception)
+		static bool TryGetValue(object element, BindableProperty property, bool attached, out object value, IXmlLineInfo lineInfo, out Exception exception, out object targetProperty)
 		{
 			exception = null;
 			value = null;
-
+			targetProperty = property;
 			var elementType = element.GetType();
 			var bindable = element as BindableObject;
 
@@ -511,11 +513,10 @@ namespace Xamarin.Forms.Xaml
 			return true;
 		}
 
-		static bool TryGetProperty(object element, string localName, out object value, IXmlLineInfo lineInfo, HydrationContext context, out Exception exception)
+		static bool TryGetProperty(object element, string localName, out object value, IXmlLineInfo lineInfo, HydrationContext context, out Exception exception, out object targetProperty)
 		{
 			exception = null;
 			value = null;
-
 			var elementType = element.GetType();
 			PropertyInfo propertyInfo = null;
 			try {
@@ -528,6 +529,7 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 			MethodInfo getter;
+			targetProperty = propertyInfo;
 			if (propertyInfo == null || !propertyInfo.CanRead || (getter = propertyInfo.GetMethod) == null)
 				return false;
 
@@ -551,17 +553,12 @@ namespace Xamarin.Forms.Xaml
 			return false;
 		}
 
-		static bool TryAddToProperty(object element, string localName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, out Exception exception)
+		static bool TryAddToProperty(object element, XmlName propertyName, object value, IXmlLineInfo lineInfo, XamlServiceProvider serviceProvider, HydrationContext context, out Exception exception)
 		{
 			exception = null;
 
-			var elementType = element.GetType();
-			var propertyInfo = elementType.GetRuntimeProperties().FirstOrDefault(p => p.Name == localName);
-			MethodInfo getter;
-			if (propertyInfo == null || !propertyInfo.CanRead || (getter = propertyInfo.GetMethod) == null)
-				return false;
-
-			var collection = getter.Invoke(element, new object [] { }) as IEnumerable;
+			object targetProperty;
+			var collection = GetPropertyValue(element, propertyName, context, lineInfo, out targetProperty) as IEnumerable;
 			if (collection == null)
 				return false;
 
@@ -569,7 +566,7 @@ namespace Xamarin.Forms.Xaml
 			if (addMethod == null)
 				return false;
 
-			((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = propertyInfo;
+			((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = targetProperty;
 			addMethod.Invoke(collection, new [] { value.ConvertTo(addMethod.GetParameters() [0].ParameterType, (Func<TypeConverter>)null, serviceProvider) });
 			return true;
 		}

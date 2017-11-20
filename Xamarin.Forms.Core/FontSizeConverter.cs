@@ -4,6 +4,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms
 {
+	[Xaml.TypeConversion(typeof(double))]
 	public class FontSizeConverter : TypeConverter, IExtendedTypeConverter
 	{
 		[Obsolete("IExtendedTypeConverter.ConvertFrom is obsolete as of version 2.2.0. Please use ConvertFromInvariantString (string, IServiceProvider) instead.")]

@@ -16,30 +16,9 @@ using Xamarin.Forms.ControlGallery.WindowsUniversal;
 using Xamarin.Forms.Controls;
 using Xamarin.Forms.Platform.UWP;
 
-[assembly: ExportEffect(typeof(BorderEffect), "BorderEffect")]
+
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
-	public class BorderEffect : PlatformEffect
-	{
-		protected override void OnAttached()
-		{
-			var control = Control as Control;
-			if (control == null)
-				return;
-
-			control.Background = new SolidColorBrush(Windows.UI.Colors.Aqua);
-		}
-
-		protected override void OnDetached()
-		{
-			var control = Control as Control;
-			if (control == null)
-				return;
-
-			control.Background = new SolidColorBrush(Windows.UI.Colors.Beige);
-		}
-	}
-
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
 	/// </summary>

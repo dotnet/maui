@@ -2,6 +2,7 @@ using System;
 
 namespace Xamarin.Forms
 {
+	[Xaml.TypeConversion(typeof(FileImageSource))]
 	public sealed class FileImageSourceConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

@@ -564,6 +564,7 @@
       <Type Name="IValueProvider" Kind="Interface" />
       <Type Name="IXamlTypeResolver" Kind="Interface" />
       <Type Name="IXmlLineInfoProvider" Kind="Interface" />
+      <Type Name="TypeConversionAttribute" Kind="Class" />
       <Type Name="XamlParseException" Kind="Class" />
       <Type Name="XamlResourceIdAttribute" Kind="Class" />
       <Type Name="XmlLineInfo" Kind="Class" />

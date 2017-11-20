@@ -5,7 +5,7 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
 	[RenderWith(typeof(_FrameRenderer))]
-	public class Frame : ContentView, IElementConfiguration<Frame>
+	public class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement
 	{
 		public static readonly BindableProperty OutlineColorProperty = BindableProperty.Create("OutlineColor", typeof(Color), typeof(Frame), Color.Default);
 
@@ -21,7 +21,7 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Frame>>(() => new PlatformConfigurationRegistry<Frame>(this));
 		}
 
-		internal override Thickness CreateDefaultPadding()
+		Thickness IPaddingElement.PaddingDefaultValueCreator()
 		{
 			return 20d;
 		}

@@ -15,6 +15,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.Font))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>A <see cref="T:Xamarin.Forms.TypeConverter" /> that converts from strings to <see cref="T:Xamarin.Forms.Core.Font" />.</summary>
     <remarks>String should be formatted as "[name],[attributes],[size]" there may be multiple attributes, e.g. "Georgia, Bold, Italic, 42"</remarks>

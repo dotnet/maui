@@ -9,6 +9,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.BindablePropertyConverter")]
+	[Xaml.TypeConversion(typeof(BindableProperty))]
 	public sealed class BindablePropertyConverter : TypeConverter, IExtendedTypeConverter
 	{
 		object IExtendedTypeConverter.ConvertFrom(CultureInfo culture, object value, IServiceProvider serviceProvider)

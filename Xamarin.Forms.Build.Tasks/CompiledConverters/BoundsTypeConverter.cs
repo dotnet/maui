@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Core.XamlC
 {
 	class BoundsTypeConverter : ICompiledTypeConverter
 	{
-		IEnumerable<Instruction> ICompiledTypeConverter.ConvertFromString(string value, ILContext context, BaseNode node)
+		public IEnumerable<Instruction> ConvertFromString(string value, ILContext context, BaseNode node)
 		{
 			var module = context.Body.Method.Module;
 

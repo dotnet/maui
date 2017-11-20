@@ -12,6 +12,49 @@ namespace Xamarin.Forms.Build.Tasks
 {
 	static class NodeILExtensions
 	{
+		public static bool CanConvertValue(this ValueNode node, ILContext context, TypeReference targetTypeRef, IEnumerable<ICustomAttributeProvider> attributeProviders)
+		{
+			TypeReference typeConverter = null;
+			foreach (var attributeProvider in attributeProviders) {
+				CustomAttribute typeConverterAttribute;
+				if (
+					(typeConverterAttribute =
+						attributeProvider.CustomAttributes.FirstOrDefault(
+							cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))) != null) {
+					typeConverter = typeConverterAttribute.ConstructorArguments[0].Value as TypeReference;
+					break;
+				}
+			}
+
+			return node.CanConvertValue(context, targetTypeRef, typeConverter);
+		}
+
+		public static bool CanConvertValue(this ValueNode node, ILContext context, FieldReference bpRef)
+		{
+			var module = context.Body.Method.Module;
+			var targetTypeRef = bpRef.GetBindablePropertyType(node, module);
+			var typeConverter = bpRef.GetBindablePropertyTypeConverter(module);
+			return node.CanConvertValue(context, targetTypeRef, typeConverter);
+		}
+
+		public static bool CanConvertValue(this ValueNode node, ILContext context, TypeReference targetTypeRef, TypeReference typeConverter)
+		{
+			var str = (string)node.Value;
+			var module = context.Body.Method.Module;
+
+			//If there's a [TypeConverter], use it
+			if (typeConverter != null && str != null) {
+				var typeConvAttribute = typeConverter.GetCustomAttribute(module.ImportReference(typeof(TypeConversionAttribute)));
+				if (typeConvAttribute == null) //trust the unattributed TypeConverter
+					return true;
+				var toType = typeConvAttribute.ConstructorArguments.First().Value as TypeReference;
+				return toType.InheritsFromOrImplements(targetTypeRef);
+			}
+
+			///No reason to return false
+			return true;
+		}
+
 		public static IEnumerable<Instruction> PushConvertedValue(this ValueNode node, ILContext context,
 			TypeReference targetTypeRef, IEnumerable<ICustomAttributeProvider> attributeProviders,
 			IEnumerable<Instruction> pushServiceProvider, bool boxValueTypes, bool unboxValueTypes)

@@ -15,6 +15,11 @@
     <BaseTypeName>Xamarin.Forms.TypeConverter</BaseTypeName>
   </Base>
   <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.Xaml.TypeConversion(typeof(Xamarin.Forms.Binding))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Type converter that converts from strings to <see cref="T:Xamarin.Forms.Binding" /> objects.</summary>
     <remarks>To be added.</remarks>

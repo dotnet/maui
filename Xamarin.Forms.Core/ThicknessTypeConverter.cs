@@ -4,6 +4,7 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[Xaml.ProvideCompiled("Xamarin.Forms.Core.XamlC.ThicknessTypeConverter")]
+	[Xaml.TypeConversion(typeof(Thickness))]
 	public class ThicknessTypeConverter : TypeConverter
 	{
 		public override object ConvertFromInvariantString(string value)

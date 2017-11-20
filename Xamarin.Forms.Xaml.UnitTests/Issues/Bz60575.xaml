@@ -7,9 +7,15 @@
         <x:String>foo</x:String>
         <x:String>bar</x:String>
     </local:Bz60575Helpers.Collection>
+    <local:Bz60575Helpers.Collection2>
+        <x:String>foo</x:String>
+    </local:Bz60575Helpers.Collection2>
     <local:Bz60575.Collection>
         <x:String>foo</x:String>
         <x:String>bar</x:String>
         <x:String>qux</x:String>
     </local:Bz60575.Collection>
+    <local:Bz60575.Collection2>
+        <x:String>foo</x:String>
+    </local:Bz60575.Collection2>
 </ContentPage>

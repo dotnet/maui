@@ -23,7 +23,11 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = listView;
 		}
 
-#if UITEST
+#if UITEST && !__WINDOWS__ 
+
+		// This test won't work on Windows right now because we can only test desktop, so touch events
+		// (like LongPress) don't really work. The test should work manually on a touch screen, though.
+
 		[Test]
 		public void Issue2981Test ()
 		{
