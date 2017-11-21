@@ -45,21 +45,18 @@ namespace Xamarin.Forms.Controls.Issues
 
 		#if UITEST
 		[Test]
-		[Ignore("Fails on ios 7.1")]
 		public void Bugzilla29247Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("btnOpenUri1"));
 		}
 
 		[Test]
-		[Ignore("Fails on ios 7.1")]
 		public void Bugzilla29247EncodedParamsTest ()
 		{
 			RunningApp.Tap (q => q.Marked ("btnOpenUri2"));
 		}
 
 		[Test]
-		[Ignore("Fails on ios 7.1")]
 		public void Bugzilla29247DecodeParamsTest ()
 		{
 			RunningApp.Tap (q => q.Marked ("btnOpenUri3"));
