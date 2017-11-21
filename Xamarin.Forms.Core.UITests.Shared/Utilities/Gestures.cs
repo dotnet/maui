@@ -112,10 +112,16 @@ namespace Xamarin.Forms.Core.UITests
 			var element = app.WaitForElement(target);
 			var rect = element[0].Rect;
 			var appRect = app.RootViewRect();
+			var width = Math.Max(250, rect.Width);
 
-			app.DragCoordinates(rect.X + (0.85f * appRect.Width), 
+			if((rect.X + width) > appRect.Width)
+			{
+				width = appRect.Width - rect.X;
+			}
+
+			app.DragCoordinates(rect.X + (0.95f * width), 
 				rect.CenterY, 
-				rect.X + (0.25f * rect.Width),
+				rect.X + (0.05f * width),
 				rect.CenterY);
 #elif __ANDROID__
 			app.TouchAndHold(target);
