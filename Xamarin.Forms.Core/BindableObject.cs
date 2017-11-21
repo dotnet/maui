@@ -117,13 +117,13 @@ namespace Xamarin.Forms
 				bindable._inheritedContext = value;
 			}
 
-			bindable.ApplyBindings();
+			bindable.ApplyBindings(skipBindingContext:false, fromBindingContextChanged:true);
 			bindable.OnBindingContextChanged();
 		}
 
 		protected void ApplyBindings()
 		{
-			ApplyBindings(false);
+			ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
 		}
 
 		protected virtual void OnBindingContextChanged()
@@ -406,7 +406,7 @@ namespace Xamarin.Forms
 			}
 		}
 
-		void ApplyBindings(bool skipBindingContext)
+		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
 		{
 			var prop = _properties.ToArray();
 			for (int i = 0, propLength = prop.Length; i < propLength; i++) {
@@ -418,8 +418,8 @@ namespace Xamarin.Forms
 				if (skipBindingContext && ReferenceEquals(context.Property, BindingContextProperty))
 					continue;
 
-				binding.Unapply();
-				binding.Apply(BindingContext, this, context.Property);
+				binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);
+				binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged: fromBindingContextChanged);
 			}
 		}
 
@@ -438,7 +438,7 @@ namespace Xamarin.Forms
 		static void BindingContextPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			bindable._inheritedContext = null;
-			bindable.ApplyBindings(true);
+			bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged:true);
 			bindable.OnBindingContextChanged();
 		}
 

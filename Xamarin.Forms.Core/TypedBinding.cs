@@ -102,14 +102,18 @@ namespace Xamarin.Forms.Internals
 		}
 
 		// Applies the binding to a new source or target.
-		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty)
+		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
 		{
 			_targetProperty = targetProperty;
 			var source = Source ?? Context ?? context;
+			var isApplied = IsApplied;
 
+			if (Source != null && isApplied && fromBindingContextChanged)
+				return;
+
+			base.Apply(source, bindObj, targetProperty, fromBindingContextChanged);
+			
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
-			base.Apply(source, bindObj, targetProperty);
-
 			BindableObject prevTarget;
 			if (_weakTarget.TryGetTarget(out prevTarget) && !ReferenceEquals(prevTarget, bindObj))
 				throw new InvalidOperationException("Binding instances can not be reused");
@@ -162,10 +166,13 @@ namespace Xamarin.Forms.Internals
 			return value;
 		}
 
-		internal override void Unapply()
+		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
+			if (Source != null && fromBindingContextChanged && IsApplied)
+				return;
+
 #if (!DO_NOT_CHECK_FOR_BINDING_REUSE)
-			base.Unapply();
+			base.Unapply(fromBindingContextChanged:fromBindingContextChanged);
 #endif
 			if (_handlers != null)
 				Unsubscribe();
