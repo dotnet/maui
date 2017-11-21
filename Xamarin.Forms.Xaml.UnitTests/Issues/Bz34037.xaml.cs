@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Xamarin.Forms;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -72,19 +73,30 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[SetUp]
 			public void Setup ()
 			{
+				Device.PlatformServices = new MockPlatformServices();
 				Bz34037Converter0.Invoked = 0;
 				Bz34037Converter1.Invoked = 0;
 			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+				Application.Current = null;
+			}
+
 
 			[TestCase(true)]
 			[TestCase(false)]
 			public void ConverterParameterOrderDoesNotMatters (bool useCompiledXaml)
 			{
 				var layout = new Bz34037 (useCompiledXaml);
-				Assert.AreEqual (2, Bz34037Converter0.Invoked);
-//				Assert.AreEqual (2, Bz34037Converter1.Invoked);
+				Assert.AreEqual (1, Bz34037Converter0.Invoked);
+				Assert.AreEqual (1, Bz34037Converter1.Invoked);
 				Assert.AreEqual (typeof(string), Bz34037Converter0.Parameter);
-//				Assert.AreEqual (typeof(string), Bz34037Converter1.Parameter);
+				Assert.AreEqual (typeof(string), Bz34037Converter1.Parameter);
+				Assert.That(layout.s0.IsToggled, Is.True);
+				Assert.That(layout.s1.IsToggled, Is.True);
 			}
 		}
 	}
