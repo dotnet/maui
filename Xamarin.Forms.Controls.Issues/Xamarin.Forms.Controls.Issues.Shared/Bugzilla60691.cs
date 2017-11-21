@@ -17,8 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Children = {
-					new Button { Text = "Call 123 4567", AutomationId = "tel", Command = new Command(() => Device.OpenUri(new System.Uri("tel:123 4567"))) },
-					new Button { Text = "Go to https://bugzilla.xamarin.com/show_bug.cgi?id=60691", AutomationId = "web", Command = new Command(() => Device.OpenUri(new System.Uri("https://bugzilla.xamarin.com/show_bug.cgi?id=60691"))) }
+					new Button { Text = "Call 123 4567", AutomationId = "tel", Command = new Command(() => Device.OpenUri(new System.Uri("tel:123 4567"))) }
 				}
 			};
 		}
@@ -30,14 +29,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked("tel"));
 			RunningApp.Tap(q => q.Marked("tel"));
 			RunningApp.Screenshot("Should have loaded phone with 123-4567");
-		}
-
-		[Test]
-		public void Bugzilla60691_Web()
-		{
-			RunningApp.WaitForElement(q => q.Marked("web"));
-			RunningApp.Tap(q => q.Marked("web"));
-			RunningApp.Screenshot("Should have loaded bugzilla 60691");
 		}
 #endif
 	}
