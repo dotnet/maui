@@ -54,7 +54,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		readonly bool _embedded;
 
-		internal Platform(Context context, bool embedded = false)
+		
+
+		internal Platform(Context context, bool embedded)
 		{
 			_embedded = embedded;
 			_context = context;
@@ -1070,6 +1072,21 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		static int s_id = 0x00000400;
+
+		#region Previewer Stuff
+		
+		internal Platform(Context context) : this(context, false)
+		{
+			// we have this overload instead of using a default value for 
+			// the 'embedded' bool parameter so the previewer can find it via reflection
+		}
+
+		internal static void SetPageContext(BindableObject bindable, Context context)		
+ 		{
+			// We need to keep this around for now because the previewer calls it
+		}
+		
+		#endregion
 
 		internal class DefaultRenderer : VisualElementRenderer<View>
 		{
