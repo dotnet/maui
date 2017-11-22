@@ -11,7 +11,7 @@ namespace Xamarin.Forms
 			while (element != null)
 			{
 				var ve = element as IResourcesProvider;
-				if (ve != null && ve.Resources != null)
+				if (ve != null && ve.IsResourcesCreated)
 				{
 					resources = resources ?? new Dictionary<string, object>();
 					foreach (KeyValuePair<string, object> res in ve.Resources.MergedResources)
@@ -48,7 +48,7 @@ namespace Xamarin.Forms
 			while (element != null)
 			{
 				var ve = element as IResourcesProvider;
-				if (ve != null && ve.Resources != null && ve.Resources.TryGetValue(key, out value))
+				if (ve != null && ve.IsResourcesCreated && ve.Resources.TryGetValue(key, out value))
 					return true;
 				var app = element as Application;
 				if (app != null && app.SystemResources != null && app.SystemResources.TryGetValue(key, out value))
@@ -57,7 +57,7 @@ namespace Xamarin.Forms
 			}
 
 			//Fallback for the XF previewer
-			if (Application.Current != null && Application.Current.Resources != null && Application.Current.Resources.TryGetValue(key, out value))
+			if (Application.Current != null && ((IResourcesProvider)Application.Current).IsResourcesCreated && Application.Current.Resources.TryGetValue(key, out value))
 				return true;
 
 			value = null;

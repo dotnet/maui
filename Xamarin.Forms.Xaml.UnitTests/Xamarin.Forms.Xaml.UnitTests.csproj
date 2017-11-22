@@ -391,9 +391,6 @@
     <Compile Include="I8.xaml.cs">
       <DependentUpon>I8.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Bz49307.xaml.cs">
-      <DependentUpon>Bz49307.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Issues\Unreported008.xaml.cs">
       <DependentUpon>Unreported008.xaml</DependentUpon>
     </Compile>
@@ -504,7 +501,7 @@
     <Compile Include="Issues\Bz60575.xaml.cs">
       <DependentUpon>Bz60575.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResourceLoader.xaml.cs" >
+    <Compile Include="ResourceLoader.xaml.cs">
       <DependentUpon>ResourceLoader.xaml</DependentUpon>
     </Compile>
     <Compile Include="Issues\Bz60203.xaml.cs">
@@ -512,6 +509,9 @@
     </Compile>
     <Compile Include="Issues\Bz55862.xaml.cs">
       <DependentUpon>Bz55862.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImplicitResourceDictionaries.xaml.cs">
+      <DependentUpon>ImplicitResourceDictionaries.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -834,9 +834,6 @@
     <EmbeddedResource Include="I8.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz49307.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Include="Issues\Unreported008.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -947,13 +944,16 @@
     <EmbeddedResource Include="Issues\Bz60575.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="ResourceLoader.xaml" >
+    <EmbeddedResource Include="ResourceLoader.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz60203.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz55862.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImplicitResourceDictionaries.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

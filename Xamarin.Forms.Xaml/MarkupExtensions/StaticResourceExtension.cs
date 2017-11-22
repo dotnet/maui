@@ -28,8 +28,8 @@ namespace Xamarin.Forms.Xaml
 			object resource = null;
 
 			foreach (var p in valueProvider.ParentObjects) {
-				var ve = p as VisualElement;
-				var resDict = ve?.Resources ?? p as ResourceDictionary;
+				var irp = p as IResourcesProvider;
+				var resDict = irp != null && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
 				if (resDict == null)
 					continue;
 				if (resDict.TryGetValue(Key, out resource))
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Xaml
 		internal object GetApplicationLevelResource(string key, IXmlLineInfo xmlLineInfo)
 		{
 			object resource;
-			if (Application.Current == null || Application.Current.Resources == null || !Application.Current.Resources.TryGetValue(Key, out resource))
+			if (Application.Current == null || !((IResourcesProvider)Application.Current).IsResourcesCreated || !Application.Current.Resources.TryGetValue(Key, out resource))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 			return resource;
 		}

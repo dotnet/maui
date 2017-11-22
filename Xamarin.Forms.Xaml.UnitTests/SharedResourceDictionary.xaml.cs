@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Xamarin.Forms;
 
 using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -22,6 +23,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		public class Tests
 		{
+			[SetUp]
+			public void SetUp()
+			{
+				Device.PlatformServices = new MockPlatformServices();
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				Device.PlatformServices = null;
+			}
+
 			[TestCase (false)]
 			[TestCase (true)]
 			public void ResourcesDirectoriesCanBeXamlRoots (bool useCompiledXaml)
