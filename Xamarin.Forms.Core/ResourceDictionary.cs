@@ -279,6 +279,11 @@ namespace Xamarin.Forms
 			}
 		}
 
+		public void Add(ResourceDictionary mergedResourceDictionary)
+		{
+			MergedDictionaries.Add(mergedResourceDictionary);
+		}
+
 		void OnValueChanged(string key, object value)
 		{
 			OnValuesChanged(new KeyValuePair<string, object>(key, value));

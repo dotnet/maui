@@ -53,6 +53,25 @@
       </Docs>
     </Member>
     <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public void Add (Xamarin.Forms.ResourceDictionary mergedResourceDictionary);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Add(class Xamarin.Forms.ResourceDictionary mergedResourceDictionary) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="mergedResourceDictionary" Type="Xamarin.Forms.ResourceDictionary" />
+      </Parameters>
+      <Docs>
+        <param name="mergedResourceDictionary">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (Xamarin.Forms.Style style);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Add(class Xamarin.Forms.Style style) cil managed" />
       <MemberType>Method</MemberType>

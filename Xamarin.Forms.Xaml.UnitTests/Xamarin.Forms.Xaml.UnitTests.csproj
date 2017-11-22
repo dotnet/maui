@@ -513,6 +513,9 @@
     <Compile Include="ImplicitResourceDictionaries.xaml.cs">
       <DependentUpon>ImplicitResourceDictionaries.xaml</DependentUpon>
     </Compile>
+    <Compile Include="AutoMergedResourceDictionaries.xaml.cs" >
+      <DependentUpon>AutoMergedResourceDictionaries.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -954,6 +957,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="ImplicitResourceDictionaries.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoMergedResourceDictionaries.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

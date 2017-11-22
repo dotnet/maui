@@ -600,6 +600,8 @@ namespace Xamarin.Forms.Xaml
 				resourceDictionary.Add(xKey, value);
 			else if (value is Style)
 				resourceDictionary.Add((Style)value);
+			else if (value is ResourceDictionary)
+				resourceDictionary.Add((ResourceDictionary)value);
 			else {
 				exception = new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
 				return false;

@@ -1153,6 +1153,9 @@ namespace Xamarin.Forms.Build.Tasks
 			if (node.XmlType.Name == "Style")
 				return true;
 
+			if (node.XmlType.Name == "ResourceDictionary")
+				return true;
+
 			throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
 		}
 
@@ -1208,15 +1211,17 @@ namespace Xamarin.Forms.Build.Tasks
 							.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 2)));
 				yield break;
 			}
-			if (node.XmlType.Name == "Style") {
-				yield return Create(Ldloc, context.Variables[node]);
-				yield return Create(Callvirt,
-					module.ImportReference(
-						module.ImportReference(typeof(ResourceDictionary))
-							.Resolve()
-							.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 1)));
-				yield break;
-			}
+
+			var nodeTypeRef = node.XmlType.GetTypeReference(module, lineInfo);
+			yield return Create(Ldloc, context.Variables[node]);
+			yield return Create(Callvirt,
+				module.ImportReference(
+					module.ImportReference(typeof(ResourceDictionary))
+						.Resolve()
+						.Methods.Single(md => md.Name == "Add"
+									 && md.Parameters.Count == 1
+									 && TypeRefComparer.Default.Equals(md.Parameters[0].ParameterType, nodeTypeRef))));
+			yield break;
 		}
 
 		public static TypeReference GetParameterType(ParameterDefinition param)
