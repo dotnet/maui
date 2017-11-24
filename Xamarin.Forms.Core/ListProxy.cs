@@ -436,6 +436,9 @@ namespace Xamarin.Forms
 
 		#region IList
 
+		bool IListProxy.TryGetValue(int index, out object value)
+			=> TryGetValue(index, out value);
+
 		object IList.this[int index]
 		{
 			get { return this[index]; }
