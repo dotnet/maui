@@ -6,13 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Input;
 
-#if WINDOWS_UWP
-
 namespace Xamarin.Forms.Maps.UWP
-#else
-
-namespace Xamarin.Forms.Maps.WinRT
-#endif
 {
 	internal class PushPin : ContentControl
 	{

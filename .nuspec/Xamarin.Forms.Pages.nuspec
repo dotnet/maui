@@ -31,16 +31,7 @@
       <group targetFramework="MonoAndroid10">
         <reference file="Xamarin.Forms.Pages.dll" />
       </group>
-      <group targetFramework="win81">
-        <reference file="Xamarin.Forms.Pages.dll" />
-      </group>
-      <group targetFramework="wpa81">
-        <reference file="Xamarin.Forms.Pages.dll" />
-      </group>
       <group targetFramework="uap10.0">
-        <reference file="Xamarin.Forms.Pages.dll" />
-      </group>
-      <group targetFramework="WP80">
         <reference file="Xamarin.Forms.Pages.dll" />
       </group>
     </references>
@@ -54,16 +45,6 @@
 
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\Xamarin.iOS10" />
 
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\WP80" />
-    
-    <!--UWP-->
     <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\uap10.0" />
-    
-    <!--WinRT Phone-->
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\wpa81" />
-    
-    <!--WinRT Tablet-->
-    <file src="..\Xamarin.Forms.Pages\bin\$Configuration$\Xamarin.Forms.Pages.dll" target="lib\win81" />
-    
   </files>
 </package>

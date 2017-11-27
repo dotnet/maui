@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
 [assembly: AssemblyTitle("Xamarin.Forms.Core")]
@@ -8,27 +7,6 @@ using Xamarin.Forms.Internals;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
 
-// The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
-// The Page "{Major}.{Minor}.*" will automatically update the build and revision,
-// and "{Major}.{Minor}.{Build}.*" will update just the revision.
-
-//[assembly: AssemblyVersion("1.0.*")]
-
-// The following attributes are used to specify the signing key for the assembly, 
-// if desired. See the Mono documentation for more information about signing.
-
-//[assembly: AssemblyDelaySign(false)]
-//[assembly: AssemblyKeyFile("")]
-
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.iOS")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.iOS.Classic")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.Android")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.UAP")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.WinRT")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Tablet")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.WinRT.Phone")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.WP8")]
-//[assembly: InternalsVisibleTo("Xamarin.Forms.Platform.macOS")]
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Controls")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Core.Design")]

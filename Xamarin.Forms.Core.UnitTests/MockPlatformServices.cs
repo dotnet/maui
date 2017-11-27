@@ -11,10 +11,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Xamarin.Forms.Internals;
 
-#if WINDOWS_PHONE
-using Xamarin.Forms.Platform.WinPhone;
-#endif
-
 [assembly:Dependency (typeof(MockDeserializer))]
 [assembly:Dependency (typeof(MockResourcesProvider))]
 
@@ -123,11 +119,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 		public IIsolatedStorageFile GetUserStoreForApplication ()
 		{
-#if WINDOWS_PHONE
-			return new MockIsolatedStorageFile (IsolatedStorageFile.GetUserStoreForApplication ());
-#else
 			return new MockIsolatedStorageFile (IsolatedStorageFile.GetUserStoreForAssembly ());
-#endif
 		}
 
 		public class MockIsolatedStorageFile : IIsolatedStorageFile

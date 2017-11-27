@@ -125,66 +125,26 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Phone\FormsPivot.cs">
-      <Link>FormsPivot.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\AlignmentExtensions.cs">
-      <Link>AlignmentExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BrushHelpers.cs">
-      <Link>BrushHelpers.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FlowDirectionExtensions.cs">
-      <Link>FlowDirectionExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsProgressBar.cs">
-      <Link>FormsProgressBar.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsTextBox.cs">
-      <Link>FormsTextBox.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsComboBox.cs">
-      <Link>FormsComboBox.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\HorizontalTextAlignmentConverter.cs">
-      <Link>HorizontalTextAlignmentConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ITitleProvider.cs">
-      <Link>ITitleProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IToolbarProvider.cs">
-      <Link>IToolbarProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeBindingExtensions.cs">
-      <Link>NativeBindingExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeEventWrapper.cs">
-      <Link>NativeEventWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativePropertyListener.cs">
-      <Link>NativePropertyListener.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapper.cs">
-      <Link>NativeViewWrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NativeViewWrapperRenderer.cs">
-      <Link>NativeViewWrapperRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformConfigurationExtensions.cs">
-      <Link>PlatformConfigurationExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PlatformEffect.cs">
-      <Link>PlatformEffect.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\UriImageSourceHandler.cs">
-      <Link>UriImageSourceHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewExtensions.cs">
-      <Link>ViewExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutExtensions.cs">
-      <Link>LayoutExtensions.cs</Link>
-    </Compile>
+    <Compile Include="FormsPivot.cs" />
+    <Compile Include="AlignmentExtensions.cs" />
+    <Compile Include="BrushHelpers.cs" />
+    <Compile Include="FlowDirectionExtensions.cs" />
+    <Compile Include="FormsProgressBar.cs"/>
+    <Compile Include="FormsTextBox.cs"/>
+    <Compile Include="FormsComboBox.cs" />
+    <Compile Include="HorizontalTextAlignmentConverter.cs" />
+    <Compile Include="ITitleProvider.cs" />
+    <Compile Include="IToolbarProvider.cs" />
+    <Compile Include="NativeBindingExtensions.cs" />
+    <Compile Include="NativeEventWrapper.cs"/>
+    <Compile Include="NativePropertyListener.cs" />
+    <Compile Include="NativeViewWrapper.cs" />
+    <Compile Include="NativeViewWrapperRenderer.cs" />
+    <Compile Include="PlatformConfigurationExtensions.cs" />
+    <Compile Include="PlatformEffect.cs" />
+    <Compile Include="UriImageSourceHandler.cs"/>
+    <Compile Include="ViewExtensions.cs" />
+    <Compile Include="LayoutExtensions.cs"/>
     <Compile Include="Flags.cs" />
     <Compile Include="FormsPresenter.cs" />
     <Compile Include="FormsUWP.cs" />
@@ -195,9 +155,7 @@
     <Compile Include="PageExtensions.cs" />
     <Compile Include="PlatformUWP.cs" />
     <Compile Include="SearchBarRenderer.cs" />
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextAlignmentToHorizontalAlignmentConverter.cs">
-      <Link>TextAlignmentToHorizontalAlignmentConverter.cs</Link>
-    </Compile>
+    <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs"/>
     <Compile Include="StepperControl.cs" />
     <Compile Include="TabbedPageRenderer.cs" />
     <Compile Include="ToolbarPlacementHelper.cs" />
@@ -205,237 +163,85 @@
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\Forms.cs">
-      <Link>Forms.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPage.cs">
-      <Link>WindowsPage.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPlatform.cs">
-      <Link>WindowsPlatform.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsPlatformServices.cs">
-      <Link>WindowsPlatformServices.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT.Tablet\WindowsResourcesProvider.cs">
-      <Link>WindowsResourcesProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ActivityIndicatorRenderer.cs">
-      <Link>ActivityIndicatorRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\AsyncValue.cs">
-      <Link>AsyncValue.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BackgroundTracker.cs">
-      <Link>BackgroundTracker.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BoolToVisibilityConverter.cs">
-      <Link>BoolToVisibilityConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\BoxViewRenderer.cs">
-      <Link>BoxViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ButtonRenderer.cs">
-      <Link>ButtonRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CarouselPageRenderer.cs">
-      <Link>CarouselPageRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CaseConverter.cs">
-      <Link>CaseConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CellControl.cs">
-      <Link>CellControl.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\CollapseWhenEmptyConverter.cs">
-      <Link>CollapseWhenEmptyConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ColorConverter.cs">
-      <Link>ColorConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ConvertExtensions.cs">
-      <Link>ConvertExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\DatePickerRenderer.cs">
-      <Link>DatePickerRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\DefaultRenderer.cs">
-      <Link>DefaultRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EditorRenderer.cs">
-      <Link>EditorRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EntryCellTextBox.cs">
-      <Link>EntryCellTextBox.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\EntryRenderer.cs">
-      <Link>EntryRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ExportRendererAttribute.cs">
-      <Link>ExportRendererAttribute.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\Extensions.cs">
-      <Link>Extensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FileImageSourceHandler.cs">
-      <Link>FileImageSourceHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FileImageSourcePathConverter.cs">
-      <Link>FileImageSourcePathConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FontExtensions.cs">
-      <Link>FontExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FormsButton.cs">
-      <Link>FormsButton.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FrameRenderer.cs">
-      <Link>FrameRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\FrameworkElementExtensions.cs">
-      <Link>FrameworkElementExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\HeightConverter.cs">
-      <Link>HeightConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ICellRenderer.cs">
-      <Link>ICellRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IImageSourceHandler.cs">
-      <Link>IImageSourceHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageConverter.cs">
-      <Link>ImageConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ImageRenderer.cs">
-      <Link>ImageRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\IVisualElementRenderer.cs">
-      <Link>IVisualElementRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\KeyboardConverter.cs">
-      <Link>KeyboardConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\KeyboardExtensions.cs">
-      <Link>KeyboardExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LabelRenderer.cs">
-      <Link>LabelRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\LayoutRenderer.cs">
-      <Link>LayoutRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListGroupHeaderPresenter.cs">
-      <Link>ListGroupHeaderPresenter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListViewGroupStyleSelector.cs">
-      <Link>ListViewGroupStyleSelector.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ListViewRenderer.cs">
-      <Link>ListViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\MasterBackgroundConverter.cs">
-      <Link>MasterBackgroundConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\MenuItemCommand.cs">
-      <Link>MenuItemCommand.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\NavigationPageRenderer.cs">
-      <Link>NavigationPageRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageControl.cs">
-      <Link>PageControl.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageRenderer.cs">
-      <Link>PageRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PageToRenderedElementConverter.cs">
-      <Link>PageToRenderedElementConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\PickerRenderer.cs">
-      <Link>PickerRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\Platform.cs">
-      <Link>Platform.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ProgressBarRenderer.cs">
-      <Link>ProgressBarRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\RendererFactory.cs">
-      <Link>RendererFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ScrollViewRenderer.cs">
-      <Link>ScrollViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\SliderRenderer.cs">
-      <Link>SliderRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\StepperRenderer.cs">
-      <Link>StepperRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\StreamImagesourceHandler.cs">
-      <Link>StreamImagesourceHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\SwitchRenderer.cs">
-      <Link>SwitchRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TableViewRenderer.cs">
-      <Link>TableViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TaskExtensions.cs">
-      <Link>TaskExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TextCellRenderer.cs">
-      <Link>TextCellRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\TimePickerRenderer.cs">
-      <Link>TimePickerRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewRenderer.cs">
-      <Link>ViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\ViewToRendererConverter.cs">
-      <Link>ViewToRendererConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementChangedEventArgs.cs">
-      <Link>VisualElementChangedEventArgs.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementExtensions.cs">
-      <Link>VisualElementExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementPackager.cs">
-      <Link>VisualElementPackager.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementRenderer.cs">
-      <Link>VisualElementRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\VisualElementTracker.cs">
-      <Link>VisualElementTracker.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WebViewRenderer.cs">
-      <Link>WebViewRenderer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsBasePage.cs">
-      <Link>WindowsBasePage.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsBasePlatformServices.cs">
-      <Link>WindowsBasePlatformServices.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsDeviceInfo.cs">
-      <Link>WindowsDeviceInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsExpressionSearch.cs">
-      <Link>WindowsExpressionSearch.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsIsolatedStorage.cs">
-      <Link>WindowsIsolatedStorage.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsSerializer.cs">
-      <Link>WindowsSerializer.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.Platform.WinRT\WindowsTicker.cs">
-      <Link>WindowsTicker.cs</Link>
-    </Compile>
+    <Compile Include="Forms.cs" />
+    <Compile Include="WindowsPage.cs" />
+    <Compile Include="WindowsPlatform.cs" />
+    <Compile Include="WindowsPlatformServices.cs" />
+    <Compile Include="WindowsResourcesProvider.cs" />
+    <Compile Include="ActivityIndicatorRenderer.cs" />
+    <Compile Include="AsyncValue.cs" />
+    <Compile Include="BackgroundTracker.cs" />
+    <Compile Include="BoolToVisibilityConverter.cs" />
+    <Compile Include="BoxViewRenderer.cs" />
+    <Compile Include="ButtonRenderer.cs" />
+    <Compile Include="CarouselPageRenderer.cs" />
+    <Compile Include="CaseConverter.cs" />
+    <Compile Include="CellControl.cs" />
+    <Compile Include="CollapseWhenEmptyConverter.cs" />
+    <Compile Include="ColorConverter.cs" />
+    <Compile Include="ConvertExtensions.cs" />
+    <Compile Include="DatePickerRenderer.cs" />
+    <Compile Include="DefaultRenderer.cs" />
+    <Compile Include="EditorRenderer.cs" />
+    <Compile Include="EntryCellTextBox.cs" />
+    <Compile Include="EntryRenderer.cs" />
+    <Compile Include="ExportRendererAttribute.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="FileImageSourceHandler.cs" />
+    <Compile Include="FileImageSourcePathConverter.cs" />
+    <Compile Include="FontExtensions.cs" />
+    <Compile Include="FormsButton.cs" />
+    <Compile Include="FrameRenderer.cs" />
+    <Compile Include="FrameworkElementExtensions.cs" />
+    <Compile Include="HeightConverter.cs" />
+    <Compile Include="ICellRenderer.cs" />
+    <Compile Include="IImageSourceHandler.cs" />
+    <Compile Include="ImageConverter.cs" />
+    <Compile Include="ImageRenderer.cs" />
+    <Compile Include="IVisualElementRenderer.cs" />
+    <Compile Include="KeyboardConverter.cs" />
+    <Compile Include="KeyboardExtensions.cs" />
+    <Compile Include="LabelRenderer.cs" />
+    <Compile Include="LayoutRenderer.cs" />
+    <Compile Include="ListGroupHeaderPresenter.cs" />
+    <Compile Include="ListViewGroupStyleSelector.cs" />
+    <Compile Include="ListViewRenderer.cs" />
+    <Compile Include="MasterBackgroundConverter.cs" />
+    <Compile Include="MenuItemCommand.cs" />
+    <Compile Include="NavigationPageRenderer.cs" />
+    <Compile Include="PageControl.cs" />
+    <Compile Include="PageRenderer.cs" />
+    <Compile Include="PageToRenderedElementConverter.cs" />
+    <Compile Include="PickerRenderer.cs" />
+    <Compile Include="Platform.cs" />
+    <Compile Include="ProgressBarRenderer.cs" />
+    <Compile Include="RendererFactory.cs" />
+    <Compile Include="ScrollViewRenderer.cs" />
+    <Compile Include="SliderRenderer.cs" />
+    <Compile Include="StepperRenderer.cs" />
+    <Compile Include="StreamImagesourceHandler.cs"/>
+    <Compile Include="SwitchRenderer.cs" />
+    <Compile Include="TableViewRenderer.cs" />
+    <Compile Include="TaskExtensions.cs" />
+    <Compile Include="TextCellRenderer.cs" />
+    <Compile Include="TimePickerRenderer.cs" />
+    <Compile Include="ViewRenderer.cs" />
+    <Compile Include="ViewToRendererConverter.cs" />
+    <Compile Include="VisualElementChangedEventArgs.cs" />
+    <Compile Include="VisualElementExtensions.cs" />
+    <Compile Include="VisualElementPackager.cs" />
+    <Compile Include="VisualElementRenderer.cs" />
+    <Compile Include="VisualElementTracker.cs" />
+    <Compile Include="WebViewRenderer.cs" />
+    <Compile Include="WindowsBasePage.cs" />
+    <Compile Include="WindowsBasePlatformServices.cs" />
+    <Compile Include="WindowsDeviceInfo.cs" />
+    <Compile Include="WindowsExpressionSearch.cs" />
+    <Compile Include="WindowsIsolatedStorage.cs" />
+    <Compile Include="WindowsSerializer.cs" />
+    <Compile Include="WindowsTicker.cs" />
+      
+      
     <Compile Include="FormsCommandBar.cs" />
     <Compile Include="MasterDetailControl.cs" />
     <Compile Include="MasterDetailPageRenderer.cs" />

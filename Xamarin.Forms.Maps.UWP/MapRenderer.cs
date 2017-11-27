@@ -10,21 +10,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-#if WINDOWS_UWP
 using Xamarin.Forms.Platform.UWP;
 
-#else
-using Xamarin.Forms.Platform.WinRT;
-
-#endif
-
-#if WINDOWS_UWP
-
 namespace Xamarin.Forms.Maps.UWP
-#else
-
-namespace Xamarin.Forms.Maps.WinRT
-#endif
 {
 	public class MapRenderer : ViewRenderer<Map, MapControl>
 	{
@@ -297,7 +285,6 @@ namespace Xamarin.Forms.Maps.WinRT
 			}
 		}
 
-#if WINDOWS_UWP
 		void UpdateHasZoomEnabled()
 		{
 			Control.ZoomInteractionMode = Element.HasZoomEnabled
@@ -309,14 +296,5 @@ namespace Xamarin.Forms.Maps.WinRT
 		{
 			Control.PanInteractionMode = Element.HasScrollEnabled ? MapPanInteractionMode.Auto : MapPanInteractionMode.Disabled;
 		}
-#else
-		void UpdateHasZoomEnabled()
-		{
-		}
-
-		void UpdateHasScrollEnabled()
-		{
-		}
-#endif
 	}
 }

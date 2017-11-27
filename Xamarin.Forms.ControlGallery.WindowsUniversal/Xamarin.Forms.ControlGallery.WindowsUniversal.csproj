@@ -129,52 +129,26 @@
     <Compile Include="_58406EffectRenderer.cs" />
     <Compile Include="_60122ImageRenderer.cs" />
     <Content Include="Assets\Fonts\OFL.txt" />
+    <Content Include="bank.png" />
     <Content Include="coffee.png" />
+    <Content Include="cover1.jpg" />
+    <Content Include="cover1small.jpg" />
+    <Content Include="crimsonsmall.jpg" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
     <Content Include="local.html" />
     <Content Include="test.jpg" />
+    <Content Include="oasis.jpg" />
+    <Content Include="oasissmall.jpg" />
+    <Content Include="photo.jpg" />
+    <Content Include="seth.png" />
     <Content Include="toolbar_close.png" />
     <Content Include="WebImages\XamarinLogo.png" />
     <Content Include="Assets\Fonts\Lobster-Regular.ttf" />
     <None Include="project.json" />
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\bank.png">
-      <Link>bank.png</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\cover1.jpg">
-      <Link>cover1.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\cover1small.jpg">
-      <Link>cover1small.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\crimson.jpg">
-      <Link>crimson.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\crimsonsmall.jpg">
-      <Link>crimsonsmall.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\menuIcon.png">
-      <Link>menuIcon.png</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\oasis.jpg">
-      <Link>oasis.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\oasissmall.jpg">
-      <Link>oasissmall.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\photo.jpg">
-      <Link>photo.jpg</Link>
-    </Content>
-    <Content Include="..\Xamarin.Forms.ControlGallery.WP8\seth.png">
-      <Link>seth.png</Link>
-    </Content>
     <Content Include="Properties\default.rd.xml" />
-    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\BrokenImageSourceHandler.cs">
-      <Link>BrokenImageSourceHandler.cs</Link>
-    </Compile>
-    <Compile Include="..\Xamarin.Forms.ControlGallery.Windows\StringProvider.cs">
-      <Link>StringProvider.cs</Link>
-    </Compile>
+    <Compile Include="BrokenImageSourceHandler.cs" />
+    <Compile Include="StringProvider.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>

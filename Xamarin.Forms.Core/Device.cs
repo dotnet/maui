@@ -13,9 +13,7 @@ namespace Xamarin.Forms
     {
         public const string iOS = "iOS";
         public const string Android = "Android";
-        public const string WinPhone = "WinPhone";
         public const string UWP = "UWP";
-        public const string WinRT = "WinRT";
         public const string macOS = "macOS";
         public const string GTK = "GTK";
 
@@ -43,7 +41,7 @@ namespace Xamarin.Forms
                     return platform;
 
                 // In the old TargetPlatform, there was no distinction between WinRT/UWP
-                if (RuntimePlatform == UWP || RuntimePlatform == WinRT)
+                if (RuntimePlatform == UWP)
                 {
                     return TargetPlatform.Windows;
                 }

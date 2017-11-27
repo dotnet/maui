@@ -965,11 +965,6 @@ namespace Xamarin.Forms.Internals
 
 		void OnProxyCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			OnProxyCollectionChanged(sender, e, true);
-		}
-
-		void OnProxyCollectionChanged(object sender, NotifyCollectionChangedEventArgs e, bool fixWindows = true)
-		{
 			if (IsGroupingEnabled)
 			{
 				OnCollectionChangedGrouped(e);
@@ -979,14 +974,6 @@ namespace Xamarin.Forms.Internals
 			if ((CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0)
 			{
 				OnCollectionChanged(e);
-				return;
-			}
-
-			/* HACKAHACKHACK: LongListSelector on WP SL has a bug in that it completely fails to deal with
-			 * INCC notifications that include more than 1 item. */
-			if (fixWindows && Device.RuntimePlatform == Device.WinPhone)
-			{
-				SplitCollectionChangedItems(e);
 				return;
 			}
 
@@ -1170,7 +1157,7 @@ namespace Xamarin.Forms.Internals
 						goto default;
 
 					for (var i = 0; i < e.NewItems.Count; i++)
-						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, e.NewItems[i], e.NewStartingIndex + i), false);
+						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, e.NewItems[i], e.NewStartingIndex + i));
 
 					break;
 
@@ -1179,7 +1166,7 @@ namespace Xamarin.Forms.Internals
 						goto default;
 
 					for (var i = 0; i < e.OldItems.Count; i++)
-						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, e.OldItems[i], e.OldStartingIndex + i), false);
+						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, e.OldItems[i], e.OldStartingIndex + i));
 
 					break;
 
@@ -1188,12 +1175,12 @@ namespace Xamarin.Forms.Internals
 						goto default;
 
 					for (var i = 0; i < e.OldItems.Count; i++)
-						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, e.NewItems[i], e.OldItems[i], e.OldStartingIndex + i), false);
+						OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, e.NewItems[i], e.OldItems[i], e.OldStartingIndex + i));
 
 					break;
 
 				default:
-					OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset), false);
+					OnProxyCollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 					break;
 			}
 		}
