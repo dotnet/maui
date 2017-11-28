@@ -13,8 +13,8 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 42620, "Issue Description", PlatformAffected.Default)]
-	public class Bugzilla42620 : TestContentPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 42620, " Grid.Children.AddHorizontal does not span all rows", PlatformAffected.Default)]
+	public class Bugzilla42620 : TestContentPage 
 	{
 		public static IEnumerator<Color> Colors = ColorGenerator().GetEnumerator();
 		public static Color GetColor()
