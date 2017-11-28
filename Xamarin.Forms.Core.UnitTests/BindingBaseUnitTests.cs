@@ -173,10 +173,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			if (System.Threading.Thread.CurrentThread.CurrentCulture.Name == "tr-TR")
-				Assert.That(bo.GetValue(property), Is.EqualTo("%95,00"));
-			else
-				Assert.That(bo.GetValue(property), Is.EqualTo("95.00 %"));
+			Assert.That(bo.GetValue(property), Is.EqualTo(string.Format(new System.Globalization.CultureInfo(culture),"{0:P2}",.95d))); //%95,00 or 95.00%
 		}
 
 		[Test]
