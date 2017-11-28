@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 		[Test]
 		[Description ("All elements renderered")]
-		public void CarouselAsycTestsAllElementsPresent ()
+		public void CarouselAsyncTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
 			RunningApp.Screenshot ("All elements present");
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 		[Test]
 		[Description ("Async Pages inserted into a CarouselPage")]
-		public void CarouselAsycTestsAllPagesExistAfterAsyncAdding ()
+		public void CarouselAsyncTestsAllPagesExistAfterAsyncAdding ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
 
@@ -95,19 +95,19 @@ namespace Xamarin.Forms.Controls.Issues
 
 		[Test]
 		[Description ("All elements renderered - landscape")]
-		public void CarouselAsycTestsAllElementsPresentLandscape ()
+		public void CarouselAsyncTestsAllElementsPresentLandscape ()
 		{
 			RunningApp.SetOrientationLandscape ();
-			CarouselAsycTestsAllElementsPresent ();
+			CarouselAsyncTestsAllElementsPresent ();
 			RunningApp.SetOrientationPortrait ();
 		}
 
 		[Test]
 		[Description ("Async Pages inserted into a CarouselPage - landscape")]
-		public void CarouselAsycTestsAllPagesExistAfterAsyncAddingLandscape ()
+		public void CarouselAsyncTestsAllPagesExistAfterAsyncAddingLandscape ()
 		{
 			RunningApp.SetOrientationLandscape ();
-			CarouselAsycTestsAllPagesExistAfterAsyncAdding ();
+			CarouselAsyncTestsAllPagesExistAfterAsyncAdding ();
 			RunningApp.SetOrientationPortrait ();
 		}
 #endif
