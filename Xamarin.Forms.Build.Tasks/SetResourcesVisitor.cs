@@ -46,9 +46,14 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 			}
 
-			if (parentNode is IElementNode && IsResourceDictionary((IElementNode)parentNode))
+			//Only proceed further if the node is a keyless RD
+			if (   parentNode is IElementNode
+				&& IsResourceDictionary((IElementNode)parentNode)
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (parentNode is ListNode && IsResourceDictionary((IElementNode)parentNode.Parent))
+			else if (   parentNode is ListNode
+					 && IsResourceDictionary((IElementNode)parentNode.Parent)
+					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new SetPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		}
 
