@@ -14,6 +14,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.InputTransparent)]
+	[Category(UITestCategories.ManualReview)]
 #endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2775, "ViewCell background conflicts with ListView Semi-Transparent and Transparent backgrounds")]
@@ -113,7 +114,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue2775Test ()
 		{
 			RunningApp.Screenshot ("I am at Issue 2775");
-			//RunningApp.WaitForElement (q => q.Marked ("IssuePageLabel"));
 			RunningApp.Screenshot ("I see the Label");
 		}
 #endif
