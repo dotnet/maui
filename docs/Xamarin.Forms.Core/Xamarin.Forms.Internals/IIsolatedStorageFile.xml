@@ -97,8 +97,8 @@
       </Docs>
     </Member>
     <Member MemberName="OpenFileAsync">
-      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenFileAsync (string path, Xamarin.Forms.Internals.FileMode mode, Xamarin.Forms.Internals.FileAccess access);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenFileAsync(string path, valuetype Xamarin.Forms.Internals.FileMode mode, valuetype Xamarin.Forms.Internals.FileAccess access) cil managed" />
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenFileAsync (string path, System.IO.FileMode mode, System.IO.FileAccess access);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenFileAsync(string path, valuetype System.IO.FileMode mode, valuetype System.IO.FileAccess access) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -108,21 +108,21 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="path" Type="System.String" />
-        <Parameter Name="mode" Type="Xamarin.Forms.Internals.FileMode" />
-        <Parameter Name="access" Type="Xamarin.Forms.Internals.FileAccess" />
+        <Parameter Name="mode" Type="System.IO.FileMode" />
+        <Parameter Name="access" Type="System.IO.FileAccess" />
       </Parameters>
       <Docs>
-        <param name="path">For internal use by the Xamarin.Forms platform.</param>
-        <param name="mode">For internal use by the Xamarin.Forms platform.</param>
-        <param name="access">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="path">To be added.</param>
+        <param name="mode">To be added.</param>
+        <param name="access">To be added.</param>
+        <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenFileAsync">
-      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenFileAsync (string path, Xamarin.Forms.Internals.FileMode mode, Xamarin.Forms.Internals.FileAccess access, Xamarin.Forms.Internals.FileShare share);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenFileAsync(string path, valuetype Xamarin.Forms.Internals.FileMode mode, valuetype Xamarin.Forms.Internals.FileAccess access, valuetype Xamarin.Forms.Internals.FileShare share) cil managed" />
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenFileAsync (string path, System.IO.FileMode mode, System.IO.FileAccess access, System.IO.FileShare share);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenFileAsync(string path, valuetype System.IO.FileMode mode, valuetype System.IO.FileAccess access, valuetype System.IO.FileShare share) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -132,16 +132,16 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="path" Type="System.String" />
-        <Parameter Name="mode" Type="Xamarin.Forms.Internals.FileMode" />
-        <Parameter Name="access" Type="Xamarin.Forms.Internals.FileAccess" />
-        <Parameter Name="share" Type="Xamarin.Forms.Internals.FileShare" />
+        <Parameter Name="mode" Type="System.IO.FileMode" />
+        <Parameter Name="access" Type="System.IO.FileAccess" />
+        <Parameter Name="share" Type="System.IO.FileShare" />
       </Parameters>
       <Docs>
-        <param name="path">For internal use by the Xamarin.Forms platform.</param>
-        <param name="mode">For internal use by the Xamarin.Forms platform.</param>
-        <param name="access">For internal use by the Xamarin.Forms platform.</param>
-        <param name="share">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="path">To be added.</param>
+        <param name="mode">To be added.</param>
+        <param name="access">To be added.</param>
+        <param name="share">To be added.</param>
+        <summary>To be added.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>

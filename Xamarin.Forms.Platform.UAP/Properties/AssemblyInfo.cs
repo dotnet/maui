@@ -1,13 +1,7 @@
-﻿using System.Reflection;
-using System.Runtime.InteropServices;
-using Xamarin.Forms;
+﻿using Xamarin.Forms;
 using Xamarin.Forms.Platform.UWP;
 
-[assembly: AssemblyTitle("Xamarin.Forms.Platform.UAP")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCulture("")]
-[assembly: ComVisible(false)]
+
 [assembly: Dependency(typeof(WindowsSerializer))]
 
 // Views

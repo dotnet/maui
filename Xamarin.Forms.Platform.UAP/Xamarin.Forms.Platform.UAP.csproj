@@ -11,8 +11,8 @@
     <AssemblyName>Xamarin.Forms.Platform.UAP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -121,30 +121,26 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="FormsPivot.cs" />
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="BrushHelpers.cs" />
     <Compile Include="FlowDirectionExtensions.cs" />
-    <Compile Include="FormsProgressBar.cs"/>
-    <Compile Include="FormsTextBox.cs"/>
+    <Compile Include="FormsProgressBar.cs" />
+    <Compile Include="FormsTextBox.cs" />
     <Compile Include="FormsComboBox.cs" />
     <Compile Include="HorizontalTextAlignmentConverter.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="IToolbarProvider.cs" />
     <Compile Include="NativeBindingExtensions.cs" />
-    <Compile Include="NativeEventWrapper.cs"/>
+    <Compile Include="NativeEventWrapper.cs" />
     <Compile Include="NativePropertyListener.cs" />
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
     <Compile Include="PlatformConfigurationExtensions.cs" />
     <Compile Include="PlatformEffect.cs" />
-    <Compile Include="UriImageSourceHandler.cs"/>
+    <Compile Include="UriImageSourceHandler.cs" />
     <Compile Include="ViewExtensions.cs" />
-    <Compile Include="LayoutExtensions.cs"/>
+    <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Flags.cs" />
     <Compile Include="FormsPresenter.cs" />
     <Compile Include="FormsUWP.cs" />
@@ -155,7 +151,7 @@
     <Compile Include="PageExtensions.cs" />
     <Compile Include="PlatformUWP.cs" />
     <Compile Include="SearchBarRenderer.cs" />
-    <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs"/>
+    <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs" />
     <Compile Include="StepperControl.cs" />
     <Compile Include="TabbedPageRenderer.cs" />
     <Compile Include="ToolbarPlacementHelper.cs" />
@@ -219,7 +215,7 @@
     <Compile Include="ScrollViewRenderer.cs" />
     <Compile Include="SliderRenderer.cs" />
     <Compile Include="StepperRenderer.cs" />
-    <Compile Include="StreamImagesourceHandler.cs"/>
+    <Compile Include="StreamImagesourceHandler.cs" />
     <Compile Include="SwitchRenderer.cs" />
     <Compile Include="TableViewRenderer.cs" />
     <Compile Include="TaskExtensions.cs" />
@@ -240,8 +236,6 @@
     <Compile Include="WindowsIsolatedStorage.cs" />
     <Compile Include="WindowsSerializer.cs" />
     <Compile Include="WindowsTicker.cs" />
-      
-      
     <Compile Include="FormsCommandBar.cs" />
     <Compile Include="MasterDetailControl.cs" />
     <Compile Include="MasterDetailPageRenderer.cs" />
@@ -293,12 +287,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <SDKReference Include="WindowsMobile, Version=10.0.10240.0">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

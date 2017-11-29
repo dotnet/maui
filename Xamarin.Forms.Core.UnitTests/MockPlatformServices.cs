@@ -141,15 +141,15 @@ namespace Xamarin.Forms.Core.UnitTests
 				return Task.FromResult (true);
 			}
 
-			public Task<Stream> OpenFileAsync (string path, Internals.FileMode mode, Internals.FileAccess access)
+			public Task<Stream> OpenFileAsync (string path, FileMode mode, FileAccess access)
 			{
-				Stream stream = isolatedStorageFile.OpenFile (path, (System.IO.FileMode)mode, (System.IO.FileAccess)access);
+				Stream stream = isolatedStorageFile.OpenFile (path, mode, access);
 				return Task.FromResult (stream);
 			}
 
-			public Task<Stream> OpenFileAsync (string path, Internals.FileMode mode, Internals.FileAccess access, Internals.FileShare share)
+			public Task<Stream> OpenFileAsync (string path, FileMode mode, FileAccess access, FileShare share)
 			{
-				Stream stream = isolatedStorageFile.OpenFile (path, (System.IO.FileMode)mode, (System.IO.FileAccess)access, (System.IO.FileShare)share);
+				Stream stream = isolatedStorageFile.OpenFile (path, mode, access, share);
 				return Task.FromResult (stream);
 			}
 

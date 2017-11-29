@@ -50,11 +50,11 @@ namespace Xamarin.Forms.Maps.UWP
 				if (mapModel.Pins.Any())
 					LoadPins();
 
-                		if (Control == null) return;
+				if (Control == null) return;
 
 				await Control.Dispatcher.RunIdleAsync(async (i) => await MoveToRegion(mapModel.LastMoveToRegion, MapAnimationKind.None));
 				await UpdateIsShowingUser();
-            		}
+			}
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -158,7 +158,7 @@ namespace Xamarin.Forms.Maps.UWP
 			{
 				var myGeolocator = new Geolocator();
 				if (myGeolocator.LocationStatus != PositionStatus.NotAvailable &&
-				    myGeolocator.LocationStatus != PositionStatus.Disabled)
+					myGeolocator.LocationStatus != PositionStatus.Disabled)
 				{
 					var userPosition = await myGeolocator.GetGeopositionAsync();
 					if (userPosition?.Coordinate != null)
@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Maps.UWP
 					_timer.Tick += async (s, o) => await UpdateIsShowingUser(moveToLocation: false);
 					_timer.Interval = TimeSpan.FromSeconds(15);
 				}
-				
+
 				if (!_timer.IsEnabled)
 					_timer.Start();
 			}
@@ -204,7 +204,6 @@ namespace Xamarin.Forms.Maps.UWP
 		{
 			if (Control == null || Element == null)
 				return;
-		
 			try
 			{
 				Geopoint nw, se = null;
@@ -217,12 +216,12 @@ namespace Xamarin.Forms.Maps.UWP
 					var center = new Position(boundingBox.Center.Latitude, boundingBox.Center.Longitude);
 					var latitudeDelta = Math.Abs(nw.Position.Latitude - se.Position.Latitude);
 					var longitudeDelta = Math.Abs(nw.Position.Longitude - se.Position.Longitude);
-                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                    {
+					await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+					{
 						Element.SetVisibleRegion(new MapSpan(center, latitudeDelta, longitudeDelta));
-                    });
+					});
 				}
-            }
+			}
 			catch (Exception)
 			{
 				return;

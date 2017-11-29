@@ -75,14 +75,7 @@ namespace Xamarin.Forms.Controls
 
 			static void TrackOnInsights (Page page)
 			{
-				if (Insights.IsInitialized) {
-					Insights.Track ("Navigation", new Dictionary<string, string> {
-						{
-							"Pushing",
-							page.GetType ().Name
-						}
-					});
-				}
+				
 			}
 
 			Page ActivatePage (Type type)

@@ -1,6 +1,5 @@
 ﻿#if !FORMS_APPLICATION_ACTIVITY && !PRE_APPLICATION_CLASS
 
-using System.Diagnostics;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -40,9 +39,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 			//Window.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.TurnScreenOn);
 
 			base.OnCreate(bundle);
-
-			if (!Debugger.IsAttached)
-				Insights.Initialize(App.InsightsApiKey, ApplicationContext);
+			
 
 #if TEST_EXPERIMENTAL_RENDERERS
 			Forms.SetFlags("FastRenderers_Experimental");

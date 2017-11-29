@@ -261,7 +261,7 @@ namespace Xamarin.Forms.Xaml
 			bool throwOnError = false)
 		{
 			var bindableFieldInfo =
-				elementType.GetFields().FirstOrDefault(fi => fi.Name == localName + "Property" && fi.IsStatic && fi.IsPublic);
+				elementType.GetFields(BindingFlags.Static | BindingFlags.Public|BindingFlags.FlattenHierarchy).FirstOrDefault(fi => fi.Name == localName + "Property");
 
 			Exception exception = null;
 			if (exception == null && bindableFieldInfo == null) {
