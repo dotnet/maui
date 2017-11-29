@@ -47,10 +47,14 @@ namespace Xamarin.Forms.Xaml
 				}
 			}
 
-			//Only proceed further if the node is a RD
-			if (parentNode is IElementNode && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode)]))
+			//Only proceed further if the node is a keyless RD
+			if (   parentNode is IElementNode
+				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode)])
+				&& !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
-			else if (parentNode is ListNode && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)]))
+			else if (   parentNode is ListNode
+					 && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
+					 && !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
 				node.Accept(new ApplyPropertiesVisitor(Context, stopOnResourceDictionary: false), parentNode);
 		}
 
