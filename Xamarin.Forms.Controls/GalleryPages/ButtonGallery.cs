@@ -40,8 +40,6 @@ namespace Xamarin.Forms.Controls
 			case Device.Android:
 				fontName = "sans-serif-light";
 				break;
-			case Device.WinPhone:
-			case Device.WinRT:
 			case Device.UWP:
 				fontName = "Comic Sans MS";
 				break;

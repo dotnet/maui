@@ -41,9 +41,7 @@ namespace Xamarin.Forms.Controls
 					imageInstructions = $"The following Image should read aloud \"{ImageName}. {ImageHelpText}\". You should be able to tap the image and hear an alert box.";
 					boxInstructions = $"The following Box should read aloud \"{BoxName}. {BoxHelpText}\". You should be able to tap the box and hear an alert box.";
 					break;
-				case Device.WinRT:
 				case Device.UWP:
-				case Device.WinPhone:
 					screenReader = "Narrator";
 					scrollFingers = "two fingers";
 					explore = "Use three fingers to swipe up the screen to read all of the elements on this page.";

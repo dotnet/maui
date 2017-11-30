@@ -11,8 +11,8 @@
     <AssemblyName>PagesGallery.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
@@ -20,6 +20,7 @@
     <PackageCertificateKeyFile>Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx</PackageCertificateKeyFile>
     <PackageCertificateThumbprint>D160433BDC22781DEAE0558325140B91C02A6A20</PackageCertificateThumbprint>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
+    <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -93,7 +94,6 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <None Include="PagesGallery.UWP_TemporaryKey.pfx" />
-    <None Include="project.json" />
     <None Include="Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +154,11 @@
     <ProjectReference Include="..\PagesGallery\PagesGallery.csproj">
       <Name>PagesGallery</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.0.1</Version>
+    </PackageReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

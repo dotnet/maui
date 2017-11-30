@@ -191,7 +191,7 @@
 						                Content="{TemplateBinding PlaceholderText}"
 						                Foreground="{TemplateBinding PlaceholderForegroundBrush}" IsHitTestVisible="False"
 						                IsTabStop="False" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"
-						                Grid.Row="1" VerticalAlignment="Bottom"
+						                Grid.Row="1"
 						                HorizontalAlignment="{Binding TextAlignment, 
                                             RelativeSource={RelativeSource Mode=TemplatedParent}, 
                                             Converter={StaticResource AlignmentConverter}}" />

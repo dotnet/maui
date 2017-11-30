@@ -7,9 +7,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Forms.Build.Tasks</RootNamespace>
     <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +22,8 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn></NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -31,7 +33,8 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn></NoWarn>
+    <NoWarn>
+    </NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -41,16 +44,16 @@
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
     <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -120,20 +123,6 @@
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
       <Name>Xamarin.Forms.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="CompiledMarkupExtensions\" />
-    <Folder Include="CompiledValueProviders\" />
-  </ItemGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
-  <ItemGroup>
-    <Folder Include="CompiledConverters\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

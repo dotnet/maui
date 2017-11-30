@@ -35,116 +35,34 @@
         <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
       </group>
     </dependencies>
-    <references>
-      <group targetFramework="portable-win+net45+wp80+win81+wpa81">
-        <reference file="Xamarin.Forms.Maps.dll" />
-      </group>
-      <group targetFramework="netstandard1.0">
-        <reference file="Xamarin.Forms.Maps.dll" />
-      </group>
-      <group targetFramework="Xamarin.iOS10">
-        <reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.iOS.dll" />
-      </group>
-      <group targetFramework="MonoAndroid10">
-        <reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.Android.dll" />
-      </group>
-      <group targetFramework="win81">
-        <reference file="Xamarin.Forms.Maps.dll" />
-      </group>
-      <group targetFramework="wpa81">
-        <reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.WinRT.Phone.dll" />
-      </group>
-      <group targetFramework="uap10.0">
-        <reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.UWP.dll" />
-      </group>
-      <group targetFramework="WP80">
-        <reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.WP8.dll" />
-      </group>
-      <group targetFramework="Xamarin.Mac">
-		<reference file="Xamarin.Forms.Maps.dll" />
-        <reference file="Xamarin.Forms.Maps.macOS.dll" />
-      </group>
-    </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\portable-win+net45+wp80+win81+wpa81" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\netstandard1.0" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\portable-win+net45+wp80+win81+wpa81" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
 
     <file src="..\Xamarin.Forms.Maps.Android\bin\$Configuration$\Xamarin.Forms.Maps.Android.dll" target="lib\MonoAndroid10" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\MonoAndroid10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\MonoAndroid10" />
 
     <file src="..\Xamarin.Forms.Maps.iOS\bin\iPhoneSimulator\$Configuration$\Xamarin.Forms.Maps.iOS.dll" target="lib\Xamarin.iOS10" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.iOS10" />
 
-    <file src="..\Xamarin.Forms.Maps.WP8\bin\$Configuration$\Xamarin.Forms.Maps.WP8.dll" target="lib\WP80" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\WP80" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\WP80" />
-    
-    <!--UWP-->
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.dll" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Maps.UWP\bin\$Configuration$\Xamarin.Forms.Maps.UWP.pri" target="lib\uap10.0" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\uap10.0" />
-    
-    <!--WinRT Phone-->
-    <file src="..\Xamarin.Forms.Maps.WinRT.Phone\bin\$Configuration$\Xamarin.Forms.Maps.WinRT.Phone.dll" target="lib\wpa81" />
-    <file src="..\Xamarin.Forms.Maps.WinRT.Phone\bin\$Configuration$\Xamarin.Forms.Maps.WinRT.Phone.pri" target="lib\wpa81" />
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\wpa81" />
-    
-    <!--WinRT Tablet-->
-    <file src="Xamarin.Forms.Maps.targets" target="build\win81\Xamarin.Forms.Maps$IdAppend$.targets" />
-    <file src="Xamarin.Forms.Maps.props" target="build\win81\Xamarin.Forms.Maps$IdAppend$.props" />
-    
-    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\win81" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\win81" />
-    
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\x86\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.dll" target="build\win81\x86" />
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\x86\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.pri" target="build\win81\x86" />   
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.dll" target="build\win81\x86" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.pri" target="build\win81\x86" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.xr.xml" target="build\win81\x86\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\Resources.xbf" target="build\win81\x86\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\TabletResources.xbf" target="build\win81\x86\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x86\$Configuration$\FormsTextBoxStyle.xbf" target="build\win81\x86\Xamarin.Forms.Platform.WinRT.Tablet" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\uap10.0" />
+	
+	 <file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
 
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\x64\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.dll" target="build\win81\x64" />
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\x64\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.pri" target="build\win81\x64" />  
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.dll" target="build\win81\x64" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.pri" target="build\win81\x64" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.xr.xml" target="build\win81\x64\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\Resources.xbf" target="build\win81\x64\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\TabletResources.xbf" target="build\win81\x64\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\x64\$Configuration$\FormsTextBoxStyle.xbf" target="build\win81\x64\Xamarin.Forms.Platform.WinRT.Tablet" />
-    
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\ARM\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.dll" target="build\win81\ARM" />
-    <file src="..\Xamarin.Forms.Maps.WinRT.Tablet\bin\ARM\$Configuration$\Xamarin.Forms.Maps.WinRT.Tablet.pri" target="build\win81\ARM" />   
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.dll" target="build\win81\ARM" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.pri" target="build\win81\ARM" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\Xamarin.Forms.Platform.WinRT.Tablet.xr.xml" target="build\win81\ARM\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\Resources.xbf" target="build\win81\ARM\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\TabletResources.xbf" target="build\win81\ARM\Xamarin.Forms.Platform.WinRT.Tablet" />
-    <file src="..\Xamarin.Forms.Platform.WinRT.Tablet\bin\ARM\$Configuration$\FormsTextBoxStyle.xbf" target="build\win81\ARM\Xamarin.Forms.Platform.WinRT.Tablet" />
-
-    <!-- Xaml Design-time Stuff -->
+    <!-- Xaml Design-time Stuff 
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\portable-win+net45+wp80+win81+wpa81\Design" />
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\MonoAndroid10\Design" />
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\Xamarin.iOS10\Design" />
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\WP80\Design" />
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\wpa81\Design" />
-    <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\win81\Design" />
     <file src="..\Xamarin.Forms.Maps.Design\bin\$Configuration$\Xamarin.Forms.Maps.Design.dll" target="lib\uap10.0\Design" />
-
-	<file src="..\Xamarin.Forms.Maps.MacOS\bin\$Configuration$\Xamarin.Forms.Maps.macOS.dll" target="lib\Xamarin.Mac" />
-	<file src="..\Xamarin.Forms.Maps\bin\$Configuration$\Xamarin.Forms.Maps.dll" target="lib\Xamarin.Mac" />
-    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\Xamarin.Mac" />
+	-->
+   
   </files>
 </package>

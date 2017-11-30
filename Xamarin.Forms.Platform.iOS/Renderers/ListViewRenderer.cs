@@ -102,10 +102,19 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void DisposeSubviews(UIView view)
 		{
-			foreach (UIView subView in view.Subviews)
-				DisposeSubviews(subView);
+			var ver = view as IVisualElementRenderer;
 
-			view.RemoveFromSuperview();
+			if (ver == null)
+			{
+				// VisualElementRenderers should implement their own dispose methods that will appropriately dispose and remove their child views.
+				// Attempting to do this work twice could cause a SIGSEGV (only observed in iOS8), so don't do this work here.
+				// Non-renderer views, such as separator lines, etc., can be removed here.
+				foreach (UIView subView in view.Subviews)
+					DisposeSubviews(subView);
+
+				view.RemoveFromSuperview();
+			}
+
 			view.Dispose();
 		}
 
@@ -666,13 +675,16 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				// We're going to base our estimate off of the first cell
-				Cell firstCell;
 				var isGroupingEnabled = List.IsGroupingEnabled;
 
 				if (isGroupingEnabled)
-					firstCell = templatedItems.ActivateContent(0, templatedItems.GetGroup(0)?.ListProxy[0]);
-				else
-					firstCell = templatedItems.ActivateContent(0, templatedItems.ListProxy[0]);
+					templatedItems = templatedItems.GetGroup(0);
+
+				object item = null;
+				if (templatedItems == null || templatedItems.ListProxy.TryGetValue(0, out item) == false)
+					return DefaultRowHeight;
+
+				var firstCell = templatedItems.ActivateContent(0, item);
 
 				// Let's skip this optimization for grouped lists. It will likely cause more trouble than it's worth.
 				if (firstCell?.Height > 0 && !isGroupingEnabled)

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Application xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Bz49307">
-	<Application.Resources>
-		<!-- Application resource dictionary -->
-		<Color x:Key="MyColor">#c2d1d3</Color>
-	</Application.Resources>
-</Application>

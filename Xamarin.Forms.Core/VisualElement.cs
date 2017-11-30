@@ -141,7 +141,6 @@ namespace Xamarin.Forms
 
 		double _mockY = -1;
 
-		ResourceDictionary _resources;
 		LayoutConstraint _selfConstraint;
 
 		internal VisualElement()
@@ -443,9 +442,18 @@ namespace Xamarin.Forms
 				BatchCommitted(this, new EventArg<VisualElement>(this));
 		}
 
+		ResourceDictionary _resources;
+		bool IResourcesProvider.IsResourcesCreated => _resources != null;
+
 		public ResourceDictionary Resources
 		{
-			get { return _resources; }
+			get {
+				if (_resources != null)
+					return _resources;
+				_resources = new ResourceDictionary();
+				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+				return _resources;
+			}
 			set
 			{
 				if (_resources == value)
@@ -727,7 +735,7 @@ namespace Xamarin.Forms
 			if (values == null)
 				return;
 
-			if (Resources == null || Resources.Count == 0)
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
 			{
 				base.OnParentResourcesChanged(values);
 				return;

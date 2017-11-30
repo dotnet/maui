@@ -7,10 +7,11 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Xamarin.Forms.Xaml.UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,6 +36,18 @@
     <NoWarn>0672;0219;0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
@@ -44,18 +57,6 @@
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Tasks.v4.0" />
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta6\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\BaseTestFixture.cs">
@@ -391,9 +392,6 @@
     <Compile Include="I8.xaml.cs">
       <DependentUpon>I8.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Issues\Bz49307.xaml.cs">
-      <DependentUpon>Bz49307.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Issues\Unreported008.xaml.cs">
       <DependentUpon>Unreported008.xaml</DependentUpon>
     </Compile>
@@ -504,7 +502,7 @@
     <Compile Include="Issues\Bz60575.xaml.cs">
       <DependentUpon>Bz60575.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ResourceLoader.xaml.cs" >
+    <Compile Include="ResourceLoader.xaml.cs">
       <DependentUpon>ResourceLoader.xaml</DependentUpon>
     </Compile>
     <Compile Include="Issues\Bz60203.xaml.cs">
@@ -512,6 +510,12 @@
     </Compile>
     <Compile Include="Issues\Bz55862.xaml.cs">
       <DependentUpon>Bz55862.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImplicitResourceDictionaries.xaml.cs">
+      <DependentUpon>ImplicitResourceDictionaries.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="AutoMergedResourceDictionaries.xaml.cs" >
+      <DependentUpon>AutoMergedResourceDictionaries.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -834,9 +838,6 @@
     <EmbeddedResource Include="I8.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="Issues\Bz49307.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Include="Issues\Unreported008.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -947,13 +948,19 @@
     <EmbeddedResource Include="Issues\Bz60575.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="ResourceLoader.xaml" >
+    <EmbeddedResource Include="ResourceLoader.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz60203.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz55862.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImplicitResourceDictionaries.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AutoMergedResourceDictionaries.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
@@ -964,13 +971,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <ItemGroup>
     <EmbeddedResource Include="Issues\Bz41296.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
@@ -991,7 +991,5 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AppResources\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

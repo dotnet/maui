@@ -40,16 +40,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 			private void GetItems()
 			{
+				var zeroGroup = new Grouping<string, GroupedItem>("Group 0", new List<GroupedItem> {
+				});
+
 				var firstGroup = new Grouping<string, GroupedItem>("Group 1", new List<GroupedItem> {
-				new GroupedItem("Group 1", "Item 1"),
-				new GroupedItem("Group 1", "Item 2")
-			});
+					new GroupedItem("Group 1", "Item 1"),
+					new GroupedItem("Group 1", "Item 2")
+				});
 
 				var secondGroup = new Grouping<string, GroupedItem>("Group 2", new List<GroupedItem> {
-				new GroupedItem("Group 2", "Item 3"),
-				new GroupedItem("Group 2", "Item 4")
-			});
+					new GroupedItem("Group 2", "Item 3"),
+					new GroupedItem("Group 2", "Item 4")
+				});
 
+				model.Add(zeroGroup);
 				model.Add(firstGroup);
 				model.Add(secondGroup);
 

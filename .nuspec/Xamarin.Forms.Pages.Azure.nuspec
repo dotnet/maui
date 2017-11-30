@@ -14,53 +14,13 @@
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms.Pages" version="$version$"/>
-        <dependency id="Newtonsoft.Json" version="6.0.4"/>
+        <dependency id="Newtonsoft.Json" version="10.0.3"/>
         <dependency id="modernhttpclient" version="2.4.2"/>
-        <dependency id="Microsoft.Net.Http" version="2.2.29" />
-        <dependency id="Microsoft.Azure.Mobile.Client" version="2.0.1" />
+        <dependency id="Microsoft.Azure.Mobile.Client" version="4.0.2" />
       </group>
     </dependencies>
-    <references>
-      <group targetFramework="portable-win+net45+wp80+win81+wpa81">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="Xamarin.iOS10">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="MonoAndroid10">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="win81">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="wpa81">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="uap10.0">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-      <group targetFramework="WP80">
-        <reference file="Xamarin.Forms.Pages.Azure.dll" />
-      </group>
-    </references>
   </metadata>
   <files>
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\portable-win+net45+wp80+win81+wpa81" />
-
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\MonoAndroid10" />
-
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\Xamarin.iOS10" />
-
-     <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\WP80" />
-    
-    <!--UWP-->
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\uap10.0" />
-    
-    <!--WinRT Phone-->
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\wpa81" />
-    
-    <!--WinRT Tablet-->
-    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\Xamarin.Forms.Pages.Azure.dll" target="lib\win81" />
-    
+    <file src="..\Xamarin.Forms.Pages.Azure\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Pages.Azure.dll" target="lib\netstandard2.0" />
   </files>
 </package>

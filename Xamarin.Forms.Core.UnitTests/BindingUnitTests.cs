@@ -2115,5 +2115,48 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual ("Baz", label.Text);
 		}
+
+		class VM57081
+		{
+			string _foo;
+			public string Foo
+			{
+				get {
+					Count++;
+					return _foo;
+				}
+				set { _foo = value; }
+			}
+
+			public int Count { get; set; }
+		}
+
+		[Test]
+		// https://bugzilla.xamarin.com/show_bug.cgi?id=57081
+		public void BindingWithSourceNotReappliedWhenBindingContextIsChanged()
+		{
+			var bindable = new MockBindable();
+			var model = new VM57081();
+			var bp = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			Assume.That(model.Count, Is.EqualTo(0));
+			bindable.SetBinding(bp, new Binding { Path = "Foo", Source = model });
+			Assume.That(model.Count, Is.EqualTo(1));
+			bindable.BindingContext = new object();
+			Assert.That(model.Count, Is.EqualTo(1));
+		}
+
+		[Test]
+		// https://bugzilla.xamarin.com/show_bug.cgi?id=57081
+		public void BindingWithSourceNotReappliedWhenParented()
+		{
+			var view = new ContentView();
+			var model = new VM57081();
+			Assume.That(model.Count, Is.EqualTo(0));
+			view.SetBinding(BindableObject.BindingContextProperty, new Binding { Path = "Foo", Source = model });
+			Assume.That(model.Count, Is.EqualTo(1));
+			var parent = new ContentView { BindingContext = new object() };
+			parent.Content = view;
+			Assert.That(model.Count, Is.EqualTo(1));
+		}
 	}
 }

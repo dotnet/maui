@@ -10,21 +10,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-#if WINDOWS_UWP
 using Xamarin.Forms.Platform.UWP;
 
-#else
-using Xamarin.Forms.Platform.WinRT;
-
-#endif
-
-#if WINDOWS_UWP
-
 namespace Xamarin.Forms.Maps.UWP
-#else
-
-namespace Xamarin.Forms.Maps.WinRT
-#endif
 {
 	public class MapRenderer : ViewRenderer<Map, MapControl>
 	{
@@ -62,11 +50,11 @@ namespace Xamarin.Forms.Maps.WinRT
 				if (mapModel.Pins.Any())
 					LoadPins();
 
-                		if (Control == null) return;
+				if (Control == null) return;
 
 				await Control.Dispatcher.RunIdleAsync(async (i) => await MoveToRegion(mapModel.LastMoveToRegion, MapAnimationKind.None));
 				await UpdateIsShowingUser();
-            		}
+			}
 		}
 
 		protected override async void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -170,7 +158,7 @@ namespace Xamarin.Forms.Maps.WinRT
 			{
 				var myGeolocator = new Geolocator();
 				if (myGeolocator.LocationStatus != PositionStatus.NotAvailable &&
-				    myGeolocator.LocationStatus != PositionStatus.Disabled)
+					myGeolocator.LocationStatus != PositionStatus.Disabled)
 				{
 					var userPosition = await myGeolocator.GetGeopositionAsync();
 					if (userPosition?.Coordinate != null)
@@ -185,7 +173,7 @@ namespace Xamarin.Forms.Maps.WinRT
 					_timer.Tick += async (s, o) => await UpdateIsShowingUser(moveToLocation: false);
 					_timer.Interval = TimeSpan.FromSeconds(15);
 				}
-				
+
 				if (!_timer.IsEnabled)
 					_timer.Start();
 			}
@@ -216,7 +204,6 @@ namespace Xamarin.Forms.Maps.WinRT
 		{
 			if (Control == null || Element == null)
 				return;
-		
 			try
 			{
 				Geopoint nw, se = null;
@@ -229,12 +216,12 @@ namespace Xamarin.Forms.Maps.WinRT
 					var center = new Position(boundingBox.Center.Latitude, boundingBox.Center.Longitude);
 					var latitudeDelta = Math.Abs(nw.Position.Latitude - se.Position.Latitude);
 					var longitudeDelta = Math.Abs(nw.Position.Longitude - se.Position.Longitude);
-                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-                    {
+					await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+					{
 						Element.SetVisibleRegion(new MapSpan(center, latitudeDelta, longitudeDelta));
-                    });
+					});
 				}
-            }
+			}
 			catch (Exception)
 			{
 				return;
@@ -297,7 +284,6 @@ namespace Xamarin.Forms.Maps.WinRT
 			}
 		}
 
-#if WINDOWS_UWP
 		void UpdateHasZoomEnabled()
 		{
 			Control.ZoomInteractionMode = Element.HasZoomEnabled
@@ -309,14 +295,5 @@ namespace Xamarin.Forms.Maps.WinRT
 		{
 			Control.PanInteractionMode = Element.HasScrollEnabled ? MapPanInteractionMode.Auto : MapPanInteractionMode.Disabled;
 		}
-#else
-		void UpdateHasZoomEnabled()
-		{
-		}
-
-		void UpdateHasScrollEnabled()
-		{
-		}
-#endif
 	}
 }

@@ -455,7 +455,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Application/&lt;SavePropertiesAsync&gt;d__52))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Application/&lt;SavePropertiesAsync&gt;d__54))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>

@@ -658,35 +658,5 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="WinPhone">
-      <MemberSignature Language="C#" Value="public const string WinPhone;" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal string WinPhone" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The string "WinPhone", representing the Windows Mobile operating system.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="WinRT">
-      <MemberSignature Language="C#" Value="public const string WinRT;" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal string WinRT" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>The string "WinRT", representing the Windows Runtime platform.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
   </Members>
 </Type>

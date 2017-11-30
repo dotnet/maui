@@ -9,7 +9,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Xamarin.Forms.Xaml</RootNamespace>
     <AssemblyName>xamlg</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,7 +50,9 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
       <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>

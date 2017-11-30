@@ -75,14 +75,7 @@ namespace Xamarin.Forms.Controls
 
 			static void TrackOnInsights (Page page)
 			{
-				if (Insights.IsInitialized) {
-					Insights.Track ("Navigation", new Dictionary<string, string> {
-						{
-							"Pushing",
-							page.GetType ().Name
-						}
-					});
-				}
+				
 			}
 
 			Page ActivatePage (Type type)
@@ -218,9 +211,7 @@ namespace Xamarin.Forms.Controls
 			default:
 				page.Title = "Test Cases";
 				break;
-			case Device.WinPhone:
 			case Device.UWP:
-			case Device.WinRT:
 				page.Title = "Tests";
 				break;
 			}

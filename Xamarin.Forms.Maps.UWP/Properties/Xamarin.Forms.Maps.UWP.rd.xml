@@ -25,7 +25,7 @@
     http://go.microsoft.com/fwlink/?LinkID=391919
 -->
 <Directives xmlns="http://schemas.microsoft.com/netfx/2013/01/metadata">
-  <Library Name="Xamarin.Forms.Maps.WindowsUniversal">
+  <Library Name="Xamarin.Forms.Maps.UWP">
 
   	<!-- add directives for your library here -->
 

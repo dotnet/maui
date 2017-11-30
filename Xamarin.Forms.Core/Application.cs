@@ -21,7 +21,6 @@ namespace Xamarin.Forms
 
 		Page _mainPage;
 
-		ResourceDictionary _resources;
 		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
 		protected Application()
@@ -134,9 +133,19 @@ namespace Xamarin.Forms
 			_appIndexProvider = provider;
 		}
 
+		ResourceDictionary _resources;
+		bool IResourcesProvider.IsResourcesCreated => _resources != null;
+
 		public ResourceDictionary Resources
 		{
-			get { return _resources; }
+			get {
+				if (_resources != null)
+					return _resources;
+
+				_resources = new ResourceDictionary();
+				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+				return _resources;
+			}
 			set
 			{
 				if (_resources == value)
@@ -208,7 +217,7 @@ namespace Xamarin.Forms
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
 		{
-			if (Resources == null || Resources.Count == 0)
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
 			{
 				base.OnParentResourcesChanged(values);
 				return;

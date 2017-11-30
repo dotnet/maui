@@ -1,7 +1,8 @@
 namespace Xamarin.Forms
 {
-	internal interface IResourcesProvider
+	interface IResourcesProvider
 	{
+		bool IsResourcesCreated { get; }
 		ResourceDictionary Resources { get; set; }
 	}
 }

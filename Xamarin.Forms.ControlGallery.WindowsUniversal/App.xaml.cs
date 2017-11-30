@@ -66,7 +66,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
 				Forms.Init (e);
-				FormsMaps.Init (Controls.App.Config["UWPMapsAuthKey"]);
+				//FormsMaps.Init (Controls.App.Config["UWPMapsAuthKey"]);
 
 				// Place the frame in the current Window
 				Window.Current.Content = rootFrame;

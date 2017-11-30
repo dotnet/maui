@@ -9,13 +9,7 @@
           <AttributeName>System.Reflection.AssemblyCompany("Xamarin Inc.")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyConfiguration("")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2016")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyDescription("")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyCopyright("Copyright © Xamarin Inc. 2013-2017")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyFileVersion("2.0.0.0")</AttributeName>
@@ -24,13 +18,7 @@
           <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Forms")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyTitle("Xamarin.Forms.Maps")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Reflection.AssemblyTrademark("")</AttributeName>
-        </Attribute>
-        <Attribute>
-          <AttributeName>System.Resources.NeutralResourcesLanguage("en")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
@@ -39,7 +27,7 @@
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.Versioning.TargetFramework(".NETPortable,Version=v4.5,Profile=Profile259", FrameworkDisplayName=".NET Portable Subset")</AttributeName>
+          <AttributeName>System.Runtime.Versioning.TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName="")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>Xamarin.Forms.Internals.Preserve</AttributeName>

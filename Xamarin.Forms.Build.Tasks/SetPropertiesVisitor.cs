@@ -11,6 +11,9 @@ using Mono.Cecil.Rocks;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
+
 namespace Xamarin.Forms.Build.Tasks
 {
 	class SetPropertiesVisitor : IXamlNodeVisitor
@@ -125,41 +128,9 @@ namespace Xamarin.Forms.Build.Tasks
 				var parentVar = Context.Variables[(IElementNode)parentNode];
 				string contentProperty;
 
-				// Implicit Style Resource in a ResourceDictionary
-				if (IsResourceDictionary((IElementNode)parentNode)
-					&& node.XmlType.Name == "Style"
-					&& !node.Properties.ContainsKey(XmlName.xKey)) {
-					Context.IL.Emit(OpCodes.Ldloc, parentVar);
-					Context.IL.Emit(OpCodes.Ldloc, Context.Variables[node]);
-					Context.IL.Emit(OpCodes.Callvirt,
-						Module.ImportReference(
-							Module.ImportReference(typeof(ResourceDictionary))
-								.Resolve()
-								.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 1)));
-				}
-				// Resource without a x:Key in a ResourceDictionary
-				else if (IsResourceDictionary((IElementNode)parentNode)
-						 && !node.Properties.ContainsKey(XmlName.xKey)) {
-					throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", node);
-				}
-				// Resource in a ResourceDictionary
-				else if (IsResourceDictionary((IElementNode)parentNode)
-						 && node.Properties.ContainsKey(XmlName.xKey)) {
-//					IL_0013: ldloc.0
-//					IL_0014:  ldstr "key"
-//					IL_0019:  ldstr "foo"
-//					IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
-					Context.IL.Emit(OpCodes.Ldloc, parentVar);
-					Context.IL.Emit(OpCodes.Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
-					var varDef = Context.Variables[node];
-					Context.IL.Emit(OpCodes.Ldloc, varDef);
-					if (varDef.VariableType.IsValueType)
-						Context.IL.Emit(OpCodes.Box, Module.ImportReference(varDef.VariableType));
-					Context.IL.Emit(OpCodes.Callvirt,
-						Module.ImportReference(
-							Module.ImportReference(typeof(ResourceDictionary))
-								.Resolve()
-								.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 2)));
+				if (CanAddToResourceDictionary(parentVar.VariableType, node, node, Context)) {
+					Context.IL.Emit(Ldloc, parentVar);
+					Context.IL.Append(AddToResourceDictionary(node, node, Context));
 				}
 				// Collection element, implicit content, or implicit collection element.
 				else if (parentVar.VariableType.ImplementsInterface(Module.ImportReference(typeof (IEnumerable))) && parentVar.VariableType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).Any()) {
@@ -205,6 +176,10 @@ namespace Xamarin.Forms.Build.Tasks
 				TypeReference propertyType;
 				Context.IL.Append(GetPropertyValue(parent, parentList.XmlName, Context, node, out propertyType));
 
+				if (CanAddToResourceDictionary(propertyType, node, node, Context)) {
+					Context.IL.Append(AddToResourceDictionary(node, node, Context));
+					return;
+				} 
 				var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
 				var adderRef = Module.ImportReference(adderTuple.Item1);
 				adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
@@ -222,13 +197,6 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public void Visit(ListNode node, INode parentNode)
 		{
-		}
-
-		bool IsResourceDictionary(IElementNode node)
-		{
-			var parentVar = Context.Variables[(IElementNode)node];
-			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
 		}
 
 		public static bool TryGetPropertyName(INode node, INode parentNode, out XmlName name)
@@ -1173,6 +1141,24 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
+		static bool CanAddToResourceDictionary(TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
+		{
+			if (   collectionType.FullName != "Xamarin.Forms.ResourceDictionary"
+			    && collectionType.Resolve().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
+				return false;
+
+			if (node.Properties.ContainsKey(XmlName.xKey))
+				return true;
+
+			if (node.XmlType.Name == "Style")
+				return true;
+
+			if (node.XmlType.Name == "ResourceDictionary")
+				return true;
+
+			throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
+		}
+
 		static IEnumerable<Instruction> Add(VariableDefinition parent, XmlName propertyName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
@@ -1182,6 +1168,12 @@ namespace Xamarin.Forms.Build.Tasks
 			TypeReference propertyType;
 			foreach (var instruction in GetPropertyValue(parent, propertyName, context, iXmlLineInfo, out propertyType))
 				yield return instruction;
+
+			if (CanAddToResourceDictionary(propertyType, elementNode, iXmlLineInfo, context)) {
+				foreach (var instruction in AddToResourceDictionary(elementNode, iXmlLineInfo, context))
+					yield return instruction;
+				yield break;
+			}
 
 			var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, module).FirstOrDefault();
 			var adderRef = module.ImportReference(adderTuple.Item1);
@@ -1197,6 +1189,39 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Callvirt, adderRef);
 			if (adderRef.ReturnType.FullName != "System.Void")
 				yield return Instruction.Create(OpCodes.Pop);
+		}
+
+		static IEnumerable<Instruction> AddToResourceDictionary(IElementNode node, IXmlLineInfo lineInfo, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+
+			if (node.Properties.ContainsKey(XmlName.xKey)) {
+//				IL_0014:  ldstr "key"
+//				IL_0019:  ldstr "foo"
+//				IL_001e:  callvirt instance void class [Xamarin.Forms.Core]Xamarin.Forms.ResourceDictionary::Add(string, object)
+				yield return Create(Ldstr, (node.Properties[XmlName.xKey] as ValueNode).Value as string);
+				var varDef = context.Variables[node];
+				yield return Create(Ldloc, varDef);
+				if (varDef.VariableType.IsValueType)
+					yield return Create(Box, module.ImportReference(varDef.VariableType));
+				yield return Create(Callvirt,
+					module.ImportReference(
+						module.ImportReference(typeof(ResourceDictionary))
+							.Resolve()
+							.Methods.Single(md => md.Name == "Add" && md.Parameters.Count == 2)));
+				yield break;
+			}
+
+			var nodeTypeRef = node.XmlType.GetTypeReference(module, lineInfo);
+			yield return Create(Ldloc, context.Variables[node]);
+			yield return Create(Callvirt,
+				module.ImportReference(
+					module.ImportReference(typeof(ResourceDictionary))
+						.Resolve()
+						.Methods.Single(md => md.Name == "Add"
+									 && md.Parameters.Count == 1
+									 && TypeRefComparer.Default.Equals(md.Parameters[0].ParameterType, nodeTypeRef))));
+			yield break;
 		}
 
 		public static TypeReference GetParameterType(ParameterDefinition param)

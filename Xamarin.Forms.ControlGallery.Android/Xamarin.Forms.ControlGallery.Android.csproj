@@ -119,9 +119,6 @@
       <HintPath>..\packages\Xamarin.GooglePlayServices.Tasks.42.1021.1\lib\MonoAndroid70\Xamarin.GooglePlayServices.Tasks.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Xamarin.Insights">
-      <HintPath>..\packages\Xamarin.Insights.1.12.3\lib\MonoAndroid10\Xamarin.Insights.dll</HintPath>
-    </Reference>
     <Reference Include="Xamarin.Android.Support.Annotations">
       <HintPath>..\packages\Xamarin.Android.Support.Annotations.25.4.0.2\lib\MonoAndroid70\Xamarin.Android.Support.Annotations.dll</HintPath>
     </Reference>
@@ -178,7 +175,7 @@
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="FormsAppCompatActivity.cs" />
     <Compile Include="PreApplicationClassActivity.cs" />
-    <Compile Include="Properties\MapsKey.cs" />
+	<Compile Include="Properties\MapsKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="CustomRenderers.cs" />
@@ -263,7 +260,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
     <AndroidResource Include="Resources\layout\Toolbar.axml">
       <SubType>Designer</SubType>
@@ -308,7 +304,6 @@
     </CreateItem>
     <Copy SourceFiles="@(MapsKey)" DestinationFiles="Properties\MapsKey.cs" Condition="!Exists('Properties\MapsKey.cs')" />
   </Target>
-  <Import Project="..\packages\Xamarin.Insights.1.12.3\build\MonoAndroid10\Xamarin.Insights.targets" Condition="Exists('..\packages\Xamarin.Insights.1.12.3\build\MonoAndroid10\Xamarin.Insights.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

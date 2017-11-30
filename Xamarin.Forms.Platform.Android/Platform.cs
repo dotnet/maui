@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		readonly bool _embedded;
 
-		internal Platform(Context context, bool embedded = false)
+		internal Platform(Context context, bool embedded)
 		{
 			_embedded = embedded;
 			_context = context;
@@ -300,10 +300,11 @@ namespace Xamarin.Forms.Platform.Android
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
 		}
 
-		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRenderer(VisualElement, Context) instead.")]
+		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRendererWithContext(VisualElement, Context) instead.")]
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			return CreateRenderer(element, Forms.Context);
+			// If there's a previewer context set, use that when created 
+			return CreateRenderer(element, GetPreviewerContext(element) ?? Forms.Context);
 		}
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
@@ -313,6 +314,13 @@ namespace Xamarin.Forms.Platform.Android
 			renderer.SetElement(element);
 
 			return renderer;
+		}
+
+		public static IVisualElementRenderer CreateRendererWithContext(VisualElement element, Context context)
+		{
+			// This is an interim method to allow public access to CreateRenderer(element, context), which we 
+			// can't make public yet because it will break the previewer
+			return CreateRenderer(element, context);
 		}
 
 		public static IVisualElementRenderer GetRenderer(VisualElement bindable)
@@ -1070,6 +1078,38 @@ namespace Xamarin.Forms.Platform.Android
 		}
 
 		static int s_id = 0x00000400;
+
+		#region Previewer Stuff
+		
+		internal static readonly BindableProperty PageContextProperty = 
+			BindableProperty.CreateAttached("PageContext", typeof(Context), typeof(Platform), null);
+
+		internal Platform(Context context) : this(context, false)
+		{
+			// we have this overload instead of using a default value for 
+			// the 'embedded' bool parameter so the previewer can find it via reflection
+		}
+
+		internal static void SetPageContext(BindableObject bindable, Context context)		
+ 		{
+			// Set a context for this page and its child controls
+			bindable.SetValue(PageContextProperty, context);
+		}
+		
+		static Context GetPreviewerContext(Element element)
+		{
+			// Walk up the tree and find the Page this element is hosted in
+			Element parent = element;
+			while (!Application.IsApplicationOrNull(parent.RealParent))
+			{
+				parent = parent.RealParent;
+			}
+
+			// If a page is found, return the PageContext set by the previewer for that page (if any)
+			return (parent as Page)?.GetValue(PageContextProperty) as Context;
+		}
+
+		#endregion
 
 		internal class DefaultRenderer : VisualElementRenderer<View>
 		{

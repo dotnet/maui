@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		public void TestResourceNotFound ()
 		{
 			var view = new View ();
-			var resource = view.Resources!= null ? view.Resources ["foo"] : null;
+			var resource = ((IResourcesProvider)view).IsResourcesCreated ? view.Resources ["foo"] : null;
 			Assert.Null (resource);
 		}
 

@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			button = new Button ().LoadFromXaml (xaml);
 			Assert.AreEqual (44, button.HeightRequest);
 
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
+			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.UWP;
 			button = new Button ().LoadFromXaml (xaml);
 			Assert.AreEqual (44, button.HeightRequest);
 		}

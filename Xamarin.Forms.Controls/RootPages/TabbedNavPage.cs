@@ -26,8 +26,8 @@ namespace Xamarin.Forms.Controls
 				Title = "Page0", 
 			};
 			
-			Children.add(navpage);
-			Children.add(new HomeButton ());
+			//Children.add(navpage);
+			//Children.add(new HomeButton ());
 		}
 	}
 }

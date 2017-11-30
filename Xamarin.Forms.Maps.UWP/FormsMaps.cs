@@ -1,10 +1,4 @@
-﻿#if WINDOWS_UWP
-using Xamarin.Forms.Maps.UWP;
-
-#else
-using Xamarin.Forms.Maps.WinRT;
-
-#endif
+﻿using Xamarin.Forms.Maps.UWP;
 
 namespace Xamarin
 {

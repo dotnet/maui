@@ -77,13 +77,13 @@ namespace Xamarin.Forms.Pages
 			_expression.Apply(fromTarget);
 		}
 
-		internal override async void Apply(object newContext, BindableObject bindObj, BindableProperty targetProperty)
+		internal override async void Apply(object newContext, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged)
 		{
 			var view = bindObj as VisualElement;
 			if (view == null)
 				throw new InvalidOperationException();
 
-			base.Apply(newContext, bindObj, targetProperty);
+			base.Apply(newContext, bindObj, targetProperty, fromBindingContextChanged: fromBindingContextChanged);
 
 			Element dataSourceParent = await FindDataSourceParentAsync(view);
 
@@ -116,9 +116,9 @@ namespace Xamarin.Forms.Pages
 			return base.GetTargetValue(value, sourcePropertyType);
 		}
 
-		internal override void Unapply()
+		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			base.Unapply();
+			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
 			var dataSourceProviderer = (IDataSourceProvider)_dataSourceRef?.Target;
 			dataSourceProviderer?.UnmaskKey(_path);

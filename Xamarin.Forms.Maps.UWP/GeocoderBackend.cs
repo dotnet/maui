@@ -4,13 +4,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
 
-#if WINDOWS_UWP
-
 namespace Xamarin.Forms.Maps.UWP
-#else
-
-namespace Xamarin.Forms.Maps.WinRT
-#endif
 {
 	internal class GeocoderBackend
 	{

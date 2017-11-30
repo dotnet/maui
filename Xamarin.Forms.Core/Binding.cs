@@ -114,10 +114,15 @@ namespace Xamarin.Forms
 			_expression.Apply(fromTarget);
 		}
 
-		internal override void Apply(object newContext, BindableObject bindObj, BindableProperty targetProperty)
+		internal override void Apply(object newContext, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
 		{
 			object src = _source;
-			base.Apply(src ?? newContext, bindObj, targetProperty);
+			var isApplied = IsApplied;
+
+			base.Apply(src ?? newContext, bindObj, targetProperty, fromBindingContextChanged: fromBindingContextChanged);
+
+			if (src != null && isApplied && fromBindingContextChanged)
+				return;
 
 			object bindingContext = src ?? Context ?? newContext;
 			if (_expression == null && bindingContext != null)
@@ -147,9 +152,12 @@ namespace Xamarin.Forms
 			return base.GetTargetValue(value, sourcePropertyType);
 		}
 
-		internal override void Unapply()
+		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			base.Unapply();
+			if (Source != null && fromBindingContextChanged && IsApplied)
+				return;
+			
+			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
 			if (_expression != null)
 				_expression.Unapply();

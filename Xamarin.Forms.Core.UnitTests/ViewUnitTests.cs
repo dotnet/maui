@@ -137,27 +137,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestOnPlatformWinPhone ()
-		{
-			var view = new View ();
-
-			bool ios = false;
-			bool android = false;
-			bool winphone = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
-
-			Device.OnPlatform (
-				iOS: () => ios = true,
-				Android: () => android = true,
-				WinPhone: () => winphone = true);
-
-			Assert.False (ios);
-			Assert.False (android);
-			Assert.True (winphone);
-		}
-
-		[Test]
 		public void TestOnPlatformDefault ()
 		{
 			var view = new View ();
@@ -214,21 +193,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			Device.OnPlatform (
 				iOS: () => { },
 				WinPhone: () => { },
-				Default:() => defaultExecuted = true);
-
-			Assert.True (defaultExecuted);
-		}
-
-		[Test]
-		public void TestDefaultOnWinPhone ()
-		{
-			bool defaultExecuted = false;
-
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
-
-			Device.OnPlatform (
-				iOS: () => { },
-				Android: () => { },
 				Default:() => defaultExecuted = true);
 
 			Assert.True (defaultExecuted);
@@ -432,9 +396,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestOnPlatformGeneric ()
 		{
-			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.WinPhone;
-			Assert.AreEqual (3, Device.OnPlatform (1, 2, 3));
-			
 			((MockPlatformServices)Device.PlatformServices).RuntimePlatform = Device.iOS;
 			Assert.AreEqual (1, Device.OnPlatform (1, 2, 3));
 
