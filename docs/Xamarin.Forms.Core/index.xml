@@ -3062,7 +3062,7 @@
         <Link Type="Xamarin.Forms.PlatformConfiguration.macOSSpecific.TabbedPage" Member="M:Xamarin.Forms.PlatformConfiguration.macOSSpecific.TabbedPage.ShowTabsOnNavigation(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.macOS,Xamarin.Forms.TabbedPage})" />
       </Member>
     </ExtensionMethod>
-	<ExtensionMethod>
+    <ExtensionMethod>
       <Targets>
         <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
       </Targets>
@@ -3890,50 +3890,6 @@
           <summary>To be added.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement" Member="M:Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement.SetToolTip(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Tizen,Xamarin.Forms.VisualElement},System.String)" />
-      </Member>
-    </ExtensionMethod>
-    <ExtensionMethod>
-      <Targets>
-        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
-      </Targets>
-      <Member MemberName="CollapsedPaneWidth">
-        <MemberSignature Language="C#" Value="public static double CollapsedPaneWidth (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt; config);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CollapsedPaneWidth(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.MasterDetailPage&gt; config) cil managed" />
-        <MemberType>ExtensionMethod</MemberType>
-        <ReturnValue>
-          <ReturnType>System.Double</ReturnType>
-        </ReturnValue>
-        <Parameters>
-          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;" RefType="this" />
-        </Parameters>
-        <Docs>
-          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-          <summary>Returns the width of the master pane when it is collapsed.</summary>
-        </Docs>
-        <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.CollapsedPaneWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage})" />
-      </Member>
-    </ExtensionMethod>
-    <ExtensionMethod>
-      <Targets>
-        <Target Type="T:Xamarin.Forms.IPlatformElementConfiguration`2" />
-      </Targets>
-      <Member MemberName="CollapsedPaneWidth">
-        <MemberSignature Language="C#" Value="public static Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt; CollapsedPaneWidth (this Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt; config, double value);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.MasterDetailPage&gt; CollapsedPaneWidth(class Xamarin.Forms.IPlatformElementConfiguration`2&lt;class Xamarin.Forms.PlatformConfiguration.Windows, class Xamarin.Forms.MasterDetailPage&gt; config, float64 value) cil managed" />
-        <MemberType>ExtensionMethod</MemberType>
-        <ReturnValue>
-          <ReturnType>Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;</ReturnType>
-        </ReturnValue>
-        <Parameters>
-          <Parameter Name="config" Type="Xamarin.Forms.IPlatformElementConfiguration&lt;Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage&gt;" RefType="this" />
-          <Parameter Name="value" Type="System.Double" />
-        </Parameters>
-        <Docs>
-          <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-          <param name="value">The new property value to assign.</param>
-          <summary>Sets the width of a pane when it is collapsed.</summary>
-        </Docs>
-        <Link Type="Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage" Member="M:Xamarin.Forms.PlatformConfiguration.WindowsSpecific.MasterDetailPage.CollapsedPaneWidth(Xamarin.Forms.IPlatformElementConfiguration{Xamarin.Forms.PlatformConfiguration.Windows,Xamarin.Forms.MasterDetailPage},System.Double)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
