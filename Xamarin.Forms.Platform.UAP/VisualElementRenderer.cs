@@ -61,10 +61,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		VisualElementPackager Packager { get; set; }
 
-		public void Dispose()
-		{
-			Dispose(true);
-		}
+	
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -218,6 +215,12 @@ namespace Xamarin.Forms.Platform.UWP
 			Element.IsInNativeLayout = false;
 
 			return finalSize;
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		protected virtual void Dispose(bool disposing)

@@ -267,7 +267,12 @@ namespace Xamarin.Forms.Platform.UWP
 				_container.Children.Remove(previousRenderer.ContainerElement);
 
 				if (popping)
+				{
 					previousPage.Cleanup();
+					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
+					// page will leak 
+					previousPage.Parent = null;
+				}
 			}
 
 			newPage.Layout(ContainerBounds);

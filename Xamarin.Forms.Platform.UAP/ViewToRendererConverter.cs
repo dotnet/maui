@@ -75,7 +75,12 @@ namespace Xamarin.Forms.Platform.UWP
 			protected override Windows.Foundation.Size MeasureOverride(Windows.Foundation.Size availableSize)
 			{
 				Size request = _view.Measure(availableSize.Width, availableSize.Height, MeasureFlags.IncludeMargins).Request;
-				
+
+				if (request.Height < 0)
+				{
+					request.Height = availableSize.Height;
+				}
+
 				Windows.Foundation.Size result;
 				if (_view.HorizontalOptions.Alignment == LayoutAlignment.Fill && !double.IsInfinity(availableSize.Width) && availableSize.Width != 0)
 				{

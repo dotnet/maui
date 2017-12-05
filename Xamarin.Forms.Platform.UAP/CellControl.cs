@@ -37,14 +37,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Unloaded += (sender, args) =>
 			{
-				if (Cell != null)
-					Cell.SendDisappearing();
+				Cell?.SendDisappearing();
 			};
 
 			_propertyChangedHandler = OnCellPropertyChanged;
 		}
 
-		public Cell Cell
+		public Cell Cell		
 		{
 			get { return (Cell)GetValue(CellProperty); }
 			set { SetValue(CellProperty, value); }
@@ -178,11 +177,6 @@ namespace Xamarin.Forms.Platform.UWP
 				OpenContextMenu();
 		}
 
-		void OnOpenContext(object sender, RightTappedRoutedEventArgs e)
-		{
-			FlyoutBase.ShowAttachedFlyout(CellContent);
-		}
-
 		void OpenContextMenu()
 		{
 			if (FlyoutBase.GetAttachedFlyout(CellContent) == null)
@@ -203,6 +197,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var cell = newContext as Cell;
 
+			if (cell != null)
+			{
+				Cell = cell;
+				return;
+			}
+
 			if (ReferenceEquals(Cell?.BindingContext, newContext))
 				return;
 
@@ -222,7 +222,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (template != null)
 				{
-					cell = template.CreateContent() as Cell;
+					if (lv.IsGroupingEnabled)
+					{
+						cell = isGroupHeader 
+							? RealizeGroupedHeaderTemplate(lv.TemplatedItems, template, newContext) 
+							: RealizeGroupedItemTemplate(lv.TemplatedItems, template, newContext);
+					}
+					else
+					{
+						cell = RealizeItemTemplate(lv.TemplatedItems, template, newContext);
+					}
 				}
 				else
 				{
@@ -318,7 +327,7 @@ namespace Xamarin.Forms.Platform.UWP
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
 			return new FrameworkElementAutomationPeer(this);
-    }
+		}
 
 		void UpdateFlowDirection(Cell newCell)
 		{
@@ -326,6 +335,44 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			this.UpdateFlowDirection(newCell.Parent as VisualElement);
+		}
+
+		static Cell RealizeGroupedHeaderTemplate(TemplatedItemsList<ItemsView<Cell>, Cell> templatedItems, 
+			ElementTemplate template, object context)
+		{
+			var index = templatedItems.GetGlobalIndexOfGroup(context);
+			if (index > -1)
+			{
+				return templatedItems[index];
+			}
+
+			return template.CreateContent() as Cell;
+		}
+
+		static Cell RealizeGroupedItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
+			ElementTemplate template, object context)
+		{
+			var indices = templatedItems.GetGroupAndIndexOfItem(context);
+
+			if (indices.Item1 > -1 && indices.Item2 > -1)
+			{
+				var group = templatedItems.GetGroup(indices.Item1);
+				return group[indices.Item2];
+			}
+
+			return template.CreateContent() as Cell;
+		}
+
+		static Cell RealizeItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
+			ElementTemplate template, object context)
+		{
+			var index = templatedItems.GetGlobalIndexOfItem(context);
+			if (index > -1)
+			{
+				return templatedItems[index];
+			}
+
+			return template.CreateContent() as Cell;
 		}
 	}
 }
