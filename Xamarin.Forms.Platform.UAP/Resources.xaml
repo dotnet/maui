@@ -320,7 +320,7 @@
 
 			<TextBlock Grid.Column="0" Text="{Binding Text}" VerticalAlignment="Center" Style="{ThemeResource BaseTextBlockStyle}" />
 
-			<ToggleSwitch Grid.Column="1" IsOn="{Binding On, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" FlowDirection="{Binding FlowDirection, ElementName=ParentGrid }" />
+			<ToggleSwitch Grid.Column="1" IsOn="{Binding On, Mode=TwoWay}" OnContent="" OffContent="" VerticalAlignment="Center" FlowDirection="{Binding FlowDirection, ElementName=ParentGrid }" IsEnabled="{Binding IsEnabled}" />
 		</Grid>
 	</DataTemplate>
 
