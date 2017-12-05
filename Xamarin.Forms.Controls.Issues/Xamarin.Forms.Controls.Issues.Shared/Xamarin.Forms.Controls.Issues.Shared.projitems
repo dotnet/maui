@@ -620,6 +620,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ButtonFastRendererTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DesktopSupportTestPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58779.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51825.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />
   </ItemGroup>
   <ItemGroup>
