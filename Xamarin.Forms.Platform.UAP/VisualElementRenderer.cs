@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (Children.Count == 0)
+			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
 
 			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
