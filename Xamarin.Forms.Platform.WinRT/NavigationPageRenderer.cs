@@ -217,6 +217,8 @@ namespace Xamarin.Forms.Platform.WinRT
 			_container.PointerPressed -= OnPointerPressed;
 			_container.SizeChanged -= OnNativeSizeChanged;
 			_container.BackClicked -= OnBackClicked;
+			_container.Loaded -= OnLoaded;
+			_container.Unloaded -= OnUnloaded;
 
 #if WINDOWS_UWP
 			if (_parentTabbedPage != null)
@@ -417,7 +419,6 @@ namespace Xamarin.Forms.Platform.WinRT
 					_currentPage.Cleanup();
 
 				_container.Content = null;
-
 				_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 			}
 

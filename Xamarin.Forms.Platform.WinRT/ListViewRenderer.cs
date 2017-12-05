@@ -31,6 +31,7 @@ namespace Xamarin.Forms.Platform.WinRT
 		bool _itemWasClicked;
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
+		bool _disposed;
 
 
 #if !WINDOWS_UWP
@@ -140,28 +141,37 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		protected override void Dispose(bool disposing)
 		{
-			if (List != null)
+			if (_disposed)
 			{
-				if (_subscribedToTapped)
-				{
-					_subscribedToTapped = false;
-					List.Tapped -= ListOnTapped;
-				}
-				if (_subscribedToItemClick)
-				{
-					_subscribedToItemClick = false;
-					List.ItemClick -= OnListItemClicked;
-				}
-				List.SelectionChanged -= OnControlSelectionChanged;
-
-				List.DataContext = null;
-				List = null;
+				return;
 			}
 
-			if (_zoom != null)
+			_disposed = true;
+
+			if (disposing)
 			{
-				_zoom.ViewChangeCompleted -= OnViewChangeCompleted;
-				_zoom = null;
+				if (List != null)
+				{
+					if (_subscribedToTapped)
+					{
+						_subscribedToTapped = false;
+						List.Tapped -= ListOnTapped;
+					}
+					if (_subscribedToItemClick)
+					{
+						_subscribedToItemClick = false;
+						List.ItemClick -= OnListItemClicked;
+					}
+					List.SelectionChanged -= OnControlSelectionChanged;
+					List.DataContext = null;
+					List = null;
+				}
+
+				if (_zoom != null)
+				{
+					_zoom.ViewChangeCompleted -= OnViewChangeCompleted;
+					_zoom = null;
+				}
 			}
 
 			base.Dispose(disposing);
