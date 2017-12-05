@@ -16,6 +16,7 @@ namespace Xamarin.Forms
         public const string UWP = "UWP";
         public const string macOS = "macOS";
         public const string GTK = "GTK";
+        public const string Tizen = "Tizen";
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static DeviceInfo info;

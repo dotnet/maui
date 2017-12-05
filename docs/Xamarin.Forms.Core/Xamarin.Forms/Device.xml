@@ -643,6 +643,21 @@ button.HeightRequest = Device.OnPlatform (20,30,30);
         <remarks>While the callback returns <see langword="true" />, the timer will keep recurring.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Tizen">
+      <MemberSignature Language="C#" Value="public const string Tizen;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Tizen" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="UWP">
       <MemberSignature Language="C#" Value="public const string UWP;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string UWP" />

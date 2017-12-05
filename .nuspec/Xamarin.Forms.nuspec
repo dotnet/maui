@@ -46,7 +46,7 @@
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\netstandard2.0" />
-    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandar2.0" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard2.0" />
@@ -77,7 +77,6 @@
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\uap10.0\Design" />-->
 
     <!-- XamlC stuffs -->
-  
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.dll" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Mdb.dll" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Pdb.dll" target="build\netstandard2.0" />
