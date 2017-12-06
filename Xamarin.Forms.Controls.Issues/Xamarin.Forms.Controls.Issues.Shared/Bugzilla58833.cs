@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Controls.Issues
 			_resultLabel.Text = ItemSelectedSuccess;
 		}
 
-#if UITEST
+#if UITEST && __IOS__
 		protected override bool Isolate => true;
 
 		[Test]

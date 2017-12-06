@@ -267,7 +267,12 @@ namespace Xamarin.Forms.Platform.UWP
 				_container.Children.Remove(previousRenderer.ContainerElement);
 
 				if (popping)
+				{
 					previousPage.Cleanup();
+					// Un-parent the page; otherwise the Resources Changed Listeners won't be unhooked and the 
+					// page will leak 
+					previousPage.Parent = null;
+				}
 			}
 
 			newPage.Layout(ContainerBounds);
@@ -304,65 +309,6 @@ namespace Xamarin.Forms.Platform.UWP
 			Page last = _navModel.Roots.Last();
 			if (last != null)
 				_toolbarTracker.Target = last;
-		}
-
-		static async void OnPageAlert(object sender, AlertArguments options)
-		{
-			string content = options.Message ?? options.Title ?? string.Empty;
-
-			MessageDialog dialog;
-			if (options.Message == null || options.Title == null)
-				dialog = new MessageDialog(content);
-			else
-				dialog = new MessageDialog(options.Message, options.Title);
-
-			if (options.Accept != null)
-			{
-				dialog.Commands.Add(new UICommand(options.Accept));
-				dialog.DefaultCommandIndex = 0;
-			}
-
-			if (options.Cancel != null)
-			{
-				dialog.Commands.Add(new UICommand(options.Cancel));
-				dialog.CancelCommandIndex = (uint)dialog.Commands.Count - 1;
-			}
-
-			if (Device.IsInvokeRequired)
-			{
-				Device.BeginInvokeOnMainThread(async () =>
-				{
-					IUICommand command = await dialog.ShowAsyncQueue();
-					options.SetResult(command.Label == options.Accept);
-				});
-			}
-			else
-			{
-				IUICommand command = await dialog.ShowAsyncQueue();
-				options.SetResult(command.Label == options.Accept);
-			}
-		}
-	}
-
-	// refer to http://stackoverflow.com/questions/29209954/multiple-messagedialog-app-crash for why this is used
-	// in order to allow for multiple MessageDialogs, or a crash occurs otherwise
-	public static class MessageDialogExtensions
-	{
-		static TaskCompletionSource<MessageDialog> _currentDialogShowRequest;
-
-		public static async Task<IUICommand> ShowAsyncQueue(this MessageDialog dialog)
-		{
-			while (_currentDialogShowRequest != null)
-			{
-				await _currentDialogShowRequest.Task;
-			}
-
-			TaskCompletionSource<MessageDialog> request = _currentDialogShowRequest = new TaskCompletionSource<MessageDialog>();
-			IUICommand result = await dialog.ShowAsync();
-			_currentDialogShowRequest = null;
-			request.SetResult(dialog);
-
-			return result;
 		}
 	}
 }

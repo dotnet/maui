@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.Issues.Bugzilla45722Xaml0"
+			xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
+			xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Core.Android.UITests" 
+            Title="Bugzilla 45722 (with grouping)">
+    <ContentPage.Content>
+      <StackLayout>
+		
+        <Label x:Name="CurrentCount"></Label>
+
+        <Label x:Name="Result"></Label>
+
+        <Button Text="Refresh" x:Name="RefreshButton"></Button>
+		<Button Text="GC" x:Name="GCButton"></Button>
+
+		<ListView x:Name="listView" HasUnevenRows="True" IsGroupingEnabled="{ Binding IsGroupingEnabled }" GroupDisplayBinding="{ Binding Key }"
+				ItemsSource="{Binding Model}" SeparatorVisibility="None" SeparatorColor="Gray" BackgroundColor="Transparent"  HorizontalOptions="FillAndExpand">
+			<x:Arguments>
+				<ListViewCachingStrategy>RecycleElement</ListViewCachingStrategy>
+			</x:Arguments>
+			<ListView.GroupHeaderTemplate>
+				<DataTemplate>
+					<ViewCell Height="40">
+						<StackLayout VerticalOptions="FillAndExpand"
+									Padding="5"
+									BackgroundColor="#365271" HeightRequest="40">
+							<local:_45722Label Text="{Binding Key}" FontSize="20" TextColor="White" VerticalOptions="Center"/>
+						</StackLayout>
+					</ViewCell>
+				</DataTemplate>
+			</ListView.GroupHeaderTemplate>
+
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<ViewCell >
+						<ViewCell.View>
+							<StackLayout Spacing="8" Orientation="Vertical" VerticalOptions="Center" HorizontalOptions="FillAndExpand">
+								<StackLayout Spacing="10" Padding="5,7,8,7" Orientation="Horizontal" VerticalOptions="Center" HorizontalOptions="FillAndExpand" BackgroundColor="Transparent">
+									<StackLayout Spacing="0" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" BackgroundColor="Transparent">
+										<local:_45722Label Text="{ Binding ListName }"  />
+										<local:_45722Label Text="{ Binding ListDescription }"  />
+									</StackLayout>
+								</StackLayout>
+							</StackLayout>
+						</ViewCell.View>
+					</ViewCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+
+	</StackLayout>
+    </ContentPage.Content>
+</controls:TestContentPage>

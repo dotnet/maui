@@ -77,12 +77,8 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 
 - [How to Contribute](https://github.com/xamarin/Xamarin.Forms/wiki/How-to-Contribute)
 
-### Xamarin.Forms Evolution
-
-To discuss this project and participate in the design, we use the [Xamarin.Forms Evolution](https://forums.xamarin.com/categories/xamarin-forms-evolution) discussion board.   
-
 ### Reporting Bugs
 
-We use [Bugzilla](https://bugzilla.xamarin.com/newbug) to track issues. If at all possible, please submit a [reproduction of your bug](https://gist.github.com/jassmith/92405c300e54a01dcc6d) along with your bug report.
+We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://gist.github.com/jassmith/92405c300e54a01dcc6d) along with your bug report.
 
 

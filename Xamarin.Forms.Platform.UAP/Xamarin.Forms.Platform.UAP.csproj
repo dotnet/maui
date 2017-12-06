@@ -142,6 +142,9 @@
     <Compile Include="ViewExtensions.cs" />
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="Flags.cs" />
+    <Compile Include="FormsFlyout.xaml.cs">
+      <DependentUpon>FormsFlyout.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FormsPresenter.cs" />
     <Compile Include="FormsUWP.cs" />
     <Compile Include="IToolBarForegroundBinder.cs" />
@@ -250,6 +253,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
+    <Page Include="FormsFlyout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FormsProgressBarStyle.xaml">
       <Generator>MSBuild:Compile</Generator>

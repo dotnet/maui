@@ -170,6 +170,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44453.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45215.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44500.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45722.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45722Xaml0.xaml.cs">
+      <DependentUpon>Bugzilla45722Xaml0.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46363.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46363_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla47548.cs" />
@@ -331,6 +336,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40161.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla44886.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzila57749.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla45125.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewObjectDisposed.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58645.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla27731.cs" />
@@ -619,6 +625,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ButtonFastRendererTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DesktopSupportTestPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58779.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51825.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -768,6 +775,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla51642.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla45722Xaml0.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
