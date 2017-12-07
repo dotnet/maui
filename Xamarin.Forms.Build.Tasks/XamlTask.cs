@@ -16,7 +16,8 @@ using Mono.Cecil.Mdb;
 
 namespace Xamarin.Forms.Build.Tasks
 {
-	public abstract class XamlTask : AppDomainIsolatedTask
+	[LoadInSeparateAppDomain]
+	public abstract class XamlTask : MarshalByRefObject, ITask
 	{
 		[Required]
 		public string Assembly { get; set; }
@@ -26,15 +27,21 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool DebugSymbols { get; set; }
 		public string DebugType { get; set; }
 
+		TaskLoggingHelper _log;
+
 		internal XamlTask()
 		{
+			_log = new TaskLoggingHelper(this);
 		}
+
+		public IBuildEngine BuildEngine { get; set; }
+		public ITaskHost HostObject { get; set; }
 
 		protected Logger Logger { get; set; }
 
-		public override bool Execute()
+		public bool Execute()
 		{
-			Logger = new Logger(Log, Verbosity);
+			Logger = new Logger(_log, Verbosity);
 			IList<Exception> _;
 			return Execute(out _);
 		}

@@ -37,7 +37,7 @@
     </dependencies>
   </metadata>
   <files>
- 
+
     <!--netstandard-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\netstandard2.0" />
@@ -51,14 +51,30 @@
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard2.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard2.0" />
 
-    <!--Xaml netstandard Stuff-->
+    <!--Xamlc common stuff-->
     <file src="Xamarin.Forms.targets" target="build\netstandard2.0\Xamarin.Forms$IdAppend$.targets" />
-    <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard2.0\Xamarin.Forms.DefaultItems.targets" />
     <file src="Xamarin.Forms.props" target="build\netstandard2.0\Xamarin.Forms$IdAppend$.props" />
-    <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard2.0\Xamarin.Forms.DefaultItems.props" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="build\netstandard2.0" />
+    <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard2.0" />
+    <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard2.0" />
+
+    <!--Xamlc net47 stuff-->
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Build.Tasks.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Mdb.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Pdb.dll" target="tasks\net47" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Rocks.dll" target="tasks\net47" />
+
+    <!--Xamlc netstandard2.0 stuff-->
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Mono.Cecil.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="tasks\netstandard2.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks.Core\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="tasks\netstandard2.0" />
 
     <!-- Xaml Design-time Stuff -->
     <!--<file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\portable-win+net45+wp80+win81+wpa81\Design" />
@@ -75,12 +91,6 @@
 
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\uap10.0\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\uap10.0\Design" />-->
-
-    <!-- XamlC stuffs -->
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Mdb.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Pdb.dll" target="build\netstandard2.0" />
-    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Mono.Cecil.Rocks.dll" target="build\netstandard2.0" />
 
     <!--Android-->
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid10" />
@@ -108,7 +118,7 @@
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*mdb" target="lib\Xamarin.iOS10" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\Xamarin.iOS10" />
     <file src="..\Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.iOS10" />
-    
+
     <!--UWP-->
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Xamarin.Forms.Platform.UAP.dll" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Platform.UAP\bin\$Configuration$\Xamarin.Forms.Platform.UAP.pri" target="lib\uap10.0" />
