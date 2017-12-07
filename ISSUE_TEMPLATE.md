@@ -20,7 +20,7 @@ Bug report best practices: https://github.com/xamarin/Xamarin.Forms/wiki/Submitt
 - Platform Target Frameworks: <!-- All that apply -->
   - iOS:  <!-- The version of the iOS SDK you are compiling against, e.g. 11.1 -->
   - Android: <!-- The version of the Android SDK you are compiling against, e.g. 7.1 --> 
-  - UWP:  <!-- The version of the Android SDK you are compiling against, e.g. 16299 --> 
+  - UWP:  <!-- The version of the UWP SDK you are compiling against, e.g. 16299 --> 
 - Android Support Library Version: <!-- if applicable -->
 - Nuget Packages:
 - Affected Devices:
