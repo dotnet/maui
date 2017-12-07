@@ -25,6 +25,10 @@ Bug report best practices: https://github.com/xamarin/Xamarin.Forms/wiki/Submitt
 - Nuget Packages:
 - Affected Devices:
 
+### Screenshots
+
+<!-- If the issue is a visual issue, please include screenshots showing the problem if possible -->
+
 ### Reproduction Link
 
 <!-- Please upload or provide a link to a reproduction case -->
