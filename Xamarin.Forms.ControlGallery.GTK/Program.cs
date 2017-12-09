@@ -5,6 +5,7 @@ using System;
 using Xamarin.Forms.Platform.GTK;
 using Xamarin.Forms.Platform.GTK.Renderers;
 using Xamarin.Forms.Controls;
+using Xamarin.Forms.Maps.GTK;
 
 [assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
@@ -20,7 +21,8 @@ namespace Xamarin.Forms.ControlGallery.GTK
             GtkOpenGL.Init();
             GtkThemes.Init();
             Gtk.Application.Init();
-            Forms.Init();
+			FormsMaps.Init(string.Empty);
+			Forms.Init();
             var app = new App();
             //var app = new BasicOpenGLApp();
             //var app = new AdvancedOpenGLApp();
