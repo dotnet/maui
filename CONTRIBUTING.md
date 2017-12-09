@@ -1,10 +1,18 @@
-Check out [A Beginner's Guide for Contributing to Xamarin.Forms](https://blog.xamarin.com/beginners-guide-contributing-xamarin-forms/).
+# Contributing
+
+Thanks you for your interest in contributing to Xamarin.Forms! In this document we'll outline what you need to know about contributing and how to get started.
+
+## Code of Conduct
+
+Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Prerequisite
 
 You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla2.dotnetfoundation.org/.
 
 ## Contributing Code
+
+Check out [A Beginner's Guide for Contributing to Xamarin.Forms](https://blog.xamarin.com/beginners-guide-contributing-xamarin-forms/).
 
 ### Bug Fixes
 
