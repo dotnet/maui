@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Xamarin.Forms.Internals;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms
 {
@@ -290,8 +291,16 @@ namespace Xamarin.Forms
 				part.IndexerName = indexerName;
 
 				property = sourceType.GetDeclaredProperty(indexerName);
-				if (property == null)
+				if (property == null) //is the indexer defined on the base class?
 					property = sourceType.BaseType.GetProperty(indexerName);
+				if (property == null) //is the indexer defined on implemented interface ?
+				{
+					foreach (var implementedInterface in sourceType.ImplementedInterfaces) {
+						property = implementedInterface.GetProperty(indexerName);
+						if (property != null)
+							break;
+					}
+				}
 
 				if (property != null)
 				{
@@ -352,6 +361,31 @@ namespace Xamarin.Forms
 								part.BindablePropertyField = bindablePropertyField.GetValue(null);
 							}
 						}
+					}
+				}
+
+				TupleElementNamesAttribute tupleEltNames;
+				if (   property != null
+				    && part.NextPart != null
+					&& property.PropertyType.IsGenericType
+					&& (   property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,>)
+						|| property.PropertyType.GetGenericTypeDefinition() == typeof(ValueTuple<,,,,,,,>))
+					&& (tupleEltNames = property.GetCustomAttribute(typeof(TupleElementNamesAttribute)) as TupleElementNamesAttribute) != null)
+				{
+					//modify the nextPart to access the tuple item via the ITuple indexer
+					var nextPart = part.NextPart;
+					var name = nextPart.Content;
+					var index = tupleEltNames.TransformNames.IndexOf(name);
+					if (index >= 0)
+					{
+						nextPart.IsIndexer = true;
+						nextPart.Content = index.ToString();
 					}
 				}
 			}
@@ -502,13 +536,13 @@ namespace Xamarin.Forms
 
 			public object BindablePropertyField { get; set; }
 
-			public string Content { get; }
+			public string Content { get; internal set; }
 
 			public string IndexerName { get; set; }
 
 			public bool IsBindablePropertySetter { get; set; }
 
-			public bool IsIndexer { get; }
+			public bool IsIndexer { get; internal set; }
 
 			public bool IsSelf { get; }
 
