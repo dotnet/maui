@@ -1,7 +1,6 @@
 #region
 
 using System;
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Linq;
 using Android.App;
@@ -9,9 +8,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.Content;
 using Android.Support.V7.App;
-using Android.Util;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
@@ -19,11 +16,9 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific.AppCompat;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 using AColor = Android.Graphics.Color;
-using AlertDialog = Android.Support.V7.App.AlertDialog;
 using ARelativeLayout = Android.Widget.RelativeLayout;
 using Xamarin.Forms.Internals;
 using System.Threading.Tasks;
-
 
 #endregion
 
@@ -114,14 +109,12 @@ namespace Xamarin.Forms.Platform.Android
 				_renderersAdded = true;
 			}
 
-			if (application == null)
-				throw new ArgumentNullException("application");
-
-			_application = application;
+			_application = application ?? throw new ArgumentNullException(nameof(application));
 			(application as IApplicationController)?.SetAppIndexingProvider(new AndroidAppIndexProvider(this));
 			Xamarin.Forms.Application.SetCurrentApplication(application);
 
-			SetSoftInputMode();
+			if (Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust() != WindowSoftInputModeAdjust.Unspecified)
+				SetSoftInputMode();
 
 			CheckForAppLink(Intent);
 
@@ -345,20 +338,21 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetSoftInputMode()
 		{
-			SoftInput adjust = SoftInput.AdjustPan;
+			var adjust = SoftInput.AdjustPan;
 
 			if (Xamarin.Forms.Application.Current != null)
 			{
-				var elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
+				WindowSoftInputModeAdjust elementValue = Xamarin.Forms.Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
 				switch (elementValue)
 				{
-					default:
-					case WindowSoftInputModeAdjust.Pan:
-						adjust = SoftInput.AdjustPan;
-						break;
-
 					case WindowSoftInputModeAdjust.Resize:
 						adjust = SoftInput.AdjustResize;
+						break;
+					case WindowSoftInputModeAdjust.Unspecified:
+						adjust = SoftInput.AdjustUnspecified;
+						break;
+					default:
+						adjust = SoftInput.AdjustPan;
 						break;
 				}
 			}
