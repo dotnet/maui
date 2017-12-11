@@ -34,6 +34,9 @@
         <dependency id="Xamarin.Android.Support.v7.CardView" version="25.4.0.2"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="25.4.0.2"/>
       </group>
+      <group targetFramework="tizen40">
+        <dependency id="Tizen.NET" version="4.0.0"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
@@ -183,5 +186,18 @@
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-Hans\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hans" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-Hant\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-Hant" />
     <file src="..\Xamarin.Forms.Platform.iOS\bin\$Configuration$\zh-HK\Xamarin.Forms.Platform.iOS.resources.dll" target="lib\Xamarin.iOS10\zh-HK" />
+
+    <!--Tizen-->
+    <file src="..\Xamarin.Forms.Platform.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Platform.Tizen.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Platform.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Platform.Tizen.*pdb" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Platform.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Platform.Tizen.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Platform.Tizen\bin\$Configuration$\tizen40\Xamarin.Forms.Platform.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\tizen40" />
+    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\tizen40" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\tizen40" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\tizen40" />
   </files>
+
 </package>
