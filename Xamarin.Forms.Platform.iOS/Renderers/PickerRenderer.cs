@@ -184,6 +184,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					Control.EditingDidBegin -= OnStarted;
 					Control.EditingDidEnd -= OnEnded;
+					Control.EditingChanged -= OnEditing;
 				}
 
 				if(Element != null)
