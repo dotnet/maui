@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new UIButton(UIButtonType.System));
+					SetNativeControl(CreateNativeControl());
 
 					Debug.Assert(Control != null, "Control != null");
 
@@ -76,6 +76,11 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateImage();
 				UpdateTextColor();
 			}
+		}
+
+		protected override UIButton CreateNativeControl()
+		{
+			return new UIButton(UIButtonType.System);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

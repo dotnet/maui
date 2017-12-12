@@ -31,6 +31,11 @@ namespace Xamarin.Forms.Platform.MacOS
 #endif
 		NativeColor _defaultColor;
 
+		protected virtual TNativeView CreateNativeControl()
+		{
+			return default(TNativeView);
+		}
+
 		public TNativeView Control { get; private set; }
 #if __MOBILE__
 		public override void LayoutSubviews()
