@@ -24,6 +24,27 @@ namespace Xamarin.Forms.Controls
 				new DatePicker { MaximumDate = new DateTime(2087, 9, 13) });
 			var textColorContainer = new ViewContainer<DatePicker>(Test.DatePicker.TextColor,
 				new DatePicker { Date = new DateTime(1978, 12, 24), TextColor = Color.Lime });
+			var fontAttributesContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontAttributes,
+				new DatePicker { FontAttributes = FontAttributes.Bold });
+
+			var fontFamilyContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontFamily,
+				new DatePicker());
+			// Set font family based on available fonts per platform
+			switch(Device.RuntimePlatform)
+			{
+				case Device.Android:
+					fontFamilyContainer.View.FontFamily = "sans-serif-thin";
+					break;
+				case Device.iOS:
+					fontFamilyContainer.View.FontFamily = "Courier";
+					break;
+				default:
+					fontFamilyContainer.View.FontFamily = "Garamond";
+					break;
+			}
+
+			var fontSizeContainer = new ViewContainer<DatePicker>(Test.DatePicker.FontSize, 
+				new DatePicker { FontSize = 24 });
 
 			Add(dateContainer);
 			Add(dateSelectedContainer);
@@ -31,6 +52,9 @@ namespace Xamarin.Forms.Controls
 			Add(minimumDateContainer);
 			Add(maximumDateContainer);
 			Add(textColorContainer);
+			Add(fontAttributesContainer);
+			Add(fontFamilyContainer);
+			Add(fontSizeContainer);
 		}
 	}
 }

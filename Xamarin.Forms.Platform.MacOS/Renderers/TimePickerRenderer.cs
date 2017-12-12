@@ -35,6 +35,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				}
 
 				UpdateTime();
+				UpdateFont();
 				UpdateTextColor();
 			}
 		}
@@ -50,6 +51,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (e.PropertyName == TimePicker.TextColorProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
+
+			if (e.PropertyName == Picker.FontSizeProperty.PropertyName ||
+				e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
+				e.PropertyName == Picker.FontAttributesProperty.PropertyName)
+					UpdateFont();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -77,6 +83,14 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			ElementController?.SetValueFromRenderer(TimePicker.TimeProperty,
 				Control.DateValue.ToDateTime() - new DateTime(2001, 1, 1));
+		}
+
+		void UpdateFont()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			Control.Font = Element.ToNSFont();	
 		}
 
 		void UpdateTime()

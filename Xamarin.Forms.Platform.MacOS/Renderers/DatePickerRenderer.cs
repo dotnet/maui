@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateDateFromModel();
 			UpdateMaximumDate();
 			UpdateMinimumDate();
+			UpdateFont();
 			UpdateTextColor();
 		}
 
@@ -57,6 +58,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			else if (e.PropertyName == DatePicker.TextColorProperty.PropertyName ||
 					e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == Picker.FontSizeProperty.PropertyName ||
+				e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
+				e.PropertyName == Picker.FontAttributesProperty.PropertyName)
+				UpdateFont();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -107,6 +112,14 @@ namespace Xamarin.Forms.Platform.MacOS
 				return;
 			if (_picker.DateValue.ToDateTime().Date != Element.Date.Date)
 				_picker.DateValue = Element.Date.ToNSDate();
+		}
+
+		void UpdateFont()
+		{
+			if (Control == null || Element == null)
+				return;
+			
+			Control.Font = Element.ToNSFont();
 		}
 
 		void UpdateMaximumDate()

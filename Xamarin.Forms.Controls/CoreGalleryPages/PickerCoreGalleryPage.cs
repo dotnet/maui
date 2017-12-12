@@ -28,10 +28,44 @@ namespace Xamarin.Forms.Controls
 			textColorContainer.View.Items.Add("Item 2");
 			textColorContainer.View.Items.Add("Item 3");
 
+			var fontAttributesContainer = new ViewContainer<Picker>(Test.Picker.FontAttributes,
+				new Picker { FontAttributes = FontAttributes.Bold });
+			fontAttributesContainer.View.Items.Add("Item 1");
+			fontAttributesContainer.View.Items.Add("Item 2");
+			fontAttributesContainer.View.Items.Add("Item 3");
+
+			var fontFamilyContainer = new ViewContainer<Picker>(Test.Picker.FontFamily,
+				new Picker());
+			// Set font family based on available fonts per platform
+			switch(Device.RuntimePlatform)
+			{
+				case Device.Android:
+					fontFamilyContainer.View.FontFamily = "sans-serif-thin";
+					break;
+				case Device.iOS:
+					fontFamilyContainer.View.FontFamily = "Courier";
+					break;
+				default:
+					fontFamilyContainer.View.FontFamily = "Garamond";
+					break;
+			}
+			fontFamilyContainer.View.Items.Add("Item 1");
+			fontFamilyContainer.View.Items.Add("Item 2");
+			fontFamilyContainer.View.Items.Add("Item 3");
+
+			var fontSizeContainer = new ViewContainer<Picker>(Test.Picker.FontSize,
+				new Picker { FontSize = 24 });
+			fontSizeContainer.View.Items.Add("Item 1");
+			fontSizeContainer.View.Items.Add("Item 2");
+			fontSizeContainer.View.Items.Add("Item 3");
+
 			Add(itemsContainer);
 			Add(selectedIndexContainer);
 			Add(titleContainer);
 			Add(textColorContainer);
+			Add(fontAttributesContainer);
+			Add(fontFamilyContainer);
+			Add(fontSizeContainer);
 		}
 	}
 }

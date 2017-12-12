@@ -10,6 +10,8 @@ namespace Xamarin.Forms.Platform.UWP
 	public class DatePickerRenderer : ViewRenderer<DatePicker, Windows.UI.Xaml.Controls.DatePicker>
 	{
 		Brush _defaultBrush;
+		bool _fontApplied;
+		FontFamily _defaultFontFamily;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -48,6 +50,8 @@ namespace Xamarin.Forms.Platform.UWP
 			// The defaults from the control template won't be available
 			// right away; we have to wait until after the template has been applied
 			_defaultBrush = Control.Foreground;
+			_defaultFontFamily = Control.FontFamily;
+			UpdateFont();
 			UpdateTextColor();
 		}
 
@@ -65,6 +69,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
+			else if (e.PropertyName == DatePicker.FontAttributesProperty.PropertyName || e.PropertyName == DatePicker.FontFamilyProperty.PropertyName || e.PropertyName == DatePicker.FontSizeProperty.PropertyName)
+				UpdateFont();
 		}
 
 		protected override bool PreventGestureBubbling { get; set; } = true;
@@ -87,6 +93,39 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
+		}
+		
+		void UpdateFont()
+		{
+			if (Control == null)
+				return;
+
+			DatePicker datePicker = Element;
+
+			if (datePicker == null)
+				return;
+
+			bool datePickerIsDefault = datePicker.FontFamily == null && datePicker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(DatePicker), true) && datePicker.FontAttributes == FontAttributes.None;
+
+			if (datePickerIsDefault && !_fontApplied)
+				return;
+
+			if (datePickerIsDefault)
+			{
+				// ReSharper disable AccessToStaticMemberViaDerivedType
+				Control.ClearValue(ComboBox.FontStyleProperty);
+				Control.ClearValue(ComboBox.FontSizeProperty);
+				Control.ClearValue(ComboBox.FontFamilyProperty);
+				Control.ClearValue(ComboBox.FontWeightProperty);
+				Control.ClearValue(ComboBox.FontStretchProperty);
+				// ReSharper restore AccessToStaticMemberViaDerivedType
+			}
+			else
+			{
+				Control.ApplyFont(datePicker);
+			}
+
+			_fontApplied = true;
 		}
 
 		void UpdateMaximumDate()

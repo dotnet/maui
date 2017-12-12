@@ -11,8 +11,10 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class PickerRenderer : ViewRenderer<Picker, FormsComboBox>
 	{
+		bool _fontApplied;
 		bool _isAnimating;
 		Brush _defaultBrush;
+		FontFamily _defaultFontFamily;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -66,6 +68,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitle();
 			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
 				UpdateTextColor();
+			else if (e.PropertyName == Picker.FontAttributesProperty.PropertyName || e.PropertyName == Picker.FontFamilyProperty.PropertyName || e.PropertyName == Picker.FontSizeProperty.PropertyName)
+				UpdateFont();
 		}
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -73,6 +77,8 @@ namespace Xamarin.Forms.Platform.UWP
 			// The defaults from the control template won't be available
 			// right away; we have to wait until after the template has been applied
 			_defaultBrush = Control.Foreground;
+			_defaultFontFamily = Control.FontFamily;
+			UpdateFont();
 			UpdateTextColor();
 		}
 
@@ -142,6 +148,39 @@ namespace Xamarin.Forms.Platform.UWP
 					await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => ((IVisualElementController)Element)?.InvalidateMeasure(InvalidationTrigger.MeasureChanged));
 				}
 			});
+		}
+
+		void UpdateFont()
+		{
+			if (Control == null)
+				return;
+
+			Picker picker = Element;
+
+			if (picker == null)
+				return;
+
+			bool pickerIsDefault = picker.FontFamily == null && picker.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Picker), true) && picker.FontAttributes == FontAttributes.None;
+
+			if (pickerIsDefault && !_fontApplied)
+				return;
+
+			if (pickerIsDefault)
+			{
+				// ReSharper disable AccessToStaticMemberViaDerivedType
+				Control.ClearValue(ComboBox.FontStyleProperty);
+				Control.ClearValue(ComboBox.FontSizeProperty);
+				Control.ClearValue(ComboBox.FontFamilyProperty);
+				Control.ClearValue(ComboBox.FontWeightProperty);
+				Control.ClearValue(ComboBox.FontStretchProperty);
+				// ReSharper restore AccessToStaticMemberViaDerivedType
+			}
+			else
+			{
+				Control.ApplyFont(picker);
+			}
+
+			_fontApplied = true;
 		}
 
 		void UpdateSelectedIndex()
