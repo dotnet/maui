@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Xaml
 			return view;
 		}
 
-		internal static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
+		public static TXaml LoadFromXaml<TXaml>(this TXaml view, string xaml)
 		{
 			XamlLoader.Load(view, xaml);
 			return view;
