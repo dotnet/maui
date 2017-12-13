@@ -1014,9 +1014,9 @@ namespace Xamarin.Forms.Build.Tasks
 			var vardef = context.Variables [elementNode];
 			var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(propertyType, module);
 
-			if (implicitOperator != null)
-				return true;
 			if (vardef.VariableType.InheritsFromOrImplements(propertyType))
+				return true;
+			if (implicitOperator != null)
 				return true;
 			if (propertyType.FullName == "System.Object")
 				return true;
@@ -1083,7 +1083,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var vardef = context.Variables [elementNode];
 				var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(propertyType, module);
 				yield return Instruction.Create(OpCodes.Ldloc, vardef);
-				if (implicitOperator != null) {
+				if (!vardef.VariableType.InheritsFromOrImplements(propertyType) && implicitOperator != null) {
 //					IL_000f:  call !0 class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<bool>::op_Implicit(class [Xamarin.Forms.Core]Xamarin.Forms.OnPlatform`1<!0>)
 					yield return Instruction.Create(OpCodes.Call, module.ImportReference(implicitOperator));
 				} else if (!vardef.VariableType.IsValueType && propertyType.IsValueType)
