@@ -171,8 +171,8 @@ namespace Xamarin.Forms.Xaml
 					return Decimal.Parse(str, CultureInfo.InvariantCulture);
 			}
 
-			//if there's an implicit conversion, convert
-			if (value != null) {
+			//if the value is not assignable and there's an implicit conversion, convert
+			if (value != null && !toType.IsAssignableFrom(value.GetType())) {
 				var opImplicit =   value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
 								?? toType.GetImplicitConversionOperator(fromType: value.GetType(), toType: toType);
 
