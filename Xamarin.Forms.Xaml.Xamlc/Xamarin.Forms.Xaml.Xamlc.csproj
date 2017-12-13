@@ -1,70 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{928A23F3-2330-4F9F-B6A3-BFE01FE2A2DF}</ProjectGuid>
     <OutputType>Exe</OutputType>
+    <TargetFramework>net47</TargetFramework>
+    <AssemblyName>xamlc</AssemblyName>
     <RootNamespace>Xamarin.Forms.Xaml</RootNamespace>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <Commandlineparameters>-r "../../../Xamarin.Forms.Controls/bin/Debug/" -p "../../../Xamarin.Forms.Xaml.UnitTest/bin/Debug/;/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/4.5;/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/4.5/Facades/" --keep -v 4 ../../../Xamarin.Forms.Xaml.UnitTests/bin/Debug/Xamarin.Forms.Xaml.UnitTests.dll</Commandlineparameters>
-    <AssemblyName>xamlc</AssemblyName>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <AssemblyName>xamlc</AssemblyName>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.Build.Framework" />
-  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Xaml.Xamlg\Mono.Options\Options.cs">
       <Link>Mono.Options\Options.cs</Link>
     </Compile>
-    <Compile Include="Xamlc.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup />
+
   <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
-      <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
-      <Name>Xamarin.Forms.Build.Tasks</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
+
 </Project>

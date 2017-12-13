@@ -1,15 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<_XFBuildTasksTFM Condition="'$(MSBuildRuntimeType)' != 'Core'">net47</_XFBuildTasksTFM>
-		<_XFBuildTasksTFM Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_XFBuildTasksTFM>
-		<XFBuildTasksDirectory Condition="'$(XFBuildTasksDirectory)' == ''">$(MSBuildThisFileDirectory)..\..\tasks\$(_XFBuildTasksTFM)\</XFBuildTasksDirectory>
-		<XFBuildTasksDirectory Condition="!Exists('$(XFBuildTasksDirectory)')">$(MSBuildThisFileDirectory)</XFBuildTasksDirectory>
-	</PropertyGroup>
-
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(XFBuildTasksDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(XFBuildTasksDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(XFBuildTasksDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>

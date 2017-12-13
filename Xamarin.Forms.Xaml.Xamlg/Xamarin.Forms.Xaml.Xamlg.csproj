@@ -1,62 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D597E3C6-1A50-4042-99FA-3E7CE28E4819}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Xamarin.Forms.Xaml</RootNamespace>
+    <TargetFramework>net47</TargetFramework>
     <AssemblyName>xamlg</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
+    <RootNamespace>Xamarin.Forms.Xaml</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0618</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>0618</NoWarn>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="System" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Xamlg.cs" />
-    <Compile Include="Mono.Options\Options.cs" />
     <Compile Include="..\Xamarin.Forms.Xaml\XmlnsHelper.cs">
       <Link>XmlnsHelper.cs</Link>
     </Compile>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
   <ItemGroup>
-    <None Include="app.config" />
+    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj">
-      <Project>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</Project>
-      <Name>Xamarin.Forms.Build.Tasks</Name>
-    </ProjectReference>
-  </ItemGroup>
+
 </Project>
