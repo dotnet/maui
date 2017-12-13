@@ -93,8 +93,9 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 		public Gh1346FontIconOptions(IGh1346FontIcon icon)
 		{
-			FontIcon = icon ?? throw new ArgumentNullException(nameof(icon));
+			if (icon == null)
+				throw new ArgumentNullException(nameof(icon));
+			FontIcon = icon;
 		}
 	}
-
 }
