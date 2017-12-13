@@ -186,6 +186,7 @@
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="_57114CustomRenderer.cs" />
     <Compile Include="_58406EffectRenderer.cs" />
+    <Compile Include="_59457CustomRenderer.cs" />
     <Compile Include="_60122ImageRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
