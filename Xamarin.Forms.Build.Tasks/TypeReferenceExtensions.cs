@@ -24,11 +24,16 @@ namespace Xamarin.Forms.Build.Tasks
 			if (x.FullName != y.FullName)
 				return false;
 			var xasm = GetAssembly(x);
-			if (xasm.StartsWith("System.Runtime", StringComparison.Ordinal) || xasm.StartsWith("mscorlib", StringComparison.Ordinal))
-				xasm = "mscorlib";
 			var yasm = GetAssembly(y);
-			if (yasm.StartsWith("System.Runtime", StringComparison.Ordinal) || yasm.StartsWith("mscorlib", StringComparison.Ordinal))
-				yasm = "mscorlib";
+
+			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
+			if (   (xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+					|| xasm.StartsWith("mscorlib", StringComparison.Ordinal)
+					|| xasm.StartsWith("netstandard", StringComparison.Ordinal))
+				&& (yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+					|| yasm.StartsWith("mscorlib", StringComparison.Ordinal)
+					|| yasm.StartsWith("netstandard", StringComparison.Ordinal)))
+				return true;
 			return xasm == yasm;
 		}
 
