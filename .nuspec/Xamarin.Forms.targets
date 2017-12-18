@@ -53,7 +53,17 @@
 	<!-- XamlG -->
 	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile">
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			XamlG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
+		</PropertyGroup>
 		<XamlGTask
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
@@ -67,9 +77,16 @@
 	<!-- XamlC -->
 	<PropertyGroup>
 		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			XamlC;
+		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlC" AfterTargets="AfterCompile">
+	<Target Name="XamlC" AfterTargets="AfterCompile" Condition="'$(_XamlCAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_XamlCAlreadyExecuted>true</_XamlCAlreadyExecuted>
+		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
