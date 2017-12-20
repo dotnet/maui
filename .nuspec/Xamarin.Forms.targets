@@ -1,12 +1,15 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll"/>
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
+		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
+		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
@@ -34,7 +37,7 @@
 		</GetTasksAbi >
 
 		<PropertyGroup>
-			<_XFTasksExpectedAbi>3</_XFTasksExpectedAbi>
+			<_XFTasksExpectedAbi>4</_XFTasksExpectedAbi>
 		</PropertyGroup>
 
 		<Error
@@ -95,5 +98,26 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
 			KeepXamlResources = "$(XFKeepXamlResources)" />
+	</Target>
+
+	<!-- CssG -->
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			CssG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+	<Target Name="CssG" BeforeTargets="BeforeCompile" Condition="'$(_CssGAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_CssGAlreadyExecuted>true</_CssGAlreadyExecuted>
+		</PropertyGroup>
+		<CssGTask
+			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
+			Language = "$(Language)"
+			AssemblyName = "$(AssemblyName)"
+			OutputPath = "$(IntermediateOutputPath)">
+			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
+			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
+		</CssGTask>
 	</Target>
 </Project>

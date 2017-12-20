@@ -14,6 +14,11 @@
   <Base>
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.TextAlignmentConverter))</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Enumerates values that control text alignment.</summary>
     <remarks>To be added.</remarks>

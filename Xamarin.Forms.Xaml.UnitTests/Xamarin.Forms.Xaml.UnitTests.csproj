@@ -463,7 +463,6 @@
     </Compile>
     <Compile Include="Issues\Bz44216.xaml.cs">
       <DependentUpon>Bz44216.xaml</DependentUpon>
-      <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
     </Compile>
     <Compile Include="AcceptEmptyServiceProvider.xaml.cs">
       <DependentUpon>AcceptEmptyServiceProvider.xaml</DependentUpon>
@@ -553,6 +552,15 @@
     <Compile Include="Issues\Gh1346.xaml.cs">
       <DependentUpon>Gh1346.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StyleSheet.xaml.cs">
+      <DependentUpon>StyleSheet.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SetStyleIdFromXName.xaml.cs">
+      <DependentUpon>SetStyleIdFromXName.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InlineCSS.xaml.cs">
+      <DependentUpon>InlineCSS.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -582,15 +590,6 @@
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
   </ItemGroup>
-  <ProjectExtensions>
-    <MonoDevelop>
-      <Properties>
-        <Policies>
-          <StandardHeader Text="" IncludeInNewFiles="True" />
-        </Policies>
-      </Properties>
-    </MonoDevelop>
-  </ProjectExtensions>
   <ItemGroup>
     <EmbeddedResource Include="CustomXamlView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
@@ -1011,24 +1010,39 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="css\foo.css" />
+    <EmbeddedResource Include="css\bar.css" />
+    <EmbeddedResource Include="StyleSheet.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="Issues\Bz41296.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="PlatformSpecifics.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Issues\Bz43450.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="AutomationProperties.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="SetStyleIdFromXName.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InlineCSS.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="css\" />
   </ItemGroup>
   <ItemGroup />
 </Project>

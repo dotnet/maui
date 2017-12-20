@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Platform.Android
 
 					paint.StrokeWidth = 1;
 					paint.SetStyle(style);
-					paint.Color = _frame.OutlineColor.ToAndroid();
+					paint.Color = _frame.BorderColor.ToAndroid();
 
 					canvas.DrawPath(path, paint);
 				}
@@ -209,9 +209,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			void FrameOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-					e.PropertyName == Frame.OutlineColorProperty.PropertyName ||
-					e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
+				if (   e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName
+					|| e.PropertyName == Frame.BorderColorProperty.PropertyName
+					|| e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				{
 					if(_normalBitmap == null)
 						return;

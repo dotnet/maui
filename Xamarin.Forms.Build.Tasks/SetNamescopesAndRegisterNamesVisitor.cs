@@ -24,8 +24,10 @@ namespace Xamarin.Forms.Build.Tasks
 		public void Visit(ValueNode node, INode parentNode)
 		{
 			Context.Scopes[node] = Context.Scopes[parentNode];
-			if (IsXNameProperty(node, parentNode))
-				RegisterName((string)node.Value, Context.Scopes[node].Item1, Context.Scopes[node].Item2, Context.Variables[(IElementNode)parentNode], node);
+			if (!IsXNameProperty(node, parentNode))
+				return;
+			RegisterName((string)node.Value, Context.Scopes[node].Item1, Context.Scopes[node].Item2, Context.Variables[(IElementNode)parentNode], node);
+			SetStyleId((string)node.Value, Context.Variables[(IElementNode)parentNode]);
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
@@ -123,13 +125,34 @@ namespace Xamarin.Forms.Build.Tasks
 			var module = Context.Body.Method.Module;
 			var nsRef = module.ImportReference(typeof (INameScope));
 			var nsDef = nsRef.Resolve();
-			var registerInfo = nsDef.Methods.First(md => md.Name == "RegisterName" && md.Parameters.Count == 2);
+			var registerInfo = nsDef.Methods.First(md => md.Name == nameof(INameScope.RegisterName) && md.Parameters.Count == 2);
 			var register = module.ImportReference(registerInfo);
 
 			Context.IL.Emit(OpCodes.Ldloc, namescopeVarDef);
 			Context.IL.Emit(OpCodes.Ldstr, str);
 			Context.IL.Emit(OpCodes.Ldloc, element);
 			Context.IL.Emit(OpCodes.Callvirt, register);
+		}
+
+		void SetStyleId(string str, VariableDefinition element)
+		{
+			if (!element.VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(typeof(Element))))
+				return;
+
+			var module = Context.Body.Method.Module;
+			var eltDef = module.ImportReference(typeof(Element)).Resolve();
+			var styleIdInfo = eltDef.Properties.First(pd => pd.Name == nameof(Element.StyleId));
+			var getStyleId = module.ImportReference(styleIdInfo.GetMethod);
+			var setStyleId = module.ImportReference(styleIdInfo.SetMethod);
+
+			var nop = Instruction.Create(OpCodes.Nop);
+			Context.IL.Emit(OpCodes.Ldloc, element);
+			Context.IL.Emit(OpCodes.Callvirt, getStyleId);
+			Context.IL.Emit(OpCodes.Brtrue, nop);
+			Context.IL.Emit(OpCodes.Ldloc, element);
+			Context.IL.Emit(OpCodes.Ldstr, str);
+			Context.IL.Emit(OpCodes.Callvirt, setStyleId);
+			Context.IL.Append(nop);
 		}
 	}
 }

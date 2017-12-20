@@ -1,0 +1,87 @@
+<Type Name="StyleSheet" FullName="Xamarin.Forms.StyleSheets.StyleSheet">
+  <TypeSignature Language="C#" Value="public sealed class StyleSheet" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit StyleSheet extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="FromAssemblyResource">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.StyleSheets.StyleSheet FromAssemblyResource (System.Reflection.Assembly assembly, string resourceId, System.Xml.IXmlLineInfo lineInfo = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.StyleSheets.StyleSheet FromAssemblyResource(class System.Reflection.Assembly assembly, string resourceId, class System.Xml.IXmlLineInfo lineInfo) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.StyleSheets.StyleSheet</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="assembly" Type="System.Reflection.Assembly" />
+        <Parameter Name="resourceId" Type="System.String" />
+        <Parameter Name="lineInfo" Type="System.Xml.IXmlLineInfo" />
+      </Parameters>
+      <Docs>
+        <param name="assembly">To be added.</param>
+        <param name="resourceId">To be added.</param>
+        <param name="lineInfo">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromReader">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.StyleSheets.StyleSheet FromReader (System.IO.TextReader reader);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.StyleSheets.StyleSheet FromReader(class System.IO.TextReader reader) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.StyleSheets.StyleSheet</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="reader" Type="System.IO.TextReader" />
+      </Parameters>
+      <Docs>
+        <param name="reader">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FromString">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.StyleSheets.StyleSheet FromString (string stylesheet);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class Xamarin.Forms.StyleSheets.StyleSheet FromString(string stylesheet) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.StyleSheets.StyleSheet</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="stylesheet" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="stylesheet">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -80,6 +80,7 @@
       <Type Name="ReferenceExtension" Kind="Class" />
       <Type Name="StaticExtension" Kind="Class" />
       <Type Name="StaticResourceExtension" Kind="Class" />
+      <Type Name="StyleSheetExtension" Kind="Class" />
       <Type Name="TemplateBindingExtension" Kind="Class" />
       <Type Name="TypeExtension" Kind="Class" />
       <Type Name="XamlCompilationAttribute" Kind="Class" />

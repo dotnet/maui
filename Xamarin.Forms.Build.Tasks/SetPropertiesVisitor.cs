@@ -1144,16 +1144,20 @@ namespace Xamarin.Forms.Build.Tasks
 		static bool CanAddToResourceDictionary(TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			if (   collectionType.FullName != "Xamarin.Forms.ResourceDictionary"
-			    && collectionType.Resolve().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
+				&& collectionType.Resolve().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
 				return false;
+
 
 			if (node.Properties.ContainsKey(XmlName.xKey))
 				return true;
 
-			if (node.XmlType.Name == "Style")
-				return true;
-
-			if (node.XmlType.Name == "ResourceDictionary")
+			//is there a RD.Add() overrides that accepts this ?
+			var nodeTypeRef = context.Variables[node].VariableType;
+			var module = context.Body.Method.Module;
+			if (module.ImportReference(typeof(ResourceDictionary)).Resolve().Methods.Any(md =>
+						   md.Name == "Add"
+						&& md.Parameters.Count == 1
+						&& TypeRefComparer.Default.Equals(md.Parameters[0].ParameterType, nodeTypeRef)))
 				return true;
 
 			throw new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
@@ -1212,7 +1216,7 @@ namespace Xamarin.Forms.Build.Tasks
 				yield break;
 			}
 
-			var nodeTypeRef = node.XmlType.GetTypeReference(module, lineInfo);
+			var nodeTypeRef = context.Variables[node].VariableType;
 			yield return Create(Ldloc, context.Variables[node]);
 			yield return Create(Callvirt,
 				module.ImportReference(

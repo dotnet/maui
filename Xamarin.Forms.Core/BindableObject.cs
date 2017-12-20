@@ -34,9 +34,14 @@ namespace Xamarin.Forms
 
 		public event EventHandler BindingContextChanged;
 
+		internal void ClearValue(BindableProperty property, bool fromStyle)
+		{
+			ClearValue(property, fromStyle: fromStyle, checkAccess: true);
+		}
+
 		public void ClearValue(BindableProperty property)
 		{
-			ClearValue(property, true);
+			ClearValue(property, fromStyle: false, checkAccess: true);
 		}
 
 		public void ClearValue(BindablePropertyKey propertyKey)
@@ -44,7 +49,7 @@ namespace Xamarin.Forms
 			if (propertyKey == null)
 				throw new ArgumentNullException("propertyKey");
 
-			ClearValue(propertyKey.BindableProperty, false);
+			ClearValue(propertyKey.BindableProperty, fromStyle:false, checkAccess: false);
 		}
 
 		public object GetValue(BindableProperty property)
@@ -442,16 +447,21 @@ namespace Xamarin.Forms
 			bindable.OnBindingContextChanged();
 		}
 
-		void ClearValue(BindableProperty property, bool checkaccess)
+		void ClearValue(BindableProperty property, bool fromStyle, bool checkAccess)
 		{
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException(nameof(property));
 
-			if (checkaccess && property.IsReadOnly)
+			if (checkAccess && property.IsReadOnly)
 				throw new InvalidOperationException(string.Format("The BindableProperty \"{0}\" is readonly.", property.PropertyName));
 
 			BindablePropertyContext bpcontext = GetContext(property);
 			if (bpcontext == null)
+				return;
+
+			if (   fromStyle && bpcontext != null
+				&& (bpcontext.Attributes & BindableContextAttributes.IsDefaultValue) != 0
+				&& (bpcontext.Attributes & BindableContextAttributes.IsSetFromStyle) == 0)
 				return;
 
 			object original = bpcontext.Value;
@@ -461,8 +471,7 @@ namespace Xamarin.Forms
 			bool same = Equals(original, newValue);
 			if (!same)
 			{
-				if (property.PropertyChanging != null)
-					property.PropertyChanging(this, original, newValue);
+				property.PropertyChanging?.Invoke(this, original, newValue);
 
 				OnPropertyChanging(property.PropertyName);
 			}
@@ -474,8 +483,7 @@ namespace Xamarin.Forms
 			if (!same)
 			{
 				OnPropertyChanged(property.PropertyName);
-				if (property.PropertyChanged != null)
-					property.PropertyChanged(this, original, newValue);
+				property.PropertyChanged?.Invoke(this, original, newValue);
 			}
 		}
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -65,6 +64,18 @@ namespace Xamarin.Forms.Core.XamlC
 
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
+		}
+
+		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
+		{
+			foreach (var ca in type.Module.GetCustomAttributes()) {
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+					continue;
+				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
+					continue;
+				return ca.ConstructorArguments[1].Value as string;
+			}
+			return null;
 		}
 	}
 }
