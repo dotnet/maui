@@ -46,8 +46,6 @@ namespace Xamarin.Forms.Platform.WPF
 		// when app gets tombstoned, user press back past first page
 		async void OnClosing(object sender, ExitEventArgs e)
 		{
-			// populate isolated storage.
-			//SerializePropertyStore ();
 			await Application.SendSleepAsync();
 		}
 
