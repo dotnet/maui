@@ -97,14 +97,14 @@ namespace Xamarin.Forms.Internals
 
 			type = attribute.Type;
 
-			if (type.Name.StartsWith("_"))
+			if (type.Name.StartsWith("_", StringComparison.Ordinal))
 			{
 				// TODO: Remove attribute2 once renderer names have been unified across all platforms
 				var attribute2 = type.GetTypeInfo().GetCustomAttribute<RenderWithAttribute>();
 				if (attribute2 != null)
 					type = attribute2.Type;
 
-				if (type.Name.StartsWith("_"))
+				if (type.Name.StartsWith("_", StringComparison.Ordinal))
 				{
 					Register(viewType, null); // Cache this result so we don't work through this chain again
 					return null;
@@ -156,6 +156,7 @@ namespace Xamarin.Forms.Internals
 		}
 
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
+		internal static Dictionary<string, StyleSheets.StylePropertyAttribute> StyleProperties { get; } = new Dictionary<string, StyleSheets.StylePropertyAttribute>();
 
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
@@ -165,9 +166,7 @@ namespace Xamarin.Forms.Internals
 		{
 			Assembly[] assemblies = Device.GetAssemblies();
 			if (ExtraAssemblies != null)
-			{
 				assemblies = assemblies.Union(ExtraAssemblies).ToArray();
-			}
 
 			Assembly defaultRendererAssembly = Device.PlatformServices.GetType().GetTypeInfo().Assembly;
 			int indexOfExecuting = Array.IndexOf(assemblies, defaultRendererAssembly);
@@ -185,32 +184,34 @@ namespace Xamarin.Forms.Internals
 				foreach (Type attrType in attrTypes)
 				{
 					Attribute[] attributes = assembly.GetCustomAttributes(attrType).ToArray();
-					if (attributes.Length == 0)
-						continue;
-
-					foreach (HandlerAttribute attribute in attributes)
+					var length = attributes.Length;
+					for (var i = 0; i < length;i++)
 					{
+						var attribute = (HandlerAttribute)attributes[i];
 						if (attribute.ShouldRegister())
 							Registered.Register(attribute.HandlerType, attribute.TargetType);
 					}
 				}
 
 				string resolutionName = assembly.FullName;
+				var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
+				if (resolutionNameAttribute != null)
+					resolutionName = resolutionNameAttribute.ShortName;
 
 				Attribute[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute)).ToArray();
-				if (effectAttributes.Length > 0)
+				var exportEffectsLength = effectAttributes.Length;
+				for (var i = 0; i < exportEffectsLength;i++)
 				{
-					var resolutionNameAttribute = (ResolutionGroupNameAttribute)assembly.GetCustomAttribute(typeof(ResolutionGroupNameAttribute));
-					if (resolutionNameAttribute != null)
-					{
-						resolutionName = resolutionNameAttribute.ShortName;
-					}
+					var effect = (ExportEffectAttribute)effectAttributes[i];
+					Effects [resolutionName + "." + effect.Id] = effect.Type;
+				}
 
-					foreach (Attribute attribute in effectAttributes)
-					{
-						var effect = (ExportEffectAttribute)attribute;
-						Effects[resolutionName + "." + effect.Id] = effect.Type;
-					}
+				Attribute[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
+				var stylePropertiesLength = styleAttributes.Length;
+				for (var i = 0; i < stylePropertiesLength; i++)
+				{
+					var attribute = (StyleSheets.StylePropertyAttribute)styleAttributes[i];
+					StyleProperties[attribute.CssPropertyName] = attribute;
 				}
 			}
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage 
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Xamarin.Forms.Xaml.UnitTests.InlineCSS">
+    <ContentPage.Resources>
+        <StyleSheet>
+            <![CDATA[
+* {
+    background-color: green;
+}
+label {
+    color: pink;
+    background-color: initial;
+}
+            ]]>
+        </StyleSheet>
+    </ContentPage.Resources>
+    <StackLayout x:Name="stack">
+        <Label x:Name="label"/>
+        <Button x:Name="button"/>
+    </StackLayout>
+</ContentPage>

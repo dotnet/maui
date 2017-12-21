@@ -68,20 +68,7 @@ namespace Xamarin.Forms
 
 		public static ImageSource FromResource(string resource, Assembly sourceAssembly = null)
 		{
-			if (sourceAssembly == null)
-			{
-				MethodInfo callingAssemblyMethod = typeof(Assembly).GetTypeInfo().GetDeclaredMethod("GetCallingAssembly");
-				if (callingAssemblyMethod != null)
-				{
-					sourceAssembly = (Assembly)callingAssemblyMethod.Invoke(null, new object[0]);
-				}
-				else
-				{
-					Log.Warning("Warning", "Can not find CallingAssembly, pass resolvingType to FromResource to ensure proper resolution");
-					return null;
-				}
-			}
-
+			sourceAssembly = sourceAssembly ?? Assembly.GetCallingAssembly();
 			return FromStream(() => sourceAssembly.GetManifestResourceStream(resource));
 		}
 

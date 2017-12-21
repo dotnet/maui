@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				PackChild();
 			}
-			else if (e.PropertyName == Frame.OutlineColorProperty.PropertyName || e.PropertyName == Frame.HasShadowProperty.PropertyName)
+			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName || e.PropertyName == Frame.HasShadowProperty.PropertyName)
 			{
 				UpdateBorder();
 			}
@@ -67,9 +67,9 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBorder()
 		{
-			if (Element.OutlineColor != Color.Default)
+			if (Element.BorderColor != Color.Default)
 			{
-				Control.BorderBrush = Element.OutlineColor.ToBrush();
+				Control.BorderBrush = Element.BorderColor.ToBrush();
 				Control.BorderThickness = new Windows.UI.Xaml.Thickness(1);
 			}
 			else

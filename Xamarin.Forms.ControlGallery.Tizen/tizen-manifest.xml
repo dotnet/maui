@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest package="ControlGallery.Tizen" version="1.0.0" api-version="4" xmlns="http://tizen.org/ns/packages">
+    <profile name="common" />
+    <ui-application appid="ControlGallery.Tizen" exec="Xamarin.Forms.ControlGallery.Tizen.dll" multiple="false" nodisplay="false" taskmanage="true" splash-screen-display="true" type="dotnet" launch_mode="single">
+        <label>ControlGallery.Tizen</label>
+        <icon>Xamarin.Forms.ControlGallery.Tizen.png</icon>
+        <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
+    </ui-application>
+    <shortcut-list />
+    <privileges>
+        <privilege>http://tizen.org/privilege/internet</privilege>
+        <privilege>http://tizen.org/privilege/mapservice</privilege>
+        <privilege>http://tizen.org/privilege/network.get</privilege>
+        <privilege>http://tizen.org/privilege/location</privilege>
+    </privileges>
+    <provides-appdefined-privileges />
+</manifest>

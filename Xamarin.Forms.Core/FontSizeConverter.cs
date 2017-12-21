@@ -20,8 +20,9 @@ namespace Xamarin.Forms
 				double size;
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out size))
 					return size;
+				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 				NamedSize namedSize;
-				if (Enum.TryParse(value, out namedSize))
+				if (Enum.TryParse(value, ignoreCase, out namedSize))
 				{
 					Type type;
 					var valueTargetProvider = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;

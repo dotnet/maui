@@ -75,6 +75,27 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Deconstruct">
+      <MemberSignature Language="C#" Value="public void Deconstruct (out double x, out double y);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Deconstruct(float64 x, float64 y) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="x" Type="System.Double&amp;" RefType="out" />
+        <Parameter Name="y" Type="System.Double&amp;" RefType="out" />
+      </Parameters>
+      <Docs>
+        <param name="x">To be added.</param>
+        <param name="y">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Distance">
       <MemberSignature Language="C#" Value="public double Distance (Xamarin.Forms.Point other);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance float64 Distance(valuetype Xamarin.Forms.Point other) cil managed" />

@@ -80,6 +80,7 @@
       <Type Name="ReferenceExtension" Kind="Class" />
       <Type Name="StaticExtension" Kind="Class" />
       <Type Name="StaticResourceExtension" Kind="Class" />
+      <Type Name="StyleSheetExtension" Kind="Class" />
       <Type Name="TemplateBindingExtension" Kind="Class" />
       <Type Name="TypeExtension" Kind="Class" />
       <Type Name="XamlCompilationAttribute" Kind="Class" />
@@ -100,6 +101,33 @@
   </Types>
   <Title>Xamarin.Forms.Xaml</Title>
   <ExtensionMethods>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="System.Object" />
+      </Targets>
+      <Member MemberName="LoadFromXaml&lt;TXaml&gt;">
+        <MemberSignature Language="C#" Value="public static TXaml LoadFromXaml&lt;TXaml&gt; (this TXaml view, string xaml);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!TXaml LoadFromXaml&lt;TXaml&gt;(!!TXaml view, string xaml) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>TXaml</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="TXaml" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="view" Type="TXaml" RefType="this" />
+          <Parameter Name="xaml" Type="System.String" />
+        </Parameters>
+        <Docs>
+          <typeparam name="TXaml">To be added.</typeparam>
+          <param name="view">To be added.</param>
+          <param name="xaml">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Xaml.Extensions" Member="M:Xamarin.Forms.Xaml.Extensions.LoadFromXaml``1(``0,System.String)" />
+      </Member>
+    </ExtensionMethod>
     <ExtensionMethod>
       <Targets>
         <Target Type="System.Object" />

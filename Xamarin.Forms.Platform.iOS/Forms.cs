@@ -28,9 +28,6 @@ namespace Xamarin.Forms
 {
 	public static class Forms
 	{
-		//Preserve GetCallingAssembly
-		static readonly bool nevertrue = false;
-
 		public static bool IsInitialized { get; private set; }
 
 #if __MOBILE__
@@ -38,11 +35,6 @@ namespace Xamarin.Forms
 		static bool? s_isiOS10OrNewer;
 		static bool? s_isiOS11OrNewer;
 #endif
-		static Forms()
-		{
-			if (nevertrue)
-				Assembly.GetCallingAssembly();
-		}
 
 #if __MOBILE__
 		internal static bool IsiOS9OrNewer

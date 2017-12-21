@@ -602,6 +602,8 @@ namespace Xamarin.Forms.Xaml
 				resourceDictionary.Add((Style)value);
 			else if (value is ResourceDictionary)
 				resourceDictionary.Add((ResourceDictionary)value);
+			else if (value is StyleSheets.StyleSheet)
+				resourceDictionary.Add((StyleSheets.StyleSheet)value);
 			else {
 				exception = new XamlParseException("resources in ResourceDictionary require a x:Key attribute", lineInfo);
 				return false;

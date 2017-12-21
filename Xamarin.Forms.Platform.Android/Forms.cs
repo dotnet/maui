@@ -166,7 +166,9 @@ namespace Xamarin.Forms
 			// This could change as a result of a config change, so we need to check it every time
 			int minWidthDp = activity.Resources.Configuration.SmallestScreenWidthDp;
 			Device.SetIdiom(minWidthDp >= TabletCrossover ? TargetIdiom.Tablet : TargetIdiom.Phone);
-			Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
+
+			if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
+				Device.SetFlowDirection(activity.Resources.Configuration.LayoutDirection.ToFlowDirection());
 
 			if (ExpressionSearch.Default == null)
 				ExpressionSearch.Default = new AndroidExpressionSearch();

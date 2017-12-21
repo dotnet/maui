@@ -1,11 +1,15 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
+
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll"/>
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
+		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
+		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
@@ -18,8 +22,8 @@
 	<PropertyGroup>
 		<_XFTargetsImportedAgain Condition="'$(_XFTargetsImported)'=='True'">True</_XFTargetsImportedAgain>
 		<_XFTargetsImported>True</_XFTargetsImported>
-		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' == ''">true</IsXBuild>
-		<IsXBuild Condition="'$(MSBuildRuntimeVersion)' != ''">false</IsXBuild>
+		<IsXBuild Condition="'$(MSBuildRuntimeType)' == ''">true</IsXBuild>
+		<IsXBuild Condition="'$(MSBuildRuntimeType)' != ''">false</IsXBuild>
 	</PropertyGroup>
 
 	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
@@ -33,7 +37,7 @@
 		</GetTasksAbi >
 
 		<PropertyGroup>
-			<_XFTasksExpectedAbi>3</_XFTasksExpectedAbi>
+			<_XFTasksExpectedAbi>4</_XFTasksExpectedAbi>
 		</PropertyGroup>
 
 		<Error
@@ -52,7 +56,17 @@
 	<!-- XamlG -->
 	<Target Name="UpdateDesignTimeXaml" DependsOnTargets="XamlG"/>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile">
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			XamlG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
+		</PropertyGroup>
 		<XamlGTask
 			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
 			Language = "$(Language)"
@@ -66,9 +80,16 @@
 	<!-- XamlC -->
 	<PropertyGroup>
 		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>
+		<CompileDependsOn>
+			$(CompileDependsOn);
+			XamlC;
+		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlC" AfterTargets="AfterCompile">
+	<Target Name="XamlC" AfterTargets="AfterCompile" Condition="'$(_XamlCAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_XamlCAlreadyExecuted>true</_XamlCAlreadyExecuted>
+		</PropertyGroup>
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
@@ -77,5 +98,26 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
 			KeepXamlResources = "$(XFKeepXamlResources)" />
+	</Target>
+
+	<!-- CssG -->
+	<PropertyGroup>
+		<CoreCompileDependsOn>
+			CssG;
+			$(CoreCompileDependsOn);
+		</CoreCompileDependsOn>
+	</PropertyGroup>
+	<Target Name="CssG" BeforeTargets="BeforeCompile" Condition="'$(_CssGAlreadyExecuted)'!='true'">
+		<PropertyGroup>
+			<_CssGAlreadyExecuted>true</_CssGAlreadyExecuted>
+		</PropertyGroup>
+		<CssGTask
+			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
+			Language = "$(Language)"
+			AssemblyName = "$(AssemblyName)"
+			OutputPath = "$(IntermediateOutputPath)">
+			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
+			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
+		</CssGTask>
 	</Target>
 </Project>

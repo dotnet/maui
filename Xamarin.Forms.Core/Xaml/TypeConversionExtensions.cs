@@ -124,6 +124,7 @@ namespace Xamarin.Forms.Xaml
 					if (convertFromStringInvariant != null)
 						return value = convertFromStringInvariant.Invoke(converter, new object[] { str });
 				}
+				var ignoreCase = (serviceProvider?.GetService(typeof(IConverterOptions)) as IConverterOptions)?.IgnoreCase ?? false;
 
 				//If the type is nullable, as the value is not null, it's safe to assume we want the built-in conversion
 				if (toType.GetTypeInfo().IsGenericType && toType.GetGenericTypeDefinition() == typeof (Nullable<>))
@@ -131,7 +132,7 @@ namespace Xamarin.Forms.Xaml
 
 				//Obvious Built-in conversions
 				if (toType.GetTypeInfo().IsEnum)
-					return Enum.Parse(toType, str);
+					return Enum.Parse(toType, str, ignoreCase);
 				if (toType == typeof(SByte))
 					return SByte.Parse(str, CultureInfo.InvariantCulture);
 				if (toType == typeof(Int16))
@@ -171,8 +172,8 @@ namespace Xamarin.Forms.Xaml
 					return Decimal.Parse(str, CultureInfo.InvariantCulture);
 			}
 
-			//if there's an implicit conversion, convert
-			if (value != null) {
+			//if the value is not assignable and there's an implicit conversion, convert
+			if (value != null && !toType.IsAssignableFrom(value.GetType())) {
 				var opImplicit =   value.GetType().GetImplicitConversionOperator(fromType: value.GetType(), toType: toType)
 								?? toType.GetImplicitConversionOperator(fromType: value.GetType(), toType: toType);
 

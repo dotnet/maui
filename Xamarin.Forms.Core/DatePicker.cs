@@ -1,10 +1,11 @@
 using System;
+using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_DatePickerRenderer))]
-	public class DatePicker : View, ITextElement,IElementConfiguration<DatePicker>
+	public class DatePicker : View, IFontElement, ITextElement,IElementConfiguration<DatePicker>
 	{
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
@@ -20,6 +21,12 @@ namespace Xamarin.Forms
 			validateValue: ValidateMaximumDate, coerceValue: CoerceMaximumDate);
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
+		
+		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
+
+		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
+
+		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
@@ -57,6 +64,40 @@ namespace Xamarin.Forms
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
+
+		public FontAttributes FontAttributes
+		{
+			get { return (FontAttributes)GetValue(FontAttributesProperty); }
+			set { SetValue(FontAttributesProperty, value); }
+		}
+
+		public string FontFamily
+		{
+			get { return (string)GetValue(FontFamilyProperty); }
+			set { SetValue(FontFamilyProperty, value); }
+		}
+
+		[TypeConverter(typeof(FontSizeConverter))]
+		public double FontSize
+		{
+			get { return (double)GetValue(FontSizeProperty); }
+			set { SetValue(FontSizeProperty, value); }
+		}
+
+		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		void IFontElement.OnFontSizeChanged(double oldValue, double newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+
+		double IFontElement.FontSizeDefaultValueCreator() =>
+			Device.GetNamedSize(NamedSize.Default, (DatePicker)this);
+
+		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
 

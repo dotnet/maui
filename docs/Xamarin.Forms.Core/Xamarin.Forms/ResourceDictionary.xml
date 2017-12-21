@@ -98,6 +98,25 @@
       </Docs>
     </Member>
     <Member MemberName="Add">
+      <MemberSignature Language="C#" Value="public void Add (Xamarin.Forms.StyleSheets.StyleSheet styleSheet);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Add(class Xamarin.Forms.StyleSheets.StyleSheet styleSheet) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="styleSheet" Type="Xamarin.Forms.StyleSheets.StyleSheet" />
+      </Parameters>
+      <Docs>
+        <param name="styleSheet">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Add">
       <MemberSignature Language="C#" Value="public void Add (string key, object value);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Add(string key, object value) cil managed" />
       <MemberType>Method</MemberType>

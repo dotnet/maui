@@ -240,5 +240,13 @@ namespace Xamarin.Forms
 		{
 			return new Rectangle(Math.Round(X), Math.Round(Y), Math.Round(Width), Math.Round(Height));
 		}
+
+		public void Deconstruct(out double x, out double y, out double width, out double height)
+		{
+			x = X;
+			y = Y;
+			width = Width;
+			height = Height;
+		}
 	}
 }

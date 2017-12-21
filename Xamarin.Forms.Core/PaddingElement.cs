@@ -60,6 +60,5 @@
 			padding.Bottom = (double)newValue;
 			bindable.SetValue(PaddingProperty, padding);
 		}
-
 	}
 }

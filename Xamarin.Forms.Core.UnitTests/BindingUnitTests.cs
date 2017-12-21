@@ -2158,5 +2158,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			parent.Content = view;
 			Assert.That(model.Count, Is.EqualTo(1));
 		}
+
+		class MockValueTupleContext
+		{
+			public (string Foo, string Bar) Tuple { get; set; }
+		}
+
+		[Test]
+		public void ValueTupleAsBindingContext()
+		{
+			var label = new Label {
+				BindingContext = new MockValueTupleContext { Tuple = (Foo: "FOO", Bar: "BAR")},
+			};
+
+			label.SetBinding(Label.TextProperty, "Tuple.Foo");
+			Assert.AreEqual("FOO", label.Text);
+			label.SetBinding(Label.TextProperty, "Tuple[1]");
+			Assert.AreEqual("BAR", label.Text);
+
+		}
 	}
 }

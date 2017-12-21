@@ -9,13 +9,64 @@ namespace Xamarin.Forms
 {
 	public class View : VisualElement, IViewController
 	{
-		public static readonly BindableProperty VerticalOptionsProperty = BindableProperty.Create("VerticalOptions", typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged));
+		public static readonly BindableProperty VerticalOptionsProperty =
+			BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
+									propertyChanged: (bindable, oldvalue, newvalue) =>
+									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged));
 
-		public static readonly BindableProperty HorizontalOptionsProperty = BindableProperty.Create("HorizontalOptions", typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.HorizontalOptionsChanged));
+		public static readonly BindableProperty HorizontalOptionsProperty =
+			BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
+									propertyChanged: (bindable, oldvalue, newvalue) =>
+									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.HorizontalOptionsChanged));
 
-		public static readonly BindableProperty MarginProperty = BindableProperty.Create("Margin", typeof(Thickness), typeof(View), default(Thickness), propertyChanged: MarginPropertyChanged);
+		public static readonly BindableProperty MarginProperty =
+			BindableProperty.Create(nameof(Margin), typeof(Thickness), typeof(View), default(Thickness),
+									propertyChanged: MarginPropertyChanged);
+
+		internal static readonly BindableProperty MarginLeftProperty =
+			BindableProperty.Create("MarginLeft", typeof(double), typeof(View), default(double),
+									propertyChanged: OnMarginLeftPropertyChanged);
+
+		static void OnMarginLeftPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var margin = (Thickness)bindable.GetValue(MarginProperty);
+			margin.Left = (double)newValue;
+			bindable.SetValue(MarginProperty, margin);
+		}
+
+		internal static readonly BindableProperty MarginTopProperty =
+			BindableProperty.Create("MarginTop", typeof(double), typeof(View), default(double),
+									propertyChanged: OnMarginTopPropertyChanged);
+
+		static void OnMarginTopPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var margin = (Thickness)bindable.GetValue(MarginProperty);
+			margin.Top = (double)newValue;
+			bindable.SetValue(MarginProperty, margin);
+		}
+
+		internal static readonly BindableProperty MarginRightProperty =
+			BindableProperty.Create("MarginRight", typeof(double), typeof(View), default(double),
+									propertyChanged: OnMarginRightPropertyChanged);
+
+		static void OnMarginRightPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var margin = (Thickness)bindable.GetValue(MarginProperty);
+			margin.Right = (double)newValue;
+			bindable.SetValue(MarginProperty, margin);
+		}
+
+		internal static readonly BindableProperty MarginBottomProperty =
+			BindableProperty.Create("MarginBottom", typeof(double), typeof(View), default(double),
+									propertyChanged: OnMarginBottomPropertyChanged);
+
+
+		static void OnMarginBottomPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var margin = (Thickness)bindable.GetValue(MarginProperty);
+			margin.Bottom = (double)newValue;
+			bindable.SetValue(MarginProperty, margin);
+		}
 
 		readonly ObservableCollection<IGestureRecognizer> _gestureRecognizers = new ObservableCollection<IGestureRecognizer>();
 

@@ -216,6 +216,7 @@ namespace Xamarin.Forms
 			get { return (bool)GetValue(IsFocusedProperty); }
 		}
 
+		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
@@ -650,6 +651,7 @@ namespace Xamarin.Forms
 #pragma warning restore 0618
 
 			FlowController.NotifyFlowDirectionChanged();
+			ApplyStyleSheetsOnParentSet();
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)
@@ -710,10 +712,7 @@ namespace Xamarin.Forms
 
 		internal void MockBounds(Rectangle bounds)
 		{
-			_mockX = bounds.X;
-			_mockY = bounds.Y;
-			_mockWidth = bounds.Width;
-			_mockHeight = bounds.Height;
+			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint)
@@ -728,6 +727,22 @@ namespace Xamarin.Forms
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
+
+		internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			if (e == ResourcesChangedEventArgs.StyleSheets)
+				ApplyStyleSheetsOnParentSet();
+			else
+				base.OnParentResourcesChanged(sender, e);
+		}
+
+		internal override void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			if (e == ResourcesChangedEventArgs.StyleSheets)
+				ApplyStyleSheets();
+			else
+				base.OnResourcesChanged(sender, e);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -856,6 +871,27 @@ namespace Xamarin.Forms
 			public bool Focus { get; set; }
 
 			public bool Result { get; set; }
+		}
+
+		public class VisibilityConverter : TypeConverter
+		{
+			public override object ConvertFromInvariantString(string value)
+			{
+				if (value != null) {
+					if (value.Equals("true", StringComparison.OrdinalIgnoreCase))
+						return true;
+					if (value.Equals("visible", StringComparison.OrdinalIgnoreCase))
+						return true;
+					if (value.Equals("false", StringComparison.OrdinalIgnoreCase))
+						return false;
+					if (value.Equals("hidden", StringComparison.OrdinalIgnoreCase))
+						return false;
+					if (value.Equals("collapse", StringComparison.OrdinalIgnoreCase))
+						return false;
+				}
+				throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(bool)));
+
+			}
 		}
 	}
 }

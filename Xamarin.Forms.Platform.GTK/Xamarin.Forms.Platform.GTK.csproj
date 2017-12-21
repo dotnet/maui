@@ -220,6 +220,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="Libs\GMaps\GMap.NET.Core.dll" />
+    <Content Include="Libs\GMaps\GMap.NET.GTK.dll" />
     <Content Include="Libs\gtk-sharp\gtk-sharp-2.0\atk-sharp.dll" />
     <Content Include="Libs\gtk-sharp\gtk-sharp-2.0\atk-sharp.pdb" />
     <Content Include="Libs\gtk-sharp\gtk-sharp-2.0\gdk-sharp.dll" />

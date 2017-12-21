@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				Control.SelectionChanged += ComboBoxSelectionChanged;
 
 				UpdatePicker();
+				UpdateFont();
 				UpdateTextColor();
 			}
 
@@ -43,8 +44,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
 			if (e.PropertyName == Picker.TextColorProperty.PropertyName ||
-				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			    e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateTextColor();
+			if (e.PropertyName == Picker.FontSizeProperty.PropertyName ||
+				e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
+				e.PropertyName == Picker.FontAttributesProperty.PropertyName)
+				UpdateFont();
+				
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -95,6 +101,14 @@ namespace Xamarin.Forms.Platform.MacOS
 		void RowsCollectionChanged(object sender, EventArgs e)
 		{
 			UpdatePicker();
+		}
+
+		void UpdateFont()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			Control.Font = Element.ToNSFont();
 		}
 
 		void UpdatePicker()

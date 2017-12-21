@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+
+             x:Class="Xamarin.Forms.Xaml.UnitTests.Gh1346">
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <Style x:Key="TestIconStyle" TargetType="local:Gh1346FontIcon">
+        <Setter Property="Icon" Value="{x:Static local:Gh1346FontAwesome.SnowflakeO}" />
+      </Style>         
+    </ResourceDictionary>
+  </ContentPage.Resources>
+  <local:Gh1346FontIcon x:Name="fontIcon" Style="{StaticResource TestIconStyle}" />
+</ContentPage>
