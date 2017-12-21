@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 PackChild();
             }
             if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
-                e.PropertyName == Frame.OutlineColorProperty.PropertyName ||
+                e.PropertyName == Frame.BorderColorProperty.PropertyName ||
                 e.PropertyName == Frame.HasShadowProperty.PropertyName)
                 SetupLayer();
         }
@@ -47,10 +47,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             else
                 Control.SetBackgroundColor(Element.BackgroundColor.ToGtkColor());
 
-            if (Element.OutlineColor == Color.Default)
+            if (Element.BorderColor == Color.Default)
                 Control.ResetBorderColor();
             else
-                Control.SetBorderColor(Element.OutlineColor.ToGtkColor());
+                Control.SetBorderColor(Element.BorderColor.ToGtkColor());
 
             if (Element.HasShadow)
                 Control.SetShadow();
