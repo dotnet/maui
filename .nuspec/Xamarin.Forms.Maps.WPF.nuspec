@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Xamarin.Forms.Maps.WPF$IdAppend$</id>
+    <version>$version$</version>
+    <authors>Xamarin, Inc.</authors>
+    <owners>Xamarin, Inc.</owners>
+    <tags>xamarin forms maps xamarinforms xamarinformsmaps xamarin.forms.maps wpf</tags>
+    <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
+    <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Xamarin.Forms.Maps Renderer for WPF</description>
+    <copyright>Copyright 2013-2017</copyright>
+    <dependencies>
+      <group>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+        <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$"/>
+      </group>
+      <group targetFramework="net45">
+        <dependency id="Microsoft.Maps.MapControl.WPF" version="1.0.0.3"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.dll" target="lib\net45" />
+    <file src="..\Xamarin.Forms.Maps.WPF\bin\$Configuration$\Xamarin.Forms.Maps.WPF.*pdb" target="lib\net45" />
+  </files>
+</package>
