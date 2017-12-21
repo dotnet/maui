@@ -45,25 +45,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get
 			{
-				ResolutionScale scale = _information.ResolutionScale;
-				switch (scale)
-				{
-					case ResolutionScale.Scale120Percent:
-						return 1.2;
-					case ResolutionScale.Scale140Percent:
-						return 1.4;
-					case ResolutionScale.Scale150Percent:
-						return 1.5;
-					case ResolutionScale.Scale160Percent:
-						return 1.6;
-					case ResolutionScale.Scale180Percent:
-						return 1.8;
-					case ResolutionScale.Scale225Percent:
-						return 2.25;
-					case ResolutionScale.Scale100Percent:
-					default:
-						return 1;
-				}
+				return ((int)_information.ResolutionScale) / 100d;
 			}
 		}
 
