@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
@@ -95,6 +96,17 @@ namespace Xamarin.Forms.Platform.iOS
 				_modal = null;
 			base.Dispose(disposing);
 		}
+
+		public override void ViewDidLoad()
+		{
+			base.ViewDidLoad();
+			SetNeedsStatusBarAppearanceUpdate();
+		}
+
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+		{
+			return ChildViewControllers?.LastOrDefault();
+		}
 	}
 
 	internal class PlatformRenderer : UIViewController
@@ -127,6 +139,11 @@ namespace Xamarin.Forms.Platform.iOS
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return (UIViewController)Platform.GetRenderer(this.Platform.Page);
+		}
+
+		public override UIViewController ChildViewControllerForStatusBarStyle()
+		{
+			return ChildViewControllers?.LastOrDefault();
 		}
 
 		public override bool ShouldAutorotate()
@@ -166,6 +183,12 @@ namespace Xamarin.Forms.Platform.iOS
 			View.BackgroundColor = UIColor.White;
 			Platform.WillAppear();
 			base.ViewWillAppear(animated);
+		}
+
+		public override void ViewDidLoad()
+		{
+			base.ViewDidLoad();
+			SetNeedsStatusBarAppearanceUpdate();
 		}
 	}
 }
