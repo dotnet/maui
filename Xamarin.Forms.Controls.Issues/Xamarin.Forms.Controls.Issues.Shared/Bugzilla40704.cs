@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Text;
+using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Collapse",
 				AutomationId = Collapse
 			};
+
 			listview.Footer = button;
 			button.Clicked += Button_Clicked;
 			Content = listview;
@@ -232,12 +234,17 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		public void Bugzilla40704Test()
 		{
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: true, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: true, timeout: TimeSpan.FromMinutes(2));
+			Task.Delay(1000).Wait(); // Let the layout settle down
+
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: true, timeout: TimeSpan.FromMinutes(2));
+			Task.Delay(1000).Wait(); // Let the layout settle down
+
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
+
 			RunningApp.WaitForElement("Menu - 2");
 			RunningApp.WaitForElement("Menu - 1");
 			RunningApp.WaitForElement("Menu - 0");
