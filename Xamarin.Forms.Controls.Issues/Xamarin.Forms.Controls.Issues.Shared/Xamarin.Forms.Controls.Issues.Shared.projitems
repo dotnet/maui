@@ -223,6 +223,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57317.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57114.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57515.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57674.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57758.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57910.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58406.cs" />
@@ -256,6 +257,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1024.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1025.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1026.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1356.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1691.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2983.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2963.cs" />
@@ -350,6 +352,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60382.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />

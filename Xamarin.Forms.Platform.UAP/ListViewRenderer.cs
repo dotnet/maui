@@ -37,16 +37,18 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				e.OldElement.ItemSelected -= OnElementItemSelected;
 				e.OldElement.ScrollToRequested -= OnElementScrollToRequested;
+				((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems.CollectionChanged -= OnCollectionChanged;
 			}
 
 			if (e.NewElement != null)
 			{
 				e.NewElement.ItemSelected += OnElementItemSelected;
 				e.NewElement.ScrollToRequested += OnElementScrollToRequested;
+				((ITemplatedItemsView<Cell>)e.NewElement).TemplatedItems.CollectionChanged += OnCollectionChanged;
 
 				if (List == null)
 				{
-					List = new WListView
+					List = new WListView 
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
@@ -64,12 +66,20 @@ namespace Xamarin.Forms.Platform.UWP
 				// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
 				List.DataContext = new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
 
+				if (Element.SelectedItem != null)
+					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem));
+
 				UpdateGrouping();
 				UpdateHeader();
 				UpdateFooter();
 				UpdateSelectionMode();
 				ClearSizeEstimate();
 			}
+		}
+
+		void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			List.DataContext = new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -315,7 +325,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
-				loadedHandler = async (o, e) =>
+				loadedHandler = async (o, e) => 
 				{
 					List.Loaded -= loadedHandler;
 
