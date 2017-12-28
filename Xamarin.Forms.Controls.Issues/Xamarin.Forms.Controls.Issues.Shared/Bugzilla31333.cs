@@ -130,7 +130,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 				View = new StackLayout {
 					Orientation = StackOrientation.Horizontal,
-					HorizontalOptions = LayoutOptions.StartAndExpand,
+					HorizontalOptions = LayoutOptions.Fill,
 					Children = {
 						control
 					}
