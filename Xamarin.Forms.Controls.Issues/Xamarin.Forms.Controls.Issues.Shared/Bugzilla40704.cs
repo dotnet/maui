@@ -234,15 +234,15 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		public void Bugzilla40704Test()
 		{
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
 			Task.Delay(1000).Wait(); // Let the layout settle down
 
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
 			Task.Delay(1000).Wait(); // Let the layout settle down
 
-			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, withInertia: false, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
 			RunningApp.Tap(Collapse);
 
 			RunningApp.WaitForElement("Menu - 2");
