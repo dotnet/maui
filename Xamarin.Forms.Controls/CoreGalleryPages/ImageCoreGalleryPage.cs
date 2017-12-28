@@ -6,24 +6,10 @@ namespace Xamarin.Forms.Controls
 {
 	internal class ImageCoreGalleryPage : CoreGalleryPage<Image>
 	{
-		static readonly Random Rand = new Random ();
-
-		protected override bool SupportsFocus
-		{
-			get { return false; }
-		}
+		protected override bool SupportsFocus => false;
 
 		protected override void InitializeElement (Image element)
 		{
-//			var sourceIndex = rand.Next (0, 3);
-//
-//			var sources = new [] {
-//				ImageSource.FromFile ("oasis.jpg"),
-//				//ImageSource.FromUri (new Uri("http://www.nasa.gov/sites/default/files/styles/1600x1200_autoletterbox/public/images/298773main_EC02-0282-3_full.jpg")),
-//				//ImageSource.FromResource ("Xamarin.Forms.Controls.ControlGalleryPages.crimson.jpg")
-//			};
-			
-			//element.Source = sources[sourceIndex];
 			element.Source = "oasissmall.jpg";
 		}
 
@@ -43,7 +29,7 @@ namespace Xamarin.Forms.Controls
 			InitializeElement (isLoadingContainer.View);
 			InitializeElement (isOpaqueContainer.View);
 			
-			var sourceContainer = new ViewContainer<Image> (Test.Image.Source, new Image { Source = "http://sethrosetter.com/images/projects/bezierdraw/bezierdraw_5.jpg" });
+			var sourceContainer = new ViewContainer<Image> (Test.Image.Source, new Image { Source = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/Xamarin.Forms.Controls/coffee.png" });
 		
 			Add (aspectFillContainer);
 			Add (aspectFitContainer);
