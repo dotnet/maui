@@ -117,11 +117,6 @@ namespace Xamarin.Forms.Platform.Android
 				view.Date = e.Date;
 				((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
 				Control.ClearFocus();
-
-				if (Forms.IsLollipopOrNewer)
-					dialog.CancelEvent -= OnCancelButtonClicked;
-
-				dialog = null;
 			}, year, month, day);
 
 			return dialog;

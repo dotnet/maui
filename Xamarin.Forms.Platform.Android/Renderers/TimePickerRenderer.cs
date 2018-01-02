@@ -8,6 +8,7 @@ using Android.Text.Format;
 using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
+using AView = Android.Views.View;
 using Android.OS;
 
 namespace Xamarin.Forms.Platform.Android
@@ -16,7 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
-		bool _is24HourFormat;
+		protected bool _is24HourFormat;
 		string _timeFormat;
 
 		public TimePickerRenderer(Context context) : base(context)
@@ -103,16 +104,22 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		protected virtual TimePickerDialog CreateTimePickerDialog(int hours, int minutes)
+		{
+			var dialog = new TimePickerDialog(Context, this, hours, minutes, _is24HourFormat);
+
+			if (Forms.IsLollipopOrNewer)
+				_dialog.CancelEvent += OnCancelButtonClicked;
+
+			return dialog;
+		}
+
 		void OnClick()
 		{
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			_dialog = new TimePickerDialog(Context, this, view.Time.Hours, view.Time.Minutes, _is24HourFormat);
-
-			if (Forms.IsLollipopOrNewer)
-				_dialog.CancelEvent += OnCancelButtonClicked;
-
+			_dialog = CreateTimePickerDialog(view.Time.Hours, view.Time.Minutes);
 			_dialog.Show();
 		}
 
@@ -135,7 +142,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			public static readonly TimePickerListener Instance = new TimePickerListener();
 
-			public void OnClick(global::Android.Views.View v)
+			public void OnClick(AView v)
 			{
 				var renderer = v.Tag as TimePickerRenderer;
 				if (renderer == null)
