@@ -1080,5 +1080,37 @@ public class MyPage : NavigationPage
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Xamarin.Forms.INavigationPageController.RemoveAsyncInner">
+      <MemberSignature Language="C#" Value="System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt; INavigationPageController.RemoveAsyncInner (Xamarin.Forms.Page page, bool animated, bool fast);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class Xamarin.Forms.Page&gt; Xamarin.Forms.INavigationPageController.RemoveAsyncInner(class Xamarin.Forms.Page page, bool animated, bool fast) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.NavigationPage/&lt;Xamarin-Forms-INavigationPageController-RemoveAsyncInner&gt;d__65))</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="page" Type="Xamarin.Forms.Page" />
+        <Parameter Name="animated" Type="System.Boolean" />
+        <Parameter Name="fast" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="page">To be added.</param>
+        <param name="animated">To be added.</param>
+        <param name="fast">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

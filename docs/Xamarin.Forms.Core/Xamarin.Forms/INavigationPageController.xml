@@ -129,6 +129,30 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="RemoveAsyncInner">
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt; RemoveAsyncInner (Xamarin.Forms.Page page, bool animated, bool fast);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance class System.Threading.Tasks.Task`1&lt;class Xamarin.Forms.Page&gt; RemoveAsyncInner(class Xamarin.Forms.Page page, bool animated, bool fast) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="page" Type="Xamarin.Forms.Page" />
+        <Parameter Name="animated" Type="System.Boolean" />
+        <Parameter Name="fast" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="page">To be added.</param>
+        <param name="animated">To be added.</param>
+        <param name="fast">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="RemovePageRequested">
       <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; RemovePageRequested;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Internals.NavigationRequestedEventArgs&gt; RemovePageRequested" />
