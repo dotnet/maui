@@ -736,6 +736,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 			{
+				// iOS may ask for a row we have just deleted and hence cannot rebind in order to measure height.
+				if (!IsValidIndexPath(indexPath))
+					return DefaultRowHeight;
+
 				var cell = GetPrototypicalCell(indexPath);
 
 				if (List.RowHeight == -1 && cell.Height == -1 && cell is ViewCell)
@@ -1065,6 +1069,21 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				UpdateShortNameListener();
 				_uiTableView.ReloadData();
+			}
+
+			protected bool IsValidIndexPath(NSIndexPath indexPath)
+			{
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				if (List.IsGroupingEnabled)
+				{
+					var section = indexPath.Section;
+					if (section < 0 || section >= templatedItems.Count)
+						return false;
+
+					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
+				}
+
+				return templatedItems.ListProxy.TryGetValue(indexPath.Row, out var _);
 			}
 
 			protected ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(NSIndexPath indexPath)
