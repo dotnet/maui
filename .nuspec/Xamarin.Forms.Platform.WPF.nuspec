@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Xamarin.Forms.Platform.WPF$IdAppend$</id>
+    <version>$version$</version>
+    <authors>Xamarin, Inc.</authors>
+    <owners>Xamarin, Inc.</owners>
+    <tags>xamarin forms xamarinforms xamarin.forms wpf</tags>
+    <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
+    <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Xamarin Forms Renderer to build native UIs for WPF</description>
+    <copyright>Copyright 2013-2017</copyright>
+    <dependencies>
+      <group>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+      </group>
+      <group targetFramework="net45">
+        <dependency id="WpfLightToolkit" version="1.0.1"/>
+        <dependency id="OpenTK" version="2.0.0"/>
+        <dependency id="OpenTK.GLControl" version="1.1.2349.61993"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\Xamarin.Forms.Platform.WPF.dll" target="lib\net45" />
+    <file src="..\Xamarin.Forms.Platform.WPF\bin\$Configuration$\Xamarin.Forms.Platform.WPF.*pdb" target="lib\net45" />
+  </files>
+</package>

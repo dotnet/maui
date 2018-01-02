@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Title = "Issue 181";
 			Content = new Frame {
-				OutlineColor = Color.Red,
+				BorderColor = Color.Red,
 				BackgroundColor = new Color (1.0, 1.0, 0.0),
 				Content = new Label {
 					Text = "I should have red text",

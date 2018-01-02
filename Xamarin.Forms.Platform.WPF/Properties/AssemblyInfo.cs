@@ -110,3 +110,4 @@ using Xamarin.Forms.Platform.WPF;
 
 // Others
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
+[assembly: Xamarin.Forms.Dependency(typeof(Deserializer))]

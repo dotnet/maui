@@ -91,5 +91,11 @@ namespace Xamarin.Forms
 		{
 			return Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
 		}
+
+		public void Deconstruct(out double x, out double y)
+		{
+			x = X;
+			y = Y;
+		}
 	}
 }

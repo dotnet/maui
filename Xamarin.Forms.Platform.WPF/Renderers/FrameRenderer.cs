@@ -37,7 +37,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (e.PropertyName == Frame.ContentProperty.PropertyName)
 				UpdateContent();
-			else if (e.PropertyName == Frame.OutlineColorProperty.PropertyName || e.PropertyName == Frame.HasShadowProperty.PropertyName)
+			else if (e.PropertyName == Frame.BorderColorProperty.PropertyName || e.PropertyName == Frame.HasShadowProperty.PropertyName)
 				UpdateBorder();
 			else if (e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
 				UpdateCornerRadius();
@@ -61,9 +61,9 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateBorder()
 		{
-			if (Element.OutlineColor != Color.Default)
+			if (Element.BorderColor != Color.Default)
 			{
-				Control.UpdateDependencyColor(Border.BorderBrushProperty, Element.OutlineColor);
+				Control.UpdateDependencyColor(Border.BorderBrushProperty, Element.BorderColor);
 				Control.BorderThickness = new System.Windows.Thickness(1);
 			}
 			else

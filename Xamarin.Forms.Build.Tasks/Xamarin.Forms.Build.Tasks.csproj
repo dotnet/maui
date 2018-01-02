@@ -1,130 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Xamarin.Forms.Build.Tasks</RootNamespace>
     <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>
-    </NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>
-    </NoWarn>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="Microsoft.Build.Framework" />
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.Build.Tasks.v4.0" />
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+    <PackageReference Include="System.CodeDom" Version="4.4.0" />
+    <PackageReference Include="Microsoft.Build" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.3.409" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XamlGTask.cs" />
-    <Compile Include="ILContext.cs" />
-    <Compile Include="CreateObjectVisitor.cs" />
-    <Compile Include="SetPropertiesVisitor.cs" />
-    <Compile Include="SetFieldVisitor.cs" />
-    <Compile Include="TypeReferenceExtensions.cs" />
-    <Compile Include="NodeILExtensions.cs" />
-    <Compile Include="ILProcessorExtensions.cs" />
-    <Compile Include="ExpandMarkupsVisitor.cs" />
-    <Compile Include="SetNamescopesAndRegisterNamesVisitor.cs" />
-    <Compile Include="MethodReferenceExtensions.cs" />
-    <Compile Include="XamlCTask.cs" />
-    <Compile Include="DebugXamlCTask.cs" />
-    <Compile Include="ILRootNode.cs" />
-    <Compile Include="XmlTypeExtensions.cs" />
-    <Compile Include="SetResourcesVisitor.cs" />
-    <Compile Include="TypeDefinitionExtensions.cs" />
-    <Compile Include="FieldReferenceExtensions.cs" />
-    <Compile Include="PropertyDefinitionExtensions.cs" />
-    <Compile Include="XamlCAssemblyResolver.cs" />
-    <Compile Include="MethodDefinitionExtensions.cs" />
-    <Compile Include="CompiledMarkupExtensions\StaticExtension.cs" />
-    <Compile Include="CompiledMarkupExtensions\ICompiledMarkupExtension.cs" />
-    <Compile Include="BindablePropertyReferenceExtensions.cs" />
-    <Compile Include="CompiledConverters\BindablePropertyConverter.cs" />
-    <Compile Include="CompiledConverters\BindingTypeConverter.cs" />
-    <Compile Include="CompiledConverters\BoundsTypeConverter.cs" />
-    <Compile Include="CompiledConverters\ColorTypeConverter.cs" />
-    <Compile Include="CompiledConverters\ICompiledTypeConverter.cs" />
-    <Compile Include="CompiledConverters\LayoutOptionsConverter.cs" />
-    <Compile Include="CompiledConverters\RectangleTypeConverter.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="XamlTask.cs" />
-    <Compile Include="CompiledMarkupExtensions\ArrayExtension.cs" />
-    <Compile Include="CompiledConverters\ConstraintTypeConverter.cs" />
-    <Compile Include="CompiledConverters\ThicknessTypeConverter.cs" />
-    <Compile Include="MethodBodyExtensions.cs" />
-    <Compile Include="CompiledConverters\TypeTypeConverter.cs" />
-    <Compile Include="CompiledValueProviders\SetterValueProvider.cs" />
-    <Compile Include="CompiledValueProviders\ICompiledValueProvider.cs" />
-    <Compile Include="CompiledValueProviders\PassthroughValueProvider.cs" />
-    <Compile Include="CompiledConverters\ListStringTypeConverter.cs" />
-    <Compile Include="CompiledMarkupExtensions\TypeExtension.cs" />
-    <Compile Include="CompiledMarkupExtensions\NullExtension.cs" />
-    <Compile Include="GetTasksAbi.cs" />
-    <Compile Include="CompiledConverters\UriTypeConverter.cs" />
-    <Compile Include="CompiledConverters\RDSourceTypeConverter.cs" />
-    <Compile Include="XamlGenerator.cs" />
+    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
+    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">
+
+  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\" ContinueOnError="true" Retries="0" />
   </Target>
-  <ItemGroup>
-    <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj">
-      <Project>{9DB2F292-8034-4E06-89AD-98BBDA4306B9}</Project>
-      <Name>Xamarin.Forms.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
-      <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
-      <Name>Xamarin.Forms.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
+
 </Project>

@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Xaml
 {
 	class ResourcesLoader : IResourcesLoader
 	{
-		public ResourceDictionary CreateResourceDictionary(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
+		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T: new()
 		{
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
 			if (resourceId == null)
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Xaml
 
 			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
 			if (alternateResource != null) {
-				var rd = new ResourceDictionary();
+				var rd = new T();
 				rd.LoadFromXaml(alternateResource);
 				return rd;
 			}
@@ -26,10 +26,28 @@ namespace Xamarin.Forms.Xaml
 				if (stream == null)
 					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
 				using (var reader = new StreamReader(stream)) {
-					var rd = new ResourceDictionary();
+					var rd = new T();
 					rd.LoadFromXaml(reader.ReadToEnd());
 					return rd;
 				}
+			}
+		}
+
+		public string GetResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
+		{
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
+			if (resourceId == null)
+				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
+
+			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
+			if (alternateResource != null)
+				return alternateResource;
+
+			using (var stream = assembly.GetManifestResourceStream(resourceId)) {
+				if (stream == null)
+					throw new XamlParseException($"No resource found for '{resourceId}'.", lineInfo);
+				using (var reader = new StreamReader(stream))
+					return reader.ReadToEnd();
 			}
 		}
 	}

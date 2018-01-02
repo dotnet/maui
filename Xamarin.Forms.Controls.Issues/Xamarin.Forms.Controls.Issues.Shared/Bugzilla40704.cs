@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Text;
+using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -20,16 +21,19 @@ namespace Xamarin.Forms.Controls.Issues
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40704, "Strange duplication of listview headers when collapsing/expanding sections")]
-	public class Bugzilla40704 : TestContentPage // or TestMasterDetailPage, etc ...
+	public class Bugzilla40704 : TestContentPage 
 	{
 		ListView listview;
 		int count = 2;
+
+		const string Collapse = "btnCollapse";
+		const string List = "lstMain";
 
 		protected override void Init()
 		{
 			listview = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
-				AutomationId = "lstMain",
+				AutomationId = List,
 				IsGroupingEnabled = true,
 				HasUnevenRows = true,
 				GroupHeaderTemplate = new DataTemplate(typeof(GroupHeaderViewCell)),
@@ -41,8 +45,9 @@ namespace Xamarin.Forms.Controls.Issues
 			var button = new Button()
 			{
 				Text = "Collapse",
-				AutomationId = "btnCollappse"
+				AutomationId = Collapse
 			};
+
 			listview.Footer = button;
 			button.Clicked += Button_Clicked;
 			Content = listview;
@@ -229,12 +234,17 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 		public void Bugzilla40704Test()
 		{
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
-			RunningApp.Tap("btnCollappse");
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
-			RunningApp.Tap("btnCollappse");
-			RunningApp.ScrollDownTo("btnCollappse", "lstMain", ScrollStrategy.Gesture, 0.8, 100, timeout: TimeSpan.FromMinutes(2));
-			RunningApp.Tap("btnCollappse");
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.Tap(Collapse);
+			Task.Delay(1000).Wait(); // Let the layout settle down
+
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.Tap(Collapse);
+			Task.Delay(1000).Wait(); // Let the layout settle down
+
+			RunningApp.ScrollDownTo(Collapse, List, ScrollStrategy.Gesture, 0.9, 500, timeout: TimeSpan.FromMinutes(2));
+			RunningApp.Tap(Collapse);
+
 			RunningApp.WaitForElement("Menu - 2");
 			RunningApp.WaitForElement("Menu - 1");
 			RunningApp.WaitForElement("Menu - 0");

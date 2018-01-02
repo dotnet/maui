@@ -31,6 +31,9 @@ namespace Xamarin.Forms.Xaml
 					throw ae;
 				throw new XamlParseException($"An element with the name \"{(string)node.Value}\" already exists in this NameScope", node);
 			}
+			var element = Values[parentNode] as Element;
+			if (element != null)
+				element.StyleId = element.StyleId ?? (string)node.Value;
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)

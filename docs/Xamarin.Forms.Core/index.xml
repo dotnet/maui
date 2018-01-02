@@ -213,6 +213,7 @@
       <Type Name="FileImageSource" Kind="Class" />
       <Type Name="FileImageSourceConverter" Kind="Class" />
       <Type Name="FlowDirection" Kind="Enumeration" />
+      <Type Name="FlowDirectionConverter" Kind="Class" />
       <Type Name="FocusEventArgs" Kind="Class" />
       <Type Name="Font" Kind="Structure" />
       <Type Name="FontAttributes" Kind="Enumeration" />
@@ -397,6 +398,7 @@
       <Type Name="TemplatedView" Kind="Class" />
       <Type Name="TemplateExtensions" Kind="Class" />
       <Type Name="TextAlignment" Kind="Enumeration" />
+      <Type Name="TextAlignmentConverter" Kind="Class" />
       <Type Name="TextCell" Kind="Class" />
       <Type Name="TextChangedEventArgs" Kind="Class" />
       <Type Name="Thickness" Kind="Structure" />
@@ -424,6 +426,7 @@
       <Type Name="ViewState" Kind="Enumeration" />
       <Type Name="VisualElement" Kind="Class" />
       <Type Name="VisualElement+FocusRequestArgs" Kind="Class" />
+      <Type Name="VisualElement+VisibilityConverter" Kind="Class" />
       <Type Name="WebNavigatedEventArgs" Kind="Class" />
       <Type Name="WebNavigatingEventArgs" Kind="Class" />
       <Type Name="WebNavigationEvent" Kind="Enumeration" />
@@ -554,6 +557,9 @@
       <Type Name="MasterDetailPage" Kind="Class" />
       <Type Name="Page" Kind="Class" />
       <Type Name="ToolbarPlacement" Kind="Enumeration" />
+    </Namespace>
+    <Namespace Name="Xamarin.Forms.StyleSheets">
+      <Type Name="StyleSheet" Kind="Class" />
     </Namespace>
     <Namespace Name="Xamarin.Forms.Xaml">
       <Type Name="AcceptEmptyServiceProviderAttribute" Kind="Class" />

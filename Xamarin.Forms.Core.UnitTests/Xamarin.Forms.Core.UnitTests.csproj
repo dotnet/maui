@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -180,6 +181,10 @@
     <Compile Include="NativeBindingTests.cs" />
     <Compile Include="TypedBindingUnitTests.cs" />
     <Compile Include="AnimationTests.cs" />
+    <Compile Include="StyleSheets\MockStylable.cs" />
+    <Compile Include="StyleSheets\SelectorTests.cs" />
+    <Compile Include="StyleSheets\IStylableTest.cs" />
+    <Compile Include="StyleSheets\StyleTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
@@ -211,5 +216,8 @@
     <EmbeddedResource Include="Images\crimson.jpg">
       <LogicalName>Images/crimson.jpg</LogicalName>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="StyleSheets\" />
   </ItemGroup>
 </Project>

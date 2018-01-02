@@ -88,5 +88,13 @@ namespace Xamarin.Forms
 		{
 			return !left.Equals(right);
 		}
+
+		public void Deconstruct(out double left, out double top, out double right, out double bottom)
+		{
+			left = Left;
+			top = Top;
+			right = Right;
+			bottom = Bottom;
+		}
 	}
 }

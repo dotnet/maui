@@ -22,7 +22,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Xamarin.Forms.Build.Tasks\Xamarin.Forms.Build.Tasks.csproj" />
     <ProjectReference Include="..\..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
     <ProjectReference Include="..\..\Xamarin.Forms.Pages\Xamarin.Forms.Pages.csproj" />
     <ProjectReference Include="..\..\Xamarin.Forms.Platform\Xamarin.Forms.Platform.csproj" />

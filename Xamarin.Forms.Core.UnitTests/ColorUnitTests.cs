@@ -277,5 +277,39 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (Color.Default, default(Color));
 			Assert.AreEqual (Color.Default, new Color ());
 		}
+		
+		[Test]
+		public void TestImplicitConversionToSystemDrawingColor()
+		{
+			var color = Color.FromRgba(0.2, 0.3, 0.4, 0.5);
+			System.Drawing.Color sdColor = color;
+			Assert.AreEqual(51, sdColor.R);
+			Assert.AreEqual(76, sdColor.G);
+			Assert.AreEqual(102, sdColor.B);
+			Assert.AreEqual(127, sdColor.A);
+		}
+
+		[Test]
+		public void TestDefaultColorToSystemDrawingColorEmpty()
+		{
+			Assert.AreEqual(System.Drawing.Color.Empty, (System.Drawing.Color)Color.Default);
+		}
+
+		[Test]
+		public void TestImplicitConversionFromSystemDrawingColor()
+		{
+			System.Drawing.Color sdColor = System.Drawing.Color.FromArgb(32, 64, 128, 255);
+			Color color = sdColor;
+			Assert.AreEqual(.125, color.A, .01);
+			Assert.AreEqual(.25, color.R, .01);
+			Assert.AreEqual(.5, color.G, .01);
+			Assert.AreEqual(1, color.B, .01);
+		}
+
+		[Test]
+		public void TestSystemDrawingColorEmptyToColorDefault()
+		{
+			Assert.AreEqual(Color.Default, (Color)System.Drawing.Color.Empty);
+		}
 	}
 }

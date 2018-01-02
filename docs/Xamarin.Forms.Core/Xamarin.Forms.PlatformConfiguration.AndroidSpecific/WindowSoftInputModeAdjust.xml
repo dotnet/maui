@@ -41,5 +41,19 @@
         <summary>Indicates that the content of the control will resize to accommodate the input interface.</summary>
       </Docs>
     </Member>
+    <Member MemberName="Unspecified">
+      <MemberSignature Language="C#" Value="Unspecified" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust Unspecified = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates that the system will automatically choose between Pan and Resize depending on the view layout.</summary>
+      </Docs>
+    </Member>
   </Members>
 </Type>

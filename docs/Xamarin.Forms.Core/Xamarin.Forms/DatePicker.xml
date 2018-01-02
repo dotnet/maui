@@ -1,6 +1,6 @@
 <Type Name="DatePicker" FullName="Xamarin.Forms.DatePicker">
-  <TypeSignature Language="C#" Value="public class DatePicker : Xamarin.Forms.View, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.DatePicker&gt;" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit DatePicker extends Xamarin.Forms.View implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.DatePicker&gt;" />
+  <TypeSignature Language="C#" Value="public class DatePicker : Xamarin.Forms.View, Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.DatePicker&gt;, Xamarin.Forms.Internals.IFontElement" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit DatePicker extends Xamarin.Forms.View implements class Xamarin.Forms.IElementConfiguration`1&lt;class Xamarin.Forms.DatePicker&gt;, class Xamarin.Forms.Internals.IFontElement" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,6 +17,9 @@
   <Interfaces>
     <Interface>
       <InterfaceName>Xamarin.Forms.IElementConfiguration&lt;Xamarin.Forms.DatePicker&gt;</InterfaceName>
+    </Interface>
+    <Interface>
+      <InterfaceName>Xamarin.Forms.Internals.IFontElement</InterfaceName>
     </Interface>
   </Interfaces>
   <Attributes>
@@ -183,6 +186,104 @@ DatePicker datePicker = new DatePicker
         <summary>An event fired when the Date property changes.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontAttributes">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.FontAttributes FontAttributes { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.FontAttributes FontAttributes" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.FontAttributes</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontAttributesProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FontAttributesProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FontAttributesProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontFamily">
+      <MemberSignature Language="C#" Value="public string FontFamily { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FontFamily" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontFamilyProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FontFamilyProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FontFamilyProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontSize">
+      <MemberSignature Language="C#" Value="public double FontSize { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 FontSize" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.FontSizeConverter))</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FontSizeProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty FontSizeProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty FontSizeProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Format">
@@ -372,6 +473,107 @@ DatePicker datePicker = new DatePicker
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Xamarin.Forms.DatePicker.TextColor" /> property.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.Internals.IFontElement.FontSizeDefaultValueCreator">
+      <MemberSignature Language="C#" Value="double IFontElement.FontSizeDefaultValueCreator ();" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance float64 Xamarin.Forms.Internals.IFontElement.FontSizeDefaultValueCreator() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.Internals.IFontElement.OnFontAttributesChanged">
+      <MemberSignature Language="C#" Value="void IFontElement.OnFontAttributesChanged (Xamarin.Forms.FontAttributes oldValue, Xamarin.Forms.FontAttributes newValue);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.Internals.IFontElement.OnFontAttributesChanged(valuetype Xamarin.Forms.FontAttributes oldValue, valuetype Xamarin.Forms.FontAttributes newValue) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="oldValue" Type="Xamarin.Forms.FontAttributes" />
+        <Parameter Name="newValue" Type="Xamarin.Forms.FontAttributes" />
+      </Parameters>
+      <Docs>
+        <param name="oldValue">To be added.</param>
+        <param name="newValue">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.Internals.IFontElement.OnFontChanged">
+      <MemberSignature Language="C#" Value="void IFontElement.OnFontChanged (Xamarin.Forms.Font oldValue, Xamarin.Forms.Font newValue);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.Internals.IFontElement.OnFontChanged(valuetype Xamarin.Forms.Font oldValue, valuetype Xamarin.Forms.Font newValue) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="oldValue" Type="Xamarin.Forms.Font" />
+        <Parameter Name="newValue" Type="Xamarin.Forms.Font" />
+      </Parameters>
+      <Docs>
+        <param name="oldValue">To be added.</param>
+        <param name="newValue">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.Internals.IFontElement.OnFontFamilyChanged">
+      <MemberSignature Language="C#" Value="void IFontElement.OnFontFamilyChanged (string oldValue, string newValue);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.Internals.IFontElement.OnFontFamilyChanged(string oldValue, string newValue) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="oldValue" Type="System.String" />
+        <Parameter Name="newValue" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="oldValue">To be added.</param>
+        <param name="newValue">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Xamarin.Forms.Internals.IFontElement.OnFontSizeChanged">
+      <MemberSignature Language="C#" Value="void IFontElement.OnFontSizeChanged (double oldValue, double newValue);" />
+      <MemberSignature Language="ILAsm" Value=".method hidebysig newslot virtual instance void Xamarin.Forms.Internals.IFontElement.OnFontSizeChanged(float64 oldValue, float64 newValue) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="oldValue" Type="System.Double" />
+        <Parameter Name="newValue" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="oldValue">To be added.</param>
+        <param name="newValue">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

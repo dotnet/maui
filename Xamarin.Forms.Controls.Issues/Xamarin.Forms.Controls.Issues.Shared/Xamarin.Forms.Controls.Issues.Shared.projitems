@@ -223,18 +223,21 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57317.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57114.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57515.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57674.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57758.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla57910.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58406.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58833.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51427.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60122.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_0.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60563.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ButtonBackgroundColorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CarouselAsync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla34561.cs" />
@@ -255,6 +258,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1024.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1025.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1026.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1356.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1691.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2983.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2963.cs" />
@@ -349,6 +353,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60382.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
