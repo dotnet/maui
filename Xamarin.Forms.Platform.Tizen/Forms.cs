@@ -133,6 +133,19 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		static IReadOnlyList<string> s_flags;
+		public static IReadOnlyList<string> Flags => s_flags ?? (s_flags = new List<string>().AsReadOnly());
+
+		public static void SetFlags(params string[] flags)
+		{
+			if (IsInitialized)
+			{
+				throw new InvalidOperationException($"{nameof(SetFlags)} must be called before {nameof(Init)}");
+			}
+
+			s_flags = flags.ToList().AsReadOnly();
+		}
+
 		public static void SetTitleBarVisibility(TizenTitleBarVisibility visibility)
 		{
 			TitleBarVisibility = visibility;
@@ -178,6 +191,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			Device.Info = new Forms.TizenDeviceInfo();
+			Device.SetFlags(s_flags);
 
 			if (!Forms.IsInitialized)
 			{

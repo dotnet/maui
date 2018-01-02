@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls
 			Padding = new Thickness (20);
 
 			var source = new UriImageSource {
-				Uri = new Uri ("http://www.nasa.gov/sites/default/files/styles/1600x1200_autoletterbox/public/images/298773main_EC02-0282-3_full.jpg"),
+				Uri = new Uri ("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png"),
 				CachingEnabled = false
 			};
 

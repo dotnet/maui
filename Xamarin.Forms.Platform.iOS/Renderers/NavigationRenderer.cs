@@ -331,7 +331,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual async Task<bool> OnPushAsync(Page page, bool animated)
 		{
-			if(page is MasterDetailPage)
+			if (page is MasterDetailPage)
 				System.Diagnostics.Trace.WriteLine($"Pushing a {nameof(MasterDetailPage)} onto a {nameof(NavigationPage)} is not a supported UI pattern on iOS. " +
 					"Please see https://developer.apple.com/documentation/uikit/uisplitviewcontroller for more details.");
 
@@ -366,7 +366,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-					setTitleImage(pack,titleIcon);
+					SetTitleImage(pack, titleIcon);
 				}
 				catch
 				{
@@ -388,7 +388,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return pack;
 		}
 
-		async void setTitleImage(ParentingViewController pack, FileImageSource titleIcon)
+		async void SetTitleImage(ParentingViewController pack, FileImageSource titleIcon)
 		{
 			var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(titleIcon);
 			var image = await source.LoadImageAsync(titleIcon);
@@ -557,26 +557,17 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			// Gesture in progress, lets not be proactive and just wait for it to finish
-			var count = ViewControllers.Length;
 			var task = GetAppearedOrDisappearedTask(controller.Child);
-			task.ContinueWith(async t =>
+
+			task.ContinueWith(t =>
 			{
 				// task returns true if the user lets go of the page and is not popped
 				// however at this point the renderer is already off the visual stack so we just need to update the NavigationPage
 				// Also worth noting this task returns on the main thread
 				if (t.Result)
 					return;
-				_ignorePopCall = true;
-				// because iOS will just chain multiple animations together...
-				var removed = count - ViewControllers.Length;
-				for (var i = 0; i < removed; i++)
-				{
-					// lets just pop these suckers off, do not await, the true is there to make this fast
-					await ((NavigationPage)Element).PopAsyncInner(animated, true);
-				}
 				// because we skip the normal pop process we need to dispose ourselves
-				controller.Dispose();
-				_ignorePopCall = false;
+				controller?.Dispose();
 			}, TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
@@ -658,7 +649,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (containerController == null)
 				return;
 			var currentChild = containerController.Child;
-			var firstPage = ((NavigationPage)Element).Pages.FirstOrDefault(); 
+			var firstPage = ((NavigationPage)Element).Pages.FirstOrDefault();
 			if ((firstPage != pageBeingRemoved && currentChild != firstPage && NavigationPage.GetHasBackButton(currentChild)) || _parentMasterDetailPage == null)
 				return;
 
@@ -693,6 +684,18 @@ namespace Xamarin.Forms.Platform.iOS
 				_secondaryToolbar.Hidden = true;
 				//secondaryToolbar.Items = null;
 			}
+		}
+
+		internal async Task UpdateFormsInnerNavigation(Page pageBeingRemoved)
+		{
+			var navPage = Element as NavigationPage;
+			if (navPage == null)
+				return;
+			_ignorePopCall = true;
+			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
+				await (navPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
+			_ignorePopCall = false;
+
 		}
 
 		internal static async void SetMasterLeftBarButton(UIViewController containerController, MasterDetailPage masterDetailPage)
@@ -1061,7 +1064,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				IVisualElementRenderer childRenderer;
 				if (Child != null && (childRenderer = Platform.GetRenderer(Child)) != null)
-					return childRenderer.ViewController.ShouldAutorotate();				
+					return childRenderer.ViewController.ShouldAutorotate();
 				return base.ShouldAutorotate();
 			}
 
@@ -1074,13 +1077,25 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			public override bool ShouldAutomaticallyForwardRotationMethods => true;
+
+			public override async void DidMoveToParentViewController(UIViewController parent)
+			{
+				//we are being removed from the UINavigationPage
+				if (parent == null)
+				{
+					NavigationRenderer navRenderer;
+					if (_navigation.TryGetTarget(out navRenderer))
+						await navRenderer.UpdateFormsInnerNavigation(Child);
+				}
+				base.DidMoveToParentViewController(parent);
+			}
 		}
 
 		public override UIViewController ChildViewControllerForStatusBarHidden()
 		{
 			return (UIViewController)Platform.GetRenderer(Current);
 		}
-		
+
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			VisualElementRenderer<VisualElement>.RegisterEffect(effect, View);

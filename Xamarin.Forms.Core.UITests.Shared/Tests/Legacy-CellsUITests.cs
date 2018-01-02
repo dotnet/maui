@@ -128,7 +128,6 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		[Ignore("Ignore because is only failing on iOS10 at XTC")] // TODO hartez also probably failing because the urls used on the test page are now invalid
 		[Description("ListView with ImageCells, file access problems")]
 		[UiTest(typeof(ListView))]
 		[UiTest(typeof(ImageCell))]
@@ -136,10 +135,9 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			SelectTest("ImageCell Url List");
 
-			//var scollBounds = App.Query(q => q.Marked("ImageUrlCellListView")).First().Rect;
-			//App.ScrollForElement("* marked:'Detail 200'", new Drag(scollBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
-			//App.ScrollUp();
-			//App.WaitForElement(q => q.Marked("Detail 200"), "Timeout : Detail 200");
+			var scollBounds = App.Query(q => q.Marked("ImageUrlCellListView")).First().Rect;
+			App.ScrollForElement("* marked:'Detail 100'", new Drag(scollBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
+			App.WaitForElement(q => q.Marked("Detail 100"), "Timeout : Detail 100");
 
 			App.Screenshot("All ImageCells are present");
 
