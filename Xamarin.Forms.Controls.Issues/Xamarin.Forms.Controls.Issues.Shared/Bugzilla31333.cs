@@ -217,10 +217,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEntryInListViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in ListView"));
-			RunningApp.Screenshot ("Entry control in ListView cell is focused");
-			RunningApp.EnterText ("Entry in ListView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Entry in ListView Success")).Length > 0);
-			RunningApp.Screenshot ("Entry in ListView Success");
+			RunningApp.EnterText("Entry in ListView Success");
+			RunningApp.WaitForElement("Entry in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in ListView"));
 		}
 
@@ -232,10 +230,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEditorInListViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in ListView"));
-			RunningApp.Screenshot ("Editor control in ListView cell is focused");
-			RunningApp.EnterText ("Editor in ListView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Editor in ListView Success")).Length > 0);
-			RunningApp.Screenshot ("Editor in ListView Success");
+			RunningApp.EnterText("Editor in ListView Success");
+			RunningApp.WaitForElement("Editor in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in ListView"));
 		}
 
@@ -248,10 +244,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEntryInTableViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in Table"));
-			RunningApp.Screenshot ("Entry control in TableView cell is focused");
-			RunningApp.EnterText ("Entry in TableView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Entry in TableView Success")).Length > 0);
-			RunningApp.Screenshot ("Entry in TableView Success");
+			RunningApp.EnterText("Entry in TableView Success");
+			RunningApp.WaitForElement("Entry in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in Table"));
 		}
 
@@ -263,10 +257,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEditorInTableViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in Table"));
-			RunningApp.Screenshot ("Editor control in TableView cell is focused");
-			RunningApp.EnterText ("Editor in TableView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Editor in TableView Success")).Length > 0);
-			RunningApp.Screenshot ("Editor in TableView Success");
+			RunningApp.EnterText("Editor in TableView Success");
+			RunningApp.WaitForElement("Editor in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in Table"));
 		}
 #endif
