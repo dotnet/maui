@@ -87,9 +87,58 @@ namespace Xamarin.Forms.Controls
 				return page;
 			}
 
-			
+			class IssueModel
+			{
+				public IssueTracker IssueTracker { get; set; }
+				public int IssueNumber { get; set; }
+				public int IssueTestNumber { get; set; }
+				public string Name { get; set; }
+				public string Description {get; set; }
+				public Action Action { get; set; }
 
-			public TestCaseScreen ()
+				public bool Matches(string filter)
+				{
+					if (string.IsNullOrEmpty(filter))
+					{
+						return true;
+					}
+
+					if (string.Compare(Name, 0, filter, 0, filter.Length, StringComparison.OrdinalIgnoreCase) == 0)
+					{
+						return true;
+					}
+
+					if (Description.ToUpper().Contains(filter.ToUpper()))
+					{
+						return true;
+					}
+
+					if (IssueNumber.ToString().Contains(filter))
+					{
+						return true;
+					}
+
+					return false;
+				}
+			}
+
+			readonly List<IssueModel> _issues;
+
+			void VerifyNoDuplicates()
+			{
+				var duplicates = new HashSet<string> ();
+				_issues.ForEach (im =>
+				{
+					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
+						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
+														+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
+					}
+
+					duplicates.Add (im.Name);
+				});
+			}
+
+			public TestCaseScreen()
 			{
 				AutomationId = "TestCasesIssueList";
 
@@ -97,11 +146,11 @@ namespace Xamarin.Forms.Controls
 
 				var assembly = typeof (TestCases).GetTypeInfo ().Assembly;
 
-				var issueModels = 
+				_issues = 
 					(from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
 					where typeInfo.GetCustomAttribute<IssueAttribute> () != null
 					let attribute = typeInfo.GetCustomAttribute<IssueAttribute> ()
-					select new {
+					select new IssueModel {
 						IssueTracker = attribute.IssueTracker,
 						IssueNumber = attribute.IssueNumber,
 						IssueTestNumber = attribute.IssueTestNumber,
@@ -114,32 +163,34 @@ namespace Xamarin.Forms.Controls
 				var section = new TableSection ("Bug Repro");
 				root.Add (section);
 
-				var duplicates = new HashSet<string> ();
-				issueModels.ForEach (im =>
-				{
-					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
-						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
-							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
-					}
+				VerifyNoDuplicates();
 
-					duplicates.Add (im.Name);
-				});
+				FilterIssues();
+			}
+
+			public void FilterIssues(string filter = null)
+			{
+				PageToAction.Clear();
+
+				var root = new TableRoot ();
+				var section = new TableSection ("Bug Repro");
+				root.Add (section);
 
 				var githubIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.Github
+					from issueModel in _issues
+					where issueModel.IssueTracker == IssueTracker.Github && issueModel.Matches(filter)
 					orderby issueModel.IssueNumber descending
 					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
 
 				var bugzillaIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.Bugzilla
+					from issueModel in _issues
+					where issueModel.IssueTracker == IssueTracker.Bugzilla && issueModel.Matches(filter)
 					orderby issueModel.IssueNumber descending
 					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
 
 				var untrackedIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.None
+					from issueModel in _issues
+					where issueModel.IssueTracker == IssueTracker.None && issueModel.Matches(filter)
 					orderby issueModel.IssueNumber descending, issueModel.Description 
 					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
 
@@ -177,6 +228,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var searchBar = new SearchBar() {
+				HeightRequest = 42,
 				AutomationId = "SearchBarGo"
 			};
 
@@ -202,7 +254,12 @@ namespace Xamarin.Forms.Controls
 			rootLayout.Children.Add (leaveTestCasesButton);
 			rootLayout.Children.Add (searchBar);
 			rootLayout.Children.Add (searchButton);
-			rootLayout.Children.Add (new TestCaseScreen ());
+
+			var testCaseScreen = new TestCaseScreen();
+
+			rootLayout.Children.Add(testCaseScreen);
+
+			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
 			switch (Device.RuntimePlatform) {
@@ -216,6 +273,18 @@ namespace Xamarin.Forms.Controls
 				break;
 			}
 			return page;
+		}
+
+		static void SearchBarOnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs, TestCaseScreen cases)
+		{
+			var filter = textChangedEventArgs.NewTextValue;
+
+			if (String.IsNullOrEmpty(filter))
+			{
+				return;
+			}
+
+			cases.FilterIssues(filter);
 		}
 	}
 
