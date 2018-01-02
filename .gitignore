@@ -10,6 +10,8 @@ classic_obj
 *.suo
 _docs.xml
 UpgradeLog*
+docs/*.xml
+.nuspec/*.nupkg
 *UpgradeReport*
 *.user
 *.DS_Store
