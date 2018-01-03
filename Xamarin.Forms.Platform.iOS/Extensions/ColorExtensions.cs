@@ -25,7 +25,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public static CGColor ToCGColor(this Color color)
 		{
-			return new CGColor((float)color.R, (float)color.G, (float)color.B, (float)color.A);
+#if __MOBILE__
+			return color.ToUIColor().CGColor;
+#else
+            return color.ToNSColor().CGColor;
+#endif
 		}
 
 		public static Color ToColor(this UIColor color)
