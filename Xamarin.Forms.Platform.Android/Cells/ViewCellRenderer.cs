@@ -127,13 +127,24 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				if (!Enabled)
 					return true;
+				
+				return base.OnInterceptTouchEvent(ev);
+			}
+
+			public override bool DispatchTouchEvent(MotionEvent e)
+			{
+				// Give the child controls a shot at the event (in case they've get Tap gestures and such
+				var handled = base.DispatchTouchEvent(e);
 
 				if (_watchForLongPress)
 				{
-					LongPressGestureDetector.OnTouchEvent(ev);
+					// Feed the gestue through the LongPress detector; for this to wor we *must* return true 
+					// afterward (or the LPGD goes nuts and immediately fires onLongPress)
+					LongPressGestureDetector.OnTouchEvent(e);
+					return true;
 				}
 
-				return base.OnInterceptTouchEvent(ev);
+				return handled;
 			}
 
 			public void Update(ViewCell cell)

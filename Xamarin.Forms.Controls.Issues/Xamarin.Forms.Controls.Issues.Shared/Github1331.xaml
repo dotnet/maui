@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Xamarin.Forms.Controls;assembly=Xamarin.Forms.Controls"
+             x:Class="Xamarin.Forms.Controls.Issues.GitHub1331">
+	<ContentPage.Content>
+		<StackLayout>
+			
+			<Label x:Name="Result" Text="Running..."></Label>
+
+			<ListView ItemsSource="{Binding Items}">
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<ViewCell>
+							<Cell.ContextActions>
+								<MenuItem Text="Context Action" />
+							</Cell.ContextActions>
+							<StackLayout Orientation="Horizontal">
+								<Label Text="{Binding Text}" HorizontalOptions="FillAndExpand"
+										VerticalOptions="Fill" VerticalTextAlignment="Center" Margin="10"/>
+								<Label Text="{Binding ActionText}" VerticalOptions="Fill" 
+										VerticalTextAlignment="Center" Margin="10" BackgroundColor="CornflowerBlue">
+									<Label.GestureRecognizers>
+										<TapGestureRecognizer Command="{Binding ActionTappedCommand}" />
+									</Label.GestureRecognizers>
+								</Label>
+							</StackLayout>
+						</ViewCell>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+		</StackLayout>
+	</ContentPage.Content>
+</controls:TestContentPage>
