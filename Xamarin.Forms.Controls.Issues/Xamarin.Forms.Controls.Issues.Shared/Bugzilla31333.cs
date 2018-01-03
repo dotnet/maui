@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -218,7 +220,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in ListView"));
 			RunningApp.EnterText("Entry in ListView Success");
-			RunningApp.WaitForElement("Entry in ListView Success");
+			WaitForTextQuery("Entry in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in ListView"));
 		}
 
@@ -231,7 +233,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in ListView"));
 			RunningApp.EnterText("Editor in ListView Success");
-			RunningApp.WaitForElement("Editor in ListView Success");
+			WaitForTextQuery("Editor in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in ListView"));
 		}
 
@@ -245,7 +247,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in Table"));
 			RunningApp.EnterText("Entry in TableView Success");
-			RunningApp.WaitForElement("Entry in TableView Success");
+			WaitForTextQuery("Entry in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in Table"));
 		}
 
@@ -258,8 +260,34 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in Table"));
 			RunningApp.EnterText("Editor in TableView Success");
-			RunningApp.WaitForElement("Editor in TableView Success");
+			WaitForTextQuery("Editor in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in Table"));
+		}
+
+		void WaitForTextQuery(string text)
+		{
+			var watch = new Stopwatch();
+			watch.Start();
+
+			// 4-5 seconds should be more than enough time to wait for the query to work
+			while (watch.ElapsedMilliseconds < 5000)
+			{
+				// We have to query this way (instead of just using WaitForElement) because
+				// WaitForElement on iOS won't find text in Entry or Editor
+				// And we can't rely on running this query immediately after entering the text into the control
+				// because on Android the query will occasionally fail if it runs too soon after entering the text
+				var textQuery = RunningApp.Query(query => query.Text(text));
+				if (textQuery.Length > 0)
+				{
+					return;
+				}
+
+				Task.Delay(1000).Wait();
+			}
+
+			watch.Stop();
+
+			Assert.Fail($"Timed out waiting for text '{text}'");
 		}
 #endif
 	}
