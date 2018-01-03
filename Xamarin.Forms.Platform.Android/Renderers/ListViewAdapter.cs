@@ -180,6 +180,13 @@ namespace Xamarin.Forms.Platform.Android
 				key = _dataTemplateIncrementer;
 				_templateToId[itemTemplate] = key;
 			}
+
+			if (key >= ViewTypeCount) 
+			{
+				throw new Exception($"ItemTemplate count has exceeded the limit of {ViewTypeCount}" + Environment.NewLine +
+									 "Please make sure to reuse DataTemplate objects");
+			}
+
 			return key;
 		}
 
