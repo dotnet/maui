@@ -39,10 +39,7 @@ namespace Xamarin.Forms
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
-		/// <summary>
-		/// Short hand property for checking SDK >= 21
-		/// </summary>
-		public static bool IsLollipopOrNewer
+		internal static bool IsLollipopOrNewer
 		{
 			get
 			{
