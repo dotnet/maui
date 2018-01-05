@@ -5,6 +5,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using static System.String;
 using AButton = Android.Widget.Button;
 using AView = Android.Views.View;
@@ -108,7 +109,10 @@ namespace Xamarin.Forms.Platform.Android
 					button.SetOnTouchListener(ButtonTouchListener.Instance.Value);
 					button.Tag = this;
 					SetNativeControl(button);
-					_textColorSwitcher = new TextColorSwitcher(button.TextColors);
+
+					var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+					_textColorSwitcher = new TextColorSwitcher(button.TextColors, useLegacyColorManagement);
+
 					button.AddOnAttachStateChangeListener(this);
 				}
 			}

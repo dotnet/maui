@@ -10,6 +10,7 @@ using ADatePicker = Android.Widget.DatePicker;
 using ATimePicker = Android.Widget.TimePicker;
 using Object = Java.Lang.Object;
 using Android.OS;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -61,7 +62,10 @@ namespace Xamarin.Forms.Platform.Android
 
 				textField.SetOnClickListener(TimePickerListener.Instance);
 				SetNativeControl(textField);
-				_textColorSwitcher = new TextColorSwitcher(textField.TextColors);
+
+				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+				_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
+				
 				_is24HourFormat = DateFormat.Is24HourFormat(Context);
 				_timeFormat = _is24HourFormat ? "HH:mm" : Element.Format;
 			}

@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:windowsSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.WindowsSpecific;assembly=Xamarin.Forms.Core"
+			 xmlns:androidSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+			 xmlns:iosSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.PickerDisabledStatesGallery"
+			 Title="Picker Disabled States Gallery">
+
+	<ContentPage.Resources>
+		<ResourceDictionary>
+
+			<Style TargetType="Picker" x:Key="CustomDisabledState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Red" />
+									<Setter Property="BackgroundColor" Value="Purple" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+			<Style TargetType="Picker" x:Key="DefaultInInitialState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Green" />
+									<Setter Property="BackgroundColor" Value="Black" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<ContentPage.Content>
+		<ScrollView VerticalOptions="Fill" HorizontalOptions="Fill">
+			<StackLayout>
+
+				<!-- Not using the VSM at all; should exhibit pre-VSM default behavior -->
+				<Label Text="The Picker below uses the current XF defaults; when IsEnabled is false, it uses the default native colors for the control. (Legacy Color Behavior)"/>
+				<Picker x:Name="Picker0" TextColor="Blue" BackgroundColor="Bisque" >
+					<Picker.Items>
+						<x:String>First</x:String>
+						<x:String>Second</x:String>
+						<!--<Picker.SelectedIndex>0</Picker.SelectedIndex>-->
+					</Picker.Items>
+				</Picker>
+				<Button Text="Toggle IsEnabled" x:Name="Button0" Clicked="Button0_OnClicked" />
+
+				<!-- Legacy Color Behavior turned off by the PlatformSpecific; ignores states entirely and uses 
+					whatever colors are manually set for it -->
+				<Label Text="The Picker below has the Legacy Color Behavior disabled; it will stick with whatever colors are set, regardless of state"/>
+				<Picker x:Name="Picker1" TextColor="Blue" BackgroundColor="Bisque" 
+					windowsSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+					androidSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+					iosSpecific:VisualElement.IsLegacyColorModeEnabled="False">
+					<Picker.Items>
+						<x:String>First</x:String>
+						<x:String>Second</x:String>
+					</Picker.Items>
+					<!--<Picker.SelectedIndex>0</Picker.SelectedIndex>-->
+				</Picker>
+				<Button Text="Toggle IsEnabled" x:Name="Button1" Clicked="Button1_OnClicked" />
+
+				<!-- Disabled colors fully managed by the VSM -->
+				<Label Text="The Picker below uses the VSM to customize the colors for the disabled state." />
+				<Picker x:Name="Picker2" Style="{StaticResource CustomDisabledState}" TextColor="Green" 
+					BackgroundColor="Beige">
+					<Picker.Items>
+						<x:String>First</x:String>
+						<x:String>Second</x:String>
+						<!--<Picker.SelectedIndex>0</Picker.SelectedIndex>-->
+					</Picker.Items>
+				</Picker>
+				<Button Text="Toggle IsEnabled" x:Name="Button2" Clicked="Button2_OnClicked" />
+
+				<!-- This section verifies that the default for a Picker's text is cached and can be reverted to -->
+				<Label Text="This Picker uses Color.Default for the intial text/background, and colors from the VSM when disabled."/>
+				<Picker x:Name="Picker3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
+				   BackgroundColor="Default">
+					<Picker.Items>
+						<x:String>First</x:String>
+						<x:String>Second</x:String>
+						<!--<Picker.SelectedIndex>0</Picker.SelectedIndex>-->
+					</Picker.Items>
+				</Picker>
+				<Button Text="Toggle IsEnabled" x:Name="Button3" Clicked="Button3_OnClicked" />
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+</ContentPage>

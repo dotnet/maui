@@ -25,9 +25,16 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Control == null)
 				{
 					var button = new FormsButton();
+
 					button.Click += OnButtonClick;
 					button.AddHandler(PointerPressedEvent, new PointerEventHandler(OnPointerPressed), true);
+					button.Loaded += ButtonOnLoaded;
+
 					SetNativeControl(button);
+				}
+				else
+				{
+					WireUpFormsVsm();
 				}
 
 				UpdateContent();
@@ -48,6 +55,19 @@ namespace Xamarin.Forms.Platform.UWP
 					UpdateBorderRadius();
 
 				UpdateFont();
+			}
+		}
+
+		void ButtonOnLoaded(object o, RoutedEventArgs routedEventArgs)
+		{
+			WireUpFormsVsm();
+		}
+
+		void WireUpFormsVsm()
+		{
+			if (Element.UseFormsVsm())
+			{
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
 			}
 		}
 
@@ -106,7 +126,7 @@ namespace Xamarin.Forms.Platform.UWP
 			((IButtonController)Element)?.SendPressed();
 		}
 
-			void UpdateBackground()
+		void UpdateBackground()
 		{
 			Control.BackgroundColor = Element.BackgroundColor != Color.Default ? Element.BackgroundColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["ButtonBackgroundThemeBrush"];
 		}

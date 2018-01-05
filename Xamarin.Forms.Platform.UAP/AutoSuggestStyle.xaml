@@ -204,6 +204,38 @@
 							</Style>
 						</Grid.Resources>
 						<VisualStateManager.VisualStateGroups>
+							<VisualStateGroup x:Name="FormsManaged">
+								<!-- These "Forms" prefixed states exist to support the Forms VSM; once custom 
+								visual state managers are working correctly for TextBox, we'll be able to remove them
+								(see notes in FormsVisualStateManager.cs) -->
+								<VisualState x:Name="FormsNormal" />
+								<VisualState x:Name="FormsDisabled">
+									<Storyboard>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground"
+																		Storyboard.TargetName="HeaderContentPresenter">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
+										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background"
+																		Storyboard.TargetName="BackgroundElement">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Background, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="BorderElement">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="BorderElement">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseLowBrush}" />
+										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentElement">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding Foreground, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+										</ObjectAnimationUsingKeyFrames>
+										<ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground"
+										                               Storyboard.TargetName="PlaceholderTextContentPresenter">
+											<DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForegroundBrush, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+										</ObjectAnimationUsingKeyFrames>
+									</Storyboard>
+								</VisualState>
+							</VisualStateGroup>
+
 							<VisualStateGroup x:Name="CommonStates">
 								<VisualState x:Name="Disabled">
 									<Storyboard>

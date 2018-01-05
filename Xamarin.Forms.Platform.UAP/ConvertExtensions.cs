@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml.Media;
+﻿using System.Drawing;
+using Windows.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.UWP
 {

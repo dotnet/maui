@@ -19,6 +19,12 @@ namespace Xamarin.Forms.Core.XamlC
 				((IElementNode)node).CollectionItems.Count == 1)
 				valueNode = ((IElementNode)node).CollectionItems[0];
 
+			var bpNode = ((ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")]);
+			var bpRef = (new BindablePropertyConverter()).GetBindablePropertyFieldReference((string)bpNode.Value, module, bpNode);
+
+			if (SetterValueIsCollection(bpRef, module, node, context))
+				yield break;
+
 			if (valueNode == null)
 				throw new XamlParseException("Missing Value for Setter", (IXmlLineInfo)node);
 
@@ -27,8 +33,6 @@ namespace Xamarin.Forms.Core.XamlC
 				yield break;
 
 			var value = ((string)((ValueNode)valueNode).Value);
-			var bpNode = ((ValueNode)((IElementNode)node).Properties[new XmlName("", "Property")]);
-			var bpRef = (new BindablePropertyConverter()).GetBindablePropertyFieldReference((string)bpNode.Value, module, bpNode);
 
 			TypeReference _;
 			var setValueRef = module.ImportReference(module.ImportReference(typeof(Setter)).GetProperty(p => p.Name == "Value", out _).SetMethod);
@@ -42,6 +46,29 @@ namespace Xamarin.Forms.Core.XamlC
 
 			//set the value
 			yield return Instruction.Create(OpCodes.Callvirt, setValueRef);
+		}
+
+		static bool SetterValueIsCollection(FieldReference bindablePropertyReference, ModuleDefinition module, BaseNode node, ILContext context)
+		{
+			var items = (node as IElementNode)?.CollectionItems;
+
+			if (items == null || items.Count <= 0)
+				return false;
+
+			// Is this a generic type ?
+			var generic = bindablePropertyReference.GetBindablePropertyType(node, module) as GenericInstanceType;
+
+			// With a single generic argument?
+			if (generic?.GenericArguments.Count != 1)
+				return false;
+
+			// Is the generic argument assignable from this value?
+			var genericType = generic.GenericArguments[0];
+
+			if (!(items[0] is IElementNode firstItem))
+				return false;
+
+			return context.Variables[firstItem].VariableType.InheritsFromOrImplements(genericType);
 		}
 	}
 }

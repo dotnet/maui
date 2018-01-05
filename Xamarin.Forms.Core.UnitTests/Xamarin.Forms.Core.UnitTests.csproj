@@ -153,6 +153,7 @@
     <Compile Include="TypeUnitTests.cs" />
     <Compile Include="ViewCellTests.cs" />
     <Compile Include="ViewUnitTests.cs" />
+    <Compile Include="VisualStateManagerTests.cs" />
     <Compile Include="WeakEventManagerTests.cs" />
     <Compile Include="WebViewUnitTests.cs" />
     <Compile Include="ImageSourceTests.cs" />

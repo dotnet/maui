@@ -128,6 +128,7 @@
     <Compile Include="FormsProgressBar.cs" />
     <Compile Include="FormsTextBox.cs" />
     <Compile Include="FormsComboBox.cs" />
+    <Compile Include="InterceptVisualStateManager.cs" />
     <Compile Include="HorizontalTextAlignmentConverter.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="IToolbarProvider.cs" />

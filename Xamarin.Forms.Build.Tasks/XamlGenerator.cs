@@ -250,7 +250,7 @@ namespace Xamarin.Forms.Build.Tasks
 			XmlNodeList names =
 				root.SelectNodes(
 				"//*[@" + xPrefix + ":Name" +
-					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style)]", nsmgr);
+					"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)]", nsmgr);
 			foreach (XmlNode node in names) {
 				// Don't take the root canvas
 				if (node == root)

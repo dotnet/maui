@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -45,10 +47,13 @@ namespace Xamarin.Forms
 				{
 					var style = parent as Style;
 					var triggerBase = parent as TriggerBase;
+					var visualState = parent as VisualState;
 					if (style != null)
 						type = style.TargetType;
 					else if (triggerBase != null)
 						type = triggerBase.TargetType;
+					else if (visualState != null)
+						type = FindTypeForVisualState(parentValuesProvider, lineinfo);
 				}
 				else if (parentValuesProvider.TargetObject is Trigger)
 					type = (parentValuesProvider.TargetObject as Trigger).TargetType;
@@ -101,6 +106,45 @@ namespace Xamarin.Forms
 			if (bp.PropertyName != propertyName)
 				throw new XamlParseException($"The PropertyName of {type.Name}.{name} is not {propertyName}", lineinfo);
 			return bp;
+		}
+
+		Type FindTypeForVisualState(IProvideParentValues parentValueProvider, IXmlLineInfo lineInfo)
+		{
+			var parents = parentValueProvider.ParentObjects.ToList();
+
+			// Skip 0; we would not be making this check if TargetObject were not a Setter
+			// Skip 1; we would not be making this check if the immediate parent were not a VisualState
+
+			// VisualStates must be in a VisualStateGroup
+			if(!(parents[2] is VisualStateGroup)) {
+				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parents[2]}.", lineInfo);
+			}
+
+			var vsTarget = parents[3];
+
+			// Are these Visual States directly on a VisualElement?
+			if (vsTarget is VisualElement)
+			{
+				return vsTarget.GetType();
+			}
+
+			if (!(parents[3] is VisualStateGroupList))
+			{
+				throw new XamlParseException($"Expected {nameof(VisualStateGroupList)} but found {parents[3]}.", lineInfo);
+			}
+
+			if (!(parents[4] is Setter))
+			{
+				throw new XamlParseException($"Expected {nameof(Setter)} but found {parents[4]}.", lineInfo);
+			}
+
+			// These must be part of a Style; verify that 
+			if (!(parents[5] is Style style))
+			{
+				throw new XamlParseException($"Expected {nameof(Style)} but found {parents[5]}.", lineInfo);
+			}
+
+			return style.TargetType;
 		}
 	}
 }

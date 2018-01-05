@@ -12,6 +12,13 @@ namespace Xamarin.Forms.Platform.iOS
 	public class EntryRenderer : ViewRenderer<Entry, UITextField>
 	{
 		UIColor _defaultTextColor;
+
+		// Placeholder default color is 70% gray
+		// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+		readonly Color _defaultPlaceholderColor = ColorExtensions.SeventyPercentGrey.ToColor();
+
+		bool _useLegacyColorManagement;
+
 		bool _disposed;
 
 		static readonly int baseHeight = 30;
@@ -73,7 +80,11 @@ namespace Xamarin.Forms.Platform.iOS
 				var textField = new UITextField(RectangleF.Empty);
 				SetNativeControl(textField);
 
+				// Cache the default text color
 				_defaultTextColor = textField.TextColor;
+
+				_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+
 				textField.BorderStyle = UITextBorderStyle.RoundedRect;
 				textField.ClipsToBounds = true;
 
@@ -165,10 +176,14 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var textColor = Element.TextColor;
 
-			if (textColor.IsDefault || !Element.IsEnabled)
-				Control.TextColor = _defaultTextColor;
+			if (_useLegacyColorManagement)
+			{
+				Control.TextColor = textColor.IsDefault || !Element.IsEnabled ? _defaultTextColor : textColor.ToUIColor();
+			}
 			else
-				Control.TextColor = textColor.ToUIColor();
+			{
+				Control.TextColor = textColor.IsDefault ? _defaultTextColor : textColor.ToUIColor();
+			}
 		}
 
 		void UpdateAdjustsFontSizeToFitWidth()
@@ -215,12 +230,17 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var targetColor = Element.PlaceholderColor;
 
-			// Placeholder default color is 70% gray
-			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
-
-			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
-
-			Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+			if (_useLegacyColorManagement)
+			{
+				var color = targetColor.IsDefault || !Element.IsEnabled ? _defaultPlaceholderColor : targetColor;
+				Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+			}
+			else
+			{
+				// Using VSM color management; take whatever is in Element.PlaceholderColor
+				var color = targetColor.IsDefault ? _defaultPlaceholderColor : targetColor;
+				Control.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+			}
 		}
 
 		void UpdateText()

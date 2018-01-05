@@ -7,6 +7,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -40,7 +41,7 @@ namespace Xamarin.Forms.Platform.UWP
 		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), 
 			typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
 
-		InputScope passwordInputScope;
+		InputScope _passwordInputScope;
 		Border _borderElement;
 		InputScope _cachedInputScope;
 		bool _cachedPredictionsSetting;
@@ -53,6 +54,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			TextChanged += OnTextChanged;
 			SelectionChanged += OnSelectionChanged;
+			IsEnabledChanged += OnIsEnabledChanged;
+		}
+
+		void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+		{
+			UpdateEnabled();
 		}
 
 		public Brush BackgroundFocusBrush
@@ -72,6 +79,8 @@ namespace Xamarin.Forms.Platform.UWP
 			get { return (bool)GetValue(IsPasswordProperty); }
 			set { SetValue(IsPasswordProperty, value); }
 		}
+
+		internal bool UseFormsVsm { get; set; }
 
 		public Brush PlaceholderForegroundBrush
 		{
@@ -95,16 +104,16 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get
 			{
-				if (passwordInputScope != null)
+				if (_passwordInputScope != null)
 				{
-					return passwordInputScope;
+					return _passwordInputScope;
 				}
 
-				passwordInputScope = new InputScope();
+				_passwordInputScope = new InputScope();
 				var name = new InputScopeName { NameValue = InputScopeNameValue.Default };
-				passwordInputScope.Names.Add(name);
+				_passwordInputScope.Names.Add(name);
 
-				return passwordInputScope;
+				return _passwordInputScope;
 			}
 		}
 
@@ -369,13 +378,21 @@ namespace Xamarin.Forms.Platform.UWP
 			// when the Windows.UI.XAML.VisualStateManager moves to the "Focused" state. So we have to force a 
 			// "refresh" of the Focused state by going to that state again
 
-			var control = dependencyObject as Control;
-			if (control == null || control.FocusState == FocusState.Unfocused)
+			if (!(dependencyObject is Control control) || control.FocusState == FocusState.Unfocused)
 			{
 				return;
 			}
 
-			VisualStateManager.GoToState(control, "Focused", false);
+			WVisualStateManager.GoToState(control, "Focused", false);
+		}
+
+		internal void UpdateEnabled()
+		{
+			if (UseFormsVsm)
+			{
+				var state = IsEnabled ? "FormsNormal" : "FormsDisabled";
+				WVisualStateManager.GoToState(this, state, true);
+			}
 		}
 	}
 }

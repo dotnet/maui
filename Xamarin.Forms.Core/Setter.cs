@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
@@ -57,7 +58,12 @@ namespace Xamarin.Forms
 			else if (dynamicResource != null)
 				target.SetDynamicResource(Property, dynamicResource.Key, fromStyle);
 			else
-				target.SetValue(Property, Value, fromStyle);
+			{
+				if (Value is IList<VisualStateGroup> visualStateGroupCollection)
+					target.SetValue(Property, visualStateGroupCollection.Clone(), fromStyle);
+				else
+					target.SetValue(Property, Value, fromStyle);
+			}
 		}
 
 		internal void UnApply(BindableObject target, bool fromStyle = false)

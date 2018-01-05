@@ -119,6 +119,9 @@
     <Compile Include="OnPlatformTests.cs" />
     <Compile Include="NullExtensionTests.cs" />
     <Compile Include="TypeExtensionTests.cs" />
+    <Compile Include="VisualStateManagerTests.xaml.cs">
+      <DependentUpon>VisualStateManagerTests.xaml</DependentUpon>
+    </Compile>
     <Compile Include="XamlgTests.cs" />
     <Compile Include="Issues\TestCases.cs" />
     <Compile Include="Issues\Issue1493.cs" />
@@ -1045,4 +1048,14 @@
     <Folder Include="css\" />
   </ItemGroup>
   <ItemGroup />
+
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="VisualStateManagerTests.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

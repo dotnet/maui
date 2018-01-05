@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:windowsSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.WindowsSpecific;assembly=Xamarin.Forms.Core"
+			xmlns:androidSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+			xmlns:iosSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.EditorDisabledStatesGallery"
+			Title="Editor Disabled States Gallery">
+
+	<ContentPage.Resources>
+		<ResourceDictionary>
+
+			<Style TargetType="Editor" x:Key="CustomDisabledState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Red" />
+									<Setter Property="BackgroundColor" Value="Purple" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+			<Style TargetType="Editor" x:Key="DefaultInInitialState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Green" />
+									<Setter Property="BackgroundColor" Value="Black" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<ContentPage.Content>
+		<ScrollView VerticalOptions="Fill" HorizontalOptions="Fill">
+			<StackLayout>
+
+				<!-- Not using the VSM at all; should exhibit pre-VSM default behavior -->
+				<Label Text="The Editor below uses the current XF defaults; when IsEnabled is false, it uses the default native colors for the control. (Legacy Color Behavior)"/>
+				<Editor x:Name="Editor0" TextColor="Blue" BackgroundColor="Bisque" Text="Kwyjibo">
+				</Editor>
+				<Button Text="Toggle IsEnabled" x:Name="Button0" Clicked="Button0_OnClicked" />
+
+				<!-- Legacy Color Behavior turned off by the PlatformSpecific; ignores states entirely and uses 
+					whatever colors are manually set for it -->
+				<Label Text="The Editor below has the Legacy Color Behavior disabled; it will stick with whatever colors are set, regardless of state"/>
+				<Editor x:Name="Editor1" TextColor="Blue" BackgroundColor="GreenYellow" Text="Kwyjibo"
+						windowsSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+						androidSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+						iosSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+				/>
+				<Button Text="Toggle IsEnabled" x:Name="Button1" Clicked="Button1_OnClicked" />
+
+				<!-- Disabled colors fully managed by the VSM -->
+				<Label Text="The Editor below uses the VSM to customize the colors for the disabled state." />
+				<Editor x:Name="Editor2" Style="{StaticResource CustomDisabledState}" TextColor="Green" 
+						BackgroundColor="Beige" Text="Kwyjibo" />
+				<Button Text="Toggle IsEnabled" x:Name="Button2" Clicked="Button2_OnClicked" />
+
+				<!-- This section verifies that the default colors for a searchbar's text and placeholder are cached and can be reverted to -->
+				<Label Text="This Editor uses Color.Default for the intial text/background, and colors from the VSM when disabled."/>
+				<Editor x:Name="Editor3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
+						BackgroundColor="Default" Text="Kwyjibo" />
+				<Button Text="Toggle IsEnabled" x:Name="Button3" Clicked="Button3_OnClicked" />
+
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+</ContentPage>

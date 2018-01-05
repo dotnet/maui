@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Platform.iOS
 		UITextField _textField;
 		bool _textWasTyped;
 		string _typedText;
+		bool _useLegacyColorManagement;
 
 		IElementController ElementController => Element as IElementController;
 
@@ -51,6 +52,9 @@ namespace Xamarin.Forms.Platform.iOS
 					_cancelButtonTextColorDefaultDisabled = cancelButton.TitleColor(UIControlState.Disabled);
 
 					SetNativeControl(searchBar);
+
+					_textField = _textField ?? Control.FindDescendantView<UITextField>();
+					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 
 					Control.CancelButtonClicked += OnCancelClicked;
 					Control.SearchButtonClicked += OnSearchButtonClicked;
@@ -193,7 +197,15 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Normal);
 				cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Highlighted);
-				cancelButton.SetTitleColor(_cancelButtonTextColorDefaultDisabled, UIControlState.Disabled);
+
+				if (_useLegacyColorManagement)
+				{
+					cancelButton.SetTitleColor(_cancelButtonTextColorDefaultDisabled, UIControlState.Disabled);
+				}
+				else
+				{
+					cancelButton.SetTitleColor(Element.CancelButtonColor.ToUIColor(), UIControlState.Disabled);
+				}
 			}
 		}
 
@@ -214,20 +226,27 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdatePlaceholder()
 		{
-			_textField = _textField ?? Control.FindDescendantView<UITextField>();
-
 			if (_textField == null)
 				return;
 
 			var formatted = (FormattedString)Element.Placeholder ?? string.Empty;
 			var targetColor = Element.PlaceholderColor;
 
-			// Placeholder default color is 70% gray
-			// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
+			if (_useLegacyColorManagement)
+			{
+				// Placeholder default color is 70% gray
+				// https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITextField_Class/index.html#//apple_ref/occ/instp/UITextField/placeholder
 
-			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
+				var color = Element.IsEnabled && !targetColor.IsDefault 
+					? targetColor : ColorExtensions.SeventyPercentGrey.ToColor();
 
-			_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, color);
+			}
+			else
+			{
+				_textField.AttributedPlaceholder = formatted.ToAttributed(Element, targetColor.IsDefault 
+					? ColorExtensions.SeventyPercentGrey.ToColor() : targetColor);
+			}
 		}
 
 		void UpdateText()
@@ -252,17 +271,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateTextColor()
 		{
-			_textField = _textField ?? Control.FindDescendantView<UITextField>();
-
 			if (_textField == null)
 				return;
 
 			_defaultTextColor = _defaultTextColor ?? _textField.TextColor;
 			var targetColor = Element.TextColor;
 
-			var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : _defaultTextColor.ToColor();
-
-			_textField.TextColor = color.ToUIColor();
+			if (_useLegacyColorManagement)
+			{
+				var color = Element.IsEnabled && !targetColor.IsDefault ? targetColor : _defaultTextColor.ToColor();
+				_textField.TextColor = color.ToUIColor();
+			}
+			else
+			{
+				_textField.TextColor = targetColor.IsDefault ? _defaultTextColor : targetColor.ToUIColor();
+			}
 		}
 	}
 }

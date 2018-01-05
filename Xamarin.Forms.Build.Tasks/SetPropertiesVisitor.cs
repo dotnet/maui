@@ -64,6 +64,8 @@ namespace Xamarin.Forms.Build.Tasks
 					return;
 			}
 
+			if (TrySetRuntimeName(propertyName, Context.Variables[(IElementNode)parentNode], node))
+				return;
 			if (skips.Contains(propertyName))
 				return;
 			if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains (propertyName))
@@ -1353,6 +1355,26 @@ namespace Xamarin.Forms.Build.Tasks
 			parentContext.IL.Emit(OpCodes.Callvirt, module.ImportReference(propertySetter));
 
 			loadTemplate.Body.Optimize();
+		}
+
+		bool TrySetRuntimeName(XmlName propertyName, VariableDefinition variableDefinition, ValueNode node)
+		{
+			if (propertyName != XmlName.xName)
+				return false;
+
+			var attributes = variableDefinition.VariableType.Resolve()
+				.CustomAttributes.Where(attribute => attribute.AttributeType.FullName == "Xamarin.Forms.Xaml.RuntimeNamePropertyAttribute").ToList();
+
+			if (!attributes.Any())
+				return false;
+
+			var runTimeName = attributes[0].ConstructorArguments[0].Value as string;
+
+			if (string.IsNullOrEmpty(runTimeName)) 
+				return false;
+
+			Context.IL.Append(SetPropertyValue(variableDefinition, new XmlName("", runTimeName), node, Context, node));
+			return true;
 		}
 	}
 
