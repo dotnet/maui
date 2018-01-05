@@ -113,20 +113,29 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendClicked()
 		{
-			Command?.Execute(CommandParameter);
-			Clicked?.Invoke(this, EventArgs.Empty);
+			if (IsEnabled == true)
+			{
+				Command?.Execute(CommandParameter);
+				Clicked?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendPressed()
 		{
-			Pressed?.Invoke(this, EventArgs.Empty);
+			if (IsEnabled == true)
+			{
+				Pressed?.Invoke(this, EventArgs.Empty); 
+			}
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendReleased()
 		{
-			Released?.Invoke(this, EventArgs.Empty);
+			if (IsEnabled == true)
+			{
+				Released?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public FontAttributes FontAttributes
