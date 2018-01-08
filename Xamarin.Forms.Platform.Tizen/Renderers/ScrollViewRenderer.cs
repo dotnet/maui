@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Scroller(Forms.Context.MainWindow));
+				SetNativeControl(new Scroller(Forms.NativeParent));
 				Control.Scrolled += OnScrolled;
 			}
 

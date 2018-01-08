@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.SearchBar(Forms.Context.MainWindow));
+				SetNativeControl(new Native.SearchBar(Forms.NativeParent));
 				Control.TextChanged += OnTextChanged;
 				Control.SearchButtonPressed += OnButtonPressed;
 			}

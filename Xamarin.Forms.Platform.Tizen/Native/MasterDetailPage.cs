@@ -1,5 +1,6 @@
 ﻿using System;
 using ElmSharp;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
@@ -120,7 +121,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				Proportion = s_splitRatio,
 			};
 
-			_drawer = new Panel(Forms.Context.MainWindow);
+			_drawer = new Panel(Forms.NativeParent);
 			_drawer.SetScrollable(_isGestureEnabled);
 			_drawer.SetScrollableArea(1.0);
 			_drawer.Direction = PanelDirection.Left;
@@ -133,9 +134,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			// in case of the screen rotation we may need to update the choice between split
 			// and popover behaviors and reconfigure the layout
-			Forms.Context.MainWindow.RotationChanged += (sender, e) =>
+			Device.Info.PropertyChanged += (s, e) =>
 			{
-				UpdateMasterBehavior();
+				if (e.PropertyName == nameof(Device.Info.CurrentOrientation))
+				{
+					UpdateMasterBehavior();
+				}
 			};
 		}
 
@@ -310,10 +314,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (behavior == MasterBehavior.SplitOnLandscape ||
 				behavior == MasterBehavior.SplitOnPortrait)
 			{
-				var rotation = Forms.Context.MainWindow.Rotation;
+				var orientation = Device.Info.CurrentOrientation;
 
-				if (((rotation == 90 || rotation == 270) && behavior == MasterBehavior.SplitOnLandscape) ||
-					((rotation == 0 || rotation == 90) && behavior == MasterBehavior.SplitOnPortrait))
+				if ((orientation.IsLandscape() && behavior == MasterBehavior.SplitOnLandscape) ||
+					(orientation.IsPortrait() && behavior == MasterBehavior.SplitOnPortrait))
 				{
 					behavior = MasterBehavior.Split;
 				}

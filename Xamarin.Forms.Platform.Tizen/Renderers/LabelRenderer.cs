@@ -1,3 +1,4 @@
+using ElmSharp;
 using Xamarin.Forms.Platform.Tizen.Native;
 using EColor = ElmSharp.Color;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Label;
@@ -28,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				base.SetNativeControl(new Native.Label(Forms.Context.MainWindow));
+				base.SetNativeControl(new Native.Label(Forms.NativeParent));
 			}
 			base.OnElementChanged(e);
 		}

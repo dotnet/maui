@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_mdpage == null)
 			{
-				_mdpage = new Native.MasterDetailPage(Forms.Context.MainWindow)
+				_mdpage = new Native.MasterDetailPage(Forms.NativeParent)
 				{
 					Master = GetNativePage(e.NewElement.Master),
 					Detail = GetNativePage(e.NewElement.Detail),

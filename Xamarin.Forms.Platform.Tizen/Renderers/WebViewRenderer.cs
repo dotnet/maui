@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				TChromium.Initialize();
 				Forms.Context.Terminated += (sender, arg) => TChromium.Shutdown();
-				_control = new TWebView(Forms.Context.MainWindow);
+				_control = new TWebView(Forms.NativeParent);
 				_control.LoadStarted += OnLoadStarted;
 				_control.LoadFinished += OnLoadFinished;
 				_control.LoadError += OnLoadError;

@@ -1,3 +1,4 @@
+using ElmSharp;
 using System;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (null == Control)
 			{
-				SetNativeControl(new Native.Canvas(Forms.Context.MainWindow));
+				SetNativeControl(new Native.Canvas(Forms.NativeParent));
 			}
 
 			base.OnElementChanged(e);

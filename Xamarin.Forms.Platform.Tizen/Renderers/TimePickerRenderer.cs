@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.EditfieldEntry(Forms.Context.MainWindow)
+				var entry = new Native.EditfieldEntry(Forms.NativeParent)
 				{
 					IsSingleLine = true,
 					HorizontalTextAlignment = Native.TextAlignment.Center,
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			// If the problem is resolved, no conditional statement is required.
 			if (Element.IsEnabled)
 			{
-				Native.DateTimePickerDialog dialog = new Native.DateTimePickerDialog(Forms.Context.MainWindow)
+				Native.DateTimePickerDialog dialog = new Native.DateTimePickerDialog(Forms.NativeParent)
 				{
 					Title = DialogTitle
 				};

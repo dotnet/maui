@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var image = new Native.Image(Forms.Context.MainWindow);
+				var image = new Native.Image(Forms.NativeParent);
 				SetNativeControl(image);
 			}
 

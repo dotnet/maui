@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl (new Native.Button(Forms.Context.MainWindow));
+				SetNativeControl (new Native.Button(Forms.NativeParent));
 				Control.Clicked += OnClicked;
 			}
 
@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnClicked(object sender, EventArgs e)
 		{
 			int i = 0;
-			_dialog = new Native.Dialog(Forms.Context.MainWindow);
+			_dialog = new Native.Dialog(Forms.NativeParent);
 			_list = new List(_dialog);
 			_dialog.AlignmentX = -1;
 			_dialog.AlignmentY = -1;

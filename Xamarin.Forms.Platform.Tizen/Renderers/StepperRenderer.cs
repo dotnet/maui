@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Spinner(Forms.Context.MainWindow)
+				SetNativeControl(new Spinner(Forms.NativeParent)
 				{
 					IsEditable = false,
 				});

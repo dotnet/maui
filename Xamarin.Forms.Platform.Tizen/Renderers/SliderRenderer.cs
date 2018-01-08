@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new ESlider(Forms.Context.MainWindow)
+				SetNativeControl(new ESlider(Forms.NativeParent)
 				{
 					PropagateEvents = false,
 				});

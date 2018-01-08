@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (null == _page)
 			{
-				_page = new Native.Page(Forms.Context.MainWindow);
+				_page = new Native.Page(Forms.NativeParent);
 				_page.LayoutUpdated += OnLayoutUpdated;
 				SetNativeView(_page);
 			}
