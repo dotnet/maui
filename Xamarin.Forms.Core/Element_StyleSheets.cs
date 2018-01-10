@@ -32,5 +32,23 @@ namespace Xamarin.Forms
 		}
 
 		IStyleSelectable IStyleSelectable.Parent => Parent;
+
+		//on parent set, or on parent stylesheet changed, reapply all
+		void ApplyStyleSheetsOnParentSet()
+		{
+			var parent = Parent;
+			if (parent == null)
+				return;
+			var sheets = new List<StyleSheet>();
+			while (parent != null) {
+				var visualParent = parent as VisualElement;
+				var vpSheets = visualParent?.GetStyleSheets();
+				if (vpSheets != null)
+					sheets.AddRange(vpSheets);
+				parent = parent.Parent;
+			}
+			for (var i = sheets.Count - 1; i >= 0; i--)
+				((IStyle)sheets[i]).Apply(this);
+		}
 	}
 }

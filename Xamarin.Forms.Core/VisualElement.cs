@@ -652,7 +652,6 @@ namespace Xamarin.Forms
 #pragma warning restore 0618
 
 			FlowController.NotifyFlowDirectionChanged();
-			ApplyStyleSheetsOnParentSet();
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)
@@ -728,14 +727,6 @@ namespace Xamarin.Forms
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
-		}
-
-		internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
-		{
-			if (e == ResourcesChangedEventArgs.StyleSheets)
-				ApplyStyleSheetsOnParentSet();
-			else
-				base.OnParentResourcesChanged(sender, e);
 		}
 
 		internal override void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
