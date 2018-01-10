@@ -35,13 +35,13 @@ namespace Xamarin.Forms.Xaml
 
 		public string GetResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
-			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
-			if (resourceId == null)
-				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
-
 			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
 			if (alternateResource != null)
 				return alternateResource;
+
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
+			if (resourceId == null)
+				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
 
 			using (var stream = assembly.GetManifestResourceStream(resourceId)) {
 				if (stream == null)
