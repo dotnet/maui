@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Xamarin.Forms.Controls.TestCasesPages;
 using Xamarin.Forms.CustomAttributes;
-using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
@@ -16,6 +11,11 @@ namespace Xamarin.Forms.Controls
 		public class TestCaseScreen : TableView
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action> ();
+
+			bool _filterBugzilla;
+			bool _filterNone;
+			bool _filterGitHub;
+			string _filter;
 
 			static TextCell MakeIssueCell (string text, string detail, Action tapped)
 			{
@@ -87,21 +87,72 @@ namespace Xamarin.Forms.Controls
 				return page;
 			}
 
-			
+			class IssueModel
+			{
+				public IssueTracker IssueTracker { get; set; }
+				public int IssueNumber { get; set; }
+				public int IssueTestNumber { get; set; }
+				public string Name { get; set; }
+				public string Description {get; set; }
+				public Action Action { get; set; }
 
-			public TestCaseScreen ()
+				public bool Matches(string filter)
+				{
+					if (string.IsNullOrEmpty(filter))
+					{
+						return true;
+					}
+
+					// If the user has typed something which looks like part of a short issue name 
+					// (e.g. 'B605' or 'G13'), make sure we match that
+					if (string.Compare(Name, 0, filter, 0, filter.Length, StringComparison.OrdinalIgnoreCase) == 0)
+					{
+						return true;
+					}
+
+					if (Description.ToUpper().Contains(filter.ToUpper()))
+					{
+						return true;
+					}
+
+					if (IssueNumber.ToString().Contains(filter))
+					{
+						return true;
+					}
+
+					return false;
+				}
+			}
+
+			readonly List<IssueModel> _issues;
+
+			void VerifyNoDuplicates()
+			{
+				var duplicates = new HashSet<string> ();
+				_issues.ForEach (im =>
+				{
+					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
+						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
+							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
+					}
+
+					duplicates.Add (im.Name);
+				});
+			}
+
+			public TestCaseScreen()
 			{
 				AutomationId = "TestCasesIssueList";
 
 				Intent = TableIntent.Settings;
 
-				var assembly = typeof (TestCases).GetTypeInfo ().Assembly;
+				var assembly = typeof(TestCases).GetTypeInfo().Assembly;
 
-				var issueModels = 
+				_issues = 
 					(from typeInfo in assembly.DefinedTypes.Select (o => o.AsType ().GetTypeInfo ())
 					where typeInfo.GetCustomAttribute<IssueAttribute> () != null
 					let attribute = typeInfo.GetCustomAttribute<IssueAttribute> ()
-					select new {
+					select new IssueModel {
 						IssueTracker = attribute.IssueTracker,
 						IssueNumber = attribute.IssueNumber,
 						IssueTestNumber = attribute.IssueTestNumber,
@@ -114,36 +165,75 @@ namespace Xamarin.Forms.Controls
 				var section = new TableSection ("Bug Repro");
 				root.Add (section);
 
-				var duplicates = new HashSet<string> ();
-				issueModels.ForEach (im =>
+				VerifyNoDuplicates();
+
+				FilterIssues();
+			}
+
+			public void FilterTracker(IssueTracker tracker)
+			{
+				switch (tracker)
 				{
-					if (duplicates.Contains (im.Name) && !IsExempt (im.Name)) {
-						throw new NotSupportedException ("Please provide unique tracker + issue number combo: " 
-							+ im.IssueTracker.ToString () + im.IssueNumber.ToString () + im.IssueTestNumber.ToString());
-					}
+					case IssueTracker.Github:
+						_filterGitHub = !_filterGitHub;
+						break;
+					case IssueTracker.Bugzilla:
+						_filterBugzilla = !_filterBugzilla;
+						break;
+					case IssueTracker.None:
+						_filterNone = !_filterNone;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(tracker), tracker, null);
+				}
 
-					duplicates.Add (im.Name);
-				});
+				FilterIssues(_filter);
+			}
 
-				var githubIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.Github
-					orderby issueModel.IssueNumber descending
-					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
+			public void FilterIssues(string filter = null)
+			{
+				_filter = filter;
 
-				var bugzillaIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.Bugzilla
-					orderby issueModel.IssueNumber descending
-					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
+				PageToAction.Clear();
 
-				var untrackedIssueCells = 
-					from issueModel in issueModels
-					where issueModel.IssueTracker == IssueTracker.None
-					orderby issueModel.IssueNumber descending, issueModel.Description 
-					select MakeIssueCell (issueModel.Name, issueModel.Description, issueModel.Action);
+				var root = new TableRoot ();
+				var section = new TableSection ("Bug Repro");
+				root.Add (section);
 
-				var issueCells = bugzillaIssueCells.Concat (githubIssueCells).Concat (untrackedIssueCells);
+				var issueCells = Enumerable.Empty<TextCell>();
+
+				if (!_filterBugzilla)
+				{
+					var bugzillaIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.Bugzilla && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(bugzillaIssueCells);
+				}
+
+				if (!_filterGitHub)
+				{
+					var githubIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.Github && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(githubIssueCells);
+				}
+
+				if (!_filterNone)
+				{
+					var untrackedIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.None && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending, issueModel.Description
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(untrackedIssueCells);
+				}
 
 				foreach (var issueCell in issueCells) {
 					section.Add (issueCell);
@@ -177,6 +267,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var searchBar = new SearchBar() {
+				HeightRequest = 42, // Need this for Android N, see https://bugzilla.xamarin.com/show_bug.cgi?id=43975
 				AutomationId = "SearchBarGo"
 			};
 
@@ -202,7 +293,14 @@ namespace Xamarin.Forms.Controls
 			rootLayout.Children.Add (leaveTestCasesButton);
 			rootLayout.Children.Add (searchBar);
 			rootLayout.Children.Add (searchButton);
-			rootLayout.Children.Add (new TestCaseScreen ());
+
+			var testCaseScreen = new TestCaseScreen();
+
+			rootLayout.Children.Add(CreateTrackerFilter(testCaseScreen));
+
+			rootLayout.Children.Add(testCaseScreen);
+
+			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
 			switch (Device.RuntimePlatform) {
@@ -216,6 +314,44 @@ namespace Xamarin.Forms.Controls
 				break;
 			}
 			return page;
+		}
+
+		static Layout CreateTrackerFilter(TestCaseScreen testCaseScreen)
+		{
+			var trackerFilterLayout = new StackLayout
+			{
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			var bzSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla" });
+			trackerFilterLayout.Children.Add(bzSwitch);
+			bzSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Bugzilla);
+
+			var ghSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "GitHub" });
+			trackerFilterLayout.Children.Add(ghSwitch);
+			ghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Github);
+
+			var noneSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "None" });
+			trackerFilterLayout.Children.Add(noneSwitch);
+			noneSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.None);
+
+			return trackerFilterLayout;
+		}
+
+		static void SearchBarOnTextChanged(object sender, TextChangedEventArgs textChangedEventArgs, TestCaseScreen cases)
+		{
+			var filter = textChangedEventArgs.NewTextValue;
+
+			if (String.IsNullOrEmpty(filter))
+			{
+				return;
+			}
+
+			cases.FilterIssues(filter);
 		}
 	}
 
