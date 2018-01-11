@@ -5,7 +5,7 @@ using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal class ExpandMarkupsVisitor : IXamlNodeVisitor
+	class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{
 		public ExpandMarkupsVisitor(HydrationContext context)
 		{
@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Xaml
 		public bool StopOnDataTemplate => false;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => true;
+		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

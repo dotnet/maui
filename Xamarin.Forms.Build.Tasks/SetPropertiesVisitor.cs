@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => true;
 		public bool VisitNodeOnDataTemplate => true;
+		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		ModuleDefinition Module { get; }
 
