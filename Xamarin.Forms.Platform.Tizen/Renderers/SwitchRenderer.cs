@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Check(Forms.Context.MainWindow)
+				SetNativeControl(new Check(Forms.NativeParent)
 				{
 					PropagateEvents = false,
 					Style = SwitchStyle.Toggle

@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.OnIdiomExample"
+			 Title="Using OnIdiom in the VisualStateManager">
+	<ContentPage.Resources>
+	<ResourceDictionary>
+
+		<Style TargetType="Label" x:Key="OnIdiomExample">
+			<Setter Property="VisualStateManager.VisualStateGroups">
+				<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal">
+								<VisualState.Setters>
+									<Setter Property="FontSize">
+										<OnIdiom x:TypeArguments="x:Double">
+											<OnIdiom.Phone>12</OnIdiom.Phone>
+											<OnIdiom.Tablet>24</OnIdiom.Tablet>
+											<OnIdiom.Desktop>36</OnIdiom.Desktop>
+											<OnIdiom.TV>30</OnIdiom.TV>
+										</OnIdiom>
+									</Setter>
+									<Setter Property="Text" Value="Normal State"></Setter>
+								</VisualState.Setters>
+							</VisualState>
+							<VisualState x:Name="CustomState">
+								<VisualState.Setters>
+									<Setter Property="FontSize">
+										<OnIdiom x:TypeArguments="x:Double">
+											<OnIdiom.Phone>24</OnIdiom.Phone>
+											<OnIdiom.Tablet>48</OnIdiom.Tablet>
+											<OnIdiom.Desktop>72</OnIdiom.Desktop>
+											<OnIdiom.TV>60</OnIdiom.TV>
+										</OnIdiom>
+									</Setter>
+									<Setter Property="Text" Value="Custom State"></Setter>
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>	
+					</VisualStateGroupList>
+				</Setter>
+		</Style>
+
+	</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<ContentPage.Content>
+		<StackLayout>
+			<Label Text="Initial State" x:Name="DemoLabel" Style="{StaticResource OnIdiomExample}"/>
+
+			<Button Text="Change Label to Custom State" x:Name="ToggleButton" Clicked="Button_OnClicked"></Button>
+
+			<Label Text="The FontSize of the label above is set in the VSM using OnIdiom"></Label>
+			<Label Text="On Tablets it will switch between 24 and 48"></Label>
+			<Label Text="On Phones it will switch between 12 and 24"></Label>
+			<Label Text="On Destktops it will switch between 36 and 72"></Label>
+			<Label Text="On TVs it will switch between 30 and 60"></Label>
+		</StackLayout>
+	</ContentPage.Content>
+</ContentPage>

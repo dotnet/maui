@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			var ns = parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode)
+			var ns = parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node)
 				? new NameScope()
 				: scopes[parentNode];
 			node.Namescope = ns;
@@ -64,6 +64,11 @@ namespace Xamarin.Forms.Xaml
 		{
 			var pnode = parentNode as ElementNode;
 			return pnode != null && pnode.XmlType.Name == "Style";
+		}
+
+		static bool IsVisualStateGroupList(ElementNode node)
+		{
+			return node != null  && node.XmlType.Name == "VisualStateGroup" && node.Parent is IListNode;
 		}
 	}
 }

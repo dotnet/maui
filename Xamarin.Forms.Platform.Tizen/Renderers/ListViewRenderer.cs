@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.ListView(Forms.Context.MainWindow));
+				SetNativeControl(new Native.ListView(Forms.NativeParent));
 
 				Control.ItemSelected += OnListViewItemSelected;
 				Control.ItemUnselected += OnListViewItemUnselected;

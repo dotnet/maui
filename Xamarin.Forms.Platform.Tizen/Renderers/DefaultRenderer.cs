@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (NativeView == null)
 			{
-				var control = new ELayout(Forms.Context.MainWindow);
+				var control = new ELayout(Forms.NativeParent);
 				SetNativeView(control);
 			}
 			base.OnElementChanged(e);

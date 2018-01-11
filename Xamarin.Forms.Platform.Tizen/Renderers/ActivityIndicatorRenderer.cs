@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new EProgressBar(Forms.Context.MainWindow)
+				SetNativeControl(new EProgressBar(Forms.NativeParent)
 				{
 					Style = "process_medium",
 					IsPulseMode = true,

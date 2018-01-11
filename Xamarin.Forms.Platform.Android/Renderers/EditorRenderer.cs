@@ -15,8 +15,8 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class EditorRenderer : ViewRenderer<Editor, FormsEditText>, ITextWatcher
 	{
-		ColorStateList _defaultColors;
 		bool _disposed;
+		TextColorSwitcher _textColorSwitcher;
 
 		public EditorRenderer(Context context) : base(context)
 		{
@@ -67,6 +67,9 @@ namespace Xamarin.Forms.Platform.Android
 				SetNativeControl(edit);
 				edit.AddTextChangedListener(this);
 				edit.OnKeyboardBackPressed += OnKeyboardBackPressed;
+
+				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
+				_textColorSwitcher = new TextColorSwitcher(edit.TextColors, useLegacyColorManagement);
 			}
 
 			edit.SetSingleLine(false);
@@ -166,28 +169,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateTextColor()
 		{
-			if (Element.TextColor.IsDefault)
-			{
-				if (_defaultColors == null)
-				{
-					// This control has always had the default colors; nothing to update
-					return;
-				}
-
-				// This control is being set back to the default colors
-				Control.SetTextColor(_defaultColors);
-			}
-			else
-			{
-				if (_defaultColors == null)
-				{
-					// Keep track of the default colors so we can return to them later
-					// and so we can preserve the default disabled color
-					_defaultColors = Control.TextColors;
-				}
-
-				Control.SetTextColor(Element.TextColor.ToAndroidPreserveDisabled(_defaultColors));
-			}
+			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
 		}
 
 		void OnKeyboardBackPressed(object sender, EventArgs eventArgs)

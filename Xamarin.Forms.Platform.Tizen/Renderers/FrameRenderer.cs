@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Canvas(Forms.Context.MainWindow));
+				SetNativeControl(new Native.Canvas(Forms.NativeParent));
 
 				_shadow = new Polygon(NativeView);
 				_shadow.Color = s_ShadowColor;

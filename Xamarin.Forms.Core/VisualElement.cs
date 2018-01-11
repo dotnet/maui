@@ -13,7 +13,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
-		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(VisualElement), true);
+		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), 
+			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
 
@@ -88,8 +89,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create("MinimumHeightRequest", typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused", typeof(bool), typeof(VisualElement), default(bool),
-			propertyChanged: OnIsFocusedPropertyChanged);
+		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused", 
+			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
 
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
@@ -651,7 +652,6 @@ namespace Xamarin.Forms
 #pragma warning restore 0618
 
 			FlowController.NotifyFlowDirectionChanged();
-			ApplyStyleSheetsOnParentSet();
 		}
 
 		protected virtual void OnSizeAllocated(double width, double height)
@@ -729,14 +729,6 @@ namespace Xamarin.Forms
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
-		internal override void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
-		{
-			if (e == ResourcesChangedEventArgs.StyleSheets)
-				ApplyStyleSheetsOnParentSet();
-			else
-				base.OnParentResourcesChanged(sender, e);
-		}
-
 		internal override void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
 		{
 			if (e == ResourcesChangedEventArgs.StyleSheets)
@@ -801,9 +793,30 @@ namespace Xamarin.Forms
 			self.NotifyFlowDirectionChanged();
 		}
 
+		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var element = (VisualElement)bindable;
+
+			if (element == null)
+			{
+				return;
+			}
+
+			var isEnabled = (bool)newValue;
+
+			VisualStateManager.GoToState(element, isEnabled 
+				? VisualStateManager.CommonStates.Normal 
+				: VisualStateManager.CommonStates.Disabled);
+		}
+
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
-			var element = bindable as VisualElement;
+			var element = (VisualElement)bindable;
+
+			if (element == null)
+			{
+				return;
+			}
 
 			var isFocused = (bool)newvalue;
 			if (isFocused)
@@ -814,6 +827,10 @@ namespace Xamarin.Forms
 			{
 				element.OnUnfocus();
 			}
+
+			VisualStateManager.GoToState(element, isFocused
+				? VisualStateManager.CommonStates.Normal
+				: VisualStateManager.CommonStates.Focused);
 		}
 
 		static void OnRequestChanged(BindableObject bindable, object oldvalue, object newvalue)

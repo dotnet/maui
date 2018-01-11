@@ -89,6 +89,7 @@
     <Compile Include="FormsContentLoader.cs" />
     <Compile Include="FormsPanel.cs" />
     <Compile Include="FormsTextBox.cs" />
+    <Compile Include="FormsTimePicker.cs" />
     <Compile Include="Helpers\UiHelper.cs" />
     <Compile Include="ICellRenderer.cs" />
     <Compile Include="IVisualElementRenderer.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="Renderers\TabbedPageRenderer.cs" />
     <Compile Include="Renderers\CellRenderer.cs" />
     <Compile Include="Renderers\TableViewRenderer.cs" />
+    <Compile Include="Renderers\TimePickerRenderer.cs" />
     <Compile Include="Renderers\ViewRenderer.cs" />
     <Compile Include="Renderers\VisualMultiPageRenderer.cs" />
     <Compile Include="Renderers\VisualPageRenderer.cs" />

@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:windowsSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.WindowsSpecific;assembly=Xamarin.Forms.Core"
+			xmlns:androidSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+			xmlns:iosSpecific="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+			x:Class="Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries.ButtonDisabledStatesGallery"
+			Title="Button Disabled States Gallery">
+	
+	<ContentPage.Resources>
+		<ResourceDictionary>
+
+			<Style TargetType="Button" x:Key="CustomDisabledState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<!-- Because we're creating our own PointerOver state here, the Forms VSM will override
+							the Windows VSM for UWP. So this button won't display the native PointerOver behavior. 
+							If we remove this next line, the usual PointerOver behavior will be restored. -->
+							<VisualState x:Name="PointerOver" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Red" />
+									<Setter Property="BackgroundColor" Value="Purple" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+			<Style TargetType="Button" x:Key="DefaultInInitialState">
+				<Setter Property="VisualStateManager.VisualStateGroups">
+					<VisualStateGroupList>
+						<VisualStateGroup x:Name="CommonStates">
+							<VisualState x:Name="Normal" />
+							<VisualState x:Name="Disabled">
+								<VisualState.Setters>
+									<Setter Property="TextColor" Value="Green" />
+									<Setter Property="BackgroundColor" Value="Black" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateGroupList>
+				</Setter>
+			</Style>
+
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+
+	<ContentPage.Content>
+		<ScrollView VerticalOptions="Fill" HorizontalOptions="Fill">
+			<StackLayout>
+
+				<!-- Not using the VSM at all; should exhibit pre-VSM default behavior -->
+				<Label Text="The Button below uses the current XF defaults; when IsEnabled is false, it uses the default native colors for the control. (Legacy Color Behavior)"/>
+				<Button Text="Button" x:Name="Button0" TextColor="Blue" BackgroundColor="Bisque" />
+				<Button Text="Toggle IsEnabled" x:Name="Button0_Toggle" Clicked="Button0_Toggle_OnClicked" />
+
+				<!-- Legacy Color Behavior turned off by the PlatformSpecific; ignores states entirely and uses 
+				whatever colors are manually set for it -->
+				<Label Text="The Button below has the Legacy Color Behavior disabled; it will stick with whatever colors are set, regardless of state"/>
+				<Button Text="Button" x:Name="Button1" TextColor="Blue" BackgroundColor="Bisque"
+						androidSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+						iosSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+						windowsSpecific:VisualElement.IsLegacyColorModeEnabled="False"
+						/>
+				<Button Text="Toggle IsEnabled" x:Name="Button1_Toggle" Clicked="Button1_Toggle_OnClicked" />
+
+				<!-- Disabled colors fully managed by the VSM -->
+				<Label Text="The Button below uses the VSM to customize the colors for the disabled state." />
+				<Button Text="Button" x:Name="Button2" Style="{StaticResource CustomDisabledState}" TextColor="Green" 
+				   BackgroundColor="Beige" />
+				<Button Text="Toggle IsEnabled" x:Name="Button2_Toggle" Clicked="Button2_Toggle_OnClicked" />
+
+				<!-- This section verifies that the default colors for an entry's text and placeholder are cached and can be reverted to -->
+				<Label Text="This Button uses Color.Default for the intial text/background, and colors from the VSM when disabled."/>
+				<Button Text="Button" x:Name="Button3" Style="{StaticResource DefaultInInitialState}" TextColor="Default" 
+					BackgroundColor="Default" />
+				<Button Text="Toggle IsEnabled" x:Name="Button3_Toggle" Clicked="Button3_Toggle_OnClicked" />
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+</ContentPage>

@@ -18,14 +18,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		Platform _platform;
 		Application _application;
 		bool _isInitialStart;
-		int _pageBusyCount;
-		Native.Dialog _pageBusyDialog;
 		Window _window;
 
 		protected FormsApplication()
 		{
 			_isInitialStart = true;
-			_pageBusyCount = 0;
 		}
 
 		/// <summary>
@@ -124,145 +121,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			SetPage(_application.MainPage);
 		}
 
-		static void ActionSheetSignalNameHandler(Page sender, ActionSheetArguments arguments)
-		{
-			Native.Dialog alert = new Native.Dialog(Forms.Context.MainWindow);
-
-			alert.Title = arguments.Title;
-			Box box = new Box(alert);
-
-			if (null != arguments.Destruction)
-			{
-				Native.Button destruction = new Native.Button(alert)
-				{
-					Text = arguments.Destruction,
-					TextColor = EColor.Red,
-					AlignmentX = -1
-				};
-				destruction.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(arguments.Destruction);
-					alert.Dismiss();
-				};
-				destruction.Show();
-				box.PackEnd(destruction);
-			}
-
-			foreach (string buttonName in arguments.Buttons)
-			{
-				Native.Button button = new Native.Button(alert)
-				{
-					Text = buttonName,
-					AlignmentX = -1
-				};
-				button.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(buttonName);
-					alert.Dismiss();
-				};
-				button.Show();
-				box.PackEnd(button);
-			}
-
-			box.Show();
-			alert.Content = box;
-
-			if (null != arguments.Cancel)
-			{
-				EButton cancel = new EButton(Forms.Context.MainWindow) { Text = arguments.Cancel };
-				alert.NegativeButton = cancel;
-				cancel.Clicked += (s, evt) =>
-				{
-					alert.Dismiss();
-				};
-			}
-
-			alert.BackButtonPressed += (s, evt) =>
-			{
-				alert.Dismiss();
-			};
-
-			alert.Show();
-		}
-
-		static void AlertSignalNameHandler(Page sender, AlertArguments arguments)
-		{
-			Native.Dialog alert = new Native.Dialog(Forms.Context.MainWindow);
-			alert.Title = arguments.Title;
-			var message = arguments.Message.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
-			alert.Text = message;
-
-			EButton cancel = new EButton(alert) { Text = arguments.Cancel };
-			alert.NegativeButton = cancel;
-			cancel.Clicked += (s, evt) =>
-			{
-				arguments.SetResult(false);
-				alert.Dismiss();
-			};
-
-			if (arguments.Accept != null)
-			{
-				EButton ok = new EButton(alert) { Text = arguments.Accept };
-				alert.NeutralButton = ok;
-				ok.Clicked += (s, evt) =>
-				{
-					arguments.SetResult(true);
-					alert.Dismiss();
-				};
-			}
-
-			alert.BackButtonPressed += (s, evt) =>
-			{
-				arguments.SetResult(false);
-				alert.Dismiss();
-			};
-
-			alert.Show();
-		}
-
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
 			if ("MainPage" == args.PropertyName)
 			{
 				SetPage(_application.MainPage);
 			}
-		}
-
-		void ShowActivityIndicatorDialog(bool enabled)
-		{
-			if (null == _pageBusyDialog)
-			{
-				_pageBusyDialog = new Native.Dialog(Forms.Context.MainWindow)
-				{
-					Orientation = PopupOrientation.Top,
-				};
-
-				var activity = new EProgressBar(_pageBusyDialog)
-				{
-					Style = "process_large",
-					IsPulseMode = true,
-				};
-				activity.PlayPulse();
-				activity.Show();
-
-				_pageBusyDialog.Content = activity;
-
-			}
-			_pageBusyCount = Math.Max(0, enabled ? _pageBusyCount + 1 : _pageBusyCount - 1);
-			if (_pageBusyCount > 0)
-			{
-				_pageBusyDialog.Show();
-			}
-			else
-			{
-				_pageBusyDialog.Dismiss();
-				_pageBusyDialog = null;
-			}
-		}
-
-		void BusySetSignalNameHandler(Page sender, bool enabled)
-		{
-			ShowActivityIndicatorDialog(enabled);
 		}
 
 		void SetPage(Page page)
@@ -277,11 +141,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				return;
 			}
 
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
-			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
-
-			_platform = new Platform(this);
+			_platform = new Platform(this, BaseLayout)
+			{
+				HasAlpha = MainWindow.Alpha
+			};
 			if (_application != null)
 			{
 				_application.Platform = _platform;
@@ -303,14 +166,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			layout.SetTheme("layout", "application", "default");
 			layout.Show();
 
-			conformant.SetContent(layout);
 			BaseLayout = layout;
+			conformant.SetContent(BaseLayout);
 			MainWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
 
 			MainWindow.Deleted += (s, e) =>
 			{
 				Exit();
 			};
+
 			MainWindow.RotationChanged += (sender, e) =>
 			{
 				switch (MainWindow.Rotation)
@@ -330,6 +194,17 @@ namespace Xamarin.Forms.Platform.Tizen
 					case 270:
 						Device.Info.CurrentOrientation = Internals.DeviceOrientation.LandscapeRight;
 						break;
+				}
+			};
+
+			MainWindow.BackButtonPressed += (sender, e) =>
+			{
+				if (_platform != null)
+				{
+					if (!_platform.SendBackButtonPressed())
+					{
+						Exit();
+					}
 				}
 			};
 		}

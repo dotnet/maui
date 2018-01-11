@@ -1,8 +1,10 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -217,10 +219,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEntryInListViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in ListView"));
-			RunningApp.Screenshot ("Entry control in ListView cell is focused");
-			RunningApp.EnterText ("Entry in ListView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Entry in ListView Success")).Length > 0);
-			RunningApp.Screenshot ("Entry in ListView Success");
+			RunningApp.EnterText("Entry in ListView Success");
+			WaitForTextQuery("Entry in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in ListView"));
 		}
 
@@ -232,10 +232,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEditorInListViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in ListView"));
-			RunningApp.Screenshot ("Editor control in ListView cell is focused");
-			RunningApp.EnterText ("Editor in ListView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Editor in ListView Success")).Length > 0);
-			RunningApp.Screenshot ("Editor in ListView Success");
+			RunningApp.EnterText("Editor in ListView Success");
+			WaitForTextQuery("Editor in ListView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in ListView"));
 		}
 
@@ -248,10 +246,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEntryInTableViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Entry in Table"));
-			RunningApp.Screenshot ("Entry control in TableView cell is focused");
-			RunningApp.EnterText ("Entry in TableView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Entry in TableView Success")).Length > 0);
-			RunningApp.Screenshot ("Entry in TableView Success");
+			RunningApp.EnterText("Entry in TableView Success");
+			WaitForTextQuery("Entry in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Entry in Table"));
 		}
 
@@ -263,11 +259,35 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Issue31333FocusEditorInTableViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("Focus Editor in Table"));
-			RunningApp.Screenshot ("Editor control in TableView cell is focused");
-			RunningApp.EnterText ("Editor in TableView Success");
-			Assert.True(RunningApp.Query(query => query.Text("Editor in TableView Success")).Length > 0);
-			RunningApp.Screenshot ("Editor in TableView Success");
+			RunningApp.EnterText("Editor in TableView Success");
+			WaitForTextQuery("Editor in TableView Success");
 			RunningApp.Tap(q => q.Marked("Focus Editor in Table"));
+		}
+
+		void WaitForTextQuery(string text)
+		{
+			var watch = new Stopwatch();
+			watch.Start();
+
+			// 4-5 seconds should be more than enough time to wait for the query to work
+			while (watch.ElapsedMilliseconds < 5000)
+			{
+				// We have to query this way (instead of just using WaitForElement) because
+				// WaitForElement on iOS won't find text in Entry or Editor
+				// And we can't rely on running this query immediately after entering the text into the control
+				// because on Android the query will occasionally fail if it runs too soon after entering the text
+				var textQuery = RunningApp.Query(query => query.Text(text));
+				if (textQuery.Length > 0)
+				{
+					return;
+				}
+
+				Task.Delay(1000).Wait();
+			}
+
+			watch.Stop();
+
+			Assert.Fail($"Timed out waiting for text '{text}'");
 		}
 #endif
 	}

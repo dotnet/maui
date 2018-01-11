@@ -2,6 +2,7 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Animation;
+using WVisualState = Windows.UI.Xaml.VisualState;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -23,14 +24,14 @@ namespace Xamarin.Forms.Platform.UWP
 				// into the opening and closing animations so it can handle them smoothly
 				// and measure at the appropriate times
 
-				var openedState = GetTemplateChild("Opened") as VisualState;
+				var openedState = GetTemplateChild("Opened") as WVisualState;
 				if (openedState != null)
 				{
 					openedState.Storyboard.Completed += (sender, o) => OnOpenAnimationCompleted();
 					IsOpeningAnimated = true;
 				}
 
-				var closedState = GetTemplateChild("Closed") as VisualState;
+				var closedState = GetTemplateChild("Closed") as WVisualState;
 
 				// On the phone, this is a dummy animation we've added to the closed state in the VSM
 				// Since it finishes immediately, we can use its Completed event to signal that the 

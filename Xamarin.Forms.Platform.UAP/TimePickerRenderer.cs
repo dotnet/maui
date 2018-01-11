@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -33,10 +34,15 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Control == null)
 				{
 					var picker = new Windows.UI.Xaml.Controls.TimePicker();
+
 					SetNativeControl(picker);
 
 					Control.TimeChanged += OnControlTimeChanged;
 					Control.Loaded += ControlOnLoaded;
+				}
+				else
+				{
+					WireUpFormsVsm();
 				}
 
 				UpdateTime();
@@ -46,12 +52,28 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
 		{
+			WireUpFormsVsm();
+
 			// The defaults from the control template won't be available
 			// right away; we have to wait until after the template has been applied
 			_defaultBrush = Control.Foreground;
 			_defaultFontFamily = Control.FontFamily;
 			UpdateFont();
 			UpdateTextColor();
+		}
+
+		void WireUpFormsVsm()
+		{
+			if (!Element.UseFormsVsm())
+			{
+				return;
+			}
+
+			InterceptVisualStateManager.Hook(Control.GetFirstDescendant<StackPanel>(), Control, Element);
+
+			// We also have to intercept the VSM changes on the TimePicker's button
+			var button = Control.GetDescendantsByName<Windows.UI.Xaml.Controls.Button>("FlyoutButton").FirstOrDefault();
+			InterceptVisualStateManager.Hook(button.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), button, Element);
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Button(Forms.Context.MainWindow)
+				SetNativeControl(new Native.Button(Forms.NativeParent)
 				{
 					PropagateEvents = false,
 				});

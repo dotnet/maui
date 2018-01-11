@@ -27,6 +27,14 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		{
 		}
 
+		class Baz<T1, T2> : Foo<T1>
+		{
+		}
+
+		class Qux<T> : Baz<int, T>
+		{
+		}
+
 		ModuleDefinition module;
 
 		[SetUp]
@@ -96,6 +104,7 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		[TestCase(typeof(Foo<string>), typeof(Foo), ExpectedResult = true)]
 		[TestCase(typeof(Bar<string>), typeof(Foo), ExpectedResult = true)]
 		[TestCase(typeof(Bar<string>), typeof(Foo<string>), ExpectedResult = true)]
+		[TestCase(typeof(Qux<string>), typeof(double), ExpectedResult = false)] //https://github.com/xamarin/Xamarin.Forms/issues/1497
 		public bool TestInheritsFromOrImplements(Type typeRef, Type baseClass)
 		{
 			return TypeReferenceExtensions.InheritsFromOrImplements(module.ImportReference(typeRef), module.ImportReference(baseClass));

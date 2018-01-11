@@ -248,8 +248,8 @@ namespace Xamarin.Forms.Platform.UWP
 
         Brush GetBarBackgroundBrush()
         {
-            object defaultColor =
-                Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
+            object defaultColor = new SolidColorBrush(Windows.UI.Colors.Transparent);
+
             if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
                 return (Brush)defaultColor;
             return Element.BarBackgroundColor.ToBrush();

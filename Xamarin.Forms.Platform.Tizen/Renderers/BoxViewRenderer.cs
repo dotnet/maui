@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new ERectangle(Forms.Context.MainWindow));
+				SetNativeControl(new ERectangle(Forms.NativeParent));
 			}
 
 			UpdateColor();

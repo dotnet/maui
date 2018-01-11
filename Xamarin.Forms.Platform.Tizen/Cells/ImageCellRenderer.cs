@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					pixelSize = Forms.ConvertToPixel(_defaultHeight);
 				}
 
-				var image = new Native.Image(Forms.Context.MainWindow)
+				var image = new Native.Image(Forms.NativeParent)
 				{
 					MinimumWidth = pixelSize,
 					MinimumHeight = pixelSize

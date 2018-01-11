@@ -1,7 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WVisualStateManager = Windows.UI.Xaml.VisualStateManager;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -74,6 +77,12 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateAlignment();
 			UpdateTextColor();
 			UpdatePlaceholderColor();
+			UpdateBackgroundColor();
+
+			// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
+			// color stuff, then the underlying textbox should just use the Forms VSM states
+			_queryTextBox.UseFormsVsm = Element.HasVisualStateGroups()
+							|| !Element.OnThisPlatform().GetIsLegacyColorModeEnabled();
 		}
 
 		void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs e)
@@ -182,6 +191,23 @@ namespace Xamarin.Forms.Platform.UWP
 
 			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush, 
 				() => _queryTextBox.ForegroundFocusBrush, brush => _queryTextBox.ForegroundFocusBrush = brush);
+		}
+
+		protected override void UpdateBackgroundColor()
+		{
+			if (_queryTextBox == null)
+				return;
+
+			Color backgroundColor = Element.BackgroundColor;
+			
+			if (!backgroundColor.IsDefault)
+			{
+				_queryTextBox.Background = backgroundColor.ToBrush();
+			}
+			else
+			{
+				_queryTextBox.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+			}
 		}
 	}
 }

@@ -84,7 +84,7 @@ using Xamarin.Forms.Platform.WPF;
 // Control don't exist natively in WPF Platform
 [assembly: ExportRenderer(typeof(TableView), typeof(TableViewRenderer))]
 //**[assembly: ExportRenderer(typeof(NavigationMenu), typeof(NavigationMenuRenderer))]
-//**[assembly: ExportRenderer(typeof(TimePicker), typeof(TimePickerRenderer))]
+[assembly: ExportRenderer(typeof(TimePicker), typeof(TimePickerRenderer))]
 //**[assembly: ExportRenderer(typeof(NativeViewWrapper), typeof(NativeViewWrapperRenderer))]
 
 //ImageSources

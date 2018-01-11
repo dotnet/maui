@@ -3,8 +3,7 @@ using Windows.System;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
-
-
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -26,10 +25,15 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Control == null)
 				{
 					var textBox = new FormsTextBox { Style = Windows.UI.Xaml.Application.Current.Resources["FormsTextBoxStyle"] as Windows.UI.Xaml.Style };
-					SetNativeControl(textBox);
 
+					SetNativeControl(textBox);
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.KeyUp += TextBoxOnKeyUp;
+
+					// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
+					// color stuff, then the underlying textbox should just use the Forms VSM states
+					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
+						|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
 				}
 
 				UpdateIsPassword();
@@ -194,10 +198,10 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Color textColor = Element.TextColor;
 
-			BrushHelpers.UpdateColor(textColor, ref _textDefaultBrush, 
+			BrushHelpers.UpdateColor(textColor, ref _textDefaultBrush,
 				() => Control.Foreground, brush => Control.Foreground = brush);
 
-			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush, 
+			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
 	}

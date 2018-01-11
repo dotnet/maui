@@ -1,0 +1,116 @@
+<Type Name="VisualStateManager" FullName="Xamarin.Forms.VisualStateManager">
+  <TypeSignature Language="C#" Value="public static class VisualStateManager" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit VisualStateManager extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="GetVisualStateGroups">
+      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IList&lt;Xamarin.Forms.VisualStateGroup&gt; GetVisualStateGroups (Xamarin.Forms.VisualElement visualElement);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Collections.Generic.IList`1&lt;class Xamarin.Forms.VisualStateGroup&gt; GetVisualStateGroups(class Xamarin.Forms.VisualElement visualElement) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IList&lt;Xamarin.Forms.VisualStateGroup&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="visualElement" Type="Xamarin.Forms.VisualElement" />
+      </Parameters>
+      <Docs>
+        <param name="visualElement">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GoToState">
+      <MemberSignature Language="C#" Value="public static bool GoToState (Xamarin.Forms.VisualElement visualElement, string name);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool GoToState(class Xamarin.Forms.VisualElement visualElement, string name) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="visualElement" Type="Xamarin.Forms.VisualElement" />
+        <Parameter Name="name" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="visualElement">To be added.</param>
+        <param name="name">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="HasVisualStateGroups">
+      <MemberSignature Language="C#" Value="public static bool HasVisualStateGroups (this Xamarin.Forms.VisualElement element);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool HasVisualStateGroups(class Xamarin.Forms.VisualElement element) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="element" Type="Xamarin.Forms.VisualElement" RefType="this" />
+      </Parameters>
+      <Docs>
+        <param name="element">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetVisualStateGroups">
+      <MemberSignature Language="C#" Value="public static void SetVisualStateGroups (Xamarin.Forms.VisualElement visualElement, Xamarin.Forms.VisualStateGroupList value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetVisualStateGroups(class Xamarin.Forms.VisualElement visualElement, class Xamarin.Forms.VisualStateGroupList value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="visualElement" Type="Xamarin.Forms.VisualElement" />
+        <Parameter Name="value" Type="Xamarin.Forms.VisualStateGroupList" />
+      </Parameters>
+      <Docs>
+        <param name="visualElement">To be added.</param>
+        <param name="value">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VisualStateGroupsProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty VisualStateGroupsProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty VisualStateGroupsProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

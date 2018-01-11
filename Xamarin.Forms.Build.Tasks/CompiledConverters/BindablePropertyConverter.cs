@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Core.XamlC
 			var parts = value.Split('.');
 			if (parts.Length == 1) {
 				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
+
 				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri &&
 				    ((node.Parent as ElementNode)?.XmlType.Name == "Setter" || (node.Parent as ElementNode)?.XmlType.Name == "PropertyCondition")) {
 					if (parent.XmlType.NamespaceUri == XamlParser.XFUri &&
@@ -41,6 +42,15 @@ namespace Xamarin.Forms.Core.XamlC
 							typeName = (ttnode as ValueNode).Value as string;
 						else if (ttnode is IElementNode)
 							typeName = ((ttnode as IElementNode).CollectionItems.FirstOrDefault() as ValueNode)?.Value as string ?? ((ttnode as IElementNode).Properties [new XmlName("", "TypeName")] as ValueNode)?.Value as string;
+					} else if (parent.XmlType.NamespaceUri == XamlParser.XFUri && parent.XmlType.Name == "VisualState") {
+						var current = parent.Parent.Parent.Parent as IElementNode;
+						if (current.XmlType.NamespaceUri == XamlParser.XFUri && current.XmlType.Name == "Setter") {
+							// Parent will be a Style, and the type will be that Style's TargetType
+							typeName =
+								((current?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+						} else {
+							typeName = current.XmlType.Name;
+						}
 					}
 				} else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.XFUri && (node.Parent as ElementNode)?.XmlType.Name == "Trigger")
 					typeName = ((node.Parent as ElementNode).Properties [new XmlName("", "TargetType")] as ValueNode).Value as string;

@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Maps.Tizen
 		{
 			if (Control == null)
 			{
-				var mapControl = new MapView(Platform.Tizen.Forms.Context.MainWindow, FormsMaps.MapService);
+				var mapControl = new MapView(Platform.Tizen.Forms.NativeParent, FormsMaps.MapService);
 
 				mapControl.RenderPost += OnVisibleRegionChanged;
 

@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_toolbar == null)
 			{
 				//Create box that holds toolbar and selected content
-				_outterLayout = new Box(Forms.Context.MainWindow)
+				_outterLayout = new Box(Forms.NativeParent)
 				{
 					AlignmentX = -1,
 					AlignmentY = -1,
@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_outterLayout.Show();
 
 				//Create toolbar that is placed inside the _outterLayout
-				_toolbar = new Toolbar(Forms.Context.MainWindow)
+				_toolbar = new Toolbar(Forms.NativeParent)
 				{
 					AlignmentX = -1,
 					WeightX = 1,
@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				_scroller.SetPageSize(1.0, 1.0);
 				_scroller.PageScrolled += OnItemPageScrolled;
 
-				_innerBox = new Box(Forms.Context.MainWindow)
+				_innerBox = new Box(Forms.NativeParent)
 				{
 					AlignmentX = -1,
 					AlignmentY = -1,

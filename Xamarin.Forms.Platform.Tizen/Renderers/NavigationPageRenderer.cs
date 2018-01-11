@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_naviFrame == null)
 			{
-				_naviFrame = new Naviframe(Forms.Context.MainWindow);
+				_naviFrame = new Naviframe(Forms.NativeParent);
 				_naviFrame.PreserveContentOnPop = true;
 				_naviFrame.DefaultBackButtonEnabled = false;
 				_naviFrame.AnimationFinished += OnAnimationFinished;
@@ -262,7 +262,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EButton CreateNavigationButton(string text)
 		{
-			EButton button = new EButton(Forms.Context.MainWindow);
+			EButton button = new EButton(Forms.NativeParent);
 			button.Clicked += (sender, e) =>
 			{
 				if (!Element.SendBackButtonPressed())
@@ -303,7 +303,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (item == default(ToolbarItem))
 				return null;
 
-			Native.Button button = new Native.Button(Forms.Context.MainWindow);
+			Native.Button button = new Native.Button(Forms.NativeParent);
 			button.Clicked += (s, e) =>
 			{
 				IMenuItemController control = item;
@@ -329,7 +329,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				Native.Image iconImage = new Native.Image(Forms.Context.MainWindow);
+				Native.Image iconImage = new Native.Image(Forms.NativeParent);
 				var task = iconImage.LoadFromImageSourceAsync(item.Icon);
 				button.Image = iconImage;
 			}
@@ -339,7 +339,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EToolbar GetBreadCrumbsBar()
 		{
-			EToolbar toolbar = new EToolbar(Forms.Context.MainWindow)
+			EToolbar toolbar = new EToolbar(Forms.NativeParent)
 			{
 				Style = StyleNavigationBar,
 				ItemAlignment = 0,

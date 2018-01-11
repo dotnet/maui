@@ -46,15 +46,15 @@ namespace Xamarin.Forms.Platform.Android
 			// on the initial direction of movement (i.e., horizontal/vertical).
 			if (IsBidirectional)
 			{
-				float dX = _renderer.LastX - ev.RawX;
 				float dY = _renderer.LastY - ev.RawY;
+
 				_renderer.LastY = ev.RawY;
 				_renderer.LastX = ev.RawX;
 				if (ev.Action == MotionEventActions.Move)
 				{
 					var parent = (global::Android.Widget.ScrollView)Parent;
 					parent.ScrollBy(0, (int)dY);
-					ScrollBy((int)dX, 0);
+					// Fall through to base.OnTouchEvent, it'll take care of the X scrolling 					
 				}
 			}
 

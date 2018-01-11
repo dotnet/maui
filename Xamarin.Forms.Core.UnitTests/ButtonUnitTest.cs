@@ -35,42 +35,57 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TestClickedvent ()
+		[TestCase(true)]
+		[TestCase(false)]
+		public void TestClickedvent (bool isEnabled)
 		{
-			var view = new Button ();
+			var view = new Button()
+			{
+				IsEnabled= isEnabled,
+			};
 
 			bool activated = false;
 			view.Clicked += (sender, e) => activated = true;
 
 			((IButtonController) view).SendClicked ();
 
-			Assert.True (activated);
+			Assert.True (activated == isEnabled ? true : false);
 		}
 
 		[Test]
-		public void TestPressedEvent ()
+		[TestCase(true)]
+		[TestCase(false)]
+		public void TestPressedEvent (bool isEnabled)
 		{
-			var view = new Button();
+			var view = new Button()
+			{
+				IsEnabled = isEnabled,
+			};
 
 			bool pressed = false;
 			view.Pressed += (sender, e) => pressed = true;
 
 			((IButtonController)view).SendPressed();
 
-			Assert.True(pressed);
+			Assert.True(pressed == isEnabled ? true : false);
 		}
 
 		[Test]
-		public void TestReleasedEvent ()
+		[TestCase(true)]
+		[TestCase(false)]
+		public void TestReleasedEvent (bool isEnabled)
 		{
-			var view = new Button();
+			var view = new Button()
+			{
+				IsEnabled = isEnabled,
+			};
 
 			bool released = false;
 			view.Released += (sender, e) => released = true;
 
 			((IButtonController)view).SendReleased();
 
-			Assert.True(released);
+			Assert.True(released == isEnabled ? true : false);
 		}
 
 		protected override Button CreateSource()
@@ -218,6 +233,22 @@ namespace Xamarin.Forms.Core.UnitTests
 			AssertButtonContentLayoutsEqual(new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Bottom, 0), converter.ConvertFromInvariantString("Bottom, 0"));
 
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
+		}
+
+		[Test]
+		public void ButtonClickWhenCommandCanExecuteFalse()
+		{
+			bool invoked = false;
+			var button = new Button()
+			{
+				Command = new Command(() => invoked = true
+				, () => false),
+			};
+
+			(button as IButtonController)
+				?.SendClicked();
+			
+			Assert.False(invoked);
 		}
 
 		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)

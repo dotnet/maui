@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.TableView(Forms.Context.MainWindow));
+				SetNativeControl(new Native.TableView(Forms.NativeParent));
 				Control.ItemSelected += OnSelected;
 			}
 

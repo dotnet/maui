@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -32,6 +33,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.LostFocus += OnLostFocus;
+
+					// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
+					// color stuff, then the underlying textbox should just use the Forms VSM states
+					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
+										|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
 				}
 
 				UpdateText();

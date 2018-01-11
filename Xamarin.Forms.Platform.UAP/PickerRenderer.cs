@@ -48,6 +48,10 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.ClosedAnimationStarted += ControlOnClosedAnimationStarted;
 					Control.Loaded += ControlOnLoaded;
 				}
+				else
+				{
+					WireUpFormsVsm();
+				}
 
 				Control.ItemsSource = ((LockableObservableListWrapper)Element.Items)._list;
 
@@ -74,12 +78,22 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ControlOnLoaded(object sender, RoutedEventArgs routedEventArgs)
 		{
+			WireUpFormsVsm();
+
 			// The defaults from the control template won't be available
 			// right away; we have to wait until after the template has been applied
 			_defaultBrush = Control.Foreground;
 			_defaultFontFamily = Control.FontFamily;
 			UpdateFont();
 			UpdateTextColor();
+		}
+
+		void WireUpFormsVsm()
+		{
+			if (Element.UseFormsVsm())
+			{
+				InterceptVisualStateManager.Hook(Control.GetFirstDescendant<Windows.UI.Xaml.Controls.Grid>(), Control, Element);
+			}
 		}
 
 		void ControlOnClosedAnimationStarted(object sender, EventArgs eventArgs)

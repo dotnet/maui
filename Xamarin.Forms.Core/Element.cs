@@ -394,6 +394,7 @@ namespace Xamarin.Forms
 		protected virtual void OnParentSet()
 		{
 			ParentSet?.Invoke(this, EventArgs.Empty);
+			ApplyStyleSheetsOnParentSet();
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -430,7 +431,10 @@ namespace Xamarin.Forms
 
 		internal virtual void OnParentResourcesChanged(object sender, ResourcesChangedEventArgs e)
 		{
-			OnParentResourcesChanged(e.Values);
+			if (e == ResourcesChangedEventArgs.StyleSheets)
+				ApplyStyleSheetsOnParentSet();
+			else
+				OnParentResourcesChanged(e.Values);
 		}
 
 		internal virtual void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)

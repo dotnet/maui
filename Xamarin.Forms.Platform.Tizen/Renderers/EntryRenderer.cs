@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.Entry(Forms.Context.MainWindow)
+				var entry = new Native.Entry(Forms.NativeParent)
 				{
 					IsSingleLine = true,
 					PropagateEvents = false,
