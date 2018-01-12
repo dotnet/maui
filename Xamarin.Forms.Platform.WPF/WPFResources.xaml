@@ -2,6 +2,25 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 					xmlns:system="clr-namespace:System;assembly=mscorlib"
 					xmlns:wpf="clr-namespace:Xamarin.Forms.Platform.WPF">
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="/WPFLightToolkit;component/Assets/Default.xaml" />
+	</ResourceDictionary.MergedDictionaries>
+
+	<!-- Default Global Color -->
+	<SolidColorBrush x:Key="WindowBackgroundColor" Color="White" />
+	<SolidColorBrush x:Key="AccentColor" Color="#3498db" />
+
+	<!-- Default Command Bar Color -->
+	<SolidColorBrush x:Key="CommandBarBackgroundColor" Color="#3498db" />
+	<SolidColorBrush x:Key="CommandBarTextColor" Color="White" />
+
+	<!-- Default Title Bar Color -->
+	<SolidColorBrush x:Key="DefaultTitleBarBackgroundColor" Color="#3498db" />
+	<SolidColorBrush x:Key="DefaultTitleBarTextColor" Color="White" />
+
+	<!-- Default Tabbed Bar Color -->
+	<SolidColorBrush x:Key="DefaultTabbedBarBackgroundColor" Color="#3498db" />
+	<SolidColorBrush x:Key="DefaultTabbedBarTextColor" Color="White" />
 
 	<system:Double x:Key="FontSizeSmall">18</system:Double>
 	<system:Double x:Key="FontSizeNormal">20</system:Double>
@@ -12,10 +31,8 @@
 	<system:Double x:Key="FontSizeExtraExtraLarge">72</system:Double>
 	<system:Double x:Key="FontSizeHuge">186</system:Double>
 
-
 	<FontFamily x:Key="FontFamilyNormal">Segoe UI</FontFamily>
 	<FontFamily x:Key="FontFamilySemiBold">Segoe UI</FontFamily>
-
 
 	<wpf:HeightConverter x:Key="HeightConverter" />
 	<wpf:ViewToRendererConverter x:Key="ViewToRenderer" />
