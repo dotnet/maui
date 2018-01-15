@@ -58,13 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 		internal Platform(Context context, bool embedded)
 		{
 			_embedded = embedded;
-
-			if (context == null)
-			{
-				throw new ArgumentNullException(nameof(context), "Somehow we're getting a null context passed in");
-			}
-
-			_context = context;
+			_context = context ?? throw new ArgumentNullException(nameof(context), "Somehow we're getting a null context passed in");
 			_activity = context as Activity;
 
 			if (!embedded)
