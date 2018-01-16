@@ -46,18 +46,11 @@ Upon opening the Xamarin.Forms solution, you will find that there are a number o
 
 By default, the `Xamarin.Forms.Controls` project does not have a configuration for various API keys to access certain features on each platform (e.g. maps). When building the solution the first time, a `controlgallery.config` file will be generated inside that project, which looks like this:
 
-    Win8MapsAuthKey:
-    WinPhoneMapsAuthKey:
     UWPMapsAuthKey:
-    InsightsApiKey:
-    WP8AppId:
-    WP8AuthToken:
 
-You will have to obtain your own API keys for each of these services, inserted directly after the identifier (e.g. `Win8MapsAuthKey:abcdefghijklmnopqrstuvwxyz`). You can find out how to obtain each of these as follows:
+You will have to obtain your own API keys for each of these services, inserted directly after the identifier (e.g. `UWPMapsAuthKey:abcdefghijklmnopqrstuvwxyz`). You can find out how to obtain each of these as follows:
 
-- `Win8MapsAuthKey`, `WinPhoneMapsAuthKey`, and `UWPMapsAuthKey` at https://www.microsoft.com/maps/create-a-bing-maps-key.aspx
-- `InsightsApiKey` at https://insights.xamarin.com/
-- `WP8AppId` and `WP8AuthToken` at https://dev.windows.com/.
+- `UWPMapsAuthKey` at https://www.microsoft.com/maps/create-a-bing-maps-key.aspx
 
 Due to the way that Android works, the maps API key cannot be injected at runtime. As a result, you will have to add this key to the `MapsKey.cs` file under `Xamarin.Forms.ControlGallery.Android/Properties`:
 
@@ -66,7 +59,6 @@ Due to the way that Android works, the maps API key cannot be injected at runtim
 You can find out how to obtain a Google Maps API key [here](https://developer.xamarin.com/guides/android/platform_features/maps_and_location/maps/obtaining_a_google_maps_api_key/).
 
 ## Coding Style ##
-
 We follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with a few exceptions:
 
 - We do not use the `private` keyword as it is the default accessibility level in C#.
