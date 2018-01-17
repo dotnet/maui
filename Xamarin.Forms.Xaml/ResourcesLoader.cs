@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Xaml
 	{
 		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T: new()
 		{
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
+			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
 			if (alternateResource != null) {
 				var rd = new T();
 				rd.LoadFromXaml(alternateResource);
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml
 
 		public string GetResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
+			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
 			if (alternateResource != null)
 				return alternateResource;
 

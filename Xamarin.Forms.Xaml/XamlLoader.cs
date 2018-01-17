@@ -153,7 +153,6 @@ namespace Xamarin.Forms.Xaml
 				return xaml;
 #pragma warning restore 0618
 
-
 			var assembly = type.GetTypeInfo().Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForType(type);
 
@@ -168,7 +167,7 @@ namespace Xamarin.Forms.Xaml
 					xaml = null;
 			}
 
-			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(XamlResourceIdAttribute.GetPathForType(type));
+			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), XamlResourceIdAttribute.GetPathForType(type));
 			return alternateXaml ?? xaml;
 		}
 

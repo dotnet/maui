@@ -6,6 +6,8 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
+using static Mono.Cecil.Cil.OpCodes;
+
 using Xamarin.Forms.Xaml;
 
 namespace Xamarin.Forms.Build.Tasks
@@ -269,34 +271,43 @@ namespace Xamarin.Forms.Build.Tasks
 				var il = body.GetILProcessor();
 				var resourcePath = GetPathForType(module, initComp.DeclaringType);
 
-				il.Emit(OpCodes.Nop);
+				il.Emit(Nop);
 
 				if (initCompRuntime != null) {
 					// Generating branching code for the Previewer
 
 					//First using the ResourceLoader
-					var nop = Instruction.Create(OpCodes.Nop);
+					var nop = Instruction.Create(Nop);
 					var getResourceProvider = module.ImportReference(module.ImportReference(typeof(Internals.ResourceLoader))
 							 .Resolve()
 							 .Properties.FirstOrDefault(pd => pd.Name == "ResourceProvider")
 							 .GetMethod);
-					il.Emit(OpCodes.Call, getResourceProvider);
-					il.Emit(OpCodes.Brfalse, nop);
-					il.Emit(OpCodes.Call, getResourceProvider);
-					il.Emit(OpCodes.Ldstr, resourcePath);
-					var func = module.ImportReference(module.ImportReference(typeof(Func<string, string>))
+					il.Emit(Call, getResourceProvider);
+					il.Emit(Brfalse, nop);
+					il.Emit(Call, getResourceProvider);
+
+					var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+					var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetGetMethod());
+					var getAssemblyName = module.ImportReference(typeof(System.Reflection.Assembly).GetMethod("GetName", new Type[] { }));
+					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
+					il.Emit(Call, module.ImportReference(getTypeFromHandle));
+					il.Emit(Callvirt, module.ImportReference(getAssembly));
+					il.Emit(Callvirt, module.ImportReference(getAssemblyName)); //assemblyName
+
+					il.Emit(Ldstr, resourcePath);	//resourcePath
+					var func = module.ImportReference(module.ImportReference(typeof(Func<System.Reflection.AssemblyName, string, string>))
 							 .Resolve()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<string, string>)), module);
-					il.Emit(OpCodes.Callvirt, func);
-					il.Emit(OpCodes.Brfalse, nop);
-					il.Emit(OpCodes.Ldarg_0);
-					il.Emit(OpCodes.Call, initCompRuntime);
-					il.Emit(OpCodes.Ret);
+					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<System.Reflection.AssemblyName, string, string>)), module);
+					il.Emit(Callvirt, func);
+					il.Emit(Brfalse, nop);
+					il.Emit(Ldarg_0);
+					il.Emit(Call, initCompRuntime);
+					il.Emit(Ret);
 					il.Append(nop);
 
 					//Or using the deprecated XamlLoader
-					nop = Instruction.Create(OpCodes.Nop);
+					nop = Instruction.Create(Nop);
 #pragma warning disable 0618
 					var getXamlFileProvider = module.ImportReference(module.ImportReference(typeof(Xaml.Internals.XamlLoader))
 							.Resolve()
@@ -304,23 +315,23 @@ namespace Xamarin.Forms.Build.Tasks
 							.GetMethod);
 #pragma warning restore 0618
 
-					il.Emit(OpCodes.Call, getXamlFileProvider);
-					il.Emit(OpCodes.Brfalse, nop);
-					il.Emit(OpCodes.Call, getXamlFileProvider);
-					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(Call, getXamlFileProvider);
+					il.Emit(Brfalse, nop);
+					il.Emit(Call, getXamlFileProvider);
+					il.Emit(Ldarg_0);
 					var getType = module.ImportReference(module.ImportReference(typeof(object))
 									  .Resolve()
 									  .Methods.FirstOrDefault(md => md.Name == "GetType"));
-					il.Emit(OpCodes.Call, getType);
+					il.Emit(Call, getType);
 					func = module.ImportReference(module.ImportReference(typeof(Func<Type, string>))
 							 .Resolve()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
 					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<Type, string>)), module);
-					il.Emit(OpCodes.Callvirt, func);
-					il.Emit(OpCodes.Brfalse, nop);
-					il.Emit(OpCodes.Ldarg_0);
-					il.Emit(OpCodes.Call, initCompRuntime);
-					il.Emit(OpCodes.Ret);
+					il.Emit(Callvirt, func);
+					il.Emit(Brfalse, nop);
+					il.Emit(Ldarg_0);
+					il.Emit(Call, initCompRuntime);
+					il.Emit(Ret);
 					il.Append(nop);
 				}
 
@@ -335,7 +346,7 @@ namespace Xamarin.Forms.Build.Tasks
 				rootnode.Accept(new SetResourcesVisitor(visitorContext), null);
 				rootnode.Accept(new SetPropertiesVisitor(visitorContext, true), null);
 
-				il.Emit(OpCodes.Ret);
+				il.Emit(Ret);
 				initComp.Body = body;
 				exception = null;
 				return true;
