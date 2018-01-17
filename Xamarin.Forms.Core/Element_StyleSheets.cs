@@ -41,8 +41,8 @@ namespace Xamarin.Forms
 				return;
 			var sheets = new List<StyleSheet>();
 			while (parent != null) {
-				var visualParent = parent as VisualElement;
-				var vpSheets = visualParent?.GetStyleSheets();
+				var resourceProvider = parent as IResourcesProvider;
+				var vpSheets = resourceProvider?.GetStyleSheets();
 				if (vpSheets != null)
 					sheets.AddRange(vpSheets);
 				parent = parent.Parent;
