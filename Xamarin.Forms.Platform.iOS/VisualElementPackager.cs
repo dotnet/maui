@@ -149,6 +149,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (oldElement == newElement)
 				return;
 
+
+			_element = newElement;
+
 			if (oldElement != null)
 			{
 				oldElement.ChildAdded -= OnChildAdded;
@@ -174,8 +177,6 @@ namespace Xamarin.Forms.Platform.MacOS
 					}
 				}
 			}
-
-			_element = newElement;
 
 			if (newElement != null)
 			{
