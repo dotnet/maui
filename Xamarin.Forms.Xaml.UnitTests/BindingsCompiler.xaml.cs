@@ -73,6 +73,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				//testing selfPath
 				layout.label4.BindingContext = "Self";
 				Assert.AreEqual("Self", layout.label4.Text);
+				layout.label7.BindingContext = 42;
+				Assert.That(layout.label7.Text, Is.EqualTo("42"));
 
 				//testing INPC
 				vm.Text = "Text2";

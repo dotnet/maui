@@ -477,19 +477,23 @@ namespace Xamarin.Forms.Build.Tasks
 			getter.Body.InitLocals = true;
 			var il = getter.Body.GetILProcessor();
 
-			if (tSourceRef.IsValueType)
-				il.Emit(Ldarga_S, (byte)0);
-			else
+			if (properties == null || properties.Count == 0) { //return self
 				il.Emit(Ldarg_0);
+				il.Emit(Ret);
+			}
+			else {
+				if (tSourceRef.IsValueType)
+					il.Emit(Ldarga_S, (byte)0);
+				else
+					il.Emit(Ldarg_0);
 
-			if (properties != null && properties.Count != 0) {
 				foreach (var propTuple in properties) {
 					var property = propTuple.Item1;
 					var indexerArg = propTuple.Item2;
 					if (indexerArg != null) {
-						if (property.GetMethod.Parameters [0].ParameterType == module.TypeSystem.String)
+						if (property.GetMethod.Parameters[0].ParameterType == module.TypeSystem.String)
 							il.Emit(Ldstr, indexerArg);
-						else if (property.GetMethod.Parameters [0].ParameterType == module.TypeSystem.Int32) {
+						else if (property.GetMethod.Parameters[0].ParameterType == module.TypeSystem.Int32) {
 							int index;
 							if (!int.TryParse(indexerArg, out index))
 								throw new XamlParseException($"Binding: {indexerArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
@@ -500,11 +504,10 @@ namespace Xamarin.Forms.Build.Tasks
 						il.Emit(Callvirt, module.ImportReference(property.GetMethod));
 					else
 						il.Emit(Call, module.ImportReference(property.GetMethod));
-				}
+					}
+
+				il.Emit(Ret);
 			}
-
-			il.Emit(Ret);
-
 			context.Body.Method.DeclaringType.Methods.Add(getter);
 
 			var funcRef = module.ImportReference(typeof(Func<,>));
