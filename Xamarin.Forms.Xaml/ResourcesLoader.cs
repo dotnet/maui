@@ -11,16 +11,16 @@ namespace Xamarin.Forms.Xaml
 	{
 		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T: new()
 		{
-			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
-			if (resourceId == null)
-				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
-
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
+			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
 			if (alternateResource != null) {
 				var rd = new T();
 				rd.LoadFromXaml(alternateResource);
 				return rd;
 			}
+
+			var resourceId = XamlResourceIdAttribute.GetResourceIdForPath(assembly, resourcePath);
+			if (resourceId == null)
+				throw new XamlParseException($"Resource '{resourcePath}' not found.", lineInfo);
 
 			using (var stream = assembly.GetManifestResourceStream(resourceId)) {
 				if (stream == null)
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Xaml
 
 		public string GetResource(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo)
 		{
-			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(resourcePath);
+			var alternateResource = Xamarin.Forms.Internals.ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), resourcePath);
 			if (alternateResource != null)
 				return alternateResource;
 

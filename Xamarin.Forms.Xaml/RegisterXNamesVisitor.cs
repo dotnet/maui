@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal class RegisterXNamesVisitor : IXamlNodeVisitor
+	class RegisterXNamesVisitor : IXamlNodeVisitor
 	{
 		public RegisterXNamesVisitor(HydrationContext context)
 		{
@@ -16,6 +16,7 @@ namespace Xamarin.Forms.Xaml
 		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
+		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

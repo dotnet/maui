@@ -65,5 +65,22 @@ namespace Xamarin.Forms.Xaml
 		public void Visit(ListNode node, INode parentNode)
 		{
 		}
+
+		public bool SkipChildren(INode node, INode parentNode)
+		{
+			var enode = node as ElementNode;
+			if (enode is null)
+				return false;
+			if (   parentNode is IElementNode
+			    && typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode)])
+			    && !((IElementNode)parentNode).Properties.ContainsKey(XmlName.xKey))
+				return true;
+			if (   parentNode is ListNode
+				&& typeof(ResourceDictionary).IsAssignableFrom(Context.Types[((IElementNode)parentNode.Parent)])
+				&& !((IElementNode)parentNode.Parent).Properties.ContainsKey(XmlName.xKey))
+				return true;
+			return false;
+		}
+
 	}
 }

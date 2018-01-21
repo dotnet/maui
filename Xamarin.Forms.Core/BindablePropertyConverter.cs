@@ -103,7 +103,8 @@ namespace Xamarin.Forms
 			if (bpinfo == null)
 				throw new XamlParseException($"Can't resolve {name} on {type.Name}", lineinfo);
 			var bp = bpinfo.GetValue(null) as BindableProperty;
-			if (bp.PropertyName != propertyName)
+			var isObsolete = bpinfo.GetCustomAttribute<ObsoleteAttribute>() != null;
+			if (bp.PropertyName != propertyName && !isObsolete)
 				throw new XamlParseException($"The PropertyName of {type.Name}.{name} is not {propertyName}", lineinfo);
 			return bp;
 		}

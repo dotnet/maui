@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool StopOnDataTemplate => true;
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => false;
-
+		public bool SkipChildren(INode node, INode parentNode) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{

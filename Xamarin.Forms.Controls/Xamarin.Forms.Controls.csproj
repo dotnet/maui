@@ -94,8 +94,8 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
-  <Target Name="BeforeBuild">
+  
+  <Target Name="CreateControllGalleryConfig" BeforeTargets="Build">
     <CreateItem Include="blank.config">
       <Output TaskParameter="Include" ItemName="ConfigFile" />
     </CreateItem>

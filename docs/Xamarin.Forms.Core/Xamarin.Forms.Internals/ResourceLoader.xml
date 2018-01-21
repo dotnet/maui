@@ -15,14 +15,14 @@
   </Docs>
   <Members>
     <Member MemberName="ResourceProvider">
-      <MemberSignature Language="C#" Value="public static Func&lt;string,string&gt; ResourceProvider { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property class System.Func`2&lt;string, string&gt; ResourceProvider" />
+      <MemberSignature Language="C#" Value="public static Func&lt;System.Reflection.AssemblyName,string,string&gt; ResourceProvider { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class System.Func`3&lt;class System.Reflection.AssemblyName, string, string&gt; ResourceProvider" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Func&lt;System.String,System.String&gt;</ReturnType>
+        <ReturnType>System.Func&lt;System.Reflection.AssemblyName,System.String,System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Xamarin.Forms platform.</summary>

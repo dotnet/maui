@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = path => {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
 					if (path == "ResourceLoader.xaml")
 						return @"
 <ContentPage 
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				var layout = new ResourceLoader(useCompiledXaml);
 				Assert.That(layout.label.TextColor, Is.EqualTo(Color.FromHex("#368F95")));
 
-				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = path => {
+				Xamarin.Forms.Internals.ResourceLoader.ResourceProvider = (asmName, path) => {
 					if (path == "AppResources/Colors.xaml")
 						return @"
 <ResourceDictionary

@@ -171,7 +171,7 @@ namespace Xamarin.Forms.Platform.UWP
 			bmp.ImageOpened += (sender, args) => {
 				image.Width = bmp.PixelWidth;
 				image.Height = bmp.PixelHeight;
-				Element.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
+				Element?.InvalidateMeasureNonVirtual(InvalidationTrigger.RendererReady);
 			};
 
 			// No text, just the image
