@@ -13,11 +13,21 @@
     <description>Xamarin.Forms.Maps Renderer for GTK</description>
     <copyright>Copyright 2013-2018</copyright>
     <dependencies>
-      <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
-      <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$" />
+      <group>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+        <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$" />
+      </group>
     </dependencies>
+    <references>
+      <group>
+        <reference file="GMap.NET.Core.dll" />
+        <reference file="GMap.NET.GTK.dll" />
+      </group>
+    </references>
   </metadata>
   <files>
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\GMaps\GMap.NET.Core.dll" target="lib\net45" />
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\GMaps\GMap.NET.GTK.dll" target="lib\net45" />
     <file src="..\Xamarin.Forms.Maps.GTK\bin\$Configuration$\Xamarin.Forms.Maps.GTK.dll" target="lib\net45"/>
     <file src="..\Xamarin.Forms.Maps.GTK\bin\$Configuration$\Xamarin.Forms.Maps.GTK.*pdb" target="lib\net45"/>
   </files>

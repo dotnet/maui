@@ -13,10 +13,22 @@
     <description>Xamarin Forms Renderer to build native UIs for GTK</description>
     <copyright>Copyright 2013-2018</copyright>
     <dependencies>
-      <dependency id="Xamarin.Forms$IdAppend$" version="$version$" />
+      <group>
+        <dependency id="Xamarin.Forms$IdAppend$" version="$version$" />
+      </group>
     </dependencies>
+    <references>
+      <group>
+        <reference file="OpenTK.dll" />
+        <reference file="webkit-sharp.dll" />
+      </group>
+    </references>
   </metadata>
   <files>
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll" target="lib\net45"/>
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll.config" target="content"/>
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\webkit-sharp\webkit-sharp.dll" target="lib\net45"/>
+    <file src="..\Xamarin.Forms.Platform.GTK\Libs\webkit-sharp\webkit-sharp.dll.config" target="content"/>
     <file src="..\Xamarin.Forms.Platform.GTK\bin\$Configuration$\Xamarin.Forms.Platform.GTK.dll" target="lib\net45"/>
     <file src="..\Xamarin.Forms.Platform.GTK\bin\$Configuration$\Xamarin.Forms.Platform.GTK.*pdb" target="lib\net45"/>
   </files>
