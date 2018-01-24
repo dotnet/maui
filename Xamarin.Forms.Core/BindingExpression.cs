@@ -23,9 +23,9 @@ namespace Xamarin.Forms
 		internal BindingExpression(BindingBase binding, string path)
 		{
 			if (binding == null)
-				throw new ArgumentNullException("binding");
+				throw new ArgumentNullException(nameof(binding));
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 
 			Binding = binding;
 			Path = path;
@@ -341,19 +341,7 @@ namespace Xamarin.Forms
 						FieldInfo bindablePropertyField = sourceType.GetDeclaredField(part.Content + "Property");
 						if (bindablePropertyField != null && bindablePropertyField.FieldType == typeof(BindableProperty) && sourceType.ImplementedInterfaces.Contains(typeof(IElementController)))
 						{
-							MethodInfo setValueMethod = null;
-							foreach (MethodInfo m in sourceType.AsType().GetRuntimeMethods())
-							{
-								if (m.Name.EndsWith("IElementController.SetValueFromRenderer"))
-								{
-									ParameterInfo[] parameters = m.GetParameters();
-									if (parameters.Length == 2 && parameters[0].ParameterType == typeof(BindableProperty))
-									{
-										setValueMethod = m;
-										break;
-									}
-								}
-							}
+							MethodInfo setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
 							if (setValueMethod != null)
 							{
 								part.LastSetter = setValueMethod;
