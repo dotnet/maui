@@ -47,18 +47,21 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Bugzilla29247Test ()
 		{
+			RunningApp.WaitForElement(q => q.Marked("btnOpenUri1"));
 			RunningApp.Tap (q => q.Marked ("btnOpenUri1"));
 		}
 
 		[Test]
 		public void Bugzilla29247EncodedParamsTest ()
 		{
+			RunningApp.WaitForElement(q => q.Marked("btnOpenUri2"));
 			RunningApp.Tap (q => q.Marked ("btnOpenUri2"));
 		}
 
 		[Test]
 		public void Bugzilla29247DecodeParamsTest ()
 		{
+			RunningApp.WaitForElement(q => q.Marked("btnOpenUri3"));
 			RunningApp.Tap (q => q.Marked ("btnOpenUri3"));
 		}
 		#endif
