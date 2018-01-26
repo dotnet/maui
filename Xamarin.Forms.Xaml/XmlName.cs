@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Xaml
 		public static readonly XmlName xName = new XmlName("x", "Name");
 		public static readonly XmlName xTypeArguments = new XmlName("x", "TypeArguments");
 		public static readonly XmlName xArguments = new XmlName("x", "Arguments");
-		public static readonly XmlName xFactoryMethod = new XmlName("x", "xFactoryMethod");
+		public static readonly XmlName xFactoryMethod = new XmlName("x", "FactoryMethod");
 		public static readonly XmlName xDataType = new XmlName("x", "DataType");
 		public static readonly XmlName Empty = new XmlName();
 
