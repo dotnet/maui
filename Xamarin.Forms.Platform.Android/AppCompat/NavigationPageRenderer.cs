@@ -46,8 +46,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		MasterDetailPage _masterDetailPage;
 		bool _toolbarVisible;
 
-		// The following is based on https://android.googlesource.com/platform/frameworks/support/+/refs/heads/master/v4/java/android/support/v4/app/FragmentManager.java#849
-		const int TransitionDuration = 220;
+		// The following is based on https://android.googlesource.com/platform/frameworks/support.git/+/4a7e12af4ec095c3a53bb8481d8d92f63157c3b7/v4/java/android/support/v4/app/FragmentManager.java#677
+		// Must be overriden in a custom renderer to match durations in XML animation resource files
+		protected virtual int TransitionDuration { get; set; } = 220;
 
 		public NavigationPageRenderer(Context context) : base(context)
 		{
@@ -604,7 +605,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			// Go ahead and take care of the fragment bookkeeping for the page being removed
 			FragmentTransaction transaction = FragmentManager.BeginTransaction();
-			transaction.DisallowAddToBackStack();
 			transaction.Remove(fragment);
 			transaction.CommitAllowingStateLoss();
 
@@ -676,6 +676,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (animated)
 				SetupPageTransition(transaction, !removed);
 
+			var fragmentsToRemove = new List<Fragment>();
+
 			if (_fragmentStack.Count == 0)
 			{
 				transaction.Add(Id, fragment);
@@ -691,7 +693,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					{
 						Fragment currentToRemove = _fragmentStack.Last();
 						_fragmentStack.RemoveAt(_fragmentStack.Count - 1);
-						transaction.Remove(currentToRemove);
+						transaction.Hide(currentToRemove);
+						fragmentsToRemove.Add(currentToRemove);
 						popPage = popToRoot;
 					}
 
@@ -731,29 +734,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				else if (_drawerToggle != null && ((INavigationPageController)Element).StackDepth == 2)
 					AnimateArrowOut();
 
-				Device.StartTimer(TimeSpan.FromMilliseconds(TransitionDuration), () =>
-				{
-					tcs.TrySetResult(true);
-					fragment.UserVisibleHint = true;
-					if (removed)
-					{
-						UpdateToolbar();
-					}
-
-					return false;
-				});
+				AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, TransitionDuration, removed);
 			}
 			else
-			{
-				Device.StartTimer(TimeSpan.FromMilliseconds(1), () =>
-				{
-					tcs.TrySetResult(true);
-					fragment.UserVisibleHint = true;
-					UpdateToolbar();
-
-					return false;
-				});
-			}
+				AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, 1, true);
 
 			Context.HideKeyboard(this);
 			((Platform)Element.Platform).NavAnimationInProgress = false;
@@ -891,6 +875,26 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
 
 			bar.Title = Element.CurrentPage.Title ?? "";
+		}
+
+		void AddTransitionTimer(TaskCompletionSource<bool> tcs, Fragment fragment, FragmentManager fragmentManager, IReadOnlyCollection<Fragment> fragmentsToRemove, int duration, bool shouldUpdateToolbar)
+		{
+			Device.StartTimer(TimeSpan.FromMilliseconds(duration), () =>
+			{
+				tcs.TrySetResult(true);
+				fragment.UserVisibleHint = true;
+				if (shouldUpdateToolbar)
+					UpdateToolbar();
+
+				FragmentTransaction fragmentTransaction = fragmentManager.BeginTransaction();
+
+				foreach (Fragment frag in fragmentsToRemove)
+					fragmentTransaction.Remove(frag);
+
+				fragmentTransaction.CommitAllowingStateLoss();
+
+				return false;
+			});
 		}
 
 		class ClickListener : Object, IOnClickListener
