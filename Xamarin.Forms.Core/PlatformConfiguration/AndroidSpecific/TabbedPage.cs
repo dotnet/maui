@@ -65,5 +65,30 @@
 			SetOffscreenPageLimit(config.Element, value);
 			return config;
 		}
+
+		public static readonly BindableProperty UseBottomNavigationProperty = 
+			BindableProperty.Create("UseBottomNavigation", typeof(bool), 
+			typeof(TabbedPage), true);
+
+		public static bool GetUseBottomNavigation(BindableObject element)
+		{
+			return (bool)element.GetValue(UseBottomNavigationProperty);
+		}
+
+		public static void SetUseBottomNavigation(BindableObject element, bool value)
+		{
+			element.SetValue(UseBottomNavigationProperty, value);
+		}
+
+		public static bool UseBottomNavigation(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetUseBottomNavigation(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> SetUseBottomNavigation(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetUseBottomNavigation(config.Element, value);
+			return config;
+		}
 	}
 }
