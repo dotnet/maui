@@ -89,8 +89,7 @@ namespace Xamarin.Forms.Platform.GTK
 
         public static IVisualElementRenderer CreateRenderer(VisualElement element)
         {
-            var elementType = element.GetType();
-            var renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(elementType) ?? new DefaultRenderer();
+            var renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultRenderer();
             renderer.SetElement(element);
 
             return renderer;

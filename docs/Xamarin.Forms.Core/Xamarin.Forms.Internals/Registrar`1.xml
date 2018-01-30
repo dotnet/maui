@@ -132,6 +132,42 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="GetHandlerForObject&lt;TOut&gt;">
+      <MemberSignature Language="C#" Value="public TOut GetHandlerForObject&lt;TOut&gt; (object obj, object[] args) where TOut : TRegistrable;" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance !!TOut GetHandlerForObject&lt;(!TRegistrable) TOut&gt;(object obj, object[] args) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>TOut</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="TOut">
+          <Constraints>
+            <BaseTypeName>TRegistrable</BaseTypeName>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+        <Parameter Name="args" Type="System.Object[]">
+          <Attributes>
+            <Attribute>
+              <AttributeName>System.ParamArray</AttributeName>
+            </Attribute>
+          </Attributes>
+        </Parameter>
+      </Parameters>
+      <Docs>
+        <typeparam name="TOut">To be added.</typeparam>
+        <param name="obj">To be added.</param>
+        <param name="args">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="GetHandlerType">
       <MemberSignature Language="C#" Value="public Type GetHandlerType (Type viewType);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Type GetHandlerType(class System.Type viewType) cil managed" />
