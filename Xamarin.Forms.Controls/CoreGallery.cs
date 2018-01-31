@@ -6,9 +6,9 @@ using Xamarin.Forms.Controls.GalleryPages;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries;
-
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
@@ -171,6 +171,69 @@ namespace Xamarin.Forms.Controls
 #endif
 	}
 
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 1675, "Android: TabbedPage: Bottom Tab Bar", PlatformAffected.Android)]
+	public class CoreTabbedPageAsBottomNavigation : TestTabbedPage
+	{
+		protected override void Init()
+		{
+		}
+#if APP
+		public CoreTabbedPageAsBottomNavigation()
+		{
+			AutomationId = "TabbedPageRoot";
+			On<Android>().SetUseBottomNavigation(true);
+
+			Device.StartTimer(TimeSpan.FromSeconds(6), () =>
+			{
+				BarBackgroundColor = Color.Maroon;
+				BarTextColor = Color.Blue;
+
+				Device.StartTimer(TimeSpan.FromSeconds(6), () =>
+				{
+					BarBackgroundColor = Color.Default;
+					BarTextColor = Color.Default;
+
+					Device.StartTimer(TimeSpan.FromSeconds(6), () =>
+					{
+						BarBackgroundColor = Color.Default;
+						BarTextColor = Color.Default;
+						Children[2].IsEnabled = false;
+						Children.RemoveAt(3);
+						Children.RemoveAt(3);
+						return false;
+					});
+
+					return false;
+				});
+
+				return false;
+			});
+
+			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 1", Icon = "coffee.png" });
+			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Tab 2", Icon = "bank.png", IsEnabled = false });
+			Children.Add(new NavigationPage(new Page())
+			{
+				Title = "Rubriques",
+				Icon = "coffee.png",
+				BarBackgroundColor = Color.Blue,
+				BarTextColor = Color.Aqua
+			});
+
+			Children.Add(new NavigationPage(new Page())
+			{
+				Title = "Le Club",
+				Icon = "bank.png"
+			});
+
+			Children.Add(new NavigationPage(new Page { Title = "Bookmarks" })
+			{
+				Title = "Bookmarks",
+			});
+		}
+#endif
+	}
+
 	[Preserve (AllMembers = true)]
 	internal class CoreViewContainer
 	{
@@ -194,6 +257,7 @@ namespace Xamarin.Forms.Controls
 				new CoreViewContainer ("SwapRoot - MasterDetailPage", typeof(CoreMasterDetailPage)),
 				new CoreViewContainer ("SwapRoot - NavigationPage", typeof(CoreNavigationPage)),
 				new CoreViewContainer ("SwapRoot - TabbedPage", typeof(CoreTabbedPage)),
+				new CoreViewContainer ("SwapRoot - BottomNavigation TabbedPage", typeof(CoreTabbedPageAsBottomNavigation)),
 			};
 
 			var template = new DataTemplate (typeof(TextCell));

@@ -68,7 +68,8 @@
 
 		public static readonly BindableProperty UseBottomNavigationProperty = 
 			BindableProperty.Create("UseBottomNavigation", typeof(bool), 
-			typeof(TabbedPage), true);
+			typeof(TabbedPage), false);
+
 
 		public static bool GetUseBottomNavigation(BindableObject element)
 		{

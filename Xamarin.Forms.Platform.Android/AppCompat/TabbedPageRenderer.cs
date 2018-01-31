@@ -298,34 +298,39 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
+			FormsViewPager pager = _viewPager;
+			Context context = Context;
+
+			var width = r - l;
+			var height = b - t;
+
 			if (Element.OnThisPlatform().UseBottomNavigation())
 			{
-				var width = r - l;
-				var height = b - t;
-
-				base.OnLayout(changed, l, t, r, b);
-
 				if (width <= 0 || height <= 0)
 				{
 					return;
 				}
-
-				_relativeLayout.Measure(MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
-
-				((IPageController)Element).ContainerArea = new Rectangle(0, 0, _relativeLayout.MeasuredWidth, _relativeLayout.GetChildAt(0).MeasuredHeight);
-
 				_relativeLayout.Measure(
 					MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
 					MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-				_relativeLayout.Layout(0, 0, _relativeLayout.MeasuredWidth, _relativeLayout.MeasuredHeight);
+				
+				pager.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.AtMost), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
+
+				if (width > 0 && height > 0)
+				{
+					PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height - _bottomNavigationView.Height));
+
+					pager.Layout(0, 0, width, b);
+					// We need to measure again to ensure that the tabs show up
+					_relativeLayout.Measure(
+						MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
+						MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+					_relativeLayout.Layout(0, 0, _relativeLayout.MeasuredWidth, _relativeLayout.MeasuredHeight);
+				}
 			}
 			else
 			{
 				TabLayout tabs = _tabLayout;
-				FormsViewPager pager = _viewPager;
-				Context context = Context;
-				int width = r - l;
-				int height = b - t;
 
 				tabs.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
 				var tabsHeight = 0;
@@ -363,11 +368,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 					UpdateTabBarTranslation(pager.CurrentItem, 0);
 				}
-
-				base.OnLayout(changed, l, t, r, b);
 			}
 
-
+      base.OnLayout(changed, l, t, r, b);
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -402,9 +405,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				TabLayout tabs = _tabLayout;
 
 				((FormsFragmentPagerAdapter<Page>)pager.Adapter).CountOverride = Element.Children.Count;
-
 				pager.Adapter.NotifyDataSetChanged();
-
 				if (Element.Children.Count == 0)
 				{
 					tabs.RemoveAllTabs();
@@ -514,11 +515,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void SetupBottomNavigationView()
 		{
 			BottomNavigationView bottomNavigationView = _bottomNavigationView;
-
+			bottomNavigationView.Menu.Clear();
 			for (var i = 0; i < Element.Children.Count; i++)
 			{
 				Page child = Element.Children[i];
-				bottomNavigationView.Menu.Add(0, i, i, child.Title);
+				bottomNavigationView.Menu.Add(0, i, i, child.Title).SetEnabled(child.IsEnabled);
+			}
+
+			if (Element.Children.Count > 0)
+			{
+				Element.CurrentPage = Element.Children[0];
 			}
 		}
 
@@ -575,7 +581,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (Forms.IsLollipopOrNewer)
 				{
-					_bottomNavigationView.SetBackgroundColor(tintColor.ToAndroid());
+					if (tintColor.IsDefault)
+						_bottomNavigationView.SetBackgroundColor(Color.Default.ToAndroid());
+					else
+						_bottomNavigationView.SetBackgroundColor(tintColor.ToAndroid());
 				}
 				else
 				{
@@ -629,7 +638,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				int currentColor = _bottomNavigationView.ItemTextColor.DefaultColor;
 
-				if (!_defaultColor.HasValue)
+        if (!_defaultColor.HasValue)
 					_defaultColor = currentColor;
 
 				Color newTextColor = Element.BarTextColor;
@@ -645,7 +654,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					_bottomNavigationView.ItemTextColor = new ColorStateList(new[] { sChecked, sDefault }, new[] { newTextColorArgb, color });
 					_bottomNavigationView.ItemIconTintList = new ColorStateList(new[] { sChecked, sDefault }, new[] { newTextColorArgb, color });
-					 
+
 				}
 			}
 			else
