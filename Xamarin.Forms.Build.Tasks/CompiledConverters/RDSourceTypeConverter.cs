@@ -51,9 +51,11 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Create(Ldstr, resourcePath); //resourcePath
 
 			var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-			var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetGetMethod());
+			var getTypeInfo = module.ImportReference(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
+			var getAssembly = module.ImportReference(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
 			yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
 			yield return Create(Call, module.ImportReference(getTypeFromHandle));
+			yield return Create(Call, module.ImportReference(getTypeInfo));
 			yield return Create(Callvirt, module.ImportReference(getAssembly)); //assembly
 
 			foreach (var instruction in node.PushXmlLineInfo(context))
