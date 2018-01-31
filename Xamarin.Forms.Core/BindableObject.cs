@@ -47,6 +47,14 @@ namespace Xamarin.Forms
 			ClearValue(propertyKey.BindableProperty, false);
 		}
 
+		public bool IsSet(BindableProperty targetProperty)
+		{
+			if (targetProperty == null)
+				throw new ArgumentNullException(nameof(targetProperty));
+
+			return GetContext(targetProperty) != null;
+		}
+
 		public object GetValue(BindableProperty property)
 		{
 			if (property == null)
