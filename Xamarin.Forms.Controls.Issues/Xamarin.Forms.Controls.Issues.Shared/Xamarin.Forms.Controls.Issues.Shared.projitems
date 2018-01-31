@@ -260,6 +260,7 @@
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1614.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsInvokeRequiredRaceCondition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsPasswordToggleTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1023.cs" />
