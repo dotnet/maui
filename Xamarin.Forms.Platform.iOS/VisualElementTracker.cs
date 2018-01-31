@@ -282,6 +282,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateNativeControl()
 		{
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
+
 			if (_disposed)
 				return;
 
@@ -299,6 +302,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			OnUpdateNativeControl(_layer);
 
 			NativeControlUpdated?.Invoke(this, EventArgs.Empty);
+			Performance.Stop(reference);
 		}
 	}
 }

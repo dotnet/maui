@@ -21,6 +21,9 @@
     <NoWarn>0114;0108;0109;4014;0649;0169;0472;0414;0168;0219;0429</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="BuildNumber.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj" />
     <ProjectReference Include="..\Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj" />
@@ -30,7 +33,10 @@
   <Import Project="..\.nuspec\Xamarin.Forms.targets" />
 
   <ItemGroup>
+    <EmbeddedResource Include="BuildNumber.txt" />
     <EmbeddedResource Include="GalleryPages\crimson.jpg" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
     <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
       <DependentUpon>OnPlatformExample.xaml</DependentUpon>
     </Compile>

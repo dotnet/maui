@@ -1,0 +1,70 @@
+<Type Name="IPerformanceProvider" FullName="Xamarin.Forms.Internals.IPerformanceProvider">
+  <TypeSignature Language="C#" Value="public interface IPerformanceProvider" />
+  <TypeSignature Language="ILAsm" Value=".class public interface auto ansi abstract IPerformanceProvider" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Interfaces />
+  <Attributes>
+    <Attribute>
+      <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public void Start (string reference, string tag, string path, string member);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Start(string reference, string tag, string path, string member) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="reference" Type="System.String" />
+        <Parameter Name="tag" Type="System.String" />
+        <Parameter Name="path" Type="System.String" />
+        <Parameter Name="member" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="reference">To be added.</param>
+        <param name="tag">To be added.</param>
+        <param name="path">To be added.</param>
+        <param name="member">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Stop">
+      <MemberSignature Language="C#" Value="public void Stop (string reference, string tag, string path, string member);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance void Stop(string reference, string tag, string path, string member) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="reference" Type="System.String" />
+        <Parameter Name="tag" Type="System.String" />
+        <Parameter Name="path" Type="System.String" />
+        <Parameter Name="member" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="reference">To be added.</param>
+        <param name="tag">To be added.</param>
+        <param name="path">To be added.</param>
+        <param name="member">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -464,6 +464,7 @@
       <Type Name="IIsolatedStorageFile" Kind="Interface" />
       <Type Name="INameScope" Kind="Interface" />
       <Type Name="InvalidationTrigger" Kind="Enumeration" />
+      <Type Name="IPerformanceProvider" Kind="Interface" />
       <Type Name="IPlatform" Kind="Interface" />
       <Type Name="IPlatformServices" Kind="Interface" />
       <Type Name="IResourceDictionary" Kind="Interface" />

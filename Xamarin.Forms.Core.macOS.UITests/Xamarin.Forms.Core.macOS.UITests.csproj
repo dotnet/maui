@@ -28,6 +28,12 @@
     <DefineConstants>__MACOS__;UITEST</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Plugin.DeviceInfo, Version=3.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xam.Plugin.DeviceInfo.3.0.2\lib\netstandard1.0\Plugin.DeviceInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="Plugin.DeviceInfo.Abstractions, Version=3.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xam.Plugin.DeviceInfo.3.0.2\lib\netstandard1.0\Plugin.DeviceInfo.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="Xamarin.UITest.Desktop">
       <HintPath>..\packages\Xamarin.UITest.Desktop.0.0.7\lib\net45\Xamarin.UITest.Desktop.dll</HintPath>

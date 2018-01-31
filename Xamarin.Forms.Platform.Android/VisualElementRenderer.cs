@@ -129,9 +129,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateLayout()
 		{
-			Performance.Start();
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 			Tracker?.UpdateLayout();
-			Performance.Stop();
+			Performance.Stop(reference);
 		}
 
 		public ViewGroup ViewGroup => this;
@@ -148,7 +149,8 @@ namespace Xamarin.Forms.Platform.Android
 			TElement oldElement = Element;
 			Element = element;
 
-			Performance.Start();
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 
 			if (oldElement != null)
 			{
@@ -193,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android
 			SetFocusable();
 			UpdateInputTransparent();
 
-			Performance.Stop();
+			Performance.Stop(reference);
 		}
 
 		/// <summary>

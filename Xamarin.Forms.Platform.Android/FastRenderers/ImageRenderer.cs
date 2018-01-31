@@ -112,7 +112,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			Image oldElement = _element;
 			_element = image;
 
-			Internals.Performance.Start();
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 
 			if (oldElement != null)
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
@@ -127,7 +128,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_visualElementRenderer = new VisualElementRenderer(this);
 			}
 
-			Internals.Performance.Stop();
+			Performance.Stop(reference);
 			_motionEventHelper.UpdateElement(element);
 			OnElementChanged(new ElementChangedEventArgs<Image>(oldElement, _element));
 

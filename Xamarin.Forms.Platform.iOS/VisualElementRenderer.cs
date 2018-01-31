@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Xamarin.Forms.Internals;
 
 #if __MOBILE__
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -154,6 +155,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			var oldElement = Element;
 			Element = element;
 
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
+
 			if (oldElement != null)
 				oldElement.PropertyChanged -= _propertyChangedHandler;
 
@@ -200,6 +204,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			SetAccessibilityHint();
 			SetIsAccessibilityElement();
 #endif
+			Performance.Stop(reference);
 		}
 
 #if __MOBILE__
