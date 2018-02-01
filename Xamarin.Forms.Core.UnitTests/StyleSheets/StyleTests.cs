@@ -54,6 +54,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		[Test]
 		public void StylesAreCascading()
 		{
+			//color should cascade, background-color should not
 			var styleString = @"background-color: #ff0000; color: #00ff00;";
 			var style = Style.Parse(new CssReader(new StringReader(styleString)), '}');
 			Assume.That(style, Is.Not.Null);
@@ -71,7 +72,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 
 			style.Apply(layout);
 			Assert.That(layout.BackgroundColor, Is.EqualTo(Color.Red));
-			Assert.That(label.BackgroundColor, Is.EqualTo(Color.Red));
+			Assert.That(label.BackgroundColor, Is.EqualTo(Color.Default));
 			Assert.That(label.TextColor, Is.EqualTo(Color.Lime));
 		}
 
