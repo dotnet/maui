@@ -17,13 +17,6 @@
         <dependency id="Xamarin.Forms$IdAppend$" version="$version$" />
       </group>
     </dependencies>
-    <references>
-      <group>
-        <reference file="OpenTK.dll" />
-        <reference file="webkit-sharp.dll" />
-        <reference file="Xamarin.Forms.Platform.GTK.dll" />
-      </group>
-    </references>
   </metadata>
   <files>
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\OpenTK\OpenTK.dll" target="lib\net45"/>
