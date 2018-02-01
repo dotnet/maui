@@ -8,6 +8,9 @@ using Mono.Cecil.Cil;
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Xaml.Internals;
 
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
+
 namespace Xamarin.Forms.Build.Tasks
 {
 	static class NodeILExtensions
@@ -493,8 +496,9 @@ namespace Xamarin.Forms.Build.Tasks
 			var addService = module.ImportReference(addServiceInfo);
 
 			var getTypeFromHandle =
-				module.ImportReference(typeof (Type).GetMethod("GetTypeFromHandle", new[] { typeof (RuntimeTypeHandle) }));
-			var getAssembly = module.ImportReference(typeof (Type).GetProperty("Assembly").GetMethod);
+				module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+			var getTypeInfo = module.ImportReference(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type)}));
+			var getAssembly = module.ImportReference(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
 
 			yield return Instruction.Create(OpCodes.Newobj, ctor);
 
@@ -537,26 +541,27 @@ namespace Xamarin.Forms.Build.Tasks
 			//Add a XamlTypeResolver
 			if (node.NamespaceResolver != null)
 			{
-				yield return Instruction.Create(OpCodes.Dup); //Dupicate the serviceProvider
-				yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeof (IXamlTypeResolver)));
-				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
+				yield return Create(Dup); //Dupicate the serviceProvider
+				yield return Create(Ldtoken, module.ImportReference(typeof (IXamlTypeResolver)));
+				yield return Create(Call, module.ImportReference(getTypeFromHandle));
 				var xmlNamespaceResolverCtor = module.ImportReference(typeof (XmlNamespaceResolver).GetConstructor(new Type[] { }));
 				var addNamespace = module.ImportReference(typeof (XmlNamespaceResolver).GetMethod("Add"));
-				yield return Instruction.Create(OpCodes.Newobj, xmlNamespaceResolverCtor);
+				yield return Create(Newobj, xmlNamespaceResolverCtor);
 				foreach (var kvp in node.NamespaceResolver.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
 				{
-					yield return Instruction.Create(OpCodes.Dup); //dup the resolver
-					yield return Instruction.Create(OpCodes.Ldstr, kvp.Key);
-					yield return Instruction.Create(OpCodes.Ldstr, kvp.Value);
-					yield return Instruction.Create(OpCodes.Callvirt, addNamespace);
+					yield return Create(Dup); //dup the resolver
+					yield return Create(Ldstr, kvp.Key);
+					yield return Create(Ldstr, kvp.Value);
+					yield return Create(Callvirt, addNamespace);
 				}
-				yield return Instruction.Create(OpCodes.Ldtoken, context.Body.Method.DeclaringType);
-				yield return Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle));
-				yield return Instruction.Create(OpCodes.Callvirt, getAssembly);
+				yield return Create(Ldtoken, context.Body.Method.DeclaringType);
+				yield return Create(Call, module.ImportReference(getTypeFromHandle));
+				yield return Create(Call, module.ImportReference(getTypeInfo));
+				yield return Create(Callvirt, getAssembly);
 				var xtr = module.ImportReference(typeof (XamlTypeResolver)).Resolve();
 				var xamlTypeResolverCtor = module.ImportReference(xtr.Methods.First(md => md.IsConstructor && md.Parameters.Count == 2));
-				yield return Instruction.Create(OpCodes.Newobj, xamlTypeResolverCtor);
-				yield return Instruction.Create(OpCodes.Callvirt, addService);
+				yield return Create(Newobj, xamlTypeResolverCtor);
+				yield return Create(Callvirt, addService);
 			}
 
 			if (node is IXmlLineInfo)

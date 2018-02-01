@@ -178,6 +178,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46363.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla46363_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla47548.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla50787.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52299.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla52419.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla49304.cs" />
@@ -233,6 +234,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60001.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60122.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_0.cs" />
@@ -255,10 +257,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FailImageSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GestureBubblingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InputTransparentInheritance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1331.xaml.cs">
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1614.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsInvokeRequiredRaceCondition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsPasswordToggleTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1023.cs" />
@@ -302,6 +306,33 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39829.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39458.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla39853.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceDataManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceGallery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceScenario.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceTracker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceTrackerTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceTrackerWatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\PerformanceViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\SearchBarScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\SliderScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\StepperScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\TableViewScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\TimePickerScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\WebViewScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\ProgressBarScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\PickerScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\MapScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\EntryScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\EditorScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\ActivityIndicatorScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\LabelScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\BoxViewScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\SwitchScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\DatePickerScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\ButtonScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\ImageScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceGallery\Scenarios\ListViewScenarios.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53179_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewIsEnabled.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformSpecifics_iOSTranslucentNavBarX.xaml.cs">

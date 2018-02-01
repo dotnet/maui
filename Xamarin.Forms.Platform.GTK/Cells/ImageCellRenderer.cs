@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
             Renderers.IImageSourceHandler handler;
 
             if (source != null && (handler =
-                Internals.Registrar.Registered.GetHandler<Renderers.IImageSourceHandler>(source.GetType())) != null)
+                Internals.Registrar.Registered.GetHandlerForObject<Renderers.IImageSourceHandler>(source)) != null)
             {
                 Gdk.Pixbuf image;
 

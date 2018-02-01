@@ -139,7 +139,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public static IVisualElementRenderer CreateRenderer(VisualElement element)
 		{
-			IVisualElementRenderer result = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType()) ?? new DefaultViewRenderer();
+			IVisualElementRenderer result = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element) ?? new DefaultViewRenderer();
 			result.SetElement(element);
 			return result;
 		}

@@ -1,4 +1,5 @@
 using System;
+using Xamarin.Forms.Internals;
 
 #if __MOBILE__
 namespace Xamarin.Forms.Platform.iOS
@@ -68,7 +69,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (_isDisposed)
 				return;
-
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 			if (CompressedLayout.GetIsHeadless(view)) {
 				var packager = new VisualElementPackager(Renderer, view);
 				view.IsPlatformEnabled = true;
@@ -85,6 +87,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				EnsureChildrenOrder();
 			}
+			Performance.Stop(reference);
 		}
 
 		protected virtual void OnChildRemoved(VisualElement view)
@@ -149,6 +152,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (oldElement == newElement)
 				return;
 
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 
 			_element = newElement;
 
@@ -184,6 +189,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				newElement.ChildRemoved += OnChildRemoved;
 				newElement.ChildrenReordered += UpdateChildrenOrder;
 			}
+			Performance.Stop(reference);
 		}
 
 		void UpdateChildrenOrder(object sender, EventArgs e)

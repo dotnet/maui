@@ -27,19 +27,14 @@ Read more about the platform at https://www.xamarin.com/forms.
 
 ## Getting Started ##
 
-##### Install Visual Studio 2015 #####
-VS 2015 is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2015 Community is completely free. If you are installing VS 2015 for the first time, select the "Custom" installation type and select the following from the features list to install:
+##### Install Visual Studio 2017 #####
+VS 2017 is required for developing Xamarin.Forms. If you do not already have it installed, you can download it [here](https://www.visualstudio.com/downloads/download-visual-studio-vs). VS 2017 Community is completely free. If you are installing VS 2017 for the first time, select the "Custom" installation type and select the following from the features list to install:
 
-- C#/.NET (Xamarin v4.0.3)
-- Universal Windows App Development Tools
-- Windows 8.1 and Windows Phone 8.0/8.1 Tools
+- Universal Windows Platform Development - In the `Summary > Optional select the Windows 10 Mobile Emulator`.
+- Mobile Development with .NET - In the `Summary > Optional select Xamarin Remoted Simulator, Xamarin SDK Manager, Intel Hardware Accelerated Execution Manager (HAXM)`
 
-We also recommend installing [Microsoft Visual Studio Emulator for Android](https://www.visualstudio.com/en-us/features/msft-android-emulator-vs.aspx) as well as [Emulators for Windows Phone 8.1](https://www.microsoft.com/en-us/download/details.aspx?id=44574). If you already have VS 2015 installed, you can verify that these features are installed by modifying the VS 2015 installation via the Control Panel.
-
-##### Install Additional Features #####
-After installing VS 2015, you will also need to install the following:
-  - Bing Maps SDK for Windows 8.1 Store apps -- you can find this in `Tools > Extensions and Updates` and searching for "bing" in the Online pane.
-  - Android SDKs -- you can install these via `Tools > Android > Android SDK Manager`.
+We also recommend installing [Xamarin Android Device Manager](https://developer.xamarin.com/guides/android/getting_started/installation/android-emulator/xamarin-device-manager/) This will use the HAXM tools installed above and allow you to configure Android Virtual Devices (AVDs) that emulate Android devices.
+If you already have VS 2017 installed, you can verify that these features are installed by modifying the VS 2017 installation via the Visual Studio Installer.
 
 ##### Solution Configuration #####
 Upon opening the Xamarin.Forms solution, you will find that there are a number of errors and warnings under the Error List pane; you can resolve this by changing the filter of `Build + IntelliSense` to `Build Only`. At this point, you should be able to successfully build the solution.
@@ -67,7 +62,7 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 
 ## Contributing ##
 
-- [How to Contribute](https://github.com/xamarin/Xamarin.Forms/wiki/How-to-Contribute)
+- [How to Contribute](https://github.com/xamarin/Xamarin.Forms/blob/master/CONTRIBUTING.md)
 
 ### Reporting Bugs
 

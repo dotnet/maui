@@ -287,10 +287,12 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Call, getResourceProvider);
 
 					var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-					var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetGetMethod());
+					var getTypeInfo = module.ImportReference(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
+					var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetMethod);
 					var getAssemblyName = module.ImportReference(typeof(System.Reflection.Assembly).GetMethod("GetName", new Type[] { }));
 					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
 					il.Emit(Call, module.ImportReference(getTypeFromHandle));
+					il.Emit(Call, module.ImportReference(getTypeInfo));
 					il.Emit(Callvirt, module.ImportReference(getAssembly));
 					il.Emit(Callvirt, module.ImportReference(getAssemblyName)); //assemblyName
 

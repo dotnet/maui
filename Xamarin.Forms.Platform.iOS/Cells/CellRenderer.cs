@@ -12,6 +12,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
+
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
 
 			tvc.Cell = item;
@@ -21,6 +24,8 @@ namespace Xamarin.Forms.Platform.iOS
 			tvc.TextLabel.Text = item.ToString();
 
 			UpdateBackground(tvc, item);
+
+			Performance.Stop(reference);
 			return tvc;
 		}
 

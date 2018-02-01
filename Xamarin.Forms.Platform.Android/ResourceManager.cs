@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 				var bitmap = GetBitmap(context.Resources, file) ?? BitmapFactory.DecodeFile(file);
 				if (bitmap == null)
 				{
-					var source = Registrar.Registered.GetHandler<IImageSourceHandler>(fileImageSource.GetType());
+					var source = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(fileImageSource);
 					bitmap = source.LoadImageAsync(fileImageSource, context).GetAwaiter().GetResult();
 				}
 				if (bitmap != null)

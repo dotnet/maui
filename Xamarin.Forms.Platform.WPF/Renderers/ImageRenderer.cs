@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Platform.WPF
 			
 			ImageSource source = Element.Source;
 			IImageSourceHandler handler;
-			if (source != null && (handler = Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				System.Windows.Media.ImageSource imagesource;
 

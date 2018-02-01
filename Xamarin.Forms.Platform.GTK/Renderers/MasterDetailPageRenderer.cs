@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             if (hamburguerIcon != null)
             {
                 IImageSourceHandler handler =
-                    Registrar.Registered.GetHandler<IImageSourceHandler>(hamburguerIcon.GetType());
+                    Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(hamburguerIcon);
 
                 var image = await handler.LoadImageAsync(hamburguerIcon);
                 Widget.UpdateHamburguerIcon(image);

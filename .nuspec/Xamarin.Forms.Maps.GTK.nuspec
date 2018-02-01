@@ -22,6 +22,7 @@
       <group>
         <reference file="GMap.NET.Core.dll" />
         <reference file="GMap.NET.GTK.dll" />
+        <reference file="Xamarin.Forms.Maps.GTK.dll" />
       </group>
     </references>
   </metadata>

@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
                         var cell = tableSection[j];
 
                         var renderer =
-                            (Cells.CellRenderer)Internals.Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
+                            (Cells.CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
                         var nativeCell = renderer.GetCell(cell, null, null);
 
                         if (nativeCell != null)

@@ -1,6 +1,6 @@
 <Type Name="Performance" FullName="Xamarin.Forms.Internals.Performance">
-  <TypeSignature Language="C#" Value="public static class Performance" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Performance extends System.Object" />
+  <TypeSignature Language="C#" Value="public class Performance" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Performance extends System.Object" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Forms.Core</AssemblyName>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -15,34 +15,42 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>For internal use by the Xamarin.Forms platform.</summary>
+    <summary>To be added.</summary>
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
-    <Member MemberName="Clear">
-      <MemberSignature Language="C#" Value="public static void Clear ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Clear() cil managed" />
-      <MemberType>Method</MemberType>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Performance ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.Conditional("PERF")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Count">
-      <MemberSignature Language="C#" Value="public static void Count (string tag = null, string path = null, string member = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Count(string tag, string path, string member) cil managed" />
+    <Member MemberName="Provider">
+      <MemberSignature Language="C#" Value="public static Xamarin.Forms.Internals.IPerformanceProvider Provider { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Xamarin.Forms.Internals.IPerformanceProvider Provider" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.IPerformanceProvider</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SetProvider">
+      <MemberSignature Language="C#" Value="public static void SetProvider (Xamarin.Forms.Internals.IPerformanceProvider instance);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetProvider(class Xamarin.Forms.Internals.IPerformanceProvider instance) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
@@ -51,84 +59,26 @@
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="tag" Type="System.String" />
-        <Parameter Name="path" Type="System.String">
-          <Attributes>
-            <Attribute>
-              <AttributeName>System.Runtime.CompilerServices.CallerFilePath</AttributeName>
-            </Attribute>
-          </Attributes>
-        </Parameter>
-        <Parameter Name="member" Type="System.String">
-          <Attributes>
-            <Attribute>
-              <AttributeName>System.Runtime.CompilerServices.CallerMemberName</AttributeName>
-            </Attribute>
-          </Attributes>
-        </Parameter>
+        <Parameter Name="instance" Type="Xamarin.Forms.Internals.IPerformanceProvider" />
       </Parameters>
       <Docs>
-        <param name="tag">For internal use by the Xamarin.Forms platform.</param>
-        <param name="path">For internal use by the Xamarin.Forms platform.</param>
-        <param name="member">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="DumpStats">
-      <MemberSignature Language="C#" Value="public static void DumpStats ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void DumpStats() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.Conditional("PERF")</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="GetStats">
-      <MemberSignature Language="C#" Value="public static string GetStats ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig string GetStats() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
-        <returns>To be added.</returns>
+        <param name="instance">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
-      <MemberSignature Language="C#" Value="public static void Start (string tag = null, string path = null, string member = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(string tag, string path, string member) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Start (string reference, string tag = null, string path = null, string member = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(string reference, string tag, string path, string member) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.Conditional("PERF")</AttributeName>
-        </Attribute>
-      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
+        <Parameter Name="reference" Type="System.String" />
         <Parameter Name="tag" Type="System.String" />
         <Parameter Name="path" Type="System.String">
           <Attributes>
@@ -146,29 +96,26 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="tag">For internal use by the Xamarin.Forms platform.</param>
-        <param name="path">For internal use by the Xamarin.Forms platform.</param>
-        <param name="member">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="reference">To be added.</param>
+        <param name="tag">To be added.</param>
+        <param name="path">To be added.</param>
+        <param name="member">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Stop">
-      <MemberSignature Language="C#" Value="public static void Stop (string tag = null, string path = null, string member = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop(string tag, string path, string member) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Stop (string reference, string tag = null, string path = null, string member = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop(string reference, string tag, string path, string member) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>2.0.0.0</AssemblyVersion>
       </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.Conditional("PERF")</AttributeName>
-        </Attribute>
-      </Attributes>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
       <Parameters>
+        <Parameter Name="reference" Type="System.String" />
         <Parameter Name="tag" Type="System.String" />
         <Parameter Name="path" Type="System.String">
           <Attributes>
@@ -186,10 +133,11 @@
         </Parameter>
       </Parameters>
       <Docs>
-        <param name="tag">For internal use by the Xamarin.Forms platform.</param>
-        <param name="path">For internal use by the Xamarin.Forms platform.</param>
-        <param name="member">For internal use by the Xamarin.Forms platform.</param>
-        <summary>For internal use by the Xamarin.Forms platform.</summary>
+        <param name="reference">To be added.</param>
+        <param name="tag">To be added.</param>
+        <param name="path">To be added.</param>
+        <param name="member">To be added.</param>
+        <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

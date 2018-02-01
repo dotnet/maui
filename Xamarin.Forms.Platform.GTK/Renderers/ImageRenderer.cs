@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             ((IImageController)Element).SetIsLoading(true);
 
             if (source != null
-                && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+                && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
             {
                 Pixbuf image;
 

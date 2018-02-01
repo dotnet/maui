@@ -436,6 +436,26 @@ class MyBindable : BindableObject
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="IsSet">
+      <MemberSignature Language="C#" Value="public bool IsSet (Xamarin.Forms.BindableProperty targetProperty);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance bool IsSet(class Xamarin.Forms.BindableProperty targetProperty) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="targetProperty" Type="Xamarin.Forms.BindableProperty" />
+      </Parameters>
+      <Docs>
+        <param name="targetProperty">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnBindingContextChanged">
       <MemberSignature Language="C#" Value="protected virtual void OnBindingContextChanged ();" />
       <MemberSignature Language="ILAsm" Value=".method familyhidebysig newslot virtual instance void OnBindingContextChanged() cil managed" />

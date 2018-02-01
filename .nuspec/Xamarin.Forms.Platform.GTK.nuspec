@@ -21,6 +21,7 @@
       <group>
         <reference file="OpenTK.dll" />
         <reference file="webkit-sharp.dll" />
+        <reference file="Xamarin.Forms.Platform.GTK.dll" />
       </group>
     </references>
   </metadata>

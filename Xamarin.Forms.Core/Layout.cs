@@ -54,6 +54,9 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty IsClippedToBoundsProperty = BindableProperty.Create("IsClippedToBounds", typeof(bool), typeof(Layout), false);
 
+		public static readonly BindableProperty InputTransparentInheritedProperty = BindableProperty.Create(
+			"InputTransparentInherited", typeof(bool), typeof(Layout), true);
+
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		static IList<KeyValuePair<Layout, int>> s_resolutionList = new List<KeyValuePair<Layout, int>>();
@@ -84,6 +87,12 @@ namespace Xamarin.Forms
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
 			set { SetValue(PaddingElement.PaddingProperty, value); }
+		}
+
+		public bool InputTransparentInherited
+		{
+			get { return (bool)GetValue(InputTransparentInheritedProperty); }
+			set { SetValue(InputTransparentInheritedProperty, value); }
 		}
 
 		Thickness IPaddingElement.PaddingDefaultValueCreator()

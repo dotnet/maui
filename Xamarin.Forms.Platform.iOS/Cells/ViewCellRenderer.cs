@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using UIKit;
+using Xamarin.Forms.Internals;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
 
@@ -10,6 +11,9 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
+
 			var viewCell = (ViewCell)item;
 
 			var cell = reusableCell as ViewTableCell;
@@ -27,6 +31,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBackground(cell, item);
 			UpdateIsEnabled(cell, viewCell);
+
+			Performance.Stop(reference);
 			return cell;
 		}
 
@@ -71,6 +77,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override void LayoutSubviews()
 			{
+				var reference = Guid.NewGuid().ToString();
+				Performance.Start(reference);
+
 				//This sets the content views frame.
 				base.LayoutSubviews();
 
@@ -92,10 +101,15 @@ namespace Xamarin.Forms.Platform.iOS
 				IVisualElementRenderer renderer;
 				if (_rendererRef.TryGetTarget(out renderer))
 					renderer.NativeView.Frame = view.Bounds.ToRectangleF();
+
+				Performance.Stop(reference);
 			}
 
 			public override SizeF SizeThatFits(SizeF size)
 			{
+				var reference = Guid.NewGuid().ToString();
+				Performance.Start(reference);
+
 				IVisualElementRenderer renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
 					return base.SizeThatFits(size);
@@ -109,6 +123,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				// make sure to add in the separator if needed
 				var finalheight = (float)result.Request.Height + (SupressSeparator ? 0f : 1f) / UIScreen.MainScreen.Scale;
+
+				Performance.Stop(reference);
+
 				return new SizeF(size.Width, finalheight);
 			}
 
@@ -150,6 +167,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateCell(ViewCell cell)
 			{
+				var reference = Guid.NewGuid().ToString();
+				Performance.Start(reference);
+
 				if (_viewCell != null)
 					Device.BeginInvokeOnMainThread(_viewCell.SendDisappearing);
 
@@ -182,6 +202,7 @@ namespace Xamarin.Forms.Platform.iOS
 				}
 
 				Platform.SetRenderer(this._viewCell.View, renderer);
+				Performance.Stop(reference);
 			}
 		}
 	}

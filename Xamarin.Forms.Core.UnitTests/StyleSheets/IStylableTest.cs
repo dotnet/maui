@@ -20,7 +20,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetPropertyDefinedOnParent()
 		{
 			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("background-color");
+			var bp = ((IStylable)label).GetProperty("background-color", false);
 			Assert.AreSame(VisualElement.BackgroundColorProperty, bp);
 		}
 
@@ -28,7 +28,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetPropertyDefinedOnType()
 		{
 			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("color");
+			var bp = ((IStylable)label).GetProperty("color", false);
 			Assert.AreSame(Label.TextColorProperty, bp);
 		}
 
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetPropertyDefinedOnType2()
 		{
 			var entry = new Entry();
-			var bp = ((IStylable)entry).GetProperty("color");
+			var bp = ((IStylable)entry).GetProperty("color", false);
 			Assert.AreSame(Entry.TextColorProperty, bp);
 		}
 
@@ -44,7 +44,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetInvalidPropertyForType()
 		{
 			var grid = new Grid();
-			var bp = ((IStylable)grid).GetProperty("color");
+			var bp = ((IStylable)grid).GetProperty("color", false);
 			Assert.Null(bp);
 		}
 
@@ -52,7 +52,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetPropertyDefinedOnPropertyOwnerType()
 		{
 			var frame = new Frame();
-			var bp = ((IStylable)frame).GetProperty("padding-left");
+			var bp = ((IStylable)frame).GetProperty("padding-left", false);
 			Assert.That(bp, Is.SameAs(PaddingElement.PaddingLeftProperty));
 		}
 
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		public void GetNonPublicProperty()
 		{
 			var label = new Label();
-			var bp = ((IStylable)label).GetProperty("margin-right");
+			var bp = ((IStylable)label).GetProperty("margin-right", false);
 			Assert.That(bp, Is.SameAs(View.MarginRightProperty));
 		}
 

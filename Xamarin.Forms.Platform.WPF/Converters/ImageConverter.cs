@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.WPF
 			var source = (ImageSource)value;
 			IImageSourceHandler handler;
 			
-			if (source != null && (handler = Internals.Registrar.Registered.GetHandler<IImageSourceHandler>(source.GetType())) != null)
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
 				Task<System.Windows.Media.ImageSource> image = handler.LoadImageAsync(source);
 				image.Wait();

@@ -501,7 +501,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
         private CellBase GetCell(Cell cell)
         {
             var renderer =
-                (Cells.CellRenderer)Registrar.Registered.GetHandler<IRegisterable>(cell.GetType());
+                (Cells.CellRenderer)Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 
             var realCell = renderer.GetCell(cell, null, _listView);
 

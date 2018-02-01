@@ -50,6 +50,9 @@ namespace Xamarin.Forms.Platform.iOS
 					entry.InputView = _picker;
 					entry.InputAccessoryView = toolbar;
 
+					entry.InputView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+					entry.InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
+
 					_defaultTextColor = entry.TextColor;
 					
 					_useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();

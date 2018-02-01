@@ -125,7 +125,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			VisualElement oldElement = Button;
 			Button = (Button)element;
 
-			Performance.Start();
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 
 			if (oldElement != null)
 			{
@@ -152,7 +153,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
-			Performance.Stop();
+			Performance.Stop(reference);
 		}
 
 		void IVisualElementRenderer.SetLabelFor(int? id)
@@ -167,9 +168,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void IVisualElementRenderer.UpdateLayout()
 		{
-			Performance.Start();
+			var reference = Guid.NewGuid().ToString();
 			_tracker?.UpdateLayout();
-			Performance.Stop();
 		}
 
 		protected override void Dispose(bool disposing)

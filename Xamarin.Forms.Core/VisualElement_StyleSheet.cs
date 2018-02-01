@@ -11,13 +11,17 @@ namespace Xamarin.Forms
 		IList<string> IStyleSelectable.Classes
 			=> StyleClass;
 
-		BindableProperty IStylable.GetProperty(string key)
+		BindableProperty IStylable.GetProperty(string key, bool inheriting)
 		{
 			StylePropertyAttribute styleAttribute;
 			if (!Internals.Registrar.StyleProperties.TryGetValue(key, out styleAttribute))
 				return null;
 
 			if (!styleAttribute.TargetType.GetTypeInfo().IsAssignableFrom(GetType().GetTypeInfo()))
+				return null;
+
+			//do not inherit non-inherited properties
+			if (inheriting && !styleAttribute.Inherited)
 				return null;
 
 			if (styleAttribute.BindableProperty != null)

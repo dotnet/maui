@@ -307,7 +307,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, Context context)
 		{
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType(), context) 
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context)
 				?? new DefaultRenderer(context);
 			renderer.SetElement(element);
 
@@ -351,7 +351,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal static IVisualElementRenderer CreateRenderer(VisualElement element, FragmentManager fragmentManager, Context context)
 		{
-			IVisualElementRenderer renderer = Registrar.Registered.GetHandler<IVisualElementRenderer>(element.GetType(), context) ?? new DefaultRenderer(context);
+			IVisualElementRenderer renderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(element, context) ?? new DefaultRenderer(context);
 
 			var managesFragments = renderer as IManageFragments;
 			managesFragments?.SetFragmentManager(fragmentManager);
@@ -1232,7 +1232,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			Performance.Start();
+			var reference = Guid.NewGuid().ToString();
+			Performance.Start(reference);
 
 			// FIXME: potential crash
 			IVisualElementRenderer viewRenderer = GetRenderer(view);
@@ -1255,7 +1256,7 @@ namespace Xamarin.Forms.Platform.Android
 			var result = new SizeRequest(new Size(_context.FromPixels(rawResult.Request.Width), _context.FromPixels(rawResult.Request.Height)),
 				new Size(_context.FromPixels(rawResult.Minimum.Width), _context.FromPixels(rawResult.Minimum.Height)));
 
-			Performance.Stop();
+			Performance.Stop(reference);
 			return result;
 		}
 
