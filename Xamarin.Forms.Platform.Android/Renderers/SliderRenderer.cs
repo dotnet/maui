@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
@@ -71,6 +73,12 @@ namespace Xamarin.Forms.Platform.Android
 			_min = slider.Minimum;
 			_max = slider.Maximum;
 			Value = slider.Value;
+			UpdateSliderColors();
+		}
+
+		SeekBar NativeSeekbar
+		{
+			get { return Control; }
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -90,6 +98,63 @@ namespace Xamarin.Forms.Platform.Android
 					if (Value != view.Value)
 						Value = view.Value;
 					break;
+			}
+
+			if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+				UpdateMinimumTrackColor();
+			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+				UpdateMaximumTrackColor();
+			else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
+				UpdateThumbImage();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
+		}
+
+		private void UpdateSliderColors()
+		{
+			UpdateMinimumTrackColor();
+			UpdateMaximumTrackColor();
+			if (!string.IsNullOrEmpty(Element.ThumbImage))
+			{
+				UpdateThumbImage();
+			}
+			else
+			{
+				UpdateThumbColor();
+			}
+		}
+
+		private void UpdateMinimumTrackColor()
+		{
+			if (Element != null && Element.MinimumTrackColor != Color.Default)
+			{
+				Control.ProgressDrawable.SetColorFilter(new PorterDuffColorFilter(Element.MinimumTrackColor.ToAndroid(), PorterDuff.Mode.SrcIn));
+			}
+		}
+
+		private void UpdateMaximumTrackColor()
+		{
+			if (Element != null && Element.MaximumTrackColor != Color.Default)
+			{
+				Control.ForegroundTintList = ColorStateList.ValueOf(Element.MinimumTrackColor.ToAndroid());
+				Control.ProgressBackgroundTintList = ColorStateList.ValueOf(Element.MaximumTrackColor.ToAndroid());
+				Control.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+			}
+		}
+
+		private void UpdateThumbColor()
+		{
+			if (Element != null && Element.ThumbColor != Color.Default)
+			{
+				Control.Thumb.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+			}
+		}
+
+		private void UpdateThumbImage()
+		{
+			if (Element != null && !string.IsNullOrEmpty(Element.ThumbImage))
+			{
+				Control.SetThumb(Context.GetDrawable(Element.ThumbImage));
 			}
 		}
 

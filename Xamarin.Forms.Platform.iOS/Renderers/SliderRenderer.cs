@@ -44,9 +44,72 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMaximum();
 				UpdateMinimum();
 				UpdateValue();
+				UpdateSliderColors();
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		private void UpdateSliderColors()
+		{
+			UpdateMinimumTrackColor();
+			UpdateMaximumTrackColor();
+			if (!string.IsNullOrEmpty(Element.ThumbImage))
+			{
+				UpdateThumbImage();
+			}
+			else
+			{
+				UpdateThumbColor();
+			}
+		}
+
+		private void UpdateMinimumTrackColor()
+		{
+			if (Element != null && Element.MinimumTrackColor != Color.Default)
+			{
+				Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToUIColor();
+			}
+		}
+
+		private void UpdateMaximumTrackColor()
+		{
+			if (Element != null && Element.MaximumTrackColor != Color.Default)
+			{
+				Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToUIColor();
+			}
+		}
+
+		private void UpdateThumbColor()
+		{
+			if (Element != null && Element.ThumbColor != Color.Default)
+			{
+				Control.ThumbTintColor = Element.ThumbColor.ToUIColor();
+			}
+		}
+
+		async void UpdateThumbImage()
+		{
+			IImageSourceHandler handler;
+			FileImageSource source = Element.ThumbImage;
+			if (source != null && (handler = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			{
+				UIImage uiimage;
+				try
+				{
+					uiimage = await handler.LoadImageAsync(source, scale: (float)UIScreen.MainScreen.Scale);
+				}
+				catch (OperationCanceledException)
+				{
+					uiimage = null;
+				}
+				UISlider slider = Control;
+				if (slider != null && uiimage != null)
+				{
+					slider.SetThumbImage(uiimage, UIControlState.Normal);
+				}
+			}
+			((IVisualElementController)Element).NativeSizeChanged();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -59,6 +122,14 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMinimum();
 			else if (e.PropertyName == Slider.ValueProperty.PropertyName)
 				UpdateValue();
+			else if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+				UpdateMinimumTrackColor();
+			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+				UpdateMaximumTrackColor();
+			else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
+				UpdateThumbImage();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
 		}
 
 		void OnControlValueChanged(object sender, EventArgs eventArgs)
