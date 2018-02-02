@@ -310,7 +310,7 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
 				SetAutomationPropertiesLabeledBy();
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || 
-					e.PropertyName == Layout.InputTransparentInheritedProperty.PropertyName)
+					e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
 		}
 
@@ -616,7 +616,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return false;
 			}
 
-			if (layout.IsEnabled && layout.InputTransparent && !layout.InputTransparentInherited)
+			if (layout.IsEnabled && layout.InputTransparent && !layout.CascadeInputTransparent)
 			{
 				return true;
 			}

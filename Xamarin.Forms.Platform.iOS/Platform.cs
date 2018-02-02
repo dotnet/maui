@@ -510,7 +510,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Alpha = old;
 				}
 
-				if (UserInteractionEnabled && Element is Layout layout && !layout.InputTransparentInherited)
+				if (UserInteractionEnabled && Element is Layout layout && !layout.CascadeInputTransparent)
 				{
 					// This is a Layout with 'InputTransparent = true' and 'InputTransparentInherited = false'
 					if (this.Equals(result))

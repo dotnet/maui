@@ -18,8 +18,8 @@ namespace Xamarin.Forms.Controls.Issues
 	#endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.None, 5552368, "Transparency Inheritance", PlatformAffected.All)]
-	public class InputTransparentInheritance : TestNavigationPage
+	[Issue(IssueTracker.None, 5552368, "Transparency Cascading", PlatformAffected.All)]
+	public class CascadeInputTransparent : TestNavigationPage
 	{
 		const string Running = "Running...";
 		const string Success = "Success";
@@ -28,10 +28,10 @@ namespace Xamarin.Forms.Controls.Issues
 		const string OverButtonText = "+";
 		const string Overlay = "overlay";
 
-		const string InheritedStatic = "Inherited";
-		const string InheritedChange = "Inherited (changes)";
-		const string NotInheritedStatic = "Not Inherited";
-		const string NotInheritedChange = "Not Inherited (changes)";
+		const string CascadesStatic = "Cascades";
+		const string CascadesChange = "Cascades (changes)";
+		const string NotCascadingStatic = "Not Cascading";
+		const string NotCascadingChange = "Not Cascading (changes)";
 
 		protected override void Init()
 		{
@@ -52,22 +52,22 @@ namespace Xamarin.Forms.Controls.Issues
 			return new ContentPage { Content = layout };
 		}
 
-		Button MenuButton(bool inherited, bool transition)
+		Button MenuButton(bool cascades, bool transition)
 		{
-			var text = inherited
-				? transition ? InheritedChange : InheritedStatic
+			var text = cascades
+				? transition ? CascadesChange : CascadesStatic
 				: transition
-				? NotInheritedChange
-				: NotInheritedStatic;
+				? NotCascadingChange
+				: NotCascadingStatic;
 
 			var button = new Button { Text = text, AutomationId = text };
 
-			button.Clicked += (sender, args) => PushAsync(CreateTestPage(inherited, transition));
+			button.Clicked += (sender, args) => PushAsync(CreateTestPage(cascades, transition));
 
 			return button;
 		}
 
-		static ContentPage CreateTestPage(bool inherited, bool transition)
+		static ContentPage CreateTestPage(bool cascades, bool transition)
 		{
 			var grid = new Grid
 			{
@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 			underButton.Clicked += (sender, args) =>
 			{
 				underPressed = true;
-				EvaluateTest(results, inherited, overPressed, underPressed, layoutTapped);
+				EvaluateTest(results, cascades, overPressed, underPressed, layoutTapped);
 			};
 
 			var overButton = new Button
@@ -127,7 +127,7 @@ namespace Xamarin.Forms.Controls.Issues
 			overButton.Clicked += (sender, args) =>
 			{
 				overPressed = true;
-				EvaluateTest(results, inherited, overPressed, underPressed, layoutTapped);
+				EvaluateTest(results, cascades, overPressed, underPressed, layoutTapped);
 			};
 
 			var layout = new StackLayout
@@ -136,7 +136,7 @@ namespace Xamarin.Forms.Controls.Issues
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill,
 				InputTransparent = true,
-				InputTransparentInherited = inherited,
+				CascadeInputTransparent = cascades,
 				BackgroundColor = Color.Blue,
 				Opacity = 0.2
 			};
@@ -146,7 +146,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Command = new Command(() =>
 				{
 					layoutTapped = true;
-					EvaluateTest(results, inherited, overPressed, underPressed, layoutTapped);
+					EvaluateTest(results, cascades, overPressed, underPressed, layoutTapped);
 				})
 			});
 
@@ -161,22 +161,22 @@ namespace Xamarin.Forms.Controls.Issues
 			grid.Children.Add(layout);
 			Grid.SetRow(layout, 2);
 
-			var page = new ContentPage { Content = grid, Title = inherited.ToString() };
+			var page = new ContentPage { Content = grid, Title = cascades.ToString() };
 
 			if (transition)
 			{
 				page.Appearing += async (sender, args) =>
 				{
 					await Task.Delay(1000);
-					inherited = !inherited;
-					layout.InputTransparentInherited = inherited;
+					cascades = !cascades;
+					layout.CascadeInputTransparent = cascades;
 				};
 			}
 
 			return page;
 		}
 
-		static void EvaluateTest(Label results, bool inherited, bool overPressed, bool underPressed, bool layoutTapped)
+		static void EvaluateTest(Label results, bool cascades, bool overPressed, bool underPressed, bool layoutTapped)
 		{
 			if (layoutTapped)
 			{
@@ -184,7 +184,7 @@ namespace Xamarin.Forms.Controls.Issues
 				return;
 			}
 
-			if (inherited)
+			if (cascades)
 			{
 				if (overPressed)
 				{
@@ -210,11 +210,11 @@ namespace Xamarin.Forms.Controls.Issues
 			results.Text = Running;
 		}
 
-		static IEnumerable<string> TestList => new List<string> { InheritedChange, InheritedStatic, NotInheritedChange, NotInheritedStatic };
+		static IEnumerable<string> TestList => new List<string> { CascadesChange, CascadesStatic, NotCascadingChange, NotCascadingStatic };
 
 		#if UITEST
 		[Test, TestCaseSource(nameof(TestList))]
-		public void TransparencyNotInherited(string test)
+		public void TransparencyCascading(string test)
 		{
 			RunningApp.WaitForElement(test);
 			RunningApp.Tap(test);
