@@ -46,7 +46,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont();
 				UpdateTextAlignment();
 				UpdateFlowDirection();
-				UpdateMaxLength();
 			}
 
 			base.OnElementChanged(e);
@@ -91,10 +90,6 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextAlignment();
 				UpdateFlowDirection();
-			}
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-			{
-				UpdateMaxLength();
 			}
 		}
 
@@ -205,11 +200,6 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
-		}
-
-		void UpdateMaxLength()
-		{
-			Control.MaxLength = Element.MaxLength;
 		}
 	}
 }

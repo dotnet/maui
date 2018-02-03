@@ -44,7 +44,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateInputScope();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
-				UpdateMaxLength();
 			}
 		}
 
@@ -85,8 +84,6 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -206,11 +203,6 @@ namespace Xamarin.Forms.Platform.UWP
 
 			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
-		}
-
-		void UpdateMaxLength()
-		{
-			Control.MaxLength = Element.MaxLength;
 		}
 	}
 }

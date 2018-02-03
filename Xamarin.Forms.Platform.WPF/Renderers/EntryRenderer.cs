@@ -38,7 +38,6 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
-				UpdateMaxLength();
 			}
 
 			base.OnElementChanged(e);
@@ -68,8 +67,6 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
-			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
-				UpdateMaxLength();
 		}
 		
 		internal override void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
@@ -229,11 +226,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Control.Text = Element.Text ?? "";
 			Control.Select(Control.Text == null ? 0 : Control.Text.Length, 0);
-		}
-
-		void UpdateMaxLength()
-		{
-			Control.MaxLength = Element.MaxLength;
 		}
 
 		bool _isDisposed;
