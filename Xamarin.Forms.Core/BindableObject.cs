@@ -257,6 +257,25 @@ namespace Xamarin.Forms
 			return values;
 		}
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal object[] GetValues(params BindableProperty[] properties)
+		{
+			var values = new object[properties.Length];
+			for (var i = 0; i < _properties.Count; i++) {
+				var context = _properties[i];
+				var index = properties.IndexOf(context.Property);
+				if (index < 0)
+					continue;
+				values[index] = context.Value;
+			}
+			for (var i = 0; i < values.Length; i++) {
+				if (!ReferenceEquals(values[i], null))
+					continue;
+				values[i] = properties[i].DefaultValueCreator == null ? properties[i].DefaultValue : CreateAndAddContext(properties[i]).Value;
+			}
+			return values;
+		}
+
 		internal virtual void OnRemoveDynamicResource(BindableProperty property)
 		{
 		}

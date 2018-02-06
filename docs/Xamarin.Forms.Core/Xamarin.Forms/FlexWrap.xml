@@ -1,0 +1,64 @@
+<Type Name="FlexWrap" FullName="Xamarin.Forms.FlexWrap">
+  <TypeSignature Language="C#" Value="public enum FlexWrap" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed FlexWrap extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Attributes>
+    <Attribute>
+      <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.FlexWrapTypeConverter))</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="NoWrap">
+      <MemberSignature Language="C#" Value="NoWrap" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.FlexWrap NoWrap = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.FlexWrap</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Reverse">
+      <MemberSignature Language="C#" Value="Reverse" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.FlexWrap Reverse = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.FlexWrap</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Wrap">
+      <MemberSignature Language="C#" Value="Wrap" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.FlexWrap Wrap = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.FlexWrap</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
