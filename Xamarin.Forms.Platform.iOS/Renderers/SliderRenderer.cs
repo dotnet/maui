@@ -8,6 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 	public class SliderRenderer : ViewRenderer<Slider, UISlider>
 	{
 		SizeF _fitSize;
+		UIColor defaultmintrackcolor, defaultmaxtrackcolor, defaultthumbcolor;
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
@@ -35,6 +36,10 @@ namespace Xamarin.Forms.Platform.iOS
 					// this however gives a very useful answer
 					Control.SizeToFit();
 					_fitSize = Control.Bounds.Size;
+
+					defaultmintrackcolor = Control.MinimumTrackTintColor;
+					defaultmaxtrackcolor = Control.MaximumTrackTintColor;
+					defaultthumbcolor = Control.ThumbTintColor;
 
 					// except if your not running iOS 7... then it fails...
 					if (_fitSize.Width <= 0 || _fitSize.Height <= 0)
@@ -66,25 +71,34 @@ namespace Xamarin.Forms.Platform.iOS
 
 		private void UpdateMinimumTrackColor()
 		{
-			if (Element != null && Element.MinimumTrackColor != Color.Default)
+			if (Element != null)
 			{
-				Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToUIColor();
+				if (Element.MinimumTrackColor == Color.Default)
+					Control.MinimumTrackTintColor = defaultmintrackcolor;
+				else
+					Control.MinimumTrackTintColor = Element.MinimumTrackColor.ToUIColor();
 			}
 		}
 
 		private void UpdateMaximumTrackColor()
 		{
-			if (Element != null && Element.MaximumTrackColor != Color.Default)
+			if (Element != null)
 			{
-				Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToUIColor();
+				if (Element.MaximumTrackColor == Color.Default)
+					Control.MaximumTrackTintColor = defaultmaxtrackcolor;
+				else
+					Control.MaximumTrackTintColor = Element.MaximumTrackColor.ToUIColor();
 			}
 		}
 
 		private void UpdateThumbColor()
 		{
-			if (Element != null && Element.ThumbColor != Color.Default)
+			if (Element != null)
 			{
-				Control.ThumbTintColor = Element.ThumbColor.ToUIColor();
+				if (Element.ThumbColor == Color.Default)
+					Control.ThumbTintColor = defaultthumbcolor;
+				else
+					Control.ThumbTintColor = Element.ThumbColor.ToUIColor();
 			}
 		}
 
@@ -107,6 +121,14 @@ namespace Xamarin.Forms.Platform.iOS
 				if (slider != null && uiimage != null)
 				{
 					slider.SetThumbImage(uiimage, UIControlState.Normal);
+				}
+			}
+			else
+			{
+				UISlider slider = Control;
+				if (slider != null)
+				{
+					slider.SetThumbImage(null, UIControlState.Normal);
 				}
 			}
 			((IVisualElementController)Element).NativeSizeChanged();

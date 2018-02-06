@@ -13,6 +13,11 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		double _max, _min;
 		bool _progressChangedOnce;
+		ColorStateList defaultprogresstintlist, defaultprogressbackgroundtintlist;
+		ColorFilter defaultthumbcolorfilter;
+		Drawable defaultthumb;
+		PorterDuff.Mode defaultprogresstintmode, defaultprogressbackgroundtintmode;
+
 
 		public SliderRenderer(Context context) : base(context)
 		{
@@ -65,8 +70,18 @@ namespace Xamarin.Forms.Platform.Android
 				SetNativeControl(seekBar);
 
 				seekBar.Max = 1000;
-
 				seekBar.SetOnSeekBarChangeListener(this);
+				//defaultthumbcolorfilter = Control.Thumb.ColorFilter;
+				//defaultprogresstintlist = Control.ProgressTintList;
+				//defaultprogressbackgroundtintlist = Control.ProgressBackgroundTintList;
+
+				defaultthumbcolorfilter = seekBar.Thumb.ColorFilter;
+				defaultprogresstintmode = seekBar.ProgressTintMode;
+				defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
+				defaultprogresstintlist = seekBar.ProgressTintList;
+				defaultprogressbackgroundtintlist = seekBar.ProgressBackgroundTintList;
+				defaultthumb = seekBar.Thumb;
+
 			}
 
 			Slider slider = e.NewElement;
@@ -126,35 +141,62 @@ namespace Xamarin.Forms.Platform.Android
 
 		private void UpdateMinimumTrackColor()
 		{
-			if (Element != null && Element.MinimumTrackColor != Color.Default)
+			if (Element != null)
 			{
-				Control.ProgressDrawable.SetColorFilter(new PorterDuffColorFilter(Element.MinimumTrackColor.ToAndroid(), PorterDuff.Mode.SrcIn));
+				if (Element.MinimumTrackColor == Color.Default)
+				{
+					Control.ProgressTintList = defaultprogresstintlist;
+					Control.ProgressTintMode = defaultprogresstintmode;
+				}
+				else
+				{
+					Control.ProgressTintList = ColorStateList.ValueOf(Element.MinimumTrackColor.ToAndroid());
+					Control.ProgressTintMode = PorterDuff.Mode.SrcIn;
+				}
 			}
 		}
 
 		private void UpdateMaximumTrackColor()
 		{
-			if (Element != null && Element.MaximumTrackColor != Color.Default)
+			if (Element != null)
 			{
-				Control.ForegroundTintList = ColorStateList.ValueOf(Element.MinimumTrackColor.ToAndroid());
-				Control.ProgressBackgroundTintList = ColorStateList.ValueOf(Element.MaximumTrackColor.ToAndroid());
-				Control.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+				if (Element.MaximumTrackColor == Color.Default)
+				{
+					Control.ProgressBackgroundTintList = defaultprogressbackgroundtintlist;
+					Control.ProgressBackgroundTintMode = defaultprogressbackgroundtintmode;
+				}
+				else
+				{
+					Control.ProgressBackgroundTintList = ColorStateList.ValueOf(Element.MaximumTrackColor.ToAndroid());
+					Control.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
+				}
 			}
 		}
 
 		private void UpdateThumbColor()
 		{
-			if (Element != null && Element.ThumbColor != Color.Default)
+			if (Element != null)
 			{
-				Control.Thumb.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+				if (Element.ThumbColor == Color.Default)
+				{
+					Control.Thumb.SetColorFilter(defaultthumbcolorfilter);
+				}
+				else
+				{
+					Control.Thumb.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
+				}
+
 			}
 		}
 
 		private void UpdateThumbImage()
 		{
-			if (Element != null && !string.IsNullOrEmpty(Element.ThumbImage))
+			if (Element != null)
 			{
-				Control.SetThumb(Context.GetDrawable(Element.ThumbImage));
+				if (string.IsNullOrEmpty(Element.ThumbImage))
+					Control.SetThumb(defaultthumb);
+				else
+					Control.SetThumb(Context.GetDrawable(Element.ThumbImage));
 			}
 		}
 
