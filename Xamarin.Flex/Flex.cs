@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See the LICENSE.txt file in the project root
+// Licensed under the MIT License. See the LICENSE file in the project root
 // for the license information.
-
+// 
+// Author(s):
+//  - Laurent Sansonetti (native Xamarin flex https://github.com/xamarin/flex)
+//  - Stephane Delcroix (.NET port)
+//
 using System;
 using System.Collections;
 using System.Collections.Generic;
