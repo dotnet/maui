@@ -1,9 +1,10 @@
 using System;
 using System.Globalization;
+using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class TimePickerRenderer : ViewRenderer<TimePicker, Native.EditfieldEntry>
+	public class TimePickerRenderer : ViewRenderer<TimePicker, EditfieldEntry>
 	{
 		//TODO need to add internationalization support
 		const string DialogTitle = "Choose Time";
@@ -11,6 +12,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		static readonly string s_defaultFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
 
 		TimeSpan _time = DateTime.Now.TimeOfDay;
+		Lazy<DateTimePickerDialog<Native.TimePicker>> _lazyDialog;
 
 		public TimePickerRenderer()
 		{
@@ -27,11 +29,21 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					IsSingleLine = true,
 					HorizontalTextAlignment = Native.TextAlignment.Center,
+					InputPanelShowByOnDemand = true,
 				};
 				entry.SetVerticalTextAlignment("elm.text", 0.5);
-				entry.AllowFocus(false);
+				entry.TextBlockFocused += OnTextBlockFocused;
 				SetNativeControl(entry);
-				Control.Clicked += OnClicked;
+
+				_lazyDialog = new Lazy<DateTimePickerDialog<Native.TimePicker>>(() =>
+				{
+					var dialog = new DateTimePickerDialog<Native.TimePicker>(Forms.NativeParent)
+					{
+						Title = DialogTitle
+					};
+					dialog.DateTimeChanged += OnDialogTimeChanged;
+					return dialog;
+				});
 			}
 			base.OnElementChanged(e);
 		}
@@ -42,7 +54,12 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					Control.Clicked -= OnClicked;
+					Control.TextBlockFocused -= OnTextBlockFocused;
+				}
+				if (_lazyDialog.IsValueCreated)
+				{
+					_lazyDialog.Value.DateTimeChanged -= OnDialogTimeChanged;
+					_lazyDialog.Value.Unrealize();
 				}
 			}
 
@@ -54,21 +71,17 @@ namespace Xamarin.Forms.Platform.Tizen
 			return Control.Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
 
-		void OnClicked(object o, EventArgs e)
+		void OnTextBlockFocused(object o, EventArgs e)
 		{
 			// For EFL Entry, the event will occur even if it is currently disabled.
 			// If the problem is resolved, no conditional statement is required.
 			if (Element.IsEnabled)
 			{
-				Native.DateTimePickerDialog dialog = new Native.DateTimePickerDialog(Forms.NativeParent)
-				{
-					Title = DialogTitle
-				};
-
-				dialog.InitializeTimePicker(_time, null);
-				dialog.DateTimeChanged += OnDialogTimeChanged;
-				dialog.Dismissed += OnDialogDismissed;
-				dialog.Show();
+				var dialog = _lazyDialog.Value;
+				dialog.DateTimePicker.Time = Element.Time;
+				// You need to call Show() after ui thread occupation because of EFL problem.
+				// Otherwise, the content of the popup will not receive focus.
+				Device.BeginInvokeOnMainThread(() => dialog.Show());
 			}
 		}
 
@@ -76,13 +89,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			Element.Time = dcea.NewDate.TimeOfDay;
 			UpdateTime();
-		}
-
-		void OnDialogDismissed(object sender, EventArgs e)
-		{
-			var dialog = sender as Native.DateTimePickerDialog;
-			dialog.DateTimeChanged -= OnDialogTimeChanged;
-			dialog.Dismissed -= OnDialogDismissed;
 		}
 
 		void UpdateFormat()

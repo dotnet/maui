@@ -10,16 +10,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class MasterDetailPage : Box
 	{
 		/// <summary>
-		/// The portion of the screen that the MasterPage takes in Split mode.
-		/// </summary>
-		static readonly double s_splitRatio = 0.35;
-
-		/// <summary>
-		/// The portion of the screen that the MasterPage takes in Popover mode.
-		/// </summary>
-		static readonly double s_popoverRatio = 0.8;
-
-		/// <summary>
 		/// The default master behavior (a.k.a mode).
 		/// </summary>
 		static readonly MasterBehavior s_defaultMasterBehavior = (Device.Idiom == TargetIdiom.Phone) ? MasterBehavior.Popover : MasterBehavior.SplitOnLandscape;
@@ -75,6 +65,16 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		bool _isGestureEnabled = true;
 
 		/// <summary>
+		/// The portion of the screen that the MasterPage takes in Split mode.
+		/// </summary>
+		double _splitRatio = 0.35;
+
+		/// <summary>
+		/// The portion of the screen that the MasterPage takes in Popover mode.
+		/// </summary>
+		double _popoverRatio = 0.8;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.Native.MasterDetailPage"/> class.
 		/// </summary>
 		/// <param name="parent">Parent evas object.</param>
@@ -82,15 +82,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 			LayoutUpdated += (s, e) =>
 			{
-				var bound = Geometry;
-				// main widget should fill the area of the MasterDetailPage
-				if (_mainWidget != null)
-				{
-					_mainWidget.Geometry = bound;
-				}
-
-				bound.Width = (int)((s_popoverRatio * bound.Width));
-				_drawer.Geometry = bound;
+				UpdateChildCanvasGeometry();
 			};
 
 			// create the controls which will hold the master and detail pages
@@ -118,7 +110,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				WeightY = 1,
 				IsFixed = true,
 				IsHorizontal = false,
-				Proportion = s_splitRatio,
+				Proportion = _splitRatio,
 			};
 
 			_drawer = new Panel(Forms.NativeParent);
@@ -127,7 +119,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_drawer.Direction = PanelDirection.Left;
 			_drawer.Toggled += (object sender, EventArgs e) =>
 			{
-				IsPresentedChanged?.Invoke(this, EventArgs.Empty);
+				UpdateFocusPolicy();
+				IsPresentedChanged?.Invoke(this, new IsPresentedChangedEventArgs(_drawer.IsOpen));
 			};
 
 			ConfigureLayout();
@@ -146,7 +139,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Occurs when the MasterPage is shown or hidden.
 		/// </summary>
-		public event EventHandler IsPresentedChanged;
+		public event EventHandler<IsPresentedChangedEventArgs> IsPresentedChanged;
 
 		/// <summary>
 		/// Occurs when the IsPresentChangeable was changed.
@@ -166,14 +159,15 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			set
 			{
-				if (_masterBehavior != value)
-				{
-					_masterBehavior = value;
-
-					UpdateMasterBehavior();
-				}
+				_masterBehavior = value;
+				UpdateMasterBehavior();
 			}
 		}
+
+		/// <summary>
+		/// Gets the MasterDEtailPage was splited
+		/// </summary>
+		public bool IsSplit => _internalMasterBehavior == MasterBehavior.Split;
 
 		/// <summary>
 		/// Gets or sets the content of the MasterPage.
@@ -194,6 +188,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					UpdatePageGeometry(_master);
 					_masterCanvas.Children.Clear();
 					_masterCanvas.Children.Add(_master);
+					if (!IsSplit)
+						UpdateFocusPolicy();
 				}
 			}
 		}
@@ -217,6 +213,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					UpdatePageGeometry(_detail);
 					_detailCanvas.Children.Clear();
 					_detailCanvas.Children.Add(_detail);
+					if (!IsSplit)
+						UpdateFocusPolicy();
 				}
 			}
 		}
@@ -266,12 +264,53 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
+		/// Gets or Sets the portion of the screen that the MasterPage takes in split mode.
+		/// </summary>
+		/// <value>The portion.</value>
+		public double SplitRatio
+		{
+			get
+			{
+				return _splitRatio;
+			}
+			set
+			{
+				if (_splitRatio != value)
+				{
+					_splitRatio = value;
+					_splitPane.Proportion = _splitRatio;
+				}
+			}
+
+		}
+
+		/// <summary>
+		/// Gets or sets the portion of the screen that the MasterPage takes in Popover mode.
+		/// </summary>
+		/// <value>The portion.</value>
+		public double PopoverRatio
+		{
+			get
+			{
+				return _popoverRatio;
+			}
+			set
+			{
+				if (_popoverRatio != value)
+				{
+					_popoverRatio = value;
+					UpdateChildCanvasGeometry();
+				}
+			}
+		}
+
+		/// <summary>
 		/// Provides destruction for native element and contained elements.
 		/// </summary>
 		protected override void OnUnrealize()
 		{
 			// Views that are not belong to view tree should be unrealized.
-			if (_internalMasterBehavior == MasterBehavior.Split)
+			if (IsSplit)
 			{
 				_drawer.Unrealize();
 			}
@@ -330,7 +369,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (behavior != _internalMasterBehavior)
 			{
 				_internalMasterBehavior = behavior;
-
 				ConfigureLayout();
 			}
 		}
@@ -350,7 +388,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			UnPackAll();
 
 			// the structure for split mode and for popover mode looks differently
-			if (_internalMasterBehavior == MasterBehavior.Split)
+			if (IsSplit)
 			{
 				_splitPane.SetPartContent("left", _masterCanvas, true);
 				_splitPane.SetPartContent("right", _detailCanvas, true);
@@ -359,7 +397,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				PackEnd(_splitPane);
 
 				IsPresented = true;
-				UpdateIsPresentChangeable?.Invoke(this, new UpdateIsPresentChangeableEventArgs { CanChange = false });
+				UpdateIsPresentChangeable?.Invoke(this, new UpdateIsPresentChangeableEventArgs(false));
+				UpdateFocusPolicy(true);
 			}
 			else
 			{
@@ -370,19 +409,98 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				PackEnd(_drawer);
 
 				_drawer.IsOpen = IsPresented;
-				UpdateIsPresentChangeable?.Invoke(this, new UpdateIsPresentChangeableEventArgs { CanChange = false });
+				UpdateIsPresentChangeable?.Invoke(this, new UpdateIsPresentChangeableEventArgs(true));
+				UpdateFocusPolicy();
 			}
 
 			_masterCanvas.Show();
 			_detailCanvas.Show();
+
+			// even though child was changed, Layout callback was not called, so i manually call layout function.
+			// Layout callback was filter out when geometry was not changed in Native.Box
+			UpdateChildCanvasGeometry();
 		}
+
+		void UpdateChildCanvasGeometry()
+		{
+			var bound = Geometry;
+			// main widget should fill the area of the MasterDetailPage
+			if (_mainWidget != null)
+			{
+				_mainWidget.Geometry = bound;
+			}
+
+			bound.Width = (int)((_popoverRatio * bound.Width));
+			_drawer.Geometry = bound;
+		}
+
+		/// <summary>
+		/// Force update the focus management
+		/// </summary>
+		void UpdateFocusPolicy(bool forceAllowFocusAll=false)
+		{
+			var master = _master as Widget;
+			var detail = _detail as Widget;
+
+			if(forceAllowFocusAll)
+			{
+				if (master != null)
+					master.AllowTreeFocus = true;
+				if (detail != null)
+					detail.AllowTreeFocus = true;
+				return;
+			}
+
+			if (_drawer.IsOpen)
+			{
+				if (detail != null)
+				{
+					detail.AllowTreeFocus = false;
+				}
+				if (master != null)
+				{
+					master.AllowTreeFocus = true;
+					master.SetFocus(true);
+				}
+			}
+			else
+			{
+				if (master != null)
+				{
+					master.AllowTreeFocus = false;
+				}
+				if (detail != null)
+				{
+					detail.AllowTreeFocus = true;
+					detail.SetFocus(true);
+				}
+			}
+		}
+	}
+
+	public class IsPresentedChangedEventArgs : EventArgs
+	{
+		public IsPresentedChangedEventArgs (bool isPresent)
+		{
+			IsPresent = isPresent;
+		}
+
+		/// <summary>
+		/// Value of IsPresent
+		/// </summary>
+		public bool IsPresent { get; private set; }
 	}
 
 	public class UpdateIsPresentChangeableEventArgs : EventArgs
 	{
+		public UpdateIsPresentChangeableEventArgs(bool canChange)
+		{
+			CanChange = canChange;
+		}
+
 		/// <summary>
 		/// Value of changeable
 		/// </summary>
-		public bool CanChange { get; set; }
+		public bool CanChange { get; private set; }
 	}
 }

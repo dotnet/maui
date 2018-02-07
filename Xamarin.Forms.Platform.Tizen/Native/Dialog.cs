@@ -5,7 +5,7 @@ using EButton = ElmSharp.Button;
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	/// <summary>
-	/// Base class for Dialogs. 
+	/// Base class for Dialogs.
 	/// A dialog is a small window that prompts the user to make a decision or enter additional information.
 	/// </summary>
 	public class Dialog : Popup
@@ -182,8 +182,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Dismissed += (s, e) =>
 			{
 				OnDismissed();
-				//Native control should be freed after dismissed event occurred. (this is EFL's law.)
-				Unrealize();
 			};
 
 			// Adds a handler for the Shown event.

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 using ElmSharp;
+using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	/// <summary>
 	/// This class provides a Renderer for a ScrollView widget.
 	/// </summary>
-	public class ScrollViewRenderer : ViewRenderer<ScrollView, Scroller>
+	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScroller>
 	{
 		EvasObject _content;
 
@@ -27,7 +28,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Scroller(Forms.NativeParent));
+				SetNativeControl(new NScroller(Forms.NativeParent));
 				Control.Scrolled += OnScrolled;
 			}
 
@@ -165,7 +166,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			((IScrollViewController)Element).SetScrolledPosition(region.X, region.Y);
 		}
 
-		void OnScrollRequested(object sender, ScrollToRequestedEventArgs e)
+		async void OnScrollRequested(object sender, ScrollToRequestedEventArgs e)
 		{
 			var x = e.ScrollX;
 			var y = e.ScrollY;
@@ -177,7 +178,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			Rect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
-			Control.ScrollTo(region, e.ShouldAnimate);
+			await Control.ScrollToAsync(region, e.ShouldAnimate);
+			Element.SendScrollFinished();
 		}
 	}
 }

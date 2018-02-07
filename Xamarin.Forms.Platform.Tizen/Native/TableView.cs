@@ -52,9 +52,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			AddCell(cell);
 		}
 
-		internal class SectionCellRenderer : GroupCellTextRenderer
+		internal class SectionCellRenderer : TextCellRenderer
 		{
-			public SectionCellRenderer()
+			public SectionCellRenderer() : this("group_index")
 			{
 				DetailPart = "null";
 			}

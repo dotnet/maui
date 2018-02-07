@@ -35,5 +35,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint);
 
 		void UpdateLayout();
+
+		Rect GetNativeContentGeometry();
 	}
 }

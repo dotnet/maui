@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using ElmSharp;
-using ESize = ElmSharp.Size;
-using ERect = ElmSharp.Rect;
-using EFocusDirection = ElmSharp.FocusDirection;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform.Tizen.Native;
+using EFocusDirection = ElmSharp.FocusDirection;
+using ERect = ElmSharp.Rect;
+using ESize = ElmSharp.Size;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
 using XFocusDirection = Xamarin.Forms.PlatformConfiguration.TizenSpecific.FocusDirection;
 
@@ -131,6 +131,10 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// the memory that the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> was occupying.</remarks>
 		public void Dispose()
 		{
+			// This is the reason why I call SendDisappearing() here.
+			// When OnChildRemove is called first like how it is called in Navigation.PopToRootAsync(),
+			// you can not controll using SendDisappearing() on the lower class.
+			(Element as IPageController)?.SendDisappearing();
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
@@ -188,7 +192,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			// send notification
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, newElement));
 
-
 			// store renderer for the new element
 			Platform.SetRenderer(newElement, this);
 
@@ -201,8 +204,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			newElement.IsPlatformEnabled = true;
 
-
 			OnElementReady();
+
+			SendVisualElementInitialized(newElement, NativeView);
 		}
 
 		void IVisualElementRenderer.UpdateLayout()
@@ -438,6 +442,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		internal virtual void SendVisualElementInitialized(VisualElement element, EvasObject nativeView)
+		{
+			element.SendViewInitialized(nativeView);
+		}
+
 		void UpdateNativeGeometry()
 		{
 			var updatedGeometry = new Rectangle(ComputeAbsolutePoint(Element), new Size(Element.Width, Element.Height)).ToPixel();
@@ -542,11 +551,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 		}
 
-		protected void DoLayout(Native.LayoutEventArgs e)
-		{
-			Element.Layout(e.Geometry.ToDP());
-		}
-
 		protected virtual Size MinimumSize()
 		{
 			return new ESize(NativeView.MinimumWidth, NativeView.MinimumHeight).ToDP();
@@ -591,14 +595,19 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		public virtual ERect GetNativeContentGeometry()
+		{
+			return NativeView.Geometry;
+		}
+
 		static double ComputeAbsoluteX(VisualElement e)
 		{
-			return e.X + ((e.RealParent is VisualElement) && !(e.RealParent is ListView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).NativeView.Geometry.X) : 0.0);
+			return e.X + ((e.RealParent is VisualElement) && !(e.RealParent is ListView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().X) : 0.0);
 		}
 
 		static double ComputeAbsoluteY(VisualElement e)
 		{
-			return e.Y + ((e.RealParent is VisualElement) && !(e.RealParent is ListView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).NativeView.Geometry.Y) : 0.0);
+			return e.Y + ((e.RealParent is VisualElement) && !(e.RealParent is ListView) ? Forms.ConvertToScaledDP(Platform.GetRenderer(e.RealParent).GetNativeContentGeometry().Y) : 0.0);
 		}
 
 		static Point ComputeAbsolutePoint(VisualElement e)
@@ -1019,7 +1028,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 			}
 		}
-		EFocusDirection ConvertToNativeFocusDirection(string direction) {
+		EFocusDirection ConvertToNativeFocusDirection(string direction)
+		{
 			if (direction == XFocusDirection.Back) return EFocusDirection.Previous;
 			if (direction == XFocusDirection.Forward) return EFocusDirection.Next;
 			if (direction == XFocusDirection.Up) return EFocusDirection.Up;

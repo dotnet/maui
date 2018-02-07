@@ -5,17 +5,15 @@ using System.Threading.Tasks;
 using ElmSharp;
 using Tizen.Applications;
 using Xamarin.Forms.Internals;
-using EButton = ElmSharp.Button;
-using EColor = ElmSharp.Color;
 using ELayout = ElmSharp.Layout;
-using EProgressBar = ElmSharp.ProgressBar;
+using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 
 	public class FormsApplication : CoreUIApplication
 	{
-		Platform _platform;
+		ITizenPlatform _platform;
 		Application _application;
 		bool _isInitialStart;
 		Window _window;
@@ -57,9 +55,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected override void OnTerminate()
 		{
 			base.OnTerminate();
-			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, "Xamarin.SendAlert");
-			MessagingCenter.Unsubscribe<Page, bool>(this, "Xamarin.BusySet");
-			MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, "Xamarin.ShowActionSheet");
 			if (_platform != null)
 			{
 				_platform.Dispose();
@@ -135,16 +130,19 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				throw new InvalidOperationException("Call Forms.Init (UIApplication) before this");
 			}
+
 			if (_platform != null)
 			{
 				_platform.SetPage(page);
 				return;
 			}
 
-			_platform = new Platform(this, BaseLayout)
-			{
-				HasAlpha = MainWindow.Alpha
-			};
+			_platform = Platform.CreatePlatform(BaseLayout);
+			_platform.HasAlpha = MainWindow.Alpha;
+			BaseLayout.SetContent(_platform.GetRootNativeView());
+
+			_platform.RootNativeViewChanged += (s, e) => BaseLayout.SetContent(e.RootNativeView);
+
 			if (_application != null)
 			{
 				_application.Platform = _platform;
@@ -158,16 +156,17 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			MainWindow.Active();
 			MainWindow.Show();
+
 			var conformant = new Conformant(MainWindow);
 			conformant.Show();
 
-			// Create the base (default) layout for the application
 			var layout = new ELayout(conformant);
 			layout.SetTheme("layout", "application", "default");
 			layout.Show();
 
 			BaseLayout = layout;
 			conformant.SetContent(BaseLayout);
+
 			MainWindow.AvailableRotations = DisplayRotation.Degree_0 | DisplayRotation.Degree_90 | DisplayRotation.Degree_180 | DisplayRotation.Degree_270;
 
 			MainWindow.Deleted += (s, e) =>
@@ -175,26 +174,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				Exit();
 			};
 
+			Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
+
 			MainWindow.RotationChanged += (sender, e) =>
 			{
-				switch (MainWindow.Rotation)
-				{
-					case 0:
-						Device.Info.CurrentOrientation = Internals.DeviceOrientation.PortraitUp;
-						break;
-
-					case 90:
-						Device.Info.CurrentOrientation = Internals.DeviceOrientation.LandscapeLeft;
-						break;
-
-					case 180:
-						Device.Info.CurrentOrientation = Internals.DeviceOrientation.PortraitDown;
-						break;
-
-					case 270:
-						Device.Info.CurrentOrientation = Internals.DeviceOrientation.LandscapeRight;
-						break;
-				}
+				Device.Info.CurrentOrientation = MainWindow.GetDeviceOrientation();
 			};
 
 			MainWindow.BackButtonPressed += (sender, e) =>
@@ -224,18 +208,38 @@ namespace Xamarin.Forms.Platform.Tizen
 				Log.Warn("Exit was already called or FormsApplication is not initialized yet.");
 				return;
 			}
-			// before everything is closed, inform the MainPage that it is disappearing
 			try
 			{
-				(_platform?.Page as IPageController)?.SendDisappearing();
+				_platform.Dispose();
 				_platform = null;
 			}
 			catch (Exception e)
 			{
-				Log.Error("Exception thrown from SendDisappearing: {0}", e.Message);
+				Log.Error("Exception thrown from Dispose: {0}", e.Message);
 			}
 
 			base.Exit();
+		}
+	}
+	static class WindowExtension
+	{
+		public static DeviceOrientation GetDeviceOrientation(this Window window)
+		{
+			DeviceOrientation orientation = DeviceOrientation.Other;
+			var isPortraitDevice = Forms.NaturalOrientation.IsPortrait();
+			switch (window.Rotation)
+			{
+				case 0:
+				case 180:
+					orientation = isPortraitDevice ? DeviceOrientation.Portrait : DeviceOrientation.Landscape;
+					break;
+
+				case 90:
+				case 270:
+					orientation = isPortraitDevice ? DeviceOrientation.Landscape : DeviceOrientation.Portrait;
+					break;
+			}
+			return orientation;
 		}
 	}
 }
