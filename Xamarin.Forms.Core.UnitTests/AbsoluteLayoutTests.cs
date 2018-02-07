@@ -7,6 +7,14 @@ namespace Xamarin.Forms.Core.UnitTests
 	[TestFixture]
 	public class AbsoluteLayoutTests : BaseTestFixture
 	{
+		[SetUp]
+		public override void Setup()
+		{
+			base.Setup();
+			var mockDeviceInfo = new TestDeviceInfo();
+			Device.Info = mockDeviceInfo;
+		}
+
 
 		[Test]
 		public void Constructor ()

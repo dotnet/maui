@@ -272,6 +272,10 @@ namespace Xamarin.Forms
 				get { return _scalingFactor; }
 			}
 
+
+			public override double DisplayRound(double value) =>
+				Math.Round(ScalingFactor * value) / ScalingFactor;
+
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
