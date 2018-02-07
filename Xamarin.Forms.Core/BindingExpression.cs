@@ -106,10 +106,10 @@ namespace Xamarin.Forms
 		void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget = false)
 		{
 			BindingMode mode = Binding.GetRealizedMode(_targetProperty);
-			if (mode == BindingMode.OneWay && fromTarget)
+			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
 
-			bool needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay;
+			bool needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 			bool needsSetter = !needsGetter && ((mode == BindingMode.TwoWay && fromTarget) || mode == BindingMode.OneWayToSource);
 
 			object current = sourceObject;

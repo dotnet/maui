@@ -350,13 +350,16 @@ namespace Xamarin.Forms.Build.Tasks
 		//Once we get compiled IValueProvider, this will move to the BindingExpression
 		static IEnumerable<Instruction> CompileBindingPath(ElementNode node, ILContext context, VariableDefinition bindingExt)
 		{
-			//TODO implement handlers[]
 			//TODO support casting operators
 
 			INode pathNode;
 			if (!node.Properties.TryGetValue(new XmlName("", "Path"), out pathNode) && node.CollectionItems.Any())
 				pathNode = node.CollectionItems [0];
 			var path = (pathNode as ValueNode)?.Value as string;
+			BindingMode declaredmode;
+			if (   !node.Properties.TryGetValue(new XmlName("", "Mode"), out INode modeNode)
+			    || !Enum.TryParse((modeNode as ValueNode)?.Value as string, true, out declaredmode))
+				declaredmode = BindingMode.TwoWay;	//meaning the mode isn't specified in the Binding extension. generate getters, setters, handlers
 
 			INode dataTypeNode = null;
 			IElementNode n = node;
@@ -393,10 +396,16 @@ namespace Xamarin.Forms.Build.Tasks
 			yield return Instruction.Create(OpCodes.Ldloc, bindingExt);
 			foreach (var instruction in CompiledBindingGetGetter(tSourceRef, tPropertyRef, properties, node, context))
 				yield return instruction;
-			foreach (var instruction in CompiledBindingGetSetter(tSourceRef, tPropertyRef, properties, node, context))
-				yield return instruction;
-			foreach (var instruction in CompiledBindingGetHandlers(tSourceRef, tPropertyRef, properties, node, context))
-				yield return instruction;
+			if (declaredmode != BindingMode.OneTime && declaredmode != BindingMode.OneWay) { //if the mode is explicitly 1w, or 1t, no need for setters
+				foreach (var instruction in CompiledBindingGetSetter(tSourceRef, tPropertyRef, properties, node, context))
+					yield return instruction;
+			} else
+				yield return Create(Ldnull);
+			if (declaredmode != BindingMode.OneTime) { //if the mode is explicitly 1t, no need for handlers
+				foreach (var instruction in CompiledBindingGetHandlers(tSourceRef, tPropertyRef, properties, node, context))
+					yield return instruction;
+			} else
+				yield return Create(Ldnull);
 			yield return Instruction.Create(OpCodes.Newobj, context.Module.ImportReference(ctorinforef));
 			yield return Instruction.Create(OpCodes.Callvirt, context.Module.ImportReference(setTypedBinding));
 		}

@@ -190,10 +190,10 @@ namespace Xamarin.Forms.Internals
 		{
 			var isTSource = sourceObject != null && sourceObject is TSource;
 			var mode = this.GetRealizedMode(property);
-			if (mode == BindingMode.OneWay && fromTarget)
+			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
 				return;
 
-			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay;
+			var needsGetter = (mode == BindingMode.TwoWay && !fromTarget) || mode == BindingMode.OneWay || mode == BindingMode.OneTime;
 
 			if (isTSource && (mode == BindingMode.OneWay || mode == BindingMode.TwoWay) && _handlers != null)
 				Subscribe((TSource)sourceObject);

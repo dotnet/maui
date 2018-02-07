@@ -2175,7 +2175,41 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("FOO", label.Text);
 			label.SetBinding(Label.TextProperty, "Tuple[1]");
 			Assert.AreEqual("BAR", label.Text);
+		}
 
+		[Test]
+		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
+		{
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+			view.BindingContext = vm;
+			view.SetBinding(bp1t, "Text", mode: BindingMode.OneTime);
+			view.SetBinding(bp1w, "Text", mode: BindingMode.OneWay);
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+
+			vm.Text = "qux";
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+		}
+
+		[Test]
+		public void OneTimeBindingUpdatesOnBindingContextChanged()
+		{
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			view.BindingContext = new MockViewModel("foobar");
+			view.SetBinding(bp1t, "Text", mode: BindingMode.OneTime);
+			view.SetBinding(bp1w, "Text", mode: BindingMode.OneWay);
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+
+			view.BindingContext = new MockViewModel("qux");
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("qux"));
 		}
 	}
 }
