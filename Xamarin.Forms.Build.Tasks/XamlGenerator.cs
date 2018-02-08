@@ -148,10 +148,11 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
+		static Version version = typeof(XamlGenerator).Assembly.GetName().Version;
 		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
 						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
-						new CodeAttributeArgument(new CodePrimitiveExpression("0.0.0.0")));
+						new CodeAttributeArgument(new CodePrimitiveExpression($"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}")));
 
 		void GenerateCode()
 		{
