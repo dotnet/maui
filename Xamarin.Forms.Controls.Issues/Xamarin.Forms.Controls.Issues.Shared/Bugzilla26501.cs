@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Controls.Issues
 		};
 
 		readonly FamilyViewModel[] _demoDataSource2 = new FamilyViewModel[] {
-			new FamilyViewModel {DisplayName = "ZOOMER robothund"},
+			new FamilyViewModel {DisplayName = "ZOOMER robothund 2"},
 			new FamilyViewModel {DisplayName = "FROST sengetøj"},
 			new FamilyViewModel {DisplayName = "BEADOS Quick Dry designstation"},
 			new FamilyViewModel {DisplayName = "Redningsstation i junglen"},
@@ -139,11 +139,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void TestCellsShowAfterRefresh()
 		{
 			RunningApp.Tap (q => q.Marked ("Refresh"));
-
-			// make sure the refresh has completed
-			System.Threading.Thread.Sleep (1);
-
-			RunningApp.WaitForElement (q => q.Marked ("ZOOMER robothund"));
+		
+			RunningApp.WaitForElement (q => q.Marked ("ZOOMER robothund 2"));
 		}
 #endif
 	}

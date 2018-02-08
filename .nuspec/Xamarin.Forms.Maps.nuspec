@@ -40,6 +40,9 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Maps.dll" target="lib\netstandard1.0" />
+    <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard1.0" />
+
     <file src="..\Xamarin.Forms.Maps\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Maps.dll" target="lib\netstandard2.0" />
     <file src="..\docs\Xamarin.Forms.Maps.xml" target="lib\netstandard2.0" />
 

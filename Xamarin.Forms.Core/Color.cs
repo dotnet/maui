@@ -391,7 +391,7 @@ namespace Xamarin.Forms
 		{
 			return new Color(h, s, l, a, Mode.Hsl);
 		}
-
+#if !NETSTANDARD1_0
 		public static implicit operator System.Drawing.Color(Color color)
 		{
 			if (color.IsDefault)
@@ -405,7 +405,7 @@ namespace Xamarin.Forms
 				return Color.Default;
 			return FromRgba(color.R, color.G, color.B, color.A);
 		}
-
+#endif
 		#region Color Definitions
 
 		// matches colors in WPF's System.Windows.Media.Colors

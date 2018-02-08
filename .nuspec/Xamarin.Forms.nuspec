@@ -34,12 +34,43 @@
         <dependency id="Xamarin.Android.Support.v7.CardView" version="25.4.0.2"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="25.4.0.2"/>
       </group>
+      <group targetFramework="uap10.0">
+        <dependency id="NETStandard.Library" version="2.0.1"/>
+        <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.0.1" />
+      </group>
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
     </dependencies>
   </metadata>
   <files>
+
+
+    <!--netstandard 1.0-->
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.*pdb" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.*mdb" target="lib\netstandard1.0" />
+    <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.*pdb" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Xaml.*mdb" target="lib\netstandard1.0" />
+    <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.dll" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard1.0" />
+
+    <file src="Xamarin.Forms.targets" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.targets" />
+    <file src="Xamarin.Forms.props" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.props" />
+    <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard1.0" />
+    <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Mdb.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Pdb.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Mono.Cecil.Rocks.dll" target="build\netstandard1.0" />
+    <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\System.CodeDom.dll" target="build\netstandard1.0" />
 
     <!--netstandard-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\netstandard2.0" />
