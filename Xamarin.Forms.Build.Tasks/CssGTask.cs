@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Build.Tasks
 		public override bool Execute()
 		{
 			bool success = true;
-
+			Log.LogMessage(MessageImportance.Normal, "Generating assembly attributes for CSS files");
 			if (XamlFiles == null) {
-				Log.LogMessage("Skipping CssG");
+				Log.LogMessage(MessageImportance.Low, "Skipping CssG");
 				return true;
 			}
 

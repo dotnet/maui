@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using Microsoft.Build.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Mdb;
@@ -18,16 +18,15 @@ namespace Xamarin.Forms.Build.Tasks
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
-			Logger = Logger ?? new Logger(null, Verbosity);
-			Logger.LogLine(1, "Preparing debug code for xamlc");
-			Logger.LogLine(1, "\nAssembly: {0}", Assembly);
+			Logger = Logger ?? new Logger(null);
+			Logger.LogLine(MessageImportance.Normal, "Preparing debug code for xamlc, assembly: {0}", Assembly);
 
 			var resolver = new DefaultAssemblyResolver();
 			if (!string.IsNullOrEmpty(DependencyPaths))
 			{
 				foreach (var dep in DependencyPaths.Split(';'))
 				{
-					Logger.LogLine(3, "Adding searchpath {0}", dep);
+					Logger.LogLine(MessageImportance.Low, "Adding searchpath {0}", dep);
 					resolver.AddSearchDirectory(dep);
 				}
 			}
@@ -37,7 +36,7 @@ namespace Xamarin.Forms.Build.Tasks
 				foreach (var p in paths)
 				{
 					var searchpath = Path.GetDirectoryName(p);
-					Logger.LogLine(3, "Adding searchpath {0}", searchpath);
+					Logger.LogLine(MessageImportance.Low, "Adding searchpath {0}", searchpath);
 					resolver.AddSearchDirectory(searchpath);
 					//					LogLine (3, "Referencing {0}", p);
 					//					resolver.AddAssembly (p);
@@ -52,33 +51,33 @@ namespace Xamarin.Forms.Build.Tasks
 				AssemblyResolver = resolver
 			})) {
 				foreach (var module in assemblyDefinition.Modules) {
-					Logger.LogLine(2, " Module: {0}", module.Name);
+					Logger.LogLine(MessageImportance.Low, " Module: {0}", module.Name);
 					foreach (var resource in module.Resources.OfType<EmbeddedResource>()) {
-						Logger.LogString(2, "  Resource: {0}... ", resource.Name);
+						Logger.LogString(MessageImportance.Low, "  Resource: {0}... ", resource.Name);
 						string classname;
 						if (!resource.IsXaml(module, out classname)) {
-							Logger.LogLine(2, "skipped.");
+							Logger.LogLine(MessageImportance.Low, "skipped.");
 							continue;
 						} else
-							Logger.LogLine(2, "");
+							Logger.LogLine(MessageImportance.Low, "");
 						TypeDefinition typeDef = module.GetType(classname);
 						if (typeDef == null) {
-							Logger.LogLine(2, "no type found... skipped.");
+							Logger.LogLine(MessageImportance.Low, "no type found... skipped.");
 							continue;
 						}
 
 						var initComp = typeDef.Methods.FirstOrDefault(md => md.Name == "InitializeComponent");
 						if (initComp == null) {
-							Logger.LogLine(2, "no InitializeComponent found... skipped.");
+							Logger.LogLine(MessageImportance.Low, "no InitializeComponent found... skipped.");
 							continue;
 						}
 						var initCompRuntime = typeDef.Methods.FirstOrDefault(md => md.Name == "__InitComponentRuntime");
 						if (initCompRuntime == null) {
-							Logger.LogString(2, "   Creating empty {0}.__InitComponentRuntime ...", typeDef.Name);
+							Logger.LogString(MessageImportance.Low, "   Creating empty {0}.__InitComponentRuntime ...", typeDef.Name);
 							initCompRuntime = new MethodDefinition("__InitComponentRuntime", initComp.Attributes, initComp.ReturnType);
 							initCompRuntime.Body.InitLocals = true;
-							Logger.LogLine(2, "done.");
-							Logger.LogString(2, "   Copying body of InitializeComponent to __InitComponentRuntime ...", typeDef.Name);
+							Logger.LogLine(MessageImportance.Low, "done.");
+							Logger.LogString(MessageImportance.Low, "   Copying body of InitializeComponent to __InitComponentRuntime ...", typeDef.Name);
 							initCompRuntime.Body = new MethodBody(initCompRuntime);
 							var iCRIl = initCompRuntime.Body.GetILProcessor();
 							foreach (var instr in initComp.Body.Instructions)
@@ -86,7 +85,7 @@ namespace Xamarin.Forms.Build.Tasks
 							initComp.Body.Instructions.Clear();
 							initComp.Body.GetILProcessor().Emit(OpCodes.Ret);
 							typeDef.Methods.Add(initCompRuntime);
-							Logger.LogLine(2, "done.");
+							Logger.LogLine(MessageImportance.Low, "done.");
 						}
 
 //						IL_0000:  ldarg.0 
@@ -109,9 +108,9 @@ namespace Xamarin.Forms.Build.Tasks
 								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters[0].ParameterType == module.TypeSystem.Boolean)
 								.FirstOrDefault();
 						if (altCtor != null)
-							Logger.LogString(2, "   Replacing body of {0}.{0} (bool {1}) ... ", typeDef.Name, altCtor.Parameters[0].Name);
+							Logger.LogString(MessageImportance.Low, "   Replacing body of {0}.{0} (bool {1}) ... ", typeDef.Name, altCtor.Parameters[0].Name);
 						else {
-							Logger.LogString(2, "   Adding {0}.{0} (bool useCompiledXaml) ... ", typeDef.Name);
+							Logger.LogString(MessageImportance.Low, "   Adding {0}.{0} (bool useCompiledXaml) ... ", typeDef.Name);
 							altCtor = new MethodDefinition(".ctor",
 								MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName |
 								MethodAttributes.RTSpecialName, module.TypeSystem.Void);
@@ -143,17 +142,17 @@ namespace Xamarin.Forms.Build.Tasks
 						altCtor.Body = body;
 						if (!typeDef.Methods.Contains(altCtor))
 							typeDef.Methods.Add(altCtor);
-						Logger.LogLine(2, "done.");
+						Logger.LogLine(MessageImportance.Low, "done.");
 					}
 
-					Logger.LogLine(2, "");
+					Logger.LogLine(MessageImportance.Low, "");
 				}
-				Logger.LogString(1, "Writing the assembly... ");
+				Logger.LogString(MessageImportance.Normal, "Writing the assembly... ");
 				assemblyDefinition.Write(new WriterParameters {
 					WriteSymbols = debug
 				});
 			}
-			Logger.LogLine(1, "done.");
+			Logger.LogLine(MessageImportance.Normal, "done.");
 
 			return true;
 		}

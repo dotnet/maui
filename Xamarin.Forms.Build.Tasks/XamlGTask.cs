@@ -25,6 +25,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public override bool Execute()
 		{
 			bool success = true;
+			Log.LogMessage(MessageImportance.Normal, "Generating code behind for XAML files");
 
 			if (XamlFiles == null) {
 				Log.LogMessage("Skipping XamlG");
