@@ -220,6 +220,48 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
 		}
 
+		[Test]
+		public void ButtonBorderRadiusForwardsToButtonCornerRadius()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+			button.BorderRadius = 10;
+
+			Assert.AreEqual(10, button.CornerRadius);
+		}
+
+		[Test]
+		public void ButtonCornerRadiusForwardsToButtonBorderRadius()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+			button.CornerRadius = 10;
+
+			Assert.AreEqual(10, button.BorderRadius);
+		}
+
+		[Test]
+		public void ButtonCornerRadiusClearValueForwardsToButtonBorderRadius()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+			
+			button.CornerRadius = 10;
+
+			button.ClearValue(Button.CornerRadiusProperty);
+
+			Assert.AreEqual((int)Button.BorderRadiusProperty.DefaultValue, button.BorderRadius);
+		}
+
+		[Test]
+		public void ButtonBorderRadiusClearValueForwardsToButtonCornerRadius()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+
+			button.BorderRadius = 10;
+
+			button.ClearValue(Button.BorderRadiusProperty);
+
+			Assert.AreEqual((int)Button.CornerRadiusProperty.DefaultValue, button.CornerRadius);
+		}
+
 		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
 		{
 			var bcl = (Button.ButtonContentLayout)layout2;

@@ -38,19 +38,20 @@ namespace Xamarin.Forms.Platform.WinRT
 
 				UpdateContent();
 
-				if (Element.BackgroundColor != Color.Default)
+				//TODO: We may want to revisit this strategy later. If a user wants to reset any of these to the default, the UI won't update.
+				if (Element.IsSet(VisualElement.BackgroundColorProperty) && Element.BackgroundColor != (Color)VisualElement.BackgroundColorProperty.DefaultValue)
 					UpdateBackground();
 
-				if (Element.TextColor != Color.Default)
+				if (Element.IsSet(Button.TextColorProperty) && Element.TextColor != (Color)Button.TextColorProperty.DefaultValue)
 					UpdateTextColor();
 
-				if (Element.BorderColor != Color.Default)
+				if (Element.IsSet(Button.BorderColorProperty) && Element.BorderColor != (Color)Button.BorderColorProperty.DefaultValue)
 					UpdateBorderColor();
 
-				if (Element.BorderWidth != (double)Button.BorderWidthProperty.DefaultValue)
+				if (Element.IsSet(Button.BorderWidthProperty) && Element.BorderWidth != (double)Button.BorderWidthProperty.DefaultValue)
 					UpdateBorderWidth();
 
-				if (Element.BorderRadius != (int)Button.BorderRadiusProperty.DefaultValue)
+				if (Element.IsSet(Button.CornerRadiusProperty) && Element.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
 					UpdateBorderRadius();
 
 				UpdateFont();
@@ -85,7 +86,7 @@ namespace Xamarin.Forms.Platform.WinRT
 			{
 				UpdateBorderWidth();
 			}
-			else if (e.PropertyName == Button.BorderRadiusProperty.PropertyName)
+			else if (e.PropertyName == Button.CornerRadiusProperty.PropertyName)
 			{
 				UpdateBorderRadius();
 			}
@@ -124,7 +125,7 @@ namespace Xamarin.Forms.Platform.WinRT
 
 		void UpdateBorderRadius()
 		{
-			Control.BorderRadius = Element.BorderRadius;
+			Control.BorderRadius = Element.CornerRadius;
 		}
 
 		void UpdateBorderWidth()

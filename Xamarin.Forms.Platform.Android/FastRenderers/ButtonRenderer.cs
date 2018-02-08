@@ -1,19 +1,15 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Support.V7.Widget;
 using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Internals;
-using GlobalResource = Android.Resource;
 using AView = Android.Views.View;
-using AMotionEvent = Android.Views.MotionEvent;
 using AMotionEventActions = Android.Views.MotionEventActions;
 using static System.String;
-using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
@@ -30,6 +26,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
 		readonly EffectControlProvider _effectControlProvider;
 		VisualElementTracker _tracker;
+		ButtonBackgroundTracker _backgroundTracker;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -134,6 +131,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
 
+			if (_backgroundTracker == null)
+				_backgroundTracker = new ButtonBackgroundTracker(Button, this);
+			else
+				_backgroundTracker.Button = Button;
+
 			Color currentColor = oldElement?.BackgroundColor ?? Color.Default;
 			if (element.BackgroundColor != currentColor)
 			{
@@ -192,6 +194,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_automationPropertiesProvider?.Dispose();
 				_tracker?.Dispose();
 
+				_backgroundTracker?.Dispose();
+
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
@@ -219,6 +223,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
+			if (e.OldElement != null)
+			{
+				_backgroundTracker?.Reset();
+			}
 			if (e.NewElement != null && !_isDisposed)
 			{
 				this.EnsureId();
@@ -230,6 +238,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateIsEnabled();
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
+				UpdateDrawable();
 
 				ElevationHelper.SetElevation(this, e.NewElement);
 			}
@@ -266,10 +275,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName)
 			{
 				UpdateInputTransparent();
-            }
-			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
-			{
-				UpdateBackgroundColor();
 			}
 
 			ElementPropertyChanged?.Invoke(this, e);
@@ -301,54 +306,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateBackgroundColor()
 		{
-			if (Element == null)
-			{
-				return;
-			}
-
-			Color backgroundColor = Element.BackgroundColor;
-			if (backgroundColor.IsDefault)
-			{
-				if (SupportBackgroundTintList != null)
-				{
-					Context context = Context;
-					int id = GlobalResource.Attribute.ButtonTint;
-					unchecked
-					{
-						using (var value = new TypedValue())
-						{
-							try
-							{
-								Resources.Theme theme = context.Theme;
-								if (theme != null && theme.ResolveAttribute(id, value, true))
-#pragma warning disable 618
-								{
-									SupportBackgroundTintList = Resources.GetColorStateList(value.Data);
-								}
-#pragma warning restore 618
-								else
-								{
-									SupportBackgroundTintList = new ColorStateList(ColorExtensions.States,
-										new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
-								}
-							}
-							catch (Exception ex)
-							{
-								Internals.Log.Warning("Xamarin.Forms.Platform.Android.ButtonRenderer",
-									"Could not retrieve button background resource: {0}", ex);
-								SupportBackgroundTintList = new ColorStateList(ColorExtensions.States,
-									new[] { (int)0xffd7d6d6, 0x7fd7d6d6 });
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				int intColor = backgroundColor.ToAndroid().ToArgb();
-				int disableColor = backgroundColor.MultiplyAlpha(0.5).ToAndroid().ToArgb();
-				SupportBackgroundTintList = new ColorStateList(ColorExtensions.States, new[] { intColor, disableColor });
-			}
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		internal void OnNativeFocusChanged(bool hasFocus)
@@ -510,5 +468,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			_textColorSwitcher.Value.UpdateTextColor(this, Button.TextColor);
 		}
+
+		void UpdateDrawable()
+		{
+			_backgroundTracker?.UpdateDrawable();
+		}
+
 	}
 }

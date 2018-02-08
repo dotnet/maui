@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			new PropertyTestCase<Button, Font> ("Font", v => v.Font, (v, o) => v.Font = o, () => default (Font), Font.SystemFontOfSize (20)),
 			new PropertyTestCase<Button, double> ("BorderWidth", v => v.BorderWidth, (v, o) => v.BorderWidth = o, () => -1d, 16d),
 			new PropertyTestCase<Button, int> ("BorderRadius", v => v.BorderRadius, (v, o) => v.BorderRadius = o, () => 5, 12),
+			new PropertyTestCase<Button, int> ("CornerRadius", v => v.CornerRadius, (v, o) => v.CornerRadius = o, () => -1, 12),
 			new PropertyTestCase<Button, Color> ("BorderColor", v => v.BorderColor, (v, o) => v.BorderColor = o, () => Color.Default, new Color (0, 1, 0)),
 			new PropertyTestCase<Button, string> ("FontFamily", v => v.FontFamily, (v, o) => v.FontFamily = o, () => null, "TestingFace"),
 			new PropertyTestCase<Button, double> ("FontSize", v => v.FontSize, (v, o) => v.FontSize = o, () => Device.GetNamedSize (NamedSize.Default, typeof (Button), true), 123.0),

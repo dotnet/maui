@@ -24,7 +24,9 @@ namespace Xamarin.Forms.Controls
 							Text = "Subscribe with LinkedIn", 
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
+#pragma warning disable 0618
 							BorderRadius = 0,
+#pragma warning restore
 						},
 //						new Label {
 //							Text = "or by email",
@@ -73,7 +75,9 @@ namespace Xamarin.Forms.Controls
 							Text = "Create an account", 
 							WidthRequest = 262,
 							HorizontalOptions = LayoutOptions.Center,
+#pragma warning disable 0618
 							BorderRadius = 0,
+#pragma warning restore
 						},
 						new Label {
 							Text = "by subscribing, you accept the general conditions.",

@@ -38,6 +38,10 @@ namespace Xamarin.Forms
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
+		static bool _ColorButtonNormalSet;
+		static Color _ColorButtonNormal = Color.Default;
+		public static Color ColorButtonNormalOverride { get; set; }
+
 		internal static bool IsLollipopOrNewer
 		{
 			get
@@ -46,6 +50,17 @@ namespace Xamarin.Forms
 					s_isLollipopOrNewer = (int)Build.VERSION.SdkInt >= 21;
 				return s_isLollipopOrNewer.Value;
 			}
+		}
+
+		public static Color GetColorButtonNormal(Context context)
+		{
+			if (!_ColorButtonNormalSet)
+			{
+				_ColorButtonNormal = GetButtonColor(context);
+				_ColorButtonNormalSet = true;
+			}
+
+			return _ColorButtonNormal;
 		}
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
@@ -65,11 +80,11 @@ namespace Xamarin.Forms
 		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. " 
+		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
-			if((Activity)Context == null)
+			if ((Activity)Context == null)
 				throw new NullReferenceException("Must be called after Xamarin.Forms.Forms.Init() method");
 
 			if (visibility == AndroidTitleBarVisibility.Never)
@@ -128,6 +143,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
 			Color.SetAccent(GetAccentColor(activity));
+			_ColorButtonNormalSet = false;
 
 			if (!IsInitialized)
 			{
@@ -138,7 +154,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// because AndroidPlatformServices needs a current activity to launch URIs from
 			Device.PlatformServices = new AndroidPlatformServices(activity);
-			
+
 			// use field and not property to avoid exception in getter
 			if (Device.info != null)
 			{
@@ -198,11 +214,11 @@ namespace Xamarin.Forms
 			Color rc;
 			using (var value = new TypedValue())
 			{
-				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer)	// Android 5.0+
+				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
-				else if(context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorAccent", "attr", context.PackageName), value, true))	// < Android 5.0
+				else if (context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorAccent", "attr", context.PackageName), value, true))  // < Android 5.0
 				{
 					rc = Color.FromUint((uint)value.Data);
 				}
@@ -220,6 +236,27 @@ namespace Xamarin.Forms
 					{
 						// Holo dark light blue
 						rc = Color.FromHex("#ff33b5e5");
+					}
+				}
+			}
+			return rc;
+		}
+
+		static Color GetButtonColor(Context context)
+		{
+			Color rc = ColorButtonNormalOverride;
+
+			if (ColorButtonNormalOverride == Color.Default)
+			{
+				using (var value = new TypedValue())
+				{
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+					{
+						rc = Color.FromUint((uint)value.Data);
+					}
+					else if (context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorButtonNormal", "attr", context.PackageName), value, true))  // < Android 5.0
+					{
+						rc = Color.FromUint((uint)value.Data);
 					}
 				}
 			}
@@ -475,7 +512,7 @@ namespace Xamarin.Forms
 			{
 				global::Android.Net.Uri aUri = global::Android.Net.Uri.Parse(uri.ToString());
 				var intent = new Intent(Intent.ActionView, aUri);
-				
+
 				// This seems to work fine even if the context has been destroyed (while another activity is in the
 				// foreground). If we run into a situation where that's not the case, we'll have to do some work to
 				// make sure this uses the active activity when launching the Intent
