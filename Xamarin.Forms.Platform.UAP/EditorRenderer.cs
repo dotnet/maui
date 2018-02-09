@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont();
 				UpdateTextAlignment();
 				UpdateFlowDirection();
+				UpdateDetectReadingOrderFromContent();
 			}
 
 			base.OnElementChanged(e);
@@ -91,6 +93,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextAlignment();
 				UpdateFlowDirection();
 			}
+			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+				UpdateDetectReadingOrderFromContent();
 		}
 
 		void OnLostFocus(object sender, RoutedEventArgs e)
@@ -200,6 +204,21 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
+		}
+
+		void UpdateDetectReadingOrderFromContent()
+		{
+			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
+				if (Element.OnThisPlatform().GetDetectReadingOrderFromContent())
+				{
+					Control.TextReadingOrder = TextReadingOrder.DetectFromContent;
+				}
+				else
+				{
+					Control.TextReadingOrder = TextReadingOrder.UseFlowDirection;
+				}
+			}
 		}
 	}
 }
