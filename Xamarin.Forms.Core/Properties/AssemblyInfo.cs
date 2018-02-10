@@ -60,3 +60,16 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty), Inherited = true)]
 [assembly: StyleProperty("visibility", typeof(VisualElement), nameof(VisualElement.IsVisibleProperty), Inherited = true)]
 [assembly: StyleProperty("width", typeof(VisualElement), nameof(VisualElement.WidthRequestProperty))]
+
+//flex
+[assembly: StyleProperty("align-content", typeof(FlexLayout), nameof(FlexLayout.AlignContentProperty))]
+[assembly: StyleProperty("align-items", typeof(FlexLayout), nameof(FlexLayout.AlignItemsProperty))]
+[assembly: StyleProperty("align-self", typeof(VisualElement), nameof(FlexLayout.AlignSelfProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("flex-direction", typeof(FlexLayout), nameof(FlexLayout.DirectionProperty))]
+[assembly: StyleProperty("flex-basis", typeof(VisualElement), nameof(FlexLayout.BasisProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("flex-grow", typeof(VisualElement), nameof(FlexLayout.GrowProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("flex-shrink", typeof(VisualElement), nameof(FlexLayout.ShrinkProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("flex-wrap", typeof(VisualElement), nameof(FlexLayout.WrapProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("justify-content", typeof(FlexLayout), nameof(FlexLayout.JustifyContentProperty))]
+[assembly: StyleProperty("order", typeof(VisualElement), nameof(FlexLayout.OrderProperty), PropertyOwnerType = typeof(FlexLayout))]
+[assembly: StyleProperty("position", typeof(FlexLayout), nameof(FlexLayout.PositionProperty))]

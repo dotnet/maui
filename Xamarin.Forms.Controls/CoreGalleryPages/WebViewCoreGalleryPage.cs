@@ -1,4 +1,6 @@
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls
 {
@@ -54,9 +56,32 @@ namespace Xamarin.Forms.Controls
 				}
 			);
 
+			var jsAlertWebView = new WebView
+			{
+				Source = new HtmlWebViewSource
+				{
+					Html = @"<html>
+<head>
+<link rel=""stylesheet"" href=""default.css"">
+</head>
+<body>
+<button onclick=""window.alert('foo');"">Click</button>
+</body>
+</html>"
+				},
+				HeightRequest = 200
+			};
+
+			jsAlertWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+			
+			var javascriptAlertWebSourceContainer = new ViewContainer<WebView>(Test.WebView.JavaScriptAlert,
+				jsAlertWebView
+			);
+
 			Add (urlWebViewSourceContainer);
 			Add (htmlWebViewSourceContainer);
 			Add (htmlFileWebSourceContainer);
+			Add (javascriptAlertWebSourceContainer);
 		}
 	}
 }

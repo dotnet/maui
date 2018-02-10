@@ -257,7 +257,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FailImageSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GestureBubblingTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)InputTransparentInheritance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CascadeInputTransparent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1331.xaml.cs">
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
