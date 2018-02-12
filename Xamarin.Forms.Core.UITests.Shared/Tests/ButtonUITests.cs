@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Core.UITests
 			remote.GoTo();
 
 #if __IOS__
-			var borderRadius = remote.GetProperty<float>(Button.BorderRadiusProperty);
+			var borderRadius = remote.GetProperty<float>(Button.CornerRadiusProperty);
 			Assert.AreEqual(20.0f, borderRadius);
 #endif
 		}

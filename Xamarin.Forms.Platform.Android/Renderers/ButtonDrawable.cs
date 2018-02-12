@@ -7,16 +7,29 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ButtonDrawable : Drawable
 	{
+		public const int DefaultCornerRadius = 2; // Default value for Android material button.
+		const int ShadowDy = 4;
+
 		readonly Func<double, float> _convertToPixels;
 		bool _isDisposed;
 		Bitmap _normalBitmap;
 		bool _pressed;
 		Bitmap _pressedBitmap;
+		float _paddingTop;
+		Color _defaultColor;
 
-		public ButtonDrawable(Func<double, float> convertToPixels)
+		float PaddingLeft => _convertToPixels(8) / 2f; //<dimen name="button_padding_horizontal_material">8dp</dimen>
+		float PaddingTop //can change based on font, so this is not a constant
+		{
+			get { return (_paddingTop / 2f) + ShadowDy; }
+			set { _paddingTop = value; }
+		} 
+
+		public ButtonDrawable(Func<double, float> convertToPixels, Color defaultColor)
 		{
 			_convertToPixels = convertToPixels;
 			_pressed = false;
+			_defaultColor = defaultColor;
 		}
 
 		public Button Button { get; set; }
@@ -51,6 +64,11 @@ namespace Xamarin.Forms.Platform.Android
 			canvas.DrawBitmap(bitmap, 0, 0, new Paint());
 		}
 
+		public void SetPaddingTop(float value)
+		{
+			_paddingTop = value;
+		}
+
 		public void Reset()
 		{
 			if (_normalBitmap != null)
@@ -75,6 +93,9 @@ namespace Xamarin.Forms.Platform.Android
 		public override void SetColorFilter(ColorFilter cf)
 		{
 		}
+
+		public Color BackgroundColor => Button.BackgroundColor == Color.Default ? _defaultColor : Button.BackgroundColor;
+		public Color PressedBackgroundColor => BackgroundColor.AddLuminosity(-.12);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
 
 		protected override void Dispose(bool disposing)
 		{
@@ -115,16 +136,34 @@ namespace Xamarin.Forms.Platform.Android
 
 		void DrawBackground(Canvas canvas, int width, int height, bool pressed)
 		{
+			const int shadowDx = 0;
+			const int shadowRadius = 2;
+
 			var paint = new Paint { AntiAlias = true };
 			var path = new Path();
 
-			float borderRadius = _convertToPixels(Button.BorderRadius);
+			float borderRadius = ConvertCornerRadiusToPixels();
 
-			path.AddRoundRect(new RectF(0, 0, width, height), borderRadius, borderRadius, Path.Direction.Cw);
+			RectF rect = new RectF(0, 0, width, height - 0);
 
-			paint.Color = pressed ? Button.BackgroundColor.AddLuminosity(-0.1).ToAndroid() : Button.BackgroundColor.ToAndroid();
+			rect.Inset(PaddingLeft, PaddingTop);
+
+			path.AddRoundRect(rect, borderRadius, borderRadius, Path.Direction.Cw);
+
+			paint.Color = pressed ? PressedBackgroundColor.ToAndroid() : BackgroundColor.ToAndroid();
 			paint.SetStyle(Paint.Style.Fill);
+			paint.SetShadowLayer(shadowRadius, shadowDx, ShadowDy, PressedBackgroundColor.ToAndroid());
 			canvas.DrawPath(path, paint);
+		}
+
+		float ConvertCornerRadiusToPixels()
+		{
+			int cornerRadius = DefaultCornerRadius;
+
+			if (Button.IsSet(Button.CornerRadiusProperty) && Button.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
+				cornerRadius = Button.CornerRadius;
+
+			return _convertToPixels(cornerRadius);
 		}
 
 		void DrawOutline(Canvas canvas, int width, int height)
@@ -139,9 +178,12 @@ namespace Xamarin.Forms.Platform.Android
 				float inset = borderWidth / 2;
 
 				// adjust border radius so outer edge of stroke is same radius as border radius of background
-				float borderRadius = Math.Max(_convertToPixels(Button.BorderRadius) - inset, 0);
+				float borderRadius = Math.Max(ConvertCornerRadiusToPixels() - inset, 0);
 
-				path.AddRoundRect(new RectF(inset, inset, width - inset, height - inset), borderRadius, borderRadius, Path.Direction.Cw);
+				RectF rect = new RectF(0, 0, width, height);
+				rect.Inset(inset + PaddingLeft, inset + PaddingTop);
+
+				path.AddRoundRect(rect, borderRadius, borderRadius, Path.Direction.Cw);
 				paint.StrokeWidth = borderWidth;
 				paint.SetStyle(Paint.Style.Stroke);
 				paint.Color = Button.BorderColor.ToAndroid();

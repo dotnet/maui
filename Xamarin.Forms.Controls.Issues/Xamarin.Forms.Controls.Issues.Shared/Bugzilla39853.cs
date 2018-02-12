@@ -13,7 +13,9 @@ namespace Xamarin.Forms.Controls
 		{
 			public RoundedButton(int radius)
 			{
+#pragma warning disable 0618
 				base.BorderRadius = radius;
+#pragma warning restore
 				base.WidthRequest = 2 * radius;
 				base.HeightRequest = 2 * radius;
 				HorizontalOptions = LayoutOptions.Center;
@@ -29,14 +31,18 @@ namespace Xamarin.Forms.Controls
 			{
 				get
 				{
+#pragma warning disable 0618
 					return base.BorderRadius;
+#pragma warning restore
 				}
 
 				set
 				{
 					base.WidthRequest = 2 * value;
 					base.HeightRequest = 2 * value;
+#pragma warning disable 0618
 					base.BorderRadius = value;
+#pragma warning restore
 				}
 			}
 
@@ -51,7 +57,9 @@ namespace Xamarin.Forms.Controls
 				{
 					base.WidthRequest = value;
 					base.HeightRequest = value;
+#pragma warning disable 0618
 					base.BorderRadius = ((int)value) / 2;
+#pragma warning restore
 				}
 			}
 
@@ -66,7 +74,9 @@ namespace Xamarin.Forms.Controls
 				{
 					base.WidthRequest = value;
 					base.HeightRequest = value;
+#pragma warning disable 0618
 					base.BorderRadius = ((int)value) / 2;
+#pragma warning restore
 				}
 			}
 
