@@ -278,18 +278,18 @@ namespace Xamarin.Forms.Build.Tasks
 
 					//First using the ResourceLoader
 					var nop = Instruction.Create(Nop);
-					var getResourceProvider = module.ImportReference(module.ImportReference(typeof(Internals.ResourceLoader))
-							 .Resolve()
+					var getResourceProvider = module.ImportReference(module.ImportReferenceCached(typeof(Internals.ResourceLoader))
+							 .ResolveCached()
 							 .Properties.FirstOrDefault(pd => pd.Name == "ResourceProvider")
 							 .GetMethod);
 					il.Emit(Call, getResourceProvider);
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getResourceProvider);
 
-					var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-					var getTypeInfo = module.ImportReference(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
-					var getAssembly = module.ImportReference(typeof(Type).GetProperty("Assembly").GetMethod);
-					var getAssemblyName = module.ImportReference(typeof(System.Reflection.Assembly).GetMethod("GetName", new Type[] { }));
+					var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+					var getTypeInfo = module.ImportReferenceCached(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
+					var getAssembly = module.ImportReferenceCached(typeof(Type).GetProperty("Assembly").GetMethod);
+					var getAssemblyName = module.ImportReferenceCached(typeof(System.Reflection.Assembly).GetMethod("GetName", new Type[] { }));
 					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
 					il.Emit(Call, module.ImportReference(getTypeFromHandle));
 					il.Emit(Call, module.ImportReference(getTypeInfo));
@@ -297,10 +297,10 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Callvirt, module.ImportReference(getAssemblyName)); //assemblyName
 
 					il.Emit(Ldstr, resourcePath);	//resourcePath
-					var func = module.ImportReference(module.ImportReference(typeof(Func<System.Reflection.AssemblyName, string, string>))
-							 .Resolve()
+					var func = module.ImportReference(module.ImportReferenceCached(typeof(Func<System.Reflection.AssemblyName, string, string>))
+							 .ResolveCached()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<System.Reflection.AssemblyName, string, string>)), module);
+					func = func.ResolveGenericParameters(module.ImportReferenceCached(typeof(Func<System.Reflection.AssemblyName, string, string>)), module);
 					il.Emit(Callvirt, func);
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
@@ -311,8 +311,8 @@ namespace Xamarin.Forms.Build.Tasks
 					//Or using the deprecated XamlLoader
 					nop = Instruction.Create(Nop);
 #pragma warning disable 0618
-					var getXamlFileProvider = module.ImportReference(module.ImportReference(typeof(Xaml.Internals.XamlLoader))
-							.Resolve()
+					var getXamlFileProvider = module.ImportReference(module.ImportReferenceCached(typeof(Xaml.Internals.XamlLoader))
+							.ResolveCached()
 							.Properties.FirstOrDefault(pd => pd.Name == "XamlFileProvider")
 							.GetMethod);
 #pragma warning restore 0618
@@ -321,14 +321,14 @@ namespace Xamarin.Forms.Build.Tasks
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getXamlFileProvider);
 					il.Emit(Ldarg_0);
-					var getType = module.ImportReference(module.ImportReference(typeof(object))
-									  .Resolve()
+					var getType = module.ImportReference(module.ImportReferenceCached(typeof(object))
+									  .ResolveCached()
 									  .Methods.FirstOrDefault(md => md.Name == "GetType"));
 					il.Emit(Call, getType);
-					func = module.ImportReference(module.ImportReference(typeof(Func<Type, string>))
-							 .Resolve()
+					func = module.ImportReference(module.ImportReferenceCached(typeof(Func<Type, string>))
+							 .ResolveCached()
 							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(module.ImportReference(typeof(Func<Type, string>)), module);
+					func = func.ResolveGenericParameters(module.ImportReferenceCached(typeof(Func<Type, string>)), module);
 					il.Emit(Callvirt, func);
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
@@ -360,8 +360,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
 		{
-			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+			foreach (var ca in type.Module.GetCustomAttributes())
+			{
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -372,8 +373,9 @@ namespace Xamarin.Forms.Build.Tasks
 
 		internal static string GetResourceIdForPath(ModuleDefinition module, string path)
 		{
-			foreach (var ca in module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+			foreach (var ca in module.GetCustomAttributes())
+			{
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;

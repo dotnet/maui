@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Core.XamlC
 				yield break;
 			}
 
-			var uriCtor = module.ImportReference(typeof(Uri)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 2 && md.Parameters[1].ParameterType.FullName == "System.UriKind");
+			var uriCtor = module.ImportReferenceCached(typeof(Uri)).ResolveCached().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 2 && md.Parameters[1].ParameterType.FullName == "System.UriKind");
 			var uriCtorRef = module.ImportReference(uriCtor);
 
 			yield return Create(Ldstr, value);

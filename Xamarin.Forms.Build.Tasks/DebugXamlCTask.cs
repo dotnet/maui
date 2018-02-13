@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Build.Tasks
 						var ret = Instruction.Create(OpCodes.Ret);
 						il.Emit(OpCodes.Ldarg_0);
 						il.Emit(OpCodes.Callvirt,
-							module.ImportReference(typeDef.BaseType.Resolve().GetConstructors().First(c => c.HasParameters == false)));
+						        module.ImportReference(typeDef.BaseType.Resolve().GetConstructors().First(c => c.HasParameters == false)));
 
 						il.Emit(OpCodes.Nop);
 						il.Emit(OpCodes.Ldarg_1);

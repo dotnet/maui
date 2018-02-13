@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReferenceCached(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
 			if (getter == null)
 				throw new XamlParseException($"Missing a public static Get{bpName} or a public instance property getter for the attached property \"{bpRef.DeclaringType}.{bpRef.Name}\"", iXmlLineInfo);
 			return getter.ResolveGenericReturnType(declaringTypeRef, module);
@@ -43,17 +43,17 @@ namespace Xamarin.Forms.Build.Tasks
 												md.IsStatic &&
 												md.IsPublic &&
 												md.Parameters.Count == 1 &&
-												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReference(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
+												md.Parameters[0].ParameterType.InheritsFromOrImplements(module.ImportReferenceCached(typeof(BindableObject))), module).SingleOrDefault()?.Item1;
 
 			var attributes = new List<CustomAttribute>();
 			if (property != null && property.HasCustomAttributes)
 				attributes.AddRange(property.CustomAttributes);
-			if (propertyType != null && propertyType.Resolve().HasCustomAttributes)
-				attributes.AddRange(propertyType.Resolve().CustomAttributes);
+			if (propertyType != null && propertyType.ResolveCached().HasCustomAttributes)
+				attributes.AddRange(propertyType.ResolveCached().CustomAttributes);
 			if (staticGetter != null && staticGetter.HasCustomAttributes)
 				attributes.AddRange(staticGetter.CustomAttributes);
-			if (staticGetter != null && staticGetter.ReturnType.Resolve().HasCustomAttributes)
-				attributes.AddRange(staticGetter.ReturnType.Resolve().CustomAttributes);
+			if (staticGetter != null && staticGetter.ReturnType.ResolveCached().HasCustomAttributes)
+				attributes.AddRange(staticGetter.ReturnType.ResolveCached().CustomAttributes);
 
 			return attributes.FirstOrDefault(cad => TypeConverterAttribute.TypeConvertersType.Contains(cad.AttributeType.FullName))?.ConstructorArguments [0].Value as TypeReference;
 		}

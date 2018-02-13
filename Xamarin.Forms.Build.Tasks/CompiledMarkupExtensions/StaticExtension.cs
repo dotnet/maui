@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Build.Tasks
 					return new [] { Instruction.Create(OpCodes.Ldc_I8, (ulong)fieldDef.Constant) };
 
 				//enum values
-				if (memberRef.Resolve().IsEnum) {
+				if (memberRef.ResolveCached().IsEnum) {
 					if (fieldDef.Constant is long)
 						return new [] { Instruction.Create(OpCodes.Ldc_I8, (long)fieldDef.Constant) };
 					if (fieldDef.Constant is ulong)
