@@ -139,6 +139,11 @@
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Core.dll" target="build\netstandard1.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\Xamarin.Forms.Xaml.dll" target="build\netstandard1.0" />
 
+    <!--Toolbox stuff-->
+    <file src="..\toolbox\Xamarin.Forms.toolbox.xml" target="content" />
+    <file src="..\toolbox\icons\mac\*.png" target="content\icons\mac" />
+    <file src="..\toolbox\icons\win\*.png" target="content\icons\win" />
+
     <!-- Xaml Design-time Stuff -->
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\portable-win+net45+wp80+win81+wpa81\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\portable-win+net45+wp80+win81+wpa81\Design" />
