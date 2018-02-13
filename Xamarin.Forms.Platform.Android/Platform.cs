@@ -35,6 +35,7 @@ namespace Xamarin.Forms.Platform.Android
 		IMasterDetailPageController MasterDetailPageController => CurrentMasterDetailPage as IMasterDetailPageController;
 
 		readonly Context _context;
+		readonly Activity _activity;
 
 		readonly PlatformRenderer _renderer;
 		readonly ToolbarTracker _toolbarTracker = new ToolbarTracker();
@@ -57,7 +58,14 @@ namespace Xamarin.Forms.Platform.Android
 		internal Platform(Context context, bool embedded)
 		{
 			_embedded = embedded;
+
+			if (context == null)
+			{
+				throw new ArgumentNullException(nameof(context), "Somehow we're getting a null context passed in");
+			}
+
 			_context = context;
+			_activity = context as Activity;
 
 			if (!embedded)
 			{
@@ -69,14 +77,13 @@ namespace Xamarin.Forms.Platform.Android
 			if (embedded)
 			{
 				// Set up handling of DisplayAlert/DisplayActionSheet/UpdateProgressBarVisibility
-				var activity = context as Activity;
-				if (activity == null)
+				if (_activity == null)
 				{
 					// Can't show dialogs if it's not an activity
 					return;
 				}
 
-				PopupManager.Subscribe(activity);
+				PopupManager.Subscribe(_activity);
 				return;
 			}
 
@@ -93,10 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
 
-		ActionBar ActionBar
-		{
-			get { return ((Activity)_context).ActionBar; }
-		}
+		ActionBar ActionBar => _activity?.ActionBar;
 
 		MasterDetailPage CurrentMasterDetailPage { get; set; }
 
@@ -507,6 +511,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal void UpdateActionBarBackgroundColor()
 		{
+			if (ActionBar == null)
+			{
+				return;
+			}
+
 			if (!ShouldShowActionBarTitleArea())
 				return;
 
@@ -521,7 +530,7 @@ namespace Xamarin.Forms.Platform.Android
 					colorToUse = CurrentNavigationPage.BarBackgroundColor;
 			}
 			using (Drawable drawable = colorToUse == Color.Default ? GetActionBarBackgroundDrawable() : new ColorDrawable(colorToUse.ToAndroid()))
-				((Activity)_context).ActionBar.SetBackgroundDrawable(drawable);
+				ActionBar.SetBackgroundDrawable(drawable);
 		}
 
 		internal void UpdateMasterDetailToggle(bool update = false)
@@ -577,7 +586,13 @@ namespace Xamarin.Forms.Platform.Android
 		ActionBar.Tab AddTab(Page page, int index)
 #pragma warning restore 618
 		{
-			ActionBar actionBar = ((Activity)_context).ActionBar;
+			ActionBar actionBar = ActionBar;
+
+			if (actionBar == null)
+			{
+				return null;
+			}
+
 			TabbedPage currentTabs = CurrentTabbedPage;
 
 			var atab = actionBar.NewTab();
@@ -731,8 +746,13 @@ namespace Xamarin.Forms.Platform.Android
 			if (drawer == null)
 				return;
 
+			if (_activity == null)
+			{
+				return;
+			}
+
 #pragma warning disable 618 // Eventually we will need to determine how to handle the v7 ActionBarDrawerToggle for AppCompat
-			MasterDetailPageToggle = new ActionBarDrawerToggle(_context as Activity, drawer, icon, 0, 0);
+			MasterDetailPageToggle = new ActionBarDrawerToggle(_activity, drawer, icon, 0, 0);
 #pragma warning restore 618
 
 			MasterDetailPageToggle.SyncState();
@@ -751,12 +771,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void HandleToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_activity == null)
+			{
+				return;
+			}
+
 			if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
-				(_context as Activity).InvalidateOptionsMenu();
+				_activity.InvalidateOptionsMenu();
 			else if (e.PropertyName == MenuItem.TextProperty.PropertyName)
-				(_context as Activity).InvalidateOptionsMenu();
+				_activity.InvalidateOptionsMenu();
 			else if (e.PropertyName == MenuItem.IconProperty.PropertyName)
-				(_context as Activity).InvalidateOptionsMenu();
+				_activity.InvalidateOptionsMenu();
 		}
 
 		void HideActionBar()
@@ -778,10 +803,10 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (args.PropertyName == Page.TitleProperty.PropertyName)
 			{
-				ActionBar actionBar = ((Activity)_context).ActionBar;
+				ActionBar actionBar = ActionBar;
 				TabbedPage currentTabs = CurrentTabbedPage;
 
-				if (currentTabs == null || actionBar.TabCount == 0)
+				if (actionBar == null || currentTabs == null || actionBar.TabCount == 0)
 					return;
 
 				var page = sender as Page;
@@ -847,15 +872,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		void ReloadToolbarItems()
 		{
-			var activity = (Activity)_context;
-			activity.InvalidateOptionsMenu();
+			_activity?.InvalidateOptionsMenu();
 		}
 
 		void RemoveTab(Page page, int index)
 		{
-			ActionBar actionBar = ((Activity)_context).ActionBar;
 			page.PropertyChanged -= PagePropertyChanged;
-			actionBar.RemoveTabAt(index);
+			ActionBar?.RemoveTabAt(index);
 		}
 
 		void Reset()
@@ -879,12 +902,12 @@ namespace Xamarin.Forms.Platform.Android
 			Color navigationBarTextColor = CurrentNavigationPage == null ? Color.Default : CurrentNavigationPage.BarTextColor;
 			TextView actionBarTitleTextView = null;
 
-			if (Forms.IsLollipopOrNewer)
+			if (Forms.IsLollipopOrNewer && _activity != null)
 			{
-				int actionbarId = _context.Resources.GetIdentifier("action_bar", "id", "android");
+				int actionbarId = _activity.Resources.GetIdentifier("action_bar", "id", "android");
 				if (actionbarId > 0)
 				{
-					var toolbar = ((Activity)_context).FindViewById(actionbarId) as ViewGroup;
+					var toolbar = _activity.FindViewById(actionbarId) as ViewGroup;
 					if (toolbar != null)
 					{
 						for (int i = 0; i < toolbar.ChildCount; i++)
@@ -900,11 +923,11 @@ namespace Xamarin.Forms.Platform.Android
 				}
 			}
 
-			if (actionBarTitleTextView == null)
+			if (actionBarTitleTextView == null && _activity != null)
 			{
-				int actionBarTitleId = _context.Resources.GetIdentifier("action_bar_title", "id", "android");
+				int actionBarTitleId = _activity.Resources.GetIdentifier("action_bar_title", "id", "android");
 				if (actionBarTitleId > 0)
-					actionBarTitleTextView = ((Activity)_context).FindViewById<TextView>(actionBarTitleId);
+					actionBarTitleTextView = _activity.FindViewById<TextView>(actionBarTitleId);
 			}
 
 			if (actionBarTitleTextView != null && navigationBarTextColor != Color.Default)
@@ -917,11 +940,16 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var defaultTitleTextColor = new Color();
 
+			if (_activity == null)
+			{
+				return defaultTitleTextColor;
+			}
+
 			TextView actionBarTitleTextView = null;
 
-			int actionBarTitleId = _context.Resources.GetIdentifier("action_bar_title", "id", "android");
+			int actionBarTitleId = _activity.Resources.GetIdentifier("action_bar_title", "id", "android");
 			if (actionBarTitleId > 0)
-				actionBarTitleTextView = ((Activity)_context).FindViewById<TextView>(actionBarTitleId);
+				actionBarTitleTextView = _activity.FindViewById<TextView>(actionBarTitleId);
 
 			if (actionBarTitleTextView != null)
 			{
@@ -935,12 +963,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool ShouldShowActionBarTitleArea()
 		{
-			var activity = _context as Activity;
-
-			if (activity == null)
+			if (_activity == null)
 				return false;
 
-			if (activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
+			if (_activity.Window.Attributes.Flags.HasFlag(WindowManagerFlags.Fullscreen))
 				return false;
 
 			bool hasMasterDetailPage = CurrentMasterDetailPage != null;
@@ -1000,10 +1026,10 @@ namespace Xamarin.Forms.Platform.Android
 			else if (CurrentTabbedPage != null)
 				view = CurrentTabbedPage.CurrentPage;
 
-			if (view == null)
+			if (view == null || _activity == null)
 				return;
 
-			ActionBar actionBar = ((Activity)_context).ActionBar;
+			ActionBar actionBar = _activity.ActionBar;
 
 			var useLogo = false;
 			var showHome = false;
@@ -1044,12 +1070,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateActionBarUpImageColor()
 		{
+			if (_activity == null)
+			{
+				return;
+			}
+
 			Color navigationBarTextColor = CurrentNavigationPage == null ? Color.Default : CurrentNavigationPage.BarTextColor;
 			ImageView actionBarUpImageView = null;
 
-			int actionBarUpId = _context.Resources.GetIdentifier("up", "id", "android");
+			int actionBarUpId = _activity.Resources.GetIdentifier("up", "id", "android");
 			if (actionBarUpId > 0)
-				actionBarUpImageView = ((Activity)_context).FindViewById<ImageView>(actionBarUpId);
+				actionBarUpImageView = _activity.FindViewById<ImageView>(actionBarUpId);
 
 			if (actionBarUpImageView != null && navigationBarTextColor != Color.Default)
 			{
