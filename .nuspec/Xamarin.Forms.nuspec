@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms$IdAppend$</id>
+    <id>Xamarin.Forms</id>
     <version>$version$</version>
     <authors>Xamarin Inc.</authors>
     <owners>Xamarin Inc.</owners>
@@ -59,8 +59,8 @@
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*pdb" target="lib\netstandard1.0" />
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard1.0" />
 
-    <file src="Xamarin.Forms.targets" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.targets" />
-    <file src="Xamarin.Forms.props" target="build\netstandard1.0\Xamarin.Forms$IdAppend$.props" />
+    <file src="Xamarin.Forms.targets" target="build\netstandard1.0\Xamarin.Forms.targets" />
+    <file src="Xamarin.Forms.props" target="build\netstandard1.0\Xamarin.Forms.props" />
     <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard1.0" />
     <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard1.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard1.0" />
@@ -86,8 +86,8 @@
     <file src="..\Xamarin.Forms.Platform\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Platform.*mdb" target="lib\netstandard2.0" />
 
     <!--Xamlc stuff-->
-    <file src="Xamarin.Forms.targets" target="build\netstandard2.0\Xamarin.Forms$IdAppend$.targets" />
-    <file src="Xamarin.Forms.props" target="build\netstandard2.0\Xamarin.Forms$IdAppend$.props" />
+    <file src="Xamarin.Forms.targets" target="build\netstandard2.0\Xamarin.Forms.targets" />
+    <file src="Xamarin.Forms.props" target="build\netstandard2.0\Xamarin.Forms.props" />
     <file src="Xamarin.Forms.DefaultItems.targets" target="build\netstandard2.0" />
     <file src="Xamarin.Forms.DefaultItems.props" target="build\netstandard2.0" />
     <file src="..\Xamarin.Forms.Build.Tasks\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Build.Tasks.dll" target="build\netstandard2.0" />
