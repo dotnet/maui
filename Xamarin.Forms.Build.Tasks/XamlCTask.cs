@@ -36,12 +36,6 @@ namespace Xamarin.Forms.Build.Tasks
 			thrownExceptions = null;
 			Logger = Logger ?? new Logger(null);
 			Logger.LogLine(MessageImportance.Normal, "Compiling Xaml, assembly: {0}", Assembly);
-			if (!string.IsNullOrEmpty(DependencyPaths))
-				Logger.LogLine(MessageImportance.Low, "DependencyPaths: \t{0}", DependencyPaths);
-			if (!string.IsNullOrEmpty(ReferencePath))
-				Logger.LogLine(MessageImportance.Low, "ReferencePath: \t{0}", ReferencePath.Replace("//", "/"));
-			Logger.LogLine(MessageImportance.Low, "DebugSymbols:\"{0}\"", DebugSymbols);
-			Logger.LogLine(MessageImportance.Low, "DebugType:\"{0}\"", DebugType);
 			var skipassembly = !CompileByDefault;
 			bool success = true;
 
