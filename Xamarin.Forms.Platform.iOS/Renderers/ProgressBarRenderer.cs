@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (Control == null)
 					SetNativeControl(new UIProgressView(UIProgressViewStyle.Default));
 
+				UpdateProgressColor();
 				UpdateProgress();
 			}
 
@@ -31,7 +32,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
+			if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+				UpdateProgressColor();
+			else if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
 				UpdateProgress();
 		}
 
@@ -43,6 +46,11 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			Control.TrackTintColor = color != Color.Default ? color.ToUIColor() : null;
+		}
+
+		void UpdateProgressColor()
+		{
+			Control.ProgressTintColor = Element.ProgressColor == Color.Default ? null : Element.ProgressColor.ToUIColor();
 		}
 
 		void UpdateProgress()

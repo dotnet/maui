@@ -609,7 +609,8 @@ namespace Xamarin.Forms.CustomAttributes
 		}
 
 		public enum ProgressBar {
-			Progress
+			Progress,
+			ProgressColor
 		}
 
 		public enum RelativeLayout {

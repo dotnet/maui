@@ -8,13 +8,21 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_ProgressBarRenderer))]
 	public class ProgressBar : View, IElementConfiguration<ProgressBar>
 	{
-		public static readonly BindableProperty ProgressProperty = BindableProperty.Create("Progress", typeof(double), typeof(ProgressBar), 0d, coerceValue: (bo, v) => ((double)v).Clamp(0, 1));
+		public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(ProgressBar), Color.Default);
+
+		public static readonly BindableProperty ProgressProperty = BindableProperty.Create(nameof(Progress), typeof(double), typeof(ProgressBar), 0d, coerceValue: (bo, v) => ((double)v).Clamp(0, 1));
 
 		readonly Lazy<PlatformConfigurationRegistry<ProgressBar>> _platformConfigurationRegistry;
 
 		public ProgressBar()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<ProgressBar>>(() => new PlatformConfigurationRegistry<ProgressBar>(this));
+		}
+
+		public Color ProgressColor
+		{
+			get { return (Color)GetValue(ProgressColorProperty); }
+			set { SetValue(ProgressColorProperty, value); }
 		}
 
 		public double Progress

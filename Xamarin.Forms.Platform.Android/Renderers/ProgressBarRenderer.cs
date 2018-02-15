@@ -1,6 +1,9 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
+using Android.OS;
 using AProgressBar = Android.Widget.ProgressBar;
 
 namespace Xamarin.Forms.Platform.Android
@@ -35,6 +38,8 @@ namespace Xamarin.Forms.Platform.Android
 
 					SetNativeControl(progressBar);
 				}
+
+				UpdateProgressColor();
 				UpdateProgress();
 			}
 		}
@@ -45,6 +50,38 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
 				UpdateProgress();
+			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+				UpdateProgressColor();
+		}
+
+		void UpdateProgressColor()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			Color color = Element.ProgressColor;
+
+			if (color.IsDefault)
+			{
+				(Control.Indeterminate ? Control.IndeterminateDrawable : 
+					Control.ProgressDrawable).ClearColorFilter();
+			}
+			else
+			{
+				if (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop)
+				{
+					(Control.Indeterminate ? Control.IndeterminateDrawable :
+						Control.ProgressDrawable).SetColorFilter(color.ToAndroid(), PorterDuff.Mode.SrcIn);
+				}
+				else
+				{
+					var tintList = ColorStateList.ValueOf(color.ToAndroid());
+					if (Control.Indeterminate)
+						Control.IndeterminateTintList = tintList;
+					else
+						Control.ProgressTintList = tintList;
+				}
+			}
 		}
 
 		void UpdateProgress()

@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Windows;
-using System.Windows.Media;
 using Xamarin.Forms.Internals;
 using WProgressBar = System.Windows.Controls.ProgressBar;
 
@@ -19,12 +13,13 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new WProgressBar { Minimum = 0, Maximum = 1, Foreground = Brushes.DeepSkyBlue });
+					SetNativeControl(new WProgressBar { Minimum = 0, Maximum = 1 });
 					Control.ValueChanged += HandleValueChanged;
 				}
 
 				// Update control property 
 				UpdateProgress();
+				UpdateProgressColor();
 			}
 
 			base.OnElementChanged(e);
@@ -36,8 +31,15 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (e.PropertyName == ProgressBar.ProgressProperty.PropertyName)
 				UpdateProgress();
+			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+				UpdateProgressColor();
 		}
-		
+
+		void UpdateProgressColor()
+		{
+			Control.UpdateDependencyColor(WProgressBar.ForegroundProperty, Element.ProgressColor.IsDefault ? Color.DeepSkyBlue : Element.ProgressColor);
+		}
+
 		void UpdateProgress()
 		{
 			Control.Value = Element.Progress;

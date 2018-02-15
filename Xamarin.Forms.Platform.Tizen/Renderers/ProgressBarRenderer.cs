@@ -3,11 +3,19 @@ using System.ComponentModel;
 using SpecificVE = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.ProgressBar;
 using EProgressBar = ElmSharp.ProgressBar;
+using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, EProgressBar>
 	{
+		static readonly EColor s_defaultColor = new EColor(129, 198, 255);
+
+		public ProgressBarRenderer()
+		{
+			RegisterPropertyHandler(ProgressBar.ProgressColorProperty, UpdateProgressColor);
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ProgressBar> e)
 		{
 			if (Control == null)
@@ -58,6 +66,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				UpdatePulsingStatus();
 			}
+		}
+
+		void UpdateProgressColor(bool initialize)
+		{
+			if (initialize && Element.ProgressColor.IsDefault)
+				return;
+
+			Control.Color = Element.ProgressColor == Color.Default ? s_defaultColor : Element.ProgressColor.ToNative();
 		}
 
 		void UpdateProgress()
