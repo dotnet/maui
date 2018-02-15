@@ -43,6 +43,8 @@
     </NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ColorExtensions.cs" />
+    <Compile Include="FormsCancelButton.cs" />
     <Compile Include="FormsPivot.cs" />
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="BrushHelpers.cs" />
