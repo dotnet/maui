@@ -9,6 +9,9 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml.cs">
+      <DependentUpon>Bugzilla60045.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)AddingMultipleItemsListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AndroidStatusBarColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AppBarIconColors.cs" />
@@ -839,6 +842,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)GitHub1331.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>
