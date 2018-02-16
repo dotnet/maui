@@ -123,35 +123,35 @@ namespace Xamarin.Forms
 
 		static void OnOrderPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable.GetIsDefault(FlexItemProperty))
+			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Order = (int)newValue;
 		}
 
 		static void OnGrowPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable.GetIsDefault(FlexItemProperty))
+			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Grow = (float)newValue;
 		}
 
 		static void OnShrinkPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable.GetIsDefault(FlexItemProperty))
+			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Shrink = (float)newValue;
 		}
 
 		static void OnAlignSelfPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable.GetIsDefault(FlexItemProperty))
+			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)newValue;
 		}
 
 		static void OnBasisPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable.GetIsDefault(FlexItemProperty))
+			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Basis = ((FlexBasis)newValue).ToFlexBasis();
 		}
