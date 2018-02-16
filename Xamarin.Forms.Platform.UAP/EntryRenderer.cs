@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Windows.System;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
@@ -74,6 +75,8 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Entry.TextColorProperty.PropertyName)
 				UpdateTextColor();
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+				UpdateInputScope();
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputScope();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
 				UpdateFont();
@@ -163,14 +166,23 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateInputScope()
 		{
-			var custom = Element.Keyboard as CustomKeyboard;
+			Entry entry = Element;
+			var custom = entry.Keyboard as CustomKeyboard;
 			if (custom != null)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
 				Control.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
 			}
+			else
+			{
+				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				if (entry.IsSet(InputView.IsSpellCheckEnabledProperty))
+					Control.IsSpellCheckEnabled = entry.IsSpellCheckEnabled;
+				else
+					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+			}
 
-			Control.InputScope = Element.Keyboard.ToInputScope();
+			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
 		void UpdateIsPassword()

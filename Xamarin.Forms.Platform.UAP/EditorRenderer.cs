@@ -72,6 +72,14 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextColor();
 			}
+			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
 			{
 				UpdateFont();
@@ -157,7 +165,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateInputScope()
 		{
-			var custom = Element.Keyboard as CustomKeyboard;
+			Editor editor = Element;
+			var custom = editor.Keyboard as CustomKeyboard;
 			if (custom != null)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
@@ -166,10 +175,13 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
-				Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				if (editor.IsSet(InputView.IsSpellCheckEnabledProperty))
+					Control.IsSpellCheckEnabled = editor.IsSpellCheckEnabled;
+				else
+					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
 			}
 
-			Control.InputScope = Element.Keyboard.ToInputScope();
+			Control.InputScope = editor.Keyboard.ToInputScope();
 		}
 
 		void UpdateText()

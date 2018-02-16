@@ -78,6 +78,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateText();
 			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
 				UpdateKeyboard();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
+				UpdateKeyboard();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEditable();
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
@@ -128,6 +130,13 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateKeyboard()
 		{
 			Control.ApplyKeyboard(Element.Keyboard);
+			if (!(Element.Keyboard is Internals.CustomKeyboard) && Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+			{
+				if (!Element.IsSpellCheckEnabled)
+				{
+					Control.SpellCheckingType = UITextSpellCheckingType.No;
+				}
+			}
 			Control.ReloadInputViews();
 		}
 
