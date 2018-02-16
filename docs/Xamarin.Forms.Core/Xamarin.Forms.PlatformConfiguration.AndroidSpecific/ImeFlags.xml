@@ -1,0 +1,199 @@
+<Type Name="ImeFlags" FullName="Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags">
+  <TypeSignature Language="C#" Value="public enum ImeFlags" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed ImeFlags extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Default = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Done">
+      <MemberSignature Language="C#" Value="Done" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Done = int32(6)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Go">
+      <MemberSignature Language="C#" Value="Go" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Go = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="ImeMaskAction">
+      <MemberSignature Language="C#" Value="ImeMaskAction" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags ImeMaskAction = int32(255)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Next">
+      <MemberSignature Language="C#" Value="Next" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Next = int32(5)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="NoAccessoryAction">
+      <MemberSignature Language="C#" Value="NoAccessoryAction" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags NoAccessoryAction = int32(536870912)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="NoExtractUi">
+      <MemberSignature Language="C#" Value="NoExtractUi" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags NoExtractUi = int32(268435456)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="NoFullscreen">
+      <MemberSignature Language="C#" Value="NoFullscreen" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags NoFullscreen = int32(33554432)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="None" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags None = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="NoPersonalizedLearning">
+      <MemberSignature Language="C#" Value="NoPersonalizedLearning" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags NoPersonalizedLearning = int32(16777216)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Previous">
+      <MemberSignature Language="C#" Value="Previous" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Previous = int32(7)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Search">
+      <MemberSignature Language="C#" Value="Search" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Search = int32(3)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Send">
+      <MemberSignature Language="C#" Value="Send" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags Send = int32(4)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
