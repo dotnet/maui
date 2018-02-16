@@ -267,6 +267,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1331.xaml.cs">
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1691_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Github1625.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1614.cs" />

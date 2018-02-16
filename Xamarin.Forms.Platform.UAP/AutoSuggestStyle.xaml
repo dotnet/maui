@@ -76,6 +76,7 @@
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
 		<Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
 		<Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}"/>
+		<Setter Property="IsSpellCheckEnabled" Value="False" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:FormsTextBox">
