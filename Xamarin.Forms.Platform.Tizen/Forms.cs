@@ -8,6 +8,7 @@ using ElmSharp;
 using Tizen.Applications;
 using TSystemInfo = Tizen.System.Information;
 using ELayout = ElmSharp.Layout;
+using DeviceOrientation = Xamarin.Forms.Internals.DeviceOrientation;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -35,6 +36,23 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			// 72.0 is from EFL which is using fixed DPI value (72.0) to determine font size internally. Thus, we are restoring the size by deviding the DPI by 72.0 here.
 			return s_dpi.Value / 72.0 / Elementary.GetScale();
+		});
+
+		static Lazy<DeviceOrientation> s_naturalOrientation = new Lazy<DeviceOrientation>(() =>
+		{
+			int width = 0;
+			int height = 0;
+			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.width", out width);
+			TSystemInfo.TryGetValue<int>("http://tizen.org/feature/screen.height", out height);
+
+			if (height >= width)
+			{
+				return DeviceOrientation.Portrait;
+			}
+			else
+			{
+				return DeviceOrientation.Landscape;
+			}
 		});
 
 		class TizenDeviceInfo : DeviceInfo
@@ -103,7 +121,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public static event EventHandler<ViewInitializedEventArgs> ViewInitialized;
 
-		public static CoreUIApplication Context
+		public static CoreApplication Context
 		{
 			get;
 			internal set;
@@ -121,6 +139,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			get;
 			private set;
 		}
+
+		public static DeviceOrientation NaturalOrientation => s_naturalOrientation.Value;
 
 		internal static TizenTitleBarVisibility TitleBarVisibility
 		{
@@ -159,19 +179,19 @@ namespace Xamarin.Forms.Platform.Tizen
 			TitleBarVisibility = visibility;
 		}
 
-		public static void Init(CoreUIApplication application)
+		public static void Init(CoreApplication application)
 		{
 			Init(application, false);
 		}
 
 
-		public static void Init(CoreUIApplication application, bool useDeviceIndependentPixel)
+		public static void Init(CoreApplication application, bool useDeviceIndependentPixel)
 		{
 			_useDeviceIndependentPixel = useDeviceIndependentPixel;
 			SetupInit(application);
 		}
 
-		static void SetupInit(CoreUIApplication application)
+		static void SetupInit(CoreApplication application)
 		{
 			Context = application;
 
@@ -266,7 +286,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </remarks>
 		/// <param name="dp"></param>
 		/// <returns></returns>
-		internal static int ConvertToPixel(double dp)
+		public static int ConvertToPixel(double dp)
 		{
 			return (int)Math.Round(dp * s_dpi.Value / 160.0);
 		}
@@ -280,7 +300,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </remarks>
 		/// <param name="dp"></param>
 		/// <returns></returns>
-		internal static int ConvertToScaledPixel(double dp)
+		public static int ConvertToScaledPixel(double dp)
 		{
 			return (int)Math.Round(dp * Device.Info.ScalingFactor);
 		}
@@ -293,7 +313,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </remarks>
 		/// <param name="pixel"></param>
 		/// <returns></returns>
-		internal static double ConvertToScaledDP(int pixel)
+		public static double ConvertToScaledDP(int pixel)
 		{
 			return pixel / Device.Info.ScalingFactor;
 		}
@@ -306,7 +326,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </remarks>
 		/// <param name="pixel"></param>
 		/// <returns></returns>
-		internal static double ConvertToScaledDP(double pixel)
+		public static double ConvertToScaledDP(double pixel)
 		{
 			return pixel / Device.Info.ScalingFactor;
 		}
@@ -316,7 +336,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		/// <param name="sp"></param>
 		/// <returns></returns>
-		internal static int ConvertToEflFontPoint(double sp)
+		public static int ConvertToEflFontPoint(double sp)
 		{
 			return (int)Math.Round(sp * s_elmScale.Value);
 		}
@@ -326,7 +346,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// </summary>
 		/// <param name="eflPt"></param>
 		/// <returns></returns>
-		internal static double ConvertToDPFont(int eflPt)
+		public static double ConvertToDPFont(int eflPt)
 		{
 			return eflPt / s_elmScale.Value;
 		}
@@ -335,7 +355,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// Get the EFL's profile
 		/// </summary>
 		/// <returns></returns>
-		internal static string GetProfile()
+		public static string GetProfile()
 		{
 			return s_profile.Value;
 		}

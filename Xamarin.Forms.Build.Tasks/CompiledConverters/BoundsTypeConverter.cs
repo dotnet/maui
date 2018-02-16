@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Instruction.Create(OpCodes.Ldc_R8, w);
 			yield return Instruction.Create(OpCodes.Ldc_R8, h);
 
-			var rectangleCtor = module.ImportReference(typeof(Rectangle)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 4);
+			var rectangleCtor = module.ImportReferenceCached(typeof(Rectangle)).ResolveCached().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == 4);
 			var rectangleCtorRef = module.ImportReference(rectangleCtor);
 			yield return Instruction.Create(OpCodes.Newobj, rectangleCtorRef);
 		}

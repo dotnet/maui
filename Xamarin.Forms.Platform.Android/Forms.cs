@@ -39,6 +39,10 @@ namespace Xamarin.Forms
 		public static bool IsInitialized { get; private set; }
 		static bool FlagsSet { get; set; }
 
+		static bool _ColorButtonNormalSet;
+		static Color _ColorButtonNormal = Color.Default;
+		public static Color ColorButtonNormalOverride { get; set; }
+
 		internal static bool IsLollipopOrNewer
 		{
 			get
@@ -47,6 +51,17 @@ namespace Xamarin.Forms
 					s_isLollipopOrNewer = (int)Build.VERSION.SdkInt >= 21;
 				return s_isLollipopOrNewer.Value;
 			}
+		}
+
+		public static Color GetColorButtonNormal(Context context)
+		{
+			if (!_ColorButtonNormalSet)
+			{
+				_ColorButtonNormal = GetButtonColor(context);
+				_ColorButtonNormalSet = true;
+			}
+
+			return _ColorButtonNormal;
 		}
 
 		// Provide backwards compat for Forms.Init and AndroidActivity
@@ -66,7 +81,7 @@ namespace Xamarin.Forms
 		/// Sets title bar visibility programmatically. Must be called after Xamarin.Forms.Forms.Init() method
 		/// </summary>
 		/// <param name="visibility">Title bar visibility enum</param>
-		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. " 
+		[Obsolete("SetTitleBarVisibility(AndroidTitleBarVisibility) is obsolete as of version 2.5. "
 			+ "Please use SetTitleBarVisibility(Activity, AndroidTitleBarVisibility) instead.")]
 		public static void SetTitleBarVisibility(AndroidTitleBarVisibility visibility)
 		{
@@ -129,6 +144,7 @@ namespace Xamarin.Forms
 			// We want this to be updated when we have a new activity (e.g. on a configuration change)
 			// This could change if the UI mode changes (e.g., if night mode is enabled)
 			Color.SetAccent(GetAccentColor(activity));
+			_ColorButtonNormalSet = false;
 
 			if (!IsInitialized)
 			{
@@ -230,6 +246,27 @@ namespace Xamarin.Forms
 			return rc;
 		}
 
+		static Color GetButtonColor(Context context)
+		{
+			Color rc = ColorButtonNormalOverride;
+
+			if (ColorButtonNormalOverride == Color.Default)
+			{
+				using (var value = new TypedValue())
+				{
+					if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorButtonNormal, value, true) && Forms.IsLollipopOrNewer) // Android 5.0+
+					{
+						rc = Color.FromUint((uint)value.Data);
+					}
+					else if (context.Theme.ResolveAttribute(context.Resources.GetIdentifier("colorButtonNormal", "attr", context.PackageName), value, true))  // < Android 5.0
+					{
+						rc = Color.FromUint((uint)value.Data);
+					}
+				}
+			}
+			return rc;
+		}
+
 		class AndroidDeviceInfo : DeviceInfo
 		{
 			bool _disposed;
@@ -271,6 +308,10 @@ namespace Xamarin.Forms
 			{
 				get { return _scalingFactor; }
 			}
+
+
+			public override double DisplayRound(double value) =>
+				Math.Round(ScalingFactor * value) / ScalingFactor;
 
 			protected override void Dispose(bool disposing)
 			{

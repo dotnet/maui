@@ -85,6 +85,20 @@ Debug.WriteLine (viewmodel.Name); //prints "Foo"
         <summary>When used in Bindings, indicates that the Binding should use the <see cref="P:Xamarin.Forms.BindableProperty.DefaultBindingMode" />. When used in BindableProperty declaration, defaults to BindingMode.OneWay.</summary>
       </Docs>
     </Member>
+    <Member MemberName="OneTime">
+      <MemberSignature Language="C#" Value="OneTime" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.BindingMode OneTime = int32(4)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindingMode</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="OneWay">
       <MemberSignature Language="C#" Value="OneWay" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.BindingMode OneWay = int32(2)" />

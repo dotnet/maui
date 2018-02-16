@@ -446,18 +446,16 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				return cache[type];
 
 			CellRenderer renderer = null;
-
-			if (isGroup && type == typeof(TextCell))
-			{
-				renderer = new GroupCellTextRenderer();
-			}
-			renderer = renderer ?? Registrar.Registered.GetHandler<CellRenderer>(type);
+			renderer = Registrar.Registered.GetHandler<CellRenderer>(type);
 
 			if (renderer == null)
 			{
 				Log.Error("Cell type is not handled: {0}", cell.GetType());
 				throw new ArgumentNullException("Unsupported cell type");
 			}
+
+			renderer.SetGroupMode(isGroup);
+
 			return cache[type] = renderer;
 		}
 

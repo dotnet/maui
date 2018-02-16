@@ -14,17 +14,10 @@
     <copyright>Copyright 2013-2018</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
-        <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$" />
+        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms.Maps" version="$version$" />
       </group>
     </dependencies>
-    <references>
-      <group>
-        <reference file="GMap.NET.Core.dll" />
-        <reference file="GMap.NET.GTK.dll" />
-        <reference file="Xamarin.Forms.Maps.GTK.dll" />
-      </group>
-    </references>
   </metadata>
   <files>
     <file src="..\Xamarin.Forms.Platform.GTK\Libs\GMaps\GMap.NET.Core.dll" target="lib\net45" />

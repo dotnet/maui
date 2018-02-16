@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 using Xamarin.Forms.Internals;
 
@@ -6,6 +7,8 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class ProgressBarRenderer : ViewRenderer<ProgressBar, Windows.UI.Xaml.Controls.ProgressBar>
 	{
+		object _foregroundDefault;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -13,6 +16,7 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Control != null)
 				{
 					Control.ValueChanged -= ProgressBarOnValueChanged;
+					Control.Loaded -= OnControlLoaded;
 				}
 			}
 
@@ -23,6 +27,14 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			base.OnElementChanged(e);
 
+			if (e.OldElement != null)
+			{
+				if (Control != null)
+				{
+					Control.Loaded -= OnControlLoaded;
+				}
+			}
+
 			if (e.NewElement != null)
 			{
 				if (Control == null)
@@ -32,6 +44,8 @@ namespace Xamarin.Forms.Platform.UWP
 					progressBar.ValueChanged += ProgressBarOnValueChanged;
 
 					SetNativeControl(progressBar);
+
+					Control.Loaded += OnControlLoaded;
 				}
 
 				Control.Value = e.NewElement.Progress;
@@ -47,6 +61,28 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.Value = Element.Progress;
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
+			else if (e.PropertyName == ProgressBar.ProgressColorProperty.PropertyName)
+				UpdateProgressColor();
+		}
+
+		void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
+		{
+			_foregroundDefault = Control.GetForegroundCache();
+			UpdateProgressColor();
+		}
+
+		void UpdateProgressColor()
+		{
+			Color color = Element.ProgressColor;
+
+			if (color.IsDefault)
+			{
+				Control.RestoreForegroundCache(_foregroundDefault);
+			}
+			else
+			{
+				Control.Foreground = color.ToBrush();
+			}
 		}
 
 		void ProgressBarOnValueChanged(object sender, RangeBaseValueChangedEventArgs rangeBaseValueChangedEventArgs)

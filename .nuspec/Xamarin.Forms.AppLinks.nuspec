@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.AppLinks$IdAppend$</id>
+    <id>Xamarin.Forms.AppLinks</id>
     <version>$version$</version>
     <authors>Xamarin Inc.</authors>
     <owners>Xamarin Inc.</owners>

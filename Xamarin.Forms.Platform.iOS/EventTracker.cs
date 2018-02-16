@@ -95,6 +95,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			var weakRecognizer = new WeakReference(recognizer);
 			var weakEventTracker = new WeakReference(this);
 
+			var tapRecognizer = recognizer as TapGestureRecognizer;
+
 #if !__MOBILE__
 			var clickRecognizer = recognizer as ClickGestureRecognizer;
 			if (clickRecognizer != null)
@@ -108,14 +110,14 @@ namespace Xamarin.Forms.Platform.MacOS
 					if (clickGestureRecognizer != null && view != null)
 						clickGestureRecognizer.SendClicked(view, clickRecognizer.Buttons);
 				});
+
 				var uiRecognizer = CreateClickRecognizer((int)clickRecognizer.Buttons, clickRecognizer.NumberOfClicksRequired, returnAction);
 				return uiRecognizer;
 			}
-#endif
-			var tapRecognizer = recognizer as TapGestureRecognizer;
+
 			if (tapRecognizer != null)
 			{
-				var returnAction = new Action(() =>
+				var returnAction = new NSGestureProbe((gesturerecognizer) =>
 				{
 					var tapGestureRecognizer = weakRecognizer.Target as TapGestureRecognizer;
 					var eventTracker = weakEventTracker.Target as EventTracker;
@@ -123,10 +125,30 @@ namespace Xamarin.Forms.Platform.MacOS
 
 					if (tapGestureRecognizer != null && view != null)
 						tapGestureRecognizer.SendTapped(view);
+
+					return false;
 				});
+
 				var uiRecognizer = CreateTapRecognizer(tapRecognizer.NumberOfTapsRequired, returnAction);
 				return uiRecognizer;
 			}
+#else
+            if (tapRecognizer != null)
+            {
+                var returnAction = new Action(() =>
+                {
+                    var tapGestureRecognizer = weakRecognizer.Target as TapGestureRecognizer;
+                    var eventTracker = weakEventTracker.Target as EventTracker;
+                    var view = eventTracker?._renderer?.Element as View;
+
+                    if (tapGestureRecognizer != null && view != null)
+                        tapGestureRecognizer.SendTapped(view);
+                });
+                var uiRecognizer = CreateTapRecognizer(tapRecognizer.NumberOfTapsRequired, returnAction);
+                return uiRecognizer;
+            }                
+#endif
+
 
 			var pinchRecognizer = recognizer as PinchGestureRecognizer;
 			if (pinchRecognizer != null)
@@ -280,43 +302,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			};
 
 			return result;
-		}
-
-		static bool ShouldRecognizeTapsTogether(NativeGestureRecognizer gesture, NativeGestureRecognizer other)
-		{
-			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
-			// added to the XF Element), we want to allow them to fire simultaneously if they have the same number
-			// of taps and touches
-
-			var tap = gesture as UITapGestureRecognizer;
-			if (tap == null)
-			{
-				return false;
-			}
-
-			var otherTap = other as UITapGestureRecognizer;
-			if (otherTap == null)
-			{
-				return false;
-			}
-
-			if (!Equals(tap.View, otherTap.View))
-			{
-				return false;
-			}
-
-			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
-			{
-				return false;
-			}
-			
-			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
-			{
-				return false;
-			}
-
-			return true;
-		}
+		}		
 #else
 		NativeGestureRecognizer CreateClickRecognizer(int buttonMask, int numberOfClicksRequired, Action returnAction)
 		{
@@ -338,13 +324,65 @@ namespace Xamarin.Forms.Platform.MacOS
 			return result;
 		}
 
-		NSClickGestureRecognizer CreateTapRecognizer(int numTaps, Action action)
+		NSClickGestureRecognizer CreateTapRecognizer(int numTaps, NSGestureProbe action)
 		{
-			var result = new NSClickGestureRecognizer(action);
+			var result = new NSClickGestureRecognizer();
+
 			result.NumberOfClicksRequired = numTaps;
+			result.ShouldBegin = action;
+			result.ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether;
+
 			return result;
 		}
 #endif
+
+		static bool ShouldRecognizeTapsTogether(NativeGestureRecognizer gesture, NativeGestureRecognizer other)
+		{
+			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
+			// added to the XF Element), we want to allow them to fire simultaneously if they have the same number
+			// of taps and touches
+
+#if __MOBILE__
+			var tap = gesture as UITapGestureRecognizer;
+#else
+			var tap = gesture as NSClickGestureRecognizer;
+#endif
+			if (tap == null)
+			{
+				return false;
+			}
+
+#if __MOBILE__
+			var otherTap = other as UITapGestureRecognizer;
+#else
+			var otherTap = other as NSClickGestureRecognizer;
+#endif
+			if (otherTap == null)
+			{
+				return false;
+			}
+
+			if (!Equals(tap.View, otherTap.View))
+			{
+				return false;
+			}
+
+#if __MOBILE__
+			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
+#else
+			if (tap.NumberOfClicksRequired != otherTap.NumberOfClicksRequired)
+#endif
+			{
+				return false;
+			}
+
+			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
+			{
+				return false;
+			}
+
+			return true;
+		}
 
 		void LoadRecognizers()
 		{

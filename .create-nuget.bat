@@ -1,7 +1,7 @@
 @echo off
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0
 set /a DEBUG_VERSION=%DEBUG_VERSION%+1
-set NUGET_EXE=%NUGET_DIR%4.1.0\NuGet.exe
+set NUGET_EXE=%NUGET_DIR%NuGet.exe
 pushd docs
 ..\tools\mdoc\mdoc.exe export-msxdoc -o Xamarin.Forms.Core.xml Xamarin.Forms.Core
 ..\tools\mdoc\mdoc.exe export-msxdoc -o Xamarin.Forms.Xaml.xml Xamarin.Forms.Xaml

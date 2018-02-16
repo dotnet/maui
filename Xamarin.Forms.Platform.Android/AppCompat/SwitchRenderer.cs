@@ -34,8 +34,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				int width = widthConstraint;
 				if (widthConstraint <= 0)
 					width = (int)Context.GetThemeAttributeDp(global::Android.Resource.Attribute.SwitchMinWidth);
-				else if (widthConstraint <= 0)
-					width = 100;
 
 				sizeConstraint = new SizeRequest(new Size(width, sizeConstraint.Request.Height), new Size(width, sizeConstraint.Minimum.Height));
 			}

@@ -22,6 +22,9 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
+		public virtual double DisplayRound(double value) =>
+			Math.Round(value);
+
 		public abstract Size PixelScreenSize { get; }
 
 		public abstract Size ScaledScreenSize { get; }

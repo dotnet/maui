@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Core.XamlC
 		{
 			foreach (var d in args)
 				yield return Instruction.Create(OpCodes.Ldc_R8, d);
-			var thicknessCtor = module.ImportReference(typeof(Thickness)).Resolve().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == args.Length);
+			var thicknessCtor = module.ImportReferenceCached(typeof(Thickness)).ResolveCached().Methods.FirstOrDefault(md => md.IsConstructor && md.Parameters.Count == args.Length);
 			var thicknessCtorRef = module.ImportReference(thicknessCtor);
 			yield return Instruction.Create(OpCodes.Newobj, thicknessCtorRef);
 		}

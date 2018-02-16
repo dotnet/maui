@@ -60,22 +60,16 @@
     </ProjectReference>
     <ProjectReference Include="..\Xamarin.Forms.Maps\Xamarin.Forms.Maps.csproj">
       <Project>{7d13bac2-c6a4-416a-b07e-c169b199e52b}</Project>
+      <GenerateDesignMetadata>true</GenerateDesignMetadata>
       <Name>Xamarin.Forms.Maps</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Xamarin.Forms.Design.1.0.14-pre\build\Xamarin.Forms.Design.targets" Condition="Exists('..\packages\Xamarin.Forms.Design.1.0.14-pre\build\Xamarin.Forms.Design.targets') And '$(OS)' != 'Unix'" />
+  <Import Project="..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets" Condition="Exists('..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets') And '$(OS)' != 'Unix'" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition=" '$(OS)' != 'Unix' ">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Xamarin.Forms.Design.1.0.14-pre\build\Xamarin.Forms.Design.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Forms.Design.1.0.14-pre\build\Xamarin.Forms.Design.targets'))" />
-  </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+    <Error Condition="!Exists('..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets'))" />
+  </Target> 
 </Project>

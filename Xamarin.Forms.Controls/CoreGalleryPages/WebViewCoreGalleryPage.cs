@@ -1,4 +1,7 @@
 using Xamarin.Forms.CustomAttributes;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls
 {
@@ -54,9 +57,61 @@ namespace Xamarin.Forms.Controls
 				}
 			);
 
+			// NOTE: Currently the ability to programmatically enable/disable mixed content only exists on Android
+			if (Device.RuntimePlatform == Device.Android)
+			{
+				var mixedContentTestPage = "https://mixed-content-test.appspot.com/";
+
+				var mixedContentDisallowedWebView = new WebView() { HeightRequest = 1000 };
+				mixedContentDisallowedWebView.On<Android>().SetMixedContentMode(MixedContentHandling.NeverAllow);
+				mixedContentDisallowedWebView.Source = new UrlWebViewSource
+				{
+					Url = mixedContentTestPage
+				};
+
+				var mixedContentAllowedWebView = new WebView() { HeightRequest = 1000 };
+				mixedContentAllowedWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
+				mixedContentAllowedWebView.Source = new UrlWebViewSource
+				{
+					Url = mixedContentTestPage
+				};
+
+				var mixedContentDisallowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentDisallowed,
+					mixedContentDisallowedWebView);
+				var mixedContentAllowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentAllowed,
+					mixedContentAllowedWebView);
+
+				Add(mixedContentDisallowedContainer);
+				Add(mixedContentAllowedContainer);
+			}
+
+
+			var jsAlertWebView = new WebView
+			{
+				Source = new HtmlWebViewSource
+				{
+					Html = @"<html>
+<head>
+<link rel=""stylesheet"" href=""default.css"">
+</head>
+<body>
+<button onclick=""window.alert('foo');"">Click</button>
+</body>
+</html>"
+				},
+				HeightRequest = 200
+			};
+
+			jsAlertWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+			
+			var javascriptAlertWebSourceContainer = new ViewContainer<WebView>(Test.WebView.JavaScriptAlert,
+				jsAlertWebView
+			);
+
 			Add (urlWebViewSourceContainer);
 			Add (htmlWebViewSourceContainer);
 			Add (htmlFileWebSourceContainer);
+			Add (javascriptAlertWebSourceContainer);
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Core.UITests
 		public static readonly Dictionary<BindableProperty, Tuple<string[], bool>> PropertyPlatformMethodDictionary = new Dictionary<BindableProperty, Tuple<string[], bool>> {
 			{ ActivityIndicator.ColorProperty, Tuple.Create (new[] { "color" }, false) },
 			{ ActivityIndicator.IsRunningProperty, Tuple.Create (new[] { "isAnimating" }, false) },
-			{ Button.BorderRadiusProperty, Tuple.Create (new[] { "layer", "cornerRadius" }, false) },
+			{ Button.CornerRadiusProperty, Tuple.Create (new[] { "layer", "cornerRadius" }, false) },
 			{ Button.BorderWidthProperty, Tuple.Create (new[] { "layer", "borderWidth" }, false) },
 			{ Button.FontProperty, Tuple.Create (new[] { "titleLabel", "font" }, false) },
 			{ Button.TextProperty, Tuple.Create (new[] { "titleLabel", "text" }, false) },
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Core.UITests
 				{ ActivityIndicator.ColorProperty, Tuple.Create(new[] { "getProgressDrawable", "getColor" }, false) },
 				{ ActivityIndicator.IsRunningProperty, Tuple.Create(new[] { "isIndeterminate" }, false) },
 				{ Button.BorderColorProperty, Tuple.Create(new[] { "getBackground" }, false) },
-				{ Button.BorderRadiusProperty, Tuple.Create(new[] { "getBackground" }, false) },
+				{ Button.CornerRadiusProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.BorderWidthProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.ImageProperty, Tuple.Create(new[] { "getBackground" }, false) },
 				{ Button.FontProperty, Tuple.Create(new[] { "getTypeface", "isBold" }, false) },

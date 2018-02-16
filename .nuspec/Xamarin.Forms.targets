@@ -79,7 +79,6 @@
 
 	<!-- XamlC -->
 	<PropertyGroup>
-		<XFVerbosity Condition="'$(XFVerbosity)' == ''">2</XFVerbosity>
 		<CompileDependsOn>
 			$(CompileDependsOn);
 			XamlC;
@@ -93,7 +92,6 @@
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
-			Verbosity = "$(XFVerbosity)"
 			OptimizeIL = "true"
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"

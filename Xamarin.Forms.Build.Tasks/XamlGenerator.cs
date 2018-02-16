@@ -74,12 +74,12 @@ namespace Xamarin.Forms.Build.Tasks
 		//returns true if a file is generated
 		public bool Execute()
 		{
-			Logger?.LogMessage("Source: {0}", XamlFile);
-			Logger?.LogMessage(" Language: {0}", Language);
-			Logger?.LogMessage(" ResourceID: {0}", ResourceId);
-			Logger?.LogMessage(" TargetPath: {0}", TargetPath);
-			Logger?.LogMessage(" AssemblyName: {0}", AssemblyName);
-			Logger?.LogMessage(" OutputFile {0}", OutputFile);
+			Logger?.LogMessage(MessageImportance.Low, "Source: {0}", XamlFile);
+			Logger?.LogMessage(MessageImportance.Low, " Language: {0}", Language);
+			Logger?.LogMessage(MessageImportance.Low, " ResourceID: {0}", ResourceId);
+			Logger?.LogMessage(MessageImportance.Low, " TargetPath: {0}", TargetPath);
+			Logger?.LogMessage(MessageImportance.Low, " AssemblyName: {0}", AssemblyName);
+			Logger?.LogMessage(MessageImportance.Low, " OutputFile {0}", OutputFile);
 
 			using (StreamReader reader = File.OpenText(XamlFile))
 				if (!ParseXaml(reader))
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 			if (root == null) {
-				Logger?.LogWarning(" No root node found");
+				Logger?.LogMessage(MessageImportance.Low, " No root node found");
 				return false;
 			}
 
@@ -148,10 +148,11 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
+		static Version version = typeof(XamlGenerator).Assembly.GetName().Version;
 		static CodeAttributeDeclaration GeneratedCodeAttrDecl =>
 			new CodeAttributeDeclaration(new CodeTypeReference($"global::{typeof(GeneratedCodeAttribute).FullName}"),
 						new CodeAttributeArgument(new CodePrimitiveExpression("Xamarin.Forms.Build.Tasks.XamlG")),
-						new CodeAttributeArgument(new CodePrimitiveExpression("0.0.0.0")));
+						new CodeAttributeArgument(new CodePrimitiveExpression($"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}")));
 
 		void GenerateCode()
 		{

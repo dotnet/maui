@@ -1,13 +1,15 @@
+using ElmSharp;
 using System;
-using System.IO;
-using System.Reflection;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http;
 using Xamarin.Forms.Internals;
-using ElmSharp;
+using TAppControl = Tizen.Applications.AppControl;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -90,7 +92,18 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public void OpenUriAction(Uri uri)
 		{
-			throw new NotImplementedException();
+			if (uri == null || uri.AbsoluteUri == null)
+			{
+				throw new ArgumentNullException(nameof(uri));
+			}
+			TAppControl tAppControl = new TAppControl() { Operation = "%", Uri = uri.AbsoluteUri };
+			var matchedApplications = TAppControl.GetMatchedApplicationIds(tAppControl);
+			if (matchedApplications.Count() > 0)
+			{
+				TAppControl.SendLaunchRequest(tAppControl);
+				return;
+			}
+			throw new PlatformNotSupportedException();
 		}
 
 		public void BeginInvokeOnMainThread(Action action)

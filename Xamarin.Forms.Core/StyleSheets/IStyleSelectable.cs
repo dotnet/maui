@@ -14,6 +14,6 @@ namespace Xamarin.Forms.StyleSheets
 
 	interface IStylable
 	{
-		BindableProperty GetProperty(string key);
+		BindableProperty GetProperty(string key, bool inheriting);
 	}
 }

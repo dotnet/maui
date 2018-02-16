@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using ElmSharp;
+using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
+using EColor = ElmSharp.Color;
 using EToolbarItem = ElmSharp.ToolbarItem;
 using EToolbarItemEventArgs = ElmSharp.ToolbarItemEventArgs;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		Dictionary<EToolbarItem, Page> _itemToItemPage = new Dictionary<EToolbarItem, Page>();
 		List<EToolbarItem> _toolbarItemList = new List<EToolbarItem>();
 		bool _isResettingToolbarItems = false;
+		bool _isInitialized = false;
 
 		public TabbedPageRenderer()
 		{
@@ -101,11 +102,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (e.OldElement != null)
 			{
-				Element.PagesChanged -= OnElementPagesChanged;
+				e.OldElement.PagesChanged -= OnElementPagesChanged;
+				_isInitialized = false;
 			}
 			if (e.NewElement != null)
 			{
-				Element.PagesChanged += OnElementPagesChanged;
+				e.NewElement.PagesChanged += OnElementPagesChanged;
 			}
 
 			base.OnElementChanged(e);
@@ -134,8 +136,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected override void OnElementReady()
 		{
-			FillToolbarAndContents();
 			base.OnElementReady();
+			_isInitialized = true;
+			FillToolbarAndContents();
+			Element.UpdateFocusTreePolicy();
 		}
 
 		protected override void UpdateThemeStyle()
@@ -150,12 +154,15 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnInnerLayoutUpdate()
 		{
+			if (!_isInitialized)
+				return;
+
 			int baseX = _innerBox.Geometry.X;
 			Rect bound = _scroller.Geometry;
 			int index = 0;
 			foreach (var page in Element.Children)
 			{
-				var nativeView = Platform.GetOrCreateRenderer(page).NativeView;
+				var nativeView = Platform.GetRenderer(page).NativeView;
 				bound.X = baseX + index * bound.Width;
 				nativeView.Geometry = bound;
 				index++;
@@ -228,6 +235,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					ResetToolbarItems();
 					break;
 			}
+			Element.UpdateFocusTreePolicy();
 		}
 
 		void AddToolbarItems(NotifyCollectionChangedEventArgs e)
@@ -292,7 +300,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		void ResetToolbarItems()
 		{
 			_isResettingToolbarItems = true;
-			foreach(var pair in _itemToItemPage)
+			foreach (var pair in _itemToItemPage)
 			{
 				pair.Value.PropertyChanged -= OnPageTitleChanged;
 				pair.Key.Delete();
@@ -338,6 +346,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			int index = MultiPage<Page>.GetIndex(newPage);
 			_scroller.ScrollTo(index, 0, true);
+
+			Element.UpdateFocusTreePolicy();
 		}
 
 		void CurrentPageChanged()

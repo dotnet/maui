@@ -442,6 +442,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static void UpdateInputTransparent(VisualElement view, FrameworkElement frameworkElement)
 		{
+			if (view is Layout)
+			{
+				// Let VisualElementRenderer handle this
+			}
+
 			frameworkElement.IsHitTestVisible = view.IsEnabled && !view.InputTransparent;
 		}
 

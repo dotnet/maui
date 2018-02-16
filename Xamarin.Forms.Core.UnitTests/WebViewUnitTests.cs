@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using NUnit.Framework;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -88,6 +91,30 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual ("<html><body><p>This is a WebView!</p></body></html>", htmlSource.Html);
 			Assert.AreEqual ("http://xamarin.com", urlSource.Url);
+		}
+
+		[Test]
+		public void TestAndroidMixedContent()
+		{
+			var defaultWebView = new WebView();
+
+			var mixedContentWebView = new WebView();
+			mixedContentWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
+
+			Assert.AreEqual(defaultWebView.On<Android>().MixedContentMode(), MixedContentHandling.NeverAllow);
+			Assert.AreEqual(mixedContentWebView.On<Android>().MixedContentMode(), MixedContentHandling.AlwaysAllow);
+		}
+
+		[Test]
+		public void TestWindowsSetAllowJavaScriptAlertsFlag()
+		{
+			var defaultWebView = new WebView();
+
+			var jsAlertsAllowedWebView = new WebView();
+			jsAlertsAllowedWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
+
+			Assert.AreEqual(defaultWebView.On<Windows>().IsJavaScriptAlertEnabled(), false);
+			Assert.AreEqual(jsAlertsAllowedWebView.On<Windows>().IsJavaScriptAlertEnabled(), true);
 		}
 	}
 }

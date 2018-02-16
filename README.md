@@ -1,3 +1,4 @@
+
 <img src="banner.png" alt="Xamarin.Forms banner" height="145" >
 
 # Xamarin.Forms #
@@ -6,23 +7,37 @@ Xamarin.Forms provides a way to quickly build native apps for iOS, Android, Wind
 
 Read more about the platform at https://www.xamarin.com/forms.
 
-## Build Status ##
+## Build Status 
 
-![OSX Debug Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_OsxDebug.svg?style=flat&label=OSX%20Debug%20%20%20%20%20 "OSX Debug")  
+![Visual Studio Team Services ](https://img.shields.io/vso/build/devdiv/0bdbc590-a062-4c3f-b0f6-9383f67865ee/7981.svg?style=flat&label=VSTS%20Master "VSTS")
+ 
 
-![Windows Debug Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_WindowsDebug.svg?style=flat&label=Win%20Debug%20%20%20%20%20%20 "Win Debug")  
+## Packages ##
 
-![Android UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunAndroid601.svg?style=flat&label=UITest%20Android "Android UI Tests")
 
-![iOS8 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS8.svg?style=flat&label=UITest%20iOS8%20%20%20%20 "iOS8 UI Tests")  
+Platform/Feature               | Package name                              | Stable (2.5.0 branch)     |Nightly Feed [MyGet](https://www.myget.org/F/xamarinforms-ci/api/v2)  (master branch)
+-----------------------|-------------------------------------------|-----------------------------|-------------------------
+Core             | `Xamarin.Forms` | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms/)| [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarinforms-ci/package/nuget/Xamarin.Forms)
+Maps                 | `Xamarin.Forms.Maps`    | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Maps.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Maps/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.Maps.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarinforms-ci/package/nuget/Xamarin.Forms.Maps)
+Pages  | `Xamarin.Forms.Pages`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Pages.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Pages/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.Pages.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarin.forms-ci/package/nuget/Xamarin.Forms.Pages)
 
-![iOS9 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS9.svg?style=flat&label=UITest%20iOS9%20%20%20%20 "iOS9 UI Tests")  
+If you want to use the latest dev build then you should read [this blog post]( https://blog.xamarin.com/try-the-latest-in-xamarin-forms-with-nightly-builds) :
+- Add the nightly feed to your nuget sources or add a NuGet.Config to your app with the following content:
 
-![iOS10 UI Tests Teamcity](https://img.shields.io/teamcity/https/teamcity.xamarin.com/e/XamarinForms_Debug_Cycle8ezTest_UiTests_OsxTestCloudPackageRunIOSUnifiedIOS10.svg?style=flat&label=UITest%20iOS10%20%20 "iOS10 UI Tests") 
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <configuration>
+      <packageSources>
+          <clear />
+          <add key="xamarin-ci" value="https://www.myget.org/F/xamarinforms-ci/api/v2" />
+          <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+      </packageSources>
+  </configuration>
+  ```
 
-![Visual Studio Team Services Windows Debug](https://img.shields.io/vso/build/devdiv/0bdbc590-a062-4c3f-b0f6-9383f67865ee/6713.svg?style=flat&label=VSTS%20Win%20dbg "Win Debug VSTS")
+  *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
 
-![Visual Studio Team Services OSX Debug](https://img.shields.io/vso/build/devdiv/0bdbc590-a062-4c3f-b0f6-9383f67865ee/5514.svg?style=flat&label=VSTS%20OSX%20dbg "OSX Debug VSTS") 
+- Change your application's dependencies to have a `*` to get the latest version.
 
 
 ## Getting Started ##
@@ -53,6 +68,24 @@ Due to the way that Android works, the maps API key cannot be injected at runtim
 
 You can find out how to obtain a Google Maps API key [here](https://developer.xamarin.com/guides/android/platform_features/maps_and_location/maps/obtaining_a_google_maps_api_key/).
 
+##### Build from the Command line #####
+Make sure you have Nuget.exe 4.0 or above and the latest dotnet core sdk (2.0.3). On OSX you should specify the platform in the msbuild command (`/p:Platform=iPhoneSimulator`)
+  
+
+     nuget restore Xamarin.Forms.sln
+     msbuild Xamarin.Forms.sln
+ 
+
+##### API documentation changes #####
+If you change or add a public API on Xamarin.Forms the associated documentation should be updated and pushed as part of the pull request. This will also be needed to create a local nuget if you want. We rely on mdoc that is shipped in the repo on the tools folder. After building the .sln on Windows run:
+     
+     ./update-docs-windows.bat
+
+on OSX execute:
+     
+     make docs
+
+
 ## Coding Style ##
 We follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with a few exceptions:
 
@@ -67,5 +100,4 @@ We follow the style used by the [.NET Foundation](https://github.com/dotnet/core
 ### Reporting Bugs
 
 We use [GitHub Issues](https://github.com/xamarin/Xamarin.Forms/issues) to track issues. If at all possible, please submit a [reproduction of your bug](https://gist.github.com/jassmith/92405c300e54a01dcc6d) along with your bug report.
-
 

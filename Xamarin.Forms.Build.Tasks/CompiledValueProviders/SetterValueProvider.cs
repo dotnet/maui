@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Core.XamlC
 			var value = ((string)((ValueNode)valueNode).Value);
 
 			TypeReference _;
-			var setValueRef = module.ImportReference(module.ImportReference(typeof(Setter)).GetProperty(p => p.Name == "Value", out _).SetMethod);
+			var setValueRef = module.ImportReference(module.ImportReferenceCached(typeof(Setter)).GetProperty(p => p.Name == "Value", out _).SetMethod);
 
 			//push the setter
 			yield return Instruction.Create(OpCodes.Ldloc, vardefref.VariableDefinition);

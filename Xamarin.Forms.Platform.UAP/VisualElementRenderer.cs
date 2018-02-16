@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Platform.UWP
 		VisualElementTracker<TElement, TNativeElement> _tracker;
 		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
 
+		Canvas _backgroundLayer;
+
 		public TNativeElement Control { get; private set; }
 
 		public TElement Element { get; private set; }
@@ -60,8 +62,6 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		VisualElementPackager Packager { get; set; }
-
-	
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (AutoTrack && Tracker == null)
 				{
-					Tracker = new VisualElementTracker<TElement, TNativeElement>();
+					Tracker = new VisualElementTracker<TElement, TNativeElement>();	
 				}
 
 				// Disabled until reason for crashes with unhandled exceptions is discovered
@@ -157,6 +157,8 @@ namespace Xamarin.Forms.Platform.UWP
 			if (controller != null)
 				controller.EffectControlProvider = this;
 		}
+
+		
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
@@ -211,6 +213,8 @@ namespace Xamarin.Forms.Platform.UWP
 						nativeChild.Arrange(myRect);
 				}
 			}
+
+			_backgroundLayer?.Arrange(myRect);
 
 			Element.IsInNativeLayout = false;
 
@@ -305,6 +309,9 @@ namespace Xamarin.Forms.Platform.UWP
 				SetAutomationPropertiesAccessibilityView();
 			else if (e.PropertyName == AutomationProperties.LabeledByProperty.PropertyName)
 				SetAutomationPropertiesLabeledBy();
+			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || 
+					e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
+				UpdateInputTransparent();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -430,6 +437,14 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			Color backgroundColor = Element.BackgroundColor;
 			var control = Control as Control;
+
+			var backgroundLayer = (Panel)this;
+			if (_backgroundLayer != null)
+			{
+				backgroundLayer = _backgroundLayer;
+				Background = null; // Make the container effectively hit test invisible
+			}
+
 			if (control != null)
 			{
 				if (!backgroundColor.IsDefault)
@@ -445,11 +460,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (!backgroundColor.IsDefault)
 				{
-					Background = backgroundColor.ToBrush();
+					backgroundLayer.Background = backgroundColor.ToBrush();
 				}
 				else
 				{
-					ClearValue(BackgroundProperty);
+					backgroundLayer.ClearValue(BackgroundProperty);
 				}
 			}
 		}
@@ -457,6 +472,7 @@ namespace Xamarin.Forms.Platform.UWP
 		protected virtual void UpdateNativeControl()
 		{
 			UpdateEnabled();
+			UpdateInputTransparent();
 			SetAutomationPropertiesHelpText();
 			SetAutomationPropertiesName();
 			SetAutomationPropertiesAccessibilityView();
@@ -544,6 +560,70 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
 		}
+
+		void UpdateInputTransparent()
+		{
+			if (NeedsBackgroundLayer(Element))
+			{
+				IsHitTestVisible = true;
+				AddBackgroundLayer();
+			}
+			else
+			{
+				RemoveBackgroundLayer();
+				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
+			}
+		}
+
+		void AddBackgroundLayer()
+		{
+			if (_backgroundLayer != null)
+			{
+				return;
+			}
+
+			// In UWP, once a control has hit testing disabled, all of its child controls
+			// also have hit testing disabled. The exception is a Panel with its 
+			// Background Brush set to `null`; the Panel will be invisible to hit testing, but its
+			// children will work just fine. 
+
+			// In order to handle the situation where we need the layout to be invisible to hit testing,
+			// the child controls to be visible to hit testing, *and* we need to support non-null
+			// background brushes, we insert another empty Panel which is invisible to hit testing; that
+			// Panel will be our Background color
+
+			_backgroundLayer = new Canvas { IsHitTestVisible = false };
+			Children.Insert(0, _backgroundLayer);
+			UpdateBackgroundColor();
+		}
+
+		void RemoveBackgroundLayer()
+		{
+			if (_backgroundLayer == null)
+			{
+				return;
+			}
+
+			Children.Remove(_backgroundLayer);
+			_backgroundLayer = null;
+			UpdateBackgroundColor();
+		}
+
+		internal static bool NeedsBackgroundLayer(VisualElement element)
+		{
+			if (!(element is Layout layout))
+			{
+				return false;
+			}
+
+			if (layout.IsEnabled && layout.InputTransparent && !layout.CascadeInputTransparent)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 
 		void UpdateTracker()
 		{

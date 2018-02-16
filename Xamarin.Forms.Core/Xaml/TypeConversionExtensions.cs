@@ -194,7 +194,7 @@ namespace Xamarin.Forms.Xaml
 
 		internal static MethodInfo GetImplicitConversionOperator(this Type onType, Type fromType, Type toType)
 		{
-#if PCL
+#if NETSTANDARD1_0
 			var mi = onType.GetRuntimeMethod("op_Implicit", new[] { fromType });
 #else
 			var bindingFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;

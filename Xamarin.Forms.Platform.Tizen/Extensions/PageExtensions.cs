@@ -19,12 +19,10 @@ namespace Xamarin.Forms
 				app.MainPage = page;
 			}
 
-			var platform = new Platform.Tizen.Platform(Platform.Tizen.Forms.Context, parent)
-			{
-				HasAlpha = hasAlpha
-			};
+			var platform = Platform.Tizen.Platform.CreatePlatform(parent);
+			platform.HasAlpha = hasAlpha;
 			platform.SetPage(page);
-			return platform.InternalNaviframe;
+			return platform.GetRootNativeView();
 		}
 
 		class DefaultApplication : Application
@@ -40,6 +38,22 @@ namespace Xamarin.Forms.Platform.Tizen
 		public static EvasObject CreateEvasObject(this ContentPage page, EvasObject parent, bool hasAlpha = false)
 		{
 			return Xamarin.Forms.PageExtensions.CreateEvasObject(page, parent, hasAlpha);
+		}
+
+		public static void UpdateFocusTreePolicy<T>(this MultiPage<T> multiPage) where T : Page
+		{
+			foreach (var pageItem in multiPage.Children)
+			{
+				if (Platform.GetRenderer(pageItem)?.NativeView is ElmSharp.Widget nativeWidget)
+				{
+					if (pageItem == multiPage.CurrentPage)
+					{
+						nativeWidget.AllowTreeFocus = true;
+						continue;
+					}
+					nativeWidget.AllowTreeFocus = false;
+				}
+			}
 		}
 	}
 }

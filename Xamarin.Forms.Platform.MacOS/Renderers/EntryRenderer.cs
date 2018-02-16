@@ -6,18 +6,6 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public class EntryRenderer : ViewRenderer<Entry, NSTextField>
 	{
-		class BoolEventArgs : EventArgs
-		{
-			public BoolEventArgs(bool value)
-			{
-				Value = value;
-			}
-			public bool Value
-			{
-				get;
-				private set;
-			}
-		}
 		class FormsNSTextField : NSTextField
 		{
 			public EventHandler<BoolEventArgs> FocusChanged;

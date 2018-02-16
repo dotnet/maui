@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Gh1766">
+    <ContentPage.Resources>
+        <StyleSheet>
+        <![CDATA[
+            .body {
+                background-color: pink;
+            }
+        ]]>
+       </StyleSheet>
+    </ContentPage.Resources>
+    <StackLayout StyleClass="body" x:Name="stack">
+        <Entry x:Name="entry" />
+    </StackLayout>
+</ContentPage>

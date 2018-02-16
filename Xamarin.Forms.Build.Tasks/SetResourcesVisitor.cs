@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
 			return parentVar.VariableType.FullName == "Xamarin.Forms.ResourceDictionary"
-				|| parentVar.VariableType.Resolve().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
+				|| parentVar.VariableType.ResolveCached().BaseType?.FullName == "Xamarin.Forms.ResourceDictionary";
 		}
 
 		public bool SkipChildren(INode node, INode parentNode)

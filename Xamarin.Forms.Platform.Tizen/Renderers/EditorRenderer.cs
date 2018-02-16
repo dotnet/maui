@@ -1,6 +1,5 @@
 using System;
-using Xamarin.Forms.Platform.Tizen.Native;
-using EColor = ElmSharp.Color;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -25,8 +24,9 @@ namespace Xamarin.Forms.Platform.Tizen
 					IsSingleLine = false,
 					PropagateEvents = false,
 				};
+				entry.Focused += OnFocused;
+				entry.Unfocused += OnUnfocused;
 				entry.TextChanged += OnTextChanged;
-				entry.Unfocused += OnCompleted;
 
 				SetNativeControl(entry);
 			}
@@ -40,7 +40,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (null != Control)
 				{
 					Control.TextChanged -= OnTextChanged;
-					Control.Activated -= OnCompleted;
+					Control.BackButtonPressed -= OnCompleted;
+					Control.Unfocused -= OnUnfocused;
+					Control.Focused -= OnFocused;
 				}
 			}
 			base.Dispose(disposing);
@@ -51,8 +53,29 @@ namespace Xamarin.Forms.Platform.Tizen
 			Element.Text = ((Native.Entry)sender).Text;
 		}
 
+		bool _isSendComplate = false;
+
+		void OnFocused(object sender, EventArgs e)
+		{
+			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
+			// If you want to make Editor input completed by using BackButtonPressed, you should subscribe BackButtonPressed event only when Editor gets focused.
+			Control.BackButtonPressed += OnCompleted;
+			_isSendComplate = false;
+		}
+
+		void OnUnfocused(object sender, EventArgs e)
+		{
+			// BackButtonPressed is only passed to the object that is at the highest Z-Order, and it does not propagate to lower objects.
+			// When the object is unfocesed BackButtonPressed event has to be released to stop using it.
+			Control.BackButtonPressed -= OnCompleted;
+			if(!_isSendComplate)
+				Element.SendCompleted();
+		}
+
 		void OnCompleted(object sender, EventArgs e)
 		{
+			_isSendComplate = true;
+			Control.SetFocus(false);
 			Element.SendCompleted();
 		}
 

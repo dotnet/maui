@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using Android.Content;
 using Android.Support.V4.View;
 using Android.Views;
 
@@ -54,9 +55,30 @@ namespace Xamarin.Forms.Platform.Android
 				eventConsumed = _scaleDetector.Value.OnTouchEvent(e);
 			}
 
-			eventConsumed = _tapAndPanDetector.Value.OnTouchEvent(e) || eventConsumed;
+			if (!ViewHasPinchGestures() || !_scaleDetector.Value.IsInProgress)
+				eventConsumed = _tapAndPanDetector.Value.OnTouchEvent(e) || eventConsumed;
 
 			return eventConsumed;
+		}
+
+		public class TapAndPanGestureDetector : GestureDetector
+		{
+			InnerGestureListener _listener;
+			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
+			{
+				_listener = listener;
+			}
+
+			public override bool OnTouchEvent(MotionEvent ev)
+			{
+				if (base.OnTouchEvent(ev))
+					return true;
+
+				if (ev.Action == MotionEventActions.Up)
+					_listener.EndScrolling();
+
+				return false;
+			}
 		}
 
 		public void Dispose()
@@ -89,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android
 			var listener = new InnerGestureListener(new TapGestureHandler(() => View),
 				new PanGestureHandler(() => View, context.FromPixels));
 
-			return new GestureDetector(context, listener);
+			return new TapAndPanGestureDetector(context, listener);
 		}
 
 		ScaleGestureDetector InitializeScaleDetector()

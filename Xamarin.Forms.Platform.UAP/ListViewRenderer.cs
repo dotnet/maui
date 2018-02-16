@@ -90,11 +90,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateGrouping();
 			}
-			else if (e.PropertyName == ListView.HeaderProperty.PropertyName)
+			else if (e.PropertyName == ListView.HeaderProperty.PropertyName || e.PropertyName == "HeaderElement")
 			{
 				UpdateHeader();
 			}
-			else if (e.PropertyName == ListView.FooterProperty.PropertyName)
+			else if (e.PropertyName == ListView.FooterProperty.PropertyName || e.PropertyName == "FooterElement")
 			{
 				UpdateFooter();
 			}

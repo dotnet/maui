@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Xaml;
@@ -55,13 +54,13 @@ namespace Xamarin.Forms.StyleSheets
 			return style;
 		}
 
-		public void Apply(VisualElement styleable)
+		public void Apply(VisualElement styleable, bool inheriting = false)
 		{
 			if (styleable == null)
 				throw new ArgumentNullException(nameof(styleable));
 
 			foreach (var decl in Declarations) {
-				var property = ((IStylable)styleable).GetProperty(decl.Key);
+				var property = ((IStylable)styleable).GetProperty(decl.Key, inheriting);
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
@@ -78,7 +77,7 @@ namespace Xamarin.Forms.StyleSheets
 				var ve = child as VisualElement;
 				if (ve == null)
 					continue;
-				Apply(ve);
+				Apply(ve, inheriting: true);
 			}
 		}
 

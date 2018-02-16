@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -9,6 +9,9 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml.cs">
+      <DependentUpon>Bugzilla60045.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)AddingMultipleItemsListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AndroidStatusBarColor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AppBarIconColors.cs" />
@@ -234,6 +237,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1717.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60001.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60122.cs" />
@@ -257,9 +262,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FailImageSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GestureBubblingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Github1461.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CascadeInputTransparent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1331.xaml.cs">
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Github1625.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1614.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsInvokeRequiredRaceCondition.cs" />
@@ -393,6 +401,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1436.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
@@ -672,6 +681,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla58779.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51825.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40092.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -834,6 +844,12 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)GitHub1331.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

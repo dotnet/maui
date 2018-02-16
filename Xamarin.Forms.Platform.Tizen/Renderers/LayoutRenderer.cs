@@ -45,7 +45,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnLayoutUpdated(object sender, Native.LayoutEventArgs e)
 		{
-			DoLayout(e);
+			Element.Layout(e.Geometry.ToDP());
 		}
 	}
 }

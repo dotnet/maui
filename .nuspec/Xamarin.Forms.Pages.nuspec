@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Pages$IdAppend$</id>
+    <id>Xamarin.Forms.Pages</id>
     <version>$version$</version>
     <authors>Xamarin, Inc.</authors>
     <owners>Xamarin, Inc.</owners>
@@ -13,7 +13,7 @@
     <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+        <dependency id="Xamarin.Forms" version="$version$"/>
         <dependency id="Newtonsoft.Json" version="10.0.3"/>
         <dependency id="modernhttpclient" version="2.4.2"/>
       </group>

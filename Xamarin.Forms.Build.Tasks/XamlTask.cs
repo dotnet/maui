@@ -23,6 +23,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public string Assembly { get; set; }
 		public string DependencyPaths { get; set; }
 		public string ReferencePath { get; set; }
+		[Obsolete("this is no longer used")]
 		public int Verbosity { get; set; }
 		public bool DebugSymbols { get; set; }
 		public string DebugType { get; set; }
@@ -41,7 +42,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public bool Execute()
 		{
-			Logger = new Logger(_log, Verbosity);
+			Logger = new Logger(_log);
 			IList<Exception> _;
 			return Execute(out _);
 		}
@@ -110,7 +111,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static TypeReference GetTypeForResourceId(ModuleDefinition module, string resourceId)
 		{
 			foreach (var ca in module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
 					continue;
 				if (ca.ConstructorArguments[0].Value as string != resourceId)
 					continue;
