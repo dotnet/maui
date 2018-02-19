@@ -25,6 +25,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateInputScope();
 				UpdateTextColor();
 				UpdateFont();
+				UpdateMaxLength();
 			}
 
 			base.OnElementChanged(e);
@@ -47,6 +48,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 		}
 		
 		void NativeOnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)
@@ -103,6 +106,16 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateTextColor()
 		{
 			Control.UpdateDependencyColor(System.Windows.Controls.Control.ForegroundProperty, Element.TextColor);
+		}
+
+		void UpdateMaxLength()
+		{
+			Control.MaxLength = Element.MaxLength;
+
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 
 		bool _isDisposed;

@@ -6,6 +6,14 @@ namespace Xamarin.Forms
 			coerceValue: (o, v) => (Keyboard)v ?? Keyboard.Default);
 		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create("IsSpellCheckEnabled", typeof(bool), typeof(InputView), true);
 
+		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
+
+		public int MaxLength
+		{
+			get { return (int)GetValue(MaxLengthProperty); }
+			set { SetValue(MaxLengthProperty, value); }
+		}
+
 		internal InputView()
 		{
 		}

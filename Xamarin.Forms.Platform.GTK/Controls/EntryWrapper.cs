@@ -76,6 +76,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
             _placeholder.ModifyFont(fontDescription);
         }
 
+        public void SetMaxLength(int maxLength)
+        {
+            _entry.MaxLength = maxLength;
+        }
+
         protected override void OnSizeAllocated(Gdk.Rectangle allocation)
         {
             base.OnSizeAllocated(allocation);

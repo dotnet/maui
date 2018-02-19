@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Xamarin.Forms.Platform.GTK.Controls;
 using Xamarin.Forms.Platform.GTK.Extensions;
 using Xamarin.Forms.Platform.GTK.Helpers;
+using System;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
@@ -35,6 +36,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdateFont();
                 UpdateTextVisibility();
                 UpdatePlaceholder();
+                UpdateMaxLength();
             }
 
             base.OnElementChanged(e);
@@ -60,6 +62,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdatePlaceholder();
             else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
                 UpdatePlaceholder();
+            else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+                UpdateMaxLength();
 
             base.OnElementPropertyChanged(sender, e);
         }
@@ -147,6 +151,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             {
                 EntryController.SendCompleted();
             }
+        }
+
+        private void UpdateMaxLength()
+        {
+            Control.SetMaxLength(Element.MaxLength);
         }
     }
 }
