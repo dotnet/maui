@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls
 		{
 			public TestPage1 ()
 			{
-				var rootLayout = new StackLayout { AutomationId = "stckMain" };
+                var rootLayout = new StackLayout { AutomationId = "stckMain" , Padding = new Thickness(10, 50, 10, 0) };
 				var btn = new Button {
 					AutomationId = "popModal",
 					Text = "Pop",
@@ -68,7 +68,7 @@ namespace Xamarin.Forms.Controls
 		{
 			public TestPage2 ()
 			{
-				var rootLayout = new StackLayout { AutomationId = "stckMain" };
+                var rootLayout = new StackLayout { AutomationId = "stckMain" , Padding = new Thickness(10, 50, 10, 0) };
 				var btn = new Button {
 					AutomationId = "popModal",
 					Text = "Pop",
