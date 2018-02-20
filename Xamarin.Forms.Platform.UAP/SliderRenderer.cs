@@ -2,15 +2,11 @@
 using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class SliderRenderer : ViewRenderer<Slider, Windows.UI.Xaml.Controls.Slider>
 	{
-		Brush defaultforegroundcolor;
-		Brush defaultbackgroundcolor;
-
 		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
 			base.OnElementChanged(e);
@@ -27,10 +23,6 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.Value = e.NewElement.Value;
 
 					slider.ValueChanged += OnNativeValueChanged;
-
-					defaultforegroundcolor = slider.Foreground;
-					defaultbackgroundcolor = slider.Background;
-
 
 					// Even when using Center/CenterAndExpand, a Slider has an oddity where it looks
 					// off-center in its layout by a smidge. The default templates are slightly different
@@ -53,37 +45,6 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.StepFrequency = stepping;
 				Control.SmallChange = stepping;
 				UpdateFlowDirection();
-				UpdateSliderColors();
-			}
-		}
-
-		private void UpdateSliderColors()
-		{
-			UpdateMinimumTrackColor();
-			UpdateMaximumTrackColor();
-		}
-
-		private void UpdateMinimumTrackColor()
-		{
-			if (Control != null)
-			{
-				if (Element.MinimumTrackColor == Color.Default)
-					Control.Foreground = defaultforegroundcolor;
-				else
-					Control.Foreground = Element.MinimumTrackColor.ToBrush();
-
-			}
-		}
-
-		private void UpdateMaximumTrackColor()
-		{
-			if (Control != null)
-			{
-				if (Element.MaximumTrackColor == Color.Default)
-					Control.Background = defaultbackgroundcolor;
-				else
-					Control.Background = Element.MaximumTrackColor.ToBrush();
-
 			}
 		}
 
@@ -102,11 +63,6 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
-			else if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
-				UpdateMinimumTrackColor();
-			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
-				UpdateMaximumTrackColor();
-
 		}
 
 		protected override void UpdateBackgroundColor()

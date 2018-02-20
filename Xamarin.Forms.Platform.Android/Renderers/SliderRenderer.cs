@@ -1,8 +1,6 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
@@ -13,13 +11,8 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		double _max, _min;
 		bool _isTrackingChange;
-		bool _progressChangedOnce;
-		ColorStateList defaultprogresstintlist, defaultprogressbackgroundtintlist;
-		ColorFilter defaultthumbcolorfilter;
-		Drawable defaultthumb;
-		PorterDuff.Mode defaultprogresstintmode, defaultprogressbackgroundtintmode;
 
-    public SliderRenderer(Context context) : base(context)
+		public SliderRenderer(Context context) : base(context)
 		{
 			AutoPackage = false;
 		}
@@ -67,30 +60,14 @@ namespace Xamarin.Forms.Platform.Android
 				SetNativeControl(seekBar);
 
 				seekBar.Max = 1000;
+
 				seekBar.SetOnSeekBarChangeListener(this);
-				//defaultthumbcolorfilter = Control.Thumb.ColorFilter;
-				//defaultprogresstintlist = Control.ProgressTintList;
-				//defaultprogressbackgroundtintlist = Control.ProgressBackgroundTintList;
-
-				defaultthumbcolorfilter = seekBar.Thumb.ColorFilter;
-				defaultprogresstintmode = seekBar.ProgressTintMode;
-				defaultprogressbackgroundtintmode = seekBar.ProgressBackgroundTintMode;
-				defaultprogresstintlist = seekBar.ProgressTintList;
-				defaultprogressbackgroundtintlist = seekBar.ProgressBackgroundTintList;
-				defaultthumb = seekBar.Thumb;
-
 			}
 
 			Slider slider = e.NewElement;
 			_min = slider.Minimum;
 			_max = slider.Maximum;
 			Value = slider.Value;
-			UpdateSliderColors();
-		}
-
-		SeekBar NativeSeekbar
-		{
-			get { return Control; }
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -110,90 +87,6 @@ namespace Xamarin.Forms.Platform.Android
 					if (Value != view.Value)
 						Value = view.Value;
 					break;
-			}
-
-			if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
-				UpdateMinimumTrackColor();
-			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
-				UpdateMaximumTrackColor();
-			else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
-				UpdateThumbImage();
-			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
-				UpdateThumbColor();
-		}
-
-		private void UpdateSliderColors()
-		{
-			UpdateMinimumTrackColor();
-			UpdateMaximumTrackColor();
-			if (!string.IsNullOrEmpty(Element.ThumbImage))
-			{
-				UpdateThumbImage();
-			}
-			else
-			{
-				UpdateThumbColor();
-			}
-		}
-
-		private void UpdateMinimumTrackColor()
-		{
-			if (Element != null)
-			{
-				if (Element.MinimumTrackColor == Color.Default)
-				{
-					Control.ProgressTintList = defaultprogresstintlist;
-					Control.ProgressTintMode = defaultprogresstintmode;
-				}
-				else
-				{
-					Control.ProgressTintList = ColorStateList.ValueOf(Element.MinimumTrackColor.ToAndroid());
-					Control.ProgressTintMode = PorterDuff.Mode.SrcIn;
-				}
-			}
-		}
-
-		private void UpdateMaximumTrackColor()
-		{
-			if (Element != null)
-			{
-				if (Element.MaximumTrackColor == Color.Default)
-				{
-					Control.ProgressBackgroundTintList = defaultprogressbackgroundtintlist;
-					Control.ProgressBackgroundTintMode = defaultprogressbackgroundtintmode;
-				}
-				else
-				{
-					Control.ProgressBackgroundTintList = ColorStateList.ValueOf(Element.MaximumTrackColor.ToAndroid());
-					Control.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
-				}
-			}
-		}
-
-		private void UpdateThumbColor()
-		{
-			if (Element != null)
-			{
-				if (Element.ThumbColor == Color.Default)
-				{
-					Control.Thumb.SetColorFilter(defaultthumbcolorfilter);
-				}
-				else
-				{
-					Control.Thumb.SetColorFilter(Element.ThumbColor.ToAndroid(), PorterDuff.Mode.SrcIn);
-				}
-
-			}
-		}
-
-		private void UpdateThumbImage()
-		{
-			if (Element != null)
-			{
-				if (string.IsNullOrEmpty(Element.ThumbImage))
-					Control.SetThumb(defaultthumb);
-				else
-					Control.SetThumb(Context.GetDrawable(Element.ThumbImage));
 			}
 		}
 
