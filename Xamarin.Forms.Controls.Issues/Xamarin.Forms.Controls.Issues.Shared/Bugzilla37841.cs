@@ -138,15 +138,14 @@ The EntryCell should display '112358' and the TextCell should display '48151623'
 			RunningApp.Tap("Generate");
 
 			RunningApp.Screenshot ("First Generate Tap");
-
-			RunningApp.WaitForElement("12345");
+			RunningApp.WaitForElement( c => c.Text("12345"));
 			RunningApp.WaitForElement("6789");
 
 			RunningApp.Tap("Generate");
 
 			RunningApp.Screenshot("Second Generate Tap");
 
-			RunningApp.WaitForElement("112358");
+			RunningApp.WaitForElement( c => c.Text("112358"));
 			RunningApp.WaitForElement("48151623");
 		}
 #endif

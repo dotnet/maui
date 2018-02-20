@@ -27,6 +27,7 @@ namespace Xamarin.Forms.Platform.iOS
 		UIToolbar _secondaryToolbar;
 		VisualElementTracker _tracker;
 		nfloat _navigationBottom = 0;
+		bool _hasNavigationBar;
 
 
 		public NavigationRenderer()
@@ -156,8 +157,12 @@ namespace Xamarin.Forms.Platform.iOS
 			var navBarFrameBottom = Math.Min(NavigationBar.Frame.Bottom, 140);
 			_navigationBottom = (nfloat)navBarFrameBottom;
 			var toolbar = _secondaryToolbar;
+
+			//save the state of the Current page we are calculating, this will fire before Current is updated
+			_hasNavigationBar = NavigationPage.GetHasNavigationBar(Current);
+
 			// Use 0 if the NavBar is hidden or will be hidden
-			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !NavigationPage.GetHasNavigationBar(Current) ? 0 : navBarFrameBottom;
+			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
 			double trueBottom = toolbar.Hidden ? toolbarY : toolbar.Frame.Bottom;
@@ -443,7 +448,11 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
 			else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
+			{
 				Current = ((NavigationPage)Element).CurrentPage;
+				ValidateNavbarExists(Current);
+			}
+				
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName)
 				UpdateTranslucent();
 			else if (e.PropertyName == PreferredStatusBarUpdateAnimationProperty.PropertyName)
@@ -451,6 +460,14 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 				UpdateUseLargeTitles();
 			
+		}
+
+		void ValidateNavbarExists(Page newCurrentPage)
+		{
+			//if the last time we did ViewDidLayoutSubviews we had other value for _hasNavigationBar
+			//we will need to relayout. This is because Current is updated async of the layout happening
+			if(_hasNavigationBar != NavigationPage.GetHasNavigationBar(newCurrentPage))
+				ViewDidLayoutSubviews();
 		}
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
@@ -698,7 +715,6 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				try
 				{
-
 					var source = Internals.Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(masterDetailPage.Master.Icon);
 					var icon = await source.LoadImageAsync(masterDetailPage.Master.Icon);
 					containerController.NavigationItem.LeftBarButtonItem = new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, handler);
@@ -839,18 +855,14 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				base.ViewDidAppear(animated);
 
-				var handler = Appearing;
-				if (handler != null)
-					handler(this, EventArgs.Empty);
+				Appearing?.Invoke(this, EventArgs.Empty);
 			}
 
 			public override void ViewDidDisappear(bool animated)
 			{
 				base.ViewDidDisappear(animated);
 
-				var handler = Disappearing;
-				if (handler != null)
-					handler(this, EventArgs.Empty);
+				Disappearing?.Invoke(this, EventArgs.Empty);
 			}
 
 			public override void ViewWillLayoutSubviews()
