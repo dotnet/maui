@@ -20,16 +20,16 @@
     <Owners>microsoft,Xamarin,XamarinNuGet</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <Copyright>Copyright 2018</Copyright>
-    <RepositoryUrl>https://github.com/xamarin/F50</RepositoryUrl>
-    <PackageReleaseNotes>See: https://github.com/xamarin/F50 </PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/xamarin/f50</RepositoryUrl>
+    <PackageReleaseNotes>See: https://github.com/xamarin/f50 </PackageReleaseNotes>
     <LangVersion>default</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <PackageLicenseUrl>https://github.com/xamarin/F50/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/xamarin/XamarF50inCommunityToolkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/xamarin/f50/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/xamarin/f50</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
