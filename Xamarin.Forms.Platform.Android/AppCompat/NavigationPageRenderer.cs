@@ -215,7 +215,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnAttachedToWindow();
 			PageController.SendAppearing();
-			_fragmentStack.Last().UserVisibleHint = true;
 			RegisterToolbar();
 			UpdateToolbar();
 		}
@@ -642,6 +641,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			FragmentManager.EnableDebugLogging(true);
 #endif
 
+			Current?.SendDisappearing();
 			Current = page;
 
 			((Platform)Element.Platform).NavAnimationInProgress = true;
@@ -708,7 +708,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Device.StartTimer(TimeSpan.FromMilliseconds(TransitionDuration), () =>
 				{
 					tcs.TrySetResult(true);
-					fragment.UserVisibleHint = true;
+					Current?.SendAppearing();
 					if (removed)
 					{
 						UpdateToolbar();
@@ -722,7 +722,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Device.StartTimer(TimeSpan.FromMilliseconds(1), () =>
 				{
 					tcs.TrySetResult(true);
-					fragment.UserVisibleHint = true;
+					Current?.SendAppearing();
 					UpdateToolbar();
 
 					return false;
