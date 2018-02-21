@@ -22,7 +22,7 @@
     <Copyright>Copyright 2018</Copyright>
     <RepositoryUrl>https://github.com/xamarin/f50</RepositoryUrl>
     <PackageReleaseNotes>See: https://github.com/xamarin/f50 </PackageReleaseNotes>
-    <LangVersion>default</LangVersion>
+    <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
