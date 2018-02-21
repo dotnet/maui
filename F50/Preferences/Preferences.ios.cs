@@ -16,18 +16,16 @@ namespace Xamarin.F50
 			}
 		}
 
-		public bool Remove(string key)
+		public void Remove(string key)
 		{
 			lock (locker)
 			{
 				if (UserDefaults[key] != null)
 					UserDefaults.RemoveObject(key);
 			}
-			
-			return true;
 		}
 
-		public bool Clear()
+		public void Clear()
 		{
 			lock (locker)
 			{
@@ -39,11 +37,9 @@ namespace Xamarin.F50
 						UserDefaults.RemoveObject(nsString);
 				}
 			}
-
-			return true;
 		}
 		
-		bool Set<T>(string key, T value)
+		void Set<T>(string key, T value)
 		{
 			lock (locker)
 			{
@@ -69,8 +65,6 @@ namespace Xamarin.F50
 						break;
 				}
 			}
-
-			return true;
 		}
 
 		T Get<T>(string key, T defaultValue)
@@ -122,23 +116,6 @@ namespace Xamarin.F50
 				}
 				
 				return userDefaults;
-			}
-		}
-
-		bool disposedValue = false;
-
-		void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing && userDefaults != null)
-				{
-					userDefaults.Synchronize();
-					userDefaults.Dispose();
-					userDefaults = null;
-				}
-				
-				disposedValue = true;
 			}
 		}
 	}

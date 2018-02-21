@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Xamarin.F50
+﻿namespace Xamarin.F50
 {
 	/// <summary>
 	/// Shared code between preferences
 	/// Contains static methods and shared members
 	/// </summary>
-	public sealed partial class Preferences : IDisposable
+	public sealed partial class Preferences
 	{
 		public Preferences()
 		{
@@ -33,8 +29,5 @@ namespace Xamarin.F50
 			Get<float>(key, defaultValue);
 		public long Get(string key, long defaultValue) =>
 			Get<long>(key, defaultValue);
-
-		public void Dispose() =>
-			Dispose(true);
 	}
 }

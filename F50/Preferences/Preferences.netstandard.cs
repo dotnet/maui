@@ -9,21 +9,16 @@ namespace Xamarin.F50
 		public bool ContainsKey(string key) =>
 			throw new NotImplentedInReferenceAssembly();
 
-		public bool Remove(string key) =>
+		public void Remove(string key) =>
 			throw new NotImplentedInReferenceAssembly();
 
-		public bool Clear() =>
+		public void Clear() =>
 			throw new NotImplentedInReferenceAssembly();
 
-		bool Set<T>(string key, T value) =>
+		void Set<T>(string key, T value) =>
 			throw new NotImplentedInReferenceAssembly();
 
 		T Get<T>(string key, T defaultValue) =>
-			throw new NotImplentedInReferenceAssembly();
-		
-		void Dispose(bool disposing)
-		{
-			throw new NotImplentedInReferenceAssembly();
-		}
+			throw new NotImplentedInReferenceAssembly();		
 	}
 }

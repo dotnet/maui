@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Windows.Storage;
+﻿using Windows.Storage;
 
 namespace Xamarin.F50
 {
@@ -17,38 +14,29 @@ namespace Xamarin.F50
 			}
 		}
 
-		public bool Remove(string key)
+		public void Remove(string key)
 		{
 			lock (locker)
 			{
 				if (Settings.Values.ContainsKey(key))
-				{
 					Settings.Values.Remove(key);
-					return true;
-				}
 			}
-
-			return false;
 		}
 
-		public bool Clear()
+		public void Clear()
 		{
 			lock (locker)
 			{
 				Settings.Values.Clear();
 			}
-
-			return true;
 		}
 		
-		bool Set<T>(string key, T value)
+		void Set<T>(string key, T value)
 		{
 			lock (locker)
 			{
 				Settings.Values[key] = value;
 			}
-
-			return true;
 		}
 
 		T Get<T>(string key, T defaultValue)
@@ -82,18 +70,6 @@ namespace Xamarin.F50
 				}
 
 				return settings;
-			}
-		}
-
-		bool disposedValue = false;
-
-		void Dispose(bool disposing)
-		{
-			if (!disposedValue)
-			{
-				if (disposing) { }
-
-				disposedValue = true;
 			}
 		}
 	}
