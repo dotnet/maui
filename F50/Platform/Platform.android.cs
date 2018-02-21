@@ -24,7 +24,7 @@ namespace Xamarin.F50
 
 	class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 	{
-		WeakReference<Activity> currentActivity = null;
+		WeakReference<Activity> currentActivity = new WeakReference<Activity>(null);
 
 		public Context Context =>
 			Activity ?? Application.Context;
