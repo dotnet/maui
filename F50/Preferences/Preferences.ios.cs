@@ -1,59 +1,43 @@
 ﻿using Foundation;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Globalization;
 
 namespace Xamarin.F50
 {
     public partial class Preferences
     {
+		static readonly object locker = new object();
+
 		public bool ContainsKey(string key)
 		{
-			var userDefaults = GetUserDefaults();
-
-			var setting = userDefaults[key];
-			return setting != null;
+			lock (locker)
+			{
+				return UserDefaults[key] != null;
+			}
 		}
 
 		public bool Remove(string key)
 		{
-			var userDefaults = GetUserDefaults();
-			try
+			lock (locker)
 			{
-				if (userDefaults[key] != null)
-				{
-					userDefaults.RemoveObject(key);
-					userDefaults.Synchronize();
-				}
+				if (UserDefaults[key] != null)
+					UserDefaults.RemoveObject(key);
 			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Unable to remove: " + key, " Message: " + ex.Message);
-				return false;
-			}
-
+			
 			return true;
 		}
 
 		public bool Clear()
 		{
-			var userDefaults = GetUserDefaults();
-			try
+			lock (locker)
 			{
-				var items = userDefaults.ToDictionary();
+				var items = UserDefaults.ToDictionary();
 
 				foreach (var item in items.Keys)
 				{
 					if (item is NSString nsString)
-						userDefaults.RemoveObject(nsString);
+						UserDefaults.RemoveObject(nsString);
 				}
-				userDefaults.Synchronize();
-
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Unable to clear items, Message: " + ex.Message);
-				return false;
 			}
 
 			return true;
@@ -61,38 +45,29 @@ namespace Xamarin.F50
 		
 		bool Set<T>(string key, T value)
 		{
-			var userDefaults = GetUserDefaults();
-			
-			switch (value)
+			lock (locker)
 			{
-				case string s:
-					userDefaults.SetString(s, key);
-					break;
-				case int i:
-					userDefaults.SetInt(i, key);
-					break;
-				case bool b:
-					userDefaults.SetBool(b, key);
-					break;
-				case long l:
-					userDefaults.SetString(l.ToString(), key);
-					break;
-				case double d:
-					userDefaults.SetDouble(d, key);
-					break;
-				case float f:
-					userDefaults.SetFloat(f, key);
-					break;
-			}
-
-			try
-			{
-				userDefaults.Synchronize();
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("Unable to save: " + key, " Message: " + ex.Message);
-				return false;
+				switch (value)
+				{
+					case string s:
+						UserDefaults.SetString(s, key);
+						break;
+					case int i:
+						UserDefaults.SetInt(i, key);
+						break;
+					case bool b:
+						UserDefaults.SetBool(b, key);
+						break;
+					case long l:
+						UserDefaults.SetString(Convert.ToString(l, NumberFormatInfo.InvariantInfo), key);
+						break;
+					case double d:
+						UserDefaults.SetDouble(d, key);
+						break;
+					case float f:
+						UserDefaults.SetFloat(f, key);
+						break;
+				}
 			}
 
 			return true;
@@ -100,44 +75,56 @@ namespace Xamarin.F50
 
 		T Get<T>(string key, T defaultValue)
 		{
-			var userDefaults = GetUserDefaults();
-			if (userDefaults[key] == null)
-				return defaultValue;
-
 			object value = null;
 
-			switch (defaultValue)
+			lock (locker)
 			{
-				case string s:
-					value = userDefaults.StringForKey(key);
-					break;
-				case int i:
-					value = userDefaults.IntForKey(key);
-					break;
-				case bool b:
-					value = userDefaults.BoolForKey(key);
-					break;
-				case long l:
-					long lv;
-					var lnStr = userDefaults.StringForKey(key);
-					if (long.TryParse(lnStr, out lv))
-						value = lv;
-					break;
-				case double d:
-					value = userDefaults.DoubleForKey(key);
-					break;
-				case float f:
-					value = userDefaults.FloatForKey(key);
-					break;
+				if (UserDefaults[key] == null)
+					return defaultValue;
+
+				switch (defaultValue)
+				{
+					case string s:
+						value = UserDefaults.StringForKey(key);
+						break;
+					case int i:
+						value = UserDefaults.IntForKey(key);
+						break;
+					case bool b:
+						value = UserDefaults.BoolForKey(key);
+						break;
+					case long l:
+						value = Convert.ToInt64(UserDefaults.StringForKey(key), NumberFormatInfo.InvariantInfo);
+						break;
+					case double d:
+						value = UserDefaults.DoubleForKey(key);
+						break;
+					case float f:
+						value = UserDefaults.FloatForKey(key);
+						break;
+				}
 			}
 
 			return (T)value;
 		}
 
-		NSUserDefaults GetUserDefaults() =>
-			string.IsNullOrWhiteSpace(SharedName) ?
-			NSUserDefaults.StandardUserDefaults :
-			new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
+		NSUserDefaults userDefaults = null;
+		NSUserDefaults UserDefaults
+		{
+			get
+			{
+				if (userDefaults == null)
+				{
+					if (!string.IsNullOrWhiteSpace(SharedName))
+						userDefaults = new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
+					else
+						userDefaults = NSUserDefaults.StandardUserDefaults;
+				}
+				
+				return userDefaults;
+			}
+		}
+
 		bool disposedValue = false;
 
 		void Dispose(bool disposing)

@@ -8,123 +8,140 @@ namespace Xamarin.F50
 {
 	public partial class Preferences
 	{
+		static readonly object locker = new object();
+
 		public bool ContainsKey(string key)
 		{
-			using (var sharedPreferences = GetSharedPreferences())
+			lock (locker)
 			{
-				if (sharedPreferences == null)
-					return false;
+				using (var sharedPreferences = GetSharedPreferences())
+				{
+					if (sharedPreferences == null)
+						return false;
 
-				return sharedPreferences.Contains(key);
+					return sharedPreferences.Contains(key);
+				}
 			}
 		}
 
 		public bool Remove(string key)
 		{
-			using (var sharedPreferences = GetSharedPreferences())
+			lock (locker)
 			{
-				if (sharedPreferences == null)
-					return false;
+				using (var sharedPreferences = GetSharedPreferences())
+				{
+					if (sharedPreferences == null)
+						return false;
 
-				return sharedPreferences.Edit().Remove(key).Commit();
+					using (var editor = sharedPreferences.Edit())
+					{
+						return editor.Remove(key).Commit();
+					}
+				}
 			}
 		}
 
 		public bool Clear()
 		{
-			using (var sharedPreferences = GetSharedPreferences())
+			lock (locker)
 			{
-				if (sharedPreferences == null)
-					return false;
-
-				using (var editor = sharedPreferences.Edit())
+				using (var sharedPreferences = GetSharedPreferences())
 				{
-					return editor.Clear().Commit();
+					if (sharedPreferences == null)
+						return false;
+
+					using (var editor = sharedPreferences.Edit())
+					{
+						return editor.Clear().Commit();
+					}
 				}
 			}
 		}
 
 		bool Set<T>(string key, T value)
 		{
-			using (var sharedPreferences = GetSharedPreferences())
+			lock (locker)
 			{
-				if (sharedPreferences == null)
-					return false;
-
-				using (var editor = sharedPreferences.Edit())
+				using (var sharedPreferences = GetSharedPreferences())
 				{
-					switch (value)
+					if (sharedPreferences == null)
+						return false;
+
+					using (var editor = sharedPreferences.Edit())
 					{
-						case string s:
-							editor.PutString(key, s);
-							break;
-						case int i:
-							editor.PutInt(key, i);
-							break;
-						case bool b:
-							editor.PutBoolean(key, b);
-							break;
-						case long l:
-							editor.PutLong(key, l);
-							break;
-						case double d:
-							var strDbl = Convert.ToString(d, CultureInfo.InvariantCulture);
-							editor.PutString(key, strDbl);
-							break;
-						case float f:
-							editor.PutFloat(key, f);
-							break;
+						switch (value)
+						{
+							case string s:
+								editor.PutString(key, s);
+								break;
+							case int i:
+								editor.PutInt(key, i);
+								break;
+							case bool b:
+								editor.PutBoolean(key, b);
+								break;
+							case long l:
+								editor.PutLong(key, l);
+								break;
+							case double d:
+								editor.PutString(key, Convert.ToString(d, NumberFormatInfo.InvariantInfo));
+								break;
+							case float f:
+								editor.PutFloat(key, f);
+								break;
+						}
+						return editor.Commit();
 					}
-					return editor.Commit();
 				}
 			}
 		}
 
 		T Get<T> (string key, T defaultValue)
 		{
-			object value = null;
-			using (var sharedPreferences = GetSharedPreferences())
+			lock (locker)
 			{
-				if (sharedPreferences == null)
-					return default;
-
-				switch (defaultValue)
+				object value = null;
+				using (var sharedPreferences = GetSharedPreferences())
 				{
-					case string s:
-						value = sharedPreferences.GetString(key, s);
-						break;
-					case int i:
-						value = sharedPreferences.GetInt(key, i);
-						break;
-					case bool b:
-						value = sharedPreferences.GetBoolean(key, b);
-						break;
-					case long l:
-						value = sharedPreferences.GetLong(key, l);
-						break;
-					case double d:
-						double dbl;
-						if (double.TryParse(sharedPreferences.GetString(key, null), out dbl))
-							value = dbl;
-						break;
-					case float f:
-						value = sharedPreferences.GetFloat(key, f);
-						break;
-				}
-			}
+					if (sharedPreferences == null)
+						return default;
 
-			return (T)value;
+					switch (defaultValue)
+					{
+						case string s:
+							value = sharedPreferences.GetString(key, s);
+							break;
+						case int i:
+							value = sharedPreferences.GetInt(key, i);
+							break;
+						case bool b:
+							value = sharedPreferences.GetBoolean(key, b);
+							break;
+						case long l:
+							value = sharedPreferences.GetLong(key, l);
+							break;
+						case double d:
+							value = Convert.ToDouble(sharedPreferences.GetString(key, null), NumberFormatInfo.InvariantInfo);
+							break;
+						case float f:
+							value = sharedPreferences.GetFloat(key, f);
+							break;
+					}
+				}
+
+				return (T)value;
+			}
 		}
 
 		ISharedPreferences GetSharedPreferences ()
 		{
-			var context = Platform.CurrentContext;
+			var context = Application.Context;
 			if (context == null)
 				return null;
 
 			return string.IsNullOrWhiteSpace(SharedName) ?
-				PreferenceManager.GetDefaultSharedPreferences(Application.Context) :
-					Application.Context.GetSharedPreferences(SharedName, FileCreationMode.Private);
+				PreferenceManager.GetDefaultSharedPreferences(context) :
+					context.GetSharedPreferences(SharedName, FileCreationMode.Private);
 		}
 
 		bool disposedValue = false;
