@@ -444,8 +444,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				var page = (Page)sender;
 				var index = Element.Children.IndexOf(page);
-				TabLayout.Tab tab = _tabLayout.GetTabAt(index);
-				tab.SetText(page.Title);
+
+				if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
+				{
+					IMenuItem tab = _bottomNavigationView.Menu.GetItem(index);
+					tab.SetTitle(page.Title);
+				}
+				else
+				{
+					TabLayout.Tab tab = _tabLayout.GetTabAt(index);
+					tab.SetText(page.Title);
+				}
 			}
 		}
 
