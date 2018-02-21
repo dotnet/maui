@@ -115,8 +115,6 @@ namespace Xamarin.F50
 		ISharedPreferences GetSharedPreferences ()
 		{
 			var context = Application.Context;
-			if (context == null)
-				return null;
 
 			return string.IsNullOrWhiteSpace(SharedName) ?
 				PreferenceManager.GetDefaultSharedPreferences(context) :
