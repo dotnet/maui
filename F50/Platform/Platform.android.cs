@@ -23,7 +23,7 @@ namespace Xamarin.F50
 		}
 	}
 
-	internal class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
+	class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 	{
 		Activity currentActivity = null;
 
