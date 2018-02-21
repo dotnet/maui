@@ -1083,7 +1083,8 @@ namespace Xamarin.Forms.Platform.iOS
 					templatedItems = (ITemplatedItemsList<Cell>)((IList)templatedItems)[indexPath.Section];
 				}
 
-				return templatedItems.ListProxy.TryGetValue(indexPath.Row, out var _);
+				Object result;
+				return templatedItems.ListProxy.TryGetValue(indexPath.Row, out result);
 			}
 
 			protected ITemplatedItemsList<Cell> GetTemplatedItemsListForPath(NSIndexPath indexPath)
