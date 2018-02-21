@@ -138,5 +138,21 @@ namespace Xamarin.F50
 			string.IsNullOrWhiteSpace(SharedName) ?
 			NSUserDefaults.StandardUserDefaults :
 			new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
+		bool disposedValue = false;
+
+		void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing && userDefaults != null)
+				{
+					userDefaults.Synchronize();
+					userDefaults.Dispose();
+					userDefaults = null;
+				}
+				
+				disposedValue = true;
+			}
+		}
 	}
 }

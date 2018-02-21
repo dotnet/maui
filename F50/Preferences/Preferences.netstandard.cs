@@ -20,5 +20,10 @@ namespace Xamarin.F50
 
 		T Get<T>(string key, T defaultValue) =>
 			throw new NotImplentedInReferenceAssembly();
-    }
+		
+		void Dispose(bool disposing)
+		{
+			throw new NotImplentedInReferenceAssembly();
+		}
+	}
 }

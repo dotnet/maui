@@ -126,5 +126,17 @@ namespace Xamarin.F50
 				PreferenceManager.GetDefaultSharedPreferences(Application.Context) :
 					Application.Context.GetSharedPreferences(SharedName, FileCreationMode.Private);
 		}
+
+		bool disposedValue = false;
+
+		void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing) { }
+
+				disposedValue = true;
+			}
+		}
 	}
 }
