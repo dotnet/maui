@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Controls
 		public CoreTabbedPageAsBottomNavigation()
 		{
 			AutomationId = "TabbedPageRoot";
-			On<Android>().SetUseBottomNavigation(true);
+			On<Android>().SetTabsPlacement(TabsPlacement.Bottom);
 
 			Device.StartTimer(TimeSpan.FromSeconds(6), () =>
 			{

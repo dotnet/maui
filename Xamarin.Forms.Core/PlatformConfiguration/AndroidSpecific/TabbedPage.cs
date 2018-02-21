@@ -66,29 +66,29 @@
 			return config;
 		}
 
-		public static readonly BindableProperty UseBottomNavigationProperty = 
-			BindableProperty.Create("UseBottomNavigation", typeof(bool), 
-			typeof(TabbedPage), false);
+		public static readonly BindableProperty TabsPlacementProperty = 
+			BindableProperty.Create("TabsPlacement", typeof(TabsPlacement), 
+			typeof(TabbedPage), TabsPlacement.Top);
 
 
-		public static bool GetUseBottomNavigation(BindableObject element)
+		public static TabsPlacement GetTabsPlacement(BindableObject element)
 		{
-			return (bool)element.GetValue(UseBottomNavigationProperty);
+			return (TabsPlacement)element.GetValue(TabsPlacementProperty);
 		}
 
-		public static void SetUseBottomNavigation(BindableObject element, bool value)
+		public static void SetTabsPlacement(BindableObject element, TabsPlacement value)
 		{
-			element.SetValue(UseBottomNavigationProperty, value);
+			element.SetValue(TabsPlacementProperty, value);
 		}
 
-		public static bool UseBottomNavigation(this IPlatformElementConfiguration<Android, FormsElement> config)
+		public static TabsPlacement GetTabsPlacement(this IPlatformElementConfiguration<Android, FormsElement> config)
 		{
-			return GetUseBottomNavigation(config.Element);
+			return GetTabsPlacement(config.Element);
 		}
 
-		public static IPlatformElementConfiguration<Android, FormsElement> SetUseBottomNavigation(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		public static IPlatformElementConfiguration<Android, FormsElement> SetTabsPlacement(this IPlatformElementConfiguration<Android, FormsElement> config, TabsPlacement value)
 		{
-			SetUseBottomNavigation(config.Element, value);
+			SetTabsPlacement(config.Element, value);
 			return config;
 		}
 	}

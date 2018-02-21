@@ -66,7 +66,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void ViewPager.IOnPageChangeListener.OnPageScrolled(int position, float positionOffset, int positionOffsetPixels)
 		{
-			if (!Element.OnThisPlatform().UseBottomNavigation())
+			if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Top)
 			{
 				UpdateTabBarTranslation(position, positionOffset);
 			}
@@ -182,7 +182,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (e.NewElement != null)
 			{
-				if (Element.OnThisPlatform().UseBottomNavigation())
+				if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
 				{
 					if (_relativeLayout == null)
 					{
@@ -304,7 +304,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			var width = r - l;
 			var height = b - t;
 
-			if (Element.OnThisPlatform().UseBottomNavigation())
+			if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
 			{
 				if (width <= 0 || height <= 0)
 				{
@@ -377,7 +377,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
-			if (Element.OnThisPlatform().UseBottomNavigation())
+			if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
 			{
 				FormsViewPager pager = _viewPager;
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -572,7 +572,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateBarBackgroundColor()
 		{
-			if (Element.OnThisPlatform().UseBottomNavigation())
+			if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
 			{
 				if (_disposed || _relativeLayout == null || _bottomNavigationView == null)
 					return;
@@ -631,7 +631,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateBarTextColor()
 		{
-			if (Element.OnThisPlatform().UseBottomNavigation())
+			if (Element.OnThisPlatform().GetTabsPlacement() == TabsPlacement.Bottom)
 			{
 				if (_disposed || _relativeLayout == null || _bottomNavigationView == null)
 					return;
