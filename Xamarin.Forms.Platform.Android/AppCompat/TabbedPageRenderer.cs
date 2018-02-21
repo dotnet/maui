@@ -693,7 +693,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return false;
 
 			int selectedIndex = item.Order;
-			if (_bottomNavigationView.SelectedItemId != item.Order && Element.Children.Count > selectedIndex && selectedIndex >= 0)
+			if (_bottomNavigationView.SelectedItemId != item.ItemId && Element.Children.Count > selectedIndex && selectedIndex >= 0)
 			{
 				Element.CurrentPage = Element.Children[selectedIndex];
 			}
