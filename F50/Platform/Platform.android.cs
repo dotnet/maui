@@ -9,11 +9,11 @@ namespace Xamarin.F50
 		static Application application;
 		static ActivityLifecycleContextListener lifecycleListener;
 
-		internal static Context CurrentContext
-			=> lifecycleListener?.Context ?? application?.ApplicationContext;
+		internal static Context CurrentContext =>
+			lifecycleListener?.Context ?? application?.ApplicationContext;
 
-		internal static Activity CurrentActivity
-			=> lifecycleListener?.Activity;
+		internal static Activity CurrentActivity =>
+			lifecycleListener?.Activity;
 
 		public static void Init(Activity activity, Bundle bundle)
 		{
@@ -27,11 +27,11 @@ namespace Xamarin.F50
 	{
 		Activity currentActivity = null;
 
-		public Context Context 
-			=> currentActivity ?? Application.Context;
+		public Context Context =>
+			currentActivity ?? Application.Context;
 
-		public Activity Activity
-			=> currentActivity;
+		public Activity Activity =>
+			currentActivity;
 
 		public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
 		{
