@@ -1,16 +1,16 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
+using System;
 
 namespace Xamarin.F50
 {
 	public partial class Platform
 	{
-		static Application application;
 		static ActivityLifecycleContextListener lifecycleListener;
 
 		internal static Context CurrentContext =>
-			lifecycleListener?.Context ?? application?.ApplicationContext;
+			lifecycleListener?.Context ?? Application.Context;
 
 		internal static Activity CurrentActivity =>
 			lifecycleListener?.Activity;
@@ -18,20 +18,27 @@ namespace Xamarin.F50
 		public static void Init(Activity activity, Bundle bundle)
 		{
 			lifecycleListener = new ActivityLifecycleContextListener();
-			application = activity.Application;
-			application.RegisterActivityLifecycleCallbacks(lifecycleListener);
+			activity.Application.RegisterActivityLifecycleCallbacks(lifecycleListener);
 		}
 	}
 
 	class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 	{
-		Activity currentActivity = null;
+		WeakReference<Activity> currentActivity = null;
 
 		public Context Context =>
-			currentActivity ?? Application.Context;
+			Activity ?? Application.Context;
 
-		public Activity Activity =>
-			currentActivity;
+		public Activity Activity
+		{
+			get
+			{
+				Activity a;
+				if (currentActivity.TryGetTarget(out a))
+					return a;
+				return null;
+			}
+		}
 
 		public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
 		{
@@ -43,11 +50,12 @@ namespace Xamarin.F50
 
 		public void OnActivityPaused(Activity activity)
 		{
+			currentActivity.SetTarget(null);
 		}
 
 		public void OnActivityResumed(Activity activity)
 		{
-			currentActivity = activity;
+			currentActivity.SetTarget(activity);
 		}
 
 		public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
