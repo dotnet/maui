@@ -1,5 +1,8 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
+using Android.Content.Res;
+using Android.Graphics;
 using Android.Support.V7.Widget;
 using Android.Widget;
 
@@ -8,6 +11,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	public class SwitchRenderer : ViewRenderer<Switch, SwitchCompat>, CompoundButton.IOnCheckedChangeListener
 	{
 		bool _disposed;
+		ColorStateList defaultOnColor;
+		PorterDuff.Mode defaultMode;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -23,6 +28,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton buttonView, bool isChecked)
 		{
 			((IViewController)Element).SetValueFromRenderer(Switch.IsToggledProperty, isChecked);
+			UpdateOnColor();
 		}
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -81,6 +87,36 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
+				defaultOnColor = Control.TrackTintList;
+				defaultMode = Control.TrackTintMode;
+				UpdateOnColor();
+			}
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
+				UpdateOnColor();
+		}
+
+		private void UpdateOnColor()
+		{
+			if (Element != null)
+			{
+				if (Element.OnColor == Color.Default)
+				{
+					Control.TrackTintList = defaultOnColor;
+					Control.TrackTintMode = defaultMode;
+				}
+				else
+				{
+					if (Control.Checked)
+						Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
+					else
+					{
+						Control.TrackTintList = defaultOnColor;
+					}
+				}
 			}
 		}
 

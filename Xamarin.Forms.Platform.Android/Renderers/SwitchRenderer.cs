@@ -12,6 +12,8 @@ namespace Xamarin.Forms.Platform.Android
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
 		ColorStateList defaultOnColor;
+		PorterDuff.Mode defaultMode;
+
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -85,6 +87,7 @@ namespace Xamarin.Forms.Platform.Android
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
 				defaultOnColor = Control.TrackTintList;
+				defaultMode = Control.TrackTintMode;
 				UpdateOnColor();
 			}
 		}
@@ -99,7 +102,6 @@ namespace Xamarin.Forms.Platform.Android
 
 		private void UpdateOnColor()
 		{
-			System.Diagnostics.Debug.WriteLine("Done");
 			if (Element != null)
 			{
 				if (Element.OnColor == Color.Default)
@@ -108,16 +110,11 @@ namespace Xamarin.Forms.Platform.Android
 				}
 				else
 				{
-					if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBean)
+					if (Control.Checked)
+						Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
+					else
 					{
-						if (Control.Checked)
-						{
-							Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
-						}
-						else
-						{
-							Control.TrackTintList = defaultOnColor;
-						}
+						Control.TrackTintList = defaultOnColor;
 					}
 				}
 			}
