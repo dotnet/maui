@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Support.V7.Widget;
 using Android.Widget;
 
@@ -110,12 +111,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 				else
 				{
-					if (Control.Checked)
-						Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
-					else
-					{
-						Control.TrackTintList = defaultOnColor;
-					}
+					StateListDrawable drawable = new StateListDrawable();
+					drawable.AddState(new int[] { global::Android.Resource.Attribute.StateChecked }, new ColorDrawable(Element.OnColor.ToAndroid()));
+					drawable.AddState(new int[] { }, new ColorDrawable(Color.Red.ToAndroid()));
+
+					Control.ThumbDrawable = drawable;
+					
+					//if (Control.Checked)
+					//	Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
+					//else
+					//{
+					//	Control.TrackTintList = defaultOnColor;
+					//}
 				}
 			}
 		}
