@@ -1,0 +1,31 @@
+<Type Name="VisualElement+ShadowEffect" FullName="Xamarin.Forms.PlatformConfiguration.iOSSpecific.VisualElement+ShadowEffect">
+  <TypeSignature Language="C#" Value="public class VisualElement.ShadowEffect : Xamarin.Forms.RoutingEffect" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi beforefieldinit VisualElement/ShadowEffect extends Xamarin.Forms.RoutingEffect" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>Xamarin.Forms.RoutingEffect</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ShadowEffect ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
