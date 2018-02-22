@@ -104,6 +104,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateAlignment();
 			UpdateAdjustsFontSizeToFitWidth();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -137,6 +138,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -257,6 +260,11 @@ namespace Xamarin.Forms.Platform.iOS
 			// ReSharper disable once RedundantCheckBeforeAssignment
 			if (Control.Text != Element.Text)
 				Control.Text = Element.Text;
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.UserInteractionEnabled = !Element.IsReadOnly;
 		}
 	}
 }

@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateInputType();
 			UpdateTextColor();
 			UpdateFont();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -100,6 +101,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -186,6 +189,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementController?.SendCompleted();
 			Control?.ClearFocus();
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.Focusable = !Element.IsReadOnly;
 		}
 	}
 }

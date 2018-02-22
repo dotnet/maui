@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
+				UpdateIsReadOnly();
 			}
 
 			base.OnElementChanged(e);
@@ -67,6 +68,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 		}
 		
 		internal override void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
@@ -247,6 +250,11 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_isDisposed = true;
 			base.Dispose(disposing);
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }
