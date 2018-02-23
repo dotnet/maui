@@ -144,7 +144,10 @@ namespace Xamarin.Forms.Controls
 
 		static void PinClicked (object sender, EventArgs e)
 		{
-			// yea!
+			Pin pin = (Pin)sender;
+			Application.Current.MainPage.DisplayAlert("Pin Click",
+				$"You clicked the {pin.Label} pin, located at {pin.Address}, or coordinates ({pin.Position.Latitude}, {pin.Position.Longitude})", 
+				"OK");
 		}
 	}
 }
