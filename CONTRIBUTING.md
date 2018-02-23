@@ -27,7 +27,7 @@ Read and follow our [Pull Request template](https://github.com/xamarin/Caboodle/
 
 ### Proposals
 
-To propose a change or new feature, review the guidance below and then [open an issue using this template](https://github.com/xamarin/Caboodle/issues).
+To propose a change or new feature, review the guidance below and then [open an issue using this template](https://github.com/xamarin/Caboodle/issues/new).
 
 #### Non-Starter Topics
 The following topics should generally not be proposed for discussion as they are non-starters:
