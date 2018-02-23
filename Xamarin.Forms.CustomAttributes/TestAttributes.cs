@@ -497,7 +497,8 @@ namespace Xamarin.Forms.CustomAttributes
 			TextColor,
 			FontAttributes,
 			FontFamily,
-			FontSize
+			FontSize,
+			IsReadOnly
 		}
 
 		public enum Entry
@@ -521,7 +522,8 @@ namespace Xamarin.Forms.CustomAttributes
 			PlaceholderColor,
 			TextDisabledColor,
 			PlaceholderDisabledColor,
-			PasswordColor
+			PasswordColor,
+			IsReadOnly
 		}
 
 		public enum Frame
