@@ -4,7 +4,7 @@ using Android.App;
 using Android.Content;
 using Android.Preferences;
 
-namespace Xamarin.F50
+namespace Microsoft.Caboodle
 {
 	public partial class Preferences
 	{

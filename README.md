@@ -1,6 +1,6 @@
-# Xamarin F50
+# Microsoft Caboodle
 
-A cross platform 'batteries included' library for consuming commonly used platform features and API's in shared code.
+A kit of essential cross platform API's
 
 ## Supported Platforms
  - iOS (10+)

@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace F50.Tests
+namespace Microsoft.Caboodle.Tests
 {
 	public class UnitTest1
 	{
