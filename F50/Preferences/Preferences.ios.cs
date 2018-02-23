@@ -55,7 +55,8 @@ namespace Xamarin.F50
 						UserDefaults.SetBool(b, key);
 						break;
 					case long l:
-						UserDefaults.SetString(Convert.ToString(l, NumberFormatInfo.InvariantInfo), key);
+						var valueString = Convert.ToString(value, CultureInfo.InvariantCulture)
+						UserDefaults.SetString(valueString, key);
 						break;
 					case double d:
 						UserDefaults.SetDouble(d, key);
@@ -88,7 +89,8 @@ namespace Xamarin.F50
 						value = UserDefaults.BoolForKey(key);
 						break;
 					case long l:
-						value = Convert.ToInt64(UserDefaults.StringForKey(key), NumberFormatInfo.InvariantInfo);
+						var savedLong = defaults.StringForKey(key);
+                        value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
 						break;
 					case double d:
 						value = UserDefaults.DoubleForKey(key);

@@ -67,7 +67,8 @@ namespace Xamarin.F50
 							editor.PutLong(key, l);
 							break;
 						case double d:
-							editor.PutString(key, Convert.ToString(d, NumberFormatInfo.InvariantInfo));
+							var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
+							editor.PutString(key, valueString);
 							break;
 						case float f:
 							editor.PutFloat(key, f);
@@ -100,7 +101,22 @@ namespace Xamarin.F50
 							value = sharedPreferences.GetLong(key, l);
 							break;
 						case double d:
-							value = Convert.ToDouble(sharedPreferences.GetString(key, null), NumberFormatInfo.InvariantInfo);
+							var savedDouble = sharedPreferences.GetString(key, null);
+							if (string.IsNullOrWhiteSpace(savedDouble))
+							{
+								value = defaultValue;
+							}
+							else
+							{
+								double outDouble;
+								if (!double.TryParse(savedDouble, out outDouble))
+								{
+									var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
+									outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
+								}
+
+								value = outDouble;
+							}
 							break;
 						case float f:
 							value = sharedPreferences.GetFloat(key, f);
