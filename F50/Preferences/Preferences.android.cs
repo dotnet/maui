@@ -79,7 +79,7 @@ namespace Xamarin.F50
 			}
 		}
 
-		T Get<T> (string key, T defaultValue)
+		T Get<T>(string key, T defaultValue)
 		{
 			lock (locker)
 			{
@@ -128,7 +128,7 @@ namespace Xamarin.F50
 			}
 		}
 
-		ISharedPreferences GetSharedPreferences ()
+		ISharedPreferences GetSharedPreferences()
 		{
 			var context = Application.Context;
 

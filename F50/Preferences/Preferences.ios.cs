@@ -4,8 +4,8 @@ using System.Globalization;
 
 namespace Xamarin.F50
 {
-    public partial class Preferences
-    {
+	public partial class Preferences
+	{
 		static readonly object locker = new object();
 
 		public bool ContainsKey(string key)
@@ -38,7 +38,7 @@ namespace Xamarin.F50
 				}
 			}
 		}
-		
+
 		void Set<T>(string key, T value)
 		{
 			lock (locker)
@@ -90,7 +90,7 @@ namespace Xamarin.F50
 						break;
 					case long l:
 						var savedLong = UserDefaults.StringForKey(key);
-                        value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
+						value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
 						break;
 					case double d:
 						value = UserDefaults.DoubleForKey(key);
@@ -116,7 +116,7 @@ namespace Xamarin.F50
 					else
 						userDefaults = NSUserDefaults.StandardUserDefaults;
 				}
-				
+
 				return userDefaults;
 			}
 		}

@@ -2,8 +2,8 @@
 
 namespace Xamarin.F50
 {
-    public partial class Preferences
-    {
+	public partial class Preferences
+	{
 		static readonly object locker = new object();
 
 		public bool ContainsKey(string key)
@@ -30,7 +30,7 @@ namespace Xamarin.F50
 				Settings.Values.Clear();
 			}
 		}
-		
+
 		void Set<T>(string key, T value)
 		{
 			lock (locker)

@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.F50
 {
-    public partial class Platform
-    {
-    }
+	public partial class Platform
+	{
+	}
 }

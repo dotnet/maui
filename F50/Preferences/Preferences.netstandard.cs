@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Xamarin.F50
 {
-    public partial class Preferences
-    {
+	public partial class Preferences
+	{
 		public bool ContainsKey(string key) =>
 			throw new NotImplentedInReferenceAssembly();
 
@@ -19,6 +19,6 @@ namespace Xamarin.F50
 			throw new NotImplentedInReferenceAssembly();
 
 		T Get<T>(string key, T defaultValue) =>
-			throw new NotImplentedInReferenceAssembly();		
+			throw new NotImplentedInReferenceAssembly();
 	}
 }
