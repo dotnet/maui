@@ -1,6 +1,6 @@
 ﻿using Windows.Storage;
 
-namespace Xamarin.F50
+namespace Microsoft.Caboodle
 {
 	public partial class Preferences
 	{

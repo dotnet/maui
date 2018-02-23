@@ -1,4 +1,4 @@
-﻿namespace Xamarin.F50
+﻿namespace Microsoft.Caboodle
 {
 	/// <summary>
 	/// Shared code between preferences

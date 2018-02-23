@@ -3,7 +3,7 @@ using Android.Content;
 using Android.OS;
 using System;
 
-namespace Xamarin.F50
+namespace Microsoft.Caboodle
 {
 	public partial class Platform
 	{

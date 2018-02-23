@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Xamarin.F50
+namespace Microsoft.Caboodle
 {
 	public partial class Preferences
 	{
