@@ -24,8 +24,6 @@
     <PackageReleaseNotes>See: https://github.com/xamarin/caboodle</PackageReleaseNotes>
     <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageLicenseUrl>https://go.microsoft.com/fwlink/?linkid=868961</PackageLicenseUrl>
