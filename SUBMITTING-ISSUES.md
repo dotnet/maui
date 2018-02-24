@@ -29,7 +29,8 @@ If you're ready to submit a new issue, taking the following steps helps expedite
 
 #Android Specific Concerns#
 Please let us know any issues which may stem from different versions of the support library packages (e.g. Xamarin.Android.Support.v7.AppCompat), as sometimes bugs may only occur when specific versions are used.
-iOS Specific Concerns
+
+#iOS Specific Concerns#
 To be added
 
 #UWP-specific Concerns#
