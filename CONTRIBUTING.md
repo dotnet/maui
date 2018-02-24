@@ -12,7 +12,7 @@ You will need to complete a Contribution License Agreement before any pull reque
 
 ## Contributing Code
 
-Check out [A Beginner's Guide for Contributing to Microsoft Caboodle](https://blog.xamarin.com/beginners-guide-contributing-xamarin-forms/).
+Check out [A Beginner's Guide for Contributing to Microsoft Caboodle](https://github.com/xamarin/Caboodle/wiki/A-Beginner's-Guide-for-Contributing-to-Microsoft-Caboodle).
 
 ### Bug Fixes
 
