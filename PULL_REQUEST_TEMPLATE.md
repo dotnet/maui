@@ -17,7 +17,7 @@ Added:
 
 Changed:
 
- - object Cell.OldPropetyName => object Cell.NewPropetyName
+ - object Cell.OldPropertyName => object Cell.NewPropertyName
 
 ### Behavioral Changes ###
 
