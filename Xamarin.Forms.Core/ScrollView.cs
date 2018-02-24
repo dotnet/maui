@@ -288,9 +288,7 @@ namespace Xamarin.Forms
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
 		{
 			CheckTaskCompletionSource();
-			EventHandler<ScrollToRequestedEventArgs> handler = ScrollToRequested;
-			if (handler != null)
-				handler(this, e);
+			ScrollToRequested?.Invoke(this, e);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

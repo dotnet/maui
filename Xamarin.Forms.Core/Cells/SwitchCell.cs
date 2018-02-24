@@ -7,9 +7,7 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty OnProperty = BindableProperty.Create("On", typeof(bool), typeof(SwitchCell), false, propertyChanged: (obj, oldValue, newValue) =>
 		{
 			var switchCell = (SwitchCell)obj;
-			EventHandler<ToggledEventArgs> handler = switchCell.OnChanged;
-			if (handler != null)
-				handler(obj, new ToggledEventArgs((bool)newValue));
+			switchCell.OnChanged?.Invoke(obj, new ToggledEventArgs((bool)newValue));
 		}, defaultBindingMode: BindingMode.TwoWay);
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(SwitchCell), default(string));

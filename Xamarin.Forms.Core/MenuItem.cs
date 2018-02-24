@@ -83,11 +83,7 @@ namespace Xamarin.Forms
 		public event EventHandler Clicked;
 
 		protected virtual void OnClicked()
-		{
-			EventHandler handler = Clicked;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> Clicked?.Invoke(this, EventArgs.Empty);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void Activate()

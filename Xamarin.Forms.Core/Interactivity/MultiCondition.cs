@@ -43,8 +43,7 @@ namespace Xamarin.Forms
 			if ((bool)oldValue == (bool)newValue)
 				return;
 
-			if (ConditionChanged != null)
-				ConditionChanged(bindable, (bool)oldValue, (bool)newValue);
+			ConditionChanged?.Invoke(bindable, (bool)oldValue, (bool)newValue);
 		}
 
 		void OnConditionChanged(BindableObject bindable, bool oldValue, bool newValue)
