@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
   <PropertyGroup>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80;uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
@@ -24,36 +25,89 @@
     <PackageReleaseNotes>See: https://github.com/xamarin/caboodle</PackageReleaseNotes>
     <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageLicenseUrl>https://go.microsoft.com/fwlink/?linkid=868961</PackageLicenseUrl>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://go.microsoft.com/fwlink/?linkid=868960</PackageProjectUrl>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
+
   <ItemGroup>
+    <PackageReference Include="mdoc" Version="5.5.0" Pack="false" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.0" PrivateAssets="All" />
     <Compile Include="**\*.shared.cs" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <Compile Include="**\*.netstandard.cs" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <Compile Include="**\*.netstandard.cs" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.16299' ">
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.6" />
     <Compile Include="**\*.uwp.cs" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid80' ">
     <Compile Include="**\*.android.cs" />
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
     <Compile Include="**\*.ios.cs" />
   </ItemGroup>
+
+  <!--
+    ============================================================
+    SetupMDoc
+
+    Set all the variables needed for mdoc.
+    This runs during the build and package phases.
+    ============================================================
+  -->
+  <Target Name="SetupMDoc">
+    <PropertyGroup>
+      <DocumentationDirectory>$(MSBuildProjectDirectory)\..\docs\en</DocumentationDirectory>
+      <ManagedExeLauncher Condition="('$(OS)' != 'Windows_NT')">mono</ManagedExeLauncher>
+      <MDocPackageDefinitionPath Condition=" '%(Name)' == 'mdoc' ">@(PackageDefinitions -> '%(ResolvedPath)')</MDocPackageDefinitionPath>
+      <MDocToolPath>$(MDocPackageDefinitionPath)\tools\mdoc.exe</MDocToolPath>
+      <MDocOutputName>$(TargetName).xml</MDocOutputName>
+      <MDocOutputPath>$(TargetDir)$(MDocOutputName)</MDocOutputPath>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    GenerateDocsWithMDoc
+
+    Generated the XML documentation file using mdoc.
+    This runs during the build phase.
+    ============================================================
+  -->
+  <Target Name="GenerateDocsWithMDoc" AfterTargets="CoreCompile" DependsOnTargets="SetupMDoc">
+    <ItemGroup>
+      <FileWrites Include="$(MDocOutputPath)" />
+    </ItemGroup>
+    <Exec Command="$(ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc -o=&quot;$(MDocOutputPath)&quot; &quot;$(DocumentationDirectory)&quot;" />
+  </Target>
+
+  <!--
+    ============================================================
+    AddMDocFilesToPackage
+
+    Make sure the mdoc output goes into the final package.
+    This runs during the package phase.
+    ============================================================
+  -->
+  <Target Name="AddMDocFilesToPackage" BeforeTargets="_GetBuildOutputFilesWithTfm" DependsOnTargets="SetupMDoc">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(MDocOutputPath)" TargetFramework="$(TargetFramework)" TargetPath="$(MDocOutputName)" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+
 </Project>

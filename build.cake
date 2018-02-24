@@ -18,28 +18,21 @@ var configuration = Argument("configuration", "Release");
 // TASKS
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Build")
+Task("UpdateDocs")
     .Does(() =>
 {
+    // restore nugets
     NuGetRestore("./Caboodle.sln", new NuGetRestoreSettings { 
         ToolPath = nugetPath,
     });
 
+    // build the project
     MSBuild("./Caboodle.sln", new MSBuildSettings {
         Configuration = configuration,
         PlatformTarget = PlatformTarget.MSIL,
         MSBuildPlatform = MSBuildPlatform.x86,
     });
 
-    CleanDirectories("./output/");
-    EnsureDirectoryExists("./output/");
-    CopyDirectory($"./Caboodle/bin/{configuration}", "./output/");
-});
-
-Task("UpdateDocs")
-    .IsDependentOn("Build")
-    .Does(() =>
-{
     // the reference folders to locate assemblies
     var refDirs = new List<DirectoryPath>();
 
@@ -57,7 +50,7 @@ Task("UpdateDocs")
     }
 
     // the assemblies to generate documentation for
-    var assemblies = GetFiles("./output/*/*.dll");
+    var assemblies = GetFiles($"./Caboodle/bin/{configuration}/**/*.dll");
 
     // generate the docs
     var args = new ProcessArgumentBuilder()
@@ -74,26 +67,5 @@ Task("UpdateDocs")
         Arguments = args
     });
 });
-
-Task("GenDocs")
-    .IsDependentOn("UpdateDocs")
-    .Does(() =>
-{
-    // create the intellisense docs
-    StartProcess(mdocPath, new ProcessSettings {
-        Arguments = new ProcessArgumentBuilder()
-            .Append("export-msxdoc")
-            .AppendSwitchQuoted("--out", "=", "./output/Xamarin.Caboodle.xml")
-            .AppendQuoted("./docs/en/")
-    });
-});
-
-Task("Default")
-    .IsDependentOn("Build");
-
-Task("CI")
-    .IsDependentOn("Build")
-    .IsDependentOn("UpdateDocs")
-    .IsDependentOn("GenDocs");
 
 RunTarget(target);
