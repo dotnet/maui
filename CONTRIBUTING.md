@@ -59,4 +59,4 @@ If you wish to start working on an accepted proposal, please reply to the thread
 Once a developer has begun work on a proposal, either from the core Microsoft Caboodle team or a community member, the proposal is marked as in progress with the implementors name and (possibly) a link to a development branch to follow along with progress.
 
 #### Rejected
-Rejected proposals will not be implemented or merged into Microsoft Caboodle. Once a proposal is rejected, the thread will be closed and the conversation is considered completed, pending considerable new information or changes..
+Rejected proposals will not be implemented or merged into Microsoft Caboodle. Once a proposal is rejected, the thread will be closed and the conversation is considered completed, pending considerable new information or changes.
