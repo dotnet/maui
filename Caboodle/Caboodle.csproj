@@ -72,8 +72,10 @@
     <PropertyGroup>
       <DocumentationDirectory>$(MSBuildProjectDirectory)\..\docs\en</DocumentationDirectory>
       <ManagedExeLauncher Condition="('$(OS)' != 'Windows_NT')">mono</ManagedExeLauncher>
-      <MDocPackageDefinitionPath Condition=" '%(Name)' == 'mdoc' ">@(PackageDefinitions -> '%(ResolvedPath)')</MDocPackageDefinitionPath>
-      <MDocToolPath>$(MDocPackageDefinitionPath)\tools\mdoc.exe</MDocToolPath>
+      <MDocVersion Condition=" '%(Identity)' == 'mdoc' ">@(PackageReference -> '%(Version)')</MDocVersion>
+      <MDocPackagePath Condition=" '%(Name)' == 'mdoc' ">@(PackageDefinitions -> '%(ResolvedPath)')</MDocPackagePath>
+      <MDocPackagePath Condition=" '$(MDocPackagePath)' == '' ">$(NuGetPackageRoot)\mdoc\$(MDocVersion)</MDocPackagePath>
+      <MDocToolPath>$(MDocPackagePath)\tools\mdoc.exe</MDocToolPath>
       <MDocOutputName>$(TargetName).xml</MDocOutputName>
       <MDocOutputPath>$(TargetDir)$(MDocOutputName)</MDocOutputPath>
     </PropertyGroup>
@@ -91,7 +93,7 @@
     <ItemGroup>
       <FileWrites Include="$(MDocOutputPath)" />
     </ItemGroup>
-    <Exec Command="$(ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc -o=&quot;$(MDocOutputPath)&quot; &quot;$(DocumentationDirectory)&quot;" />
+    <Exec Command="$(ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc --out=&quot;$(MDocOutputPath)&quot; &quot;$(DocumentationDirectory)&quot;" />
   </Target>
 
   <!--
@@ -106,6 +108,37 @@
     <ItemGroup>
       <BuildOutputInPackage Include="$(MDocOutputPath)" TargetFramework="$(TargetFramework)" TargetPath="$(MDocOutputName)" />
     </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    UpdateDocsWithMDoc
+
+    Update the docs in the documentation directory using the
+    compiled RELEASE assemblies.
+    This runs as a separate task.
+    ============================================================
+  -->
+  <Target Name="UpdateDocsWithMDoc" DependsOnTargets="SetupMDoc">
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <FrameowrkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameowrkReferenceAssemblyPath>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\MonoAndroid\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\MonoAndroid\v4.0.3" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.iOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.TVOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.WatchOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.Mac\v2.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <MDocAssembly Include="$(MSBuildProjectDirectory)\bin\Release\**\*.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
+      <MDocAssemblies>@(MDocAssembly -> '&quot;%(Identity)&quot;', ' ')</MDocAssemblies>
+    </PropertyGroup>
+    <Exec Command="$(ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --preserve --out=&quot;$(DocumentationDirectory)&quot; $(MDocReferenceAssemblies) $(MDocAssemblies)" />
   </Target>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
