@@ -38,7 +38,7 @@
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="mdoc" Version="5.5.0" Pack="false" PrivateAssets="All" />
+    <PackageReference Include="mdoc" Version="5.5.0" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.0" PrivateAssets="All" />
     <Compile Include="**\*.shared.cs" />
   </ItemGroup>
