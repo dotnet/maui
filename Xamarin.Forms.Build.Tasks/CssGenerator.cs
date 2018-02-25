@@ -64,12 +64,12 @@ namespace Xamarin.Forms.Build.Tasks
 		//returns true if a file is generated
 		public bool Execute()
 		{
-			Logger?.LogMessage("Source: {0}", CssFile);
-			Logger?.LogMessage(" Language: {0}", Language);
-			Logger?.LogMessage(" ResourceID: {0}", ResourceId);
-			Logger?.LogMessage(" TargetPath: {0}", TargetPath);
-			Logger?.LogMessage(" AssemblyName: {0}", AssemblyName);
-			Logger?.LogMessage(" OutputFile {0}", OutputFile);
+			Logger?.LogMessage(MessageImportance.Low, "Source: {0}", CssFile);
+			Logger?.LogMessage(MessageImportance.Low, " Language: {0}", Language);
+			Logger?.LogMessage(MessageImportance.Low, " ResourceID: {0}", ResourceId);
+			Logger?.LogMessage(MessageImportance.Low, " TargetPath: {0}", TargetPath);
+			Logger?.LogMessage(MessageImportance.Low, " AssemblyName: {0}", AssemblyName);
+			Logger?.LogMessage(MessageImportance.Low, " OutputFile {0}", OutputFile);
 
 			GenerateCode();
 

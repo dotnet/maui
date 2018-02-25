@@ -44,15 +44,15 @@ namespace Xamarin.Forms.Core.XamlC
 
 			//keep the Uri for later
 			yield return Create(Dup);
-			var uriVarDef = new VariableDefinition(module.ImportReference(typeof(Uri)));
+			var uriVarDef = new VariableDefinition(module.ImportReferenceCached(typeof(Uri)));
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
 
 			yield return Create(Ldstr, resourcePath); //resourcePath
 
-			var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-			var getTypeInfo = module.ImportReference(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
-			var getAssembly = module.ImportReference(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
+			var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
+			var getTypeInfo = module.ImportReferenceCached(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
+			var getAssembly = module.ImportReferenceCached(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
 			yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
 			yield return Create(Call, module.ImportReference(getTypeFromHandle));
 			yield return Create(Call, module.ImportReference(getTypeInfo));
@@ -61,7 +61,7 @@ namespace Xamarin.Forms.Core.XamlC
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
 
-			var setAndLoadSource = module.ImportReference(typeof(ResourceDictionary).GetMethod("SetAndLoadSource"));
+			var setAndLoadSource = module.ImportReferenceCached(typeof(ResourceDictionary).GetMethod("SetAndLoadSource"));
 			yield return Create(Callvirt, module.ImportReference(setAndLoadSource));
 
 			//ldloc the stored uri as return value
@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Core.XamlC
 		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
 		{
 			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

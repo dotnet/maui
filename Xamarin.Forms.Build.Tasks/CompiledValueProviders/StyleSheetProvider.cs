@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Core.XamlC
 				var style = (styleNode as ValueNode).Value as string;
 				yield return Create(Ldstr, style);
 
-				var fromString = module.ImportReference(typeof(StyleSheets.StyleSheet).GetMethods().FirstOrDefault(mi => mi.Name == nameof(StyleSheets.StyleSheet.FromString) && mi.GetParameters().Length == 1));
+				var fromString = module.ImportReferenceCached(typeof(StyleSheets.StyleSheet).GetMethods().FirstOrDefault(mi => mi.Name == nameof(StyleSheets.StyleSheet.FromString) && mi.GetParameters().Length == 1));
 				yield return Create(Call, module.ImportReference(fromString));
 			}
 			else {
@@ -65,8 +65,8 @@ namespace Xamarin.Forms.Core.XamlC
 				if (resourceId == null)
 					throw new XamlParseException($"Resource '{source}' not found.", node);
 
-				var getTypeFromHandle = module.ImportReference(typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle), new[] { typeof(RuntimeTypeHandle) }));
-				var getAssembly = module.ImportReference(typeof(Type).GetProperty(nameof(Type.Assembly)).GetGetMethod());
+				var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle), new[] { typeof(RuntimeTypeHandle) }));
+				var getAssembly = module.ImportReferenceCached(typeof(Type).GetProperty(nameof(Type.Assembly)).GetGetMethod());
 				yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
 				yield return Create(Call, module.ImportReference(getTypeFromHandle));
 				yield return Create(Callvirt, module.ImportReference(getAssembly)); //assembly
@@ -76,12 +76,12 @@ namespace Xamarin.Forms.Core.XamlC
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo
 
-				var fromAssemblyResource = module.ImportReference(typeof(StyleSheets.StyleSheet).GetMethods().FirstOrDefault(mi => mi.Name == nameof(StyleSheets.StyleSheet.FromAssemblyResource) && mi.GetParameters().Length == 3));
+				var fromAssemblyResource = module.ImportReferenceCached(typeof(StyleSheets.StyleSheet).GetMethods().FirstOrDefault(mi => mi.Name == nameof(StyleSheets.StyleSheet.FromAssemblyResource) && mi.GetParameters().Length == 3));
 				yield return Create(Call, module.ImportReference(fromAssemblyResource));
 			}
 
 			//the variable is of type `object`. fix that
-			var vardef = new VariableDefinition(module.ImportReference(typeof(StyleSheets.StyleSheet)));
+			var vardef = new VariableDefinition(module.ImportReferenceCached(typeof(StyleSheets.StyleSheet)));
 			yield return Create(Stloc, vardef);
 			vardefref.VariableDefinition = vardef;
 		}

@@ -18,6 +18,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True (tapped);
 		}
 
+		[TestCase(true)]
+		[TestCase(false)]
+		public void TappedHonorsCanExecute(bool canExecute)
+		{
+			bool executed = false;
+
+			var cmd = new Command (() => executed = true, () => canExecute);
+			var cell = new TextCell { Command = cmd };
+			cell.OnTapped();
+
+			Assert.That (executed, Is.EqualTo(canExecute));
+		}
+
 		[Test]
 		public void TestCommand()
 		{

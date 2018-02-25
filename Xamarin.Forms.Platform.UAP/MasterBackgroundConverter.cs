@@ -36,8 +36,7 @@ namespace Xamarin.Forms.Platform.UWP
 			brush = value as SolidColorBrush;
 			if (brush != null)
 			{
-				Windows.UI.Color wcolor = brush.Color;
-				Color color = Color.FromRgba(wcolor.R, wcolor.G, wcolor.B, wcolor.A);
+				Color color = brush.ToFormsColor();
 
 				double delta = Shift;
 				if (color.Luminosity > .6)

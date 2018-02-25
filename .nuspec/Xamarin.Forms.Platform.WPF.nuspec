@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Platform.WPF$IdAppend$</id>
+    <id>Xamarin.Forms.Platform.WPF</id>
     <version>$version$</version>
     <authors>Xamarin, Inc.</authors>
     <owners>Xamarin, Inc.</owners>
@@ -14,7 +14,7 @@
     <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
+        <dependency id="Xamarin.Forms" version="$version$"/>
       </group>
       <group targetFramework="net45">
         <dependency id="WpfLightToolkit" version="1.0.1"/>

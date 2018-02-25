@@ -21,7 +21,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new NSDatePicker
+					SetNativeControl(new FormsNSDatePicker
 					{
 						DatePickerMode = NSDatePickerMode.Single,
 						TimeZone = new NSTimeZone("UTC"),
@@ -29,6 +29,7 @@ namespace Xamarin.Forms.Platform.MacOS
 						DatePickerElements = NSDatePickerElementFlags.HourMinuteSecond
 					});
 
+					(Control as FormsNSDatePicker).FocusChanged += ControlFocusChanged;
 					Control.ValidateProposedDateValue += HandleValueChanged;
 					_defaultTextColor = Control.TextColor;
 					_defaultBackgroundColor = Control.BackgroundColor;
@@ -55,7 +56,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (e.PropertyName == Picker.FontSizeProperty.PropertyName ||
 				e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
 				e.PropertyName == Picker.FontAttributesProperty.PropertyName)
-					UpdateFont();
+				UpdateFont();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -63,7 +64,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (disposing && !_disposed)
 			{
 				if (Control != null)
+				{
 					Control.ValidateProposedDateValue -= HandleValueChanged;
+					(Control as FormsNSDatePicker).FocusChanged -= ControlFocusChanged;
+				}
 
 				_disposed = true;
 			}
@@ -79,10 +83,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			Control.BackgroundColor = color == Color.Default ? _defaultBackgroundColor : color.ToNSColor();
 		}
 
+		void ControlFocusChanged(object sender, BoolEventArgs e)
+		{
+			ElementController?.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, e.Value);
+		}
+
 		void HandleValueChanged(object sender, NSDatePickerValidatorEventArgs e)
 		{
-			ElementController?.SetValueFromRenderer(TimePicker.TimeProperty,
-				Control.DateValue.ToDateTime() - new DateTime(2001, 1, 1));
+			ElementController?.SetValueFromRenderer(TimePicker.TimeProperty, e.ProposedDateValue.ToDateTime() - new DateTime(2001, 1, 1));
 		}
 
 		void UpdateFont()
@@ -90,7 +98,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null || Element == null)
 				return;
 
-			Control.Font = Element.ToNSFont();	
+			Control.Font = Element.ToNSFont();
 		}
 
 		void UpdateTime()

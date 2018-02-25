@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -46,6 +47,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont();
 				UpdateTextAlignment();
 				UpdateFlowDirection();
+				UpdateDetectReadingOrderFromContent();
+				UpdateIsReadOnly();
 			}
 
 			base.OnElementChanged(e);
@@ -70,6 +73,14 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextColor();
 			}
+			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
 			{
 				UpdateFont();
@@ -90,6 +101,12 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextAlignment();
 				UpdateFlowDirection();
+			}
+			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+				UpdateDetectReadingOrderFromContent();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+			{
+				UpdateIsReadOnly();
 			}
 		}
 
@@ -153,7 +170,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateInputScope()
 		{
-			var custom = Element.Keyboard as CustomKeyboard;
+			Editor editor = Element;
+			var custom = editor.Keyboard as CustomKeyboard;
 			if (custom != null)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
@@ -162,10 +180,13 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
-				Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				if (editor.IsSet(InputView.IsSpellCheckEnabledProperty))
+					Control.IsSpellCheckEnabled = editor.IsSpellCheckEnabled;
+				else
+					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
 			}
 
-			Control.InputScope = Element.Keyboard.ToInputScope();
+			Control.InputScope = editor.Keyboard.ToInputScope();
 		}
 
 		void UpdateText()
@@ -200,6 +221,26 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
+		}
+
+		void UpdateDetectReadingOrderFromContent()
+		{
+			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
+				if (Element.OnThisPlatform().GetDetectReadingOrderFromContent())
+				{
+					Control.TextReadingOrder = TextReadingOrder.DetectFromContent;
+				}
+				else
+				{
+					Control.TextReadingOrder = TextReadingOrder.UseFlowDirection;
+				}
+			}
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }

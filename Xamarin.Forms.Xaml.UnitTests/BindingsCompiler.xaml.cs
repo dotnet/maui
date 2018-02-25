@@ -65,6 +65,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.AreEqual("Text0", layout.label1.Text);
 				Assert.AreEqual("Text1", layout.label2.Text);
 				Assert.AreEqual("TextIndex", layout.label3.Text);
+				Assert.AreEqual("Text0", layout.label8.Text);
 
 				//value types
 				Assert.That(layout.label5.Text, Is.EqualTo("42"));

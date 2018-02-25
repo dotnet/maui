@@ -21,6 +21,11 @@
     <ProjectReference Include="..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
   <Target Name="_CopyToNuspecDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />

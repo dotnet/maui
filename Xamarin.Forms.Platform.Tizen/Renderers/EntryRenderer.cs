@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(Entry.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
+			RegisterPropertyHandler(Entry.IsReadOnlyProperty, UpdateIsReadOnly);
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -128,6 +129,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateFontWeight()
 		{
 			Control.FontWeight = Specific.GetFontWeight(Element);
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.AllowFocus(!Element.IsReadOnly);
 		}
 	}
 }

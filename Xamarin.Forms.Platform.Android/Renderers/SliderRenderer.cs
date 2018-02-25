@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Platform.Android
 	public class SliderRenderer : ViewRenderer<Slider, SeekBar>, SeekBar.IOnSeekBarChangeListener
 	{
 		double _max, _min;
-		bool _progressChangedOnce;
+		bool _isTrackingChange;
 
 		public SliderRenderer(Context context) : base(context)
 		{
@@ -31,21 +31,18 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SeekBar.IOnSeekBarChangeListener.OnProgressChanged(SeekBar seekBar, int progress, bool fromUser)
 		{
-			if (!_progressChangedOnce)
-			{
-				_progressChangedOnce = true;
-				return;
-			}
-
-			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
+			if (_isTrackingChange)
+				((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Value);
 		}
 
 		void SeekBar.IOnSeekBarChangeListener.OnStartTrackingTouch(SeekBar seekBar)
 		{
+			_isTrackingChange = true;
 		}
 
 		void SeekBar.IOnSeekBarChangeListener.OnStopTrackingTouch(SeekBar seekBar)
 		{
+			_isTrackingChange = false;
 		}
 
 		protected override SeekBar CreateNativeControl()

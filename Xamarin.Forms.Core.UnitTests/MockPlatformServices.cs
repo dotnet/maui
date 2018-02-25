@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using System.IO;
 using System.Threading;
 using System.Reflection;
 using System.IO.IsolatedStorage;
@@ -9,14 +8,17 @@ using Xamarin.Forms;
 using Xamarin.Forms.Core.UnitTests;
 using System.Security.Cryptography;
 using System.Text;
-using Xamarin.Forms.Internals;
+using FileMode = System.IO.FileMode;
+using FileAccess = System.IO.FileAccess;
+using FileShare = System.IO.FileShare;
+using Stream = System.IO.Stream;
 
 [assembly:Dependency (typeof(MockDeserializer))]
 [assembly:Dependency (typeof(MockResourcesProvider))]
 
 namespace Xamarin.Forms.Core.UnitTests
 {
-	internal class MockPlatformServices : IPlatformServices
+	internal class MockPlatformServices : Internals.IPlatformServices
 	{
 		Action<Action> invokeOnMainThread;
 		Action<Uri> openUriAction;
@@ -88,7 +90,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				invokeOnMainThread (action);
 		}
 
-		public Ticker CreateTicker()
+		public Internals.Ticker CreateTicker()
 		{
 			return new MockTicker();
 		}
@@ -117,12 +119,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			return AppDomain.CurrentDomain.GetAssemblies ();
 		}
 
-		public IIsolatedStorageFile GetUserStoreForApplication ()
+		public Internals.IIsolatedStorageFile GetUserStoreForApplication ()
 		{
 			return new MockIsolatedStorageFile (IsolatedStorageFile.GetUserStoreForAssembly ());
 		}
 
-		public class MockIsolatedStorageFile : IIsolatedStorageFile
+		public class MockIsolatedStorageFile : Internals.IIsolatedStorageFile
 		{
 			readonly IsolatedStorageFile isolatedStorageFile;
 			public MockIsolatedStorageFile (IsolatedStorageFile isolatedStorageFile)
@@ -170,7 +172,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 	}
 
-	internal class MockDeserializer : IDeserializer
+	internal class MockDeserializer : Internals.IDeserializer
 	{
 		public Task<IDictionary<string, object>> DeserializePropertiesAsync ()
 		{
@@ -183,9 +185,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 	}
 
-	internal class MockResourcesProvider : ISystemResourcesProvider
+	internal class MockResourcesProvider : Internals.ISystemResourcesProvider
 	{
-		public IResourceDictionary GetSystemResources ()
+		public Internals.IResourceDictionary GetSystemResources ()
 		{
 			var dictionary = new ResourceDictionary ();
 			Style style;
@@ -223,7 +225,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 	}
 
-	internal class MockTicker : Ticker
+	internal class MockTicker : Internals.Ticker
 	{
 		bool _enabled;
 

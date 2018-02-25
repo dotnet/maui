@@ -212,7 +212,7 @@ namespace Xamarin.Forms
 					if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
 						return Auto;
 					value = value.Trim();
-					if (value.EndsWith("%", StringComparison.InvariantCulture) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
+					if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase) && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
 						return new FlexBasis(relflex/100, isRelative: true);
 					if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
 						return new FlexBasis(flex);

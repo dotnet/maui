@@ -1,18 +1,21 @@
-﻿using ElmSharp;
+﻿using System;
+using Xamarin.Forms.Platform.Tizen.Renderers;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class MasterDetailPageRenderer : VisualElementRenderer<MasterDetailPage>
 	{
 		Native.MasterDetailPage _mdpage;
+		MasterDetailContainer _masterContainer = null;
+		MasterDetailContainer _detailContainer = null;
 
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
 		public MasterDetailPageRenderer()
 		{
-			RegisterPropertyHandler("Master", UpdateMasterPage);
-			RegisterPropertyHandler("Detail", UpdateDetailPage);
+			RegisterPropertyHandler(nameof(Element.Master), UpdateMasterPage);
+			RegisterPropertyHandler(nameof(Element.Detail), UpdateDetailPage);
 			RegisterPropertyHandler(MasterDetailPage.IsPresentedProperty,
 				UpdateIsPresented);
 			RegisterPropertyHandler(MasterDetailPage.MasterBehaviorProperty,
@@ -27,14 +30,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_mdpage = new Native.MasterDetailPage(Forms.NativeParent)
 				{
-					Master = GetNativePage(e.NewElement.Master),
-					Detail = GetNativePage(e.NewElement.Detail),
 					IsPresented = e.NewElement.IsPresented,
+					Master = _masterContainer = new MasterDetailContainer(Element, true),
+					Detail = _detailContainer = new MasterDetailContainer(Element, false),
 				};
 
 				_mdpage.IsPresentedChanged += (sender, ev) =>
 				{
-					Element.IsPresented = _mdpage.IsPresented;
+					Element.IsPresented = ev.IsPresent;
 				};
 				_mdpage.UpdateIsPresentChangeable += (sender, ev) =>
 				{
@@ -46,44 +49,96 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (e.OldElement != null)
 			{
 				(e.OldElement as IMasterDetailPageController).BackButtonPressed -= OnBackButtonPressed;
+				e.OldElement.Appearing -= OnMasterDetailAppearing;
+				e.OldElement.Disappearing -= OnMasterDetailDisappearing;
 			}
 
 			if (e.NewElement != null)
 			{
 				(e.NewElement as IMasterDetailPageController).BackButtonPressed += OnBackButtonPressed;
+				e.NewElement.Appearing += OnMasterDetailAppearing;
+				e.NewElement.Disappearing += OnMasterDetailDisappearing;
 			}
 
 			UpdateMasterBehavior();
 			base.OnElementChanged(e);
 		}
 
+		void OnMasterDetailDisappearing(object sender, EventArgs e)
+		{
+			_masterContainer?.SendDisappearing();
+			_detailContainer?.SendDisappearing();
+		}
+
+		void OnMasterDetailAppearing(object sender, EventArgs e)
+		{
+			_masterContainer?.SendAppearing();
+			_detailContainer?.SendAppearing();
+		}
+
+		protected override void OnElementReady()
+		{
+			base.OnElementReady();
+			UpdateMasterPage(false);
+			UpdateDetailPage(false);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_masterContainer != null)
+				{
+					_masterContainer.Dispose();
+					_masterContainer = null;
+				}
+
+				if (_detailContainer != null)
+				{
+					_detailContainer.Dispose();
+					_detailContainer = null;
+				}
+
+				if (Element != null)
+				{
+					Element.Appearing -= OnMasterDetailAppearing;
+					Element.Disappearing -= OnMasterDetailDisappearing;
+				}
+			}
+
+			base.Dispose(disposing);
+		}
+
+		protected void UpdateMasterPageRatio(double popoverRatio, double splitRatio)
+		{
+			_mdpage.PopoverRatio = popoverRatio;
+			_mdpage.SplitRatio = splitRatio;
+		}
+
 		void OnBackButtonPressed(object sender, BackButtonPressedEventArgs e)
 		{
-			if ((Element != null) && Element.IsPresented)
+			if ((Element != null) && Element.IsPresented && !_mdpage.IsSplit)
 			{
 				Element.IsPresented = false;
 				e.Handled = true;
 			}
 		}
 
-		EvasObject GetNativePage(Page page)
+		void UpdateMasterBehavior()
 		{
-			var pageRenderer = Platform.GetOrCreateRenderer(page);
-			return pageRenderer.NativeView;
-		}
-
-		void UpdateMasterBehavior() {
 			_mdpage.MasterBehavior = Element.MasterBehavior;
 		}
 
-		void UpdateMasterPage()
+		void UpdateMasterPage(bool isInit)
 		{
-			_mdpage.Master = GetNativePage(Element.Master);
+			if (!isInit)
+				_masterContainer.ChildView = Element.Master;
 		}
 
-		void UpdateDetailPage()
+		void UpdateDetailPage(bool isInit)
 		{
-			_mdpage.Detail = GetNativePage(Element.Detail);
+			if (!isInit)
+				_detailContainer.ChildView = Element.Detail;
 		}
 
 		void UpdateIsPresented()

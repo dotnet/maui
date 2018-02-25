@@ -1387,6 +1387,65 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void OneTimeBindingDoesntUpdateOnPropertyChanged()
+		{
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+			view.BindingContext = vm;
+			var b1t = CreateBinding(mode: BindingMode.OneTime);
+			var b1w = CreateBinding(mode: BindingMode.OneWay);
+
+			view.SetBinding(bp1t, b1t);
+			view.SetBinding(bp1w, b1w);
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+
+			vm.Text = "qux";
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+		}
+
+		[Test]
+		public void OneTimeBindingUpdatesOnBindingContextChanged()
+		{
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var bp1w = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			view.BindingContext = new MockViewModel("foobar");
+			var b1t = CreateBinding(mode: BindingMode.OneTime);
+			var b1w = CreateBinding(mode: BindingMode.OneWay);
+
+			view.SetBinding(bp1t, b1t);
+			view.SetBinding(bp1w, b1w);
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("foobar"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+
+			view.BindingContext = new MockViewModel("qux");
+			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("qux"));
+		}
+
+		[Test]
+		public void OneTimeBindingDoesntUpdateNeedSettersOrHandlers()
+		{
+			var view = new VisualElement();
+			var bp1t = BindableProperty.Create("Foo", typeof(string), typeof(VisualElement));
+			var vm = new MockViewModel("foobar");
+			view.BindingContext = vm;
+
+			var b1t = new TypedBinding<MockViewModel, string>(v => v.Text, null, null);
+
+			view.SetBinding(bp1t, b1t);
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+
+			vm.Text = "qux";
+			Assert.That(view.GetValue(bp1t), Is.EqualTo("foobar"));
+			Assert.Pass(); //doesn't throw
+		}
+
+		[Test]
 		[Ignore]
 		public void SpeedTestApply()
 		{

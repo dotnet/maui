@@ -41,6 +41,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateFont();
 			UpdateTextColor();
 			UpdateEditable();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -59,6 +60,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -123,6 +126,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			var textColor = Element.TextColor;
 
 			Control.TextColor = textColor.IsDefault ? NSColor.Black : textColor.ToNSColor();
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.Editable = !Element.IsReadOnly;
 		}
 	}
 }

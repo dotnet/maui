@@ -12,75 +12,210 @@ using System.Collections.Generic;
 
 namespace Xamarin.Flex
 {
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.AlignContent" />.
+	/// </summary>
 	enum AlignContent
 	{
+		/// <summary>
+		/// Whether an item's should be stretched out.
+		/// </summary>
 		Stretch = 1,
+		/// <summary>
+		/// Whether an item should be packed around the center.
+		/// </summary>
 		Center = 2,
+		/// <summary>
+		/// Whether an item should be packed at the start.
+		/// </summary>
 		Start = 3,
+		/// <summary>
+		/// Whether an item should be packed at the end.
+		/// </summary>
 		End = 4,
+		/// <summary>
+		/// Whether items should be distributed evenly, the first item being at the start and the last item being at the end.
+		/// </summary>
 		SpaceBetween = 5,
+		/// <summary>
+		/// Whether items should be distributed evenly, the first and last items having a half-size space.
+		/// </summary>
 		SpaceAround = 6,
+		/// <summary>
+		/// Whether items should be distributed evenly, all items having equal space around them.
+		/// </summary>
 		SpaceEvenly = 7,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.AlignItems" />.
+	/// </summary>
 	enum AlignItems
 	{
+		/// <summary>
+		/// Whether an item's should be stretched out.
+		/// </summary>
 		Stretch = 1,
+		/// <summary>
+		/// Whether an item should be packed around the center.
+		/// </summary>
 		Center = 2,
+		/// <summary>
+		/// Whether an item should be packed at the start.
+		/// </summary>
 		Start = 3,
+		/// <summary>
+		/// Whether an item should be packed at the end.
+		/// </summary>
 		End = 4,
 		//Baseline = 8,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.AlignSelf" />.
+	/// </summary>
 	enum AlignSelf
 	{
+		/// <summary>
+		/// Whether an item should be packed according to the alignment value of its parent.
+		/// </summary>
 		Auto = 0,
+		/// <summary>
+		/// Whether an item's should be stretched out.
+		/// </summary>
 		Stretch = 1,
+		/// <summary>
+		/// Whether an item should be packed around the center.
+		/// </summary>
 		Center = 2,
+		/// <summary>
+		/// Whether an item should be packed at the start.
+		/// </summary>
 		Start = 3,
+		/// <summary>
+		/// Whether an item should be packed at the end.
+		/// </summary>
 		End = 4,
 		//Baseline = 8,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.Direction" />.
+	/// </summary>
 	enum Direction
 	{
+		/// <summary>
+		/// Whether items should be stacked horizontally.
+		/// </summary>
 		Row = 0,
+		/// <summary>
+		/// Like Row but in reverse order.
+		/// </summary>
 		RowReverse = 1,
+		/// <summary>
+		/// Whether items should be stacked vertically.
+		/// </summary>
 		Column = 2,
+		/// <summary>
+		/// Like Column but in reverse order.
+		/// </summary>
 		ColumnReverse = 3,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.Justify" />.
+	/// </summary>
 	enum Justify
 	{
+		/// <summary>
+		/// Whether an item should be packed around the center.
+		/// </summary>
 		Center = 2,
+		/// <summary>
+		/// Whether an item should be packed at the start.
+		/// </summary>
 		Start = 3,
+		/// <summary>
+		/// Whether an item should be packed at the end.
+		/// </summary>
 		End = 4,
+		/// <summary>
+		/// Whether items should be distributed evenly, the first item being at the start and the last item being at the end.
+		/// </summary>
 		SpaceBetween = 5,
+		/// <summary>
+		/// Whether items should be distributed evenly, the first and last items having a half-size space.
+		/// </summary>
 		SpaceAround = 6,
+		/// <summary>
+		/// Whether items should be distributed evenly, all items having equal space around them.
+		/// </summary>
 		SpaceEvenly = 7,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.Position" />.
+	/// </summary>
 	enum Position
 	{
+		/// <summary>
+		/// Whether the item's frame will be determined by the flex rules of the layout system.
+		/// </summary>
 		Relative = 0,
+		/// <summary>
+		/// Whether the item's frame will be determined by fixed position values (<see cref="P:Xamarin.Flex.Item.Left" />, <see cref="P:Xamarin.Flex.Item.Right" />, <see cref="P:Xamarin.Flex.Item.Top" /> and <see cref="P:Xamarin.Flex.Item.Bottom" />).
+		/// </summary>
 		Absolute = 1,
 	}
 
+	/// <summary>
+	/// Values for <see cref="P:Xamarin.Flex.Item.Wrap" />.
+	/// </summary>
 	enum Wrap
 	{
+		/// <summary>
+		/// Whether items are laid out in a single line.
+		/// </summary>
 		NoWrap = 0,
+		/// <summary>
+		/// Whether items are laid out in multiple lines if needed.
+		/// </summary>
 		Wrap = 1,
+		/// <summary>
+		/// Like Wrap but in reverse order.
+		/// </summary>
 		WrapReverse = 2,
 	}
 
+	/// <summary>
+	/// Value for <see cref="P:Xamarin.Flex.Item.Wrap" />.
+	/// </summary>
 	struct Basis {
 		readonly bool _isRelative;
 		readonly bool _isLength;
 		readonly float _length;
+		/// <summary>
+		/// Auto basis.
+		/// </summary>
 		public static Basis Auto = new Basis();
+		/// <summary>
+		/// Whether the basis length is relative to parent's size.
+		/// </summary>
 		public bool IsRelative => _isRelative;
+		/// <summary>
+		/// Whether the basis is auto.
+		/// </summary>
 		public bool IsAuto => !_isLength && !_isRelative;
+		/// <summary>
+		/// Gets the length.
+		/// </summary>
+		/// <value>The length.</value>
 		public float Length => _length;
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Basis"/> struct.
+		/// </summary>
+		/// <param name="length">Length.</param>
+		/// <param name="isRelative">If set to <c>true</c> is relative.</param>
 		public Basis(float length, bool isRelative = false)
 		{
 			_length = length;
@@ -89,29 +224,97 @@ namespace Xamarin.Flex
 		}
 	}
 
+	/// <summary>
+	/// An item with flexbox properties. Items can also contain other items and be enumerated.
+	/// </summary>
 	class Item : IEnumerable<Item>
 	{
-		public float[] Frame { get; } = new float[4];						//x, y, w, h
+		/// <summary>
+		/// Gets the frame (x, y, w, h).
+		/// </summary>
+		/// <value>The frame.</value>
+		public float[] Frame { get; } = new float[4];
+
+		/// <summary>The parent item.</summary>
+		/// <value>The parent item, or null if the item is a root item.</value>
 		public Item Parent { get; private set; }
 		IList<Item> Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
+		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its<see cref="P:Xamarin.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
+		///<remarks>The default value for this property is Stretch.</remarks>
+		/// <value>The content of the align.</value>
 		public AlignContent AlignContent { get; set; } = AlignContent.Stretch;
+
+		/// <summary>This property defines how the layout engine will distribute space between and around child items along the cross-axis.</summary>
+		/// <value>The align items.</value>
+		/// <remarks>The default value for this property is Stretch.</remarks>
 		public AlignItems AlignItems { get; set; } = AlignItems.Stretch;
+
+		/// <summary>This property defines how the layout engine will distribute space between and around child items for a specific child along the cross-axis. If this property is set to Auto on a child item, the parent's value for <see cref="P:Xamarin.Flex.Item.AlignItems" /> will be used instead.</summary>
+		/// <value>The align self.</value>
 		public AlignSelf AlignSelf { get; set; } = AlignSelf.Auto;
+
+		/// <summary>This property defines the initial main-axis dimension of the item. If <see cref="P:Xamarin.Flex.Item.Direction" /> is row-based (horizontal), it will be used instead of <see cref="P:Xamarin.Flex.Item.Width" />, and if it's column-based (vertical), it will be used instead of <see cref="P:Xamarin.Flex.Item.Height" />.</summary>
+		/// <value>The basis.</value>
+		/// <remarks>The default value for this property is Auto.</remarks>
 		public Basis Basis { get; set; } = Basis.Auto;
+
+		/// <summary>This property defines the bottom edge absolute position of the item. It also defines the item's height if <see cref="P:Xamarin.Flex.Item.Top" /> is also set and if <see cref="P:Xamarin.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <value>The value for the property.</value>
+        /// <remarks>The default value for this property is NaN.</remarks>
 		public float Bottom { get; set; } = float.NaN;
+
+		/// <summary>This property defines the direction and main-axis of child items. If set to Column (or ColumnReverse), the main-axis will be the y-axis and items will be stacked vertically. If set to Row (or RowReverse), the main-axis will be the x-axis and items will be stacked horizontally.</summary>
+		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Direction" /> enumeration.</value>
+		/// <remarks>The default value for this property is Column.</remarks>
 		public Direction Direction { get; set; } = Direction.Column;
+
+		/// <summary>This property defines the grow factor of the item; the amount of available space it should use on the main-axis. If this property is set to 0, the item will not grow.</summary>
+		/// <value>The item grow factor.</value>
+		/// <remarks>The default value for this property is 0 (does not take any available space).</remarks>
 		public float Grow { get; set; } = 0f;
+
+		/// <summary>This property defines the height size dimension of the item.</summary>
+		/// <value>The height size dimension.</value>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Height { get; set; } = float.NaN;
+
+		/// <summary>This property defines how the layout engine will distribute space between and around child items along the main-axis.</summary>
+		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Align" /> enumeration, with the exception of Stretch and Auto.</value>
+		/// <remarks>The default value for this property is Start.</remarks>
 		public Justify JustifyContent { get; set; } = Justify.Start;
+
+		/// <summary>This property defines the left edge absolute position of the item.It also defines the item's width if <see cref="P:Xamarin.Flex.Item.Right" /> is also set and if <see cref="P:Xamarin.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <value>The value for the property.</value>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Left { get; set; } = float.NaN;
+
+		/// <summary>This property defines the margin space required on the bottom edge of the item.</summary>
+		/// <value>The top edge margin space (negative values are allowed).</value>
+		/// <remarks>The default value for this property is 0.</remarks>
 		public float MarginBottom { get; set; } = 0f;
+
+		/// <summary>This property defines the margin space required on the left edge of the item.</summary>
+		/// <value>The top edge margin space (negative values are allowed).</value>
+		/// <remarks>The default value for this property is 0.</remarks>
 		public float MarginLeft { get; set; } = 0f;
+
+		/// <summary>This property defines the margin space required on the right edge of the item.</summary>
+		/// <value>The top edge margin space (negative values are allowed).</value>
+		/// <remarks>The default value for this property is 0.</remarks>
 		public float MarginRight { get; set; } = 0f;
+
+		/// <summary>This property defines the margin space required on the top edge of the item.</summary>
+		/// <value>The top edge margin space (negative values are allowed).</value>
+		/// <remarks>The default value for this property is 0.</remarks>
 		public float MarginTop { get; set; } = 0f;
 
 		int order;
+
+		/// <summary>This property specifies whether this item should be laid out before or after other items in the container.Items are laid out based on the ascending value of this property.Items that have the same value for this property will be laid out in the order they were inserted.</summary>
+		/// <value>The item order (can be a negative, 0, or positive value).</value>
+		/// <remarks>The default value for this property is 0.</remarks>
 		public int Order {
 			get => order; 
 			set {
@@ -120,28 +323,74 @@ namespace Xamarin.Flex
 			}
 		}
 
+		/// <summary>This property defines the height of the item's bottom edge padding space that should be used when laying out child items.</summary>
+		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingBottom { get; set; } = 0f;
+
+		/// <summary>This property defines the height of the item's left edge padding space that should be used when laying out child items.</summary>
+		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingLeft { get; set; } = 0f;
+
+		/// <summary>This property defines the height of the item's right edge padding space that should be used when laying out child items.</summary>
+		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingRight { get; set; } = 0f;
+
+		/// <summary>This property defines the height of the item's top edge padding space that should be used when laying out child items.</summary>
+		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingTop { get; set; } = 0f;
 
+		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Xamarin.Flex.Item.Left" />, <see cref = "P:Xamarin.Flex.Item.Right" />, <see cref = "P:Xamarin.Flex.Item.Top" /> and < see cref= "P:Xamarin.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
+		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Position" /> enumeration.</value>
+		/// <remarks>The default value for this property is Relative</remarks>
 		public Position Position { get; set; } = Position.Relative;
+
+		/// <summary>This property defines the right edge absolute position of the item.It also defines the item's width if <see cref="P:Xamarin.Flex.Item.Left" /> is also set and if <see cref="P:Xamarin.Flex.Item.Width" /> isn't set.It is ignored if <see cref = "P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <value>The value for the property.</value>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Right { get; set; } = float.NaN;
+
+		/// <summary>This property defines the shrink factor of the item.In case the child items overflow the main-axis of the container, this factor will be used to determine how individual items should shrink so that all items can fill inside the container.If this property is set to 0, the item will not shrink.</summary>
+		/// <value>The item shrink factor.</value>
+		/// <remarks>The default value for this property is 1 (all items will shrink equally).</remarks>
 		public float Shrink { get; set; } = 1f;
+
+		/// <summary>This property defines the top edge absolute position of the item. It also defines the item's height if <see cref="P:Xamarin.Flex.Item.Bottom" /> is also set and if <see cref="P:Xamarin.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
+		/// <value>The value for the property.</value>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Top { get; set; } = float.NaN;
+
+		/// <summary>This property defines the width size dimension of the item.</summary>
+		/// <value>The width size dimension.</value>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Width { get; set; } = float.NaN;
+
+		/// <summary>This property defines whether child items should be laid out in a single line(NoWrap) or multiple lines(Wrap or WrapReverse). If this property is set to Wrap or WrapReverse, <see cref = "P:Xamarin.Flex.Item.AlignContent" /> can then be used to specify how the lines should be distributed.</summary>
+		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Wrap" /> enumeration.</value>
+		/// <remarks>The default value for this property is NoWrap.</remarks>
 		public Wrap Wrap { get; set; } = Wrap.NoWrap;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Item"/> class.
+		/// </summary>
 		public Item()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:Xamarin.Flex.Item"/> class.
+		/// </summary>
+		/// <param name="width">Width.</param>
+		/// <param name="height">Height.</param>
 		public Item(float width, float height)
 		{
 			Width = width;
 			Height = height;
 		}
 
+		/// <param name="child">The child item to be added.</param>
+        /// <summary>Adds a given child item to the current item.</summary>
+        /// <exception cref = "ArgumentException" > Thrown if the child has already been added to another item.</exception>
+		/// <param name="child">Child.</param>
 		public void Add(Item child)
 		{
 			ValidateChild(child);
@@ -185,6 +434,9 @@ namespace Xamarin.Flex
 			}
 		}
 
+		/// <summary>Determines the frames of each child(included nested ones) based on the flexbox rules that were applied on this item and the children themselves.After this method is called, the<see cref="P:Xamarin.Flex.Item.FrameX" />, <see cref = "P:Xamarin.Flex.Item.FrameY" />, <see cref = "P:Xamarin.Flex.Item.FrameWidth" /> and < see cref= "P:Xamarin.Flex.Item.FrameHeight" /> properties can be accessed on child items.</summary>
+		/// <remarks>This method must be called on a root (without parent) item where the <see cref = "P:Xamarin.Flex.Item.Width" /> and < see cref= "P:Xamarin.Flex.Item.Height" /> properties have also been set.</remarks>
+		/// <exception cref = "InvalidOperationException" > Thrown if the item has a parent (must be root) or if the item does not have a proper value set for < see cref = "P:Xamarin.Flex.Item.Width" /> and < see cref = "P:Xamarin.Flex.Item.Height" />.</ exception >
 		public void Layout()
 		{
 			if (Parent != null)

@@ -30,6 +30,10 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = AndroidApplicationLifecycleState.Uninitialized;
 			_currentState = AndroidApplicationLifecycleState.Uninitialized;
 			PopupManager.Subscribe(this);
+
+			// We seem to get a different color from the theme than we use by default
+			// Override to use the old color
+			Forms.ColorButtonNormalOverride = Color.FromHex("#5a595b");
 		}
 
 		public event EventHandler ConfigurationChanged;

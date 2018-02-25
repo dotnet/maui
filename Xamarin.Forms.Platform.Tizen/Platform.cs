@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using ElmSharp;
-using Tizen.Applications;
 using EProgressBar = ElmSharp.ProgressBar;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class Platform : BindableObject, IPlatform, INavigation, IDisposable
+	public static class Platform
 	{
 		internal static readonly BindableProperty RendererProperty = BindableProperty.CreateAttached("Renderer", typeof(IVisualElementRenderer), typeof(Platform), default(IVisualElementRenderer),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -20,49 +20,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (ve != null && newvalue == null)
 					ve.IsPlatformEnabled = false;
 			});
-
-		NavigationModel _navModel = new NavigationModel();
-		bool _disposed;
-		Native.Dialog _pageBusyDialog;
-		int _pageBusyCount;
-
-		internal Platform(CoreUIApplication context, EvasObject parent)
-		{
-			Forms.NativeParent = parent;
-			_pageBusyCount = 0;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
-			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
-			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
-
-			InternalNaviframe = new Naviframe(Forms.NativeParent)
-			{
-				PreserveContentOnPop = true,
-				DefaultBackButtonEnabled = false,
-			};
-			InternalNaviframe.SetAlignment(-1, -1);
-			InternalNaviframe.SetWeight(1.0, 1.0);
-			InternalNaviframe.Show();
-			InternalNaviframe.AnimationFinished += NaviAnimationFinished;
-		}
-
-		~Platform()
-		{
-			Dispose(false);
-		}
-
-		public Page Page { get; private set; }
-
-		public Naviframe InternalNaviframe { get; private set; }
-
-		public bool HasAlpha { get; set; }
-
-		Action BackPressedAction { get; set; }
-
-		Task CurrentModalNavigationTask { get; set; }
-		TaskCompletionSource<bool> CurrentTaskCompletionSource { get; set; }
-		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
-		IReadOnlyList<Page> INavigation.ModalStack => _navModel.Modals.ToList();
-		IReadOnlyList<Page> INavigation.NavigationStack => new List<Page>();
 
 		public static IVisualElementRenderer GetRenderer(BindableObject bindable)
 		{
@@ -84,6 +41,92 @@ namespace Xamarin.Forms.Platform.Tizen
 			return GetRenderer(view) ?? AttachRenderer(view);
 		}
 
+		internal static IVisualElementRenderer AttachRenderer(VisualElement view)
+		{
+			IVisualElementRenderer visualElementRenderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view) ?? new DefaultRenderer();
+
+			visualElementRenderer.SetElement(view);
+
+			return visualElementRenderer;
+		}
+
+		internal static ITizenPlatform CreatePlatform(EvasObject parent)
+		{
+			ITizenPlatform platform;
+			if (Forms.Flags.Contains(Flags.LightweightPlatformExperimental))
+			{
+				platform = new LightweightPlatform(parent);
+			}
+			else
+			{
+				platform = new DefaultPlatform(parent);
+			}
+			return platform;
+		}
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public interface ITizenPlatform : IPlatform, IDisposable
+	{
+		void SetPage(Page page);
+		bool SendBackButtonPressed();
+		EvasObject GetRootNativeView();
+		bool HasAlpha { get; set; }
+		event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
+	}
+
+	public class RootNativeViewChangedEventArgs : EventArgs
+	{
+		public RootNativeViewChangedEventArgs(EvasObject view) => RootNativeView = view;
+		public EvasObject RootNativeView { get; private set; }
+	}
+
+	public class DefaultPlatform : BindableObject, ITizenPlatform, INavigation
+	{
+		NavigationModel _navModel = new NavigationModel();
+		bool _disposed;
+		Native.Dialog _pageBusyDialog;
+		int _pageBusyCount;
+		Naviframe _internalNaviframe;
+
+		public event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
+
+		internal DefaultPlatform(EvasObject parent)
+		{
+			Forms.NativeParent = parent;
+			_pageBusyCount = 0;
+			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, BusySetSignalNameHandler);
+			MessagingCenter.Subscribe<Page, AlertArguments>(this, Page.AlertSignalName, AlertSignalNameHandler);
+			MessagingCenter.Subscribe<Page, ActionSheetArguments>(this, Page.ActionSheetSignalName, ActionSheetSignalNameHandler);
+
+			_internalNaviframe = new Naviframe(Forms.NativeParent)
+			{
+				PreserveContentOnPop = true,
+				DefaultBackButtonEnabled = false,
+			};
+			_internalNaviframe.SetAlignment(-1, -1);
+			_internalNaviframe.SetWeight(1.0, 1.0);
+			_internalNaviframe.Show();
+			_internalNaviframe.AnimationFinished += NaviAnimationFinished;
+		}
+
+		~DefaultPlatform()
+		{
+			Dispose(false);
+		}
+
+		public Page Page { get; private set; }
+
+		public bool HasAlpha { get; set; }
+
+		Action BackPressedAction { get; set; }
+
+		Task CurrentModalNavigationTask { get; set; }
+		TaskCompletionSource<bool> CurrentTaskCompletionSource { get; set; }
+		IPageController CurrentPageController => _navModel.CurrentPage as IPageController;
+		IReadOnlyList<Page> INavigation.ModalStack => _navModel.Modals.ToList();
+		IReadOnlyList<Page> INavigation.NavigationStack => new List<Page>();
+
 		public void Dispose()
 		{
 			Dispose(true);
@@ -94,15 +137,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Page != null)
 			{
-				var copyOfStack = new List<NaviItem>(InternalNaviframe.NavigationStack);
+				var copyOfStack = new List<NaviItem>(_internalNaviframe.NavigationStack);
 				for (var i = 0; i < copyOfStack.Count; i++)
 				{
 					copyOfStack[i].Delete();
 				}
 				foreach (Page page in _navModel.Roots)
 				{
-					var renderer = GetRenderer(page);
-					(page as IPageController)?.SendDisappearing();
+					var renderer = Platform.GetRenderer(page);
 					renderer?.Dispose();
 				}
 				_navModel = new NavigationModel();
@@ -116,8 +158,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			Page = newRoot;
 			Page.Platform = this;
 
-			IVisualElementRenderer pageRenderer = AttachRenderer(Page);
-			var naviItem = InternalNaviframe.Push(pageRenderer.NativeView);
+			IVisualElementRenderer pageRenderer = Platform.AttachRenderer(Page);
+			var naviItem = _internalNaviframe.Push(pageRenderer.NativeView);
 			naviItem.TitleBarVisible = false;
 
 			// Make naviitem transparent if parent window is transparent.
@@ -145,7 +187,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
 			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
 
-			return GetRenderer(view).GetDesiredSize(width, height);
+			return Platform.GetRenderer(view).GetDesiredSize(width, height);
 		}
 
 		public bool SendBackButtonPressed()
@@ -165,13 +207,21 @@ namespace Xamarin.Forms.Platform.Tizen
 			return handled;
 		}
 
+		public EvasObject GetRootNativeView()
+		{
+			return _internalNaviframe as EvasObject;
+		}
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed) return;
 			if (disposing)
 			{
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(this, "Xamarin.SendAlert");
+				MessagingCenter.Unsubscribe<Page, bool>(this, "Xamarin.BusySet");
+				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(this, "Xamarin.ShowActionSheet");
 				SetPage(null);
-				InternalNaviframe.Unrealize();
+				_internalNaviframe.Unrealize();
 			}
 			_disposed = true;
 		}
@@ -180,15 +230,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			BindableObject.SetInheritedBindingContext(Page, base.BindingContext);
 			base.OnBindingContextChanged();
-		}
-
-		static IVisualElementRenderer AttachRenderer(VisualElement view)
-		{
-			IVisualElementRenderer visualElementRenderer = Registrar.Registered.GetHandlerForObject<IVisualElementRenderer>(view) ?? new DefaultRenderer();
-
-			visualElementRenderer.SetElement(view);
-
-			return visualElementRenderer;
 		}
 
 		void INavigation.InsertPageBefore(Page page, Page before)
@@ -238,7 +279,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
-			CurrentPageController?.SendDisappearing();
+			var previousPage = CurrentPageController;
+			Device.BeginInvokeOnMainThread(()=> previousPage?.SendDisappearing());
 
 			_navModel.PushModal(modal);
 
@@ -260,14 +302,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			Page modal = _navModel.PopModal();
 
-			((IPageController)modal).SendDisappearing();
-
-			IVisualElementRenderer modalRenderer = GetRenderer(modal);
+			IVisualElementRenderer modalRenderer = Platform.GetRenderer(modal);
 			if (modalRenderer != null)
 			{
 				await PopModalInternal(animated);
+				modalRenderer.Dispose();
 			}
-			Platform.GetRenderer(modal).Dispose();
 
 			CurrentPageController?.SendAppearing();
 			return modal;
@@ -284,15 +324,15 @@ namespace Xamarin.Forms.Platform.Tizen
 				await previousTask;
 			}
 
-			var after = InternalNaviframe.NavigationStack.LastOrDefault();
+			var after = _internalNaviframe.NavigationStack.LastOrDefault();
 			NaviItem pushed = null;
 			if (animated || after == null)
 			{
-				pushed = InternalNaviframe.Push(Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
+				pushed = _internalNaviframe.Push(Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
 			}
 			else
 			{
-				pushed = InternalNaviframe.InsertAfter(after, Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
+				pushed = _internalNaviframe.InsertAfter(after, Platform.GetOrCreateRenderer(modal).NativeView, modal.Title);
 			}
 			pushed.TitleBarVisible = false;
 
@@ -313,14 +353,14 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (animated)
 			{
-				InternalNaviframe.Pop();
+				_internalNaviframe.Pop();
 			}
 			else
 			{
-				InternalNaviframe.NavigationStack.LastOrDefault()?.Delete();
+				_internalNaviframe.NavigationStack.LastOrDefault()?.Delete();
 			}
 
-			bool shouldWait = animated && (InternalNaviframe.NavigationStack.Count != 0);
+			bool shouldWait = animated && (_internalNaviframe.NavigationStack.Count != 0);
 			await WaitForCompletion(shouldWait, tcs);
 		}
 
@@ -389,7 +429,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void AlertSignalNameHandler(Page sender, AlertArguments arguments)
 		{
-			// Verify that the page making the request is child of this platform 
+			// Verify that the page making the request is child of this platform
 			if (!PageIsChildOfPlatform(sender))
 				return;
 

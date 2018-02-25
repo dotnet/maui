@@ -37,7 +37,9 @@ namespace Xamarin.Forms.Controls
 					Text = "BorderRadius",
 					BackgroundColor = Color.Transparent,
 					BorderColor = Color.Red,
+#pragma warning disable 0618
 					BorderRadius = 20,
+#pragma warning restore
 					BorderWidth = 1,
 				}
 			);

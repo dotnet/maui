@@ -14,8 +14,8 @@
     <copyright>Copyright 2013-2018</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
-        <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$" />
+        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms.Maps" version="$version$" />
       </group>
     </dependencies>
   </metadata>

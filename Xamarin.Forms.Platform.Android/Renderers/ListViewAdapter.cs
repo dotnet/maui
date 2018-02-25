@@ -448,7 +448,7 @@ namespace Xamarin.Forms.Platform.Android
 				var layout = cellOwner as ConditionalFocusLayout;
 				if (layout != null)
 					cellOwner = layout.GetChildAt(0);
-				cell = (Cell)((INativeElementView)cellOwner).Element;
+				cell = (Cell)(cellOwner as INativeElementView)?.Element;
 			}
 
 			// All our ListView's have called AddHeaderView. This effectively becomes index 0, so our index 0 is index 1 to the listView.

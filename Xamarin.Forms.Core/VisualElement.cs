@@ -712,7 +712,14 @@ namespace Xamarin.Forms
 
 		internal void MockBounds(Rectangle bounds)
 		{
+#if NETSTANDARD2_0
 			(_mockX, _mockY, _mockWidth, _mockHeight) = bounds;
+#else
+			_mockX = bounds.X;
+			_mockY = bounds.Y;
+			_mockWidth = bounds.Width;
+			_mockHeight = bounds.Height;
+#endif
 		}
 
 		internal virtual void OnConstraintChanged(LayoutConstraint oldConstraint, LayoutConstraint newConstraint)

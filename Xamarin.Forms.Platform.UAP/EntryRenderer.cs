@@ -1,9 +1,12 @@
 ﻿using System.ComponentModel;
 using Windows.System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.InputView;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -44,6 +47,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateInputScope();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
+				UpdateDetectReadingOrderFromContent();
+				UpdateIsReadOnly();
 			}
 		}
 
@@ -72,6 +77,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextColor();
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
 				UpdateInputScope();
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+				UpdateInputScope();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
@@ -84,6 +91,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
+				UpdateDetectReadingOrderFromContent();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -158,14 +169,23 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateInputScope()
 		{
-			var custom = Element.Keyboard as CustomKeyboard;
+			Entry entry = Element;
+			var custom = entry.Keyboard as CustomKeyboard;
 			if (custom != null)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
 				Control.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
 			}
+			else
+			{
+				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				if (entry.IsSet(InputView.IsSpellCheckEnabledProperty))
+					Control.IsSpellCheckEnabled = entry.IsSpellCheckEnabled;
+				else
+					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+			}
 
-			Control.InputScope = Element.Keyboard.ToInputScope();
+			Control.InputScope = entry.Keyboard.ToInputScope();
 		}
 
 		void UpdateIsPassword()
@@ -203,6 +223,26 @@ namespace Xamarin.Forms.Platform.UWP
 
 			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
+		}
+
+		void UpdateDetectReadingOrderFromContent()
+		{
+			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+			{
+				if (Element.OnThisPlatform().GetDetectReadingOrderFromContent())
+				{
+					Control.TextReadingOrder = TextReadingOrder.DetectFromContent;
+				}
+				else
+				{
+					Control.TextReadingOrder = TextReadingOrder.UseFlowDirection;
+				}
+			}
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }

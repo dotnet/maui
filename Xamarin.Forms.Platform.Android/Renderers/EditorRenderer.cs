@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateInputType();
 			UpdateTextColor();
 			UpdateFont();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -89,6 +90,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.PropertyName == Editor.TextProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+				UpdateInputType();
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputType();
 			else if (e.PropertyName == Editor.TextColorProperty.PropertyName)
 				UpdateTextColor();
@@ -98,6 +101,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -149,6 +154,14 @@ namespace Xamarin.Forms.Platform.Android
 			var keyboard = model.Keyboard;
 
 			edit.InputType = keyboard.ToInputType() | InputTypes.TextFlagMultiLine;
+			if (!(keyboard is Internals.CustomKeyboard) && model.IsSet(InputView.IsSpellCheckEnabledProperty))
+			{
+				if ((edit.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				{
+					if (!model.IsSpellCheckEnabled)
+						edit.InputType = edit.InputType | InputTypes.TextFlagNoSuggestions;
+				}
+			}
 
 			if (keyboard == Keyboard.Numeric)
 			{
@@ -176,6 +189,11 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementController?.SendCompleted();
 			Control?.ClearFocus();
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.Focusable = !Element.IsReadOnly;
 		}
 	}
 }

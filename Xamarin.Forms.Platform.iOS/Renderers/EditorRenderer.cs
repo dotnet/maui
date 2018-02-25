@@ -68,6 +68,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateEditable();
 			UpdateTextAlignment();
+			UpdateIsReadOnly();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -77,6 +78,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.PropertyName == Editor.TextProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
+				UpdateKeyboard();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEditable();
@@ -90,6 +93,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateTextAlignment();
+			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
+				UpdateIsReadOnly();
 		}
 
 		void HandleChanged(object sender, EventArgs e)
@@ -128,6 +133,13 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateKeyboard()
 		{
 			Control.ApplyKeyboard(Element.Keyboard);
+			if (!(Element.Keyboard is Internals.CustomKeyboard) && Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+			{
+				if (!Element.IsSpellCheckEnabled)
+				{
+					Control.SpellCheckingType = UITextSpellCheckingType.No;
+				}
+			}
 			Control.ReloadInputViews();
 		}
 
@@ -151,6 +163,11 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TextColor = UIColor.Black;
 			else
 				Control.TextColor = textColor.ToUIColor();
+		}
+
+		void UpdateIsReadOnly()
+		{
+			Control.UserInteractionEnabled = !Element.IsReadOnly;
 		}
 	}
 }

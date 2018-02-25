@@ -57,7 +57,9 @@ namespace Xamarin.Forms
 			if (targetProperty == null)
 				throw new ArgumentNullException(nameof(targetProperty));
 
-			return GetContext(targetProperty) != null;
+			var bpcontext = GetContext(targetProperty);
+			return bpcontext != null
+				&& (bpcontext.Attributes & BindableContextAttributes.IsDefaultValue) == 0;
 		}
 
 		public object GetValue(BindableProperty property)
@@ -176,14 +178,6 @@ namespace Xamarin.Forms
 
 			BindablePropertyContext bpcontext = GetContext(targetProperty);
 			return bpcontext != null && bpcontext.Binding != null;
-		}
-
-		internal bool GetIsDefault(BindableProperty targetProperty)
-		{
-			if (targetProperty == null)
-				throw new ArgumentNullException(nameof(targetProperty));
-
-			return GetContext(targetProperty) == null;
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

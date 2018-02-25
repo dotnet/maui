@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Xamarin.Forms.Maps.WPF$IdAppend$</id>
+    <id>Xamarin.Forms.Maps.WPF</id>
     <version>$version$</version>
     <authors>Xamarin, Inc.</authors>
     <owners>Xamarin, Inc.</owners>
@@ -14,8 +14,8 @@
     <copyright>Copyright 2013-2017</copyright>
     <dependencies>
       <group>
-        <dependency id="Xamarin.Forms$IdAppend$" version="$version$"/>
-        <dependency id="Xamarin.Forms.Maps$IdAppend$" version="$version$"/>
+        <dependency id="Xamarin.Forms" version="$version$"/>
+        <dependency id="Xamarin.Forms.Maps" version="$version$"/>
       </group>
       <group targetFramework="net45">
         <dependency id="Microsoft.Maps.MapControl.WPF" version="1.0.0.3"/>

@@ -5,6 +5,7 @@ namespace Xamarin.Forms
 		Default,
 		TwoWay,
 		OneWay,
-		OneWayToSource
+		OneWayToSource,
+		OneTime,
 	}
 }

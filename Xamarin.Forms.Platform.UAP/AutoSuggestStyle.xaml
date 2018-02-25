@@ -76,12 +76,13 @@
 		<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
 		<Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
 		<Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}"/>
+		<Setter Property="IsSpellCheckEnabled" Value="False" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="uwp:FormsTextBox">
 					<Grid>
 						<Grid.Resources>
-							<Style x:Name="DeleteButtonStyle" TargetType="Button">
+							<Style x:Name="DeleteButtonStyle" TargetType="uwp:FormsCancelButton">
 								<Setter Property="Template">
 									<Setter.Value>
 										<ControlTemplate TargetType="Button">
@@ -97,7 +98,7 @@
 																</ObjectAnimationUsingKeyFrames>
 																<ObjectAnimationUsingKeyFrames Storyboard.TargetName="GlyphElement"
                                                              Storyboard.TargetProperty="Foreground">
-																	<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FormsCancelBackgroundBrush}" />
+																	<DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAltAccentBrush}" />
 																</ObjectAnimationUsingKeyFrames>
 															</Storyboard>
 														</VisualState>
@@ -126,9 +127,9 @@
 												<Border x:Name="BorderElement"
                               BorderBrush="{ThemeResource TextBoxButtonBorderThemeBrush}"
                               BorderThickness="{TemplateBinding BorderThickness}"
-                              Background="{ThemeResource FormsCancelBackgroundBrush}">
+                              Background="{ThemeResource TextBoxButtonBackgroundThemeBrush}">
 													<TextBlock x:Name="GlyphElement"
-                                   Foreground="{ThemeResource FormsCancelForegroundBrush}"
+                                   Foreground="{ThemeResource SystemControlBackgroundChromeBlackMediumBrush}"
                                    VerticalAlignment="Center"
                                    HorizontalAlignment="Center"
                                    FontStyle="Normal"
@@ -391,7 +392,8 @@
                         HorizontalAlignment="{Binding TextAlignment, 
                                             RelativeSource={RelativeSource Mode=TemplatedParent}, 
                                             Converter={StaticResource AlignmentConverter}}" />
-						<Button x:Name="DeleteButton"
+						<!-- We use a custom version of the cancel button so we can control the colors from Forms -->
+						<uwp:FormsCancelButton x:Name="DeleteButton"
                   Grid.Row="1"
                   Style="{StaticResource DeleteButtonStyle}"
                   BorderThickness="{TemplateBinding BorderThickness}"

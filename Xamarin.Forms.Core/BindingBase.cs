@@ -20,7 +20,11 @@ namespace Xamarin.Forms
 			get { return _mode; }
 			set
 			{
-				if (value != BindingMode.Default && value != BindingMode.OneWay && value != BindingMode.OneWayToSource && value != BindingMode.TwoWay)
+				if (   value != BindingMode.Default
+				    && value != BindingMode.OneWay
+				    && value != BindingMode.OneWayToSource
+				    && value != BindingMode.TwoWay
+				    && value != BindingMode.OneTime)
 					throw new ArgumentException("mode is not a valid BindingMode", "mode");
 
 				ThrowIfApplied();

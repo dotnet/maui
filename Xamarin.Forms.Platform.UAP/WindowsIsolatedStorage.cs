@@ -4,13 +4,15 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
-using Xamarin.Forms.Internals;
+//using FileMode = Xamarin.Forms.Internals.FileMode;
+//using FileAccess = Xamarin.Forms.Internals.FileAccess;
+//using FileShare = Xamarin.Forms.Internals.FileShare;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal class WindowsIsolatedStorage : IIsolatedStorageFile
+	internal class WindowsIsolatedStorage : Internals.IIsolatedStorageFile
 	{
-		 StorageFolder _folder;
+		StorageFolder _folder;
 
 		public WindowsIsolatedStorage(StorageFolder folder)
 		{
@@ -103,7 +105,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				default:
 					throw new ArgumentException("access was an invalid FileAccess", "access");
-			}
+			}			
 		}
 
 		public Task<Stream> OpenFileAsync(string path, FileMode mode, FileAccess access, FileShare share)

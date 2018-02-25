@@ -4,9 +4,9 @@ using EButton = ElmSharp.Button;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class DateTimePickerDialog : Dialog
+	public class DateTimePickerDialog<T> : Dialog where T : DateTimeSelector
 	{
-		DateTimeSelector _dateTimePicker;
+		T _dateTimePicker;
 		EvasObject _parent;
 
 		/// <summary>
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Gets the <see cref="DateTimePicker"/> contained in this dialog.
 		/// </summary>
-		public DateTimeSelector DateTimePicker
+		public T DateTimePicker
 		{
 			get
 			{
@@ -41,34 +41,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		/// <summary>
-		/// Creates date picker in dialog window.
-		/// </summary>
-		public void InitializeDatePicker(DateTime date, DateTime minimumDate, DateTime maximumDate)
-		{
-			var datePicker = new DatePicker(this)
-			{
-				Date = date,
-				MinimumDate = minimumDate,
-				MaximumDate = maximumDate
-			};
-			Content = DateTimePicker = datePicker;
-		}
-
-		/// <summary>
-		/// Creates time picker in dialog window.
-		/// </summary>
-		public void InitializeTimePicker(TimeSpan time, string format)
-		{
-			var timePicker = new TimePicker(this)
-			{
-				Time = time,
-				DateTimeFormat = format
-			};
-			Content = DateTimePicker = timePicker;
-		}
-
-		void ApplyDateTimePicker(DateTimeSelector dateTimePicker)
+		void ApplyDateTimePicker(T dateTimePicker)
 		{
 			_dateTimePicker = dateTimePicker;
 			Content = _dateTimePicker;
@@ -76,13 +49,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void Initialize()
 		{
+			DateTimePicker = (T)Activator.CreateInstance(typeof(T), new object[] { _parent });
+
 			//TODO need to add internationalization support
 			PositiveButton = new EButton(_parent) { Text = "Set" };
 			PositiveButton.Clicked += (s, e) =>
 			{
-				DateTime oldDate = DateTimePicker.DateTime;
-				DateTimeChanged?.Invoke(this, new DateChangedEventArgs(oldDate, DateTimePicker.DateTime));
-				Hide();
+				Confirm();
 			};
 
 			//TODO need to add internationalization support
@@ -95,6 +68,30 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				Hide();
 			};
+
+			// TODO This is Tizen TV Limitation.
+			// UX is defined and the focus move processing is complete, it should be removed(After Tizen 5.0)
+			if (Device.Idiom == TargetIdiom.TV)
+			{
+				KeyDown += (s, e) =>
+				{
+					if (e.KeyName == "Return")
+					{
+						if (DateTimePicker != null && DateTimePicker.IsFocused)
+						{
+							Confirm();
+							e.Flags |= EvasEventFlag.OnHold;
+						}
+					}
+				};
+			}
+		}
+
+		void Confirm()
+		{
+			DateTime oldDate = DateTimePicker.DateTime;
+			DateTimeChanged?.Invoke(this, new DateChangedEventArgs(oldDate, DateTimePicker.DateTime));
+			Hide();
 		}
 	}
 }

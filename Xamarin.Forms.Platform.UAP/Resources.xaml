@@ -359,8 +359,5 @@
 	<Style TargetType="ToggleSwitch">
 		<Setter Property="MinWidth" Value="0"/>
 	</Style>
-	
-	<SolidColorBrush x:Key="FormsCancelForegroundBrush" />
-    <SolidColorBrush x:Key="FormsCancelBackgroundBrush" />
     
 </ResourceDictionary>

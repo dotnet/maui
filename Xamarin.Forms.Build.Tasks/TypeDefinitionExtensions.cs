@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Build.Tasks
 		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType)
 		{
 			var module = targetType.Module;
-			var voidType = module.ImportReference(typeof (void));
+			var voidType = module.ImportReferenceCached(typeof (void));
 			var methodAttributes = MethodAttributes.Public |
 			                       MethodAttributes.HideBySig |
 			                       MethodAttributes.SpecialName |
@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (objectConstructor == null)
 				objectConstructor = typeof (object).GetConstructor(new Type[0]);
 
-			var baseConstructor = module.ImportReference(objectConstructor);
+			var baseConstructor = module.ImportReferenceCached(objectConstructor);
 
 			var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
 			{
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Build.Tasks
 			{
 				foreach (var md in self.Methods)
 					yield return md;
-				self = self.BaseType == null ? null : self.BaseType.Resolve();
+				self = self.BaseType == null ? null : self.BaseType.ResolveCached();
 			}
 		}
 	}

@@ -81,9 +81,12 @@ namespace Xamarin.Forms
 		{
 			base.OnTapped();
 
-			ICommand cmd = Command;
-			if (cmd != null)
-				cmd.Execute(CommandParameter);
+			if (!IsEnabled)
+			{
+				return;
+			}
+
+			Command?.Execute(CommandParameter);
 		}
 
 		void OnCommandCanExecuteChanged(object sender, EventArgs eventArgs)

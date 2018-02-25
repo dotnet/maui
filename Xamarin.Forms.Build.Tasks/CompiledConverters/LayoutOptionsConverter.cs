@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Core.XamlC
 				if (parts.Length == 1 || (parts.Length == 2 && parts [0] == "LayoutOptions")) {
 					var options = parts [parts.Length - 1];
 
-					var field = module.ImportReference(typeof(LayoutOptions)).Resolve().Fields.SingleOrDefault(fd => fd.Name == options && fd.IsStatic);
+					var field = module.ImportReferenceCached(typeof(LayoutOptions)).ResolveCached().Fields.SingleOrDefault(fd => fd.Name == options && fd.IsStatic);
 					if (field != null) {
 						yield return Instruction.Create(OpCodes.Ldsfld, module.ImportReference(field));
 						yield break;

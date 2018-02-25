@@ -52,6 +52,12 @@ Debug.WriteLine ("Animation completed");
           <description>Value</description>
         </listheader>
         <item>
+          <term>Color</term>
+          <description>
+            <para>A color specification, with or without the prefix, "Color". For example, "Color.Red" and "Red" both specify the color red.</para>
+          </description>
+        </item>
+        <item>
           <term>Progress</term>
           <description>
             <para>A decimal value between 0 and 1, inclusive, that specifies the fraction of the bar that is colored.</para>
@@ -126,6 +132,39 @@ Debug.WriteLine ("Animation completed");
         <summary>Gets or sets the progress value. This is s bindable property.</summary>
         <value>Gets or sets a value that specifies the fraction of the bar that is colored.</value>
         <remarks>Values less than 0 or larger than 1 will be clamped to the range [0-1].</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ProgressColor">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.Color ProgressColor { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.Color ProgressColor" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Color</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the <see cref="T:Xamarin.Forms.Color" /> of the ProgressBar line. This is a bindable property.</summary>
+        <value>A <see cref="T:Xamarin.Forms.Color" /> used to display the ProgressBar line. Default is <see cref="P:Xamarin.Forms.Color.Default" />.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ProgressColorProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty ProgressColorProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty ProgressColorProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Identifies the ProgressColor bindable property.</summary>
+        <remarks>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="ProgressProperty">
