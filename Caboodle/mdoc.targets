@@ -67,7 +67,7 @@
     ============================================================
   -->
   <Target Name="MDocUpdateDocs"
-          DependsOnTargets="_SetupMDoc">
+          DependsOnTargets="_MDocSetup">
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <FrameowrkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameowrkReferenceAssemblyPath>
     </PropertyGroup>
