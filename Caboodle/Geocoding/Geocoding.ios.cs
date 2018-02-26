@@ -17,7 +17,7 @@ namespace Microsoft.Caboodle
             }
         }
 
-        public static async Task<IEnumerable<GeoPoint>> GetGeoPointsAsync(string address)
+        public static async Task<IEnumerable<GeoPoint>> GetPointsAsync(string address)
         {
 
             using (var geocoder = new CLGeocoder())

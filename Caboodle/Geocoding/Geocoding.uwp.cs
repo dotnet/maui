@@ -19,7 +19,7 @@ namespace Microsoft.Caboodle
             return queryResults?.Locations.ToAddresses();
         }
 
-        public static async Task<IEnumerable<GeoPoint>> GetGeoPointsAsync(string address)
+        public static async Task<IEnumerable<GeoPoint>> GetPointsAsync(string address)
         {
             SetMapKey();
 

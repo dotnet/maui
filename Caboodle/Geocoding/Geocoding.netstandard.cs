@@ -9,7 +9,7 @@ namespace Microsoft.Caboodle
             throw new NotImplentedInReferenceAssembly();
 
 
-        public static Task<IEnumerable<GeoPoint>> GetGeoPointsAsync(string address) =>
+        public static Task<IEnumerable<GeoPoint>> GetPointsAsync(string address) =>
             throw new NotImplentedInReferenceAssembly();
     }
 }
