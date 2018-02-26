@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
+		<!--Work around so the conditions work below-->
+		<TargetFrameworks></TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80;uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
