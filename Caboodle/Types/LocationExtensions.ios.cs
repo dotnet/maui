@@ -4,14 +4,13 @@ using System.Linq;
 
 namespace Microsoft.Caboodle
 {
-	public static partial class AddressExtensions
+	public static partial class PositionExtensions
     {
-		internal static IEnumerable<Address> ToAddresses(this IEnumerable<CLPlacemark> addresses)
+		internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> addresses)
 		{
-			return addresses.Select(address => new Address
+			return addresses.Select(address => new Location
 			{
-				Longitude = address.Location.Coordinate.Longitude,
-				Latitude = address.Location.Coordinate.Latitude,
+				Point = new GeoPoint(address.Location.Coordinate.Latitude, address.Location.Coordinate.Longitude),
 				FeatureName = address.Name,
 				PostalCode = address.PostalCode,
 				SubLocality = address.SubLocality,

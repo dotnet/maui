@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Geolocation;
 using Windows.Services.Maps;
@@ -8,7 +9,7 @@ namespace Microsoft.Caboodle
 {
 	public partial class Geocoding
     {
-        public static async Task<IEnumerable<Address>> GetAddressesAsync(double latitude, double longitude)
+        public static async Task<IEnumerable<Location>> GetLocationsAsync(double latitude, double longitude)
         {
 
             var queryResults =
@@ -18,25 +19,20 @@ namespace Microsoft.Caboodle
             return queryResults?.Locations.ToAddresses();
         }
 
-        public static async Task<IEnumerable<Position>> GetPositionsAsync(string address)
+        public static async Task<IEnumerable<GeoPoint>> GetGeoPointsAsync(string address)
         {
             SetMapKey();
 
             var queryResults = await MapLocationFinder.FindLocationsAsync(address, null, 10);
-            var positions = new List<Position>();
+
             if (queryResults?.Locations == null)
-                return positions;
+                return null;
 
-            foreach (var p in queryResults.Locations)
-            {
-                positions.Add(new Position
-                {
-                    Latitude = p.Point.Position.Latitude,
-                    Longitude = p.Point.Position.Longitude
-                });
-            }
-
-            return positions;
+            return queryResults.Locations.Select(l  => new GeoPoint
+			{
+				Latitude = l.Point.Position.Latitude,
+				Longitude = l.Point.Position.Longitude
+			});
         }
 
         static void SetMapKey()

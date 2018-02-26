@@ -9,16 +9,16 @@ namespace Microsoft.Caboodle
 {
 	public partial class Geocoding
     {
-        public static async Task<IEnumerable<Address>> GetAddressesAsync(double latitude, double longitude)
+        public static async Task<IEnumerable<Location>> GetLocationsAsync(double latitude, double longitude)
         {
             using (var geocoder = new Geocoder(Application.Context))
             {
                 var addressList = await geocoder.GetFromLocationAsync(latitude, longitude, 10);
-                return addressList?.ToAddresses();
+                return addressList?.ToLocations();
             }
         }
 
-        public static async Task<IEnumerable<Position>> GetPositionsAsync(string address)
+        public static async Task<IEnumerable<GeoPoint>> GetGeoPointsAsync(string address)
         {
             if (address == null)
                 throw new ArgumentNullException(nameof(address));
@@ -27,8 +27,8 @@ namespace Microsoft.Caboodle
             {
                 var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
 
-                return addressList?.Select(p => new Position
-                {
+                return addressList?.Select(p => new GeoPoint
+				{
                     Latitude = p.Latitude,
                     Longitude = p.Longitude
                 });

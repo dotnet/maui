@@ -4,14 +4,13 @@ using Windows.Services.Maps;
 
 namespace Microsoft.Caboodle
 {
-	public static partial class AddressExtensions
+	public static partial class LoctionExtensions
     {
-		internal static IEnumerable<Address> ToAddresses(this IEnumerable<MapLocation> addresses)
+		internal static IEnumerable<Location> ToAddresses(this IEnumerable<MapLocation> addresses)
 		{
-			return addresses.Select(address => new Address
+			return addresses.Select(address => new Location
 			{
-				Longitude = address.Point.Position.Longitude,
-				Latitude = address.Point.Position.Latitude,
+				Point = new GeoPoint(address.Point.Position.Latitude, address.Point.Position.Longitude),
 				FeatureName = address.DisplayName,
 				PostalCode = address.Address.PostCode,
 				CountryCode = address.Address.CountryCode,
@@ -20,7 +19,8 @@ namespace Microsoft.Caboodle
 				SubThoroughfare = address.Address.StreetNumber,
 				Locality = address.Address.Town,
 				AdminArea = address.Address.Region,
-				SubAdminArea = address.Address.District
+				SubAdminArea = address.Address.District,
+				SubLocality = address.Address.Neighborhood
 			});
 		}
 	}
