@@ -16,26 +16,19 @@ namespace Microsoft.Caboodle
                 await MapLocationFinder.FindLocationsAtAsync(
                         new Geopoint(new BasicGeoposition { Latitude = latitude, Longitude = longitude })).AsTask();
 
-            return queryResults?.Locations.ToPlacemarks();
+            return queryResults?.Locations?.ToPlacemarks();
         }
 
         public static async Task<IEnumerable<Location>> GetLocationsAsync(string address)
         {
-            SetMapKey();
+            ValidateMapKey();
 
             var queryResults = await MapLocationFinder.FindLocationsAsync(address, null, 10);
 
-            if (queryResults?.Locations == null)
-                return null;
-
-            return queryResults.Locations.Select(l  => new Location
-			{
-				Latitude = l.Point.Position.Latitude,
-				Longitude = l.Point.Position.Longitude
-			});
+            return queryResults?.Locations?.ToLocations();
         }
 
-        static void SetMapKey()
+        internal static void ValidateMapKey()
         {
             if (string.IsNullOrWhiteSpace(MapKey) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
             {

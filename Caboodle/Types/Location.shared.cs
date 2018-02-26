@@ -50,12 +50,12 @@ namespace Microsoft.Caboodle
 		public double Longitude { get; set; }
 
 
-		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units = DistanceUnits.Miles) =>
+		public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
 			CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
 		public static double CalculateDistance(
 			double latitudeStart, double latitudeEnd,
-			double longitudeStart, double longitudeEnd, DistanceUnits units = DistanceUnits.Miles)
+			double longitudeStart, double longitudeEnd, DistanceUnits units)
 		{
 			if (latitudeEnd == latitudeStart && longitudeEnd == longitudeStart)
 				return 0;

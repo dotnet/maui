@@ -10,7 +10,7 @@ namespace Microsoft.Caboodle
 		{
 			return addresses.Select(address => new Placemark
 			{
-				Location = new Location(address.Location.Coordinate.Latitude, address.Location.Coordinate.Longitude),
+				Location = address.ToLocation(),
 				FeatureName = address.Name,
 				PostalCode = address.PostalCode,
 				SubLocality = address.SubLocality,

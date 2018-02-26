@@ -27,11 +27,7 @@ namespace Microsoft.Caboodle
             {
                 var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
 
-                return addressList?.Select(p => new Location
-				{
-                    Latitude = p.Latitude,
-                    Longitude = p.Longitude
-                });
+                return addressList?.ToLocations();
             }
         }
     }

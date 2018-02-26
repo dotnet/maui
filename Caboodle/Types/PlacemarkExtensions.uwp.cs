@@ -5,12 +5,12 @@ using Windows.Services.Maps;
 namespace Microsoft.Caboodle
 {
 	public static partial class LoctionExtensions
-    {
+	{
 		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<MapLocation> mapLocations)
 		{
 			return mapLocations.Select(address => new Placemark
 			{
-				Location = new Location(address.Point.Position.Latitude, address.Point.Position.Longitude),
+				Location = address.ToLocation(),
 				FeatureName = address.DisplayName,
 				PostalCode = address.Address.PostCode,
 				CountryCode = address.Address.CountryCode,
@@ -23,5 +23,8 @@ namespace Microsoft.Caboodle
 				SubLocality = address.Address.Neighborhood
 			});
 		}
+
+		internal static IEnumerable<Placemark> ToPlacemarks(this MapLocationFinderResult result) =>
+			result?.ToPlacemarks();
 	}
 }
