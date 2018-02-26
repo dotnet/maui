@@ -1,11 +1,101 @@
-﻿using Windows.UI.Xaml.Controls;
+﻿using System.ComponentModel;
+using System.Linq;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Xamarin.Forms.ControlGallery.WindowsUniversal;
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Bugzilla42602.TextBoxView), typeof(Xamarin.Forms.ControlGallery.WindowsUniversal.TextBoxViewRenderer))]
+[assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
+[assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
+	public class EntryRendererKeyboardFlags : EntryRenderer
+	{
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			Control.SetKeyboardFlags(((Issue1683.EntryKeyboardFlags)Element).FlagsToSet);
+			Control.TestKeyboardFlags(((Issue1683.EntryKeyboardFlags)Element).FlagsToSet);
+
+
+		}
+	}
+	public class EditorRendererKeyboardFlags : EditorRenderer
+	{
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			Control.SetKeyboardFlags(((Issue1683.EditorKeyboardFlags)Element).FlagsToSet);
+			Control.TestKeyboardFlags(((Issue1683.EditorKeyboardFlags)Element).FlagsToSet);
+
+
+		}
+	}
+
+	public static class KeyboardFlagExtensions
+	{
+		public static void TestKeyboardFlags(this FormsTextBox Control, KeyboardFlags? flags)
+		{
+			if (flags == null) { return; }
+			if (flags.Value.HasFlag(KeyboardFlags.CapitalizeSentence))
+			{
+				if (!Control.IsSpellCheckEnabled)
+				{
+					throw new System.Exception("IsSpellCheckEnabled not enabled");
+				}
+			}
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeWord))
+			{
+				if (!Control.InputScope.Names.Select(x => x.NameValue).Contains(InputScopeNameValue.NameOrPhoneNumber))
+				{
+					throw new System.Exception("Input Scope Not Set to NameOrPhoneNumber");
+				}
+
+				if (!Control.IsSpellCheckEnabled)
+				{
+					throw new System.Exception("IsSpellCheckEnabled not enabled");
+				}
+
+			}
+			else
+			{
+				return;
+			}
+		}
+
+		public static void SetKeyboardFlags(this FormsTextBox Control, KeyboardFlags? flags)
+		{
+			if (flags == null) { return; }
+			var result = new InputScope();
+			var value = InputScopeNameValue.Default;
+
+			if (flags.Value.HasFlag(KeyboardFlags.CapitalizeSentence))
+			{
+				Control.IsSpellCheckEnabled = true;
+			}
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeWord))
+			{
+				value = InputScopeNameValue.NameOrPhoneNumber;
+				Control.IsSpellCheckEnabled = true;
+			}
+			else
+			{
+				return;
+			}
+
+
+			InputScopeName nameValue = new InputScopeName();
+			nameValue.NameValue = value;
+			result.Names.Add(nameValue);
+			Control.InputScope = result;
+		}
+	}
+
+
 	public class TextBoxViewRenderer : BoxViewRenderer
 	{
 		Canvas m_Canvas;

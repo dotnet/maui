@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using CoreLocation;
 using Foundation;
 using MapKit;
@@ -21,8 +22,11 @@ using RectangleF = CoreGraphics.CGRect;
 [assembly: ExportRenderer(typeof(Bugzilla43161.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla36802.AccessoryViewCell), typeof(AccessoryViewCellRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla52700.NoSelectionViewCell), typeof(NoSelectionViewCellRenderer))]
+[assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
+[assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 namespace Xamarin.Forms.ControlGallery.iOS
 {
+
 	public class CustomIOSMapRenderer : ViewRenderer<CustomMapView, MKMapView>
 	{
 		private MKMapView _mapView;
@@ -391,7 +395,9 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 		public IEnumerable<string> Items
 		{
-			set { _tableItems = new List<string>(value); 
+			set
+			{
+				_tableItems = new List<string>(value);
 			}
 		}
 
@@ -504,7 +510,8 @@ namespace Xamarin.Forms.ControlGallery.iOS
 		public CollectionViewController(UICollectionViewLayout layout, OnItemSelected onItemSelected) : base(layout)
 		{
 			items = new List<string>();
-			for (int i = 0; i < 20; i++) {
+			for (int i = 0; i < 20; i++)
+			{
 				items.Add($"#{i}");
 			}
 			_onItemSelected = onItemSelected;
@@ -597,5 +604,92 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			return cell;
 		}
 	}
+
+	public class EditorRendererKeyboardFlags : EditorRenderer
+	{
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			KeyboardFlagExtensions.SetFlags(
+				(value) => Control.AutocapitalizationType = value,
+				(((Issue1683.EditorKeyboardFlags)Element).FlagsToTestFor)
+			);
+
+			Control.AutocapitalizationType.TestKeyboardFlags(((Issue1683.EditorKeyboardFlags)Element).FlagsToTestFor);
+		}
+	}
+
+	public class EntryRendererKeyboardFlags : EntryRenderer
+	{
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			KeyboardFlagExtensions.SetFlags(
+				(value) => Control.AutocapitalizationType = value,
+				(((Issue1683.EntryKeyboardFlags)Element).FlagsToTestFor)
+			);
+
+			Control.AutocapitalizationType.TestKeyboardFlags(((Issue1683.EntryKeyboardFlags)Element).FlagsToTestFor);
+		}
+	}
+
+
+	public static class KeyboardFlagExtensions
+	{
+		public static void SetFlags(Action<UITextAutocapitalizationType> setField, KeyboardFlags? flags)
+		{
+			if (flags == null)
+			{
+				return;
+			}
+
+
+			if (flags.Value.HasFlag(KeyboardFlags.CapitalizeSentence))
+			{
+				setField(UITextAutocapitalizationType.Sentences);
+			}
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeCharacter))
+			{
+				setField(UITextAutocapitalizationType.AllCharacters);
+			}
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeWord))
+			{
+				setField(UITextAutocapitalizationType.Words);
+			}
+		}
+
+		public static void TestKeyboardFlags(this UITextAutocapitalizationType currentValue, KeyboardFlags? flags)
+		{
+			if (flags == null)
+			{
+				return;
+			}
+
+			if (flags.Value.HasFlag(KeyboardFlags.CapitalizeSentence))
+			{
+				if (currentValue != UITextAutocapitalizationType.Sentences)
+				{
+					throw new Exception("TextFlagCapSentences not correctly set");
+				}
+			}
+
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeCharacter))
+			{
+				if (currentValue != UITextAutocapitalizationType.AllCharacters)
+				{
+					throw new Exception("CapitalizeCharacter not correctly set");
+				}
+			}
+			else if (flags.Value.HasFlag(KeyboardFlags.CapitalizeWord))
+			{
+
+				if (currentValue != UITextAutocapitalizationType.Words)
+				{
+					throw new Exception("CapitalizeWord not correctly set");
+				}
+			}
+		}
+	}
+
 }
 

@@ -44,6 +44,34 @@
         <summary>Capitalize the first words of sentences, and perform spellcheck and offer suggested word completions on text that the user enters.</summary>
       </Docs>
     </Member>
+    <Member MemberName="CapitalizeCharacter">
+      <MemberSignature Language="C#" Value="CapitalizeCharacter" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags CapitalizeCharacter = int32(16)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.KeyboardFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="CapitalizeNone">
+      <MemberSignature Language="C#" Value="CapitalizeNone" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags CapitalizeNone = int32(32)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.KeyboardFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="CapitalizeSentence">
       <MemberSignature Language="C#" Value="CapitalizeSentence" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags CapitalizeSentence = int32(1)" />
@@ -62,6 +90,20 @@
       </ReturnValue>
       <Docs>
         <summary>Capitalize the first words of sentences.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="CapitalizeWord">
+      <MemberSignature Language="C#" Value="CapitalizeWord" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.KeyboardFlags CapitalizeWord = int32(8)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.KeyboardFlags</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="None">
