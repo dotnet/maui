@@ -7,6 +7,9 @@ using Mono.Cecil.Cil;
 using Xamarin.Forms.Xaml;
 using System.Xml;
 
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
+
 namespace Xamarin.Forms.Build.Tasks
 {
 	class CreateObjectVisitor : IXamlNodeVisitor
@@ -53,7 +56,9 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			//if this is a MarkupExtension that can be compiled directly, compile and returns the value
-			var compiledMarkupExtensionName = typeref.GetCustomAttribute(Module.ImportReferenceCached(typeof(ProvideCompiledAttribute)))?.ConstructorArguments?[0].Value as string;
+			var compiledMarkupExtensionName = typeref
+				.GetCustomAttribute(Module, ("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "ProvideCompiledAttribute"))
+				?.ConstructorArguments?[0].Value as string;
 			Type compiledMarkupExtensionType;
 			ICompiledMarkupExtension markupProvider;
 			if (compiledMarkupExtensionName != null &&
@@ -337,207 +342,174 @@ namespace Xamarin.Forms.Build.Tasks
 
 		IEnumerable<Instruction> PushValueFromLanguagePrimitive(TypeDefinition typedef, ElementNode node)
 		{
+			var module = Context.Body.Method.Module;
 			var hasValue = node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode &&
 			               ((ValueNode)node.CollectionItems[0]).Value is string;
 			var valueString = hasValue ? ((ValueNode)node.CollectionItems[0]).Value as string : string.Empty;
 			switch (typedef.FullName) {
 			case "System.SByte":
-				sbyte outsbyte;
-				if (hasValue && sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outsbyte))
-					yield return Instruction.Create(OpCodes.Ldc_I4, (int)outsbyte);
+				if (hasValue && sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out sbyte outsbyte))
+					yield return Create(Ldc_I4, (int)outsbyte);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.Int16":
-				short outshort;
-				if (hasValue && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outshort))
-					yield return Instruction.Create(OpCodes.Ldc_I4, outshort);
+				if (hasValue && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out short outshort))
+					yield return Create(Ldc_I4, outshort);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.Int32":
-				int outint;
-				if (hasValue && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outint))
-					yield return Instruction.Create(OpCodes.Ldc_I4, outint);
+				if (hasValue && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out int outint))
+					yield return Create(Ldc_I4, outint);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.Int64":
-				long outlong;
-				if (hasValue && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outlong))
-					yield return Instruction.Create(OpCodes.Ldc_I8, outlong);
+				if (hasValue && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out long outlong))
+					yield return Create(Ldc_I8, outlong);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I8, 0L);
+					yield return Create(Ldc_I8, 0L);
 				break;
 			case "System.Byte":
-				byte outbyte;
-				if (hasValue && byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outbyte))
-					yield return Instruction.Create(OpCodes.Ldc_I4, (int)outbyte);
+				if (hasValue && byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out byte outbyte))
+					yield return Create(Ldc_I4, (int)outbyte);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.UInt16":
-				short outushort;
-				if (hasValue && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outushort))
-					yield return Instruction.Create(OpCodes.Ldc_I4, outushort);
+				if (hasValue && short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out short outushort))
+					yield return Create(Ldc_I4, outushort);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.UInt32":
-				int outuint;
-				if (hasValue && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outuint))
-					yield return Instruction.Create(OpCodes.Ldc_I4, outuint);
+				if (hasValue && int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out int outuint))
+					yield return Create(Ldc_I4, outuint);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.UInt64":
-				long outulong;
-				if (hasValue && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outulong))
-					yield return Instruction.Create(OpCodes.Ldc_I8, outulong);
+				if (hasValue && long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out long outulong))
+					yield return Create(Ldc_I8, outulong);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I8, 0L);
+					yield return Create(Ldc_I8, 0L);
 				break;
 			case "System.Boolean":
-				bool outbool;
-				if (hasValue && bool.TryParse(valueString, out outbool))
-					yield return Instruction.Create(outbool ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+				if (hasValue && bool.TryParse(valueString, out bool outbool))
+					yield return Create(outbool ? Ldc_I4_1 : Ldc_I4_0);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4_0);
+					yield return Create(Ldc_I4_0);
 				break;
 			case "System.String":
-				yield return Instruction.Create(OpCodes.Ldstr, valueString);
+				yield return Create(Ldstr, valueString);
 				break;
 			case "System.Object":
 				var ctorinfo =
-					Context.Body.Method.Module.TypeSystem.Object.ResolveCached()
+					module.TypeSystem.Object.ResolveCached()
 						.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
-				var ctor = Context.Body.Method.Module.ImportReference(ctorinfo);
-				yield return Instruction.Create(OpCodes.Newobj, ctor);
+				var ctor = module.ImportReference(ctorinfo);
+				yield return Create(Newobj, ctor);
 				break;
 			case "System.Char":
-				char outchar;
-				if (hasValue && char.TryParse(valueString, out outchar))
-					yield return Instruction.Create(OpCodes.Ldc_I4, outchar);
+				if (hasValue && char.TryParse(valueString, out char outchar))
+					yield return Create(Ldc_I4, outchar);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x00);
+					yield return Create(Ldc_I4, 0x00);
 				break;
 			case "System.Decimal":
 				decimal outdecimal;
 				if (hasValue && decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outdecimal)) {
-					var vardef = new VariableDefinition(Context.Body.Method.Module.ImportReferenceCached(typeof(decimal)));
+					var vardef = new VariableDefinition(module.ImportReference(("mscorlib", "System", "Decimal")));
 					Context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
-					//					IL_0003:  ldstr "adecimal"
-					//					IL_0008:  ldc.i4.s 0x6f
-					//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
-					//					IL_000f:  ldloca.s 0
-					//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&)
-					//					IL_0016:  pop
-					yield return Instruction.Create(OpCodes.Ldstr, valueString);
-					yield return Instruction.Create(OpCodes.Ldc_I4, 0x6f); //NumberStyles.Number
-					var getInvariantInfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(CultureInfo))
-							.ResolveCached()
-							.Properties.FirstOrDefault(pd => pd.Name == "InvariantCulture")
-							.GetMethod;
-					var getInvariant = Context.Body.Method.Module.ImportReference(getInvariantInfo);
-					yield return Instruction.Create(OpCodes.Call, getInvariant);
-					yield return Instruction.Create(OpCodes.Ldloca, vardef);
-					var tryParseInfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(decimal))
-							.ResolveCached()
-							.Methods.FirstOrDefault(md => md.Name == "TryParse" && md.Parameters.Count == 4);
-					var tryParse = Context.Body.Method.Module.ImportReference(tryParseInfo);
-					yield return Instruction.Create(OpCodes.Call, tryParse);
-					yield return Instruction.Create(OpCodes.Pop);
-					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+//					IL_0003:  ldstr "adecimal"
+//					IL_0008:  ldc.i4.s 0x6f
+//					IL_000a:  call class [mscorlib]System.Globalization.CultureInfo class [mscorlib]System.Globalization.CultureInfo::get_InvariantCulture()
+//					IL_000f:  ldloca.s 0
+//					IL_0011:  call bool valuetype [mscorlib]System.Decimal::TryParse(string, valuetype [mscorlib]System.Globalization.NumberStyles, class [mscorlib]System.IFormatProvider, [out] valuetype [mscorlib]System.Decimal&)
+//					IL_0016:  pop
+					yield return Create(Ldstr, valueString);
+					yield return Create(Ldc_I4, 0x6f); //NumberStyles.Number
+					var getInvariant = module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+																			propertyName: "InvariantCulture");
+					yield return Create(Call, getInvariant);
+					yield return Create(Ldloca, vardef);
+					var tryParse = module.ImportMethodReference(("mscorlib", "System", "Decimal"),
+																methodName: "TryParse",
+																paramCount: 4);
+					yield return Create(Call, tryParse);
+					yield return Create(Pop);
+					yield return Create(Ldloc, vardef);
 				} else {
-					yield return Instruction.Create(OpCodes.Ldc_I4_0);
-					var decimalctorinfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(decimal))
-							.ResolveCached()
-							.Methods.FirstOrDefault(
-								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters [0].ParameterType.FullName == "System.Int32");
-					var decimalctor = Context.Body.Method.Module.ImportReference(decimalctorinfo);
-					yield return Instruction.Create(OpCodes.Newobj, decimalctor);
+					yield return Create(Ldc_I4_0);
+					var decimalctor = module.ImportCtorReference(("mscorlib", "System", "Decimal"),
+																 paramCount: 1,
+																 predicate: md => md.Parameters[0].ParameterType.FullName == "System.Int32");
+					yield return Create(Newobj, decimalctor);
 				}
 				break;
 			case "System.Single":
-				float outfloat;
-				if (hasValue && float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outfloat))
-					yield return Instruction.Create(OpCodes.Ldc_R4, outfloat);
+				if (hasValue && float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out float outfloat))
+					yield return Create(Ldc_R4, outfloat);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_R4, 0f);
+					yield return Create(Ldc_R4, 0f);
 				break;
 			case "System.Double":
-				double outdouble;
-				if (hasValue && double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out outdouble))
-					yield return Instruction.Create(OpCodes.Ldc_R8, outdouble);
+				if (hasValue && double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out double outdouble))
+					yield return Create(Ldc_R8, outdouble);
 				else
-					yield return Instruction.Create(OpCodes.Ldc_R8, 0d);
+					yield return Create(Ldc_R8, 0d);
 				break;
 			case "System.TimeSpan":
-				TimeSpan outspan;
-				if (hasValue && TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out outspan)) {
-					var vardef = new VariableDefinition(Context.Body.Method.Module.ImportReferenceCached(typeof(TimeSpan)));
+				if (hasValue && TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out TimeSpan outspan)) {
+					var vardef = new VariableDefinition(module.ImportReference(("mscorlib", "System", "TimeSpan")));
 					Context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
-					yield return Instruction.Create(OpCodes.Ldstr, valueString);
-					var getInvariantInfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(CultureInfo))
-							.ResolveCached()
-							.Properties.FirstOrDefault(pd => pd.Name == "InvariantCulture")
-							.GetMethod;
-					var getInvariant = Context.Body.Method.Module.ImportReference(getInvariantInfo);
-					yield return Instruction.Create(OpCodes.Call, getInvariant);
-					yield return Instruction.Create(OpCodes.Ldloca, vardef);
-					var tryParseInfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(TimeSpan))
-							.ResolveCached()
-							.Methods.FirstOrDefault(md => md.Name == "TryParse" && md.Parameters.Count == 3);
-					var tryParse = Context.Body.Method.Module.ImportReference(tryParseInfo);
-					yield return Instruction.Create(OpCodes.Call, tryParse);
-					yield return Instruction.Create(OpCodes.Pop);
-					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+					yield return Create(Ldstr, valueString);
+					var getInvariant = module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+																			propertyName: "InvariantCulture");
+					yield return Create(Call, getInvariant);
+					yield return Create(Ldloca, vardef);
+					var tryParse = module.ImportMethodReference(("mscorlib", "System", "TimeSpan"),
+																methodName: "TryParse",
+																paramCount: 3);
+
+					yield return Create(Call, tryParse);
+					yield return Create(Pop);
+					yield return Create(Ldloc, vardef);
 				} else {
-					yield return Instruction.Create(OpCodes.Ldc_I8, 0L);
-					var timespanctorinfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(TimeSpan))
-							.ResolveCached()
-							.Methods.FirstOrDefault(
-								md => md.IsConstructor && md.Parameters.Count == 1 && md.Parameters [0].ParameterType.FullName == "System.Int64");
-					var timespanctor = Context.Body.Method.Module.ImportReference(timespanctorinfo);
-					yield return Instruction.Create(OpCodes.Newobj, timespanctor);
+					yield return Create(Ldc_I8, 0L);
+					var timespanctor = module.ImportCtorReference(("mscorlib", "System", "TimeSpan"),
+																  paramCount: 1,
+																  predicate: md => md.Parameters[0].ParameterType.FullName == "System.Int64");
+					yield return Create(Newobj, timespanctor);
 				}
 				break;
 			case "System.Uri":
-				Uri outuri;
-				if (hasValue && Uri.TryCreate(valueString, UriKind.RelativeOrAbsolute, out outuri)) {
-					var vardef = new VariableDefinition(Context.Body.Method.Module.ImportReferenceCached(typeof(Uri)));
+				if (hasValue && Uri.TryCreate(valueString, UriKind.RelativeOrAbsolute, out Uri outuri)) {
+					var vardef = new VariableDefinition(module.ImportReference(("System", "System", "Uri")));
 					Context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
-					yield return Instruction.Create(OpCodes.Ldstr, valueString);
-					yield return Instruction.Create(OpCodes.Ldc_I4, (int)UriKind.RelativeOrAbsolute);
-					yield return Instruction.Create(OpCodes.Ldloca, vardef);
-					var tryCreateInfo =
-						Context.Body.Method.Module.ImportReferenceCached(typeof(Uri))
-							.ResolveCached()
-							.Methods.FirstOrDefault(md => md.Name == "TryCreate" && md.Parameters.Count == 3);
-					var tryCreate = Context.Body.Method.Module.ImportReference(tryCreateInfo);
-					yield return Instruction.Create(OpCodes.Call, tryCreate);
-					yield return Instruction.Create(OpCodes.Pop);
-					yield return Instruction.Create(OpCodes.Ldloc, vardef);
+					yield return Create(Ldstr, valueString);
+					yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
+					yield return Create(Ldloca, vardef);
+					var tryCreate = module.ImportMethodReference(("System", "System", "Uri"),
+																 methodName: "TryCreate",
+																 paramCount: 3);
+					yield return Create(Call, tryCreate);
+					yield return Create(Pop);
+					yield return Create(Ldloc, vardef);
 				} else
-					yield return Instruction.Create(OpCodes.Ldnull);
+					yield return Create(Ldnull);
 				break;
 			default:
-				var defaultctorinfo = typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters);
-				if (defaultctorinfo != null) {
-					var defaultctor = Context.Body.Method.Module.ImportReference(defaultctorinfo);
-					yield return Instruction.Create(OpCodes.Newobj, defaultctor);
-				} else {
+				var defaultCtor = module.ImportCtorReference(typedef, paramCount: 0);
+				if (defaultCtor != null)
+					yield return Create(Newobj, defaultCtor);
+				else {
 					//should never happen. but if it does, this prevents corrupting the IL stack
-					yield return Instruction.Create(OpCodes.Ldnull);
+					yield return Create(Ldnull);
 				}
 				break;
 			}

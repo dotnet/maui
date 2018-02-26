@@ -12,30 +12,23 @@ namespace Xamarin.Forms.Build.Tasks
 	{
 		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType)
 		{
-			var parentType = typeof (object);
+			var module = targetType.Module;
+			var parentType = module.ImportReference(("mscorlib", "System", "Object"));
 
 			return AddDefaultConstructor(targetType, parentType);
 		}
 
-		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, Type parentType)
+		public static MethodDefinition AddDefaultConstructor(this TypeDefinition targetType, TypeReference parentType)
 		{
 			var module = targetType.Module;
-			var voidType = module.ImportReferenceCached(typeof (void));
+			var voidType = module.ImportReference(("mscorlib", "System", "Void"));
 			var methodAttributes = MethodAttributes.Public |
 			                       MethodAttributes.HideBySig |
 			                       MethodAttributes.SpecialName |
 			                       MethodAttributes.RTSpecialName;
 
-			var flags = BindingFlags.Public |
-			            BindingFlags.NonPublic |
-			            BindingFlags.Instance;
-
-			var objectConstructor = parentType.GetConstructor(flags, null, new Type[0], null);
-
-			if (objectConstructor == null)
-				objectConstructor = typeof (object).GetConstructor(new Type[0]);
-
-			var baseConstructor = module.ImportReferenceCached(objectConstructor);
+			var parentctor =    module.ImportCtorReference(parentType, paramCount: 0, predicate: md => (!md.IsPrivate && !md.IsStatic))
+							 ?? module.ImportCtorReference(("mscorlib", "System", "Object"), paramCount: 0);
 
 			var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
 			{
@@ -47,7 +40,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var IL = ctor.Body.GetILProcessor();
 
 			IL.Emit(OpCodes.Ldarg_0);
-			IL.Emit(OpCodes.Call, baseConstructor);
+			IL.Emit(OpCodes.Call, parentctor);
 			IL.Emit(OpCodes.Ret);
 
 			targetType.Methods.Add(ctor);

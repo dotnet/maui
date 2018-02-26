@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static TypeReference GetTypeForResourceId(ModuleDefinition module, string resourceId)
 		{
 			foreach (var ca in module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[0].Value as string != resourceId)
 					continue;

@@ -200,7 +200,7 @@ namespace Xamarin.Forms.Build.Tasks
 			return typeRef.InheritsFromOrImplements(baseClass);
 		}
 
-		public static CustomAttribute GetCustomAttribute(this TypeReference typeRef, TypeReference attribute)
+		static CustomAttribute GetCustomAttribute(this TypeReference typeRef, TypeReference attribute)
 		{
 			var typeDef = typeRef.ResolveCached();
 			//FIXME: avoid string comparison. make sure the attribute TypeRef is the same one
@@ -211,6 +211,11 @@ namespace Xamarin.Forms.Build.Tasks
 			if (baseTypeRef != null && baseTypeRef.FullName != "System.Object")
 				return baseTypeRef.GetCustomAttribute(attribute);
 			return null;
+		}
+
+		public static CustomAttribute GetCustomAttribute(this TypeReference typeRef, ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) attributeType)
+		{
+			return typeRef.GetCustomAttribute(module.ImportReference(module.GetTypeDefinition(attributeType)));
 		}
 
 		[Obsolete]
