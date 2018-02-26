@@ -374,6 +374,7 @@
       <Type Name="RoutingEffect" Kind="Class" />
       <Type Name="RowDefinition" Kind="Class" />
       <Type Name="RowDefinitionCollection" Kind="Class" />
+      <Type Name="ScrollBarVisibility" Kind="Enumeration" />
       <Type Name="ScrolledEventArgs" Kind="Class" />
       <Type Name="ScrollOrientation" Kind="Enumeration" />
       <Type Name="ScrollToMode" Kind="Enumeration" />

@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -15,7 +16,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new TextBox { VerticalScrollBarVisibility = ScrollBarVisibility.Visible, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true });
+					SetNativeControl(new TextBox { VerticalScrollBarVisibility = WpfScrollBarVisibility.Visible, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true });
 					Control.LostFocus += NativeOnLostFocus; 
 					Control.TextChanged += NativeOnTextChanged;
 				}
