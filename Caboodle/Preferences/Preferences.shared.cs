@@ -1,9 +1,5 @@
 ﻿namespace Microsoft.Caboodle
 {
-	/// <summary>
-	/// Shared code between preferences
-	/// Contains static methods and shared members
-	/// </summary>
 	public sealed partial class Preferences
 	{
 		public Preferences()

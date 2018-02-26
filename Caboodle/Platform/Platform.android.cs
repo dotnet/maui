@@ -1,7 +1,7 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content;
 using Android.OS;
-using System;
 
 namespace Microsoft.Caboodle
 {
@@ -20,54 +20,54 @@ namespace Microsoft.Caboodle
 			lifecycleListener = new ActivityLifecycleContextListener();
 			activity.Application.RegisterActivityLifecycleCallbacks(lifecycleListener);
 		}
-	}
 
-	class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
-	{
-		WeakReference<Activity> currentActivity = new WeakReference<Activity>(null);
-
-		public Context Context =>
-			Activity ?? Application.Context;
-
-		public Activity Activity
+		class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 		{
-			get
+			WeakReference<Activity> currentActivity = new WeakReference<Activity>(null);
+
+			public Context Context =>
+				Activity ?? Application.Context;
+
+			public Activity Activity
 			{
-				Activity a;
-				if (currentActivity.TryGetTarget(out a))
-					return a;
-				return null;
+				get
+				{
+					Activity a;
+					if (currentActivity.TryGetTarget(out a))
+						return a;
+					return null;
+				}
 			}
-		}
 
-		public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
-		{
-		}
+			public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
+			{
+			}
 
-		public void OnActivityDestroyed(Activity activity)
-		{
-		}
+			public void OnActivityDestroyed(Activity activity)
+			{
+			}
 
-		public void OnActivityPaused(Activity activity)
-		{
-			currentActivity.SetTarget(null);
-		}
+			public void OnActivityPaused(Activity activity)
+			{
+				currentActivity.SetTarget(null);
+			}
 
-		public void OnActivityResumed(Activity activity)
-		{
-			currentActivity.SetTarget(activity);
-		}
+			public void OnActivityResumed(Activity activity)
+			{
+				currentActivity.SetTarget(activity);
+			}
 
-		public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
-		{
-		}
+			public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
+			{
+			}
 
-		public void OnActivityStarted(Activity activity)
-		{
-		}
+			public void OnActivityStarted(Activity activity)
+			{
+			}
 
-		public void OnActivityStopped(Activity activity)
-		{
+			public void OnActivityStopped(Activity activity)
+			{
+			}
 		}
 	}
 }

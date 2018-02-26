@@ -6,6 +6,26 @@ namespace Microsoft.Caboodle
 	{
 		static readonly object locker = new object();
 
+		ApplicationDataContainer settings;
+
+		ApplicationDataContainer Settings
+		{
+			get
+			{
+				if (settings == null)
+				{
+					if (string.IsNullOrWhiteSpace(SharedName))
+						settings = ApplicationData.Current.LocalSettings;
+
+					if (!ApplicationData.Current.LocalSettings.Containers.ContainsKey(SharedName))
+						ApplicationData.Current.LocalSettings.CreateContainer(SharedName, ApplicationDataCreateDisposition.Always);
+					settings = ApplicationData.Current.LocalSettings.Containers[SharedName];
+				}
+
+				return settings;
+			}
+		}
+
 		public bool ContainsKey(string key)
 		{
 			lock (locker)
@@ -52,25 +72,6 @@ namespace Microsoft.Caboodle
 			}
 
 			return defaultValue;
-		}
-
-		ApplicationDataContainer settings;
-		ApplicationDataContainer Settings
-		{
-			get
-			{
-				if (settings == null)
-				{
-					if (string.IsNullOrWhiteSpace(SharedName))
-						settings = ApplicationData.Current.LocalSettings;
-
-					if (!ApplicationData.Current.LocalSettings.Containers.ContainsKey(SharedName))
-						ApplicationData.Current.LocalSettings.CreateContainer(SharedName, ApplicationDataCreateDisposition.Always);
-					settings = ApplicationData.Current.LocalSettings.Containers[SharedName];
-				}
-
-				return settings;
-			}
 		}
 	}
 }

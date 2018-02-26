@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <CodeAnalysisRuleSet>..\Caboodle.ruleset</CodeAnalysisRuleSet>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
