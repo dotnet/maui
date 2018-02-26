@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+
+  "settings": {
+    "layoutRules": {
+      "newlineAtEndOfFile": "require"
+    },
+    "indentation": {
+      "useTabs": true
+    },
+    "orderingRules": {
+      "systemUsingDirectivesFirst": true,
+      "usingDirectivesPlacement": "outsideNamespace"
+    }
+  }
+}

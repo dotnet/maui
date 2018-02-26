@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for Caboodle" Description="Code analysis rules for Caboodle." ToolsVersion="15.0">
+  <IncludeAll Action="Warning" />
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
+    <Rule Id="SA0001" Action="None" />
+    <Rule Id="SA1101" Action="None" />
+    <Rule Id="SA1311" Action="None" />
+    <Rule Id="SA1400" Action="None" />
+    <Rule Id="SA1503" Action="None" />
+    <Rule Id="SA1513" Action="None" />
+    <Rule Id="SA1516" Action="None" />
+    <Rule Id="SA1600" Action="None" />
+    <Rule Id="SA1601" Action="None" />
+    <Rule Id="SA1633" Action="None" />
+    <Rule Id="SA1652" Action="None" />
+    <!--
+      =================================================================================================================
+      Rules that are configured in the stylecop.json file
+      https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/Configuration.md
+      =================================================================================================================
+      SA1200: Using directives must be placed correctly.
+              settings.orderingRules.systemUsingDirectivesFirst
+              settings.orderingRules.usingDirectivesPlacement
+      =================================================================================================================
+    -->
+  </Rules>
+</RuleSet>
