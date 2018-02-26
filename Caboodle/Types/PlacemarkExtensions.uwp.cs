@@ -6,11 +6,11 @@ namespace Microsoft.Caboodle
 {
 	public static partial class LoctionExtensions
     {
-		internal static IEnumerable<Location> ToAddresses(this IEnumerable<MapLocation> addresses)
+		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<MapLocation> mapLocations)
 		{
-			return addresses.Select(address => new Location
+			return mapLocations.Select(address => new Placemark
 			{
-				Point = new GeoPoint(address.Point.Position.Latitude, address.Point.Position.Longitude),
+				Location = new Location(address.Point.Position.Latitude, address.Point.Position.Longitude),
 				FeatureName = address.DisplayName,
 				PostalCode = address.Address.PostCode,
 				CountryCode = address.Address.CountryCode,

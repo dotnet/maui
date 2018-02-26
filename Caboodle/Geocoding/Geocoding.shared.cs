@@ -8,12 +8,12 @@ namespace Microsoft.Caboodle
     {
         public static string MapKey { get; set; }
 
-        public static Task<IEnumerable<Location>> GetLocationsAsync(GeoPoint point)
+        public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(Location location)
         {
-            if (point == null)
-                throw new ArgumentNullException(nameof(point));
+            if (location == null)
+                throw new ArgumentNullException(nameof(location));
 
-            return GetLocationsAsync(point.Latitude, point.Longitude);
+            return GetPlacemarksAsync(location.Latitude, location.Longitude);
         }
     }
 }

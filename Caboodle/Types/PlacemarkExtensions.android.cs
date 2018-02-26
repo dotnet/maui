@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Microsoft.Caboodle
 {
-	public static partial class PositionExtensions
+	public static partial class PlacemarkExtensions
 	{
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         internal static DateTimeOffset GetTimestamp(this Android.Locations.Location location)
@@ -19,9 +19,9 @@ namespace Microsoft.Caboodle
             }
         }
 
-        internal static GeoPoint ToPoint(this Android.Locations.Location location)
+        internal static Location ToLocation(this Android.Locations.Location location)
         {
-			var p = new GeoPoint
+			var p = new Location
 			{
 				Longitude = location.Longitude,
 				Latitude = location.Latitude,
@@ -30,11 +30,11 @@ namespace Microsoft.Caboodle
 			return p;
         }
 
-		internal static IEnumerable<Location> ToLocations(this IEnumerable<Android.Locations.Address> addresses)
+		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<Android.Locations.Address> addresses)
 		{
-			return addresses.Select(address => new Location
+			return addresses.Select(address => new Placemark
 			{
-				Point = new GeoPoint(address.Latitude, address.Longitude),
+				Location = new Location(address.Latitude, address.Longitude),
 				FeatureName = address.FeatureName,
 				PostalCode = address.PostalCode,
 				SubLocality = address.SubLocality,

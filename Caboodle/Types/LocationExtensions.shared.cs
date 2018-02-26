@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
-namespace Microsoft.Caboodle
+namespace Microsoft.Caboodle.Types
 {
-	public static partial class PositionExtensions
+    public static partial class LocationExtensions
 	{
-        public static double CalculateDistance(this GeoPoint positionStart, GeoPoint positionEnd, DistanceUnits units = DistanceUnits.Miles) =>
-			GeoPoint.CalculateDistance(positionStart, positionEnd, units);
+		public static double CalculateDistance(this Location locationStart, Location locationEnd, DistanceUnits units = DistanceUnits.Miles) =>
+			Location.CalculateDistance(locationStart, locationEnd, units);
 
-    }
+	}
 }

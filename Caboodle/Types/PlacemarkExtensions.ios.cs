@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace Microsoft.Caboodle
 {
-	public static partial class PositionExtensions
+	public static partial class PlacemarkExtensions
     {
-		internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> addresses)
+		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<CLPlacemark> addresses)
 		{
-			return addresses.Select(address => new Location
+			return addresses.Select(address => new Placemark
 			{
-				Point = new GeoPoint(address.Location.Coordinate.Latitude, address.Location.Coordinate.Longitude),
+				Location = new Location(address.Location.Coordinate.Latitude, address.Location.Coordinate.Longitude),
 				FeatureName = address.Name,
 				PostalCode = address.PostalCode,
 				SubLocality = address.SubLocality,
