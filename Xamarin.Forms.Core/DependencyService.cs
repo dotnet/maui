@@ -13,6 +13,13 @@ namespace Xamarin.Forms
 		static readonly List<Type> DependencyTypes = new List<Type>();
 		static readonly Dictionary<Type, DependencyData> DependencyImplementations = new Dictionary<Type, DependencyData>();
 
+		public static T Resolve<T>(DependencyFetchTarget fallbackFetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
+		{
+			var result = DependencyResolver.Resolve(typeof(T)) as T;
+
+			return result ?? Get<T>(fallbackFetchTarget);
+		}
+
 		public static T Get<T>(DependencyFetchTarget fetchTarget = DependencyFetchTarget.GlobalInstance) where T : class
 		{
 			Initialize();

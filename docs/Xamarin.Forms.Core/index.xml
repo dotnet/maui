@@ -463,6 +463,7 @@
       <Type Name="CustomKeyboard" Kind="Class" />
       <Type Name="DataTemplateExtensions" Kind="Class" />
       <Type Name="DelegateLogListener" Kind="Class" />
+      <Type Name="DependencyResolver" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceOrientation" Kind="Enumeration" />
       <Type Name="DeviceOrientationExtensions" Kind="Class" />
