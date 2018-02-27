@@ -1,30 +1,12 @@
-﻿using System;
+﻿using Foundation;
+using System;
 using System.Globalization;
-using Foundation;
 
 namespace Microsoft.Caboodle
 {
 	public partial class Preferences
 	{
 		static readonly object locker = new object();
-
-		NSUserDefaults userDefaults = null;
-
-		NSUserDefaults UserDefaults
-		{
-			get
-			{
-				if (userDefaults == null)
-				{
-					if (!string.IsNullOrWhiteSpace(SharedName))
-						userDefaults = new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
-					else
-						userDefaults = NSUserDefaults.StandardUserDefaults;
-				}
-
-				return userDefaults;
-			}
-		}
 
 		public bool ContainsKey(string key)
 		{
@@ -120,6 +102,23 @@ namespace Microsoft.Caboodle
 			}
 
 			return (T)value;
+		}
+
+		NSUserDefaults userDefaults = null;
+		NSUserDefaults UserDefaults
+		{
+			get
+			{
+				if (userDefaults == null)
+				{
+					if (!string.IsNullOrWhiteSpace(SharedName))
+						userDefaults = new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
+					else
+						userDefaults = NSUserDefaults.StandardUserDefaults;
+				}
+
+				return userDefaults;
+			}
 		}
 	}
 }
