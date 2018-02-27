@@ -8,6 +8,7 @@ namespace Microsoft.Caboodle.Tests
 		[Fact]
 		public void Test1()
 		{
+
 		}
 	}
 }
