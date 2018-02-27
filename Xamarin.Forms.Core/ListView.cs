@@ -11,7 +11,6 @@ namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ListViewRenderer))]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>
-
 	{
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
 
@@ -567,7 +566,7 @@ namespace Xamarin.Forms
 			=> ScrollToRequested?.Invoke(this, e);
 
 		static void OnSelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
-			=> (bindable as ListView)?.ItemSelected?.Invoke(bindable, new SelectedItemChangedEventArgs(newValue));
+			=> ((ListView)bindable).ItemSelected?.Invoke(bindable, new SelectedItemChangedEventArgs(newValue));
 
 		static bool ValidateHeaderFooterTemplate(BindableObject bindable, object value)
 		{
