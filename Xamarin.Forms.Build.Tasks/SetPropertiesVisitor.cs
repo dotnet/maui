@@ -184,7 +184,9 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.IL.Append(AddToResourceDictionary(node, node, Context));
 					return;
 				} 
-				var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).First();
+				var adderTuple = propertyType.GetMethods(md => md.Name == "Add" && md.Parameters.Count == 1, Module).FirstOrDefault();
+				if (adderTuple == null)
+					throw new XamlParseException($"Can not Add() elements to {parent.VariableType}.{localname}", node);
 				var adderRef = Module.ImportReference(adderTuple.Item1);
 				adderRef = Module.ImportReference(adderRef.ResolveGenericParameters(adderTuple.Item2, Module));
 
