@@ -272,30 +272,22 @@ namespace Xamarin.Forms.Build.Tasks
 
 					//First using the ResourceLoader
 					var nop = Instruction.Create(Nop);
-					var getResourceProvider = module.ImportReference(module.ImportReferenceCached(typeof(Internals.ResourceLoader))
-							 .ResolveCached()
-							 .Properties.FirstOrDefault(pd => pd.Name == "ResourceProvider")
-							 .GetMethod);
+					var getResourceProvider = module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms.Internals", "ResourceLoader"), "ResourceProvider");
 					il.Emit(Call, getResourceProvider);
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getResourceProvider);
 
-					var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-					var getTypeInfo = module.ImportReferenceCached(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
-					var getAssembly = module.ImportReferenceCached(typeof(Type).GetProperty("Assembly").GetMethod);
-					var getAssemblyName = module.ImportReferenceCached(typeof(System.Reflection.Assembly).GetMethod("GetName", new Type[] { }));
 					il.Emit(Ldtoken, module.ImportReference(initComp.DeclaringType));
-					il.Emit(Call, module.ImportReference(getTypeFromHandle));
-					il.Emit(Call, module.ImportReference(getTypeInfo));
-					il.Emit(Callvirt, module.ImportReference(getAssembly));
-					il.Emit(Callvirt, module.ImportReference(getAssemblyName)); //assemblyName
+					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", paramCount: 1, predicate: md => md.IsStatic));
+					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", paramCount: 1, predicate: md => md.IsStatic));
+					il.Emit(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
+					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System.Reflection", "Assembly"), methodName: "GetName", paramCount: 0)); //assemblyName
 
-					il.Emit(Ldstr, resourcePath);	//resourcePath
-					var func = module.ImportReference(module.ImportReferenceCached(typeof(Func<System.Reflection.AssemblyName, string, string>))
-							 .ResolveCached()
-							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(module.ImportReferenceCached(typeof(Func<System.Reflection.AssemblyName, string, string>)), module);
-					il.Emit(Callvirt, func);
+					il.Emit(Ldstr, resourcePath);   //resourcePath
+					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System", "Func`3"),
+																   methodName: "Invoke",
+																   paramCount: 2,
+																   classArguments: new[] { ("mscorlib", "System.Reflection", "AssemblyName"), ("mscorlib", "System", "String"), ("mscorlib", "System", "String") }));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -304,26 +296,17 @@ namespace Xamarin.Forms.Build.Tasks
 
 					//Or using the deprecated XamlLoader
 					nop = Instruction.Create(Nop);
-#pragma warning disable 0618
-					var getXamlFileProvider = module.ImportReference(module.ImportReferenceCached(typeof(Xaml.Internals.XamlLoader))
-							.ResolveCached()
-							.Properties.FirstOrDefault(pd => pd.Name == "XamlFileProvider")
-							.GetMethod);
-#pragma warning restore 0618
 
+					var getXamlFileProvider = module.ImportPropertyGetterReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlLoader"), propertyName: "XamlFileProvider");
 					il.Emit(Call, getXamlFileProvider);
 					il.Emit(Brfalse, nop);
 					il.Emit(Call, getXamlFileProvider);
 					il.Emit(Ldarg_0);
-					var getType = module.ImportReference(module.ImportReferenceCached(typeof(object))
-									  .ResolveCached()
-									  .Methods.FirstOrDefault(md => md.Name == "GetType"));
-					il.Emit(Call, getType);
-					func = module.ImportReference(module.ImportReferenceCached(typeof(Func<Type, string>))
-							 .ResolveCached()
-							 .Methods.FirstOrDefault(md => md.Name == "Invoke"));
-					func = func.ResolveGenericParameters(module.ImportReferenceCached(typeof(Func<Type, string>)), module);
-					il.Emit(Callvirt, func);
+					il.Emit(Call, module.ImportMethodReference(("mscorlib", "System", "Object"), methodName: "GetType", paramCount: 0));
+					il.Emit(Callvirt, module.ImportMethodReference(("mscorlib", "System", "Func`2"),
+																   methodName: "Invoke",
+																   paramCount: 1,
+																   classArguments: new[] { ("mscorlib", "System", "Type"), ("mscorlib", "System", "String")}));
 					il.Emit(Brfalse, nop);
 					il.Emit(Ldarg_0);
 					il.Emit(Call, initCompRuntime);
@@ -356,7 +339,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -369,7 +352,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;
