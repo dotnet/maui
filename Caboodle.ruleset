@@ -73,8 +73,8 @@
     <Rule Id="SA1137" Action="Warning" />
     <Rule Id="SA1139" Action="Warning" />
     <Rule Id="SA1200" Action="Warning" />
-    <Rule Id="SA1201" Action="Warning" /><!-- TODO: verify SA1201ElementsMustAppearInTheCorrectOrder -->
-    <Rule Id="SA1202" Action="Warning" /><!-- TODO: verify SA1202ElementsMustBeOrderedByAccess -->
+    <Rule Id="SA1201" Action="None" />
+    <Rule Id="SA1202" Action="None" />
     <Rule Id="SA1203" Action="Warning" />
     <Rule Id="SA1204" Action="Warning" />
     <Rule Id="SA1205" Action="Warning" />
@@ -107,7 +107,7 @@
     <Rule Id="SA1314" Action="Warning" />
     <Rule Id="SA1400" Action="None" />
     <Rule Id="SA1401" Action="Warning" />
-    <Rule Id="SA1402" Action="Warning" />
+    <Rule Id="SA1402" Action="None" />
     <Rule Id="SA1403" Action="Warning" />
     <Rule Id="SA1404" Action="Warning" />
     <Rule Id="SA1405" Action="Warning" />
@@ -126,7 +126,7 @@
     <Rule Id="SA1504" Action="Warning" />
     <Rule Id="SA1505" Action="Warning" />
     <Rule Id="SA1506" Action="Warning" />
-    <Rule Id="SA1507" Action="Warning" /><!-- TODO: verify SA1507CodeMustNotContainMultipleBlankLinesInARow -->
+    <Rule Id="SA1507" Action="None" />
     <Rule Id="SA1508" Action="Warning" />
     <Rule Id="SA1509" Action="Warning" />
     <Rule Id="SA1510" Action="Warning" />
@@ -189,7 +189,7 @@
     <Rule Id="SA1646" Action="None" />
     <Rule Id="SA1647" Action="None" />
     <Rule Id="SA1648" Action="None" />
-    <Rule Id="SA1649" Action="Warning" /><!-- TODO: verify SA1649FileNameMustMatchTypeName -->
+    <Rule Id="SA1649" Action="None" />
     <Rule Id="SA1650" Action="None" />
     <Rule Id="SA1651" Action="None" />
     <Rule Id="SA1652" Action="None" />
