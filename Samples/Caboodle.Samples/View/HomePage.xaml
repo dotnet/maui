@@ -2,24 +2,18 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Caboodle.Samples.View.HomePage"
-			 xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
-			 Title="Caboodle Samples">
-	<ContentPage.BindingContext>
-		<viewmodels:HomeViewModel/>
-	</ContentPage.BindingContext>
-	<ListView x:Name="MyListView"
-            ItemsSource="{Binding Items}"
-            ItemTapped="Handle_ItemTapped"
-            CachingStrategy="RecycleElement">
-		<ListView.ItemTemplate>
-			<DataTemplate>
-				<ViewCell>
-					<StackLayout>
-						<Label Text="{Binding Name}" 
-                   Style="{DynamicResource ListItemTextStyle}" />
-					</StackLayout>
-				</ViewCell>
-			</DataTemplate>
-		</ListView.ItemTemplate>
-	</ListView>
+             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
+             Title="Caboodle Samples">
+    <ContentPage.BindingContext>
+        <viewmodels:HomeViewModel/>
+    </ContentPage.BindingContext>
+
+    <ListView ItemsSource="{Binding Items}" ItemTapped="Handle_ItemTapped" CachingStrategy="RecycleElement">
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <TextCell Text="{Binding Name}" Detail="{Binding Description}" />
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+
 </ContentPage>
