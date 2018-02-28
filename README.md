@@ -1,6 +1,6 @@
 # Microsoft Caboodle
 
-A kit of essential cross platform API's
+A kit of essential cross platform APIs.
 
 ## Supported Platforms
  - iOS (10+)
@@ -20,4 +20,3 @@ A kit of essential cross platform API's
 ## Planned Features:
  - Media Picker
  - Browser
-
