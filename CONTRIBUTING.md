@@ -21,7 +21,9 @@ If you're looking for something to fix, please browse [open issues](https://gith
 Follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with two primary exceptions:
 
 - We do not use the `private` keyword as it is the default accessibility level in C#.
-- We use hard tabs over spaces. You can change this setting in VS 2015 via `Tools > Options` and navigating to `Text Editor > C#` and selecting the "Keep tabs" radio option.
+- We will **not** use `_` or `_s` as a prefix for internal or private field names
+- We will use `camelCaseFieldName` for naming internal or private fields in both instance and static implementations
+
 
 Read and follow our [Pull Request template](https://github.com/xamarin/Caboodle/blob/master/PULL_REQUEST_TEMPLATE.md)
 
