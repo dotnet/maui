@@ -2,7 +2,7 @@
 # top-most EditorConfig file
 root = true
 
-# Don't use tabs for indentation.
+# Don't use spaces for indentation.
 [*]
 indent_style = space
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
@@ -10,12 +10,10 @@ indent_style = space
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 4
-indent_style = tabs
 
 # Code files
 [*.sln]
 indent_size = 4
-indent_style = tabs
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]

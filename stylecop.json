@@ -5,9 +5,6 @@
     "layoutRules": {
       "newlineAtEndOfFile": "require"
     },
-    "indentation": {
-      "useTabs": true
-    },
     "orderingRules": {
       "systemUsingDirectivesFirst": true,
       "usingDirectivesPlacement": "outsideNamespace"
