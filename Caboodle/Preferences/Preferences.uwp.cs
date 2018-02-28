@@ -61,12 +61,17 @@ namespace Microsoft.Caboodle
 			{
 				if (settings == null)
 				{
+					var localSettings = ApplicationData.Current.LocalSettings;
 					if (string.IsNullOrWhiteSpace(SharedName))
-						settings = ApplicationData.Current.LocalSettings;
-
-					if (!ApplicationData.Current.LocalSettings.Containers.ContainsKey(SharedName))
-						ApplicationData.Current.LocalSettings.CreateContainer(SharedName, ApplicationDataCreateDisposition.Always);
-					settings = ApplicationData.Current.LocalSettings.Containers[SharedName];
+					{
+						settings = localSettings;
+					}
+					else
+					{
+						if (!localSettings.Containers.ContainsKey(SharedName))
+							localSettings.CreateContainer(SharedName, ApplicationDataCreateDisposition.Always);
+						settings = localSettings.Containers[SharedName];
+					}
 				}
 
 				return settings;
