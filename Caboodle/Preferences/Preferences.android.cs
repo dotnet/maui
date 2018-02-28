@@ -88,9 +88,6 @@ namespace Microsoft.Caboodle
 				{
 					switch (defaultValue)
 					{
-						case string s:
-							value = sharedPreferences.GetString(key, s);
-							break;
 						case int i:
 							value = sharedPreferences.GetInt(key, i);
 							break;
@@ -120,6 +117,15 @@ namespace Microsoft.Caboodle
 							break;
 						case float f:
 							value = sharedPreferences.GetFloat(key, f);
+							break;
+						case string s:
+							// the case when the string is not null
+							value = sharedPreferences.GetString(key, s);
+							break;
+						default:
+							// the case when the string is null
+							if (typeof(T) == typeof(string))
+								value = sharedPreferences.GetString(key, null);
 							break;
 					}
 				}
