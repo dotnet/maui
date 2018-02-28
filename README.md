@@ -1,6 +1,8 @@
+[![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle)](https://jenkins.mono-project.com/view/Components/job/Components-Caboodle/)
+
 # Microsoft Caboodle
 
-A kit of essential cross platform API's
+A kit of essential cross platform APIs.
 
 ## Supported Platforms
  - iOS (10+)
@@ -20,4 +22,3 @@ A kit of essential cross platform API's
 ## Planned Features:
  - Media Picker
  - Browser
-

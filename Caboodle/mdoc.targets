@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    ============================================================
+    SetupMDoc
+
+    Set all the variables needed for mdoc.
+    This runs during the build and package phases.
+    ============================================================
+  -->
+  <Target Name="_MDocSetup">
+    <PropertyGroup>
+      <_ManagedExeLauncher Condition=" '$(OS)' != 'Windows_NT' And Exists ('/Library/Frameworks/Mono.framework/Versions/Current/bin/mono') ">/Library/Frameworks/Mono.framework/Versions/Current/bin/mono</_ManagedExeLauncher>
+      <_ManagedExeLauncher Condition=" '$(OS)' != 'Windows_NT' And Exists ('/usr/local/bin/mono') ">/usr/local/bin/mono</_ManagedExeLauncher>
+      <_ManagedExeLauncher Condition=" '$(OS)' != 'Windows_NT' And Exists ('/usr/bin/mono') ">/usr/bin/mono</_ManagedExeLauncher>
+      <_ManagedExeLauncher Condition=" '$(OS)' != 'Windows_NT' And '$(_ManagedExeLauncher)' == '' ">mono</_ManagedExeLauncher>
+      <MDocVersion Condition=" '%(Identity)' == 'mdoc' ">@(PackageReference -> '%(Version)')</MDocVersion>
+      <MDocPackagePath Condition=" '%(Name)' == 'mdoc' ">@(PackageDefinitions -> '%(ResolvedPath)')</MDocPackagePath>
+      <MDocPackagePath Condition=" '$(MDocPackagePath)' == '' ">$(NuGetPackageRoot)\mdoc\$(MDocVersion)</MDocPackagePath>
+      <MDocToolPath>$(MDocPackagePath)\tools\mdoc.exe</MDocToolPath>
+      <MDocOutputName>$(TargetName).xml</MDocOutputName>
+      <MDocOutputPath>$(TargetDir)$(MDocOutputName)</MDocOutputPath>
+      <_ShouldGenerateDocs Condition=" '$(MDocDocumentationDirectory)' != '' and Exists('$(MDocDocumentationDirectory)\index.xml') ">true</_ShouldGenerateDocs>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    MDocGenerateDocs
+
+    Generated the XML documentation file using mdoc.
+    This runs during the build phase.
+    ============================================================
+  -->
+  <Target Name="MDocGenerateDocs"
+          AfterTargets="CoreCompile" DependsOnTargets="_MDocSetup">
+    <ItemGroup Condition=" '$(_ShouldGenerateDocs)' == 'true' ">
+      <FileWrites Include="$(MDocOutputPath)" />
+    </ItemGroup>
+    <Exec Condition=" '$(_ShouldGenerateDocs)' == 'true' "
+          Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc --out=&quot;$(MDocOutputPath)&quot; &quot;$(MDocDocumentationDirectory)&quot;" />
+  </Target>
+
+  <!--
+    ============================================================
+    MDocAddFilesToPackage
+
+    Make sure the mdoc output goes into the final package.
+    This runs during the package phase.
+    ============================================================
+  -->
+  <Target Name="MDocAddFilesToPackage"
+          BeforeTargets="_GetBuildOutputFilesWithTfm" DependsOnTargets="_MDocSetup">
+    <ItemGroup Condition=" '$(_ShouldGenerateDocs)' == 'true' ">
+      <BuildOutputInPackage Include="$(MDocOutputPath)" TargetFramework="$(TargetFramework)" TargetPath="$(MDocOutputName)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    MDocUpdateDocs
+
+    Update the docs in the documentation directory using the
+    compiled assemblies.
+    This runs as a separate task.
+    ============================================================
+  -->
+  <Target Name="MDocUpdateDocs"
+          DependsOnTargets="_MDocSetup">
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <FrameowrkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameowrkReferenceAssemblyPath>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\MonoAndroid\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\MonoAndroid\v4.0.3" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.iOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.TVOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.WatchOS\v1.0" />
+      <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.Mac\v2.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <MDocAssembly Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\*.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
+      <MDocAssemblies>@(MDocAssembly -> '&quot;%(Identity)&quot;', ' ')</MDocAssemblies>
+    </PropertyGroup>
+    <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --preserve --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies) $(MDocAssemblies)" />
+  </Target>
+
+</Project>
