@@ -10,6 +10,7 @@ namespace Caboodle.Samples.ViewModel
 		{
 			Items = new ObservableRangeCollection<SampleItem>
 			{
+				new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
 				new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),
 			};
 		}

@@ -11,8 +11,9 @@ namespace Microsoft.Caboodle
     {
         public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
         {
+			ValidateMapKey();
 
-            var queryResults =
+			var queryResults =
                 await MapLocationFinder.FindLocationsAtAsync(
                         new Geopoint(new BasicGeoposition { Latitude = latitude, Longitude = longitude })).AsTask();
 
