@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace Microsoft.Caboodle
 {
-	public static partial class LocationExtensions
-	{
-		internal static Location ToLocation(this CLPlacemark placemark) =>
-			new Location(placemark.Location.Coordinate.Latitude, placemark.Location.Coordinate.Longitude, DateTimeOffset.UtcNow);
+    public static partial class LocationExtensions
+    {
+        internal static Location ToLocation(this CLPlacemark placemark) =>
+            new Location(placemark.Location.Coordinate.Latitude, placemark.Location.Coordinate.Longitude, DateTimeOffset.UtcNow);
 
-		internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> placemarks) =>
-			placemarks?.Select(a => a.ToLocation());
-	}
+        internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> placemarks) =>
+            placemarks?.Select(a => a.ToLocation());
+    }
 }

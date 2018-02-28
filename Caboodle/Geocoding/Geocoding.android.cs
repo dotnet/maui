@@ -7,29 +7,29 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Caboodle
 {
-	public partial class Geocoding
-	{
-		public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
-		{
-			using (var geocoder = new Geocoder(Application.Context))
-			{
-				var addressList = await geocoder.GetFromLocationAsync(latitude, longitude, 10);
-				return addressList?.ToPlacemarks();
-			}
-		}
+    public partial class Geocoding
+    {
+        public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
+        {
+            using (var geocoder = new Geocoder(Application.Context))
+            {
+                var addressList = await geocoder.GetFromLocationAsync(latitude, longitude, 10);
+                return addressList?.ToPlacemarks();
+            }
+        }
 
-		public static async Task<IEnumerable<Location>> GetLocationsAsync(string address)
-		{
-			if (address == null)
-				throw new ArgumentNullException(nameof(address));
+        public static async Task<IEnumerable<Location>> GetLocationsAsync(string address)
+        {
+            if (address == null)
+                throw new ArgumentNullException(nameof(address));
 
-			using (var geocoder = new Geocoder(Application.Context))
-			{
-				var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
+            using (var geocoder = new Geocoder(Application.Context))
+            {
+                var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
 
-				return addressList?.ToLocations();
-			}
-		}
-	}
+                return addressList?.ToLocations();
+            }
+        }
+    }
 
 }
