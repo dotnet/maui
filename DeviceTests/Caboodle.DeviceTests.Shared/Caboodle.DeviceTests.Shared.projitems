@@ -11,4 +11,5 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

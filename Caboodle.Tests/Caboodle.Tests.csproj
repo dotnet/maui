@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <CodeAnalysisRuleSet>..\Caboodle.ruleset</CodeAnalysisRuleSet>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -12,13 +9,13 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" PrivateAssets="All" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
-    <AdditionalFiles Include="..\stylecop.json" InProject="false" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Caboodle\Caboodle.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
 
 </Project>

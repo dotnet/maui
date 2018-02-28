@@ -33,14 +33,10 @@
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://go.microsoft.com/fwlink/?linkid=868960</PackageProjectUrl>
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
-    <CodeAnalysisRuleSet>..\Caboodle.ruleset</CodeAnalysisRuleSet>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" PrivateAssets="All" />
     <PackageReference Include="mdoc" Version="5.5.0" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.0" PrivateAssets="All" />
-    <AdditionalFiles Include="..\stylecop.json" InProject="false" />
     <Compile Include="**\*.shared.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
@@ -60,5 +56,6 @@
     <Compile Include="**\*.ios.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
-  <Import Project="$(MSBuildProjectDirectory)\mdoc.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)mdoc.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
 </Project>
