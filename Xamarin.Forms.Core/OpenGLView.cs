@@ -24,11 +24,7 @@ namespace Xamarin.Forms
 		public Action<Rectangle> OnDisplay { get; set; }
 
 		public void Display()
-		{
-			EventHandler handler = DisplayRequested;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> DisplayRequested?.Invoke(this, EventArgs.Empty);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler DisplayRequested;

@@ -161,13 +161,11 @@ namespace Xamarin.Forms
 				if (_platform == value)
 					return;
 				_platform = value;
-				if (PlatformSet != null)
-					PlatformSet(this, EventArgs.Empty);
+				PlatformSet?.Invoke(this, EventArgs.Empty);
 				foreach (Element descendant in Descendants())
 				{
 					descendant._platform = _platform;
-					if (descendant.PlatformSet != null)
-						descendant.PlatformSet(this, EventArgs.Empty);
+					descendant.PlatformSet?.Invoke(this, EventArgs.Empty);
 				}
 			}
 		}
@@ -371,8 +369,7 @@ namespace Xamarin.Forms
 
 			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged:true);
 
-			if (ChildAdded != null)
-				ChildAdded(this, new ElementEventArgs(child));
+			ChildAdded?.Invoke(this, new ElementEventArgs(child));
 
 			OnDescendantAdded(child);
 			foreach (Element element in child.Descendants())
@@ -383,8 +380,7 @@ namespace Xamarin.Forms
 		{
 			child.Parent = null;
 
-			if (ChildRemoved != null)
-				ChildRemoved(child, new ElementEventArgs(child));
+			ChildRemoved?.Invoke(child, new ElementEventArgs(child));
 
 			OnDescendantRemoved(child);
 			foreach (Element element in child.Descendants())
@@ -641,8 +637,7 @@ namespace Xamarin.Forms
 
 		void OnDescendantAdded(Element child)
 		{
-			if (DescendantAdded != null)
-				DescendantAdded(this, new ElementEventArgs(child));
+			DescendantAdded?.Invoke(this, new ElementEventArgs(child));
 
 			if (RealParent != null)
 				RealParent.OnDescendantAdded(child);
@@ -650,8 +645,7 @@ namespace Xamarin.Forms
 
 		void OnDescendantRemoved(Element child)
 		{
-			if (DescendantRemoved != null)
-				DescendantRemoved(this, new ElementEventArgs(child));
+			DescendantRemoved?.Invoke(this, new ElementEventArgs(child));
 
 			if (RealParent != null)
 				RealParent.OnDescendantRemoved(child);

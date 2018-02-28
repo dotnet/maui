@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -82,7 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateInputType();
 			UpdateTextColor();
 			UpdateFont();
-			UpdateIsReadOnly();
+			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -101,8 +103,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -191,9 +193,27 @@ namespace Xamarin.Forms.Platform.Android
 			Control?.ClearFocus();
 		}
 
-		void UpdateIsReadOnly()
+		void UpdateMaxLength()
 		{
-			Control.Focusable = !Element.IsReadOnly;
+			var currentFilters = new List<IInputFilter>(Control?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(Element.MaxLength));
+
+			Control?.SetFilters(currentFilters.ToArray());
+
+			var currentControlText = Control?.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 	}
 }

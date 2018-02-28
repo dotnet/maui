@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateInputScope();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
+				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
 				UpdateIsReadOnly();
 			}
@@ -91,6 +92,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
 				UpdateDetectReadingOrderFromContent();
 			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
@@ -224,7 +227,17 @@ namespace Xamarin.Forms.Platform.UWP
 			BrushHelpers.UpdateColor(textColor, ref _defaultTextColorFocusBrush,
 				() => Control.ForegroundFocusBrush, brush => Control.ForegroundFocusBrush = brush);
 		}
+    
+		void UpdateMaxLength()
+		{
+			Control.MaxLength = Element.MaxLength;
 
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+    
 		void UpdateDetectReadingOrderFromContent()
 		{
 			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))

@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Editor.FontFamilyProperty, UpdateFontFamily);
 			RegisterPropertyHandler(Editor.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Editor.KeyboardProperty, UpdateKeyboard);
-			RegisterPropertyHandler(Editor.IsReadOnlyProperty, UpdateIsReadOnly);
+			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
@@ -28,6 +28,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				entry.Focused += OnFocused;
 				entry.Unfocused += OnUnfocused;
 				entry.TextChanged += OnTextChanged;
+				entry.Unfocused += OnCompleted;
+				entry.PrependMarkUpFilter(MaxLengthFilter);
 
 				SetNativeControl(entry);
 			}
@@ -117,9 +119,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.Keyboard = Element.Keyboard.ToNative();
 		}
 
-		void UpdateIsReadOnly()
+		void UpdateMaxLength()
 		{
-			Control.AllowFocus(!Element.IsReadOnly);
+			if (Control.Text.Length > Element.MaxLength)
+				Control.Text = Control.Text.Substring(0, Element.MaxLength);
+		}
+
+		string MaxLengthFilter(ElmSharp.Entry entry, string s)
+		{
+			if (entry.Text.Length < Element.MaxLength)
+				return s;
+
+			return null;
 		}
 	}
 }

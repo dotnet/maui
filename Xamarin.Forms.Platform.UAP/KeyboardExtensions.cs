@@ -1,5 +1,6 @@
 ﻿using System;
 using Windows.UI.Xaml.Input;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -42,8 +43,41 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				name.NameValue = InputScopeNameValue.Default;
+				var custom = (CustomKeyboard)self;
+				var capitalizedSentenceEnabled = (custom.Flags & KeyboardFlags.CapitalizeSentence) == KeyboardFlags.CapitalizeSentence;
+				var capitalizedWordsEnabled = (custom.Flags & KeyboardFlags.CapitalizeWord) == KeyboardFlags.CapitalizeWord;
+				var capitalizedCharacterEnabled = (custom.Flags & KeyboardFlags.CapitalizeCharacter) == KeyboardFlags.CapitalizeCharacter;
+
+				var spellcheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) == KeyboardFlags.Spellcheck;
+				var suggestionsEnabled = (custom.Flags & KeyboardFlags.Suggestions) == KeyboardFlags.Suggestions;
+
+				InputScopeNameValue nameValue = InputScopeNameValue.Default;
+
+				if (capitalizedSentenceEnabled)
+				{
+					if (!spellcheckEnabled)
+					{
+						Log.Warning(null, "CapitalizeSentence only works when spell check is enabled");
+					}
+				}
+				else if (capitalizedWordsEnabled)
+				{
+					if (!spellcheckEnabled)
+					{
+						Log.Warning(null, "CapitalizeWord only works when spell check is enabled");
+					}
+
+					nameValue = InputScopeNameValue.NameOrPhoneNumber;
+				}
+
+				if (capitalizedCharacterEnabled)
+				{
+					Log.Warning(null, "UWP does not support CapitalizeCharacter");
+				}
+
+				name.NameValue = nameValue;
 			}
+
 			result.Names.Add(name);
 			return result;
 		}

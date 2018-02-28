@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
@@ -84,7 +85,6 @@ namespace Xamarin.Forms.Platform.Android
 
 				_textColorSwitcher = new TextColorSwitcher(textView.TextColors, useLegacyColorManagement);
 				_hintColorSwitcher = new TextColorSwitcher(textView.HintTextColors, useLegacyColorManagement);
-				
 				SetNativeControl(textView);
 			}
 
@@ -96,8 +96,8 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateAlignment();
 			UpdateFont();
 			UpdatePlaceholderColor();
+			UpdateMaxLength();
 			UpdateImeOptions();
-			UpdateIsReadOnly();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -119,7 +119,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			base.Dispose(disposing);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Entry.PlaceholderProperty.PropertyName)
@@ -156,18 +156,18 @@ namespace Xamarin.Forms.Platform.Android
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)
 				UpdateImeOptions();
-			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
 
 		protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
 		{
-			// Override this in a custom renderer to use a different NumberKeyListener 
-			// or to filter out input types you don't want to allow 
+			// Override this in a custom renderer to use a different NumberKeyListener
+			// or to filter out input types you don't want to allow
 			// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
 			return LocalizedDigitsKeyListener.Create(inputTypes);
 		}
@@ -232,10 +232,28 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Control?.ClearFocus();
 		}
-
-		void UpdateIsReadOnly()
+    
+		void UpdateMaxLength()
 		{
-			Control.Focusable = !Element.IsReadOnly;
+			var currentFilters = new List<IInputFilter>(Control?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(Element.MaxLength));
+
+			Control?.SetFilters(currentFilters.ToArray());
+
+			var currentControlText = Control?.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
 		}
 	}
 }

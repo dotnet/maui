@@ -44,26 +44,18 @@ namespace Xamarin.Forms.Core.XamlC
 
 			//keep the Uri for later
 			yield return Create(Dup);
-			var uriVarDef = new VariableDefinition(module.ImportReferenceCached(typeof(Uri)));
+			var uriVarDef = new VariableDefinition(module.ImportReference(("System", "System", "Uri")));
 			body.Variables.Add(uriVarDef);
 			yield return Create(Stloc, uriVarDef);
-
 			yield return Create(Ldstr, resourcePath); //resourcePath
-
-			var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
-			var getTypeInfo = module.ImportReferenceCached(typeof(System.Reflection.IntrospectionExtensions).GetMethod("GetTypeInfo", new Type[] { typeof(Type) }));
-			var getAssembly = module.ImportReferenceCached(typeof(System.Reflection.TypeInfo).GetProperty("Assembly").GetMethod);
 			yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
-			yield return Create(Call, module.ImportReference(getTypeFromHandle));
-			yield return Create(Call, module.ImportReference(getTypeInfo));
-			yield return Create(Callvirt, module.ImportReference(getAssembly)); //assembly
+			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", paramCount: 1, predicate: md => md.IsStatic));
+			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", paramCount: 1, predicate: md => md.IsStatic));
+			yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
-
-			var setAndLoadSource = module.ImportReferenceCached(typeof(ResourceDictionary).GetMethod("SetAndLoadSource"));
-			yield return Create(Callvirt, module.ImportReference(setAndLoadSource));
-
+			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"), methodName: "SetAndLoadSource", paramCount: 4));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}
@@ -71,7 +63,7 @@ namespace Xamarin.Forms.Core.XamlC
 		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
 		{
 			foreach (var ca in type.Module.GetCustomAttributes()) {
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReferenceCached(typeof(XamlResourceIdAttribute))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;

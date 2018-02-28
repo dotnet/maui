@@ -119,17 +119,10 @@ namespace Xamarin.Forms
 		public event EventHandler Tapped;
 
 		protected internal virtual void OnTapped()
-		{
-			if (Tapped != null)
-				Tapped(this, EventArgs.Empty);
-		}
+			=> Tapped?.Invoke(this, EventArgs.Empty);
 
 		protected virtual void OnAppearing()
-		{
-			EventHandler handler = Appearing;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> Appearing?.Invoke(this, EventArgs.Empty);
 
 		protected override void OnBindingContextChanged()
 		{
@@ -143,11 +136,7 @@ namespace Xamarin.Forms
 		}
 
 		protected virtual void OnDisappearing()
-		{
-			EventHandler handler = Disappearing;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> Disappearing?.Invoke(this, EventArgs.Empty);
 
 		protected override void OnParentSet()
 		{
@@ -223,9 +212,7 @@ namespace Xamarin.Forms
 		{
 			// don't run more than once per 16 milliseconds
 			await Task.Delay(TimeSpan.FromMilliseconds(16));
-			EventHandler handler = ForceUpdateSizeRequested;
-			if (handler != null)
-				handler(this, null);
+			ForceUpdateSizeRequested?.Invoke(this, null);
 
 			_nextCallToForceUpdateSizeQueued = false;
 		}

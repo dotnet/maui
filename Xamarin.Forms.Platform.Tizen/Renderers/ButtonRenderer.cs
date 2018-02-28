@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Button.TextColorProperty, UpdateTextColor);
 			RegisterPropertyHandler(Button.ImageProperty, UpdateBitmap);
 			RegisterPropertyHandler(Button.BorderColorProperty, UpdateBorder);
-			RegisterPropertyHandler(Button.BorderRadiusProperty, UpdateBorder);
+			RegisterPropertyHandler(Button.CornerRadiusProperty, UpdateBorder);
 			RegisterPropertyHandler(Button.BorderWidthProperty, UpdateBorder);
 		}
 
@@ -28,6 +28,8 @@ namespace Xamarin.Forms.Platform.Tizen
 					PropagateEvents = false,
 				});
 				Control.Clicked += OnButtonClicked;
+				Control.Pressed += OnButtonPressed;
+				Control.Released += OnButtonReleased;
 			}
 			base.OnElementChanged(e);
 		}
@@ -54,6 +56,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (Control != null)
 				{
 					Control.Clicked -= OnButtonClicked;
+					Control.Pressed -= OnButtonPressed;
+					Control.Released -= OnButtonReleased;
 				}
 			}
 			base.Dispose(disposing);
@@ -62,6 +66,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnButtonClicked(object sender, EventArgs e)
 		{
 			(Element as IButtonController)?.SendClicked();
+		}
+
+		void OnButtonPressed(object sender, EventArgs e)
+		{
+			(Element as IButtonController)?.SendPressed();
+		}
+
+		void OnButtonReleased(object sender, EventArgs e)
+		{
+			(Element as IButtonController)?.SendReleased();
 		}
 
 		void UpdateText()

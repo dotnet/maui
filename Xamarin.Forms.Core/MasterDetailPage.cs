@@ -220,12 +220,7 @@ namespace Xamarin.Forms
 		}
 
 		static void OnIsPresentedPropertyChanged(BindableObject sender, object oldValue, object newValue)
-		{
-			var page = (MasterDetailPage)sender;
-			EventHandler handler = page.IsPresentedChanged;
-			if (handler != null)
-				handler(page, EventArgs.Empty);
-		}
+			=> ((MasterDetailPage)sender).IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{

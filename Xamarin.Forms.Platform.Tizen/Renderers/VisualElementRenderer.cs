@@ -781,7 +781,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Updates the InputTransparent property.
 		/// </summary>
-		void UpdateInputTransparent(bool initialize)
+		protected virtual void UpdateInputTransparent(bool initialize)
 		{
 			if (initialize && Element.InputTransparent == default(bool))
 				return;

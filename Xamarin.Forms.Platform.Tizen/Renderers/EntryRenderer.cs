@@ -1,4 +1,5 @@
 using System;
+using ElmSharp;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -17,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(Entry.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
-			RegisterPropertyHandler(Entry.IsReadOnlyProperty, UpdateIsReadOnly);
+			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -37,6 +38,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				entry.SetVerticalTextAlignment("elm.guide", 0.5);
 				entry.TextChanged += OnTextChanged;
 				entry.Activated += OnCompleted;
+				entry.PrependMarkUpFilter(MaxLengthFilter);
 				SetNativeControl(entry);
 			}
 			base.OnElementChanged(e);
@@ -131,9 +133,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.FontWeight = Specific.GetFontWeight(Element);
 		}
 
-		void UpdateIsReadOnly()
+		void UpdateMaxLength()
 		{
-			Control.AllowFocus(!Element.IsReadOnly);
+			if (Control.Text.Length > Element.MaxLength)
+				Control.Text = Control.Text.Substring(0, Element.MaxLength);
+		}
+
+		string MaxLengthFilter(ElmSharp.Entry entry, string s)
+		{
+			if (entry.Text.Length < Element.MaxLength)
+				return s;
+
+			return null;
 		}
 	}
 }

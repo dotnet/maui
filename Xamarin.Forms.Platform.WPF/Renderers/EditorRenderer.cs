@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WpfScrollBarVisibility = System.Windows.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -15,7 +16,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new TextBox { VerticalScrollBarVisibility = ScrollBarVisibility.Visible, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true });
+					SetNativeControl(new TextBox { VerticalScrollBarVisibility = WpfScrollBarVisibility.Visible, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true });
 					Control.LostFocus += NativeOnLostFocus; 
 					Control.TextChanged += NativeOnTextChanged;
 				}
@@ -25,7 +26,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateInputScope();
 				UpdateTextColor();
 				UpdateFont();
-				UpdateIsReadOnly();
+				UpdateMaxLength();
 			}
 
 			base.OnElementChanged(e);
@@ -48,8 +49,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
-			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 		}
 		
 		void NativeOnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)
@@ -108,6 +109,16 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.UpdateDependencyColor(System.Windows.Controls.Control.ForegroundProperty, Element.TextColor);
 		}
 
+		void UpdateMaxLength()
+		{
+			Control.MaxLength = Element.MaxLength;
+
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
 		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)
@@ -126,11 +137,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_isDisposed = true;
 			base.Dispose(disposing);
-		}
-
-		void UpdateIsReadOnly()
-		{
-			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }

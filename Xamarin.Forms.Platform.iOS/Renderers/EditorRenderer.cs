@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Foundation;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
@@ -24,6 +25,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.Changed -= HandleChanged;
 					Control.Started -= OnStarted;
 					Control.Ended -= OnEnded;
+					Control.ShouldChangeText -= ShouldChangeText;
 				}
 			}
 
@@ -60,6 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Changed += HandleChanged;
 				Control.Started += OnStarted;
 				Control.Ended += OnEnded;
+				Control.ShouldChangeText += ShouldChangeText;
 			}
 
 			UpdateText();
@@ -68,7 +71,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateEditable();
 			UpdateTextAlignment();
-			UpdateIsReadOnly();
+			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -93,8 +96,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFont();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateTextAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
+			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 		}
 
 		void HandleChanged(object sender, EventArgs e)
@@ -165,9 +168,18 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TextColor = textColor.ToUIColor();
 		}
 
-		void UpdateIsReadOnly()
+		void UpdateMaxLength()
 		{
-			Control.UserInteractionEnabled = !Element.IsReadOnly;
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
+		bool ShouldChangeText(UITextView textView, NSRange range, string text)
+		{
+			var newLength = textView.Text.Length + text.Length - range.Length;
+			return newLength <= Element.MaxLength;
 		}
 	}
 }

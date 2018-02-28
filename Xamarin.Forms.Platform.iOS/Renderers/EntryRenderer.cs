@@ -62,6 +62,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EditingDidBegin -= OnEditingBegan;
 					Control.EditingChanged -= OnEditingChanged;
 					Control.EditingDidEnd -= OnEditingEnded;
+                    Control.ShouldChangeCharacters -= ShouldChangeCharacters;
 				}
 			}
 
@@ -94,6 +95,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 				textField.EditingDidBegin += OnEditingBegan;
 				textField.EditingDidEnd += OnEditingEnded;
+
+                textField.ShouldChangeCharacters += ShouldChangeCharacters;
 			}
 
 			UpdatePlaceholder();
@@ -104,7 +107,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateKeyboard();
 			UpdateAlignment();
 			UpdateAdjustsFontSizeToFitWidth();
-			UpdateIsReadOnly();
+			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -138,8 +141,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
-			else if (e.PropertyName == Xamarin.Forms.InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
+			else if (e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -262,9 +265,18 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.Text = Element.Text;
 		}
 
-		void UpdateIsReadOnly()
+		void UpdateMaxLength()
 		{
-			Control.UserInteractionEnabled = !Element.IsReadOnly;
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
+		bool ShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
+		{
+			var newLength = textField?.Text?.Length + replacementString.Length - range.Length;
+			return newLength <= Element?.MaxLength;
 		}
 	}
 }

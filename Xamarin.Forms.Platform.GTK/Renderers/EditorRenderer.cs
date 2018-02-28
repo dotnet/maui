@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdateText();
                 UpdateFont();
                 UpdateTextColor();
+                UpdateMaxLength();
             }
 
             base.OnElementChanged(e);
@@ -66,6 +67,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdateFont();
             else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
                 UpdateFont();
+            else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+                UpdateMaxLength();
         }
 
         protected override void Dispose(bool disposing)
@@ -152,6 +155,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             {
                 textView.HeightRequest = minHeight;
             }
+        }
+
+        private void UpdateMaxLength()
+        {
+            Control.SetMaxLength(Element.MaxLength);
         }
     }
 }

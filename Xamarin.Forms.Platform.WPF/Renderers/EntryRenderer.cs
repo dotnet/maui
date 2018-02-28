@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateFont();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
-				UpdateIsReadOnly();
+				UpdateMaxLength();
 			}
 
 			base.OnElementChanged(e);
@@ -68,8 +68,8 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateAlignment();
 			else if (e.PropertyName == Entry.PlaceholderColorProperty.PropertyName)
 				UpdatePlaceholderColor();
-			else if (e.PropertyName == InputView.IsReadOnlyProperty.PropertyName)
-				UpdateIsReadOnly();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 		}
 		
 		internal override void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
@@ -231,6 +231,16 @@ namespace Xamarin.Forms.Platform.WPF
 			Control.Select(Control.Text == null ? 0 : Control.Text.Length, 0);
 		}
 
+		void UpdateMaxLength()
+		{
+			Control.MaxLength = Element.MaxLength;
+
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
 		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)
@@ -250,11 +260,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			_isDisposed = true;
 			base.Dispose(disposing);
-		}
-
-		void UpdateIsReadOnly()
-		{
-			Control.IsReadOnly = Element.IsReadOnly;
 		}
 	}
 }

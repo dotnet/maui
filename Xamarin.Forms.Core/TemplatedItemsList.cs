@@ -929,11 +929,7 @@ namespace Xamarin.Forms.Internals
 		}
 
 		void OnInnerCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			NotifyCollectionChangedEventHandler handler = GroupedCollectionChanged;
-			if (handler != null)
-				handler(sender, e);
-		}
+			=> GroupedCollectionChanged?.Invoke(sender, e);
 
 		void OnItemsSourceChanged(bool fromGrouping = false)
 		{
