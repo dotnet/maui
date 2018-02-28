@@ -24,7 +24,6 @@ Follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/
 - We will **not** use `_` or `_s` as a prefix for internal or private field names
 - We will use `camelCaseFieldName` for naming internal or private fields in both instance and static implementations
 
-
 Read and follow our [Pull Request template](https://github.com/xamarin/Caboodle/blob/master/PULL_REQUEST_TEMPLATE.md)
 
 ### Proposals
