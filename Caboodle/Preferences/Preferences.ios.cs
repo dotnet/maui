@@ -79,11 +79,8 @@ namespace Microsoft.Caboodle
 
 				switch (defaultValue)
 				{
-					case string s:
-						value = UserDefaults.StringForKey(key);
-						break;
 					case int i:
-						value = UserDefaults.IntForKey(key);
+						value = (int)(nint)UserDefaults.IntForKey(key);
 						break;
 					case bool b:
 						value = UserDefaults.BoolForKey(key);
@@ -97,6 +94,15 @@ namespace Microsoft.Caboodle
 						break;
 					case float f:
 						value = UserDefaults.FloatForKey(key);
+						break;
+					case string s:
+						// the case when the string is not null
+						value = UserDefaults.StringForKey(key);
+						break;
+					default:
+						// the case when the string is null
+						if (typeof(T) == typeof(string))
+							value = UserDefaults.StringForKey(key);
 						break;
 				}
 			}
