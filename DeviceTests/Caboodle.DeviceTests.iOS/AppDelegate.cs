@@ -12,6 +12,12 @@ namespace Caboodle.DeviceTests.iOS
 			// We need this to ensure the execution assembly is part of the app bundle
 			AddExecutionAssembly(typeof(AppDelegate).Assembly);
 
+			// a hack to work around the case where the tests aren't found
+			if (Initialized)
+			{
+				var preserve = typeof(Xunit.Sdk.TestFailed);
+			}
+
 			// tests can be inside the main assembly
 			AddTestAssembly(Assembly.GetExecutingAssembly());
 			// otherwise you need to ensure that the test assemblies will 
