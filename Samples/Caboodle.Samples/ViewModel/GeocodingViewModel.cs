@@ -9,7 +9,7 @@ using Xamarin.Forms;
 
 namespace Caboodle.Samples.ViewModel
 {
-    public class GeocodingViewModel : BaseViewModel
+	public class GeocodingViewModel : BaseViewModel
 	{
 		public GeocodingViewModel()
 		{

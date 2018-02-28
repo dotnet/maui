@@ -5,17 +5,17 @@ using System.Text;
 
 namespace Microsoft.Caboodle
 {
-    public class Placemark
+	public class Placemark
 	{
-        public Placemark()
-        {
+		public Placemark()
+		{
 
-        }
+		}
 
-        public Placemark(Placemark placemark)
-        {
-            if (placemark == null)
-                throw new ArgumentNullException(nameof(placemark));
+		public Placemark(Placemark placemark)
+		{
+			if (placemark == null)
+				throw new ArgumentNullException(nameof(placemark));
 
 			if (placemark.Location == null)
 				Location = new Location();
@@ -55,6 +55,6 @@ namespace Microsoft.Caboodle
 		public string AdminArea { get; set; }
 
 		public string SubAdminArea { get; set; }
-		
-    }
+
+	}
 }

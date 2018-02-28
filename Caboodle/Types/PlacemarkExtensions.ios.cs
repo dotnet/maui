@@ -5,7 +5,7 @@ using System.Linq;
 namespace Microsoft.Caboodle
 {
 	public static partial class PlacemarkExtensions
-    {
+	{
 		internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<CLPlacemark> addresses)
 		{
 			return addresses.Select(address => new Placemark

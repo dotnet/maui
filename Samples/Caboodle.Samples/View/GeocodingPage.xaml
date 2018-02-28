@@ -1,8 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Caboodle.Samples.View.GeocodingPage">
-    <ContentPage.Content>
+             x:Class="Caboodle.Samples.View.GeocodingPage"
+			 Title="Geocoding"
+             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel">
+	<ContentPage.BindingContext>
+		<viewmodels:GeocodingViewModel/>
+	</ContentPage.BindingContext>
+	<ContentPage.Content>
 		<ScrollView>
 			<StackLayout Padding="10">
 				<ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
