@@ -1,3 +1,5 @@
+[![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle)](https://jenkins.mono-project.com/view/Components/job/Components-Caboodle/)
+
 # Microsoft Caboodle
 
 A kit of essential cross platform APIs.
