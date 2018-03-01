@@ -156,5 +156,22 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Watch">
+      <MemberSignature Language="C#" Value="public T Watch { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance !T Watch" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the value applied on Watch-like devices.</summary>
+        <value>A T.</value>
+        <remarks>
+        </remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>
