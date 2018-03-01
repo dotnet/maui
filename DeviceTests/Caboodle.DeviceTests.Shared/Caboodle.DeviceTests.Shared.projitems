@@ -12,4 +12,3 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />
   </ItemGroup>
-</Project>
