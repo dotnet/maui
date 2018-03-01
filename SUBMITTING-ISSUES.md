@@ -27,14 +27,18 @@ If you're ready to submit a new issue, taking the following steps helps expedite
 
 * Please upload reproductions directly to the report as an attachment; this guarantees future access to the file.
 
-#Android Specific Concerns#
+# Android Specific Concerns #
+
 Please let us know any issues which may stem from different versions of the support library packages (e.g. Xamarin.Android.Support.v7.AppCompat), as sometimes bugs may only occur when specific versions are used.
 
-#iOS Specific Concerns#
+# iOS Specific Concerns #
+
 To be added
 
-#UWP-specific Concerns#
+# UWP-specific Concerns #
+
 Please make note if an issue appears hardware-specific (slower machines, multiple monitors, etc.), due to the desktop component.
 
-#Contributing#
+# Contributing #
+
 Think you may have a bug fix, or you'd like to work on fixing one yourself? We greatly welcome PRs with fixes from the community! Check out the [Contribute page](CONTRIBUTING.md) for more info.
