@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="View\GeocodingPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="View\HomePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

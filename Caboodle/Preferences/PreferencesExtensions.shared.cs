@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Caboodle
 {
-	public static class PreferencesExtensions
-	{
-	}
+    public static class PreferencesExtensions
+    {
+    }
 }
