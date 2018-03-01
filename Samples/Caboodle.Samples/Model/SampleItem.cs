@@ -2,19 +2,19 @@
 
 namespace Caboodle.Samples.Model
 {
-	public class SampleItem
-	{
-		public SampleItem(string name, Type pageType, string description)
-		{
-			Name = name;
-			Description = description;
-			PageType = pageType;
-		}
+    public class SampleItem
+    {
+        public SampleItem(string name, Type pageType, string description)
+        {
+            Name = name;
+            Description = description;
+            PageType = pageType;
+        }
 
-		public string Name { get; }
+        public string Name { get; }
 
-		public string Description { get; }
+        public string Description { get; }
 
-		public Type PageType { get; }
-	}
+        public Type PageType { get; }
+    }
 }

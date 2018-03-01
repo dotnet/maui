@@ -14,9 +14,9 @@ namespace Caboodle.DeviceTests
         {
             Geocoding.MapKey = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
         }
-        
+
         [Theory]
-        [InlineData(47.673988, -122.121513) ]
+        [InlineData(47.673988, -122.121513)]
         public async Task Get_Placemarks_LatLong(double latitude, double longitude)
         {
             var placemarks = await Geocoding.GetPlacemarksAsync(latitude, longitude);
