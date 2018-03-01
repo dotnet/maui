@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Caboodle
 {
-	public partial class Platform
+	public static partial class Platform
 	{
 		static ActivityLifecycleContextListener lifecycleListener;
 
