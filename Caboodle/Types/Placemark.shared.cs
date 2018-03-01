@@ -9,7 +9,6 @@ namespace Microsoft.Caboodle
     {
         public Placemark()
         {
-
         }
 
         public Placemark(Placemark placemark)
@@ -55,6 +54,5 @@ namespace Microsoft.Caboodle
         public string AdminArea { get; set; }
 
         public string SubAdminArea { get; set; }
-
     }
 }

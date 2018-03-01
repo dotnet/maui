@@ -1,7 +1,7 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Content;
 using Android.OS;
-using System;
 
 namespace Microsoft.Caboodle
 {

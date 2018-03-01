@@ -35,7 +35,6 @@ namespace Microsoft.Caboodle
             {
                 Console.WriteLine("Map API key is required on UWP to reverse geolocate.");
                 throw new ArgumentNullException(nameof(MapKey));
-
             }
 
             if (!string.IsNullOrWhiteSpace(MapKey))

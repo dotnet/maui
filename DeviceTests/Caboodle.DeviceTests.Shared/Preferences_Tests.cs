@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Microsoft.Caboodle;
+﻿using Microsoft.Caboodle;
+using Xunit;
 
 namespace Caboodle.DeviceTests
 {
