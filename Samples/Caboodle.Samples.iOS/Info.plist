@@ -22,7 +22,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>9.3</string>
+	<string>10.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>Caboodle Samples</string>
 	<key>CFBundleIdentifier</key>
