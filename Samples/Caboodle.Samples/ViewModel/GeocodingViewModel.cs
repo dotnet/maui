@@ -1,10 +1,8 @@
-﻿using Microsoft.Caboodle;
-using MvvmHelpers;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
 using System.Windows.Input;
+using Microsoft.Caboodle;
+using MvvmHelpers;
 using Xamarin.Forms;
 
 namespace Caboodle.Samples.ViewModel
@@ -13,8 +11,9 @@ namespace Caboodle.Samples.ViewModel
     {
         public GeocodingViewModel()
         {
-            //Set UWP Map Key
+            // set UWP Map Key
             Geocoding.MapKey = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
+
             GetAddressCommand = new Command(async () =>
             {
                 if (IsBusy)
@@ -64,7 +63,6 @@ namespace Caboodle.Samples.ViewModel
                 IsBusy = true;
                 try
                 {
-
                     var a = await Geocoding.GetLocationsAsync(Address);
                     var a1 = a?.FirstOrDefault();
                     if (a1 == null)
@@ -73,8 +71,9 @@ namespace Caboodle.Samples.ViewModel
                     }
                     else
                     {
-                        GeocodePosition = $"{nameof(a1.Latitude)}: {a1.Latitude}\n" +
-                                    $"{nameof(a1.Longitude)}: {a1.Longitude}\n";
+                        GeocodePosition =
+                            $"{nameof(a1.Latitude)}: {a1.Latitude}\n" +
+                            $"{nameof(a1.Longitude)}: {a1.Longitude}\n";
                     }
                 }
                 catch (Exception)
@@ -87,8 +86,11 @@ namespace Caboodle.Samples.ViewModel
                 }
             });
         }
+
         public ICommand GetAddressCommand { get; }
+
         public ICommand GetPositionCommand { get; }
+
         string lat = "47.673988";
         string lon = "-122.121513";
         string address = "Microsoft Building 25 Redmond WA USA";
@@ -124,9 +126,5 @@ namespace Caboodle.Samples.ViewModel
             get => geocodePosition;
             set => SetProperty(ref geocodePosition, value);
         }
-
-
-
-
     }
 }

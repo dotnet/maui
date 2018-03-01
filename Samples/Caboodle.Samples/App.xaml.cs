@@ -1,6 +1,6 @@
-﻿using Xamarin.Forms;
+﻿using Caboodle.Samples.View;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Caboodle.Samples.View;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 

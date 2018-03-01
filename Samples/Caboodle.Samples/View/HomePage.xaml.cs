@@ -1,6 +1,6 @@
 ﻿using System;
-using Xamarin.Forms;
 using Caboodle.Samples.Model;
+using Xamarin.Forms;
 
 namespace Caboodle.Samples.View
 {

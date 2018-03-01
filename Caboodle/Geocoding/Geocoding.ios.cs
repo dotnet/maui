@@ -1,7 +1,6 @@
-﻿using CoreLocation;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using CoreLocation;
 
 namespace Microsoft.Caboodle
 {
@@ -19,7 +18,6 @@ namespace Microsoft.Caboodle
 
         public static async Task<IEnumerable<Location>> GetLocationsAsync(string address)
         {
-
             using (var geocoder = new CLGeocoder())
             {
                 var positionList = await geocoder.GeocodeAddressAsync(address);
@@ -29,4 +27,3 @@ namespace Microsoft.Caboodle
         }
     }
 }
-

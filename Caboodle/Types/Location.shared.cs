@@ -6,33 +6,32 @@ using static System.Math;
 
 namespace Microsoft.Caboodle
 {
-
-
     public enum DistanceUnits
     {
         Kilometers,
         Miles
     }
 
-
     public class Location
     {
         public Location()
         {
-
         }
+
         public Location(double latitude, double longitude)
         {
             Latitude = latitude;
             Longitude = longitude;
             TimestampUtc = DateTimeOffset.UtcNow;
         }
+
         public Location(double latitude, double longitude, DateTimeOffset timestamp)
         {
             Latitude = latitude;
             Longitude = longitude;
             TimestampUtc = timestamp;
         }
+
         public Location(Location point)
         {
             if (point == null)
@@ -49,13 +48,15 @@ namespace Microsoft.Caboodle
 
         public double Longitude { get; set; }
 
-
         public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
             CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 
         public static double CalculateDistance(
-            double latitudeStart, double latitudeEnd,
-            double longitudeStart, double longitudeEnd, DistanceUnits units)
+            double latitudeStart,
+            double latitudeEnd,
+            double longitudeStart,
+            double longitudeEnd,
+            DistanceUnits units)
         {
             if (latitudeEnd == latitudeStart && longitudeEnd == longitudeStart)
                 return 0;
@@ -64,7 +65,7 @@ namespace Microsoft.Caboodle
             var rlat2 = PI * latitudeEnd / 180.0;
             var theta = longitudeStart - longitudeEnd;
             var rtheta = PI * theta / 180.0;
-            var dist = Sin(rlat1) * Sin(rlat2) + Cos(rlat1) * Cos(rlat2) * Cos(rtheta);
+            var dist = (Sin(rlat1) * Sin(rlat2)) + (Cos(rlat1) * Cos(rlat2) * Cos(rtheta));
             dist = Acos(dist);
             dist = dist * 180.0 / PI;
             var final = dist * 60.0 * 1.1515;
@@ -79,6 +80,7 @@ namespace Microsoft.Caboodle
         }
 
         public static double MilesToKilometers(double miles) => miles * 1.609344;
+
         public static double KilometersToMiles(double kilometers) => kilometers * .62137119;
     }
 }

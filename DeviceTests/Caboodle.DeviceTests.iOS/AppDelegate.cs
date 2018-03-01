@@ -20,9 +20,10 @@ namespace Caboodle.DeviceTests.iOS
 
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());
-            // otherwise you need to ensure that the test assemblies will 
+
+            // otherwise you need to ensure that the test assemblies will
             // become part of the app bundle
-            //AddTestAssembly(typeof(PortableTests).Assembly);
+            //    AddTestAssembly(typeof(PortableTests).Assembly);
 
 #if false
             // you can use the default or set your own custom writer (e.g. save to web site and tweet it ;-)
