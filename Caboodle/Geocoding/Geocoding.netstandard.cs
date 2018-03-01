@@ -6,9 +6,9 @@ namespace Microsoft.Caboodle
     public partial class Geocoding
     {
         public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude) =>
-            throw new NotImplentedInReferenceAssemblyException();
+            throw new NotImplentedInReferenceAssembly();
 
         public static Task<IEnumerable<Location>> GetLocationsAsync(string address) =>
-            throw new NotImplentedInReferenceAssemblyException();
+            throw new NotImplentedInReferenceAssembly();
     }
 }

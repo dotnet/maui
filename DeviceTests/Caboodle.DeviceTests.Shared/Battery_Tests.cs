@@ -18,6 +18,6 @@ namespace Caboodle.DeviceTests
 
         [Fact]
         public void Charge_Power() =>
-            Assert.Equal(BatteryPowerSource.AC, Battery.PowerSource);
+            Assert.Equal(BatteryPowerSource.Ac, Battery.PowerSource);
     }
 }

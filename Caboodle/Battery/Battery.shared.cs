@@ -21,8 +21,8 @@ namespace Microsoft.Caboodle
     {
         Unknown,
         Battery,
-        AC,
-        USB,
+        Ac,
+        Usb,
         Wireless
     }
 

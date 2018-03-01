@@ -61,7 +61,7 @@ namespace Microsoft.Caboodle
                     {
                         case UIDeviceBatteryState.Full:
                         case UIDeviceBatteryState.Charging:
-                            return BatteryPowerSource.AC;
+                            return BatteryPowerSource.Ac;
                         case UIDeviceBatteryState.Unplugged:
                             return BatteryPowerSource.Battery;
                         default:

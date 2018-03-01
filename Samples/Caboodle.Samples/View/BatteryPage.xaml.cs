@@ -9,8 +9,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Caboodle.Samples.View
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class BatteryPage : ContentPage
+    public partial class BatteryPage : ContentPage
 	{
 		public BatteryPage ()
 		{

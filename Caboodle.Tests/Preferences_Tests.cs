@@ -8,7 +8,7 @@ namespace Microsoft.Caboodle.Tests
         public void Preferences_Fail_On_NetStandard()
         {
             var p = new Preferences();
-            Assert.Throws<NotImplentedInReferenceAssemblyException>(() => p.Set("anything", "fails"));
+            Assert.Throws<NotImplentedInReferenceAssembly>(() => p.Set("anything", "fails"));
         }
     }
 }

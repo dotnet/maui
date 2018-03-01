@@ -75,10 +75,10 @@ namespace Microsoft.Caboodle
                         var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
                         if (chargePlug == (int)BatteryPlugged.Usb)
-                            return BatteryPowerSource.USB;
+                            return BatteryPowerSource.Usb;
 
                         if (chargePlug == (int)BatteryPlugged.Ac)
-                            return BatteryPowerSource.AC;
+                            return BatteryPowerSource.Ac;
 
                         if (chargePlug == (int)BatteryPlugged.Wireless)
                             return BatteryPowerSource.Wireless;

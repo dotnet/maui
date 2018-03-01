@@ -29,13 +29,6 @@ namespace Microsoft.Caboodle
         {
             get
             {
-                var percentage = ChargeLevel;
-
-                if (percentage >= 1.0)
-                    return BatteryState.Full;
-                if (percentage < 0)
-                    return BatteryState.Unknown;
-
                 var report = DefaultBattery.GetReport();
 
                 switch (report.Status)
@@ -47,10 +40,13 @@ namespace Microsoft.Caboodle
                     case Windows.System.Power.BatteryStatus.Idle:
                         return BatteryState.NotCharging;
                     case Windows.System.Power.BatteryStatus.NotPresent:
-                    default:
                         return BatteryState.Unknown;
                 }
+                
+                if (ChargeLevel >= 1.0)
+                    return BatteryState.Full;
 
+                return BatteryState.Unknown;
             }
         }
         public static BatteryPowerSource PowerSource
@@ -59,7 +55,7 @@ namespace Microsoft.Caboodle
             {
                 var currentStatus = State;
                 if (currentStatus == BatteryState.Full || currentStatus == BatteryState.Charging)
-                    return BatteryPowerSource.AC;
+                    return BatteryPowerSource.Ac;
 
                 return BatteryPowerSource.Battery;
             }
