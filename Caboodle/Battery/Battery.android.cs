@@ -1,9 +1,6 @@
 ﻿using Android;
 using Android.Content;
 using Android.OS;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Caboodle
 {

@@ -8,7 +8,7 @@
         <viewmodels:BatteryViewModel/>
     </ContentPage.BindingContext>
     <ContentPage.Content>
-        <StackLayout>
+        <StackLayout Padding="10">
             <Label Text="{Binding Level}"/>
             <Label Text="{Binding State}"/>
             <Label Text="{Binding PowerSource}"/>

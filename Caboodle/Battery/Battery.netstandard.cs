@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-
-namespace Microsoft.Caboodle
+﻿namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
