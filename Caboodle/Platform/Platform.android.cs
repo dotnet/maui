@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 
 namespace Microsoft.Caboodle
@@ -19,6 +21,13 @@ namespace Microsoft.Caboodle
         {
             lifecycleListener = new ActivityLifecycleContextListener();
             activity.Application.RegisterActivityLifecycleCallbacks(lifecycleListener);
+        }
+
+        public static bool HasPermissionInManifest(string permission)
+        {
+            var packageInfo = CurrentContext.PackageManager.GetPackageInfo(CurrentContext.PackageName, PackageInfoFlags.Permissions);
+            var requestedPermissions = packageInfo?.RequestedPermissions;
+            return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.InvariantCultureIgnoreCase)) ?? false;
         }
     }
 
