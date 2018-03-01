@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-		<!--Work around so the conditions work below-->
-		<TargetFrameworks></TargetFrameworks>
+    <!--Work around so the conditions work below-->
+    <TargetFrameworks></TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80;uap10.0.16299</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
@@ -30,7 +30,7 @@
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageLicenseUrl>https://go.microsoft.com/fwlink/?linkid=868961</PackageLicenseUrl>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageProjectUrl>https://go.microsoft.com/fwlink/?linkid=868960</PackageProjectUrl>
     <MDocDocumentationDirectory>$(MSBuildThisFileDirectory)..\docs\en</MDocDocumentationDirectory>
     <FileUpgradeFlags>

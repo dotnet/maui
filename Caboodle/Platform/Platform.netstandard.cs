@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Caboodle
 {
-	public partial class Platform
-	{
-	}
+    public partial class Platform
+    {
+    }
 }
