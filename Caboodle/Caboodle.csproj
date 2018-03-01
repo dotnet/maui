@@ -39,7 +39,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard1.0|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
