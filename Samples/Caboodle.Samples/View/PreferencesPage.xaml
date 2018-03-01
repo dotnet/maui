@@ -4,15 +4,15 @@
              x:Class="Caboodle.Samples.View.PreferencesPage"
              xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
              Title="Preferences">
-    <ContentPage.BindingContext>
-        <viewmodels:PreferencesViewModel/>
-    </ContentPage.BindingContext>
+	<ContentPage.BindingContext>
+		<viewmodels:PreferencesViewModel/>
+	</ContentPage.BindingContext>
 
-    <StackLayout>
-        <Label Text="Quickly and easily add persistent preferences." FontAttributes="Bold" />
+	<StackLayout>
+		<Label Text="Quickly and easily add persistent preferences." FontAttributes="Bold" />
 
-        <Label Text="Enter some text to save:" />
-        <Entry Placeholder="Enter text..." Text="{Binding PreferenceValue}" />
-    </StackLayout>
+		<Label Text="Enter some text to save:" />
+		<Entry Placeholder="Enter text..." Text="{Binding PreferenceValue}" />
+	</StackLayout>
 
 </ContentPage>
