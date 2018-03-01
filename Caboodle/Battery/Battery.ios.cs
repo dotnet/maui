@@ -9,14 +9,15 @@ namespace Microsoft.Caboodle
         {
             get
             {
+                var batteryMonitoringEnabled = UIDevice.CurrentDevice.BatteryMonitoringEnabled;
+                UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                 try
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                     return UIDevice.CurrentDevice.BatteryLevel;
                 }
                 finally
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = false;
+                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = batteryMonitoringEnabled;
                 }
             }
         }
@@ -25,9 +26,10 @@ namespace Microsoft.Caboodle
         {
             get
             {
+                var batteryMonitoringEnabled = UIDevice.CurrentDevice.BatteryMonitoringEnabled;
+                UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                 try
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                     switch (UIDevice.CurrentDevice.BatteryState)
                     {
                         case UIDeviceBatteryState.Charging:
@@ -42,7 +44,7 @@ namespace Microsoft.Caboodle
                 }
                 finally
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = false;
+                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = batteryMonitoringEnabled;
                 }
             }
         }
@@ -51,9 +53,10 @@ namespace Microsoft.Caboodle
         {
             get
             {
+                var batteryMonitoringEnabled = UIDevice.CurrentDevice.BatteryMonitoringEnabled;
+                UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                 try
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
                     switch (UIDevice.CurrentDevice.BatteryState)
                     {
                         case UIDeviceBatteryState.Full:
@@ -67,7 +70,7 @@ namespace Microsoft.Caboodle
                 }
                 finally
                 {
-                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = false;
+                    UIDevice.CurrentDevice.BatteryMonitoringEnabled = batteryMonitoringEnabled;
                 }
             }
         }
