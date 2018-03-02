@@ -6,7 +6,7 @@ namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
-        static event BatteryChangedEventHandler batteryChanagedInternal;
+        static event BatteryChangedEventHandler BatteryChanagedInternal;
 
         public delegate void BatteryChangedEventHandler(BatteryChangedEventArgs e);
 
@@ -20,11 +20,11 @@ namespace Microsoft.Caboodle
         {
             add
             {
-                var wasRunning = batteryChanagedInternal != null;
+                var wasRunning = BatteryChanagedInternal != null;
 
-                batteryChanagedInternal += value;
+                BatteryChanagedInternal += value;
 
-                if (!wasRunning && batteryChanagedInternal != null)
+                if (!wasRunning && BatteryChanagedInternal != null)
                 {
                     SetCurrent();
                     StartBatteryListeners();
@@ -33,11 +33,11 @@ namespace Microsoft.Caboodle
 
             remove
             {
-                var wasRunning = batteryChanagedInternal != null;
+                var wasRunning = BatteryChanagedInternal != null;
 
-                batteryChanagedInternal -= value;
+                BatteryChanagedInternal -= value;
 
-                if (wasRunning && batteryChanagedInternal == null)
+                if (wasRunning && BatteryChanagedInternal == null)
                     StopBatteryListeners();
             }
         }
@@ -59,7 +59,7 @@ namespace Microsoft.Caboodle
                 currentState != e.State)
             {
                 SetCurrent();
-                batteryChanagedInternal?.Invoke(e);
+                BatteryChanagedInternal?.Invoke(e);
             }
         }
     }

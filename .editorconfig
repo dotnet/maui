@@ -63,7 +63,7 @@ dotnet_naming_rule.methods_and_properties_must_be_pascal_case.symbols = method_a
 dotnet_naming_rule.methods_and_properties_must_be_pascal_case.style = pascal_case_style
 
 # Non-public members must be lower-case
-dotnet_naming_symbols.non_public_symbols.applicable_kinds = property,method,field,event,delegate
+dotnet_naming_symbols.non_public_symbols.applicable_kinds = property,method,field,delegate
 dotnet_naming_symbols.non_public_symbols.applicable_accessibilities = private
 dotnet_naming_style.all_lower_case_style.capitalization = camel_case
 

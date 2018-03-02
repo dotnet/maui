@@ -90,7 +90,6 @@
     <Rule Id="SA1215" Action="Warning" />
     <Rule Id="SA1216" Action="Warning" />
     <Rule Id="SA1217" Action="Warning" />
-    <Rule Id="SA1300" Action="None" />
     <Rule Id="SA1301" Action="Warning" />
     <Rule Id="SA1302" Action="Warning" />
     <Rule Id="SA1303" Action="None" />
