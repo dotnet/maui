@@ -188,7 +188,7 @@ namespace Xamarin.Flex
 	}
 
 	/// <summary>
-	/// Value for <see cref="P:Xamarin.Flex.Item.Wrap" />.
+	/// Value for <see cref="P:Xamarin.Flex.Item.Basis" />.
 	/// </summary>
 	struct Basis {
 		readonly bool _isRelative;
@@ -524,9 +524,7 @@ namespace Xamarin.Flex
 					}
 					else {
 						child.Frame[layout.frame_size2_i] = (layout.vertical ? width : height)
-							- (layout.vertical ? child.MarginLeft : child.MarginTop)
-							- (layout.vertical ? child.MarginRight : child.MarginBottom);
-
+							- child.MarginThickness(!layout.vertical);
 					}
 				}
 
@@ -557,7 +555,7 @@ namespace Xamarin.Flex
 					float basis = child.Basis.Length;
 					if (child.Basis.IsRelative)
 						basis *= (layout.vertical ? height : width);
-					child.Frame[layout.frame_size_i] = basis;
+					child.Frame[layout.frame_size_i] = basis - child.MarginThickness(layout.vertical);
 				}
 
 				float child_size = child.Frame[layout.frame_size_i];
@@ -573,8 +571,8 @@ namespace Xamarin.Flex
 					}
 
 					float child_size2 = child.Frame[layout.frame_size2_i];
-					if (!float.IsNaN(child_size2) && child_size2 > layout.line_dim) {
-						layout.line_dim = child_size2;
+					if (!float.IsNaN(child_size2) && child_size2 + child.MarginThickness(!layout.vertical) > layout.line_dim) {
+						layout.line_dim = child_size2 + child.MarginThickness(!layout.vertical);
 					}
 				}
 
@@ -585,9 +583,7 @@ namespace Xamarin.Flex
 				layout.flex_grows += child.Grow;
 				layout.flex_shrinks += child.Shrink;
 
-				layout.flex_dim -= child_size
-					+ (layout.vertical ? child.MarginTop : child.MarginLeft)
-					+ (layout.vertical ? child.MarginBottom : child.MarginRight);
+				layout.flex_dim -= child_size + child.MarginThickness(layout.vertical);
 
 				relative_children_count++;
 
@@ -652,6 +648,13 @@ namespace Xamarin.Flex
 			}
 
 			layout.cleanup();
+		}
+
+		float MarginThickness(bool vertical)
+		{
+			if (vertical)
+				return MarginTop + MarginBottom;
+			return MarginLeft + MarginRight;
 		}
 
 		static void layout_align(Justify align, float flex_dim, uint children_count, ref float pos_p, ref float spacing_p)

@@ -408,12 +408,12 @@ namespace Xamarin.Forms
 			if (double.IsPositiveInfinity(widthConstraint)) {
 				widthConstraint = 0;
 				foreach (var item in _root)
-					widthConstraint = Math.Max(widthConstraint, item.Frame[0] + item.Frame[2]);
+					widthConstraint = Math.Max(widthConstraint, item.Frame[0] + item.Frame[2] + item.MarginRight);
 			}
 			if (double.IsPositiveInfinity(heightConstraint)) {
 				heightConstraint = 0;
 				foreach (var item in _root)
-					heightConstraint = Math.Max(heightConstraint, item.Frame[1] + item.Frame[3]);
+					heightConstraint = Math.Max(heightConstraint, item.Frame[1] + item.Frame[3] + item.MarginBottom);
 			}
 
 			//3. reset Shrink and algin-self
