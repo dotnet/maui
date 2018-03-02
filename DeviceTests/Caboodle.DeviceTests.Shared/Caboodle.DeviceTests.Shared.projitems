@@ -9,7 +9,9 @@
     <Import_RootNamespace>Caboodle.DeviceTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DeviceInfo_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
 </Project>
