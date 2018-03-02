@@ -27,5 +27,9 @@
         static DeviceType GetDeviceType() => throw new NotImplentedInReferenceAssembly();
 
         static ScreenMetrics GetScreenMetrics() => throw new NotImplentedInReferenceAssembly();
+
+        static void StartScreenMetricsListeners() => throw new NotImplentedInReferenceAssembly();
+
+        static void StopScreenMetricsListeners() => throw new NotImplentedInReferenceAssembly();
     }
 }

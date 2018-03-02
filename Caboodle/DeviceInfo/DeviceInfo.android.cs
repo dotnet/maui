@@ -16,6 +16,8 @@ namespace Microsoft.Caboodle
     {
         const int tabletCrossover = 600;
 
+        static OrientationEventListener orientationListener;
+
         static string GetIdentifier()
         {
             var id = GetSerial();
@@ -163,6 +165,19 @@ namespace Microsoft.Caboodle
             return metrics;
         }
 
+        static void StartScreenMetricsListeners()
+        {
+            orientationListener = new Listener(Application.Context, OnScreenMetricsChanaged);
+            orientationListener.Enable();
+        }
+
+        static void StopScreenMetricsListeners()
+        {
+            orientationListener?.Disable();
+            orientationListener?.Dispose();
+            orientationListener = null;
+        }
+
         private static ScreenRotation CalculateRotation()
         {
             var service = CaboodlePlatform.CurrentContext.GetSystemService(Context.WindowService);
@@ -243,6 +258,19 @@ namespace Microsoft.Caboodle
             }
 
             return string.Empty;
+        }
+
+        class Listener : OrientationEventListener
+        {
+            private Action onChanged;
+
+            public Listener(Context context, Action handler)
+                : base(context)
+            {
+                onChanged = handler;
+            }
+
+            public override void OnOrientationChanged(int orientation) => onChanged();
         }
     }
 }

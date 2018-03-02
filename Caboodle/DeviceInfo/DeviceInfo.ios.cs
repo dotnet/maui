@@ -7,6 +7,8 @@ namespace Microsoft.Caboodle
 {
     public static partial class DeviceInfo
     {
+        private static NSObject observer;
+
         static string GetIdentifier() => UIDevice.CurrentDevice.IdentifierForVendor.AsString();
 
         static string GetModel() => UIDevice.CurrentDevice.Model;
@@ -60,6 +62,19 @@ namespace Microsoft.Caboodle
                 Orientation = CalculateOrientation(),
                 Rotation = CalculateRotation()
             };
+        }
+
+        static void StartScreenMetricsListeners()
+        {
+            var notificationCenter = NSNotificationCenter.DefaultCenter;
+            var notification = UIApplication.DidChangeStatusBarOrientationNotification;
+            observer = notificationCenter.AddObserver(notification, n => OnScreenMetricsChanaged());
+        }
+
+        static void StopScreenMetricsListeners()
+        {
+            observer?.Dispose();
+            observer = null;
         }
 
         static ScreenOrientation CalculateOrientation()

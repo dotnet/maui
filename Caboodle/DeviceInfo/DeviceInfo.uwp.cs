@@ -117,15 +117,49 @@ namespace Microsoft.Caboodle
         static ScreenMetrics GetScreenMetrics()
         {
             var di = DisplayInformation.GetForCurrentView();
+            return GetScreenMetrics(di);
+        }
+
+        static ScreenMetrics GetScreenMetrics(DisplayInformation di)
+        {
+            var rotation = CalculateRotation(di);
+            var perpendicular =
+                rotation == ScreenRotation.Rotation90 ||
+                rotation == ScreenRotation.Rotation270;
+
+            var w = di.ScreenWidthInRawPixels;
+            var h = di.ScreenHeightInRawPixels;
 
             return new ScreenMetrics
             {
-                Width = di.ScreenWidthInRawPixels,
-                Height = di.ScreenHeightInRawPixels,
+                Width = perpendicular ? h : w,
+                Height = perpendicular ? w : h,
                 Density = di.LogicalDpi / 96.0,
                 Orientation = CalculateOrientation(di),
-                Rotation = CalculateRotation(di)
+                Rotation = rotation
             };
+        }
+
+        static void StartScreenMetricsListeners()
+        {
+            var di = DisplayInformation.GetForCurrentView();
+
+            di.DpiChanged += OnDisplayInformationChanged;
+            di.OrientationChanged += OnDisplayInformationChanged;
+        }
+
+        static void StopScreenMetricsListeners()
+        {
+            var di = DisplayInformation.GetForCurrentView();
+
+            di.DpiChanged -= OnDisplayInformationChanged;
+            di.OrientationChanged -= OnDisplayInformationChanged;
+        }
+
+        static void OnDisplayInformationChanged(DisplayInformation di, object args)
+        {
+            var metrics = GetScreenMetrics(di);
+            OnScreenMetricsChanaged(metrics);
         }
 
         static ScreenOrientation CalculateOrientation(DisplayInformation di)

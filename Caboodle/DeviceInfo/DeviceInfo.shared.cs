@@ -19,6 +19,8 @@ namespace Microsoft.Caboodle
         static string idiom;
         static DeviceType? deviceType;
 
+        static event ScreenMetricsChanagedEventHandler screenMetricsChanagedInternal;
+
         public static string Identifier => identifier ?? (identifier = GetIdentifier());
 
         public static string Model => model ?? (model = GetModel());
@@ -48,6 +50,37 @@ namespace Microsoft.Caboodle
         public static DeviceType DeviceType => deviceType ?? (deviceType = GetDeviceType()).Value;
 
         public static ScreenMetrics ScreenMetrics => GetScreenMetrics();
+
+        public static event ScreenMetricsChanagedEventHandler ScreenMetricsChanaged
+        {
+            add
+            {
+                var wasRunning = screenMetricsChanagedInternal != null;
+
+                screenMetricsChanagedInternal += value;
+
+                if (!wasRunning && screenMetricsChanagedInternal != null)
+                    StartScreenMetricsListeners();
+            }
+            remove
+            {
+                var wasRunning = screenMetricsChanagedInternal != null;
+
+                screenMetricsChanagedInternal -= value;
+
+                if (wasRunning && screenMetricsChanagedInternal == null)
+                    StopScreenMetricsListeners();
+            }
+        }
+
+        static void OnScreenMetricsChanaged()
+            => OnScreenMetricsChanaged(ScreenMetrics);
+
+        static void OnScreenMetricsChanaged(ScreenMetrics metrics)
+            => OnScreenMetricsChanaged(new ScreenMetricsChanagedEventArgs(metrics));
+
+        static void OnScreenMetricsChanaged(ScreenMetricsChanagedEventArgs e)
+            => screenMetricsChanagedInternal?.Invoke(e);
 
         static Version ParseVersion(string version, ref Version number)
         {
@@ -86,13 +119,25 @@ namespace Microsoft.Caboodle
         }
     }
 
+    public delegate void ScreenMetricsChanagedEventHandler(ScreenMetricsChanagedEventArgs e);
+
+    public class ScreenMetricsChanagedEventArgs : EventArgs
+    {
+        public ScreenMetricsChanagedEventArgs(ScreenMetrics metrics)
+        {
+            Metrics = metrics;
+        }
+
+        public ScreenMetrics Metrics { get; }
+    }
+
     public enum DeviceType
     {
         Physical,
         Virtual
     }
 
-    public struct ScreenMetrics
+    public class ScreenMetrics
     {
         public double Width { get; set; }
 
