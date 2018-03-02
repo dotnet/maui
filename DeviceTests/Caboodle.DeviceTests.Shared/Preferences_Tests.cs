@@ -75,5 +75,59 @@ namespace Caboodle.DeviceTests
             p.Set(key, value);
             Assert.Equal(value, p.Get(key, false));
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(sharedName)]
+        public void Remove(string sharedName)
+        {
+            var p = new Preferences(sharedName);
+            p.Set("RemoveKey1", "value");
+            
+            Assert.Equal("value", p.Get("RemoveKey1", null));
+
+            p.Remove("RemoveKey1");
+
+            Assert.Null(p.Get("RemoveKey1", null));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(sharedName)]
+        public void Clear (string sharedName)
+        {
+            var p = new Preferences(sharedName);
+            p.Set("ClearKey1", "value");
+            p.Set("ClearKey2", 2);
+
+            Assert.Equal(2, p.Get("ClearKey2", 0));
+
+            p.Clear();
+
+            Assert.NotEqual("value", p.Get("ClearKey1", null));
+            Assert.NotEqual(2, p.Get("ClearKey2", 0));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(sharedName)]
+        public void Does_ContainsKey(string sharedName)
+        {
+            var p = new Preferences(sharedName);
+            p.Set("DoesContainsKey1", "One");
+
+            Assert.True(p.ContainsKey("DoesContainsKey1"));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(sharedName)]
+        public void Not_ContainsKey(string sharedName)
+        {
+            var p = new Preferences(sharedName);
+            p.Remove("NotContainsKey1");
+
+            Assert.False(p.ContainsKey("NotContainsKey1"));
+        }
     }
 }
