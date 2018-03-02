@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -16,5 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Caboodle\Caboodle.csproj" />
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\CodeStyles.targets" />
 
 </Project>
