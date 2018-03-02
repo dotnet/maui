@@ -83,7 +83,7 @@ namespace Caboodle.DeviceTests
         {
             var p = new Preferences(sharedName);
             p.Set("RemoveKey1", "value");
-            
+
             Assert.Equal("value", p.Get("RemoveKey1", null));
 
             p.Remove("RemoveKey1");
@@ -94,7 +94,7 @@ namespace Caboodle.DeviceTests
         [Theory]
         [InlineData(null)]
         [InlineData(sharedName)]
-        public void Clear (string sharedName)
+        public void Clear(string sharedName)
         {
             var p = new Preferences(sharedName);
             p.Set("ClearKey1", "value");
