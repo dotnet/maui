@@ -55,6 +55,7 @@ namespace Microsoft.Caboodle
         }
 
         ApplicationDataContainer settings;
+
         ApplicationDataContainer Settings
         {
             get

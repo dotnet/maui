@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Caboodle.Samples.UWP
 {
-    sealed partial class App : Application
+    public sealed partial class App : Application
     {
         public App()
         {

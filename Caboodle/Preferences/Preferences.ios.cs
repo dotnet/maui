@@ -1,6 +1,6 @@
-﻿using Foundation;
-using System;
+﻿using System;
 using System.Globalization;
+using Foundation;
 
 namespace Microsoft.Caboodle
 {
@@ -111,6 +111,7 @@ namespace Microsoft.Caboodle
         }
 
         NSUserDefaults userDefaults = null;
+
         NSUserDefaults UserDefaults
         {
             get

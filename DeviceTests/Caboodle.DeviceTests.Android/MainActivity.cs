@@ -1,8 +1,8 @@
-﻿using Android.App;
+﻿using System.Reflection;
+using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Xunit.Runners.UI;
-using System.Reflection;
 
 namespace Caboodle.DeviceTests.Droid
 {
@@ -14,9 +14,9 @@ namespace Caboodle.DeviceTests.Droid
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());
             AddExecutionAssembly(typeof(MainActivity).Assembly);
-            // or in any reference assemblies
 
-            //AddTestAssembly(typeof(PortableTests).Assembly);
+            // or in any reference assemblies
+            //   AddTestAssembly(typeof(PortableTests).Assembly);
             // or in any assembly that you load (since JIT is available)
 
 #if false

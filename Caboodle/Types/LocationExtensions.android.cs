@@ -16,17 +16,17 @@ namespace Microsoft.Caboodle
             new Location(location.Latitude, location.Longitude, location.GetTimestamp().ToUniversalTime());
 
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
         internal static DateTimeOffset GetTimestamp(this Android.Locations.Location location)
         {
             try
             {
                 return new DateTimeOffset(epoch.AddMilliseconds(location.Time));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new DateTimeOffset(epoch);
             }
         }
-
     }
 }

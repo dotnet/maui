@@ -6,7 +6,6 @@ namespace Microsoft.Caboodle
 {
     public static partial class PlacemarkExtensions
     {
-
         internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<Android.Locations.Address> addresses)
         {
             return addresses.Select(address => new Placemark

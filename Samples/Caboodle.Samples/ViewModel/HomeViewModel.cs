@@ -1,6 +1,6 @@
-﻿using MvvmHelpers;
-using Caboodle.Samples.Model;
+﻿using Caboodle.Samples.Model;
 using Caboodle.Samples.View;
+using MvvmHelpers;
 
 namespace Caboodle.Samples.ViewModel
 {

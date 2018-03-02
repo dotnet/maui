@@ -1,9 +1,8 @@
-﻿using Android.App;
-using Android.Locations;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Android.App;
+using Android.Locations;
 
 namespace Microsoft.Caboodle
 {
@@ -31,5 +30,4 @@ namespace Microsoft.Caboodle
             }
         }
     }
-
 }

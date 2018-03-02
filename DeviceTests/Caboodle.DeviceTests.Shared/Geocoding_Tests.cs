@@ -1,9 +1,6 @@
-﻿using Microsoft.Caboodle;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Caboodle;
 using Xunit;
 
 namespace Caboodle.DeviceTests
@@ -23,7 +20,6 @@ namespace Caboodle.DeviceTests
 
             Assert.NotNull(placemarks);
             Assert.True(placemarks.Any());
-
         }
 
         [Theory]

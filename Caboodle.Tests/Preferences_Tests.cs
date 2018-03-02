@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 
 namespace Microsoft.Caboodle.Tests
 {

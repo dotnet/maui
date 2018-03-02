@@ -1,7 +1,7 @@
-﻿using CoreLocation;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoreLocation;
 
 namespace Microsoft.Caboodle
 {
