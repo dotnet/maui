@@ -25,14 +25,12 @@ namespace Microsoft.Caboodle
                 ValidateBatteryStatsPermission();
 
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
+                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
                 {
-                    using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
-                    {
-                        var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
-                        var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
+                    var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
+                    var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
 
-                        return (double)level / (double)scale;
-                    }
+                    return (double)level / (double)scale;
                 }
             }
         }
@@ -42,21 +40,19 @@ namespace Microsoft.Caboodle
             {
                 ValidateBatteryStatsPermission();
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
+                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
                 {
-                    using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
+                    var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
+                    switch (status)
                     {
-                        var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
-                        switch (status)
-                        {
-                            case (int)BatteryStatus.Charging:
-                                return BatteryState.Charging;
-                            case (int)BatteryStatus.Discharging:
-                                return BatteryState.Discharging;
-                            case (int)BatteryStatus.Full:
-                                return BatteryState.Full;
-                            case (int)BatteryStatus.NotCharging:
-                                return BatteryState.NotCharging;
-                        }
+                        case (int)BatteryStatus.Charging:
+                            return BatteryState.Charging;
+                        case (int)BatteryStatus.Discharging:
+                            return BatteryState.Discharging;
+                        case (int)BatteryStatus.Full:
+                            return BatteryState.Full;
+                        case (int)BatteryStatus.NotCharging:
+                            return BatteryState.NotCharging;
                     }
                 }
 
@@ -69,24 +65,22 @@ namespace Microsoft.Caboodle
             {
                 ValidateBatteryStatsPermission();
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
+                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
                 {
-                    using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
-                    {
-                        var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
+                    var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
-                        if (chargePlug == (int)BatteryPlugged.Usb)
-                            return BatteryPowerSource.Usb;
+                    if (chargePlug == (int)BatteryPlugged.Usb)
+                        return BatteryPowerSource.Usb;
 
-                        if (chargePlug == (int)BatteryPlugged.Ac)
-                            return BatteryPowerSource.Ac;
+                    if (chargePlug == (int)BatteryPlugged.Ac)
+                        return BatteryPowerSource.Ac;
 
-                        if (chargePlug == (int)BatteryPlugged.Wireless)
-                            return BatteryPowerSource.Wireless;
+                    if (chargePlug == (int)BatteryPlugged.Wireless)
+                        return BatteryPowerSource.Wireless;
 
-                        //if we aren't on one of these power plugs then we must be on battery
-                        return BatteryPowerSource.Battery;
-                    }
-                }               
+                    //if we aren't on one of these power plugs then we must be on battery
+                    return BatteryPowerSource.Battery;
+                }      
             }
         }
     }
