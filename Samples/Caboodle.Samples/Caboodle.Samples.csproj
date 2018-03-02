@@ -20,16 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="View\DeviceInfoPage.xaml.cs">
-      <DependentUpon>DeviceInfoPage.xaml</DependentUpon>
-    </Compile>
-    <EmbeddedResource Update="View\GeocodingPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="View\HomePage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="View\PreferencesPage.xaml">
+    <EmbeddedResource Update="**\*.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
