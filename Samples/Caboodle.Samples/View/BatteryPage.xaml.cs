@@ -10,10 +10,15 @@ using Xamarin.Forms.Xaml;
 namespace Caboodle.Samples.View
 {
     public partial class BatteryPage : ContentPage
-	{
-		public BatteryPage ()
-		{
-			InitializeComponent ();
-		}
-	}
+    {
+        public BatteryPage()
+        {
+            InitializeComponent();
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+        }
+    }
 }

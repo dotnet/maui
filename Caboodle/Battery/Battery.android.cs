@@ -1,4 +1,5 @@
-﻿using Android;
+﻿using System;
+using Android;
 using Android.Content;
 using Android.OS;
 
@@ -6,7 +7,10 @@ namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
+        static BatteryBroadcastReceiver batteryReceiver;
+
         static bool hasBatteryStatsPermission;
+
         static void ValidateBatteryStatsPermission()
         {
             if (hasBatteryStatsPermission)
@@ -18,6 +22,21 @@ namespace Microsoft.Caboodle
 
             hasBatteryStatsPermission = true;
         }
+
+        static void StartBatteryListeners()
+        {
+            ValidateBatteryStatsPermission();
+            batteryReceiver = new BatteryBroadcastReceiver(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+            Platform.CurrentContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
+        }
+
+        static void StopBatteryListeners()
+        {
+            Platform.CurrentContext.UnregisterReceiver(batteryReceiver);
+            batteryReceiver?.Dispose();
+            batteryReceiver = null;
+        }
+
         public static double ChargeLevel
         {
             get
@@ -34,6 +53,7 @@ namespace Microsoft.Caboodle
                 }
             }
         }
+
         public static BatteryState State
         {
             get
@@ -59,6 +79,7 @@ namespace Microsoft.Caboodle
                 return BatteryState.Unknown;
             }
         }
+
         public static BatteryPowerSource PowerSource
         {
             get
@@ -78,10 +99,20 @@ namespace Microsoft.Caboodle
                     if (chargePlug == (int)BatteryPlugged.Wireless)
                         return BatteryPowerSource.Wireless;
 
-                    //if we aren't on one of these power plugs then we must be on battery
                     return BatteryPowerSource.Battery;
-                }      
+                }
             }
         }
+    }
+
+    class BatteryBroadcastReceiver : BroadcastReceiver
+    {
+        Action onChanged;
+
+        public BatteryBroadcastReceiver(Action onChanged) =>
+            this.onChanged = onChanged;
+
+        public override void OnReceive(Context context, Intent intent) =>
+            onChanged?.Invoke();
     }
 }

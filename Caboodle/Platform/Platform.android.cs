@@ -9,6 +9,7 @@ namespace Microsoft.Caboodle
 {
     public static partial class Platform
     {
+        static Handler handler;
         static ActivityLifecycleContextListener lifecycleListener;
 
         internal static Context CurrentContext =>
@@ -28,6 +29,16 @@ namespace Microsoft.Caboodle
             var packageInfo = CurrentContext.PackageManager.GetPackageInfo(CurrentContext.PackageName, PackageInfoFlags.Permissions);
             var requestedPermissions = packageInfo?.RequestedPermissions;
             return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.InvariantCultureIgnoreCase)) ?? false;
+        }
+
+        public static void BeginInvokeOnMainThread(Action action)
+        {
+            if (handler?.Looper != Looper.MainLooper)
+            {
+                handler = new Handler(Looper.MainLooper);
+            }
+
+            handler.Post(action);
         }
     }
 

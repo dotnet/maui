@@ -6,6 +6,62 @@ namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
+        static event BatteryChangedEventHandler batteryChanagedInternal;
+
+        public delegate void BatteryChangedEventHandler(BatteryChangedEventArgs e);
+
+        static double currentLevel;
+
+        static BatteryPowerSource currentSource;
+
+        static BatteryState currentState;
+
+        public static event BatteryChangedEventHandler BatteryChanged
+        {
+            add
+            {
+                var wasRunning = batteryChanagedInternal != null;
+
+                batteryChanagedInternal += value;
+
+                if (!wasRunning && batteryChanagedInternal != null)
+                {
+                    SetCurrent();
+                    StartBatteryListeners();
+                }
+            }
+
+            remove
+            {
+                var wasRunning = batteryChanagedInternal != null;
+
+                batteryChanagedInternal -= value;
+
+                if (wasRunning && batteryChanagedInternal == null)
+                    StopBatteryListeners();
+            }
+        }
+
+        static void SetCurrent()
+        {
+            currentLevel = Battery.ChargeLevel;
+            currentSource = Battery.PowerSource;
+            currentState = Battery.State;
+        }
+
+        static void OnBatteryChanged(double level, BatteryState state, BatteryPowerSource source)
+            => OnBatteryChanged(new BatteryChangedEventArgs(level, state, source));
+
+        static void OnBatteryChanged(BatteryChangedEventArgs e)
+        {
+            if (currentLevel != e.ChargeLevel ||
+                currentSource != e.PowerSource ||
+                currentState != e.State)
+            {
+                SetCurrent();
+                batteryChanagedInternal?.Invoke(e);
+            }
+        }
     }
 
     public enum BatteryState
@@ -36,7 +92,9 @@ namespace Microsoft.Caboodle
         }
 
         public double ChargeLevel { get; }
+
         public BatteryState State { get; }
+
         public BatteryPowerSource PowerSource { get; }
     }
 }

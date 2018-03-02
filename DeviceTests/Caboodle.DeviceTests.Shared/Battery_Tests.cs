@@ -10,14 +10,14 @@ namespace Caboodle.DeviceTests
     {
         [Fact]
         public void Charge_Level() =>
-            Assert.Equal(1.0, Battery.ChargeLevel);
+            Assert.True(Battery.ChargeLevel > 0.0);
 
         [Fact]
         public void Charge_State() =>
-            Assert.Equal(BatteryState.Full, Battery.State);
+            Assert.True(Battery.State != BatteryState.Unknown);
 
         [Fact]
         public void Charge_Power() =>
-            Assert.Equal(BatteryPowerSource.Ac, Battery.PowerSource);
+            Assert.True(Battery.PowerSource != BatteryPowerSource.Unknown);
     }
 }

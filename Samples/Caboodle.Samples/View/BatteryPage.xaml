@@ -13,6 +13,7 @@
             <Label Text="{Binding State}"/>
             <Label Text="{Binding PowerSource}"/>
             <Button Text="Refresh Battery Stats" Command="{Binding RefreshStatsCommand}"/>
+            <Button Text="{Binding ListenText}" Command="{Binding ListenCommand}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

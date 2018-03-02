@@ -1,7 +1,4 @@
 ﻿using Microsoft.Caboodle;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Caboodle.Tests
@@ -19,5 +16,13 @@ namespace Caboodle.Tests
         [Fact]
         public void Charge_Power_Source_On_NetStandard() =>
             Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.PowerSource);
+
+        [Fact]
+        public void Battery_Changed_Event_On_NetStandard() =>
+            Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.BatteryChanged += Battery_BatteryChanged);
+
+        void Battery_BatteryChanged(BatteryChangedEventArgs e)
+        {
+        }
     }
 }

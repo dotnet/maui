@@ -5,6 +5,28 @@ namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
+        static NSObject levelObserver;
+        static NSObject stateObserver;
+
+        static void StartBatteryListeners()
+        {
+            UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
+            levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryChangedNotification);
+            stateObserver = UIDevice.Notifications.ObserveBatteryStateDidChange(BatteryChangedNotification);
+        }
+
+        static void StopBatteryListeners()
+        {
+            UIDevice.CurrentDevice.BatteryMonitoringEnabled = false;
+            levelObserver?.Dispose();
+            levelObserver = null;
+            stateObserver?.Dispose();
+            stateObserver = null;
+        }
+
+        static void BatteryChangedNotification(object sender, NSNotificationEventArgs args) =>
+            Platform.BeginInvokeOnMainThread(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+
         public static double ChargeLevel
         {
             get

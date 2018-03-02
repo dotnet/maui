@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using Windows.ApplicationModel.Core;
 
 namespace Microsoft.Caboodle
 {
     public static partial class Battery
     {
-        static Windows.Devices.Power.Battery DefaultBattery => 
+        static void StartBatteryListeners() =>
+            DefaultBattery.ReportUpdated += ReportUpdated;
+
+        static void StopBatteryListeners() =>
+            DefaultBattery.ReportUpdated -= ReportUpdated;
+
+        static void ReportUpdated(object sender, object e) =>
+            Platform.BeginInvokeOnMainThread(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+
+        static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;
 
         public static double ChargeLevel
@@ -25,6 +34,7 @@ namespace Microsoft.Caboodle
                 return finalPercent;
             }
         }
+
         public static BatteryState State
         {
             get
@@ -42,13 +52,14 @@ namespace Microsoft.Caboodle
                     case Windows.System.Power.BatteryStatus.NotPresent:
                         return BatteryState.Unknown;
                 }
-                
+
                 if (ChargeLevel >= 1.0)
                     return BatteryState.Full;
 
                 return BatteryState.Unknown;
             }
         }
+
         public static BatteryPowerSource PowerSource
         {
             get
