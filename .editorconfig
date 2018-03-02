@@ -2,13 +2,17 @@
 # top-most EditorConfig file
 root = true
 
-# Don't use tabs for indentation.
+# Don't use spaces for indentation.
 [*]
 indent_style = space
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
 [*.{cs,csx,vb,vbx}]
+indent_size = 4
+
+# Code files
+[*.sln]
 indent_size = 4
 
 # Xml project files
@@ -23,10 +27,14 @@ indent_size = 2
 [*.json]
 indent_size = 2
 
+# XML files
+[*.xml]
+indent_size = 2
+
 # Dotnet code style settings:
 [*.{cs,vb}]
 # Sort using and Import directives with System.* appearing first
-dotnet_sort_system_directives_first = false
+dotnet_sort_system_directives_first = true
 # Avoid "this." and "Me." if not necessary
 dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion

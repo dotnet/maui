@@ -33,4 +33,7 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
+
 </Project>

@@ -18,7 +18,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Caboodle.DeviceTests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>7F340C498AB7EA7E75532E168F3B8F19881CE1D5</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>167A368DF44D3492E081E0A0317B51A870E26E61</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
