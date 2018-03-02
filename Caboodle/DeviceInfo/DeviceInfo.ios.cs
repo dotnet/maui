@@ -17,6 +17,10 @@ namespace Microsoft.Caboodle
 
         static string GetVersionString() => UIDevice.CurrentDevice.SystemVersion;
 
+        static string GetAppPackageName() => GetBundleValue("CFBundleIdentifier");
+
+        static string GetAppName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
+
         static string GetAppVersionString() => GetBundleValue("CFBundleShortVersionString");
 
         static string GetAppBuild() => GetBundleValue("CFBundleVersion");

@@ -27,6 +27,26 @@ namespace Caboodle.DeviceTests
         }
 
         [Fact]
+        public void AppName_Is_Correct()
+        {
+            Assert.Equal("Caboodle Tests", DeviceInfo.AppName);
+        }
+
+        [Fact]
+        public void AppPackageName_Is_Correct()
+        {
+#if WINDOWS_UWP
+            Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", DeviceInfo.AppPackageName);
+#elif __IOS__
+            Assert.Equal("com.yourcompany.Caboodle.DeviceTests", DeviceInfo.AppPackageName);
+#elif __ANDROID__
+            Assert.Equal("com.companyname.Caboodle.DeviceTests", DeviceInfo.AppPackageName);
+#else
+            throw new PlatformNotSupportedException();
+#endif
+        }
+
+        [Fact]
         public void Platform_Is_Correct()
         {
 #if WINDOWS_UWP
@@ -43,7 +63,7 @@ namespace Caboodle.DeviceTests
         [Fact]
         public void App_Build_Is_Correct()
         {
-            Assert.Equal("1", DeviceInfo.AppBuild);
+            Assert.Equal("1", DeviceInfo.AppBuildString);
         }
 
         [Fact]

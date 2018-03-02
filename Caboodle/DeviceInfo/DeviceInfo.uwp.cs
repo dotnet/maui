@@ -68,6 +68,10 @@ namespace Microsoft.Caboodle
             return version;
         }
 
+        static string GetAppPackageName() => Package.Current.Id.Name;
+
+        static string GetAppName() => Package.Current.DisplayName;
+
         static string GetAppVersionString()
         {
             var version = Package.Current.Id.Version;

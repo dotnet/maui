@@ -46,6 +46,15 @@ namespace Microsoft.Caboodle
 
         static string GetVersionString() => Build.VERSION.Release;
 
+        static string GetAppPackageName() => CaboodlePlatform.CurrentContext.PackageName;
+
+        static string GetAppName()
+        {
+            var applicationInfo = CaboodlePlatform.CurrentContext.ApplicationInfo;
+            var packageManager = CaboodlePlatform.CurrentContext.PackageManager;
+            return applicationInfo.LoadLabel(packageManager);
+        }
+
         static string GetAppVersionString()
         {
             SetAppVersions();

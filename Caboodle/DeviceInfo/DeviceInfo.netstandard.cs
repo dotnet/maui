@@ -12,6 +12,10 @@
 
         static string GetVersionString() => throw new NotImplentedInReferenceAssembly();
 
+        static string GetAppPackageName() => throw new NotImplentedInReferenceAssembly();
+
+        static string GetAppName() => throw new NotImplentedInReferenceAssembly();
+
         static string GetAppVersionString() => throw new NotImplentedInReferenceAssembly();
 
         static string GetAppBuild() => throw new NotImplentedInReferenceAssembly();

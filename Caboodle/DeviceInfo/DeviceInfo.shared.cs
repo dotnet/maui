@@ -10,6 +10,8 @@ namespace Microsoft.Caboodle
         static string deviceName;
         static string versionString;
         static Version versionNumber;
+        static string appName;
+        static string appPackageName;
         static string appVersionString;
         static Version appVersionNumber;
         static string appBuild;
@@ -23,17 +25,21 @@ namespace Microsoft.Caboodle
 
         public static string Manufacturer => manufacturer ?? (manufacturer = GetManufacturer());
 
-        public static string DeviceName => deviceName ?? (deviceName = GetDeviceName());
+        public static string Name => deviceName ?? (deviceName = GetDeviceName());
 
         public static string VersionString => versionString ?? (versionString = GetVersionString());
 
         public static Version Version => ParseVersion(VersionString, ref versionNumber);
 
+        public static string AppPackageName => appPackageName ?? (appPackageName = GetAppPackageName());
+
+        public static string AppName => appName ?? (appName = GetAppName());
+
         public static string AppVersionString => appVersionString ?? (appVersionString = GetAppVersionString());
 
         public static Version AppVersion => ParseVersion(AppVersionString, ref appVersionNumber);
 
-        public static string AppBuild => appBuild ?? (appBuild = GetAppBuild());
+        public static string AppBuildString => appBuild ?? (appBuild = GetAppBuild());
 
         public static string Platform => platform ?? (platform = GetPlatform());
 
