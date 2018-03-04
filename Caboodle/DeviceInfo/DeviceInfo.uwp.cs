@@ -104,6 +104,7 @@ namespace Microsoft.Caboodle
 
             return Idioms.Unsupported;
         }
+
         static DeviceType GetDeviceType()
         {
             var isVirtual = deviceInfo.SystemProductName == "Virtual";

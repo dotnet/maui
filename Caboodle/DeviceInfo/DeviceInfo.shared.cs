@@ -19,7 +19,7 @@ namespace Microsoft.Caboodle
         static string idiom;
         static DeviceType? deviceType;
 
-        static event ScreenMetricsChanagedEventHandler screenMetricsChanagedInternal;
+        static event ScreenMetricsChanagedEventHandler ScreenMetricsChanagedInternal;
 
         public static string Identifier => identifier ?? (identifier = GetIdentifier());
 
@@ -55,20 +55,21 @@ namespace Microsoft.Caboodle
         {
             add
             {
-                var wasRunning = screenMetricsChanagedInternal != null;
+                var wasRunning = ScreenMetricsChanagedInternal != null;
 
-                screenMetricsChanagedInternal += value;
+                ScreenMetricsChanagedInternal += value;
 
-                if (!wasRunning && screenMetricsChanagedInternal != null)
+                if (!wasRunning && ScreenMetricsChanagedInternal != null)
                     StartScreenMetricsListeners();
             }
+
             remove
             {
-                var wasRunning = screenMetricsChanagedInternal != null;
+                var wasRunning = ScreenMetricsChanagedInternal != null;
 
-                screenMetricsChanagedInternal -= value;
+                ScreenMetricsChanagedInternal -= value;
 
-                if (wasRunning && screenMetricsChanagedInternal == null)
+                if (wasRunning && ScreenMetricsChanagedInternal == null)
                     StopScreenMetricsListeners();
             }
         }
@@ -80,7 +81,7 @@ namespace Microsoft.Caboodle
             => OnScreenMetricsChanaged(new ScreenMetricsChanagedEventArgs(metrics));
 
         static void OnScreenMetricsChanaged(ScreenMetricsChanagedEventArgs e)
-            => screenMetricsChanagedInternal?.Invoke(e);
+            => ScreenMetricsChanagedInternal?.Invoke(e);
 
         static Version ParseVersion(string version, ref Version number)
         {
