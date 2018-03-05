@@ -208,6 +208,7 @@
     <Compile Include="ColorPicker.cs" />
     <Compile Include="StringProvider.cs" />
     <Compile Include="TestCloudService.cs" />
+    <Compile Include="_1909CustomRenderer.cs" />
     <Compile Include="_38989CustomRenderer.cs" />
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="_57114CustomRenderer.cs" />
@@ -320,6 +321,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\synchronize_enabled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\red_button.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

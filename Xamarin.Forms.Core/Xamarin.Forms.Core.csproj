@@ -100,6 +100,7 @@
     <Compile Include="PlatformConfiguration\AndroidSpecific\AppCompat\Application.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\Application.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\Elevation.cs" />
+    <Compile Include="PlatformConfiguration\AndroidSpecific\Button.cs" />
     <Compile Include="PlatformConfiguration\AndroidSpecific\TabbedPage.cs" />
     <Compile Include="PlatformConfiguration\ExtensionPoints.cs" />
     <Compile Include="PlatformConfiguration\iOSSpecific\BlurEffectStyle.cs" />
