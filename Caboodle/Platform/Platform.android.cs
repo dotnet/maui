@@ -27,7 +27,7 @@ namespace Microsoft.Caboodle
         public static void Init(Activity activity, Bundle bundle) =>
            Init(activity.Application);
 
-        interface static bool HasPermissionInManifest(string permission)
+        internal static bool HasPermissionInManifest(string permission)
         {
             var packageInfo = CurrentContext.PackageManager.GetPackageInfo(CurrentContext.PackageName, PackageInfoFlags.Permissions);
             var requestedPermissions = packageInfo?.RequestedPermissions;
@@ -52,15 +52,8 @@ namespace Microsoft.Caboodle
         public Context Context =>
             Activity ?? Application.Context;
 
-        public Activity Activity
-        {
-            get
-            {
-                if (currentActivity.TryGetTarget(out var a))
-                    return a;
-                return null;
-            }
-        }
+        public Activity Activity =>
+            currentActivity.TryGetTarget(out var a) ? a : null;
 
         public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
         {
