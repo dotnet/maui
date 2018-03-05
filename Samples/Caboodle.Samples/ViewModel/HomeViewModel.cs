@@ -13,6 +13,7 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("Battery", typeof(BatteryPage), "Easily detect battery level, source, and state."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
                 new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),
+                new SampleItem("Device Info", typeof(DeviceInfoPage), "Find out about the device with ease."),
             };
         }
 

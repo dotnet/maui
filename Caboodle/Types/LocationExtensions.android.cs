@@ -15,7 +15,7 @@ namespace Microsoft.Caboodle
         internal static Location ToLocation(this Android.Locations.Location location) =>
             new Location(location.Latitude, location.Longitude, location.GetTimestamp().ToUniversalTime());
 
-        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         internal static DateTimeOffset GetTimestamp(this Android.Locations.Location location)
         {

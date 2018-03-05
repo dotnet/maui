@@ -10,8 +10,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Battery_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DeviceInfo_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

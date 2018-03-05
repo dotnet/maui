@@ -52,6 +52,6 @@
 	<key>CFBundleName</key>
 	<string>Caboodle.DeviceTests</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.0.1.0</string>
 </dict>
 </plist>

@@ -5,24 +5,31 @@
              Title="Geocoding"
              xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel">
     <ContentPage.BindingContext>
-        <viewmodels:GeocodingViewModel/>
+        <viewmodels:GeocodingViewModel />
     </ContentPage.BindingContext>
 
-    <ScrollView>
-        <StackLayout Padding="10">
-            <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
-            <Label Text="Latitude:"/>
-            <Entry Text="{Binding Latitude}" Keyboard="Numeric"/>
-            <Label Text="Longitude:"/>
-            <Entry Text="{Binding Longitude}" Keyboard="Numeric"/>
-            <Button Text="Detect Placemarks" Command="{Binding GetAddressCommand}" IsEnabled="{Binding IsNotBusy}"/>
-            <Label Text="{Binding GeocodeAddress}"/>
+    <StackLayout>
+        <Label Text="Easily geocode and reverse geocoding." FontAttributes="Bold" Margin="12" />
 
-            <Label Margin="0,20,0,0" Text="Address:"/>
-            <Entry Text="{Binding Address}"/>
-            <Button Text="Detect Location" Command="{Binding GetPositionCommand}" IsEnabled="{Binding IsNotBusy}"/>
-            <Label Text="{Binding GeocodePosition}"/>
-        </StackLayout>
-    </ScrollView>
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}"/>
+
+                <Label Text="Geocoding:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="Latitude:"/>
+                <Entry Text="{Binding Latitude}" Keyboard="Numeric"/>
+                <Label Text="Longitude:"/>
+                <Entry Text="{Binding Longitude}" Keyboard="Numeric"/>
+                <Button Text="Detect Placemarks" Command="{Binding GetAddressCommand}" IsEnabled="{Binding IsNotBusy}"/>
+                <Label Text="{Binding GeocodeAddress}"/>
+
+                <Label Text="Reverse Geocoding:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="Address:"/>
+                <Entry Text="{Binding Address}"/>
+                <Button Text="Detect Location" Command="{Binding GetPositionCommand}" IsEnabled="{Binding IsNotBusy}"/>
+                <Label Text="{Binding GeocodePosition}"/>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
 
 </ContentPage>

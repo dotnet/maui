@@ -32,10 +32,7 @@ namespace Microsoft.Caboodle
         internal static void ValidateMapKey()
         {
             if (string.IsNullOrWhiteSpace(MapKey) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
-            {
-                Console.WriteLine("Map API key is required on UWP to reverse geolocate.");
                 throw new ArgumentNullException(nameof(MapKey));
-            }
 
             if (!string.IsNullOrWhiteSpace(MapKey))
                 MapService.ServiceToken = MapKey;

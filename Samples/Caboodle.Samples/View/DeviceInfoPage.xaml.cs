@@ -4,9 +4,9 @@ using Xamarin.Forms;
 
 namespace Caboodle.Samples.View
 {
-    public partial class BatteryPage : ContentPage
+    public partial class DeviceInfoPage : ContentPage
     {
-        public BatteryPage()
+        public DeviceInfoPage()
         {
             InitializeComponent();
         }
@@ -15,21 +15,21 @@ namespace Caboodle.Samples.View
         {
             base.OnAppearing();
 
-            Battery.BatteryChanged += OnBatteryChanged;
+            DeviceInfo.ScreenMetricsChanaged += OnScreenMetricsChanged;
         }
 
         protected override void OnDisappearing()
         {
-            Battery.BatteryChanged -= OnBatteryChanged;
+            DeviceInfo.ScreenMetricsChanaged -= OnScreenMetricsChanged;
 
             base.OnDisappearing();
         }
 
-        void OnBatteryChanged(BatteryChangedEventArgs e)
+        void OnScreenMetricsChanged(ScreenMetricsChanagedEventArgs e)
         {
-            if (BindingContext is BatteryViewModel vm)
+            if (BindingContext is DeviceInfoViewModel vm)
             {
-                vm.Update(e);
+                vm.ScreenMetrics = e.Metrics;
             }
         }
     }

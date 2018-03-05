@@ -1,4 +1,5 @@
 ﻿using Caboodle.Samples.View;
+using Microsoft.Caboodle;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -17,7 +18,8 @@ namespace Caboodle.Samples
 
         protected override void OnStart()
         {
-            // Handle when your app starts
+            // set UWP Map Key
+            Geocoding.MapKey = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
         }
 
         protected override void OnSleep()
