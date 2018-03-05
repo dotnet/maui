@@ -43,6 +43,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		DrawerMultiplexedListener _drawerListener;
 		DrawerLayout _drawerLayout;
 		bool _toolbarVisible;
+		bool _isAttachedToWindow;
 
 		// The following is based on https://android.googlesource.com/platform/frameworks/support/+/refs/heads/master/v4/java/android/support/v4/app/FragmentManager.java#849
 		const int TransitionDuration = 220;
@@ -214,15 +215,31 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		protected override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
+
 			PageController.SendAppearing();
+
+			// If the Appearing handler changed the application's main page for some reason,
+			// this page may no longer be part of the hierarchy; if so, we need to skip
+			// updating the toolbar and pushing the pages to avoid crashing the app
+			if (!IsAttachedToRoot())
+			{
+				return;
+			}
+
 			RegisterToolbar();
+
+			// If there is already stuff on the stack we need to push it
+			PushCurrentPages();
+
 			UpdateToolbar();
+			_isAttachedToWindow = true;
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
 			PageController.SendDisappearing();
+			_isAttachedToWindow = false;
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<NavigationPage> e)
@@ -273,10 +290,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				navController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 				navController.RemovePageRequested += OnRemovePageRequested;
 
-				// If there is already stuff on the stack we need to push it
-				foreach (Page page in navController.Pages)
+				if (_isAttachedToWindow && IsAttachedToRoot())
 				{
-					PushViewAsync(page, false);
+					PushCurrentPages();
 				}
 			}
 		}
@@ -732,8 +748,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Context.HideKeyboard(this);
 			((Platform)Element.Platform).NavAnimationInProgress = false;
 
-			// TransitionDuration is how long the built-in animations are, and they are "reversible" in the sense that starting another one slightly before it's done is fine
-
 			return tcs.Task;
 		}
 
@@ -865,6 +879,28 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				bar.SetTitleTextColor(textColor.ToAndroid().ToArgb());
 
 			bar.Title = Element.CurrentPage.Title ?? "";
+		}
+
+		void PushCurrentPages()
+		{
+			var navController = (INavigationPageController)Element;
+
+			foreach (Page page in navController.Pages)
+			{
+				PushViewAsync(page, false);
+			}
+		}
+
+		bool IsAttachedToRoot()
+		{
+			var root = (Page)Element;
+
+			while (!Application.IsApplicationOrNull(root.RealParent))
+			{
+				root = (Page)root.RealParent;
+			}
+
+			return root.RealParent != null;
 		}
 
 		class ClickListener : Object, IOnClickListener
