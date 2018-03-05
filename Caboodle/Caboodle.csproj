@@ -18,7 +18,6 @@
     <Version>1.0.0</Version>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <Authors>Xamarin Inc.</Authors>
-    <PackOnBuild>true</PackOnBuild>
     <Owners>microsoft,Xamarin,XamarinNuGet</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
@@ -26,7 +25,6 @@
     <PackageReleaseNotes>See: https://github.com/xamarin/caboodle</PackageReleaseNotes>
     <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <PackageLicenseUrl>https://go.microsoft.com/fwlink/?linkid=868961</PackageLicenseUrl>

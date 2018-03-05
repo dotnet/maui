@@ -1,5 +1,10 @@
 $ErrorActionPreference = "Stop"
 
+# Make sure that we have something on non-bots
+if (!$env:BUILD_NUMBER) {
+    $env:BUILD_NUMBER = "0"
+}
+
 # Find MSBuild on this machine
 if ($IsMacOS) {
     $msbuild = "msbuild"
