@@ -339,7 +339,7 @@ namespace Xamarin.Flex
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
 		public float PaddingTop { get; set; } = 0f;
 
-		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Xamarin.Flex.Item.Left" />, <see cref = "P:Xamarin.Flex.Item.Right" />, <see cref = "P:Xamarin.Flex.Item.Top" /> and < see cref= "P:Xamarin.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
+		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Xamarin.Flex.Item.Left" />, <see cref = "P:Xamarin.Flex.Item.Right" />, <see cref = "P:Xamarin.Flex.Item.Top" /> and <see cref= "P:Xamarin.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
 		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Position" /> enumeration.</value>
 		/// <remarks>The default value for this property is Relative</remarks>
 		public Position Position { get; set; } = Position.Relative;
@@ -387,10 +387,9 @@ namespace Xamarin.Flex
 			Height = height;
 		}
 
+		/// <summary>Adds a given child item to the current item.</summary>
+		/// <exception cref = "ArgumentException" > Thrown if the child has already been added to another item.</exception>
 		/// <param name="child">The child item to be added.</param>
-        /// <summary>Adds a given child item to the current item.</summary>
-        /// <exception cref = "ArgumentException" > Thrown if the child has already been added to another item.</exception>
-		/// <param name="child">Child.</param>
 		public void Add(Item child)
 		{
 			ValidateChild(child);
@@ -434,9 +433,9 @@ namespace Xamarin.Flex
 			}
 		}
 
-		/// <summary>Determines the frames of each child(included nested ones) based on the flexbox rules that were applied on this item and the children themselves.After this method is called, the<see cref="P:Xamarin.Flex.Item.FrameX" />, <see cref = "P:Xamarin.Flex.Item.FrameY" />, <see cref = "P:Xamarin.Flex.Item.FrameWidth" /> and < see cref= "P:Xamarin.Flex.Item.FrameHeight" /> properties can be accessed on child items.</summary>
-		/// <remarks>This method must be called on a root (without parent) item where the <see cref = "P:Xamarin.Flex.Item.Width" /> and < see cref= "P:Xamarin.Flex.Item.Height" /> properties have also been set.</remarks>
-		/// <exception cref = "InvalidOperationException" > Thrown if the item has a parent (must be root) or if the item does not have a proper value set for < see cref = "P:Xamarin.Flex.Item.Width" /> and < see cref = "P:Xamarin.Flex.Item.Height" />.</ exception >
+		/// <summary>Determines the frames of each child(included nested ones) based on the flexbox rules that were applied on this item and the children themselves.After this method is called, the<see cref="P:Xamarin.Flex.Item.FrameX" />, <see cref = "P:Xamarin.Flex.Item.FrameY" />, <see cref = "P:Xamarin.Flex.Item.FrameWidth" /> and <see cref= "P:Xamarin.Flex.Item.FrameHeight" /> properties can be accessed on child items.</summary>
+		/// <remarks>This method must be called on a root (without parent) item where the <see cref = "P:Xamarin.Flex.Item.Width" /> and <see cref= "P:Xamarin.Flex.Item.Height" /> properties have also been set.</remarks>
+		/// <exception cref = "InvalidOperationException" > Thrown if the item has a parent (must be root) or if the item does not have a proper value set for <see cref = "P:Xamarin.Flex.Item.Width" /> and <see cref = "P:Xamarin.Flex.Item.Height" />.</exception>
 		public void Layout()
 		{
 			if (Parent != null)

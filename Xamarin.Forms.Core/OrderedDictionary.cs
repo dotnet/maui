@@ -79,9 +79,7 @@ namespace Cadenza.Collections
 		}
 
 		/// <summary>
-		///     Gets the equality comparer being used for
-		///     <typeparam name="TKey" />
-		///     .
+		///     Gets the equality comparer being used for <typeparamref name="TKey"/>.
 		/// </summary>
 		public IEqualityComparer<TKey> Comparer
 		{
