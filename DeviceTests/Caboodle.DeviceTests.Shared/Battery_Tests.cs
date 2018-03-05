@@ -1,7 +1,7 @@
-﻿using Microsoft.Caboodle;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Caboodle;
 using Xunit;
 
 namespace Caboodle.DeviceTests
