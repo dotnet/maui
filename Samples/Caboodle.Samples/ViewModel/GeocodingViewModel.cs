@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows.Input;
 using Microsoft.Caboodle;
-using MvvmHelpers;
 using Xamarin.Forms;
 
 namespace Caboodle.Samples.ViewModel

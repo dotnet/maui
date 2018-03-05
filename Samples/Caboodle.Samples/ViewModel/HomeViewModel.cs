@@ -1,6 +1,6 @@
-﻿using Caboodle.Samples.Model;
+﻿using System.Collections.ObjectModel;
+using Caboodle.Samples.Model;
 using Caboodle.Samples.View;
-using MvvmHelpers;
 
 namespace Caboodle.Samples.ViewModel
 {
@@ -8,7 +8,7 @@ namespace Caboodle.Samples.ViewModel
     {
         public HomeViewModel()
         {
-            Items = new ObservableRangeCollection<SampleItem>
+            Items = new ObservableCollection<SampleItem>
             {
                 new SampleItem("Battery", typeof(BatteryPage), "Easily detect battery level, source, and state."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
@@ -17,6 +17,6 @@ namespace Caboodle.Samples.ViewModel
             };
         }
 
-        public ObservableRangeCollection<SampleItem> Items { get; }
+        public ObservableCollection<SampleItem> Items { get; }
     }
 }
