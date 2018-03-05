@@ -196,6 +196,7 @@
       <Type Name="DependencyAttribute" Kind="Class" />
       <Type Name="DependencyFetchTarget" Kind="Enumeration" />
       <Type Name="DependencyService" Kind="Class" />
+      <Type Name="DesignMode" Kind="Class" />
       <Type Name="Device" Kind="Class" />
       <Type Name="Device+Styles" Kind="Class" />
       <Type Name="Easing" Kind="Class" />
