@@ -2,8 +2,8 @@
   <PropertyGroup>
     <!--Work around so the conditions work below-->
     <TargetFrameworks></TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard1.4;netstandard2.0;Xamarin.iOS10;MonoAndroid80;uap10.0.14393;uap10.0.16299</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard1.4;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80;uap10.0.16299</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netstandard1.0;netstandard2.0;Xamarin.iOS10;MonoAndroid80</TargetFrameworks>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
     <RootNamespace>Microsoft.Caboodle</RootNamespace>
     <PackageId>Microsoft.Caboodle</PackageId>
