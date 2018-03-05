@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Caboodle.Types
+namespace Microsoft.Caboodle
 {
     public static partial class LocationExtensions
     {
