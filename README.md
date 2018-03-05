@@ -50,5 +50,12 @@ The following cross-platform APIs are planned for our first release:
 ## Contributing
 Please read through our [Contribution Guide](CONTRIBUTING.md).
 
+## Building Caboodle
+Caboodle is built with the new SDK style projects with multi-targeting enabled. This means that all code for iOS, Android, and UWP exist inside of the Caboodle project. 
+
+If building on Visual Studio 2017 simply open the solution and build the project. 
+
+If using Visual Studio for Mac the project can be built at the command line with MSBuild. To change the project type that you are working with simply edit Caboodle.csproj and modify the TargetFrameworks for only the project type you want to use.
+
 ## License
 Please see the [License](LICENSE).
