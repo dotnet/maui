@@ -1,6 +1,8 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.Reflection;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
@@ -83,6 +85,14 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				},
 			};
+
+			foreach (var element in stackLayout.Descendants())
+			{
+				//TODO: if (element is Button button)
+				var button = element as Button;
+				if (button != null)
+					button.On<Android>().SetUseDefaultPadding(true).SetUseDefaultShadow(true);
+			}
 
 			Content = stackLayout;
 		}

@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		public WindowsBasePage()
 		{
-			if (!DesignMode.DesignModeEnabled)
+			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 			{
 				Windows.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
 				Windows.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;

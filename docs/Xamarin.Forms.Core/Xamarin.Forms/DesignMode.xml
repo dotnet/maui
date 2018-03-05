@@ -1,0 +1,34 @@
+<Type Name="DesignMode" FullName="Xamarin.Forms.DesignMode">
+  <TypeSignature Language="C#" Value="public static class DesignMode" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit DesignMode extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsDesignModeEnabled">
+      <MemberSignature Language="C#" Value="public static bool IsDesignModeEnabled { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsDesignModeEnabled" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
