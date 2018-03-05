@@ -9,13 +9,13 @@ namespace Microsoft.Caboodle
 {
     public static partial class PlatformExtensions
     {
-        public static void WatchForError(this IAsyncAction self) =>
+        internal static void WatchForError(this IAsyncAction self) =>
             self.AsTask().WatchForError();
 
-        public static void WatchForError<T>(this IAsyncOperation<T> self) =>
+        internal static void WatchForError<T>(this IAsyncOperation<T> self) =>
             self.AsTask().WatchForError();
 
-        public static void WatchForError(this Task self)
+        internal static void WatchForError(this Task self)
         {
             var context = SynchronizationContext.Current;
             if (context == null)

@@ -18,11 +18,14 @@ namespace Microsoft.Caboodle
         internal static Activity CurrentActivity =>
             lifecycleListener?.Activity;
 
-        public static void Init(Activity activity, Bundle bundle)
+        public static void Init(Application application)
         {
             lifecycleListener = new ActivityLifecycleContextListener();
-            activity.Application.RegisterActivityLifecycleCallbacks(lifecycleListener);
+            application.RegisterActivityLifecycleCallbacks(lifecycleListener);
         }
+
+        public static void Init(Activity activity) =>
+            Init(activity.Application);
 
         public static bool HasPermissionInManifest(string permission)
         {
