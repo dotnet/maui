@@ -90,10 +90,12 @@
     <Rule Id="SA1215" Action="Warning" />
     <Rule Id="SA1216" Action="Warning" />
     <Rule Id="SA1217" Action="Warning" />
+    <Rule Id="SA1300" Action="Warning" />
     <Rule Id="SA1301" Action="Warning" />
     <Rule Id="SA1302" Action="Warning" />
     <Rule Id="SA1303" Action="None" />
     <Rule Id="SA1304" Action="Warning" />
+    <Rule Id="SA1305" Action="None" />
     <Rule Id="SA1306" Action="Warning" />
     <Rule Id="SA1307" Action="Warning" />
     <Rule Id="SA1308" Action="Warning" />
@@ -147,6 +149,7 @@
     <Rule Id="SA1606" Action="None" />
     <Rule Id="SA1607" Action="None" />
     <Rule Id="SA1608" Action="None" />
+    <Rule Id="SA1609" Action="None" />
     <Rule Id="SA1610" Action="None" />
     <Rule Id="SA1611" Action="None" />
     <Rule Id="SA1612" Action="None" />
@@ -176,6 +179,7 @@
     <Rule Id="SA1636" Action="None" />
     <Rule Id="SA1637" Action="None" />
     <Rule Id="SA1638" Action="None" />
+    <Rule Id="SA1639" Action="None" />
     <Rule Id="SA1640" Action="None" />
     <Rule Id="SA1641" Action="None" />
     <Rule Id="SA1642" Action="None" />
@@ -190,5 +194,17 @@
     <Rule Id="SA1651" Action="None" />
     <Rule Id="SA1652" Action="None" />
     <Rule Id="SX1101" Action="Warning" />
+    <Rule Id="SX1309" Action="None" />
+    <Rule Id="SX1309S" Action="None" />
+    <!--
+      =================================================================================================================
+      Rules that are configured in the stylecop.json file
+      https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/Configuration.md
+      =================================================================================================================
+      SA1200: Using directives must be placed correctly.
+              settings.orderingRules.systemUsingDirectivesFirst
+              settings.orderingRules.usingDirectivesPlacement
+      =================================================================================================================
+    -->
   </Rules>
 </RuleSet>
