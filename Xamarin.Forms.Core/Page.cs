@@ -317,6 +317,8 @@ namespace Xamarin.Forms
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendAppearing();
+
+			FindApplication(this)?.OnPageAppearing(this);
 		}
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -337,6 +339,16 @@ namespace Xamarin.Forms
 			EventHandler handler = Disappearing;
 			if (handler != null)
 				handler(this, EventArgs.Empty);
+
+			FindApplication(this)?.OnPageDisappearing(this);
+		}
+
+		Application FindApplication(Element element)
+		{
+			if (element == null)
+				return null;
+
+			return (element.Parent is Application app) ? app : FindApplication(element.Parent);
 		}
 
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

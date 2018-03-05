@@ -363,6 +363,36 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="PageAppearing">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Page&gt; PageAppearing;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Page&gt; PageAppearing" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PageDisappearing">
+      <MemberSignature Language="C#" Value="public event EventHandler&lt;Xamarin.Forms.Page&gt; PageDisappearing;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Forms.Page&gt; PageDisappearing" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Forms.Page&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="PanGestureId">
       <MemberSignature Language="C#" Value="public int PanGestureId { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance int32 PanGestureId" />
@@ -455,7 +485,7 @@
           <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Application/&lt;SavePropertiesAsync&gt;d__54))</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.Application/&lt;SavePropertiesAsync&gt;d__60))</AttributeName>
         </Attribute>
       </Attributes>
       <ReturnValue>
