@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 using Microsoft.Caboodle;
-using MvvmHelpers;
 using Xamarin.Forms;
 
 namespace Caboodle.Samples.ViewModel
