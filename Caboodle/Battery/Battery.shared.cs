@@ -8,8 +8,6 @@ namespace Microsoft.Caboodle
     {
         static event BatteryChangedEventHandler BatteryChanagedInternal;
 
-        public delegate void BatteryChangedEventHandler(BatteryChangedEventArgs e);
-
         static double currentLevel;
 
         static BatteryPowerSource currentSource;
@@ -81,6 +79,8 @@ namespace Microsoft.Caboodle
         Usb,
         Wireless
     }
+
+    public delegate void BatteryChangedEventHandler(BatteryChangedEventArgs e);
 
     public class BatteryChangedEventArgs : EventArgs
     {
