@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Linq;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 
 namespace Microsoft.Caboodle
 {
     public static partial class Platform
     {
+        static Handler handler;
         static ActivityLifecycleContextListener lifecycleListener;
 
         internal static Context CurrentContext =>
@@ -15,10 +18,30 @@ namespace Microsoft.Caboodle
         internal static Activity CurrentActivity =>
             lifecycleListener?.Activity;
 
-        public static void Init(Activity activity, Bundle bundle)
+        public static void Init(Application application)
         {
             lifecycleListener = new ActivityLifecycleContextListener();
-            activity.Application.RegisterActivityLifecycleCallbacks(lifecycleListener);
+            application.RegisterActivityLifecycleCallbacks(lifecycleListener);
+        }
+
+        public static void Init(Activity activity, Bundle bundle) =>
+           Init(activity.Application);
+
+        internal static bool HasPermissionInManifest(string permission)
+        {
+            var packageInfo = CurrentContext.PackageManager.GetPackageInfo(CurrentContext.PackageName, PackageInfoFlags.Permissions);
+            var requestedPermissions = packageInfo?.RequestedPermissions;
+            return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.InvariantCultureIgnoreCase)) ?? false;
+        }
+
+        public static void BeginInvokeOnMainThread(Action action)
+        {
+            if (handler?.Looper != Looper.MainLooper)
+            {
+                handler = new Handler(Looper.MainLooper);
+            }
+
+            handler.Post(action);
         }
     }
 
@@ -29,16 +52,8 @@ namespace Microsoft.Caboodle
         public Context Context =>
             Activity ?? Application.Context;
 
-        public Activity Activity
-        {
-            get
-            {
-                Activity a;
-                if (currentActivity.TryGetTarget(out a))
-                    return a;
-                return null;
-            }
-        }
+        public Activity Activity =>
+            currentActivity.TryGetTarget(out var a) ? a : null;
 
         public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
         {

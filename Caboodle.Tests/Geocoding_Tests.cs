@@ -7,7 +7,6 @@ namespace Caboodle.Tests
     public class Geocoding_Tests
     {
         [Fact]
-
         public async Task Geocoding_Placemarks_Fail_On_NetStandard()
         {
             await Assert.ThrowsAsync<NotImplentedInReferenceAssembly>(() => Geocoding.GetPlacemarksAsync(1, 1));

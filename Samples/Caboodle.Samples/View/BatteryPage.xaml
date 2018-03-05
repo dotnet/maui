@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Caboodle.Samples.View.BatteryPage"
+             Title="Battery"
+             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel">
+    <ContentPage.BindingContext>
+        <viewmodels:BatteryViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <StackLayout Padding="10">
+            <Label Text="{Binding Level}"/>
+            <Label Text="{Binding State}"/>
+            <Label Text="{Binding PowerSource}"/>
+            <Button Text="Refresh Battery Stats" Command="{Binding RefreshStatsCommand}"/>
+            <Button Text="{Binding ListenText}" Command="{Binding ListenCommand}"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
