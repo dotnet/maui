@@ -7,13 +7,18 @@
     <ContentPage.BindingContext>
         <viewmodels:BatteryViewModel/>
     </ContentPage.BindingContext>
-    <ContentPage.Content>
-        <StackLayout Padding="10">
-            <Label Text="{Binding Level}"/>
-            <Label Text="{Binding State}"/>
-            <Label Text="{Binding PowerSource}"/>
-            <Button Text="Refresh Battery Stats" Command="{Binding RefreshStatsCommand}"/>
-            <Button Text="{Binding ListenText}" Command="{Binding ListenCommand}"/>
-        </StackLayout>
-    </ContentPage.Content>
+
+    <StackLayout>
+        <Label Text="Easily detect battery level, source, and state." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Label Text="Battery State:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding Level, StringFormat='Charge Level: {0:P1}'}"/>
+                <Label Text="{Binding State, StringFormat='State: {0}'}"/>
+                <Label Text="{Binding PowerSource, StringFormat='Power Source: {0}'}"/>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
 </ContentPage>

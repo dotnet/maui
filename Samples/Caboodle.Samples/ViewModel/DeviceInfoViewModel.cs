@@ -5,6 +5,8 @@ namespace Caboodle.Samples.ViewModel
 {
     public class DeviceInfoViewModel : BaseViewModel
     {
+        ScreenMetrics screenMetrics = DeviceInfo.ScreenMetrics;
+
         public DeviceInfoViewModel()
         {
         }
@@ -31,12 +33,10 @@ namespace Caboodle.Samples.ViewModel
 
         public DeviceType DeviceType => DeviceInfo.DeviceType;
 
-        public ScreenMetrics ScreenMetrics { get; set; } = DeviceInfo.ScreenMetrics;
-
-        public void UpdateScreenMetrics(ScreenMetrics newMetrics)
+        public ScreenMetrics ScreenMetrics
         {
-            ScreenMetrics = newMetrics;
-            OnPropertyChanged(nameof(ScreenMetrics));
+            get => screenMetrics;
+            set => SetProperty(ref screenMetrics, value);
         }
     }
 }

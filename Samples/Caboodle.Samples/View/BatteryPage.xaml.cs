@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Caboodle.Samples.ViewModel;
+using Microsoft.Caboodle;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace Caboodle.Samples.View
 {
@@ -16,9 +11,26 @@ namespace Caboodle.Samples.View
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            Battery.BatteryChanged += OnBatteryChanged;
+        }
+
         protected override void OnDisappearing()
         {
+            Battery.BatteryChanged -= OnBatteryChanged;
+
             base.OnDisappearing();
+        }
+
+        void OnBatteryChanged(BatteryChangedEventArgs e)
+        {
+            if (BindingContext is BatteryViewModel vm)
+            {
+                vm.Update(e);
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Caboodle.Samples.ViewModel;
+﻿using Caboodle.Samples.ViewModel;
 using Microsoft.Caboodle;
 using Xamarin.Forms;
 
@@ -30,7 +29,7 @@ namespace Caboodle.Samples.View
         {
             if (BindingContext is DeviceInfoViewModel vm)
             {
-                vm.UpdateScreenMetrics(e.Metrics);
+                vm.ScreenMetrics = e.Metrics;
             }
         }
     }
