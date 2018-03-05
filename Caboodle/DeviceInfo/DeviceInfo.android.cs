@@ -162,7 +162,7 @@ namespace Microsoft.Caboodle
             orientationListener = null;
         }
 
-        private static ScreenRotation CalculateRotation()
+        static ScreenRotation CalculateRotation()
         {
             var service = CaboodlePlatform.CurrentContext.GetSystemService(Context.WindowService);
             var display = service?.JavaCast<IWindowManager>()?.DefaultDisplay;
@@ -185,7 +185,7 @@ namespace Microsoft.Caboodle
             return ScreenRotation.Rotation0;
         }
 
-        private static ScreenOrientation CalculateOrientation()
+        static ScreenOrientation CalculateOrientation()
         {
             var config = CaboodlePlatform.CurrentContext.Resources?.Configuration;
 
@@ -220,7 +220,7 @@ namespace Microsoft.Caboodle
 
         class Listener : OrientationEventListener
         {
-            private Action onChanged;
+            Action onChanged;
 
             public Listener(Context context, Action handler)
                 : base(context)

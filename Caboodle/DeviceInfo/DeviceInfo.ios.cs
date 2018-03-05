@@ -7,7 +7,7 @@ namespace Microsoft.Caboodle
 {
     public static partial class DeviceInfo
     {
-        private static NSObject observer;
+        static NSObject observer;
 
         static string GetModel() => UIDevice.CurrentDevice.Model;
 

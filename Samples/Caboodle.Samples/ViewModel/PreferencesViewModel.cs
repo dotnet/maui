@@ -5,11 +5,11 @@ namespace Caboodle.Samples.ViewModel
 {
     public class PreferencesViewModel : BaseViewModel
     {
-        private const string preferenceKey = "PreferenceKey";
+        const string preferenceKey = "PreferenceKey";
 
-        private readonly Preferences preferences;
+        readonly Preferences preferences;
 
-        private string preferenceValue;
+        string preferenceValue;
 
         public PreferencesViewModel()
         {
