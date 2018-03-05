@@ -1,5 +1,4 @@
-using Microsoft.Caboodle;
-using MvvmHelpers;
+﻿using Microsoft.Caboodle;
 
 namespace Caboodle.Samples.ViewModel
 {
