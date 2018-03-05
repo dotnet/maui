@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class PlatformExtensions
+    internal static partial class PlatformExtensions
     {
         internal static void WatchForError(this IAsyncAction self) =>
             self.AsTask().WatchForError();
