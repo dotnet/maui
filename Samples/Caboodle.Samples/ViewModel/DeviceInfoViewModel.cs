@@ -9,8 +9,6 @@ namespace Caboodle.Samples.ViewModel
         {
         }
 
-        public string Identifier => DeviceInfo.Identifier;
-
         public string Model => DeviceInfo.Model;
 
         public string Manufacturer => DeviceInfo.Manufacturer;

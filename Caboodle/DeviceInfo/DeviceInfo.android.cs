@@ -18,22 +18,6 @@ namespace Microsoft.Caboodle
 
         static OrientationEventListener orientationListener;
 
-        static string GetIdentifier()
-        {
-            var id = GetSerial();
-            if (string.IsNullOrWhiteSpace(id) || id == Build.Unknown || id == "0")
-            {
-                try
-                {
-                    id = GetSecureSetting(Settings.Secure.AndroidId);
-                }
-                catch
-                {
-                }
-            }
-            return id;
-        }
-
         static string GetModel() => Build.Model;
 
         static string GetManufacturer() => Build.Manufacturer;
@@ -233,32 +217,6 @@ namespace Microsoft.Caboodle
 
         static string GetSystemSetting(string name)
            => Settings.System.GetString(CaboodlePlatform.CurrentContext.ContentResolver, name);
-
-        static string GetSecureSetting(string name)
-           => Settings.Secure.GetString(CaboodlePlatform.CurrentContext.ContentResolver, name);
-
-        static string GetSerial()
-        {
-            try
-            {
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-                {
-                    // requires READ_PHONE_STATE
-                    return Build.GetSerial();
-                }
-
-                // only valid for pre-O versions
-                var buildMembers = new XAPeerMembers("android/os/Build", typeof(Build));
-                const string id = "SERIAL.Ljava/lang/String;";
-                var value = buildMembers.StaticFields.GetObjectValue(id);
-                return JNIEnv.GetString(value.Handle, JniHandleOwnership.TransferLocalRef);
-            }
-            catch
-            {
-            }
-
-            return string.Empty;
-        }
 
         class Listener : OrientationEventListener
         {

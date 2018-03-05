@@ -21,31 +21,6 @@ namespace Microsoft.Caboodle
             deviceInfo = new EasClientDeviceInformation();
         }
 
-        static string GetIdentifier()
-        {
-            try
-            {
-                if (ApiInformation.IsTypePresent("Windows.System.Profile.SystemIdentification"))
-                {
-                    var systemId = SystemIdentification.GetSystemIdForPublisher();
-                    if (systemId.Source != SystemIdentificationSource.None)
-                    {
-                        return ReadBuffer(systemId.Id);
-                    }
-                }
-                else if (ApiInformation.IsTypePresent("Windows.System.Profile.HardwareIdentification"))
-                {
-                    var token = HardwareIdentification.GetPackageSpecificToken(null);
-                    return ReadBuffer(token.Id);
-                }
-            }
-            catch
-            {
-            }
-
-            return null;
-        }
-
         static string GetModel() => deviceInfo.SystemProductName;
 
         static string GetManufacturer() => deviceInfo.SystemManufacturer;
@@ -205,16 +180,6 @@ namespace Microsoft.Caboodle
             }
 
             return ScreenRotation.Rotation0;
-        }
-
-        static string ReadBuffer(IBuffer hardwareId)
-        {
-            using (var dataReader = DataReader.FromBuffer(hardwareId))
-            {
-                var bytes = new byte[hardwareId.Length];
-                dataReader.ReadBytes(bytes);
-                return Convert.ToBase64String(bytes);
-            }
         }
     }
 }

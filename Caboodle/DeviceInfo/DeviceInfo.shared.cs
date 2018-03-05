@@ -4,7 +4,6 @@ namespace Microsoft.Caboodle
 {
     public static partial class DeviceInfo
     {
-        static string identifier;
         static string model;
         static string manufacturer;
         static string deviceName;
@@ -20,8 +19,6 @@ namespace Microsoft.Caboodle
         static DeviceType? deviceType;
 
         static event ScreenMetricsChanagedEventHandler ScreenMetricsChanagedInternal;
-
-        public static string Identifier => identifier ?? (identifier = GetIdentifier());
 
         public static string Model => model ?? (model = GetModel());
 

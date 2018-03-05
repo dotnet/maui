@@ -9,8 +9,6 @@ namespace Microsoft.Caboodle
     {
         private static NSObject observer;
 
-        static string GetIdentifier() => UIDevice.CurrentDevice.IdentifierForVendor.AsString();
-
         static string GetModel() => UIDevice.CurrentDevice.Model;
 
         static string GetManufacturer() => "Apple";

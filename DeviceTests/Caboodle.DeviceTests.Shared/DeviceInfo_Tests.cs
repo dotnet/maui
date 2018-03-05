@@ -20,13 +20,6 @@ namespace Caboodle.DeviceTests
         }
 
         [Fact]
-        public void Identifier_Is_Not_Null()
-        {
-            Assert.NotNull(DeviceInfo.Identifier);
-            Assert.NotEmpty(DeviceInfo.Identifier);
-        }
-
-        [Fact]
         public void AppName_Is_Correct()
         {
             Assert.Equal("Caboodle Tests", DeviceInfo.AppName);

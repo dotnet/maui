@@ -2,8 +2,6 @@
 {
     public static partial class DeviceInfo
     {
-        static string GetIdentifier() => throw new NotImplentedInReferenceAssembly();
-
         static string GetModel() => throw new NotImplentedInReferenceAssembly();
 
         static string GetManufacturer() => throw new NotImplentedInReferenceAssembly();
