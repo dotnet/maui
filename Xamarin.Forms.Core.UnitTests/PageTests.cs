@@ -400,6 +400,39 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True (completed);
 		}
 
+		class PageTestApp : Application { }
+
+		[Test]
+		public void SendApplicationPageAppearing()
+		{
+			var app = new PageTestApp();
+			var page = new ContentPage();
+
+			Page actual = null;
+			app.MainPage = page;
+			app.PageAppearing += (sender, args) => actual = args;
+
+			((IPageController)page).SendAppearing();
+
+			Assert.AreSame(page, actual);
+		}
+
+		[Test]
+		public void SendApplicationPageDisappearing()
+		{
+			var app = new PageTestApp();
+			var page = new ContentPage();
+
+			Page actual = null;
+			app.MainPage = page;
+			app.PageDisappearing += (sender, args) => actual = args;
+
+			((IPageController)page).SendAppearing();
+			((IPageController)page).SendDisappearing();
+
+			Assert.AreSame(page, actual);
+		}
+
 		[Test]
 		public void SendAppearing ()
 		{
@@ -494,5 +527,5 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.True (sentNav);
 			Assert.True (sent);
 		}
-	}	
+	}
 }

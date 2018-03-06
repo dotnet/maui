@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 
 		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		protected Application()
+		public Application()
 		{
 			var f = false;
 			if (f)
@@ -169,6 +169,10 @@ namespace Xamarin.Forms
 
 		public event EventHandler<ModalPushingEventArgs> ModalPushing;
 
+		public event EventHandler<Page> PageAppearing;
+
+		public event EventHandler<Page> PageDisappearing;
+
 		public async Task SavePropertiesAsync()
 		{
 			if (Device.IsInvokeRequired)
@@ -278,6 +282,12 @@ namespace Xamarin.Forms
 
 			return properties;
 		}
+
+		internal void OnPageAppearing(Page page)
+			=> PageAppearing?.Invoke(this, page);
+
+		internal void OnPageDisappearing(Page page)
+			=> PageDisappearing?.Invoke(this, page);
 
 		void OnModalPopped(Page modalPage)
 			=> ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modalPage));

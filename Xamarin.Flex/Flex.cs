@@ -241,7 +241,7 @@ namespace Xamarin.Flex
 		IList<Item> Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
-		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its<see cref="P:Xamarin.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
+		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Xamarin.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
 		///<remarks>The default value for this property is Stretch.</remarks>
 		/// <value>The content of the align.</value>
 		public AlignContent AlignContent { get; set; } = AlignContent.Stretch;
@@ -387,9 +387,6 @@ namespace Xamarin.Flex
 			Height = height;
 		}
 
-		/// <summary>Adds a given child item to the current item.</summary>
-		/// <exception cref = "ArgumentException" > Thrown if the child has already been added to another item.</exception>
-		/// <param name="child">The child item to be added.</param>
 		public void Add(Item child)
 		{
 			ValidateChild(child);
@@ -398,10 +395,10 @@ namespace Xamarin.Flex
 			ShouldOrderChildren |= child.Order != 0;
 		}
 
-		public void InsertAt(uint index, Item child)
+		public void InsertAt(int index, Item child)
 		{
 			ValidateChild(child);
-			(Children ?? (Children = new List<Item>())).Insert((int)index, child);
+			(Children ?? (Children = new List<Item>())).Insert(index, child);
 			child.Parent = this;
 			ShouldOrderChildren |= child.Order != 0;
 		}
@@ -414,13 +411,13 @@ namespace Xamarin.Flex
 			return child;
 		}
 
-		public uint Count =>
-			(uint)(Children?.Count ?? 0);
+		public int Count =>
+			(Children?.Count ?? 0);
 
-		public Item ItemAt(uint index) =>
-			Children?[(int)index];
+		public Item ItemAt(int index) =>
+			Children?[index];
 
-		public Item this[uint index] {
+		public Item this[int index] {
 			get => ItemAt(index);
 		}
 
@@ -433,9 +430,6 @@ namespace Xamarin.Flex
 			}
 		}
 
-		/// <summary>Determines the frames of each child(included nested ones) based on the flexbox rules that were applied on this item and the children themselves.After this method is called, the<see cref="P:Xamarin.Flex.Item.FrameX" />, <see cref = "P:Xamarin.Flex.Item.FrameY" />, <see cref = "P:Xamarin.Flex.Item.FrameWidth" /> and <see cref= "P:Xamarin.Flex.Item.FrameHeight" /> properties can be accessed on child items.</summary>
-		/// <remarks>This method must be called on a root (without parent) item where the <see cref = "P:Xamarin.Flex.Item.Width" /> and <see cref= "P:Xamarin.Flex.Item.Height" /> properties have also been set.</remarks>
-		/// <exception cref = "InvalidOperationException" > Thrown if the item has a parent (must be root) or if the item does not have a proper value set for <see cref = "P:Xamarin.Flex.Item.Width" /> and <see cref = "P:Xamarin.Flex.Item.Height" />.</exception>
 		public void Layout()
 		{
 			if (Parent != null)
@@ -445,14 +439,6 @@ namespace Xamarin.Flex
 			if (SelfSizing != null)
 				throw new InvalidOperationException("Layout() cannot be called on an item that has the SelfSizing property set");
 			layout_item(this, Width, Height);
-		}
-
-		public float Padding {
-			set => PaddingTop = PaddingLeft = PaddingRight = PaddingBottom = value;
-		}
-
-		public float Margin {
-			set => MarginTop = MarginLeft = MarginRight = MarginBottom = value;
 		}
 
 		public delegate void SelfSizingDelegate(Item item, ref float width, ref float height);
@@ -482,22 +468,17 @@ namespace Xamarin.Flex
 			layout.init(item, width, height);
 			layout.reset();
 
-			uint last_layout_child = 0;
-			uint relative_children_count = 0;
-			for (uint i = 0; i < item.Count; i++) {
-				Item child = layout.child_at(item, i);
+			int last_layout_child = 0;
+			int relative_children_count = 0;
+			for (int i = 0; i < item.Count; i++) {
+				var child = layout.child_at(item, i);
 				// Items with an absolute position have their frames determined
 				// directly and are skipped during layout.
 				if (child.Position == Position.Absolute) {
-					float child_width = absolute_size(child.Width, child.Left, child.Right, width);
-					float child_height = absolute_size(child.Height, child.Top, child.Bottom, height);
-					float child_x = absolute_pos(child.Left, child.Right, child_width, width);
-					float child_y = absolute_pos(child.Top, child.Bottom, child_height, height);
-
-					child.Frame[0] = child_x;
-					child.Frame[1] = child_y;
-					child.Frame[2] = child_width;
-					child.Frame[3] = child_height;
+					child.Frame[2] = absolute_size(child.Width, child.Left, child.Right, width);
+					child.Frame[3] = absolute_size(child.Height, child.Top, child.Bottom, height);
+					child.Frame[0] = absolute_pos(child.Left, child.Right, child.Frame[2], width);
+					child.Frame[1] = absolute_pos(child.Top, child.Bottom, child.Frame[3], height);
 
 					// Now that the item has a frame, we can layout its children.
 					layout_item(child, child.Frame[2], child.Frame[3]);
@@ -511,20 +492,16 @@ namespace Xamarin.Flex
 				child.Frame[3] = child.Height;
 
 				// Main axis size defaults to 0.
-				if (float.IsNaN(child.Frame[layout.frame_size_i])) {
+				if (float.IsNaN(child.Frame[layout.frame_size_i]))
 					child.Frame[layout.frame_size_i] = 0;
-				}
 
 				// Cross axis size defaults to the parent's size (or line size in wrap
 				// mode, which is calculated later on).
 				if (float.IsNaN(child.Frame[layout.frame_size2_i])) {
-					if (layout.wrap) {
+					if (layout.wrap)
 						layout.need_lines = true;
-					}
-					else {
-						child.Frame[layout.frame_size2_i] = (layout.vertical ? width : height)
-							- child.MarginThickness(!layout.vertical);
-					}
+					else
+						child.Frame[layout.frame_size2_i] = (layout.vertical ? width : height) - child.MarginThickness(!layout.vertical);
 				}
 
 				// Call the self_sizing callback if provided. Only non-NAN values
@@ -535,15 +512,13 @@ namespace Xamarin.Flex
 
 					child.SelfSizing(child, ref size[0], ref size[1]);
 
-					for (uint j = 0; j < 2; j++) {
-						uint size_off = j + 2;
-						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch) {
+					for (int j = 0; j < 2; j++) {
+						int size_off = j + 2;
+						if (size_off == layout.frame_size2_i && child_align(child, item) == AlignItems.Stretch)
 							continue;
-						}
 						float val = size[j];
-						if (!float.IsNaN(val)) {
+						if (!float.IsNaN(val))
 							child.Frame[size_off] = val;
-						}
 					}
 				}
 
@@ -622,7 +597,7 @@ namespace Xamarin.Flex
 
 					// Re-position the children of this line, honoring any child
 					// alignment previously set within the line.
-					for (uint j = line.child_begin; j < line.child_end; j++) {
+					for (int j = line.child_begin; j < line.child_end; j++) {
 						Item child = layout.child_at(item, j);
 						if (child.Position == Position.Absolute) {
 							// Should not be re-positioned.
@@ -649,14 +624,10 @@ namespace Xamarin.Flex
 			layout.cleanup();
 		}
 
-		float MarginThickness(bool vertical)
-		{
-			if (vertical)
-				return MarginTop + MarginBottom;
-			return MarginLeft + MarginRight;
-		}
+		float MarginThickness(bool vertical) =>
+			vertical ? MarginTop + MarginBottom : MarginLeft + MarginRight;
 
-		static void layout_align(Justify align, float flex_dim, uint children_count, ref float pos_p, ref float spacing_p)
+		static void layout_align(Justify align, float flex_dim, int children_count, ref float pos_p, ref float spacing_p)
 		{
 			if (flex_dim < 0)
 				throw new ArgumentException();
@@ -733,7 +704,7 @@ namespace Xamarin.Flex
 			}
 		}
 
-		static void layout_items(Item item, uint child_begin, uint child_end, uint children_count, ref flex_layout layout)
+		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout)
 		{
 			if (children_count > (child_end - child_begin))
 				throw new ArgumentException();
@@ -766,7 +737,7 @@ namespace Xamarin.Flex
 				layout.pos2 -= layout.line_dim;
 			}
 
-			for (uint i = child_begin; i < child_end; i++) {
+			for (int i = child_begin; i < child_end; i++) {
 
 				Item child = layout.child_at(item, i);
 				if (child.Position == Position.Absolute) {
@@ -879,7 +850,7 @@ namespace Xamarin.Flex
 			public uint frame_pos2_i;			// cross axis position
 			public uint frame_size_i;			// main axis size
 			public uint frame_size2_i;			// cross axis size
-			uint[] ordered_indices;
+			int[] ordered_indices;
 
 			// Set for each line layout.
 			public float line_dim;				// the cross axis size
@@ -895,8 +866,8 @@ namespace Xamarin.Flex
 			public bool need_lines;
 			public struct flex_layout_line
 			{
-				public uint child_begin;
-				public uint child_end;
+				public int child_begin;
+				public int child_end;
 				public float size;
 			};
 
@@ -922,11 +893,8 @@ namespace Xamarin.Flex
 				    || item.PaddingBottom < 0)
 					throw new ArgumentException();
 
-				width -= item.PaddingLeft + item.PaddingRight;
-				height -= item.PaddingTop + item.PaddingBottom;
-				if (   width < 0
-				    || height < 0)
-					throw new ArgumentException();
+				width = Math.Max(0, width - item.PaddingLeft + item.PaddingRight);
+				height = Math.Max(0, height - item.PaddingTop + item.PaddingBottom);
 
 				reverse = item.Direction == Direction.RowReverse || item.Direction == Direction.ColumnReverse;
 				vertical = true;
@@ -954,18 +922,18 @@ namespace Xamarin.Flex
 
 				ordered_indices = null;
 				if (item.ShouldOrderChildren && item.Count > 0) {
-					var indices = new uint[item.Count];
+					var indices = new int[item.Count];
 					// Creating a list of item indices sorted using the children's `order'
 					// attribute values. We are using a simple insertion sort as we need
 					// stability (insertion order must be preserved) and cross-platform
 					// support. We should eventually switch to merge sort (or something
 					// else) if the number of items becomes significant enough.
-					for (uint i = 0; i < item.Count; i++) {
+					for (int i = 0; i < item.Count; i++) {
 						indices[i] = i;
-						for (uint j = i; j > 0; j--) {
-							uint prev = indices[j - 1];
-							uint curr = indices[j];
-							if (item.Children[(int)prev].Order <= item.Children[(int)curr].Order) {
+						for (int j = i; j > 0; j--) {
+							int prev = indices[j - 1];
+							int curr = indices[j];
+							if (item.Children[prev].Order <= item.Children[curr].Order) {
 								break;
 							}
 							indices[j - 1] = curr;
@@ -996,8 +964,8 @@ namespace Xamarin.Flex
 				lines_sizes = 0;
 			}
 
-			public Item child_at(Item item, uint i) =>
-				item.Children[(int)(ordered_indices?[i] ?? i)];
+			public Item child_at(Item item, int i) =>
+				item.Children[(ordered_indices?[i] ?? i)];
 
 			public void cleanup()
 			{

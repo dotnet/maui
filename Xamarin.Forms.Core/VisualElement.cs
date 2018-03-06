@@ -278,9 +278,16 @@ namespace Xamarin.Forms
 			set { SetValue(StyleProperty, value); }
 		}
 
+
+		[Obsolete("Use @class")]
 		[TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> StyleClass
-		{
+		public IList<string> StyleClass {
+			get { return @class; }
+			set { @class = value; }
+		}
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> @class {
 			get { return _mergedStyle.StyleClass; }
 			set { _mergedStyle.StyleClass = value; }
 		}
