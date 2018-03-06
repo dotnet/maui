@@ -8,7 +8,7 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle)](https://jenkins.mono-project.com/view/Components/job/Components-Caboodle/)
 
 ## Installation
-Microsoft Cabooble is available on MyGet via:  
+Coming soon... 
 
 ## Supported Platforms
 Caboodle is focused on the following platforms for our first release:
