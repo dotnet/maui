@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 
 		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		protected Application()
+		public Application()
 		{
 			var f = false;
 			if (f)
