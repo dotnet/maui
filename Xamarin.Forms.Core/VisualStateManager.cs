@@ -38,7 +38,7 @@ namespace Xamarin.Forms
 
 		public static bool GoToState(VisualElement visualElement, string name)
 		{
-			if (visualElement.GetIsDefault(VisualStateGroupsProperty))
+			if (!visualElement.IsSet(VisualStateGroupsProperty))
 			{
 				return false;
 			}
@@ -86,7 +86,7 @@ namespace Xamarin.Forms
 
 		public static bool HasVisualStateGroups(this VisualElement element)
 		{
-			return !element.GetIsDefault(VisualStateGroupsProperty);
+			return element.IsSet(VisualStateGroupsProperty);
 		}
 	}
 

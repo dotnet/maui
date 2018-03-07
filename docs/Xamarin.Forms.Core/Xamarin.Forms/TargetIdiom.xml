@@ -114,5 +114,19 @@
         <summary>(Unused) Indicates that Forms is running on an unsupported device.</summary>
       </Docs>
     </Member>
+    <Member MemberName="Watch">
+      <MemberSignature Language="C#" Value="Watch" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.TargetIdiom Watch = int32(5)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.TargetIdiom</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Indicates that Forms is running on a smart watch such as Samsing Gear S serires.</summary>
+      </Docs>
+    </Member>
   </Members>
 </Type>

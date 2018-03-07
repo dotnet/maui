@@ -24,6 +24,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: InternalsVisibleTo("Xamarin.Forms.iOS.UITests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Android.UITests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Loader")]
+// Xamarin.Forms.Loader.dll, Xamarin.Forms.Internals.ResourceLoader.ResourceProvider, kzu@microsoft.com
 [assembly: InternalsVisibleTo("Xamarin.Forms.UITest.Validator")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Build.Tasks")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Platform")]

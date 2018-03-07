@@ -59,6 +59,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateColor();
 				UpdateFont();
 				UpdateAlignment();
+				UpdateMaxLength();
 			}
 		}
 
@@ -88,6 +89,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -131,6 +134,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void OnChanged(object sender, EventArgs eventArgs)
 		{
+			UpdateMaxLength();
+			
 			ElementController.SetValueFromRenderer(Entry.TextProperty, Control.StringValue);
 		}
 
@@ -190,6 +195,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			// ReSharper disable once RedundantCheckBeforeAssignment
 			if (Control.StringValue != Element.Text)
 				Control.StringValue = Element.Text ?? string.Empty;
+		}
+
+		void UpdateMaxLength()
+		{
+			var currentControlText = Control?.StringValue;
+
+			if (currentControlText.Length > Element?.MaxLength)
+				Control.StringValue = currentControlText.Substring(0, Element.MaxLength);
 		}
 	}
 }

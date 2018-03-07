@@ -891,7 +891,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void IsSetIsTrueWhenPropCleared()
+		public void IsSetIsFalseWhenPropCleared()
 		{
 			string defaultValue = "default";
 			string newValue = "new value";
@@ -900,11 +900,9 @@ namespace Xamarin.Forms.Core.UnitTests
 			var bindable = new MockBindable();
 
 			bindable.SetValue(bindableProperty, newValue);
-
 			bindable.ClearValue(bindableProperty);
 
-			var isSet = bindable.IsSet(bindableProperty);
-			Assert.IsTrue(isSet);
+			Assert.That(bindable.IsSet(bindableProperty), Is.False);
 		}
 
 		[Test]
@@ -924,7 +922,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void IsSetIsTrueWhenPropSetByDefaultValueCreator()
+		public void IsSetIsFalseWhenPropSetByDefaultValueCreator()
 		{
 			string defaultValue = "default";
 			string defaultValueC = "defaultVC";
@@ -941,7 +939,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(defaultValueC, created);
 
 			var isSet = bindable.IsSet(bindableProperty);
-			Assert.IsTrue(isSet);
+			Assert.IsFalse(isSet);
 		}
 
 		[Test]

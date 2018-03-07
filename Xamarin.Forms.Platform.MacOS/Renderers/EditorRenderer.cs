@@ -41,6 +41,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			UpdateFont();
 			UpdateTextColor();
 			UpdateEditable();
+			UpdateMaxLength();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -59,6 +60,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateFont();
 			else if (e.PropertyName == Editor.FontSizeProperty.PropertyName)
 				UpdateFont();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -88,6 +91,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void HandleChanged(object sender, EventArgs e)
 		{
+			UpdateMaxLength();
+			
 			ElementController.SetValueFromRenderer(Editor.TextProperty, Control.StringValue);
 		}
 
@@ -123,6 +128,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			var textColor = Element.TextColor;
 
 			Control.TextColor = textColor.IsDefault ? NSColor.Black : textColor.ToNSColor();
+		}
+
+		void UpdateMaxLength()
+		{
+			var currentControlText = Control?.StringValue;
+
+			if (currentControlText.Length > Element?.MaxLength)
+				Control.StringValue = currentControlText.Substring(0, Element.MaxLength);
 		}
 	}
 }

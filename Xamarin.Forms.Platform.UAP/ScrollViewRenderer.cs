@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -74,7 +75,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					SetNativeControl(new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+					SetNativeControl(new ScrollViewer
+					{
+						HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(e.NewElement.HorizontalScrollBarVisibility),
+						VerticalScrollBarVisibility = ScrollBarVisibilityToUwp(e.NewElement.VerticalScrollBarVisibility)
+					});
 
 					Control.ViewChanged += OnViewChanged;
 				}
@@ -97,6 +102,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMargins();
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
 				UpdateOrientation();
+			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+				UpdateVerticalScrollBarVisibiilty();
+			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+				UpdateHorizontalScrollBarVisibility();
 		}
 
 		void LoadContent()
@@ -188,12 +197,39 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (Element.Orientation == ScrollOrientation.Horizontal || Element.Orientation == ScrollOrientation.Both)
 			{
-				Control.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+				Control.HorizontalScrollBarVisibility = UwpScrollBarVisibility.Auto;
 			}
 			else
 			{
-				Control.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+				Control.HorizontalScrollBarVisibility = UwpScrollBarVisibility.Disabled;
 			}
+		}
+
+		UwpScrollBarVisibility ScrollBarVisibilityToUwp(ScrollBarVisibility visibility)
+		{
+			switch(visibility)
+			{
+				case ScrollBarVisibility.Always:
+					return UwpScrollBarVisibility.Visible;
+				case ScrollBarVisibility.Default:
+					return UwpScrollBarVisibility.Auto;
+				case ScrollBarVisibility.Never:
+					return UwpScrollBarVisibility.Hidden;
+				default:
+					return UwpScrollBarVisibility.Auto;
+			}
+		}
+
+		void UpdateVerticalScrollBarVisibiilty()
+		{
+			Control.VerticalScrollBarVisibility = ScrollBarVisibilityToUwp(Element.VerticalScrollBarVisibility);
+		}
+
+		void UpdateHorizontalScrollBarVisibility()
+		{
+			var orientation = Element.Orientation;
+			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+				Control.HorizontalScrollBarVisibility = ScrollBarVisibilityToUwp(Element.HorizontalScrollBarVisibility);
 		}
 	}
 }

@@ -238,8 +238,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1683.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1717.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60001.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1355.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60056.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60122.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59863_0.cs" />
@@ -267,6 +269,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1331.xaml.cs">
       <DependentUpon>GitHub1331.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1691_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Github1625.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InputTransparentTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1614.cs" />
@@ -279,7 +282,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1347.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1356.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1439.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1660.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1691.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1665.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1707.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1908.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2983.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2981.cs" />
@@ -402,6 +409,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1436.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1909.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1028.cs" />
@@ -682,6 +690,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla51825.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40092.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1426.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

@@ -74,8 +74,7 @@ namespace Xamarin.Forms
 
 				_lastMilliseconds = ms;
 
-				if (ValueUpdated != null)
-					ValueUpdated(this, EventArgs.Empty);
+				ValueUpdated?.Invoke(this, EventArgs.Empty);
 
 				if (Value >= 1.0f)
 				{
@@ -86,8 +85,7 @@ namespace Xamarin.Forms
 						return true;
 					}
 
-					if (Finished != null)
-						Finished(this, EventArgs.Empty);
+					Finished?.Invoke(this, EventArgs.Empty);
 					Value = 0.0f;
 					_timer = 0;
 					return false;
@@ -100,8 +98,7 @@ namespace Xamarin.Forms
 		{
 			Pause();
 			Value = 1.0f;
-			if (Finished != null)
-				Finished(this, EventArgs.Empty);
+			Finished?.Invoke(this, EventArgs.Empty);
 			Value = 0.0f;
 		}
 

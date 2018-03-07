@@ -12,6 +12,7 @@ namespace Xamarin.Forms
 		internal static void RegisterAll(Type[] attrTypes) => Internals.Registrar.RegisterAll(attrTypes);
 	}
 }
+
 namespace Xamarin.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
@@ -33,7 +34,8 @@ namespace Xamarin.Forms.Internals
 			if (handlerType == null)
 				return null;
 
-			object handler = Activator.CreateInstance(handlerType);
+			object handler = DependencyResolver.ResolveOrCreate(handlerType);
+
 			return (TRegistrable)handler;
 		}
 
@@ -48,16 +50,7 @@ namespace Xamarin.Forms.Internals
 			if (handlerType == null)
 				return null;
 
-			// This is by no means a general solution to matching with the correct constructor, but it'll
-			// do for finding Android renderers which need Context (vs older custom renderers which may still use
-			// parameterless constructors)
-			if (handlerType.GetTypeInfo().DeclaredConstructors.Any(info => info.GetParameters().Length == args.Length))
-			{
-				object handler = Activator.CreateInstance(handlerType, args);
-				return (TRegistrable)handler;
-			}
-			
-			return GetHandler(type);
+			return (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, args);
 		}
 
 		public TOut GetHandler<TOut>(Type type) where TOut : TRegistrable
@@ -171,7 +164,7 @@ namespace Xamarin.Forms.Internals
 
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
-		public static Registrar<IRegisterable> Registered { get; }
+		public static Registrar<IRegisterable> Registered { get; internal set; }
 
 		public static void RegisterAll(Type[] attrTypes)
 		{

@@ -264,9 +264,7 @@ namespace Xamarin.Forms
 
 				if (c.Bounds != startingLayout[i])
 				{
-					EventHandler handler = LayoutChanged;
-					if (handler != null)
-						handler(this, EventArgs.Empty);
+					LayoutChanged?.Invoke(this, EventArgs.Empty);
 					return;
 				}
 			}
@@ -311,12 +309,12 @@ namespace Xamarin.Forms
 				MessagingCenter.Send(this, BusySetSignalName, true);
 
 			OnAppearing();
-			EventHandler handler = Appearing;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
+			Appearing?.Invoke(this, EventArgs.Empty);
 
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendAppearing();
+
+			FindApplication(this)?.OnPageAppearing(this);
 		}
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -334,9 +332,17 @@ namespace Xamarin.Forms
 			pageContainer?.CurrentPage?.SendDisappearing();
 
 			OnDisappearing();
-			EventHandler handler = Disappearing;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
+			Disappearing?.Invoke(this, EventArgs.Empty);
+
+			FindApplication(this)?.OnPageDisappearing(this);
+		}
+
+		Application FindApplication(Element element)
+		{
+			if (element == null)
+				return null;
+
+			return (element.Parent is Application app) ? app : FindApplication(element.Parent);
 		}
 
 		void InternalChildrenOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

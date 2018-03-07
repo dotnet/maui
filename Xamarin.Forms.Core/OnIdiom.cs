@@ -10,6 +10,8 @@ namespace Xamarin.Forms
 
 		public T TV { get; set; }
 
+		public T Watch { get; set; }
+
 		public static implicit operator T(OnIdiom<T> onIdiom)
 		{
 			switch (Device.Idiom)
@@ -23,6 +25,8 @@ namespace Xamarin.Forms
 					return onIdiom.Desktop;
 				case TargetIdiom.TV:
 					return onIdiom.TV;
+				case TargetIdiom.Watch:
+					return onIdiom.Watch;
 			}
 		}
 	}

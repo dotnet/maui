@@ -19,10 +19,11 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>D160433BDC22781DEAE0558325140B91C02A6A20</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>D5A43FC916D476D1E32C2DADF178F6206989B043</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
+    <GenerateAppxPackageOnBuild>False</GenerateAppxPackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -158,7 +159,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="Xamarin.Forms.ControlGallery.WindowsUniversal_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

@@ -73,6 +73,7 @@
     <Compile Include="ColorUnitTests.cs" />
     <Compile Include="CommandSourceTests.cs" />
     <Compile Include="CommandTests.cs" />
+    <Compile Include="DependencyResolutionTests.cs" />
     <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="FlowDirectionTests.cs" />
     <Compile Include="LayoutChildIntoBoundingRegionTests.cs" />
@@ -225,7 +226,5 @@
       <LogicalName>Images/crimson.jpg</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="StyleSheets\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

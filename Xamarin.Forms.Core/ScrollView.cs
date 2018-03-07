@@ -26,6 +26,10 @@ namespace Xamarin.Forms
 
 		readonly Lazy<PlatformConfigurationRegistry<ScrollView>> _platformConfigurationRegistry;
 
+		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
+
+		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
+
 		View _content;
 
 		TaskCompletionSource<bool> _scrollCompletionSource;
@@ -70,6 +74,18 @@ namespace Xamarin.Forms
 		{
 			get { return (double)GetValue(ScrollYProperty); }
 			private set { SetValue(ScrollYPropertyKey, value); }
+		}
+
+		public ScrollBarVisibility HorizontalScrollBarVisibility
+		{
+			get { return (ScrollBarVisibility)GetValue(HorizontalScrollBarVisibilityProperty); }
+			set { SetValue(HorizontalScrollBarVisibilityProperty, value); }
+		}
+
+		public ScrollBarVisibility VerticalScrollBarVisibility
+		{
+			get { return (ScrollBarVisibility)GetValue(VerticalScrollBarVisibilityProperty); }
+			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
 		}
 
 		public ScrollView()
@@ -288,9 +304,7 @@ namespace Xamarin.Forms
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
 		{
 			CheckTaskCompletionSource();
-			EventHandler<ScrollToRequestedEventArgs> handler = ScrollToRequested;
-			if (handler != null)
-				handler(this, e);
+			ScrollToRequested?.Invoke(this, e);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]

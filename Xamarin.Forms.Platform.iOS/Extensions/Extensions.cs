@@ -40,11 +40,29 @@ namespace Xamarin.Forms.Platform.iOS
 			else if (keyboard is CustomKeyboard)
 			{
 				var custom = (CustomKeyboard)keyboard;
+
 				var capitalizedSentenceEnabled = (custom.Flags & KeyboardFlags.CapitalizeSentence) == KeyboardFlags.CapitalizeSentence;
+				var capitalizedWordsEnabled = (custom.Flags & KeyboardFlags.CapitalizeWord) == KeyboardFlags.CapitalizeWord;
+				var capitalizedCharacterEnabled = (custom.Flags & KeyboardFlags.CapitalizeCharacter) == KeyboardFlags.CapitalizeCharacter;
+				var capitalizedNone = (custom.Flags & KeyboardFlags.None) == KeyboardFlags.None;
+
 				var spellcheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) == KeyboardFlags.Spellcheck;
 				var suggestionsEnabled = (custom.Flags & KeyboardFlags.Suggestions) == KeyboardFlags.Suggestions;
 
-				textInput.AutocapitalizationType = capitalizedSentenceEnabled ? UITextAutocapitalizationType.Sentences : UITextAutocapitalizationType.None;
+
+				UITextAutocapitalizationType capSettings = UITextAutocapitalizationType.None;
+
+				// Sentence being first ensures that the behavior of ALL is backwards compatible
+				if (capitalizedSentenceEnabled)
+					capSettings = UITextAutocapitalizationType.Sentences;
+				else if (capitalizedWordsEnabled)
+					capSettings = UITextAutocapitalizationType.Words;
+				else if (capitalizedCharacterEnabled)
+					capSettings = UITextAutocapitalizationType.AllCharacters;
+				else if (capitalizedNone)
+					capSettings = UITextAutocapitalizationType.None;
+
+				textInput.AutocapitalizationType = capSettings;
 				textInput.AutocorrectionType = suggestionsEnabled ? UITextAutocorrectionType.Yes : UITextAutocorrectionType.No;
 				textInput.SpellCheckingType = spellcheckEnabled ? UITextSpellCheckingType.Yes : UITextSpellCheckingType.No;
 			}

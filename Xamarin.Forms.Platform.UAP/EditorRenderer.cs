@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.UWP
 					// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
 					// color stuff, then the underlying textbox should just use the Forms VSM states
 					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
-										|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
+						|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
 				}
 
 				UpdateText();
@@ -47,6 +47,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont();
 				UpdateTextAlignment();
 				UpdateFlowDirection();
+				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
 			}
 
@@ -72,6 +73,14 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateTextColor();
 			}
+			else if (e.PropertyName == InputView.KeyboardProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
+			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+			{
+				UpdateInputScope();
+			}
 			else if (e.PropertyName == Editor.FontAttributesProperty.PropertyName)
 			{
 				UpdateFont();
@@ -93,6 +102,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTextAlignment();
 				UpdateFlowDirection();
 			}
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
 				UpdateDetectReadingOrderFromContent();
 		}
@@ -131,7 +142,9 @@ namespace Xamarin.Forms.Platform.UWP
 			if (editor == null)
 				return;
 
-			bool editorIsDefault = editor.FontFamily == null && editor.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Editor), true) && editor.FontAttributes == FontAttributes.None;
+			bool editorIsDefault = editor.FontFamily == null &&
+			                       editor.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Editor), true) &&
+			                       editor.FontAttributes == FontAttributes.None;
 
 			if (editorIsDefault && !_fontApplied)
 				return;
@@ -157,7 +170,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateInputScope()
 		{
-			var custom = Element.Keyboard as CustomKeyboard;
+			Editor editor = Element;
+			var custom = editor.Keyboard as CustomKeyboard;
 			if (custom != null)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
@@ -166,10 +180,13 @@ namespace Xamarin.Forms.Platform.UWP
 			else
 			{
 				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
-				Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
+				if (editor.IsSet(InputView.IsSpellCheckEnabledProperty))
+					Control.IsSpellCheckEnabled = editor.IsSpellCheckEnabled;
+				else
+					Control.ClearValue(TextBox.IsSpellCheckEnabledProperty);
 			}
 
-			Control.InputScope = Element.Keyboard.ToInputScope();
+			Control.InputScope = editor.Keyboard.ToInputScope();
 		}
 
 		void UpdateText()
@@ -206,6 +223,16 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.UpdateFlowDirection(Element);
 		}
 
+		void UpdateMaxLength()
+		{
+			Control.MaxLength = Element.MaxLength;
+
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+    
 		void UpdateDetectReadingOrderFromContent()
 		{
 			if (Element.IsSet(Specifics.DetectReadingOrderFromContentProperty))

@@ -23,7 +23,7 @@ namespace Xamarin.Forms
 
 		static SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
 
-		protected Application()
+		public Application()
 		{
 			var f = false;
 			if (f)
@@ -169,6 +169,10 @@ namespace Xamarin.Forms
 
 		public event EventHandler<ModalPushingEventArgs> ModalPushing;
 
+		public event EventHandler<Page> PageAppearing;
+
+		public event EventHandler<Page> PageDisappearing;
+
 		public async Task SavePropertiesAsync()
 		{
 			if (Device.IsInvokeRequired)
@@ -279,42 +283,30 @@ namespace Xamarin.Forms
 			return properties;
 		}
 
+		internal void OnPageAppearing(Page page)
+			=> PageAppearing?.Invoke(this, page);
+
+		internal void OnPageDisappearing(Page page)
+			=> PageDisappearing?.Invoke(this, page);
+
 		void OnModalPopped(Page modalPage)
-		{
-			EventHandler<ModalPoppedEventArgs> handler = ModalPopped;
-			if (handler != null)
-				handler(this, new ModalPoppedEventArgs(modalPage));
-		}
+			=> ModalPopped?.Invoke(this, new ModalPoppedEventArgs(modalPage));
 
 		bool OnModalPopping(Page modalPage)
 		{
-			EventHandler<ModalPoppingEventArgs> handler = ModalPopping;
 			var args = new ModalPoppingEventArgs(modalPage);
-			if (handler != null)
-				handler(this, args);
+			ModalPopping?.Invoke(this, args);
 			return args.Cancel;
 		}
 
 		void OnModalPushed(Page modalPage)
-		{
-			EventHandler<ModalPushedEventArgs> handler = ModalPushed;
-			if (handler != null)
-				handler(this, new ModalPushedEventArgs(modalPage));
-		}
+			=> ModalPushed?.Invoke(this, new ModalPushedEventArgs(modalPage));
 
 		void OnModalPushing(Page modalPage)
-		{
-			EventHandler<ModalPushingEventArgs> handler = ModalPushing;
-			if (handler != null)
-				handler(this, new ModalPushingEventArgs(modalPage));
-		}
+			=> ModalPushing?.Invoke(this, new ModalPushingEventArgs(modalPage));
 
 		void OnPopCanceled()
-		{
-			EventHandler handler = PopCanceled;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> PopCanceled?.Invoke(this, EventArgs.Empty);
 
 		async Task SetPropertiesAsync()
 		{

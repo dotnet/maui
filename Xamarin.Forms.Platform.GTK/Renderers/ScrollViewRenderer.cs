@@ -34,8 +34,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                         CanFocus = true,
                         ShadowType = ShadowType.None,
                         BorderWidth = 0,
-                        HscrollbarPolicy = PolicyType.Automatic,
-                        VscrollbarPolicy = PolicyType.Automatic
+                        HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility),
+                        VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility)
                     };
 
                     _viewPort = new Viewport();
@@ -54,6 +54,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdateOrientation();
                 LoadContent();
                 UpdateContentSize();
+                UpdateVerticalScrollBarVisibility();
+                UpdateHorizontalScrollBarVisibility();
             }
         }
 
@@ -67,6 +69,10 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 LoadContent();
             else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
                 UpdateOrientation();
+            else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+                UpdateVerticalScrollBarVisibility();
+            else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+                UpdateHorizontalScrollBarVisibility();
         }
 
         protected override void Dispose(bool disposing)
@@ -146,15 +152,15 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             {
                 case ScrollOrientation.Vertical:
                     Control.HscrollbarPolicy = PolicyType.Never;
-                    Control.VscrollbarPolicy = PolicyType.Automatic;
+                    Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
                     break;
                 case ScrollOrientation.Horizontal:
-                    Control.HscrollbarPolicy = PolicyType.Automatic;
+                    Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
                     Control.VscrollbarPolicy = PolicyType.Never;
                     break;
                 case ScrollOrientation.Both:
-                    Control.HscrollbarPolicy = PolicyType.Automatic;
-                    Control.VscrollbarPolicy = PolicyType.Automatic;
+                    Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
+                    Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Element.Orientation));
@@ -195,6 +201,33 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
             var width = Convert.ToInt32(contentSize.Width);
 
             Control.SetSizeRequest(width, height);
+        }
+
+        void UpdateVerticalScrollBarVisibility()
+        {
+            Control.VscrollbarPolicy = ScrollBarVisibilityToGtk(Element.VerticalScrollBarVisibility);
+        }
+
+        void UpdateHorizontalScrollBarVisibility()
+        {
+	        var orientation = Element.Orientation;
+            if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+                Control.HscrollbarPolicy = ScrollBarVisibilityToGtk(Element.HorizontalScrollBarVisibility);
+        }
+
+        PolicyType ScrollBarVisibilityToGtk(ScrollBarVisibility visibility)
+        {
+            switch(visibility)
+            {
+                case ScrollBarVisibility.Default:
+	                return PolicyType.Automatic;
+                case ScrollBarVisibility.Always:
+	                return PolicyType.Always;
+                case ScrollBarVisibility.Never:
+	                return PolicyType.Never;
+                default:
+	                return PolicyType.Automatic;
+            }
         }
     }
 }
