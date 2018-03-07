@@ -9,116 +9,129 @@ using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using WGrid = Windows.UI.Xaml.Controls.Grid;
+using WTextAlignment = Windows.UI.Xaml.TextAlignment;
+using WHorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
+using WVisibility = Windows.UI.Xaml.Visibility;
+using WStackPanel = Windows.UI.Xaml.Controls.StackPanel;
+using WImage = Windows.UI.Xaml.Controls.Image;
+using WTextBlock = Windows.UI.Xaml.Controls.TextBlock;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.TabbedPage;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-    public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
-    {
-        const string TabBarHeaderTextBlockName = "TabbedPageHeaderTextBlock";
-        const string TabBarHeaderGridName = "TabbedPageHeaderGrid";
+	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
+	{
+		const string TabBarHeaderStackPanelName = "TabbedPageHeaderStackPanel";
+		const string TabBarHeaderImageName = "TabbedPageHeaderImage";
+		const string TabBarHeaderTextBlockName = "TabbedPageHeaderTextBlock";
+		const string TabBarHeaderGridName = "TabbedPageHeaderGrid";
 
-        Color _barBackgroundColor;
-        Color _barTextColor;
-        bool _disposed;
-        bool _showTitle;
-        VisualElementTracker<Page, Pivot> _tracker;
+		Color _barBackgroundColor;
+		Color _barTextColor;
+		bool _disposed;
+		bool _showTitle;
 
-        ITitleProvider TitleProvider => this;
+		WTextAlignment _oldBarTextBlockTextAlignment = WTextAlignment.Center;
+		WHorizontalAlignment _oldBarTextBlockHorinzontalAlignment = WHorizontalAlignment.Center;
 
-        public FormsPivot Control { get; private set; }
+		VisualElementTracker<Page, Pivot> _tracker;
 
-        public TabbedPage Element { get; private set; }
+		ITitleProvider TitleProvider => this;
 
-        protected VisualElementTracker<Page, Pivot> Tracker
-        {
-            get { return _tracker; }
-            set
-            {
-                if (_tracker == value)
-                    return;
+		public FormsPivot Control { get; private set; }
 
-                if (_tracker != null)
-                    _tracker.Dispose();
+		public TabbedPage Element { get; private set; }
 
-                _tracker = value;
-            }
-        }
+		protected VisualElementTracker<Page, Pivot> Tracker
+		{
+			get { return _tracker; }
+			set
+			{
+				if (_tracker == value)
+					return;
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+				if (_tracker != null)
+					_tracker.Dispose();
 
-        Brush ITitleProvider.BarBackgroundBrush
-        {
-            set { Control.ToolbarBackground = value; }
-        }
+				_tracker = value;
+			}
+		}
 
-        Brush ITitleProvider.BarForegroundBrush
-        {
-            set { Control.ToolbarForeground = value; }
-        }
+		public void Dispose()
+		{
+			Dispose(true);
+		}
 
-        bool ITitleProvider.ShowTitle
-        {
-            get { return _showTitle; }
+		Brush ITitleProvider.BarBackgroundBrush
+		{
+			set { Control.ToolbarBackground = value; }
+		}
 
-            set
-            {
-                if (_showTitle == value)
-                    return;
-                _showTitle = value;
+		Brush ITitleProvider.BarForegroundBrush
+		{
+			set { Control.ToolbarForeground = value; }
+		}
 
-                UpdateTitleVisibility();
-            }
-        }
+		bool ITitleProvider.ShowTitle
+		{
+			get { return _showTitle; }
 
-        string ITitleProvider.Title
-        {
-            get { return (string)Control?.Title; }
+			set
+			{
+				if (_showTitle == value)
+					return;
+				_showTitle = value;
 
-            set
-            {
-                if (Control != null && _showTitle)
-                    Control.Title = value;
-            }
-        }
+				UpdateTitleVisibility();
+			}
+		}
 
-        public Task<CommandBar> GetCommandBarAsync()
-        {
-            return (Control as IToolbarProvider)?.GetCommandBarAsync();
-        }
+		string ITitleProvider.Title
+		{
+			get { return (string)Control?.Title; }
 
-        public FrameworkElement ContainerElement
-        {
-            get { return Control; }
-        }
+			set
+			{
+				if (Control != null && _showTitle)
+					Control.Title = value;
+			}
+		}
 
-        VisualElement IVisualElementRenderer.Element
-        {
-            get { return Element; }
-        }
+		public Task<CommandBar> GetCommandBarAsync()
+		{
+			return (Control as IToolbarProvider)?.GetCommandBarAsync();
+		}
 
-        public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
+		public FrameworkElement ContainerElement
+		{
+			get { return Control; }
+		}
 
-        public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-        {
-            var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
+		VisualElement IVisualElementRenderer.Element
+		{
+			get { return Element; }
+		}
 
-            double oldWidth = Control.Width;
-            double oldHeight = Control.Height;
+		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
-            Control.Height = double.NaN;
-            Control.Width = double.NaN;
+		public SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var constraint = new Windows.Foundation.Size(widthConstraint, heightConstraint);
 
-            Control.Measure(constraint);
-            var result = new Size(Math.Ceiling(Control.DesiredSize.Width), Math.Ceiling(Control.DesiredSize.Height));
+			double oldWidth = Control.Width;
+			double oldHeight = Control.Height;
 
-            Control.Width = oldWidth;
-            Control.Height = oldHeight;
+			Control.Height = double.NaN;
+			Control.Width = double.NaN;
 
-            return new SizeRequest(result);
-        }
+			Control.Measure(constraint);
+			var result = new Size(Math.Ceiling(Control.DesiredSize.Width), Math.Ceiling(Control.DesiredSize.Height));
+
+			Control.Width = oldWidth;
+			Control.Height = oldHeight;
+
+			return new SizeRequest(result);
+		}
 
 		UIElement IVisualElementRenderer.GetNativeElement()
 		{
@@ -126,212 +139,295 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		public void SetElement(VisualElement element)
-        {
-            if (element != null && !(element is TabbedPage))
-                throw new ArgumentException("Element must be a TabbedPage", "element");
+		{
+			if (element != null && !(element is TabbedPage))
+				throw new ArgumentException("Element must be a TabbedPage", "element");
 
-            TabbedPage oldElement = Element;
-            Element = (TabbedPage)element;
+			TabbedPage oldElement = Element;
+			Element = (TabbedPage)element;
 
-            if (oldElement != null)
-            {
-                oldElement.PropertyChanged -= OnElementPropertyChanged;
-                ((INotifyCollectionChanged)oldElement.Children).CollectionChanged -= OnPagesChanged;
-            }
+			if (oldElement != null)
+			{
+				oldElement.PropertyChanged -= OnElementPropertyChanged;
+				((INotifyCollectionChanged)oldElement.Children).CollectionChanged -= OnPagesChanged;
+			}
 
-            if (element != null)
-            {
-                if (Control == null)
-                {
-                    Control = new FormsPivot
-                    {
-                        Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"],
-                    };
+			if (element != null)
+			{
+				if (Control == null)
+				{
+					Control = new FormsPivot {
+						Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TabbedPageStyle"],
+					};
 
-                    Control.SelectionChanged += OnSelectionChanged;
+					Control.SelectionChanged += OnSelectionChanged;
 
-                    Tracker = new BackgroundTracker<Pivot>(Windows.UI.Xaml.Controls.Control.BackgroundProperty)
-                    {
-                        Element = (Page)element,
-                        Control = Control,
-                        Container = Control
-                    };
+					Tracker = new BackgroundTracker<Pivot>(Windows.UI.Xaml.Controls.Control.BackgroundProperty) {
+						Element = (Page)element,
+						Control = Control,
+						Container = Control
+					};
 
-                    Control.Loaded += OnLoaded;
-                    Control.Unloaded += OnUnloaded;
-                }
+					Control.Loaded += OnLoaded;
+					Control.Unloaded += OnUnloaded;
+				}
 
-                Control.DataContext = Element;
-                OnPagesChanged(Element.Children,
-                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+				Control.DataContext = Element;
+				OnPagesChanged(Element.Children,
+					new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
-                UpdateCurrentPage();
-                UpdateToolbarPlacement();
+				UpdateCurrentPage();
+				UpdateToolbarPlacement();
 
-                ((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
-                element.PropertyChanged += OnElementPropertyChanged;
+				((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
+				element.PropertyChanged += OnElementPropertyChanged;
 
-                if (!string.IsNullOrEmpty(element.AutomationId))
+				if (!string.IsNullOrEmpty(element.AutomationId))
 					Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, element.AutomationId);
-            }
+			}
 
-            OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
-        }
+			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
+		}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposing || _disposed)
-                return;
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposing || _disposed)
+				return;
 
-            _disposed = true;
-            Element?.SendDisappearing();
-            SetElement(null);
-            Tracker = null;
-        }
+			_disposed = true;
+			Element?.SendDisappearing();
+			SetElement(null);
+			Tracker = null;
+		}
 
-        protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
-        {
-            EventHandler<VisualElementChangedEventArgs> changed = ElementChanged;
-            if (changed != null)
-                changed(this, e);
-        }
+		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
+		{
+			ElementChanged?.Invoke(this, e);
+		}
 
-        void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(TabbedPage.CurrentPage))
-            {
-                UpdateCurrentPage();
-                UpdateBarTextColor();
-                UpdateBarBackgroundColor();
-            }
-            else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
-                UpdateBarTextColor();
-            else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
-                UpdateBarBackgroundColor();
-            else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
-                UpdateToolbarPlacement();
-        }
+		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
+			{
+				UpdateCurrentPage();
+				UpdateBarTextColor();
+				UpdateBarBackgroundColor();
+			}
+			else if (e.PropertyName == TabbedPage.BarTextColorProperty.PropertyName)
+				UpdateBarTextColor();
+			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
+				UpdateBarBackgroundColor();
+			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
+				UpdateToolbarPlacement();
+			else if (e.PropertyName == Specifics.HeaderIconsEnabledProperty.PropertyName)
+				UpdateBarIcons();
+			else if (e.PropertyName == Specifics.HeaderIconsSizeProperty.PropertyName)
+				UpdateBarIcons();
+		}
 
-        void OnLoaded(object sender, RoutedEventArgs args)
-        {
-            Element?.SendAppearing();
-            UpdateBarTextColor();
-            UpdateBarBackgroundColor();
-        }
+		void OnLoaded(object sender, RoutedEventArgs args)
+		{
+			Element?.SendAppearing();
 
-        void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            e.Apply(Element.Children, Control.Items);
+			UpdateBarTextColor();
+			UpdateBarBackgroundColor();
+			UpdateBarIcons();
+		}
 
-            // Potential performance issue, UpdateLayout () is called for every page change
-            Control.UpdateLayout();
-        }
+		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			e.Apply(Element.Children, Control.Items);
 
-        void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (Element == null)
-                return;
+			// Potential performance issue, UpdateLayout () is called for every page change
+			Control.UpdateLayout();
+		}
 
-            Page page = e.AddedItems.Count > 0 ? (Page)e.AddedItems[0] : null;
-            Page currentPage = Element.CurrentPage;
-            if (currentPage == page)
-                return;
-            currentPage?.SendDisappearing();
-            Element.CurrentPage = page;
-            page?.SendAppearing();
-        }
+		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (Element == null)
+				return;
 
-        void OnUnloaded(object sender, RoutedEventArgs args)
-        {
-            Element?.SendDisappearing();
-        }
+			Page page = e.AddedItems.Count > 0 ? (Page)e.AddedItems[0] : null;
+			Page currentPage = Element.CurrentPage;
+			if (currentPage == page)
+				return;
+			currentPage?.SendDisappearing();
+			Element.CurrentPage = page;
+			page?.SendAppearing();
+		}
 
-        Brush GetBarBackgroundBrush()
-        {
-            object defaultColor = new SolidColorBrush(Windows.UI.Colors.Transparent);
+		void OnUnloaded(object sender, RoutedEventArgs args)
+		{
+			Element?.SendDisappearing();
+		}
 
-            if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
-                return (Brush)defaultColor;
-            return Element.BarBackgroundColor.ToBrush();
-        }
+		Brush GetBarBackgroundBrush()
+		{
+			object defaultColor = new SolidColorBrush(Windows.UI.Colors.Transparent);
 
-        Brush GetBarForegroundBrush()
-        {
-            object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
-            if (Element.BarTextColor.IsDefault && defaultColor != null)
-                return (Brush)defaultColor;
-            return Element.BarTextColor.ToBrush();
-        }
+			if (Element.BarBackgroundColor.IsDefault && defaultColor != null)
+				return (Brush)defaultColor;
+			return Element.BarBackgroundColor.ToBrush();
+		}
 
-        void UpdateBarBackgroundColor()
-        {
-            if (Element == null) return;
-            var barBackgroundColor = Element.BarBackgroundColor;
+		Brush GetBarForegroundBrush()
+		{
+			object defaultColor = Windows.UI.Xaml.Application.Current.Resources["ApplicationForegroundThemeBrush"];
+			if (Element.BarTextColor.IsDefault && defaultColor != null)
+				return (Brush)defaultColor;
+			return Element.BarTextColor.ToBrush();
+		}
 
-            if (barBackgroundColor == _barBackgroundColor) return;
-            _barBackgroundColor = barBackgroundColor;
+		void UpdateBarBackgroundColor()
+		{
+			if (Element == null) return;
+			var barBackgroundColor = Element.BarBackgroundColor;
 
-            var controlToolbarBackground = Control.ToolbarBackground;
-            if (controlToolbarBackground == null && barBackgroundColor.IsDefault) return;
+			if (barBackgroundColor == _barBackgroundColor) return;
+			_barBackgroundColor = barBackgroundColor;
 
-            var brush = GetBarBackgroundBrush();
-            if (brush == controlToolbarBackground) return;
+			var controlToolbarBackground = Control.ToolbarBackground;
+			if (controlToolbarBackground == null && barBackgroundColor.IsDefault) return;
 
-            TitleProvider.BarBackgroundBrush = brush;
+			var brush = GetBarBackgroundBrush();
+			if (brush == controlToolbarBackground) return;
 
-            foreach (WGrid tabBarGrid in Control.GetDescendantsByName<WGrid>(TabBarHeaderGridName))
-            {
-                tabBarGrid.Background = brush;
-            }
-        }
+			TitleProvider.BarBackgroundBrush = brush;
 
-        void UpdateBarTextColor()
-        {
-            if (Element == null) return;
-            var barTextColor = Element.BarTextColor;
+			foreach (WGrid tabBarGrid in Control.GetDescendantsByName<WGrid>(TabBarHeaderGridName))
+			{
+				tabBarGrid.Background = brush;
+			}
+		}
 
-            if (barTextColor == _barTextColor) return;
-            _barTextColor = barTextColor;
+		void UpdateBarTextColor()
+		{
+			if (Element == null) return;
+			var barTextColor = Element.BarTextColor;
 
-            var controlToolbarForeground = Control.ToolbarForeground;
-            if (controlToolbarForeground == null && barTextColor.IsDefault) return;
+			if (barTextColor == _barTextColor) return;
+			_barTextColor = barTextColor;
 
-            var brush = GetBarForegroundBrush();
-            if (brush == controlToolbarForeground)
-                return;
+			var controlToolbarForeground = Control.ToolbarForeground;
+			if (controlToolbarForeground == null && barTextColor.IsDefault) return;
 
-            TitleProvider.BarForegroundBrush = brush;
+			var brush = GetBarForegroundBrush();
+			if (brush == controlToolbarForeground)
+				return;
 
-            foreach (TextBlock tabBarTextBlock in Control.GetDescendantsByName<TextBlock>(TabBarHeaderTextBlockName))
-            {
-                tabBarTextBlock.Foreground = brush;
-            }
-        }
+			TitleProvider.BarForegroundBrush = brush;
 
-        void UpdateTitleVisibility()
-        {
-            Control.TitleVisibility = _showTitle ? Visibility.Visible : Visibility.Collapsed;
-        }
+			foreach (WTextBlock tabBarTextBlock in Control.GetDescendantsByName<WTextBlock>(TabBarHeaderTextBlockName))
+			{
+				tabBarTextBlock.Foreground = brush;
+			}
+		}
 
-        void UpdateCurrentPage()
-        {
-            Page page = Element.CurrentPage;
+		void UpdateTitleVisibility()
+		{
+			Control.TitleVisibility = _showTitle ? WVisibility.Visible : WVisibility.Collapsed;
+		}
 
-            var nav = page as NavigationPage;
-            TitleProvider.ShowTitle = nav != null;
+		void UpdateCurrentPage()
+		{
+			Page page = Element.CurrentPage;
+
+			var nav = page as NavigationPage;
+			TitleProvider.ShowTitle = nav != null;
 
 			// Enforce consistency rules on toolbar (show toolbar if visible Tab is Navigation Page)
 			Control.ShouldShowToolbar = nav != null;
 
-            if (page == null)
-                return;
+			if (page == null)
+				return;
 
-            Control.SelectedItem = page;
-        }
+			Control.SelectedItem = page;
+		}
 
-        void UpdateToolbarPlacement()
-        {
-            Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
-        }
-    }
+		void UpdateToolbarPlacement()
+		{
+			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
+		}
+
+		void UpdateBarIcons()
+		{
+			if (Control == null)
+				return;
+
+			if (Element.IsSet(Specifics.HeaderIconsEnabledProperty))
+			{
+				bool headerIconsEnabled = Element.OnThisPlatform().GetHeaderIconsEnabled();
+				bool invalidateMeasure = false;
+
+				// Get all stack panels affected by update.
+				var stackPanels = Control.GetDescendantsByName<WStackPanel>(TabBarHeaderStackPanelName);
+				foreach (var stackPanel in stackPanels)
+				{
+					int stackPanelChildCount = stackPanel.Children.Count;
+					for (int i = 0; i < stackPanelChildCount; i++)
+					{
+						var stackPanelItem = stackPanel.Children[i];
+						if (stackPanelItem is WImage tabBarImage)
+						{
+							// Update icon image.
+							if (tabBarImage.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderImageName)
+							{
+								if (headerIconsEnabled)
+								{
+									if (Element.IsSet(Specifics.HeaderIconsSizeProperty))
+									{
+										Size iconSize = Element.OnThisPlatform().GetHeaderIconsSize();
+										tabBarImage.Height = iconSize.Height;
+										tabBarImage.Width = iconSize.Width;
+									}
+									tabBarImage.HorizontalAlignment = WHorizontalAlignment.Center;
+									tabBarImage.Visibility = WVisibility.Visible;
+								}
+								else
+								{
+									tabBarImage.Visibility = WVisibility.Collapsed;
+								}
+
+								invalidateMeasure = true;
+							}
+						}
+						else if (stackPanelItem is WTextBlock tabBarTextblock)
+						{
+							// Update text block.
+							if (tabBarTextblock.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderTextBlockName)
+							{
+								if (headerIconsEnabled)
+								{
+									// Remember old values so we can restore them if icons are collapsed.
+									// NOTE, since all Textblock instances in this stack panel comes from the same
+									// style, we just keep one copy of the value (since they should be identical).
+									if (tabBarTextblock.TextAlignment != WTextAlignment.Center)
+									{
+										_oldBarTextBlockTextAlignment = tabBarTextblock.TextAlignment;
+										tabBarTextblock.TextAlignment = WTextAlignment.Center;
+									}
+
+									if (tabBarTextblock.HorizontalAlignment != WHorizontalAlignment.Center)
+									{
+										_oldBarTextBlockHorinzontalAlignment = tabBarTextblock.HorizontalAlignment;
+										tabBarTextblock.HorizontalAlignment = WHorizontalAlignment.Center;
+									}
+								}
+								else
+								{
+									// Restore old values.
+									tabBarTextblock.TextAlignment = _oldBarTextBlockTextAlignment;
+									tabBarTextblock.HorizontalAlignment = _oldBarTextBlockHorinzontalAlignment;
+								}
+							}
+						}
+					}
+				}
+
+				// If items have been made visible or collapsed in panel, invalidate current control measures.
+				if (invalidateMeasure)
+					Control.InvalidateMeasure();
+			}
+		}
+	}
 }
