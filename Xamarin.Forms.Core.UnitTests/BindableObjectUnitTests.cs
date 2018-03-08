@@ -922,7 +922,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void IsSetIsFalseWhenPropSetByDefaultValueCreator()
+		public void IsSetIsTrueWhenPropSetByDefaultValueCreator()
 		{
 			string defaultValue = "default";
 			string defaultValueC = "defaultVC";
@@ -939,7 +939,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(defaultValueC, created);
 
 			var isSet = bindable.IsSet(bindableProperty);
-			Assert.IsFalse(isSet);
+			Assert.IsTrue(isSet);
 		}
 
 		[Test]
