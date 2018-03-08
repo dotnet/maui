@@ -56,9 +56,9 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
             }
 
             // ForegroundColor => 
-            if (!span.ForegroundColor.IsDefault)
+            if (!span.TextColor.IsDefault)
             {
-                builder.AppendFormat(" fgcolor=\"{0}\"", span.ForegroundColor.ToRgbaColor());
+                builder.AppendFormat(" fgcolor=\"{0}\"", span.TextColor.ToRgbaColor());
             }
 
             builder.Append(">"); // Complete opening span tag

@@ -123,7 +123,7 @@ namespace Xamarin.Forms
 
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
-		readonly MergedStyle _mergedStyle;
+		internal readonly MergedStyle _mergedStyle;
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
