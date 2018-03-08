@@ -38,17 +38,9 @@ The following cross-platform APIs are planned for our first release:
  - Clipboard
  - Text-to-Speech
 
-## Future Feature Plans:
- - Media Picker
- - Bluetooth
- - Audio
- - Open Maps
- - Keystore/Keychain
- - Store Review
- - Vibrate
  
 ## Contributing
-Please read through our [Contribution Guide](CONTRIBUTING.md).
+Please read through our [Contribution Guide](CONTRIBUTING.md). Issues marked as `up for grabs` are open for community contributions. We are not accepting PRs or new issues for features not listed.
 
 ## Building Caboodle
 Caboodle is built with the new SDK style projects with multi-targeting enabled. This means that all code for iOS, Android, and UWP exist inside of the Caboodle project. 
