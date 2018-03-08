@@ -278,8 +278,7 @@ namespace Xamarin.Forms
 			set { SetValue(StyleProperty, value); }
 		}
 
-
-		[Obsolete("Use @class")]
+		
 		[TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> StyleClass {
 			get { return @class; }
