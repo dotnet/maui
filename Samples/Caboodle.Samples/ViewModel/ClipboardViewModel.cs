@@ -32,11 +32,7 @@ namespace Caboodle.Samples.ViewModel
         public string FieldValue
         {
             get => fieldValue;
-            set
-            {
-                fieldValue = value;
-                OnPropertyChanged();
-            }
+            set => SetProperty(ref fieldValue, value);
         }
     }
 }
