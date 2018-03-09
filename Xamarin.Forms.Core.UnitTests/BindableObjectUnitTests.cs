@@ -1512,6 +1512,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/2019
+		public void EventSubscribingOnBindingContextChanged()
+		{
+			var source = new MockBindable();
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			bindable.SetBinding(property, new Binding("BindingContext", source: source));
+			Assert.That((string)bindable.GetValue(property), Is.EqualTo(null));
+			BindableObject.SetInheritedBindingContext(source, "bar"); //inherited BC, only trigger BCChanged
+			Assert.That((string)bindable.GetValue(property), Is.EqualTo("bar"));
+		}
+
+		[Test]
 		public void BindingsEditableAfterUnapplied()
 		{
 			var bindable = new MockBindable();
