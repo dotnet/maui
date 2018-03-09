@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using ElmSharp;
 using NScroller = Xamarin.Forms.Platform.Tizen.Native.Scroller;
+using NBox = Xamarin.Forms.Platform.Tizen.Native.Box;
+using ERect = ElmSharp.Rect;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -10,7 +12,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	/// </summary>
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, NScroller>
 	{
-		EvasObject _content;
+		NBox _scrollCanvas;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Xamarin.Forms.Platform.Tizen.ScrollViewRenderer"/> class.
@@ -18,6 +20,15 @@ namespace Xamarin.Forms.Platform.Tizen
 		public ScrollViewRenderer()
 		{
 			RegisterPropertyHandler("Content", FillContent);
+		}
+
+		/// <summary>
+		/// Provide Native cotnent area to place child content
+		/// </summary>
+		/// <returns>Rect of Content area</returns>
+		public override ERect GetNativeContentGeometry()
+		{
+			return _scrollCanvas.Geometry;
 		}
 
 		/// <summary>
@@ -30,6 +41,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new NScroller(Forms.NativeParent));
 				Control.Scrolled += OnScrolled;
+				_scrollCanvas = new NBox(Control);
+				_scrollCanvas.LayoutUpdated += OnContentLayoutUpdated;
+				Control.SetContent(_scrollCanvas);
 			}
 
 			if (e.OldElement != null)
@@ -60,6 +74,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					Control.Scrolled -= OnScrolled;
 				}
+				if (_scrollCanvas != null)
+				{
+					_scrollCanvas.LayoutUpdated -= OnContentLayoutUpdated;
+				}
 			}
 
 			base.Dispose(disposing);
@@ -67,25 +85,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void FillContent()
 		{
-			if (_content != null)
-			{
-				if (_content is Native.Box contentBox)
-				{
-					contentBox.LayoutUpdated -= OnContentLayoutUpdated;
-				}
-				Control.SetContent(null, true);
-				_content.Unrealize();
-				_content = null;
-			}
-
+			_scrollCanvas.UnPackAll();
 			if (Element.Content != null)
 			{
-				_content = Platform.GetOrCreateRenderer(Element.Content).NativeView;
-				if (_content is Native.Box contentBox)
-				{
-					contentBox.LayoutUpdated += OnContentLayoutUpdated;
-				}
-				Control.SetContent(_content, true);
+				_scrollCanvas.PackEnd(Platform.GetOrCreateRenderer(Element.Content).NativeView);
 				UpdateContentSize();
 			}
 
@@ -127,11 +130,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateContentSize()
 		{
-			if (_content == null)
-				return;
-
-			_content.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width);
-			_content.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height);
+			_scrollCanvas.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width);
+			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height);
 
 			// elm-scroller updates the CurrentRegion after render
 			Device.BeginInvokeOnMainThread(() =>
