@@ -5,8 +5,8 @@
 
 var TARGET = Argument("target", "Default");
 
-var IOS_SIM_NAME = "iPhone X";
-var IOS_SIM_RUNTIME = "iOS 11.2";
+var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone X";
+var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 11.1";
 var IOS_PROJ = "./Caboodle.DeviceTests.iOS/Caboodle.DeviceTests.iOS.csproj";
 var IOS_BUNDLE_ID = "com.xamarin.caboodle.devicetests";
 var IOS_IPA_PATH = "./Caboodle.DeviceTests.iOS/bin/iPhoneSimulator/Release/CaboodleDeviceTestsiOS.app";
@@ -17,8 +17,8 @@ var ANDROID_APK_PATH = "./Caboodle.DeviceTests.Android/bin/Release/com.xamarin.c
 var ANDROID_TEST_RESULTS_PATH = "./nunit-android.xml";
 var ANDROID_AVD = "CABOODLE";
 var ANDROID_PKG_NAME = "com.xamarin.caboodle.devicetests";
-var ANDROID_EMU_TARGET = "system-images;android-26;google_apis;x86";
-var ANDROID_EMU_DEVICE = "Nexus 5X";
+var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
+var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
 
 var UWP_PROJ = "./Caboodle.DeviceTests.UWP/Caboodle.DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./nunit-uwp.xml";
