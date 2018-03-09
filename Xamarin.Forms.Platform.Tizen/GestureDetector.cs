@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		double _longTapTime = 0;
 		int _horizontalSwipeTime = 0;
 		int _verticalSwipeTime = 0;
+		bool _inputTransparent = false;
+		bool _isEnabled = true;
 
 		View View => _renderer.Element as View;
 
@@ -26,21 +28,33 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			get
 			{
-				if (_gestureLayer != null)
-					return _gestureLayer.IsEnabled;
-
-				return false;
+				return _isEnabled;
 			}
 			set
 			{
-				if (_gestureLayer != null)
-					_gestureLayer.IsEnabled = value;
+				_isEnabled = value;
+				UpdateGestureLayerEnabled();
+			}
+		}
+
+		public bool InputTransparent
+		{
+			get
+			{
+				return _inputTransparent;
+			}
+			set
+			{
+				_inputTransparent = value;
+				UpdateGestureLayerEnabled();
 			}
 		}
 
 		public GestureDetector(IVisualElementRenderer renderer)
 		{
 			_renderer = renderer;
+			_isEnabled = View.IsEnabled;
+			_inputTransparent = View.InputTransparent;
 
 			(View.GestureRecognizers as ObservableCollection<IGestureRecognizer>).CollectionChanged += OnGestureRecognizerCollectionChanged;
 
@@ -75,8 +89,17 @@ namespace Xamarin.Forms.Platform.Tizen
 				_gestureLayer = null;
 				Clear();
 			};
-			_gestureLayer.IsEnabled = _renderer.Element.IsEnabled;
+			UpdateGestureLayerEnabled();
 		}
+
+		void UpdateGestureLayerEnabled()
+		{
+			if (_gestureLayer != null)
+			{
+				_gestureLayer.IsEnabled = !_inputTransparent && _isEnabled;
+			}
+		}
+
 
 		void AddGestures(IEnumerable<IGestureRecognizer> recognizers)
 		{
@@ -457,12 +480,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		GestureHandler CreateHandler(IGestureRecognizer recognizer)
 		{
-			var handlerType = Registrar.Registered.GetHandlerTypeForObject(recognizer);
-
-			if (handlerType != null)
-				return (GestureHandler)Activator.CreateInstance(handlerType, recognizer);
-			else
-				return null;
+			return Registrar.Registered.GetHandlerForObject<GestureHandler>(recognizer, recognizer);
 		}
 
 		GestureHandler LookupHandler(IGestureRecognizer recognizer)

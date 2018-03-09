@@ -766,7 +766,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <summary>
 		/// Updates the IsEnabled property.
 		/// </summary>
-		void UpdateIsEnabled(bool initialize)
+		protected virtual void UpdateIsEnabled(bool initialize)
 		{
 			if (initialize && Element.IsEnabled)
 				return;
