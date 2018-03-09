@@ -134,10 +134,12 @@ Task ("test-android-emu")
     .IsDependentOn ("build-android")
     .Does (() =>
 {
-    // Create the AVD if necessary
-    Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
-    if (!AndroidAvdListAvds ().Any (a => a.Name == ANDROID_AVD))
-        AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true);
+    if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
+        // Create the AVD if necessary
+        Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
+        if (!AndroidAvdListAvds ().Any (a => a.Name == ANDROID_AVD))
+            AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true);
+    }
 
     // Start up the emulator by name
     Information ("Starting Emulator: {0}...", ANDROID_AVD);
