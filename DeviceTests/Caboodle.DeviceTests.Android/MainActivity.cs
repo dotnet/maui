@@ -6,14 +6,20 @@ using Xunit.Runners.UI;
 
 namespace Caboodle.DeviceTests.Droid
 {
-    [Activity(Label = "@string/app_name", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Name="com.xamarin.caboodle.devicetests.MainActivity", Label = "@string/app_name", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : RunnerActivity
     {
         protected override void OnCreate(Bundle bundle)
         {
+            var hostIp = Intent.Extras?.GetString("HOST_IP", null);
+            var hostPort = Intent.Extras?.GetInt("HOST_PORT", 10578) ?? 10578;
+
+            if (!string.IsNullOrEmpty(hostIp))
+                UnitTests.HeadlessRunner.Tests.RunAsync(hostIp, hostPort, typeof(Battery_Tests).Assembly);
+
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());
-            AddExecutionAssembly(typeof(MainActivity).Assembly);
+            AddExecutionAssembly(typeof(Battery_Tests).Assembly);
 
             // or in any reference assemblies
             //   AddTestAssembly(typeof(PortableTests).Assembly);

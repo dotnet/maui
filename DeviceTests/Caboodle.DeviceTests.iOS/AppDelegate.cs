@@ -9,14 +9,18 @@ namespace Caboodle.DeviceTests.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            // We need this to ensure the execution assembly is part of the app bundle
-            AddExecutionAssembly(typeof(AppDelegate).Assembly);
-
-            // a hack to work around the case where the tests aren't found
-            if (Initialized)
+            // Invoke the headless test runner if a config was specified
+            var testCfg = System.IO.File.ReadAllText("tests.cfg")?.Split(':');
+            if (testCfg != null && testCfg.Length > 1)
             {
-                var preserve = typeof(Xunit.Sdk.TestFailed);
+                var ip = testCfg[0];
+                int port;
+                if (int.TryParse(testCfg[1], out port))
+                    UnitTests.HeadlessRunner.Tests.RunAsync(ip, port, typeof(Battery_Tests).Assembly);
             }
+
+            // We need this to ensure the execution assembly is part of the app bundle
+            AddExecutionAssembly(typeof(Battery_Tests).Assembly);
 
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());

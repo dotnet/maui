@@ -26,7 +26,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>Caboodle Tests</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.Caboodle.DeviceTests</string>
+	<string>com.xamarin.caboodle.devicetests</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleIconFiles</key>
