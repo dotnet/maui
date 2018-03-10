@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Platform.Android
 		ColorStateList defaultOnColor;
 		PorterDuff.Mode defaultMode;
 
-
 		public SwitchRenderer(Context context) : base(context)
 		{
 			AutoPackage = false;
@@ -104,17 +103,19 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (Element != null)
 			{
-				if (Element.OnColor == Color.Default)
+				if (Control.Checked)
 				{
-					Control.TrackTintList = defaultOnColor;
-				}
-				else
-				{
-					if (Control.Checked)
-						Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
-					else
+					if (Element.OnColor == Color.Default)
 					{
 						Control.TrackTintList = defaultOnColor;
+						Control.TrackTintMode = defaultMode;
+					}
+					else
+					{
+						if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBean)
+						{
+							Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+						}
 					}
 				}
 			}

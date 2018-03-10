@@ -82,14 +82,14 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					SwitchCompat aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
+					defaultOnColor = aswitch.TrackTintList;
+					defaultMode = aswitch.TrackTintMode;
 				}
 				else
 					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
-				defaultOnColor = Control.TrackTintList;
-				defaultMode = Control.TrackTintMode;
 				UpdateOnColor();
 			}
 		}
@@ -102,7 +102,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		private void UpdateOnColor()
 		{
-			if (Element != null)
+			if (Element == null || Control == null)
+				return;
+
+			if (defaultOnColor == null)
+			{
+				defaultOnColor = Control.TrackTintList;
+				defaultMode = Control.TrackTintMode;
+			}
+
+			if (Control.Checked)
 			{
 				if (Element.OnColor == Color.Default)
 				{
@@ -111,19 +120,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 				else
 				{
-					StateListDrawable drawable = new StateListDrawable();
-					drawable.AddState(new int[] { global::Android.Resource.Attribute.StateChecked }, new ColorDrawable(Element.OnColor.ToAndroid()));
-					drawable.AddState(new int[] { }, new ColorDrawable(Color.Red.ToAndroid()));
-
-					Control.ThumbDrawable = drawable;
-					
-					//if (Control.Checked)
-					//	Control.TrackTintList = ColorStateList.ValueOf(Element.OnColor.ToAndroid());
-					//else
-					//{
-					//	Control.TrackTintList = defaultOnColor;
-					//}
+					Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
 				}
+			}
+			else
+			{
+				Control.TrackTintList = defaultOnColor;
 			}
 		}
 
