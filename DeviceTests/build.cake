@@ -1,6 +1,6 @@
 #addin nuget:?package=Cake.AppleSimulator
 #addin nuget:?package=Cake.Android.Adb&version=2.0.6
-#addin nuget:?package=Cake.Android.AvdManager&version=1.0.2
+#addin nuget:?package=Cake.Android.AvdManager&version=1.0.3
 #addin nuget:?package=Cake.FileHelpers
 
 var TARGET = Argument("target", "Default");
@@ -27,6 +27,8 @@ var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 var TCP_LISTEN_PORT = 10578;
 var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
         .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
+
+var ANDROID_HOME = EnvironmentVariable("ANDROID_HOME");
 
 Func<int, FilePath, Task> DownloadTcpTextAsync = (int port, FilePath filename) =>
     System.Threading.Tasks.Task.Run (() => {
@@ -135,21 +137,40 @@ Task ("test-android-emu")
     .Does (() =>
 {
     if (EnvironmentVariable("ANDROID_SKIP_AVD_CREATE") == null) {
+        var avdSettings = new AndroidAvdManagerToolSettings  { SdkRoot = ANDROID_HOME };
+
         // Create the AVD if necessary
         Information ("Creating AVD if necessary: {0}...", ANDROID_AVD);
-        if (!AndroidAvdListAvds ().Any (a => a.Name == ANDROID_AVD))
-            AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true);
+        if (!AndroidAvdListAvds (avdSettings).Any (a => a.Name == ANDROID_AVD))
+            AndroidAvdCreate (ANDROID_AVD, ANDROID_EMU_TARGET, ANDROID_EMU_DEVICE, force: true, settings: avdSettings);
+    }
+
+    // We need to find `emulator` and the best way is to try within a specified ANDROID_HOME
+    var emulatorExt = IsRunningOnWindows() ? ".bat" : "";
+    string emulatorPath = "emulator" + emulatorExt;
+
+    if (ANDROID_HOME != null) {
+        var andHome = new DirectoryPath(ANDROID_HOME);
+        if (DirectoryExists(andHome)) {
+            emulatorPath = MakeAbsolute(andHome.Combine("tools").CombineWithFilePath("emulator" + emulatorExt)).FullPath;
+            if (!FileExists(emulatorPath))
+                emulatorPath = MakeAbsolute(andHome.Combine("emulator").CombineWithFilePath("emulator" + emulatorExt)).FullPath;
+            if (!FileExists(emulatorPath))
+                emulatorPath = "emulator" + emulatorExt;
+        }
     }
 
     // Start up the emulator by name
     Information ("Starting Emulator: {0}...", ANDROID_AVD);
-    var emu = StartAndReturnProcess ("emulator", new ProcessSettings { 
+    var emu = StartAndReturnProcess (emulatorPath, new ProcessSettings { 
         Arguments = $"-avd {ANDROID_AVD}" });
+
+    var adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME };
 
     // Keep checking adb for an emulator with an AVD name matching the one we just started
     var emuSerial = string.Empty;
     for (int i = 0; i < 100; i++) {
-        foreach (var device in AdbDevices().Where(d => d.Serial.StartsWith("emulator-"))) {
+        foreach (var device in AdbDevices(adbSettings).Where(d => d.Serial.StartsWith("emulator-"))) {
             if (AdbGetAvdName(device.Serial).Equals(ANDROID_AVD, StringComparison.OrdinalIgnoreCase)) {
                 emuSerial = device.Serial;
                 break;
@@ -163,7 +184,7 @@ Task ("test-android-emu")
     }
 
     Information ("Matched ADB Serial: {0}", emuSerial);
-    var adbSettings = new AdbToolSettings { Serial = emuSerial };
+    adbSettings = new AdbToolSettings { SdkRoot = ANDROID_HOME, Serial = emuSerial };
 
     // Wait for the emulator to enter a 'booted' state
     AdbWaitForEmulatorToBoot(TimeSpan.FromSeconds(100), adbSettings);
