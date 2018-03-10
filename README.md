@@ -6,11 +6,11 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 
 ## Build Status
 
-| Build Server  | Status                                                                                                                                                                          |
-|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Jenkins       | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle)](https://jenkins.mono-project.com/view/Components/job/Components-Caboodle/) |
-| VSTS          | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                            |
-
+| Build Server | Type         | Platform | Status                                                                                                                                                                                 |
+|--------------|--------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle)](https://jenkins.mono-project.com/view/Components/job/Components-Caboodle/)        |
+| VSTS         | Build        | Windows  | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                                   |
+| Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Caboodle-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Caboodle-DeviceTests-Mac) |
 
 ## Installation
 Coming soon... 
