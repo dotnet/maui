@@ -31,9 +31,9 @@ namespace Caboodle.DeviceTests
 #if WINDOWS_UWP
             Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", DeviceInfo.AppPackageName);
 #elif __IOS__
-            Assert.Equal("com.yourcompany.Caboodle.DeviceTests", DeviceInfo.AppPackageName);
+            Assert.Equal("com.xamarin.caboodle.devicetests", DeviceInfo.AppPackageName);
 #elif __ANDROID__
-            Assert.Equal("com.companyname.Caboodle.DeviceTests", DeviceInfo.AppPackageName);
+            Assert.Equal("com.xamarin.caboodle.devicetests", DeviceInfo.AppPackageName);
 #else
             throw new PlatformNotSupportedException();
 #endif
