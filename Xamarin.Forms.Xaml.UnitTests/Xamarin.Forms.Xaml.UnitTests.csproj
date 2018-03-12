@@ -584,7 +584,9 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
+  
+  <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
+  
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
