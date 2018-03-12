@@ -287,12 +287,10 @@ namespace Xamarin.Forms
 			if (binding == null)
 				throw new ArgumentNullException("binding");
 
-			BindablePropertyContext context = null;
-			if (fromStyle && (context = GetContext(targetProperty)) != null && (context.Attributes & BindableContextAttributes.IsDefaultValue) == 0 &&
-				(context.Attributes & BindableContextAttributes.IsSetFromStyle) == 0)
+			if (fromStyle && !CanBeSetFromStyle(targetProperty))
 				return;
 
-			context = context ?? GetOrCreateContext(targetProperty);
+			var context = GetOrCreateContext(targetProperty);
 			if (fromStyle)
 				context.Attributes |= BindableContextAttributes.IsSetFromStyle;
 			else
@@ -309,6 +307,20 @@ namespace Xamarin.Forms
 			binding.Apply(BindingContext, this, targetProperty);
 		}
 
+		bool CanBeSetFromStyle(BindableProperty property)
+		{
+			var context = GetContext(property);
+			if (context == null)
+				return true;
+			if ((context.Attributes & BindableContextAttributes.IsSetFromStyle) == BindableContextAttributes.IsSetFromStyle)
+				return true;
+			if ((context.Attributes & BindableContextAttributes.IsDefaultValue) == BindableContextAttributes.IsDefaultValue)
+				return true;
+			if ((context.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
+				return true;
+			return false;
+		}
+
 		internal void SetDynamicResource(BindableProperty property, string key)
 		{
 			SetDynamicResource(property, key, false);
@@ -320,13 +332,10 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException(nameof(property));
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
-
-			BindablePropertyContext context = null;
-			if (fromStyle && (context = GetContext(property)) != null && (context.Attributes & BindableContextAttributes.IsDefaultValue) == 0 &&
-				(context.Attributes & BindableContextAttributes.IsSetFromStyle) == 0)
+			if (fromStyle && !CanBeSetFromStyle(property))
 				return;
 
-			context = context ?? GetOrCreateContext(property);
+			var context = GetOrCreateContext(property);
 
 			context.Attributes |= BindableContextAttributes.IsDynamicResource;
 			if (fromStyle)
@@ -471,9 +480,7 @@ namespace Xamarin.Forms
 			if (bpcontext == null)
 				return;
 
-			if (   fromStyle && bpcontext != null
-				&& (bpcontext.Attributes & BindableContextAttributes.IsDefaultValue) != 0
-				&& (bpcontext.Attributes & BindableContextAttributes.IsSetFromStyle) == 0)
+			if (fromStyle && !CanBeSetFromStyle(property))
 				return;
 
 			object original = bpcontext.Value;
@@ -490,7 +497,10 @@ namespace Xamarin.Forms
 
 			bpcontext.Attributes &= ~BindableContextAttributes.IsManuallySet;
 			bpcontext.Value = newValue;
-			bpcontext.Attributes |= BindableContextAttributes.IsDefaultValue;
+			if (property.DefaultValueCreator == null)
+				bpcontext.Attributes |= BindableContextAttributes.IsDefaultValue;
+			else
+				bpcontext.Attributes |= BindableContextAttributes.IsDefaultValueCreated;
 
 			if (!same)
 			{
@@ -504,8 +514,10 @@ namespace Xamarin.Forms
 		{
 			var context = new BindablePropertyContext { Property = property, Value = property.DefaultValueCreator != null ? property.DefaultValueCreator(this) : property.DefaultValue };
 
-			if (property.DefaultValueCreator != null)
+			if (property.DefaultValueCreator == null)
 				context.Attributes = BindableContextAttributes.IsDefaultValue;
+			else
+				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
 
 			_properties.Add(context);
 			return context;
@@ -555,9 +567,7 @@ namespace Xamarin.Forms
 			if (checkAccess && property.IsReadOnly)
 				throw new InvalidOperationException(string.Format("The BindableProperty \"{0}\" is readonly.", property.PropertyName));
 
-			BindablePropertyContext context = null;
-			if (fromStyle && (context = GetContext(property)) != null && (context.Attributes & BindableContextAttributes.IsDefaultValue) == 0 &&
-				(context.Attributes & BindableContextAttributes.IsSetFromStyle) == 0)
+			if (fromStyle && !CanBeSetFromStyle(property))
 				return;
 
 			SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource,
@@ -586,6 +596,7 @@ namespace Xamarin.Forms
 			}
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValue;
+			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
 			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
 				RemoveDynamicResource(property);
@@ -622,7 +633,8 @@ namespace Xamarin.Forms
 			IsBeingSet = 1 << 1,
 			IsDynamicResource = 1 << 2,
 			IsSetFromStyle = 1 << 3,
-			IsDefaultValue = 1 << 4
+			IsDefaultValue = 1 << 4,
+			IsDefaultValueCreated = 1 << 5,
 		}
 
 		class BindablePropertyContext

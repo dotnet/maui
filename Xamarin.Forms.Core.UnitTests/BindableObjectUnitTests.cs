@@ -922,7 +922,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void IsSetIsFalseWhenPropSetByDefaultValueCreator()
+		public void IsSetIsTrueWhenPropSetByDefaultValueCreator()
 		{
 			string defaultValue = "default";
 			string defaultValueC = "defaultVC";
@@ -939,7 +939,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(defaultValueC, created);
 
 			var isSet = bindable.IsSet(bindableProperty);
-			Assert.IsFalse(isSet);
+			Assert.IsTrue(isSet);
 		}
 
 		[Test]
@@ -1507,6 +1507,19 @@ namespace Xamarin.Forms.Core.UnitTests
 			locator.Invoked += (sender, e) => Assert.IsTrue(locator.Count <= 1);
 			bindable.SetBinding(BindableObject.BindingContextProperty, new Binding("VM", source: locator));
 			Assert.IsTrue(locator.Count == 1);
+		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/2019
+		public void EventSubscribingOnBindingContextChanged()
+		{
+			var source = new MockBindable();
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("foo", typeof(string), typeof(MockBindable), null);
+			bindable.SetBinding(property, new Binding("BindingContext", source: source));
+			Assert.That((string)bindable.GetValue(property), Is.EqualTo(null));
+			BindableObject.SetInheritedBindingContext(source, "bar"); //inherited BC, only trigger BCChanged
+			Assert.That((string)bindable.GetValue(property), Is.EqualTo("bar"));
 		}
 
 		[Test]

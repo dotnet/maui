@@ -28,5 +28,5 @@
     <ProjectReference Include="..\..\Xamarin.Forms.Xaml\Xamarin.Forms.Xaml.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\.nuspec\Xamarin.Forms.targets" />
+  <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="Exists('..\..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
 </Project>
