@@ -146,9 +146,7 @@ namespace Xamarin.Forms
 				{
 					var inpc = current as INotifyPropertyChanged;
 					if (inpc != null && !ReferenceEquals(current, previous))
-					{
 						part.Subscribe(inpc);
-					}
 				}
 
 				previous = current;
@@ -460,11 +458,13 @@ namespace Xamarin.Forms
 			readonly WeakReference<INotifyPropertyChanged> _source = new WeakReference<INotifyPropertyChanged>(null);
 			readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
 			readonly PropertyChangedEventHandler _handler;
+			readonly EventHandler _bchandler;
 			internal WeakReference<INotifyPropertyChanged> Source => _source;
 
 			public WeakPropertyChangedProxy()
 			{
 				_handler = new PropertyChangedEventHandler(OnPropertyChanged);
+				_bchandler = new EventHandler(OnBCChanged);
 			}
 
 			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener) : this()
@@ -475,6 +475,9 @@ namespace Xamarin.Forms
 			public void SubscribeTo(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
 			{
 				source.PropertyChanged += _handler;
+				var bo = source as BindableObject;
+				if (bo != null)
+					bo.BindingContextChanged += _bchandler;
 				_source.SetTarget(source);
 				_listener.SetTarget(listener);
 			}
@@ -484,6 +487,10 @@ namespace Xamarin.Forms
 				INotifyPropertyChanged source;
 				if (_source.TryGetTarget(out source) && source != null)
 					source.PropertyChanged -= _handler;
+				var bo = source as BindableObject;
+				if (bo != null)
+					bo.BindingContextChanged -= _bchandler;
+
 				_source.SetTarget(null);
 				_listener.SetTarget(null);
 			}
@@ -495,6 +502,11 @@ namespace Xamarin.Forms
 					handler(sender, e);
 				else
 					Unsubscribe();
+			}
+
+			void OnBCChanged(object sender, EventArgs e)
+			{
+				OnPropertyChanged(sender, new PropertyChangedEventArgs("BindingContext"));
 			}
 		}
 
@@ -518,10 +530,8 @@ namespace Xamarin.Forms
 			{
 				INotifyPropertyChanged source;
 				if (_listener != null && _listener.Source.TryGetTarget(out source) && ReferenceEquals(handler, source))
-				{
 					// Already subscribed
 					return;
-				}
 
 				// Clear out the old subscription if necessary
 				Unsubscribe();
