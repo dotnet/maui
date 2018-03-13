@@ -24,7 +24,8 @@ namespace Microsoft.Caboodle
 
         public static bool HasText => ClipboardManager.HasPrimaryClip;
 
-        public static Task<string> GetTextAsync() =>
-            Task.FromResult(HasText ? clipboardManager.PrimaryClip.GetItemAt(0).Text : null);
+        public static Task<string> GetTextAsync() => HasText
+            ? Platform.InvokeOnMainThread(() => clipboardManager.PrimaryClip.GetItemAt(0).Text)
+            : Task.FromResult<string>(null);
     }
 }

@@ -9,6 +9,7 @@ namespace Microsoft.Caboodle
 
         public static bool HasText => UIPasteboard.General.HasStrings;
 
-        public static Task<string> GetTextAsync() => Task.FromResult(UIPasteboard.General.String);
+        public static Task<string> GetTextAsync() =>
+            Platform.InvokeOnMainThread(() => UIPasteboard.General.String);
     }
 }

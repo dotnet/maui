@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Caboodle.Samples.View.ClipboardPage"
-             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
-             Title="Clipboard">
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Caboodle.Samples.View"
+                xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
+                x:Class="Caboodle.Samples.View.ClipboardPage"
+                Title="Clipboard">
     <ContentPage.BindingContext>
-        <viewmodels:ClipboardViewModel/>
+        <viewmodels:ClipboardViewModel />
     </ContentPage.BindingContext>
 
     <StackLayout>
@@ -21,4 +22,4 @@
         </ScrollView>
     </StackLayout>
 
-</ContentPage>
+</views:BasePage>
