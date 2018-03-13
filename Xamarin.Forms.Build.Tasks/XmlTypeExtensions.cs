@@ -79,9 +79,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
 				asmstring = asmstring ?? module.Assembly.Name.Name;
-				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
-					AssemblyName = asmstring
-				});
+				if (ns != null)
+					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
+						AssemblyName = asmstring
+					});
 			}
 
 			lookupNames.Add(elementName);
