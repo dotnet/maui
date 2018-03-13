@@ -33,7 +33,9 @@ namespace Xamarin.Forms.Xaml
 				if (value != null)
 					return value;
 			}
-			throw new Exception("Can't resolve name on Element");
+
+			var lineInfo = (serviceProvider?.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo ?? new XmlLineInfo();
+			throw new XamlParseException($"Can not find the object referenced by `{Name}`", lineInfo);
 		}
 	}
 }
