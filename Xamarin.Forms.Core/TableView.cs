@@ -111,8 +111,7 @@ namespace Xamarin.Forms
 			foreach (Cell cell in Root.SelectMany(r => r))
 				cell.Parent = this;
 
-			if (ModelChanged != null)
-				ModelChanged(this, EventArgs.Empty);
+			ModelChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]

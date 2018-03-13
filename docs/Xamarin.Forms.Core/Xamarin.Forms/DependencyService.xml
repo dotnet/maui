@@ -115,5 +115,33 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Resolve&lt;T&gt;">
+      <MemberSignature Language="C#" Value="public static T Resolve&lt;T&gt; (Xamarin.Forms.DependencyFetchTarget fallbackFetchTarget = Xamarin.Forms.DependencyFetchTarget.GlobalInstance) where T : class;" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!T Resolve&lt;class T&gt;(valuetype Xamarin.Forms.DependencyFetchTarget fallbackFetchTarget) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>T</ReturnType>
+      </ReturnValue>
+      <TypeParameters>
+        <TypeParameter Name="T">
+          <Constraints>
+            <ParameterAttribute>ReferenceTypeConstraint</ParameterAttribute>
+          </Constraints>
+        </TypeParameter>
+      </TypeParameters>
+      <Parameters>
+        <Parameter Name="fallbackFetchTarget" Type="Xamarin.Forms.DependencyFetchTarget" />
+      </Parameters>
+      <Docs>
+        <typeparam name="T">To be added.</typeparam>
+        <param name="fallbackFetchTarget">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>

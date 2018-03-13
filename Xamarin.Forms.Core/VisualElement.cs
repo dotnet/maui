@@ -278,9 +278,16 @@ namespace Xamarin.Forms
 			set { SetValue(StyleProperty, value); }
 		}
 
+
+		[Obsolete("Use @class")]
 		[TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> StyleClass
-		{
+		public IList<string> StyleClass {
+			get { return @class; }
+			set { @class = value; }
+		}
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> @class {
 			get { return _mergedStyle.StyleClass; }
 			set { _mergedStyle.StyleClass = value; }
 		}
@@ -440,8 +447,8 @@ namespace Xamarin.Forms
 		public void BatchCommit()
 		{
 			_batched = Math.Max(0, _batched - 1);
-			if (!Batched && BatchCommitted != null)
-				BatchCommitted(this, new EventArg<VisualElement>(this));
+			if (!Batched)
+				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
 		}
 
 		ResourceDictionary _resources;
@@ -624,10 +631,7 @@ namespace Xamarin.Forms
 		}
 
 		protected void OnChildrenReordered()
-		{
-			if (ChildrenReordered != null)
-				ChildrenReordered(this, EventArgs.Empty);
-		}
+			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
@@ -886,8 +890,7 @@ namespace Xamarin.Forms
 			Height = height;
 
 			SizeAllocated(width, height);
-			if (SizeChanged != null)
-				SizeChanged(this, EventArgs.Empty);
+			SizeChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public class FocusRequestArgs : EventArgs

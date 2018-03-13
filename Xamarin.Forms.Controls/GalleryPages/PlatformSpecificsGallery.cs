@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls
 			var appAndroidButton = new Button() { Text = "Application (Android)" };
 			var tbAndroidButton = new Button { Text = "TabbedPage (Android)" };
 			var entryiOSButton = new Button() { Text = "Entry (iOS)" };
+			var entryAndroidButton = new Button() { Text = "Entry (Android)" };
 			var largeTitlesiOSButton = new Button() { Text = "Large Title (iOS)" };
 			var safeareaiOSButton = new Button() { Text = "SafeArea (iOS)" };
 
@@ -32,6 +33,7 @@ namespace Xamarin.Forms.Controls
 			appAndroidButton.Clicked += (sender, args) => { SetRoot(new ApplicationAndroid(new Command(RestoreOriginal))); };
 			tbAndroidButton.Clicked += (sender, args) => { SetRoot(new TabbedPageAndroid(new Command(RestoreOriginal))); };
 			entryiOSButton.Clicked += (sender, args) => { Navigation.PushAsync(new EntryPageiOS()); };
+			entryAndroidButton.Clicked += (sender, args) => { Navigation.PushAsync(new EntryPageAndroid()); };
 			largeTitlesiOSButton.Clicked += (sender, args) => { Navigation.PushAsync(new LargeTitlesPageiOS(new Command(RestoreOriginal))); };
 			safeareaiOSButton.Clicked += (sender, args) => { SetRoot(new SafeAreaPageiOS(new Command(RestoreOriginal), new Command<Page>( p => SetRoot(p)))); };
 
@@ -41,7 +43,7 @@ namespace Xamarin.Forms.Controls
 				Content = new StackLayout
 				{
 					Children = { mdpiOSButton, mdpWindowsButton, npWindowsButton, tbiOSButton, tbWindowsButton, viselemiOSButton,
-							 appAndroidButton, tbAndroidButton, entryiOSButton, largeTitlesiOSButton, safeareaiOSButton }
+							 appAndroidButton, tbAndroidButton, entryiOSButton, entryAndroidButton, largeTitlesiOSButton, safeareaiOSButton }
 				}
 			};
 		}

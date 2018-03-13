@@ -22,10 +22,11 @@ namespace Xamarin.Forms.Core.XamlC
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Constraint)}", node);
 
 			yield return Instruction.Create(OpCodes.Ldc_R8, size);
-
-			var constantDef = module.ImportReferenceCached(typeof(Constraint)).ResolveCached().Methods.FirstOrDefault(md => md.IsStatic && md.Name == "Constant");
-			var constantRef = module.ImportReference(constantDef);
-			yield return Instruction.Create(OpCodes.Call, constantRef);
+			var constantReference = module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),
+																 methodName: "Constant",
+																 paramCount: 1,
+																 predicate: md => md.IsStatic);
+			yield return Instruction.Create(OpCodes.Call, constantReference);
 		}
 	}
 }

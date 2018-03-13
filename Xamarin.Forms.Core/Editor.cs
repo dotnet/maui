@@ -8,12 +8,8 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_EditorRenderer))]
 	public class Editor : InputView, IEditorController, IFontElement, ITextElement, IElementConfiguration<Editor>
 	{
-		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue) =>
-		{
-			var editor = (Editor)bindable;
-			if (editor.TextChanged != null)
-				editor.TextChanged(editor, new TextChangedEventArgs((string)oldValue, (string)newValue));
-		});
+		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue)
+			=> ((Editor)bindable).TextChanged?.Invoke(bindable, new TextChangedEventArgs((string)oldValue, (string)newValue)));
 
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
@@ -91,11 +87,7 @@ namespace Xamarin.Forms
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
-		{
-			EventHandler handler = Completed;
-			if (handler != null)
-				handler(this, EventArgs.Empty);
-		}
+			=> Completed?.Invoke(this, EventArgs.Empty);
 
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
 		{

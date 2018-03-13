@@ -99,6 +99,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateAll()
 		{
 			UpdateOrientation();
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
 		}
 
 		void UpdateOrientation()
@@ -156,6 +158,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				UpdateContentSize();
 			}
+			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
+				UpdateVerticalScrollBarVisibility();
+			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
+				UpdateHorizontalScrollBarVisibility();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -180,6 +186,33 @@ namespace Xamarin.Forms.Platform.Tizen
 			Rect region = new Rectangle(x, y, Element.Width, Element.Height).ToPixel();
 			await Control.ScrollToAsync(region, e.ShouldAnimate);
 			Element.SendScrollFinished();
+		}
+
+		void UpdateVerticalScrollBarVisibility()
+		{
+			Control.VerticalScrollBarVisiblePolicy = ScrollBarVisibilityToTizen(Element.VerticalScrollBarVisibility);
+		}
+
+		void UpdateHorizontalScrollBarVisibility()
+		{
+			var orientation = Element.Orientation;
+			if (orientation == ScrollOrientation.Horizontal || orientation == ScrollOrientation.Both)
+				Control.HorizontalScrollBarVisiblePolicy = ScrollBarVisibilityToTizen(Element.HorizontalScrollBarVisibility);
+		}
+
+		ScrollBarVisiblePolicy ScrollBarVisibilityToTizen(ScrollBarVisibility visibility)
+		{
+			switch (visibility)
+			{
+				case ScrollBarVisibility.Default:
+					return ScrollBarVisiblePolicy.Auto;
+				case ScrollBarVisibility.Always:
+					return ScrollBarVisiblePolicy.Visible;
+				case ScrollBarVisibility.Never:
+					return ScrollBarVisiblePolicy.Invisible;
+				default:
+					return ScrollBarVisiblePolicy.Auto;
+			}
 		}
 	}
 }

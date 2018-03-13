@@ -1,5 +1,6 @@
 using ElmSharp;
 using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -29,6 +30,15 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.OnElementChanged(e);
 		}
 
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
+			{
+				UpdateInputTransparent(false);
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -41,6 +51,39 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			base.Dispose(disposing);
+		}
+
+		protected override void UpdateInputTransparent(bool initialize)
+		{
+			if (initialize && Element.InputTransparent == default(bool))
+			{
+				NativeView.RepeatEvents = Element.CascadeInputTransparent;
+				return;
+			}
+
+			if (Element.InputTransparent)
+			{
+				if (Element.CascadeInputTransparent)
+				{
+					//Ignore all events of both layout and it's chidren
+					NativeView.PassEvents = true;
+					GestureDetector.IsEnabled = Element.IsEnabled;
+				}
+				else
+				{
+					//Ignore Layout's event only. Children's events should be allowded.
+					NativeView.PassEvents = false;
+					NativeView.RepeatEvents = true;
+					GestureDetector.IsEnabled = false;
+				}
+			}
+			else
+			{
+				//Allow layout's events and children's events would be determined by CascadeInputParent.
+				NativeView.PassEvents = false;
+				NativeView.RepeatEvents = Element.CascadeInputTransparent;
+				GestureDetector.IsEnabled = Element.IsEnabled;
+			}
 		}
 
 		void OnLayoutUpdated(object sender, Native.LayoutEventArgs e)

@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Build.Tasks
 	{
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
 		{
-			memberRef = module.ImportReferenceCached(typeof(Type));
+			memberRef = module.ImportReference(("mscorlib", "System", "Type"));
 			INode typeNameNode;
 
 			var name = new XmlName("", "TypeName");
@@ -34,10 +34,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 			context.TypeExtensions[node] = typeref;
 
-			var getTypeFromHandle = module.ImportReferenceCached(typeof(Type).GetMethod("GetTypeFromHandle", new[] { typeof(RuntimeTypeHandle) }));
 			return new List<Instruction> {
 				Instruction.Create(OpCodes.Ldtoken, module.ImportReference(typeref)),
-				Instruction.Create(OpCodes.Call, module.ImportReference(getTypeFromHandle))
+				Instruction.Create(OpCodes.Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", paramCount: 1, predicate: md => md.IsStatic)),
+
 			};
 		}
 	}

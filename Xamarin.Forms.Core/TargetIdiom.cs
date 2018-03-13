@@ -6,6 +6,7 @@ namespace Xamarin.Forms
 		Phone,
 		Tablet,
 		Desktop,
-		TV
+		TV,
+		Watch
 	}
 }

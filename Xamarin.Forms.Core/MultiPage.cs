@@ -121,11 +121,7 @@ namespace Xamarin.Forms
 		}
 
 		protected virtual void OnPagesChanged(NotifyCollectionChangedEventArgs e)
-		{
-			NotifyCollectionChangedEventHandler handler = PagesChanged;
-			if (handler != null)
-				handler(this, e);
-		}
+			=> PagesChanged?.Invoke(this, e);
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{

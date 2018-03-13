@@ -26,9 +26,11 @@ namespace Xamarin.Forms.Core.XamlC
 				if (parts.Length == 1 || (parts.Length == 2 && parts [0] == "LayoutOptions")) {
 					var options = parts [parts.Length - 1];
 
-					var field = module.ImportReferenceCached(typeof(LayoutOptions)).ResolveCached().Fields.SingleOrDefault(fd => fd.Name == options && fd.IsStatic);
-					if (field != null) {
-						yield return Instruction.Create(OpCodes.Ldsfld, module.ImportReference(field));
+					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "LayoutOptions"),
+																	 fieldName: options,
+																	 predicate: fd => fd.IsStatic);
+					if (fieldReference != null) {
+						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
 				}

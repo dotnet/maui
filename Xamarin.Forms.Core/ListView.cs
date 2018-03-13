@@ -11,7 +11,6 @@ namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ListViewRenderer))]
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>
-
 	{
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
 
@@ -247,19 +246,11 @@ namespace Xamarin.Forms
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellAppearing(Cell cell)
-		{
-			EventHandler<ItemVisibilityEventArgs> handler = ItemAppearing;
-			if (handler != null)
-				handler(this, new ItemVisibilityEventArgs(cell.BindingContext));
-		}
+			=> ItemAppearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext));
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCellDisappearing(Cell cell)
-		{
-			EventHandler<ItemVisibilityEventArgs> handler = ItemDisappearing;
-			if (handler != null)
-				handler(this, new ItemVisibilityEventArgs(cell.BindingContext));
-		}
+			=> ItemDisappearing?.Invoke(this, new ItemVisibilityEventArgs(cell.BindingContext));
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendRefreshing()
@@ -569,25 +560,13 @@ namespace Xamarin.Forms
 		}
 
 		void OnRefreshing(EventArgs e)
-		{
-			EventHandler handler = Refreshing;
-			if (handler != null)
-				handler(this, e);
-		}
+			=> Refreshing?.Invoke(this, e);
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
-		{
-			EventHandler<ScrollToRequestedEventArgs> handler = ScrollToRequested;
-			if (handler != null)
-				handler(this, e);
-		}
+			=> ScrollToRequested?.Invoke(this, e);
 
 		static void OnSelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var list = (ListView)bindable;
-			if (list.ItemSelected != null)
-				list.ItemSelected(list, new SelectedItemChangedEventArgs(newValue));
-		}
+			=> ((ListView)bindable).ItemSelected?.Invoke(bindable, new SelectedItemChangedEventArgs(newValue));
 
 		static bool ValidateHeaderFooterTemplate(BindableObject bindable, object value)
 		{
