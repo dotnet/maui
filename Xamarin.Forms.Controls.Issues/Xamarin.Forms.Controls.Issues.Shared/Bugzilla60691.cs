@@ -23,6 +23,8 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 #if UITEST
+		protected override bool Isolate => true;
+
 		[Test]
 		public void Bugzilla60691_Tel()
 		{
