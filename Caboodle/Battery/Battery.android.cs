@@ -26,7 +26,7 @@ namespace Microsoft.Caboodle
         static void StartBatteryListeners()
         {
             ValidateBatteryStatsPermission();
-            batteryReceiver = new BatteryBroadcastReceiver(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+            batteryReceiver = new BatteryBroadcastReceiver(OnBatteryChanged);
             Platform.CurrentContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
         }
 

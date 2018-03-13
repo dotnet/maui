@@ -13,8 +13,8 @@ namespace Microsoft.Caboodle
         static void StopBatteryListeners() =>
             DefaultBattery.ReportUpdated -= ReportUpdated;
 
-        static void ReportUpdated(object sender, object e) =>
-            Platform.BeginInvokeOnMainThread(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+        static void ReportUpdated(object sender, object e)
+            => Platform.BeginInvokeOnMainThread(OnBatteryChanged);
 
         static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;
