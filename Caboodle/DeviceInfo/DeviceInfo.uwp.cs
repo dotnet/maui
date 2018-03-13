@@ -86,29 +86,26 @@ namespace Microsoft.Caboodle
             return DeviceType.Physical;
         }
 
-        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal(DisplayInformation di = null)
+        static ScreenMetrics GetScreenMetrics(DisplayInformation di = null)
         {
-            return Caboodle.Platform.InvokeOnMainThread(() =>
+            di = di ?? DisplayInformation.GetForCurrentView();
+
+            var rotation = CalculateRotation(di);
+            var perpendicular =
+                rotation == ScreenRotation.Rotation90 ||
+                rotation == ScreenRotation.Rotation270;
+
+            var w = di.ScreenWidthInRawPixels;
+            var h = di.ScreenHeightInRawPixels;
+
+            return new ScreenMetrics
             {
-                di = di ?? DisplayInformation.GetForCurrentView();
-
-                var rotation = CalculateRotation(di);
-                var perpendicular =
-                    rotation == ScreenRotation.Rotation90 ||
-                    rotation == ScreenRotation.Rotation270;
-
-                var w = di.ScreenWidthInRawPixels;
-                var h = di.ScreenHeightInRawPixels;
-
-                return new ScreenMetrics
-                {
-                    Width = perpendicular ? h : w,
-                    Height = perpendicular ? w : h,
-                    Density = di.LogicalDpi / 96.0,
-                    Orientation = CalculateOrientation(di),
-                    Rotation = rotation
-                };
-            });
+                Width = perpendicular ? h : w,
+                Height = perpendicular ? w : h,
+                Density = di.LogicalDpi / 96.0,
+                Orientation = CalculateOrientation(di),
+                Rotation = rotation
+            };
         }
 
         static void StartScreenMetricsListeners()
@@ -133,14 +130,12 @@ namespace Microsoft.Caboodle
             });
         }
 
-        // this MUST be run on the main thread!
-        static async void OnDisplayInformationChanged(DisplayInformation di, object args)
+        static void OnDisplayInformationChanged(DisplayInformation di, object args)
         {
-            var metrics = await GetScreenMetricsAsyncInternal(di);
+            var metrics = GetScreenMetrics(di);
             OnScreenMetricsChanaged(metrics);
         }
 
-        // this MUST be run on the main thread!
         static ScreenOrientation CalculateOrientation(DisplayInformation di)
         {
             switch (di.CurrentOrientation)
@@ -156,7 +151,6 @@ namespace Microsoft.Caboodle
             return ScreenOrientation.Unknown;
         }
 
-        // this MUST be run on the main thread!
         static ScreenRotation CalculateRotation(DisplayInformation di)
         {
             var native = di.NativeOrientation;

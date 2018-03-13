@@ -24,8 +24,8 @@ namespace Microsoft.Caboodle
             stateObserver = null;
         }
 
-        static void BatteryChangedNotification(object sender, NSNotificationEventArgs args) =>
-            Platform.BeginInvokeOnMainThread(() => OnBatteryChanged(ChargeLevel, State, PowerSource));
+        static void BatteryChangedNotification(object sender, NSNotificationEventArgs args)
+            => Platform.BeginInvokeOnMainThread(OnBatteryChanged);
 
         public static double ChargeLevel
         {

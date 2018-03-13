@@ -50,6 +50,9 @@ namespace Microsoft.Caboodle
         static void OnBatteryChanged(double level, BatteryState state, BatteryPowerSource source)
             => OnBatteryChanged(new BatteryChangedEventArgs(level, state, source));
 
+        static void OnBatteryChanged()
+            => OnBatteryChanged(ChargeLevel, State, PowerSource);
+
         static void OnBatteryChanged(BatteryChangedEventArgs e)
         {
             if (currentLevel != e.ChargeLevel ||
