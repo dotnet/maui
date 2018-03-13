@@ -8,9 +8,9 @@ namespace Caboodle.DeviceTests
     {
         [Theory]
         [InlineData("text")]
-        public void Set_Clipboard_Values(string text)
+        public async Task Set_Clipboard_Values(string text)
         {
-            Clipboard.SetText(text);
+            await Clipboard.SetTextAsync(text);
 
             Assert.True(Clipboard.HasText);
         }
@@ -19,7 +19,7 @@ namespace Caboodle.DeviceTests
         [InlineData("text")]
         public async Task Get_Clipboard_Values(string text)
         {
-            Clipboard.SetText(text);
+            await Clipboard.SetTextAsync(text);
             var clipText = await Clipboard.GetTextAsync();
 
             Assert.NotNull(clipText);

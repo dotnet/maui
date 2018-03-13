@@ -20,7 +20,8 @@ namespace Microsoft.Caboodle
             }
         }
 
-        public static void SetText(string text) => ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text);
+        public static Task SetTextAsync(string text) =>
+            Platform.InvokeOnMainThread(() => ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text));
 
         public static bool HasText => ClipboardManager.HasPrimaryClip;
 

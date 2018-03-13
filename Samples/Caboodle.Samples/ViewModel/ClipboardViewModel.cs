@@ -18,7 +18,7 @@ namespace Caboodle.Samples.ViewModel
 
         public ICommand PasteCommand { get; }
 
-        void OnCopy() => Clipboard.SetText(FieldValue);
+        async void OnCopy() => await Clipboard.SetTextAsync(FieldValue);
 
         async void OnPaste()
         {

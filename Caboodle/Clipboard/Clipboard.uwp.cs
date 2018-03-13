@@ -8,11 +8,13 @@ namespace Microsoft.Caboodle
 {
     public static partial class Clipboard
     {
-        public static void SetText(string text)
+        public static Task SetTextAsync(string text)
         {
             var dataPackage = new DataPackage();
             dataPackage.SetText(text);
             SetContent(dataPackage);
+
+            return Task.CompletedTask;
         }
 
         public static bool HasText => GetContent().Contains(StandardDataFormats.Text);
