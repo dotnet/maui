@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Caboodle
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.Caboodle
 {
     public static partial class DeviceInfo
     {
@@ -24,7 +26,7 @@
 
         static DeviceType GetDeviceType() => throw new NotImplentedInReferenceAssembly();
 
-        static ScreenMetrics GetScreenMetrics() => throw new NotImplentedInReferenceAssembly();
+        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal() => throw new NotImplentedInReferenceAssembly();
 
         static void StartScreenMetricsListeners() => throw new NotImplentedInReferenceAssembly();
 

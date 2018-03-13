@@ -2,7 +2,7 @@
 
 namespace Caboodle.Samples.View
 {
-    public partial class GeocodingPage : ContentPage
+    public partial class GeocodingPage : BasePage
     {
         public GeocodingPage()
         {

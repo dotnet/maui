@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -43,14 +44,22 @@ namespace Microsoft.Caboodle
 
         static string GetAppVersionString()
         {
-            SetAppVersions();
-            return appVersionString;
+            var pm = CaboodlePlatform.CurrentContext.PackageManager;
+            var packageName = CaboodlePlatform.CurrentContext.PackageName;
+            using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
+            {
+                return info.VersionName;
+            }
         }
 
         static string GetAppBuild()
         {
-            SetAppVersions();
-            return appBuild;
+            var pm = CaboodlePlatform.CurrentContext.PackageManager;
+            var packageName = CaboodlePlatform.CurrentContext.PackageName;
+            using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
+            {
+                return info.VersionCode.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         static string GetPlatform() => Platforms.Android;
@@ -131,7 +140,7 @@ namespace Microsoft.Caboodle
             return DeviceType.Physical;
         }
 
-        static ScreenMetrics GetScreenMetrics()
+        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal()
         {
             var metrics = new ScreenMetrics();
 
@@ -146,7 +155,7 @@ namespace Microsoft.Caboodle
             metrics.Orientation = CalculateOrientation();
             metrics.Rotation = CalculateRotation();
 
-            return metrics;
+            return Task.FromResult(metrics);
         }
 
         static void StartScreenMetricsListeners()
@@ -160,6 +169,12 @@ namespace Microsoft.Caboodle
             orientationListener?.Disable();
             orientationListener?.Dispose();
             orientationListener = null;
+        }
+
+        static async void OnScreenMetricsChanaged()
+        {
+            var metrics = await GetScreenMetricsAsyncInternal();
+            OnScreenMetricsChanaged(metrics);
         }
 
         static ScreenRotation CalculateRotation()
@@ -202,17 +217,6 @@ namespace Microsoft.Caboodle
             }
 
             return ScreenOrientation.Unknown;
-        }
-
-        static void SetAppVersions()
-        {
-            var pm = CaboodlePlatform.CurrentContext.PackageManager;
-            var packageName = CaboodlePlatform.CurrentContext.PackageName;
-            using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
-            {
-                appVersionString = info.VersionName;
-                appBuild = info.VersionCode.ToString(CultureInfo.InvariantCulture);
-            }
         }
 
         static string GetSystemSetting(string name)

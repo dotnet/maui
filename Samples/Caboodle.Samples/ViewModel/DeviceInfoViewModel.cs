@@ -4,7 +4,7 @@ namespace Caboodle.Samples.ViewModel
 {
     public class DeviceInfoViewModel : BaseViewModel
     {
-        ScreenMetrics screenMetrics = DeviceInfo.ScreenMetrics;
+        ScreenMetrics screenMetrics;
 
         public DeviceInfoViewModel()
         {
@@ -36,6 +36,26 @@ namespace Caboodle.Samples.ViewModel
         {
             get => screenMetrics;
             set => SetProperty(ref screenMetrics, value);
+        }
+
+        public override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            DeviceInfo.ScreenMetricsChanaged += OnScreenMetricsChanged;
+            ScreenMetrics = await DeviceInfo.GetScreenMetricsAsync();
+        }
+
+        public override void OnDisappearing()
+        {
+            DeviceInfo.ScreenMetricsChanaged -= OnScreenMetricsChanged;
+
+            base.OnDisappearing();
+        }
+
+        void OnScreenMetricsChanged(ScreenMetricsChanagedEventArgs e)
+        {
+            ScreenMetrics = e.Metrics;
         }
     }
 }

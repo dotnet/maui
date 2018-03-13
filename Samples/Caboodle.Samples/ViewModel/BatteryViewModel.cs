@@ -14,7 +14,21 @@ namespace Caboodle.Samples.ViewModel
 
         public BatteryPowerSource PowerSource => Battery.PowerSource;
 
-        public void Update(BatteryChangedEventArgs e)
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            Battery.BatteryChanged += OnBatteryChanged;
+        }
+
+        public override void OnDisappearing()
+        {
+            Battery.BatteryChanged -= OnBatteryChanged;
+
+            base.OnDisappearing();
+        }
+
+        void OnBatteryChanged(BatteryChangedEventArgs e)
         {
             OnPropertyChanged(nameof(Level));
             OnPropertyChanged(nameof(State));

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -47,32 +48,41 @@ namespace Microsoft.Caboodle
         static DeviceType GetDeviceType()
             => Runtime.Arch == Arch.DEVICE ? DeviceType.Physical : DeviceType.Virtual;
 
-        static ScreenMetrics GetScreenMetrics()
+        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal()
         {
-            var bounds = UIScreen.MainScreen.Bounds;
-            var scale = UIScreen.MainScreen.Scale;
-
-            return new ScreenMetrics
+            return Caboodle.Platform.InvokeOnMainThread(() =>
             {
-                Width = bounds.Width * scale,
-                Height = bounds.Height * scale,
-                Density = scale,
-                Orientation = CalculateOrientation(),
-                Rotation = CalculateRotation()
-            };
+                var bounds = UIScreen.MainScreen.Bounds;
+                var scale = UIScreen.MainScreen.Scale;
+
+                return new ScreenMetrics
+                {
+                    Width = bounds.Width * scale,
+                    Height = bounds.Height * scale,
+                    Density = scale,
+                    Orientation = CalculateOrientation(),
+                    Rotation = CalculateRotation()
+                };
+            });
         }
 
         static void StartScreenMetricsListeners()
         {
             var notificationCenter = NSNotificationCenter.DefaultCenter;
             var notification = UIApplication.DidChangeStatusBarOrientationNotification;
-            observer = notificationCenter.AddObserver(notification, n => OnScreenMetricsChanaged());
+            observer = notificationCenter.AddObserver(notification, OnScreenMetricsChanaged);
         }
 
         static void StopScreenMetricsListeners()
         {
             observer?.Dispose();
             observer = null;
+        }
+
+        private static async void OnScreenMetricsChanaged(NSNotification obj)
+        {
+            var metrics = await GetScreenMetricsAsyncInternal();
+            OnScreenMetricsChanaged(metrics);
         }
 
         static ScreenOrientation CalculateOrientation()
