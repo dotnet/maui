@@ -8,22 +8,28 @@ namespace Caboodle.DeviceTests
     {
         [Theory]
         [InlineData("text")]
-        public async Task Set_Clipboard_Values(string text)
+        public Task Set_Clipboard_Values(string text)
         {
-            await Clipboard.SetTextAsync(text);
+            return Utils.OnMainThread(() =>
+            {
+                Clipboard.SetText(text);
 
-            Assert.True(Clipboard.HasText);
+                Assert.True(Clipboard.HasText);
+            });
         }
 
         [Theory]
         [InlineData("text")]
-        public async Task Get_Clipboard_Values(string text)
+        public Task Get_Clipboard_Values(string text)
         {
-            await Clipboard.SetTextAsync(text);
-            var clipText = await Clipboard.GetTextAsync();
+            return Utils.OnMainThread(async () =>
+            {
+                Clipboard.SetText(text);
+                var clipText = await Clipboard.GetTextAsync();
 
-            Assert.NotNull(clipText);
-            Assert.Equal(text, clipText);
+                Assert.NotNull(clipText);
+                Assert.Equal(text, clipText);
+            });
         }
     }
 }

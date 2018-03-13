@@ -9,7 +9,7 @@ namespace Caboodle.Tests
         [Fact]
         public void Clipboard_SetText_Fail_On_NetStandard()
         {
-            Assert.ThrowsAsync<NotImplentedInReferenceAssembly>(() => Clipboard.SetTextAsync("Text"));
+            Assert.Throws<NotImplentedInReferenceAssembly>(() => Clipboard.SetText("Text"));
         }
 
         [Fact]
