@@ -588,6 +588,9 @@
     <Compile Include="Issues\Gh2063.xaml.cs">
       <DependentUpon>Gh2063.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Gh2064.xaml.cs">
+      <DependentUpon>Gh2064.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" />
@@ -1054,6 +1057,10 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Gh2063.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Gh2064.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
