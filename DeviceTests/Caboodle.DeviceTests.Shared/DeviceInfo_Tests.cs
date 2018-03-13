@@ -67,13 +67,16 @@ namespace Caboodle.DeviceTests
         }
 
         [Fact]
-        public async Task Screen_Metrics_Are_Not_Null()
+        public Task Screen_Metrics_Are_Not_Null()
         {
-            var metrics = await DeviceInfo.GetScreenMetricsAsync();
+            return Utils.OnMainThread(() =>
+            {
+                var metrics = DeviceInfo.ScreenMetrics;
 
-            Assert.True(metrics.Width > 0);
-            Assert.True(metrics.Height > 0);
-            Assert.True(metrics.Density > 0);
+                Assert.True(metrics.Width > 0);
+                Assert.True(metrics.Height > 0);
+                Assert.True(metrics.Density > 0);
+            });
         }
     }
 }

@@ -48,22 +48,19 @@ namespace Microsoft.Caboodle
         static DeviceType GetDeviceType()
             => Runtime.Arch == Arch.DEVICE ? DeviceType.Physical : DeviceType.Virtual;
 
-        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal()
+        static ScreenMetrics GetScreenMetrics()
         {
-            return Caboodle.Platform.InvokeOnMainThread(() =>
-            {
-                var bounds = UIScreen.MainScreen.Bounds;
-                var scale = UIScreen.MainScreen.Scale;
+            var bounds = UIScreen.MainScreen.Bounds;
+            var scale = UIScreen.MainScreen.Scale;
 
-                return new ScreenMetrics
-                {
-                    Width = bounds.Width * scale,
-                    Height = bounds.Height * scale,
-                    Density = scale,
-                    Orientation = CalculateOrientation(),
-                    Rotation = CalculateRotation()
-                };
-            });
+            return new ScreenMetrics
+            {
+                Width = bounds.Width * scale,
+                Height = bounds.Height * scale,
+                Density = scale,
+                Orientation = CalculateOrientation(),
+                Rotation = CalculateRotation()
+            };
         }
 
         static void StartScreenMetricsListeners()
@@ -79,9 +76,9 @@ namespace Microsoft.Caboodle
             observer = null;
         }
 
-        private static async void OnScreenMetricsChanaged(NSNotification obj)
+        private static void OnScreenMetricsChanaged(NSNotification obj)
         {
-            var metrics = await GetScreenMetricsAsyncInternal();
+            var metrics = GetScreenMetrics();
             OnScreenMetricsChanaged(metrics);
         }
 

@@ -20,9 +20,15 @@ namespace Caboodle.DeviceTests
             var handler = new Android.OS.Handler(looper);
             handler.Post(() =>
             {
-                action();
-
-                tcs.SetResult(true);
+                try
+                {
+                    action();
+                    tcs.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
             });
             return tcs.Task;
         }
