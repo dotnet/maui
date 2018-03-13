@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Widget;
 using ASwitch = Android.Widget.Switch;
@@ -11,8 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
-		ColorStateList defaultOnColor;
-		PorterDuff.Mode defaultMode;
+		Drawable defaultTrackDrawable;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -85,8 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
-				defaultOnColor = Control.TrackTintList;
-				defaultMode = Control.TrackTintMode;
+				defaultTrackDrawable = Control.TrackDrawable;
 				UpdateOnColor();
 			}
 		}
@@ -107,8 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					if (Element.OnColor == Color.Default)
 					{
-						Control.TrackTintList = defaultOnColor;
-						Control.TrackTintMode = defaultMode;
+						Control.TrackDrawable = defaultTrackDrawable;
 					}
 					else
 					{
@@ -117,6 +114,10 @@ namespace Xamarin.Forms.Platform.Android
 							Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
 						}
 					}
+				}
+				else
+				{
+					Control.TrackDrawable.ClearColorFilter();
 				}
 			}
 		}
