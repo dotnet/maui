@@ -26,7 +26,7 @@ namespace Microsoft.Caboodle
 
         static DeviceType GetDeviceType() => throw new NotImplentedInReferenceAssembly();
 
-        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal() => throw new NotImplentedInReferenceAssembly();
+        static ScreenMetrics GetScreenMetrics() => throw new NotImplentedInReferenceAssembly();
 
         static void StartScreenMetricsListeners() => throw new NotImplentedInReferenceAssembly();
 

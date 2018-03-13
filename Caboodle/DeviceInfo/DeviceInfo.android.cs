@@ -140,7 +140,7 @@ namespace Microsoft.Caboodle
             return DeviceType.Physical;
         }
 
-        static Task<ScreenMetrics> GetScreenMetricsAsyncInternal()
+        static ScreenMetrics GetScreenMetrics()
         {
             var metrics = new ScreenMetrics();
 
@@ -155,7 +155,7 @@ namespace Microsoft.Caboodle
             metrics.Orientation = CalculateOrientation();
             metrics.Rotation = CalculateRotation();
 
-            return Task.FromResult(metrics);
+            return metrics;
         }
 
         static void StartScreenMetricsListeners()
@@ -171,9 +171,9 @@ namespace Microsoft.Caboodle
             orientationListener = null;
         }
 
-        static async void OnScreenMetricsChanaged()
+        static void OnScreenMetricsChanaged()
         {
-            var metrics = await GetScreenMetricsAsyncInternal();
+            var metrics = GetScreenMetrics();
             OnScreenMetricsChanaged(metrics);
         }
 

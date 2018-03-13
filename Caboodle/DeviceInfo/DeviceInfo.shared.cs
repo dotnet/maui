@@ -33,7 +33,7 @@ namespace Microsoft.Caboodle
 
         public static DeviceType DeviceType => GetDeviceType();
 
-        public static Task<ScreenMetrics> GetScreenMetricsAsync() => GetScreenMetricsAsyncInternal();
+        public static ScreenMetrics ScreenMetrics => GetScreenMetrics();
 
         public static event ScreenMetricsChanagedEventHandler ScreenMetricsChanaged
         {

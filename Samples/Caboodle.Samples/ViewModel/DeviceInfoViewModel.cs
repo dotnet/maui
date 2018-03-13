@@ -38,12 +38,12 @@ namespace Caboodle.Samples.ViewModel
             set => SetProperty(ref screenMetrics, value);
         }
 
-        public override async void OnAppearing()
+        public override void OnAppearing()
         {
             base.OnAppearing();
 
             DeviceInfo.ScreenMetricsChanaged += OnScreenMetricsChanged;
-            ScreenMetrics = await DeviceInfo.GetScreenMetricsAsync();
+            ScreenMetrics = DeviceInfo.ScreenMetrics;
         }
 
         public override void OnDisappearing()
