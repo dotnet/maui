@@ -8,6 +8,7 @@ namespace Caboodle.DeviceTests
     {
         [Theory]
         [InlineData("text")]
+        [InlineData("some really long test text")]
         public Task Set_Clipboard_Values(string text)
         {
             return Utils.OnMainThread(() =>
@@ -20,6 +21,7 @@ namespace Caboodle.DeviceTests
 
         [Theory]
         [InlineData("text")]
+        [InlineData("some really long test text")]
         public Task Get_Clipboard_Values(string text)
         {
             return Utils.OnMainThread(async () =>
