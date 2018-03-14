@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public class SwitchRenderer : ViewRenderer<Switch, UISwitch>
 	{
-		UIColor defaultOnColor;
+		UIColor _defaultOnColor;
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.ValueChanged += OnControlValueChanged;
 				}
 
-				defaultOnColor = Control.OnTintColor;
+				_defaultOnColor = Control.OnTintColor;
 				Control.On = Element.IsToggled;
 				e.NewElement.Toggled += OnElementToggled;
 				UpdateOnColor();
@@ -38,12 +38,12 @@ namespace Xamarin.Forms.Platform.iOS
 			base.OnElementChanged(e);
 		}
 
-		private void UpdateOnColor()
+		void UpdateOnColor()
 		{
 			if (Element != null)
 			{
 				if (Element.OnColor == Color.Default)
-					Control.OnTintColor = defaultOnColor;
+					Control.OnTintColor = _defaultOnColor;
 				else
 					Control.OnTintColor = Element.OnColor.ToUIColor();
 			}

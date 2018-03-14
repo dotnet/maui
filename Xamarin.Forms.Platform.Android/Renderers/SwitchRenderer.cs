@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	public class SwitchRenderer : ViewRenderer<Switch, ASwitch>, CompoundButton.IOnCheckedChangeListener
 	{
-		Drawable defaultTrackDrawable;
+		Drawable _defaultTrackDrawable;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -84,7 +84,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
-				defaultTrackDrawable = Control.TrackDrawable;
+				_defaultTrackDrawable = Control.TrackDrawable;
 				UpdateOnColor();
 			}
 		}
@@ -97,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateOnColor();
 		}
 
-		private void UpdateOnColor()
+		void UpdateOnColor()
 		{
 			if (Element != null)
 			{
@@ -105,7 +105,7 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					if (Element.OnColor == Color.Default)
 					{
-						Control.TrackDrawable = defaultTrackDrawable;
+						Control.TrackDrawable = _defaultTrackDrawable;
 					}
 					else
 					{

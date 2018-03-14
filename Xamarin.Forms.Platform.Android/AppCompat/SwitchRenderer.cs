@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	public class SwitchRenderer : ViewRenderer<Switch, SwitchCompat>, CompoundButton.IOnCheckedChangeListener
 	{
 		bool _disposed;
-		Drawable defaultTrackDrawable;
+		Drawable _defaultTrackDrawable;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					SwitchCompat aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
-					defaultTrackDrawable = aswitch.TrackDrawable;
+					_defaultTrackDrawable = aswitch.TrackDrawable;
 				}
 				else
 					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateOnColor();
 		}
 
-		private void UpdateOnColor()
+		void UpdateOnColor()
 		{
 			if (Element == null || Control == null)
 				return;
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				if (Element.OnColor == Color.Default)
 				{
-					Control.TrackDrawable = defaultTrackDrawable;
+					Control.TrackDrawable = _defaultTrackDrawable;
 				}
 				else
 				{
