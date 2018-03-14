@@ -1,10 +1,12 @@
 ### Description of Change ###
 
-Describe your changes here.
+Describe your changes here. 
 
 ### Bugs Fixed ###
 
-- Provide links to bugs here
+- Related to issue #
+
+Provide links to issues here. Ensure that a GitHub issue was created for your feature or bug fix before sending PR.
 
 ### API Changes ###
 
@@ -29,4 +31,4 @@ Describe any non-bug related behavioral changes that may change how users app be
 - [ ] Has samples (if omitted, state reason in description)
 - [ ] Rebased on top of master at time of PR
 - [ ] Changes adhere to coding standard
-- [ ] Consolidate commits as makes sense
+- [ ] Updated documentation ([see walkthrough](https://github.com/xamarin/Caboodle/wiki/Documenting-your-code-with-mdoc))
