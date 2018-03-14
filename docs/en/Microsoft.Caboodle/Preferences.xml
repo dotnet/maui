@@ -10,8 +10,21 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>A class to interact with the preferences/settings of the native platform.</summary>
+    <remarks>
+      <para>Each platform uses the platform provided native API’s for storing application/user preferences:</para>
+      <list type="bullet">
+        <item>
+          <term>iOS: NSUserDefaults</term>
+        </item>
+        <item>
+          <term>Android: SharedPreferences</term>
+        </item>
+        <item>
+          <term>UWP: ApplicationDataContainer</term>
+        </item>
+      </list>
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -23,8 +36,10 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>
+          <para />
+        </summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -38,9 +53,21 @@
         <Parameter Name="sharedName" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="sharedName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="sharedName">Optionally specify a container name to use for the instance.</param>
+        <summary>Creates and instance that interacts with a shared container name:</summary>
+        <remarks>
+          <list type="bullet">
+            <item>
+              <term>iOS: SuiteName - required to share preferences between apps and/or app extensions</term>
+            </item>
+            <item>
+              <term>Android: Preferences File - can be used to share between apps</term>
+            </item>
+            <item>
+              <term>UWP: Container - specific container within the application settings</term>
+            </item>
+          </list>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -55,8 +82,8 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <summary>Clears all keys and values.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
@@ -73,10 +100,10 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <summary>Checks the existence of a given key.</summary>
+        <returns>Returns true if the key exists.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -94,11 +121,11 @@
         <Parameter Name="defaultValue" Type="System.Boolean" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -116,11 +143,11 @@
         <Parameter Name="defaultValue" Type="System.Double" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -138,11 +165,11 @@
         <Parameter Name="defaultValue" Type="System.Int32" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -160,11 +187,11 @@
         <Parameter Name="defaultValue" Type="System.Int64" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -182,11 +209,11 @@
         <Parameter Name="defaultValue" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
@@ -204,11 +231,11 @@
         <Parameter Name="defaultValue" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <param name="defaultValue">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -225,9 +252,135 @@
         <Parameter Name="key" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="key">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="key">Preference key.</param>
+        <summary>Removes a key and its associated value if it exists.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, bool value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, bool value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, double value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, float64 value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, int value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, int32 value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Int32" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, long value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, int64 value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Int64" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, float value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, float32 value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Single" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public void Set (string key, string value);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, string value) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SharedName">
@@ -241,9 +394,9 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <summary>Gets the shared name (or null for none) of the Preferences instance.</summary>
+        <value>The shared (container) name.</value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>
