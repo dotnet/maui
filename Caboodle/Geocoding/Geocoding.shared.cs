@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Geocoding
+    public static partial class Geocoding
     {
         public static string MapKey { get; set; }
 

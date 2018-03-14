@@ -6,7 +6,7 @@ using Android.Locations;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Geocoding
+    public static partial class Geocoding
     {
         public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
         {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Geocoding
+    public static partial class Geocoding
     {
         public static Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude) =>
             throw new NotImplentedInReferenceAssembly();

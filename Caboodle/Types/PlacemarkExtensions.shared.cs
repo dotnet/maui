@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class PlacemarkExtensions
+    internal static partial class PlacemarkExtensions
     {
     }
 }

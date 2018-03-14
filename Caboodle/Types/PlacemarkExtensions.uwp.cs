@@ -4,7 +4,7 @@ using Windows.Services.Maps;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class LoctionExtensions
+    public static partial class LocationExtensions
     {
         internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<MapLocation> mapLocations)
         {
