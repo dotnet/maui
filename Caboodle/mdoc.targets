@@ -86,7 +86,43 @@
       <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
       <MDocAssemblies>@(MDocAssembly -> '&quot;%(Identity)&quot;', ' ')</MDocAssemblies>
     </PropertyGroup>
-    <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --preserve --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies) $(MDocAssemblies)" />
+    <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --debug --preserve --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies) &quot;%(MDocAssembly.Identity)&quot;" />
+    <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />
   </Target>
+
+  <!--
+    ===================================================================================================================
+    _FormatDocs
+
+    Make sure the docs are all unifor after editing in various apps or tools.
+    ===================================================================================================================
+  -->
+  <UsingTask TaskName="_FormatDocs" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >  
+    <ParameterGroup>
+      <DocsRoot ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Xml.Linq" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
+          var xdoc = XDocument.Load(file);
+          var settings = new XmlWriterSettings {
+              Encoding = new UTF8Encoding(),
+              Indent = true,
+              NewLineChars = "\n",
+              OmitXmlDeclaration = true,
+          };
+          using (var writer = XmlWriter.Create(file, settings)) {
+              xdoc.Save(writer);
+              writer.Flush();
+          }
+          File.AppendAllText(file, "\n");
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
 
 </Project>
