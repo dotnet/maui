@@ -87,7 +87,7 @@ namespace Microsoft.Caboodle
 
     public class BatteryChangedEventArgs : EventArgs
     {
-        public BatteryChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
+        internal BatteryChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
         {
             ChargeLevel = level;
             State = state;

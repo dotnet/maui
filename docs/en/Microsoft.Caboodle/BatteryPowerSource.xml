@@ -1,0 +1,94 @@
+<Type Name="BatteryPowerSource" FullName="Microsoft.Caboodle.BatteryPowerSource">
+  <TypeSignature Language="C#" Value="public enum BatteryPowerSource" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed BatteryPowerSource extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>How the device and battery are currently being powered or charged.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Ac">
+      <MemberSignature Language="C#" Value="Ac" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BatteryPowerSource Ac = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Power source is an AC Charger.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Battery">
+      <MemberSignature Language="C#" Value="Battery" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BatteryPowerSource Battery = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Power source is the battery and not being charge.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BatteryPowerSource Unknown = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Power source can not be determined.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Usb">
+      <MemberSignature Language="C#" Value="Usb" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BatteryPowerSource Usb = int32(3)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Power source is a USB port.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Wireless">
+      <MemberSignature Language="C#" Value="Wireless" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BatteryPowerSource Wireless = int32(4)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BatteryPowerSource</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>Power source is wireless.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
