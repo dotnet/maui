@@ -201,6 +201,7 @@
       <Type Name="Device+Styles" Kind="Class" />
       <Type Name="Easing" Kind="Class" />
       <Type Name="Editor" Kind="Class" />
+      <Type Name="EditorAutoSizeOption" Kind="Enumeration" />
       <Type Name="Effect" Kind="Class" />
       <Type Name="EffectiveFlowDirection" Kind="Enumeration" />
       <Type Name="EffectiveFlowDirectionExtensions" Kind="Class" />
