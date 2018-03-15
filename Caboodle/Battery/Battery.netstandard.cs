@@ -3,18 +3,18 @@
     public static partial class Battery
     {
         static void StartBatteryListeners() =>
-            throw new NotImplentedInReferenceAssembly();
+            throw new NotImplementedInReferenceAssemblyException();
 
         static void StopBatteryListeners() =>
-            throw new NotImplentedInReferenceAssembly();
+            throw new NotImplementedInReferenceAssemblyException();
 
         public static double ChargeLevel =>
-            throw new NotImplentedInReferenceAssembly();
+            throw new NotImplementedInReferenceAssemblyException();
 
         public static BatteryState State =>
-            throw new NotImplentedInReferenceAssembly();
+            throw new NotImplementedInReferenceAssemblyException();
 
         public static BatteryPowerSource PowerSource =>
-            throw new NotImplentedInReferenceAssembly();
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }

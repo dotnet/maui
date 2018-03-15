@@ -7,19 +7,19 @@ namespace Caboodle.Tests
     {
         [Fact]
         public void Charge_Level_On_NetStandard() =>
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.ChargeLevel);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.ChargeLevel);
 
         [Fact]
         public void Charge_State_On_NetStandard() =>
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.State);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.State);
 
         [Fact]
         public void Charge_Power_Source_On_NetStandard() =>
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.PowerSource);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.PowerSource);
 
         [Fact]
         public void Battery_Changed_Event_On_NetStandard() =>
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Battery.BatteryChanged += Battery_BatteryChanged);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.BatteryChanged += Battery_BatteryChanged);
 
         void Battery_BatteryChanged(BatteryChangedEventArgs e)
         {

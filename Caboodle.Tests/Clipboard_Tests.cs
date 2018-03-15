@@ -9,19 +9,19 @@ namespace Caboodle.Tests
         [Fact]
         public void Clipboard_SetText_Fail_On_NetStandard()
         {
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Clipboard.SetText("Text"));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Clipboard.SetText("Text"));
         }
 
         [Fact]
         public void Clipboard_HasText_Fail_On_NetStandard()
         {
-            Assert.Throws<NotImplentedInReferenceAssembly>(() => Clipboard.HasText);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Clipboard.HasText);
         }
 
         [Fact]
         public async Task Clipboard_GetText_Fail_On_NetStandard()
         {
-            await Assert.ThrowsAsync<NotImplentedInReferenceAssembly>(() => Clipboard.GetTextAsync());
+            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Clipboard.GetTextAsync());
         }
     }
 }
