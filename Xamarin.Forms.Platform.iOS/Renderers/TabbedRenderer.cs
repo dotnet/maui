@@ -207,6 +207,9 @@ namespace Xamarin.Forms.Platform.iOS
 				controller = GetViewController(Tabbed.CurrentPage);
 			if (controller != null && controller != base.SelectedViewController)
 				base.SelectedViewController = controller;
+
+			UpdateBarBackgroundColor();
+			UpdateBarTextColor();
 		}
 
 		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
