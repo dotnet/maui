@@ -3,14 +3,14 @@
   <metadata>
     <id>Xamarin.Forms.Pages.Azure</id>
     <version>$version$</version>
-    <authors>Xamarin, Inc.</authors>
-    <owners>Xamarin, Inc.</owners>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
     <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
     <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Pre-built themeable pages for Xamarin.Forms</description>
-    <copyright>Copyright 2013-2017</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms.Pages" version="$version$"/>
