@@ -91,7 +91,18 @@ namespace Xamarin.Forms
 			// Naive implementation can easily take over a second to run
 			foreach (Assembly assembly in assemblies)
 			{
-				Attribute[] attributes = assembly.GetCustomAttributes(targetAttrType).ToArray();
+				Attribute[] attributes;
+				try
+				{
+					attributes = assembly.GetCustomAttributes(targetAttrType).ToArray();
+				}
+				catch (System.IO.FileNotFoundException)
+				{
+					// Sometimes the previewer doesn't actually have everything required for these loads to work
+					Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, targetAttrType.FullName);
+					continue;
+				}
+				
 				if (attributes.Length == 0)
 					continue;
 
