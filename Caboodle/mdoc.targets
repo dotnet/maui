@@ -108,7 +108,19 @@
       <Using Namespace="System.Xml.Linq" />
       <Code Type="Fragment" Language="cs"><![CDATA[
         foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
+          // load the docs
           var xdoc = XDocument.Load(file);
+
+          // check for any incomplete elements
+          var incomplete = xdoc.Descendants("Member").Where(x => x.Descendants().Any(d => d.Value == "To be added."));
+          foreach (var node in incomplete) {
+            var typename = xdoc.Root.Attribute("FullName").Value;
+            var member = node.Attribute("MemberName").Value;
+            var memberType = node.Element("MemberType").Value.ToLower();
+            Log.LogMessage(MessageImportance.High, "Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
+          }
+
+          // write
           var settings = new XmlWriterSettings {
               Encoding = new UTF8Encoding(),
               Indent = true,
