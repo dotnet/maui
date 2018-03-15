@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
+				UpdateReturnType();
 			}
 		}
 
@@ -95,6 +96,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMaxLength();
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
 				UpdateDetectReadingOrderFromContent();
+			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+				UpdateReturnType();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -248,6 +251,14 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.TextReadingOrder = TextReadingOrder.UseFlowDirection;
 				}
 			}
+		}
+
+		void UpdateReturnType()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Windows.Input;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -8,6 +9,12 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_EntryRenderer))]
 	public class Entry : InputView, IFontElement, ITextElement, ITextAlignmentElement, IEntryController, IElementConfiguration<Entry>
 	{
+		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(Entry), ReturnType.Default);
+
+		public static readonly BindableProperty ReturnCommandProperty = BindableProperty.Create(nameof(ReturnCommand), typeof(ICommand), typeof(Entry), default(ICommand));
+
+		public static readonly BindableProperty ReturnCommandParameterProperty = BindableProperty.Create(nameof(ReturnCommandParameter), typeof(object), typeof(Entry), default(object));
+
 		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create("Placeholder", typeof(string), typeof(Entry), default(string));
 
 		public static readonly BindableProperty IsPasswordProperty = BindableProperty.Create("IsPassword", typeof(bool), typeof(Entry), default(bool));
@@ -88,6 +95,24 @@ namespace Xamarin.Forms
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public ReturnType ReturnType
+		{
+			get => (ReturnType)GetValue(ReturnTypeProperty);
+			set => SetValue(ReturnTypeProperty, value);
+		}
+
+		public ICommand ReturnCommand
+		{
+			get => (ICommand)GetValue(ReturnCommandProperty);
+			set => SetValue(ReturnCommandProperty, value);
+		}
+
+		public object ReturnCommandParameter
+		{
+			get => GetValue(ReturnCommandParameterProperty);
+			set => SetValue(ReturnCommandParameterProperty, value);
+		}
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Entry)this);
 
@@ -102,7 +127,7 @@ namespace Xamarin.Forms
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			 InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		
+
 		public event EventHandler Completed;
 
 		public event EventHandler<TextChangedEventArgs> TextChanged;
@@ -110,7 +135,15 @@ namespace Xamarin.Forms
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendCompleted()
 		{
-			Completed?.Invoke(this, EventArgs.Empty);
+			if (IsEnabled)
+			{
+				Completed?.Invoke(this, EventArgs.Empty);
+
+				if (ReturnCommand != null && ReturnCommand.CanExecute(ReturnCommandParameter))
+				{
+					ReturnCommand.Execute(ReturnCommandParameter);
+				}
+			}
 		}
 
 		static void OnTextChanged(BindableObject bindable, object oldValue, object newValue)
