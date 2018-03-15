@@ -123,13 +123,16 @@ namespace Xamarin.Forms.Build.Tasks
 																							 ca.AttributeType.FullName ==
 																							 "Xamarin.Forms.ParameterAttribute")));
 			}
-			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node)) {
+			string missingCtorParameter = null;
+			if (parameterizedCtorInfo != null && ValidateCtorArguments(parameterizedCtorInfo, node, out missingCtorParameter)) {
 				ctorInfo = parameterizedCtorInfo;
 //				IL_0000:  ldstr "foo"
 				Context.IL.Append(PushCtorArguments(parameterizedCtorInfo, node));
 			}
 			ctorInfo = ctorInfo ?? typedef.Methods.FirstOrDefault(md => md.IsConstructor && !md.HasParameters && !md.IsStatic);
-
+			if (parameterizedCtorInfo != null && ctorInfo == null)
+				//there was a parameterized ctor, we didn't use it
+				throw new XamlParseException($"The Property '{missingCtorParameter}' is required to create a '{typedef.FullName}' object.", node);
 			var ctorinforef = ctorInfo?.ResolveGenericParameters(typeref, Module);
 			var factorymethodinforef = factoryMethodInfo?.ResolveGenericParameters(typeref, Module);
 			var implicitOperatorref = typedef.Methods.FirstOrDefault(md =>
@@ -234,16 +237,19 @@ namespace Xamarin.Forms.Build.Tasks
 				node.XmlName = name;
 		}
 
-		bool ValidateCtorArguments(MethodDefinition ctorinfo, ElementNode enode)
+		bool ValidateCtorArguments(MethodDefinition ctorinfo, ElementNode enode, out string firstMissingProperty)
 		{
+			firstMissingProperty = null;
 			foreach (var parameter in ctorinfo.Parameters)
 			{
 				var propname =
 					parameter.CustomAttributes.First(ca => ca.AttributeType.FullName == "Xamarin.Forms.ParameterAttribute")
 						.ConstructorArguments.First()
 						.Value as string;
-				if (!enode.Properties.ContainsKey(new XmlName("", propname)))
+				if (!enode.Properties.ContainsKey(new XmlName("", propname))) {
+					firstMissingProperty = propname;
 					return false;
+				}
 			}
 			return true;
 		}
