@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class Bugzilla29247 : TestContentPage
 	{
 		protected override void Init()
@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	}
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 2", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 2", PlatformAffected.iOS, issueTestNumber: 2)]
 	public class Bugzilla29247_2 : TestContentPage
 	{
 		protected override void Init()
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 	}
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 3", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 3", PlatformAffected.iOS, issueTestNumber: 3)]
 	public class Bugzilla29247_3 : TestContentPage
 	{
 		protected override void Init()
