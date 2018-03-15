@@ -125,6 +125,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateKeyboard();
 			else if (e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateKeyboard();
+			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+				UpdateKeyboard();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateAlignment();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
@@ -215,12 +217,23 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateKeyboard()
 		{
-			Control.ApplyKeyboard(Element.Keyboard);
-			if (!(Element.Keyboard is Internals.CustomKeyboard) && Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+			var keyboard = Element.Keyboard;
+			Control.ApplyKeyboard(keyboard);
+			if (!(keyboard is Internals.CustomKeyboard))
 			{
-				if (!Element.IsSpellCheckEnabled)
+				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
 				{
-					Control.SpellCheckingType = UITextSpellCheckingType.No;
+					if (!Element.IsSpellCheckEnabled)
+					{
+						Control.SpellCheckingType = UITextSpellCheckingType.No;
+					}
+				}
+				if (Element.IsSet(Xamarin.Forms.Entry.IsTextPredictionEnabledProperty))
+				{
+					if (!Element.IsTextPredictionEnabled)
+					{
+						Control.AutocorrectionType = UITextAutocorrectionType.No;
+					}
 				}
 			}
 			Control.ReloadInputViews();

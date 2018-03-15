@@ -80,6 +80,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateInputScope();
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputScope();
+			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+				UpdateInputScope();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
@@ -181,7 +183,10 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				if (entry.IsSet(Entry.IsTextPredictionEnabledProperty))
+					Control.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
+				else
+					Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
 				if (entry.IsSet(InputView.IsSpellCheckEnabledProperty))
 					Control.IsSpellCheckEnabled = entry.IsSpellCheckEnabled;
 				else
