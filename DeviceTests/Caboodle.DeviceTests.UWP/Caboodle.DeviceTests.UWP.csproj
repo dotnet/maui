@@ -122,6 +122,9 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AppBundleFile.txt" />
+    <Content Include="Folder\AppBundleFile_Nested.txt" />
+    <Content Include="AppBundleFile_NoExtension" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-100.png" />
     <Content Include="Assets\LockScreenLogo.scale-125.png" />

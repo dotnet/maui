@@ -15,6 +15,7 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),
                 new SampleItem("Device Info", typeof(DeviceInfoPage), "Find out about the device with ease."),
                 new SampleItem("Clipboard", typeof(ClipboardPage), "Quickly and easily use clipboard"),
+                new SampleItem("File System", typeof(FileSystemPage), "Easily save files to app data."),
             };
         }
 
