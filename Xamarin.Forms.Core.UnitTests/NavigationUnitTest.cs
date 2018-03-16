@@ -559,6 +559,26 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (popped, Is.Null);
 			Assert.That (navPage.CurrentPage, Is.SameAs (root));
 		}
+		
+		[Test]
+		[Property("Bugzilla", 31171)]
+		public async Task ReleasesPoppedPage()
+		{
+			var root = new ContentPage { Title = "Root" };
+			var navPage = new NavigationPage(root);
+
+			var isFinalized = false;
+
+			await navPage.PushAsync(new PageWithFinalizer(() => isFinalized = true));
+			await navPage.PopAsync();
+
+			await Task.Delay(100);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.IsTrue(isFinalized);
+		}
 	}
 
 	internal class BackButtonPage : ContentPage
@@ -572,6 +592,20 @@ namespace Xamarin.Forms.Core.UnitTests
 			if (BackPressed != null)
 				BackPressed (this, EventArgs.Empty);
 			return Handle;
+		}
+	}
+	
+	internal class PageWithFinalizer : Page
+	{
+		Action OnFinalize;
+		public PageWithFinalizer(Action onFinalize)
+		{
+			OnFinalize = onFinalize;
+		}
+
+		~PageWithFinalizer()
+		{
+			OnFinalize();
 		}
 	}
 }
