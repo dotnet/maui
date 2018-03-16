@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 			RegisterPropertyHandler(Entry.ReturnTypeProperty, UpdateReturnType);
+			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
+
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -114,8 +116,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled);
+		}
 
-			Control.Keyboard = Element.Keyboard.ToNative();
+		void UpdateIsSpellCheckEnabled()
+		{
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled);
 		}
 
 		void UpdatePlaceholder()

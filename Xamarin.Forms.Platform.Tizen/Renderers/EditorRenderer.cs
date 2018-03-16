@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -14,6 +13,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Editor.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Editor.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
+			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
@@ -115,8 +115,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled);
+		}
 
-			Control.Keyboard = Element.Keyboard.ToNative();
+		void UpdateIsSpellCheckEnabled()
+		{
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled);
 		}
 
 		void UpdateMaxLength()

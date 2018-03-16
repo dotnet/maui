@@ -1,4 +1,5 @@
-using Xamarin.Forms;
+using Xamarin.Forms.Internals;
+using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -31,6 +32,49 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				return Native.Keyboard.Normal;
 			}
+		}
+
+		public static AutoCapital ToAutoCapital(this KeyboardFlags keyboardFlags)
+		{
+			if (keyboardFlags.HasFlag(KeyboardFlags.CapitalizeSentence))
+			{
+				return AutoCapital.Sentence;
+			}
+			else if (keyboardFlags.HasFlag(KeyboardFlags.CapitalizeWord))
+			{
+				return AutoCapital.Word;
+			}
+			else if (keyboardFlags.HasFlag(KeyboardFlags.CapitalizeCharacter))
+			{
+				return AutoCapital.All;
+			}
+			else
+			{
+				return AutoCapital.None;
+			}
+		}
+
+		public static InputHints ToInputHints(this Keyboard keyboard, bool isSpellCheckEnabled)
+		{
+			if (keyboard is CustomKeyboard customKeyboard && customKeyboard.Flags.HasFlag(KeyboardFlags.Suggestions))
+			{
+				return InputHints.AutoComplete;
+			}
+			return isSpellCheckEnabled ? InputHints.AutoComplete : InputHints.None;
+		}
+
+		public static void UpdateKeyboard(this Native.Entry control, Keyboard keyboard, bool isSpellCheckEnabled)
+		{
+			control.Keyboard = keyboard.ToNative();
+			if (keyboard is CustomKeyboard customKeyboard)
+			{
+				control.AutoCapital = customKeyboard.Flags.ToAutoCapital();
+			}
+			else
+			{
+				control.AutoCapital = AutoCapital.None;
+			}
+			control.InputHint = keyboard.ToInputHints(isSpellCheckEnabled);
 		}
 	}
 }
