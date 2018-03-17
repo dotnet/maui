@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		float PaddingLeft
 		{
-			get { return (_paddingLeft / 2f); }
+			get { return (_paddingLeft / 2f) + _shadowDx; }
 			set { _paddingLeft = value; }
 		}
 
