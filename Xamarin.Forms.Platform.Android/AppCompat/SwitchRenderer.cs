@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
-using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Support.V7.Widget;
@@ -94,6 +93,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			base.OnElementPropertyChanged(sender, e);
+
 			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
 				UpdateOnColor();
 		}
