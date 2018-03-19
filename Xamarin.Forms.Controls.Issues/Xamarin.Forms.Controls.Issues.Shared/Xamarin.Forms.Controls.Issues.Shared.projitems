@@ -238,7 +238,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1677.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1683.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1705_2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1601.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1717.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60001.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1355.cs" />
@@ -409,6 +412,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1436.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GitHub1567.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1909.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
@@ -691,6 +695,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla31688.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla40092.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1426.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1733.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1323.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">
@@ -858,7 +864,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

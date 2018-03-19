@@ -123,7 +123,7 @@ namespace Xamarin.Forms
 
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
-		readonly MergedStyle _mergedStyle;
+		internal readonly MergedStyle _mergedStyle;
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -278,8 +278,7 @@ namespace Xamarin.Forms
 			set { SetValue(StyleProperty, value); }
 		}
 
-
-		[Obsolete("Use @class")]
+		
 		[TypeConverter(typeof(ListStringTypeConverter))]
 		public IList<string> StyleClass {
 			get { return @class; }

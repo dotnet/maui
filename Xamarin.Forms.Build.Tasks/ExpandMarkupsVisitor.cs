@@ -152,6 +152,8 @@ namespace Xamarin.Forms.Build.Tasks
 				}
 
 				var namespaceuri = nsResolver.LookupNamespace(prefix) ?? "";
+				if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+					throw new XamlParseException($"Undeclared xmlns prefix '{prefix}'", xmlLineInfo);
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 				XmlType type;
 				try

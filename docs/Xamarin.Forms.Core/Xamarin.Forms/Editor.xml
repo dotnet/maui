@@ -84,6 +84,37 @@ var editor = new Editor {
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="AutoSize">
+      <MemberSignature Language="C#" Value="public Xamarin.Forms.EditorAutoSizeOption AutoSize { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Forms.EditorAutoSizeOption AutoSize" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.EditorAutoSizeOption</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AutoSizeProperty">
+      <MemberSignature Language="C#" Value="public static readonly Xamarin.Forms.BindableProperty AutoSizeProperty;" />
+      <MemberSignature Language="ILAsm" Value=".field public static initonly class Xamarin.Forms.BindableProperty AutoSizeProperty" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.BindableProperty</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Completed">
       <MemberSignature Language="C#" Value="public event EventHandler Completed;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler Completed" />
@@ -350,6 +381,22 @@ var editor = new Editor {
         <summary>Identifies the Text bindable property.</summary>
         <remarks>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UpdateAutoSizeOption">
+      <MemberSignature Language="C#" Value="protected void UpdateAutoSizeOption ();" />
+      <MemberSignature Language="ILAsm" Value=".method familyhidebysig instance void UpdateAutoSizeOption() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Xamarin.Forms.Internals.IFontElement.FontSizeDefaultValueCreator">

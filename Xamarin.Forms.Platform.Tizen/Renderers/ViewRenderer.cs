@@ -33,16 +33,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
-
-			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
-			{
-				UpdateIsEnabled();
-			}
-		}
-
 		/// <summary>
 		/// Native control associated with this renderer.
 		/// </summary>
@@ -60,8 +50,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			SetNativeView(control);
 		}
 
-		void UpdateIsEnabled()
+		protected override void UpdateIsEnabled(bool initialize)
 		{
+			base.UpdateIsEnabled(initialize);
 			_gestureDetector.Value.IsEnabled = Element.IsEnabled;
 		}
 	}

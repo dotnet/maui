@@ -1820,9 +1820,6 @@
       </AssemblyInfo>
       <Attributes>
         <Attribute>
-          <AttributeName>System.Obsolete("Use @class")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>Xamarin.Forms.TypeConverter(typeof(Xamarin.Forms.ListStringTypeConverter))</AttributeName>
         </Attribute>
       </Attributes>

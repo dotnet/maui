@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
+				UpdateReturnType();
 			}
 		}
 
@@ -79,6 +80,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateInputScope();
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputScope();
+			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+				UpdateInputScope();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Entry.FontFamilyProperty.PropertyName)
@@ -95,6 +98,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMaxLength();
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
 				UpdateDetectReadingOrderFromContent();
+			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+				UpdateReturnType();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -178,7 +183,10 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
+				if (entry.IsSet(Entry.IsTextPredictionEnabledProperty))
+					Control.IsTextPredictionEnabled = entry.IsTextPredictionEnabled;
+				else
+					Control.ClearValue(TextBox.IsTextPredictionEnabledProperty);
 				if (entry.IsSet(InputView.IsSpellCheckEnabledProperty))
 					Control.IsSpellCheckEnabled = entry.IsSpellCheckEnabled;
 				else
@@ -248,6 +256,14 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.TextReadingOrder = TextReadingOrder.UseFlowDirection;
 				}
 			}
+		}
+
+		void UpdateReturnType()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			Control.InputScope = Element.ReturnType.ToInputScope();
 		}
 	}
 }

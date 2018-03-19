@@ -331,6 +331,9 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			// Enforce consistency rules on toolbar
 			Control.ShouldShowToolbar = _detail is NavigationPage || _master is NavigationPage;
+			if(_detail is NavigationPage _detailNav)
+				Control.ShouldShowNavigationBar = NavigationPage.GetHasNavigationBar(_detailNav.CurrentPage);
+			
 		}
 
 		public void BindForegroundColor(AppBar appBar)

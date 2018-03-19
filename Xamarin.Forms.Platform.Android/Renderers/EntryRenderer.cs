@@ -19,7 +19,6 @@ namespace Xamarin.Forms.Platform.Android
 		TextColorSwitcher _hintColorSwitcher;
 		TextColorSwitcher _textColorSwitcher;
 		bool _disposed;
-		//global::Android.Views.InputMethods.ImeFlags _defaultInputImeFlag;
 		ImeAction _currentInputImeFlag;
 
 		public EntryRenderer(Context context) : base(context)
@@ -98,6 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdatePlaceholderColor();
 			UpdateMaxLength();
 			UpdateImeOptions();
+			UpdateReturnType();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -144,6 +144,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateInputType();
 			else if (e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
 				UpdateInputType();
+			else if (e.PropertyName == Entry.IsTextPredictionEnabledProperty.PropertyName)
+				UpdateInputType();
 			else if (e.PropertyName == Entry.HorizontalTextAlignmentProperty.PropertyName)
 				UpdateAlignment();
 			else if (e.PropertyName == Entry.FontAttributesProperty.PropertyName)
@@ -160,6 +162,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateMaxLength();
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName)
 				UpdateImeOptions();
+			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
+				UpdateReturnType();
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -203,12 +207,23 @@ namespace Xamarin.Forms.Platform.Android
 			var keyboard = model.Keyboard;
 
 			Control.InputType = keyboard.ToInputType();
-			if (!(keyboard is Internals.CustomKeyboard) && model.IsSet(InputView.IsSpellCheckEnabledProperty))
+			if (!(keyboard is Internals.CustomKeyboard))
 			{
-				if ((Control.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
 				{
-					if (!model.IsSpellCheckEnabled)
-						Control.InputType = Control.InputType | InputTypes.TextFlagNoSuggestions;
+					if ((Control.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!model.IsSpellCheckEnabled)
+							Control.InputType = Control.InputType | InputTypes.TextFlagNoSuggestions;
+					}
+				}
+				if (model.IsSet(Entry.IsTextPredictionEnabledProperty))
+				{
+					if ((Control.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!model.IsTextPredictionEnabled)
+							Control.InputType = Control.InputType | InputTypes.TextFlagNoSuggestions;
+					}
 				}
 			}
 
@@ -254,6 +269,15 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (currentControlText.Length > Element.MaxLength)
 				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
+		void UpdateReturnType()
+		{
+			if (Control == null || Element == null)
+				return;
+			
+			Control.ImeOptions = Element.ReturnType.ToAndroidImeAction();
+			_currentInputImeFlag = Control.ImeOptions;
 		}
 	}
 }

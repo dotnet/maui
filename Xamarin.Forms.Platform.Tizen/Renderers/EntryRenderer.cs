@@ -1,5 +1,4 @@
 using System;
-using ElmSharp;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -19,6 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
+			RegisterPropertyHandler(Entry.ReturnTypeProperty, UpdateReturnType);
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -145,6 +145,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				return s;
 
 			return null;
+		}
+
+		void UpdateReturnType()
+		{
+			Control.SetInputPanelReturnKeyType(Element.ReturnType.ToInputPanelReturnKeyType());
 		}
 	}
 }

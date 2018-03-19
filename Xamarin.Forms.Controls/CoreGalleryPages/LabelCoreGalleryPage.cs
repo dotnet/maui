@@ -43,9 +43,9 @@ namespace Xamarin.Forms.Controls
 #pragma warning restore 618
 
 			var formattedString = new FormattedString ();
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Red, ForegroundColor = Color.Olive, Text = "Span 1 " });
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Black, ForegroundColor = Color.White, Text = "Span 2 " });
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Pink, ForegroundColor = Color.Purple, Text = "Span 3" });
+			formattedString.Spans.Add (new Span { BackgroundColor = Color.Red, TextColor = Color.Olive, Text = "Span 1 " });
+			formattedString.Spans.Add (new Span { BackgroundColor = Color.Black, TextColor = Color.White, Text = "Span 2 " });
+			formattedString.Spans.Add (new Span { BackgroundColor = Color.Pink, TextColor = Color.Purple, Text = "Span 3" });
 
 			var formattedTextContainer = new ViewContainer<Label> (Test.Label.FormattedText, new Label { FormattedText = formattedString });
 

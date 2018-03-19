@@ -50,6 +50,7 @@
     <Compile Include="BrushHelpers.cs" />
     <Compile Include="FlowDirectionExtensions.cs" />
     <Compile Include="FormsProgressBar.cs" />
+    <Compile Include="FormsSlider.cs" />
     <Compile Include="FormsTextBox.cs" />
     <Compile Include="FormsComboBox.cs" />
     <Compile Include="InterceptVisualStateManager.cs" />
@@ -202,6 +203,11 @@
     <Page Include="Resources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SliderStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Page>
     <Page Include="TabbedPageStyle.xaml">
       <SubType>Designer</SubType>

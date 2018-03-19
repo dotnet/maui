@@ -3,15 +3,15 @@
   <metadata>
     <id>Xamarin.Forms.Platform.WPF</id>
     <version>$version$</version>
-    <authors>Xamarin, Inc.</authors>
-    <owners>Xamarin, Inc.</owners>
+    <authors>Microsoft</authors>
+    <owners>microsoft xamarin</owners>
     <tags>xamarin forms xamarinforms xamarin.forms wpf</tags>
     <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
     <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
     <projectUrl>http://xamarin.com/forms</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Xamarin Forms Renderer to build native UIs for WPF</description>
-    <copyright>Copyright 2013-2017</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
       <group>
         <dependency id="Xamarin.Forms" version="$version$"/>

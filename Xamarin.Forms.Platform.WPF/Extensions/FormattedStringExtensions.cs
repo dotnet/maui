@@ -19,8 +19,8 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			var run = new Run { Text = span.Text };
 
-			if (span.ForegroundColor != Color.Default)
-				run.Foreground = span.ForegroundColor.ToBrush();
+			if (span.TextColor != Color.Default)
+				run.Foreground = span.TextColor.ToBrush();
 
 			if (!span.IsDefault())
 #pragma warning disable 618

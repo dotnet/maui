@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				nativeSpan.FontAttributes = span.FontAttributes;
 				nativeSpan.FontFamily = span.FontFamily;
 				nativeSpan.FontSize = span.FontSize;
-				nativeSpan.ForegroundColor = span.ForegroundColor.ToNative();
+				nativeSpan.ForegroundColor = span.TextColor.ToNative();
 				nativeSpan.BackgroundColor = span.BackgroundColor.ToNative();
 				nativeString.Spans.Add(nativeSpan);
 			}

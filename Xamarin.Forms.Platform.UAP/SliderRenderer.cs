@@ -3,13 +3,15 @@ using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class SliderRenderer : ViewRenderer<Slider, Windows.UI.Xaml.Controls.Slider>
+	public class SliderRenderer : ViewRenderer<Slider, FormsSlider>
 	{
 		Brush defaultforegroundcolor;
 		Brush defaultbackgroundcolor;
+		Brush _defaultThumbColor;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
@@ -19,8 +21,14 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var slider = new Windows.UI.Xaml.Controls.Slider();
+					var slider = new FormsSlider();
 					SetNativeControl(slider);
+
+					slider.Ready += (sender, args) =>
+					{
+						UpdateThumbColor();
+						UpdateThumbImage();
+					};
 
 					Control.Minimum = e.NewElement.Minimum;
 					Control.Maximum = e.NewElement.Maximum;
@@ -56,13 +64,13 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		private void UpdateSliderColors()
+		void UpdateSliderColors()
 		{
 			UpdateMinimumTrackColor();
 			UpdateMaximumTrackColor();
 		}
 
-		private void UpdateMinimumTrackColor()
+		void UpdateMinimumTrackColor()
 		{
 			if (Control != null)
 			{
@@ -73,7 +81,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		private void UpdateMaximumTrackColor()
+		void UpdateMaximumTrackColor()
 		{
 			if (Control != null)
 			{
@@ -103,7 +111,46 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMinimumTrackColor();
 			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
 				UpdateMaximumTrackColor();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
+			else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
+				UpdateThumbImage();
+		}
 
+		void UpdateThumbColor()
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			var thumb = Control?.Thumb;
+
+			if (thumb == null)
+			{
+				return;
+			}
+			
+			BrushHelpers.UpdateColor(Element.ThumbColor, ref _defaultThumbColor, 
+				() => thumb.Background, brush => thumb.Background = brush);
+		}
+
+		void UpdateThumbImage()
+		{
+			if (Element == null || Control == null)
+			{
+				return;
+			}
+
+			var thumbImage = Element.ThumbImage;
+
+			if (thumbImage == null)
+			{
+				Control.ThumbImage = null;
+				return;
+			}
+
+			Control.ThumbImage = new BitmapImage(new Uri($"ms-appx:///{thumbImage.File}"));
 		}
 
 		protected override void UpdateBackgroundColor()
