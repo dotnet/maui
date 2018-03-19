@@ -79,7 +79,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void LoadUrl(string url)
 		{
-			LoadRequest(new NSUrlRequest(new NSUrl(url)));
+			var encodedStringUrl = new NSString(url).CreateStringByAddingPercentEscapes(NSStringEncoding.UTF8);
+			LoadRequest(new NSUrlRequest(new NSUrl(encodedStringUrl)));
 		}
 
 		public override void LayoutSubviews()
