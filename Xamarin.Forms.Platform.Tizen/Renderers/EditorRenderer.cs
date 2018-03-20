@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Editor.FontSizeProperty, UpdateFontSize);
 			RegisterPropertyHandler(Editor.FontFamilyProperty, UpdateFontFamily);
 			RegisterPropertyHandler(Editor.FontAttributesProperty, UpdateFontAttributes);
-			RegisterPropertyHandler(Editor.KeyboardProperty, UpdateKeyboard);
+			RegisterPropertyHandler(InputView.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
 		}
@@ -20,7 +20,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.Entry(Forms.NativeParent)
+				// Multiline EditField style is only available on Mobile and TV profile
+				var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new Native.EditfieldEntry(Forms.NativeParent, "multiline") : new Native.Entry(Forms.NativeParent)
 				{
 					IsSingleLine = false,
 					PropagateEvents = false,
@@ -49,6 +50,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 			}
 			base.Dispose(disposing);
+		}
+
+		protected override Size MinimumSize()
+		{
+			return (Control as Native.IMeasurable).Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
 
 		void OnTextChanged(object sender, EventArgs e)

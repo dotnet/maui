@@ -19,6 +19,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		{
 		}
 
+		public EditfieldEntry(EvasObject parent, string style) : base(parent)
+		{
+			if (!string.IsNullOrEmpty(style))
+				_editfieldLayout.SetTheme("layout", "editfield", style);
+		}
+
 		protected override IntPtr CreateHandle(EvasObject parent)
 		{
 			var handle = base.CreateHandle(parent);
@@ -33,9 +39,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 			Handle = handle;
 
-			_editfieldLayout.SetPartContent("elm.swallow.content", this);
+			if (!_editfieldLayout.SetPartContent("elm.swallow.content", this))
+			{
+				// Restore theme to default if editfield style is not available
+				_editfieldLayout.SetTheme("layout", "application", "default");
+				_editfieldLayout.SetPartContent("elm.swallow.content", this);
+			}
 
-			// The minimun size for the Content area of an Editfield. This is used to calculate the size when layouting.
 			_heightPadding = _editfieldLayout.EdjeObject["elm.swallow.content"].Geometry.Height;
 			return _editfieldLayout;
 		}
@@ -48,10 +58,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			layout.Unfocused += (s, e) =>
 			{
 				SetFocusOnTextBlock(false);
+				layout.SignalEmit("elm,state,unfocused", "");
 			};
 			layout.Focused += (s, e) =>
 			{
 				AllowFocus(false);
+				layout.SignalEmit("elm,state,focused", "");
 			};
 
 			layout.KeyDown += (s, e) =>
@@ -66,6 +78,17 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				}
 			};
 			Clicked += (s, e) => SetFocusOnTextBlock(true);
+
+			Focused += (s, e) =>
+			{
+				layout.RaiseTop();
+				layout.SignalEmit("elm,state,focused", "");
+			};
+
+			Unfocused += (s, e) =>
+			{
+				layout.SignalEmit("elm,state,unfocused", "");
+			};
 
 			return layout;
 		}

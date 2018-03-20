@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.FontFamilyProperty, UpdateFontFamily);
 			RegisterPropertyHandler(Entry.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Entry.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);
-			RegisterPropertyHandler(Entry.KeyboardProperty, UpdateKeyboard);
+			RegisterPropertyHandler(InputView.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(Entry.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.Entry(Forms.NativeParent)
+				var entry = new Native.EditfieldEntry(Forms.NativeParent)
 				{
 					IsSingleLine = true,
 					PropagateEvents = false,
@@ -58,6 +58,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			base.Dispose(disposing);
+		}
+
+		protected override Size MinimumSize()
+		{
+			return (Control as Native.IMeasurable).Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
 
 		void OnTextChanged(object sender, EventArgs e)
