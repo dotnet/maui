@@ -34,13 +34,13 @@ The following cross-platform APIs are planned for our first release:
  - [x] Battery
  - [ ] Share Text
  - [ ] Open Browser
- - [ ] File System Helpers
+ - [X] File System Helpers
  - [ ] Magnetometer
  - [ ] Gyroscope
  - [ ] Compass
  - [ ] Accelerometer
  - [ ] Phone Dialer
- - [ ] Clipboard
+ - [X] Clipboard
  - [ ] Text-to-Speech
 
  
