@@ -33,35 +33,6 @@ namespace Microsoft.Caboodle
 
         static string GetVersionString() => Build.VERSION.Release;
 
-        static string GetAppPackageName() => CaboodlePlatform.CurrentContext.PackageName;
-
-        static string GetAppName()
-        {
-            var applicationInfo = CaboodlePlatform.CurrentContext.ApplicationInfo;
-            var packageManager = CaboodlePlatform.CurrentContext.PackageManager;
-            return applicationInfo.LoadLabel(packageManager);
-        }
-
-        static string GetAppVersionString()
-        {
-            var pm = CaboodlePlatform.CurrentContext.PackageManager;
-            var packageName = CaboodlePlatform.CurrentContext.PackageName;
-            using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
-            {
-                return info.VersionName;
-            }
-        }
-
-        static string GetAppBuild()
-        {
-            var pm = CaboodlePlatform.CurrentContext.PackageManager;
-            var packageName = CaboodlePlatform.CurrentContext.PackageName;
-            using (var info = pm.GetPackageInfo(packageName, PackageInfoFlags.MetaData))
-            {
-                return info.VersionCode.ToString(CultureInfo.InvariantCulture);
-            }
-        }
-
         static string GetPlatform() => Platforms.Android;
 
         static string GetIdiom()

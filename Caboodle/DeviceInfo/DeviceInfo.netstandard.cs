@@ -12,14 +12,6 @@ namespace Microsoft.Caboodle
 
         static string GetVersionString() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetAppPackageName() => throw new NotImplementedInReferenceAssemblyException();
-
-        static string GetAppName() => throw new NotImplementedInReferenceAssemblyException();
-
-        static string GetAppVersionString() => throw new NotImplementedInReferenceAssemblyException();
-
-        static string GetAppBuild() => throw new NotImplementedInReferenceAssemblyException();
-
         static string GetPlatform() => throw new NotImplementedInReferenceAssemblyException();
 
         static string GetIdiom() => throw new NotImplementedInReferenceAssemblyException();

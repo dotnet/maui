@@ -22,18 +22,18 @@ namespace Caboodle.DeviceTests
         [Fact]
         public void AppName_Is_Correct()
         {
-            Assert.Equal("Caboodle Tests", DeviceInfo.AppName);
+            Assert.Equal("Caboodle Tests", AppInfo.Name);
         }
 
         [Fact]
         public void AppPackageName_Is_Correct()
         {
 #if WINDOWS_UWP
-            Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", DeviceInfo.AppPackageName);
+            Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
 #elif __IOS__
-            Assert.Equal("com.xamarin.caboodle.devicetests", DeviceInfo.AppPackageName);
+            Assert.Equal("com.xamarin.caboodle.devicetests", AppInfo.PackageName);
 #elif __ANDROID__
-            Assert.Equal("com.xamarin.caboodle.devicetests", DeviceInfo.AppPackageName);
+            Assert.Equal("com.xamarin.caboodle.devicetests", AppInfo.PackageName);
 #else
             throw new PlatformNotSupportedException();
 #endif
@@ -56,14 +56,14 @@ namespace Caboodle.DeviceTests
         [Fact]
         public void App_Build_Is_Correct()
         {
-            Assert.Equal("1", DeviceInfo.AppBuildString);
+            Assert.Equal("1", AppInfo.BuildString);
         }
 
         [Fact]
         public void App_Versions_Are_Correct()
         {
-            Assert.Equal("1.0.1.0", DeviceInfo.AppVersionString);
-            Assert.Equal(new Version(1, 0, 1, 0), DeviceInfo.AppVersion);
+            Assert.Equal("1.0.1.0", AppInfo.VersionString);
+            Assert.Equal(new Version(1, 0, 1, 0), AppInfo.Version);
         }
 
         [Fact]

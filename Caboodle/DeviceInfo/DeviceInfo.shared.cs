@@ -15,17 +15,7 @@ namespace Microsoft.Caboodle
 
         public static string VersionString => GetVersionString();
 
-        public static Version Version => ParseVersion(VersionString);
-
-        public static string AppPackageName => GetAppPackageName();
-
-        public static string AppName => GetAppName();
-
-        public static string AppVersionString => GetAppVersionString();
-
-        public static Version AppVersion => ParseVersion(AppVersionString);
-
-        public static string AppBuildString => GetAppBuild();
+        public static Version Version => Utils.ParseVersion(VersionString);
 
         public static string Platform => GetPlatform();
 
@@ -63,14 +53,6 @@ namespace Microsoft.Caboodle
 
         static void OnScreenMetricsChanaged(ScreenMetricsChanagedEventArgs e)
             => ScreenMetricsChanagedInternal?.Invoke(e);
-
-        static Version ParseVersion(string version)
-        {
-            if (Version.TryParse(version, out var number))
-                return number;
-
-            return new Version(0, 0);
-        }
 
         public static class Idioms
         {

@@ -18,13 +18,13 @@ namespace Caboodle.Samples.ViewModel
 
         public string Version => DeviceInfo.VersionString;
 
-        public string AppPackageName => DeviceInfo.AppPackageName;
+        public string AppPackageName => AppInfo.PackageName;
 
-        public string AppName => DeviceInfo.AppName;
+        public string AppName => AppInfo.Name;
 
-        public string AppVersion => DeviceInfo.AppVersionString;
+        public string AppVersion => AppInfo.VersionString;
 
-        public string AppBuild => DeviceInfo.AppBuildString;
+        public string AppBuild => AppInfo.BuildString;
 
         public string Platform => DeviceInfo.Platform;
 

@@ -39,19 +39,6 @@ namespace Microsoft.Caboodle
             return version;
         }
 
-        static string GetAppPackageName() => Package.Current.Id.Name;
-
-        static string GetAppName() => Package.Current.DisplayName;
-
-        static string GetAppVersionString()
-        {
-            var version = Package.Current.Id.Version;
-            return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-        }
-
-        static string GetAppBuild()
-            => Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
-
         static string GetPlatform() => Platforms.UWP;
 
         static string GetIdiom()

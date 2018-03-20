@@ -220,6 +220,7 @@
   <Copyright>To be added.</Copyright>
   <Types>
     <Namespace Name="Microsoft.Caboodle">
+      <Type Name="AppInfo" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="NotImplentedInReferenceAssembly" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
