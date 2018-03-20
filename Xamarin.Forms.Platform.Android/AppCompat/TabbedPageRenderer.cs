@@ -212,18 +212,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						var viewPagerParams = new AWidget.RelativeLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
 						viewPagerParams.AddRule(AWidget.LayoutRules.Above, _bottomNavigationView.Id);
 
-						FormsViewPager pager =
-							_viewPager =
-								new FormsViewPager(activity)
-								{
-									OverScrollMode = OverScrollMode.Never,
-									EnableGesture = UseAnimations,
-									LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
-									Adapter = new FormsFragmentPagerAdapter<Page>(e.NewElement, FragmentManager)
-									{
-										CountOverride = e.NewElement.Children.Count
-									}
-								};
+						FormsViewPager pager = _viewPager = CreateFormsViewPager(activity, e.NewElement);
 
 						pager.Id = Platform.GenerateViewId();
 						pager.AddOnPageChangeListener(this);
@@ -246,15 +235,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 						else
 							tabs = _tabLayout = new TabLayout(activity) { TabMode = TabLayout.ModeFixed, TabGravity = TabLayout.GravityFill };
 
-						FormsViewPager pager =
-							_viewPager =
-							new FormsViewPager(activity)
-							{
-								OverScrollMode = OverScrollMode.Never,
-								EnableGesture = UseAnimations,
-								LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
-								Adapter = new FormsFragmentPagerAdapter<Page>(e.NewElement, FragmentManager) { CountOverride = e.NewElement.Children.Count }
-							};
+						FormsViewPager pager = _viewPager = CreateFormsViewPager(activity, e.NewElement);
+							
 						pager.Id = Platform.GenerateViewId();
 						pager.AddOnPageChangeListener(this);
 
@@ -313,7 +295,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_relativeLayout.Measure(
 					MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
 					MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
-				
+
 				pager.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.AtMost), MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.AtMost));
 
 				if (width > 0 && height > 0)
@@ -370,7 +352,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 			}
 
-      base.OnLayout(changed, l, t, r, b);
+			base.OnLayout(changed, l, t, r, b);
 		}
 
 		void OnChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -420,6 +402,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				UpdateIgnoreContainerAreas();
 			}
+		}
+
+		FormsViewPager CreateFormsViewPager(Context context, TabbedPage tabbedPage)
+		{
+			return new FormsViewPager(context)
+			{
+				OverScrollMode = OverScrollMode.Never,
+				EnableGesture = UseAnimations,
+				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
+				Adapter = new FormsFragmentPagerAdapter<Page>(tabbedPage, FragmentManager) { CountOverride = tabbedPage.Children.Count }
+			};
 		}
 
 		void TeardownPage(Page page)
@@ -647,7 +640,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				int currentColor = _bottomNavigationView.ItemTextColor.DefaultColor;
 
-        if (!_defaultColor.HasValue)
+				if (!_defaultColor.HasValue)
 					_defaultColor = currentColor;
 
 				Color newTextColor = Element.BarTextColor;
