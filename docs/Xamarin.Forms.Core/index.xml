@@ -597,6 +597,7 @@
       <Type Name="IMarkupExtension`1" DisplayName="IMarkupExtension&lt;T&gt;" Kind="Interface" />
       <Type Name="IProvideValueTarget" Kind="Interface" />
       <Type Name="IRootObjectProvider" Kind="Interface" />
+      <Type Name="IServiceProviderExtensions" Kind="Class" />
       <Type Name="IValueProvider" Kind="Interface" />
       <Type Name="IXamlTypeResolver" Kind="Interface" />
       <Type Name="IXmlLineInfoProvider" Kind="Interface" />
@@ -5081,6 +5082,31 @@
           <summary>To be added.</summary>
         </Docs>
         <Link Type="Xamarin.Forms.VisualStateManager" Member="M:Xamarin.Forms.VisualStateManager.HasVisualStateGroups(Xamarin.Forms.VisualElement)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:System.IServiceProvider" />
+      </Targets>
+      <Member MemberName="GetService&lt;T&gt;">
+        <MemberSignature Language="C#" Value="public static T GetService&lt;T&gt; (this IServiceProvider provider);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig !!T GetService&lt;T&gt;(class System.IServiceProvider provider) cil managed" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>T</ReturnType>
+        </ReturnValue>
+        <TypeParameters>
+          <TypeParameter Name="T" />
+        </TypeParameters>
+        <Parameters>
+          <Parameter Name="provider" Type="System.IServiceProvider" RefType="this" />
+        </Parameters>
+        <Docs>
+          <typeparam name="T">To be added.</typeparam>
+          <param name="provider">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Forms.Xaml.IServiceProviderExtensions" Member="M:Xamarin.Forms.Xaml.IServiceProviderExtensions.GetService``1(System.IServiceProvider)" />
       </Member>
     </ExtensionMethod>
   </ExtensionMethods>
