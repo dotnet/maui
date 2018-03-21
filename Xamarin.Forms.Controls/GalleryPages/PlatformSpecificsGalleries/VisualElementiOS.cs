@@ -1,3 +1,4 @@
+using System;
 using System.Windows.Input;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -20,8 +21,17 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 			Button button4 = GetButton(box, BlurEffectStyle.Dark);
 			var buttons = new StackLayout { Orientation = StackOrientation.Horizontal, Children = { button1, button2, button3, button4 } };
 
+			var tapGestureRecognizer = new TapGestureRecognizer();
+			tapGestureRecognizer.Tapped += OnImageTapped;
+			box.GestureRecognizers.Add(tapGestureRecognizer);
+
 			Content = new StackLayout { Children = { buttons, new AbsoluteLayout { Children = { image, box } } } };
 			Title = "Visual Element Features";
+		}
+
+		void OnImageTapped(object o, EventArgs args)
+		{
+			DisplayAlert("BoxView Tapped", "The tap gesture works", "OK");
 		}
 
 		Button GetButton(BoxView box, BlurEffectStyle value)
