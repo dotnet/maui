@@ -14,19 +14,6 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Platform ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberType>Constructor</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Parameters />
-      <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public static void Init (Android.App.Activity activity, Android.OS.Bundle bundle);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Activity activity, class Android.OS.Bundle bundle) cil managed" />

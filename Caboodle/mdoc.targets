@@ -80,7 +80,7 @@
       <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.Mac\v2.0" />
     </ItemGroup>
     <ItemGroup>
-      <MDocAssembly Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\*.dll" />
+      <MDocAssembly Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\$(AssemblyName).dll" />
     </ItemGroup>
     <PropertyGroup>
       <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
