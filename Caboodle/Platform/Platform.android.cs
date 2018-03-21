@@ -34,6 +34,13 @@ namespace Microsoft.Caboodle
             return requestedPermissions?.Any(r => r.Equals(permission, StringComparison.InvariantCultureIgnoreCase)) ?? false;
         }
 
+        internal static bool IsIntentSupported(Intent intent)
+        {
+            var manager = CurrentContext.PackageManager;
+            var activities = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
+            return activities.Any();
+        }
+
         public static void BeginInvokeOnMainThread(Action action)
         {
             if (handler?.Looper != Looper.MainLooper)

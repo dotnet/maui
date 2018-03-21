@@ -1,4 +1,7 @@
-﻿namespace Caboodle.Samples.ViewModel
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Caboodle.Samples.ViewModel
 {
     public class BaseViewModel : ObservableObject
     {
@@ -18,6 +21,13 @@
 
         public virtual void OnDisappearing()
         {
+        }
+
+        internal event Func<string, Task> DoDisplayAlert;
+
+        public Task DisplayAlert(string message)
+        {
+            return DoDisplayAlert?.Invoke(message) ?? Task.CompletedTask;
         }
     }
 }

@@ -226,6 +226,8 @@
       <Type Name="Platform" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
       <Type Name="PreferencesExtensions" Kind="Class" />
+      <Type Name="Sms" Kind="Class" />
+      <Type Name="SmsMessage" Kind="Class" />
     </Namespace>
   </Types>
   <Title>Untitled</Title>

@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FileSystem_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sms_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Traits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
