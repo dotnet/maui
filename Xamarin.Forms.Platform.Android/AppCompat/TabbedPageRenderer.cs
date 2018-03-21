@@ -521,9 +521,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			for (var i = 0; i < Element.Children.Count; i++)
 			{
 				Page child = Element.Children[i];
-				bottomNavigationView.Menu.Add(0, i, i, child.Title).SetEnabled(child.IsEnabled);
+				bottomNavigationView.Menu.Add(global::Android.Views.Menu.None, i, i, child.Title).SetEnabled(child.IsEnabled);
 			}
-
+			
 			if (Element.Children.Count > 0)
 			{
 				Element.CurrentPage = Element.Children[0];
@@ -643,19 +643,19 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (!_defaultColor.HasValue)
 					_defaultColor = currentColor;
 
-				Color newTextColor = Element.BarTextColor;
-				int newTextColorArgb = newTextColor.ToAndroid().ToArgb();
-				var color = newTextColor.ToAndroid();
-				color.A = 128;
-				int newTextColorArgbFade = color.ToArgb();
+				Color textColor = Element.BarTextColor;
+				int textColorArgb = textColor.ToAndroid().ToArgb();
+				var semiTransparentTextColor = textColor.ToAndroid();
+				semiTransparentTextColor.A = 128;
+				var semiTransparentTextColorArgb = semiTransparentTextColor.ToArgb();
 
 				int[] sChecked = { global::Android.Resource.Attribute.StateChecked };
 				int[] sDefault = { };
 
-				if (!newTextColor.IsDefault && currentColor != newTextColorArgb)
+				if (!textColor.IsDefault && currentColor != textColorArgb)
 				{
-					_bottomNavigationView.ItemTextColor = new ColorStateList(new[] { sChecked, sDefault }, new[] { newTextColorArgb, color });
-					_bottomNavigationView.ItemIconTintList = new ColorStateList(new[] { sChecked, sDefault }, new[] { newTextColorArgb, color });
+					_bottomNavigationView.ItemTextColor = new ColorStateList(new[] { sChecked, sDefault }, new[] { textColorArgb, semiTransparentTextColorArgb });
+					_bottomNavigationView.ItemIconTintList = new ColorStateList(new[] { sChecked, sDefault }, new[] { textColorArgb, semiTransparentTextColorArgb });
 
 				}
 			}

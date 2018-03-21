@@ -1,5 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
+	using System;
 	using FormsElement = Forms.TabbedPage;
 
 	public static class TabbedPage
@@ -78,6 +79,9 @@
 
 		public static void SetTabsPlacement(BindableObject element, TabsPlacement value)
 		{
+			if (element.IsSet(TabsPlacementProperty))
+				throw new InvalidOperationException("Changing the tabs placement after it's been set is not supported.");
+
 			element.SetValue(TabsPlacementProperty, value);
 		}
 
