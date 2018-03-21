@@ -1,6 +1,6 @@
 <Type Name="Geocoding" FullName="Microsoft.Caboodle.Geocoding">
-  <TypeSignature Language="C#" Value="public class Geocoding" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Geocoding extends System.Object" />
+  <TypeSignature Language="C#" Value="public static class Geocoding" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Geocoding extends System.Object" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -24,9 +24,6 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
-        </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Microsoft.Caboodle.Geocoding/&lt;GetLocationsAsync&gt;d__6))</AttributeName>
         </Attribute>
@@ -78,9 +75,6 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Attributes>
-        <Attribute>
-          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
-        </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Microsoft.Caboodle.Geocoding/&lt;GetPlacemarksAsync&gt;d__5))</AttributeName>
         </Attribute>

@@ -1,0 +1,105 @@
+<Type Name="DeviceInfo+Idioms" FullName="Microsoft.Caboodle.DeviceInfo+Idioms">
+  <TypeSignature Language="C#" Value="public static class DeviceInfo.Idioms" />
+  <TypeSignature Language="ILAsm" Value=".class nested public auto ansi abstract sealed beforefieldinit DeviceInfo/Idioms extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The device idiom.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Desktop">
+      <MemberSignature Language="C#" Value="public const string Desktop;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Desktop" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A desktop device such as laptop or tower.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Phone">
+      <MemberSignature Language="C#" Value="public const string Phone;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Phone" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A mobile phone.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Tablet">
+      <MemberSignature Language="C#" Value="public const string Tablet;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Tablet" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A tablet.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TV">
+      <MemberSignature Language="C#" Value="public const string TV;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string TV" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>A television.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Unsupported">
+      <MemberSignature Language="C#" Value="public const string Unsupported;" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal string Unsupported" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Unsupported or unknown device.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

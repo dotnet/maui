@@ -1,0 +1,197 @@
+<Type Name="DeviceInfo" FullName="Microsoft.Caboodle.DeviceInfo">
+  <TypeSignature Language="C#" Value="public static class DeviceInfo" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit DeviceInfo extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents information about the device and application.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="DeviceType">
+      <MemberSignature Language="C#" Value="public static Microsoft.Caboodle.DeviceType DeviceType { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Microsoft.Caboodle.DeviceType DeviceType" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.DeviceType</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the type of device the application is running on.</summary>
+        <value>The device type.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Idiom">
+      <MemberSignature Language="C#" Value="public static string Idiom { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Idiom" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the idiom of the device. </summary>
+        <value>The idiom.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Manufacturer">
+      <MemberSignature Language="C#" Value="public static string Manufacturer { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Manufacturer" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the manufacturer of the device.</summary>
+        <value>Device manufacturer.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Model">
+      <MemberSignature Language="C#" Value="public static string Model { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Model" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the model of the device.</summary>
+        <value>Device model.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Name">
+      <MemberSignature Language="C#" Value="public static string Name { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Name" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the name of the device.</summary>
+        <value>The name of the device (often specified by the user).</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Platform">
+      <MemberSignature Language="C#" Value="public static string Platform { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string Platform" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the platform or operating system of the device.</summary>
+        <value>The platform of device.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ScreenMetrics">
+      <MemberSignature Language="C#" Value="public static Microsoft.Caboodle.ScreenMetrics ScreenMetrics { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class Microsoft.Caboodle.ScreenMetrics ScreenMetrics" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.ScreenMetrics</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the screen metrics of the device.</summary>
+        <value>The screen metrics.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ScreenMetricsChanaged">
+      <MemberSignature Language="C#" Value="public static event Microsoft.Caboodle.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged;" />
+      <MemberSignature Language="ILAsm" Value=".event class Microsoft.Caboodle.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.ScreenMetricsChanagedEventHandler</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when the screen matrics change.</summary>
+        <remarks>Such as screen rotation.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Version">
+      <MemberSignature Language="C#" Value="public static Version Version { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class System.Version Version" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Version</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the version of the operating system.</summary>
+        <value>The device operating system.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="VersionString">
+      <MemberSignature Language="C#" Value="public static string VersionString { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property string VersionString" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the version of the operating system.</summary>
+        <value>The version of the operating system.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

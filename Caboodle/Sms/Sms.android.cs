@@ -47,7 +47,7 @@ namespace Microsoft.Caboodle
             return intent;
         }
 
-        public static string GetDefaultSmsPackage(Context context)
+        static string GetDefaultSmsPackage(Context context)
         {
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
             {

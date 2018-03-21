@@ -288,3 +288,4 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+docs/en/ns-.xml

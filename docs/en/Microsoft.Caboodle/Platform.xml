@@ -1,6 +1,6 @@
 <Type Name="Platform" FullName="Microsoft.Caboodle.Platform">
-  <TypeSignature Language="C#" Value="public class Platform" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Platform extends System.Object" />
+  <TypeSignature Language="C#" Value="public static class Platform" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Platform extends System.Object" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -10,10 +10,51 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Platform specific helpers.</summary>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
+    <Member MemberName="BeginInvokeOnMainThread">
+      <MemberSignature Language="C#" Value="public static void BeginInvokeOnMainThread (Action action);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void BeginInvokeOnMainThread(class System.Action action) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="action" Type="System.Action" />
+      </Parameters>
+      <Docs>
+        <param name="action">Action to execute.</param>
+        <summary>Invokes an action on the main thread of the application.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Init">
+      <MemberSignature Language="C#" Value="public static void Init (Android.App.Application application);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Application application) cil managed" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="application" Type="Android.App.Application" />
+      </Parameters>
+      <Docs>
+        <param name="application">Application to initialize with.</param>
+        <summary>Initialize Caboodle with Android's application class.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public static void Init (Android.App.Activity activity, Android.OS.Bundle bundle);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Activity activity, class Android.OS.Bundle bundle) cil managed" />
@@ -26,10 +67,12 @@
         <Parameter Name="bundle" Type="Android.OS.Bundle" />
       </Parameters>
       <Docs>
-        <param name="activity">To be added.</param>
-        <param name="bundle">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
+        <param name="activity">Activity to use for initialization.</param>
+        <param name="bundle">Bundle of the activity.</param>
+        <summary>Initialize Caboodle with Android's activity and bundle.</summary>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

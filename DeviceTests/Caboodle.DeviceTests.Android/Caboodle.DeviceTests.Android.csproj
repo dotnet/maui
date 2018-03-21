@@ -88,6 +88,9 @@
     <AndroidAsset Include="Assets\AppBundleFile_NoExtension" />
     <AndroidAsset Include="Assets\Folder\AppBundleFile_Nested.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
   <Import Project="..\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

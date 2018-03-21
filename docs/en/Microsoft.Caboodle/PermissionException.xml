@@ -1,0 +1,38 @@
+<Type Name="PermissionException" FullName="Microsoft.Caboodle.PermissionException">
+  <TypeSignature Language="C#" Value="public class PermissionException : UnauthorizedAccessException" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit PermissionException extends System.UnauthorizedAccessException" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.UnauthorizedAccessException</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Exception that occures when calling an API that requires a specific exception</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public PermissionException (string permission);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string permission) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="permission" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="permission">Permission that is required.</param>
+        <summary>Constructor with permission information.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -28,7 +28,7 @@
         <summary>Gets the current charge level of the device from 0.0 to 1.0.</summary>
         <value>Level of charge.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -46,7 +46,7 @@
         <summary>Gets the current power source for the device.</summary>
         <value>Power source, or unknown</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -64,7 +64,7 @@
         <summary>Gets the charging state of the device if it can be determined.</summary>
         <value>Battery state, or unknown.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

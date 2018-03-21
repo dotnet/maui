@@ -18,7 +18,7 @@
     <param name="e">BatteryChangeEventArgs with new information.</param>
     <summary>Event handler that is triggered when the battery changes.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
 </Type>

@@ -1,6 +1,8 @@
 <Namespace Name="Microsoft.Caboodle">
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Caboodle offers a cross-patform APIs for platform specific features.</summary>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
 </Namespace>

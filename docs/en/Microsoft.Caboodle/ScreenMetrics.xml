@@ -11,7 +11,9 @@
   <Interfaces />
   <Docs>
     <summary>This type represents the properties of the current screen.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -24,7 +26,9 @@
       <Parameters />
       <Docs>
         <summary>Creates a new instance of the ScreenMetrics type.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Density">
@@ -39,7 +43,9 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value representing the current screen density.</summary>
-        <value></value>
+        <value>
+          <para />
+        </value>
         <remarks>This value is a multiple value, such that a retina display would be 2.0 or 3.0. On Windows, the scaling percent of 200% means that the density will be 2.0.</remarks>
       </Docs>
     </Member>
@@ -55,7 +61,9 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the height of the screen for the current orientation.</summary>
-        <value></value>
+        <value>
+          <para></para>
+        </value>
         <remarks>This value is the height after rotation, so a landscape iPhone will have a smaller height than width.</remarks>
       </Docs>
     </Member>

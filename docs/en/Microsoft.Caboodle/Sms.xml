@@ -15,6 +15,23 @@
   </Docs>
   <Members>
     <Member MemberName="ComposeAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task ComposeAsync ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task ComposeAsync() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Opens the default SMS client to allow the user to send the message.</summary>
+        <returns></returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ComposeAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task ComposeAsync (Microsoft.Caboodle.SmsMessage message);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task ComposeAsync(class Microsoft.Caboodle.SmsMessage message) cil managed" />
       <MemberType>Method</MemberType>
@@ -31,22 +48,6 @@
         <param name="message">The message to send.</param>
         <summary>Opens the default SMS client to allow the user to send the message.</summary>
         <returns></returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="IsComposeSupported">
-      <MemberSignature Language="C#" Value="public static bool IsComposeSupported { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property bool IsComposeSupported" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets a value indicating whether the device supports sending SMS messages.</summary>
-        <value></value>
         <remarks></remarks>
       </Docs>
     </Member>
