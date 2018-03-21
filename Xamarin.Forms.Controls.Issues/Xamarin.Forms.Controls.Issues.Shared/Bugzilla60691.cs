@@ -1,5 +1,6 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
 
 #if UITEST
 using Xamarin.UITest;
@@ -26,10 +27,13 @@ namespace Xamarin.Forms.Controls.Issues
 		protected override bool Isolate => true;
 
 		[Test]
-		public void Bugzilla60691_Tel()
+		[Ignore("This test opens a system dialog in iOS11+ that cannot be dismissed by UITest and covers subsequent tests.")]
+		public async void Bugzilla60691_Tel()
 		{
 			RunningApp.WaitForElement(q => q.Marked("tel"));
 			RunningApp.Tap(q => q.Marked("tel"));
+
+			await Task.Delay(500);
 			RunningApp.Screenshot("Should have loaded phone with 123-4567");
 		}
 #endif
