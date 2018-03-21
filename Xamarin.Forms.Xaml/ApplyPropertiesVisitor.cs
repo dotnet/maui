@@ -316,7 +316,7 @@ namespace Xamarin.Forms.Xaml
 			var property = GetBindableProperty(bpOwnerType, localName, lineInfo, false);
 
 			//If the target is an event, connect
-			if (xpe == null && TryConnectEvent(xamlelement, localName, value, rootElement, lineInfo, out xpe))
+			if (xpe == null && TryConnectEvent(xamlelement, localName, attached, value, rootElement, lineInfo, out xpe))
 				return;
 
 			//If Value is DynamicResource and it's a BP, SetDynamicResource
@@ -375,9 +375,12 @@ namespace Xamarin.Forms.Xaml
 			return null;
 		}
 
-		static bool TryConnectEvent(object element, string localName, object value, object rootElement, IXmlLineInfo lineInfo, out Exception exception)
+		static bool TryConnectEvent(object element, string localName, bool attached, object value, object rootElement, IXmlLineInfo lineInfo, out Exception exception)
 		{
 			exception = null;
+
+			if (attached)
+				return false;
 
 			var elementType = element.GetType();
 			var eventInfo = elementType.GetRuntimeEvent(localName);
