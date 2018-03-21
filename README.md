@@ -23,29 +23,30 @@ Caboodle is focused on the following platforms for our first release:
 
 ## Current Features:
 The following cross-platform APIs are planned for our first release:
- - [ ] Permissions
- - [x] Preferences
- - [x] Geolocation
+ - [ ] Accelerometer
+ - [X] App Information
+ - [x] Battery
+ - [X] Clipboard
+ - [ ] Compass
  - [ ] Connectivity
  - [ ] Device Capabilities
  - [x] Device Information
+ - [x] File System Helpers
  - [ ] Email
- - [ ] SMS
- - [x] Battery
- - [ ] Share Text
- - [ ] Open Browser
- - [X] File System Helpers
- - [ ] Magnetometer
+ - [x] Geocoding 
+ - [ ] Geolocation 
  - [ ] Gyroscope
- - [ ] Compass
- - [ ] Accelerometer
+ - [ ] Magnetometer
+ - [ ] Open Browser
+ - [ ] Permissions
  - [ ] Phone Dialer
- - [X] Clipboard
+ - [x] Preferences
+ - [ ] Share Text
+ - [ ] SMS
  - [ ] Text-to-Speech
-
  
 ## Contributing
-Please read through our [Contribution Guide](CONTRIBUTING.md). Issues marked as `up for grabs` are open for community contributions. We are not accepting PRs or new issues for features not listed.
+Please read through our [Contribution Guide](CONTRIBUTING.md). We are not accepting new PRs for full features, however any issue that is marked as `up for grabs` are open for community contributions. We encourage creating new issues for bugs found during usage that the team will triage. Additionally, we are open for code refactoring suggestions in PRs.
 
 ## Building Caboodle
 Caboodle is built with the new SDK style projects with multi-targeting enabled. This means that all code for iOS, Android, and UWP exist inside of the Caboodle project. 
