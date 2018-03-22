@@ -9,6 +9,7 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using Xamarin.Forms.Internals;
 using MixedContentHandling = Android.Webkit.MixedContentHandling;
 using AWebView = Android.Webkit.WebView;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -99,6 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var oldElementController = e.OldElement as IWebViewController;
 				oldElementController.EvalRequested -= OnEvalRequested;
+				oldElementController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElementController.GoBackRequested -= OnGoBackRequested;
 				oldElementController.GoForwardRequested -= OnGoForwardRequested;
 			}
@@ -107,6 +109,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var newElementController = e.NewElement as IWebViewController;
 				newElementController.EvalRequested += OnEvalRequested;
+				newElementController.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElementController.GoBackRequested += OnGoBackRequested;
 				newElementController.GoForwardRequested += OnGoForwardRequested;
 
@@ -145,6 +148,15 @@ namespace Xamarin.Forms.Platform.Android
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			LoadUrl("javascript:" + eventArg.Script);
+		}
+
+		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			var jsr = new JavascriptResult();
+
+			Control.EvaluateJavascript(script, jsr);
+
+			return await jsr.JsResult.ConfigureAwait(false);
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
@@ -249,6 +261,23 @@ namespace Xamarin.Forms.Platform.Android
 				base.Dispose(disposing);
 				if (disposing)
 					_renderer = null;
+			}
+		}
+
+		class JavascriptResult : Java.Lang.Object, IValueCallback
+		{
+			TaskCompletionSource<string> source;
+			public Task<string> JsResult { get { return source.Task; } }
+
+			public JavascriptResult()
+			{
+				source = new TaskCompletionSource<string>();
+			}
+
+			public void OnReceiveValue(Java.Lang.Object result)
+			{
+				string json = ((Java.Lang.String)result).ToString();
+				source.SetResult(json);
 			}
 		}
 	}

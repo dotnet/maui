@@ -4,6 +4,7 @@ using System.Drawing;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -37,6 +38,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Element = element;
 			Element.PropertyChanged += HandlePropertyChanged;
 			WebView.EvalRequested += OnEvalRequested;
+			WebView.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 			WebView.GoBackRequested += OnGoBackRequested;
 			WebView.GoForwardRequested += OnGoForwardRequested;
 			Delegate = new CustomWebViewDelegate(this);
@@ -100,6 +102,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				Element.PropertyChanged -= HandlePropertyChanged;
 				WebView.EvalRequested -= OnEvalRequested;
+				WebView.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				WebView.GoBackRequested -= OnGoBackRequested;
 				WebView.GoForwardRequested -= OnGoForwardRequested;
 
@@ -137,6 +140,16 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			EvaluateJavascript(eventArg.Script);
+		}
+
+		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			var tcr = new TaskCompletionSource<string>();
+			var task = tcr.Task;
+
+			Device.BeginInvokeOnMainThread(() => { tcr.SetResult(EvaluateJavascript(script)); });
+
+			return await task.ConfigureAwait(false);
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)

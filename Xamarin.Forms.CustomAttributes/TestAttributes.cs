@@ -689,7 +689,8 @@ namespace Xamarin.Forms.CustomAttributes
 			LoadHtml,
 			MixedContentDisallowed,
 			MixedContentAllowed,
-			JavaScriptAlert
+			JavaScriptAlert,
+			EvaluateJavaScript
 		}
 
 		public enum UrlWebViewSource {

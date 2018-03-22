@@ -108,10 +108,30 @@ namespace Xamarin.Forms.Controls
 				jsAlertWebView
 			);
 
+			var evaluateJsWebView = new WebView
+			{
+				Source = new UrlWebViewSource { Url = "https://www.google.com/" },
+				HeightRequest = 50
+			};
+			var evaluateJsWebViewSourceContainer = new ViewContainer<WebView>(Test.WebView.EvaluateJavaScript,
+				evaluateJsWebView
+			);
+
+			var resultsLabel = new Label();
+			var execButton = new Button();
+			execButton.Text = "Evaluate Javascript";
+			execButton.Command = new Command(async() => resultsLabel.Text = await evaluateJsWebView.EvaluateJavaScriptAsync(
+												"var test = function(){ return 'This string came from Javascript!'; }; test();"));
+
+			evaluateJsWebViewSourceContainer.ContainerLayout.Children.Add(resultsLabel);
+			evaluateJsWebViewSourceContainer.ContainerLayout.Children.Add(execButton);
+
+
 			Add (urlWebViewSourceContainer);
 			Add (htmlWebViewSourceContainer);
 			Add (htmlFileWebSourceContainer);
 			Add (javascriptAlertWebSourceContainer);
+			Add (evaluateJsWebViewSourceContainer);
 		}
 	}
 }

@@ -471,6 +471,7 @@
       <Type Name="EffectUtilities" Kind="Class" />
       <Type Name="EnumerableExtensions" Kind="Class" />
       <Type Name="EvalRequested" Kind="Class" />
+      <Type Name="EvaluateJavaScriptDelegate" Kind="Delegate" />
       <Type Name="EventArg`1" DisplayName="EventArg&lt;T&gt;" Kind="Class" />
       <Type Name="ExpressionSearch" Kind="Class" />
       <Type Name="IDataTemplate" Kind="Interface" />

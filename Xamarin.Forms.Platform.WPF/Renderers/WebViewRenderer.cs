@@ -22,6 +22,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (e.OldElement != null) // Clear old element event
 			{
 				e.OldElement.EvalRequested -= OnEvalRequested;
+				e.OldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				e.OldElement.GoBackRequested -= OnGoBackRequested;
 				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
 			}
@@ -40,6 +41,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 				// Suscribe element event
 				Element.EvalRequested += OnEvalRequested;
+				Element.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				Element.GoBackRequested += OnGoBackRequested;
 				Element.GoForwardRequested += OnGoForwardRequested;
 			}
@@ -89,6 +91,18 @@ namespace Xamarin.Forms.Platform.WPF
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			Control.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => Control.InvokeScript("eval", eventArg.Script)));
+		}
+
+		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			var tcr = new TaskCompletionSource<string>();
+			var task = tcr.Task;
+
+			Device.BeginInvokeOnMainThread(() => {
+					tcr.SetResult((string)Control.InvokeScript("eval", new[] { script }));
+			});
+
+			return await task.ConfigureAwait(false);
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
