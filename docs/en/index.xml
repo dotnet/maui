@@ -55,6 +55,7 @@
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
+      <Type Name="DataTransfer" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceInfo+Idioms" Kind="Class" />
       <Type Name="DeviceInfo+Platforms" Kind="Class" />
@@ -70,11 +71,13 @@
       <Type Name="Placemark" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
+      <Type Name="ScreenLock" Kind="Class" />
       <Type Name="ScreenMetrics" Kind="Class" />
       <Type Name="ScreenMetricsChanagedEventArgs" Kind="Class" />
       <Type Name="ScreenMetricsChanagedEventHandler" Kind="Delegate" />
       <Type Name="ScreenOrientation" Kind="Enumeration" />
       <Type Name="ScreenRotation" Kind="Enumeration" />
+      <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
     </Namespace>
