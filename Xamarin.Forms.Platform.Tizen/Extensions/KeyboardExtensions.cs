@@ -54,16 +54,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		public static InputHints ToInputHints(this Keyboard keyboard, bool isSpellCheckEnabled)
+		public static InputHints ToInputHints(this Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
 		{
-			if (keyboard is CustomKeyboard customKeyboard && customKeyboard.Flags.HasFlag(KeyboardFlags.Suggestions))
+			if (keyboard is CustomKeyboard customKeyboard)
 			{
-				return InputHints.AutoComplete;
+				return customKeyboard.Flags.HasFlag(KeyboardFlags.Suggestions) || customKeyboard.Flags.HasFlag(KeyboardFlags.Spellcheck) ? InputHints.AutoComplete : InputHints.None;
 			}
-			return isSpellCheckEnabled ? InputHints.AutoComplete : InputHints.None;
+			return isSpellCheckEnabled && isTextPredictionEnabled ? InputHints.AutoComplete : InputHints.None;
 		}
 
-		public static void UpdateKeyboard(this Native.Entry control, Keyboard keyboard, bool isSpellCheckEnabled)
+		public static void UpdateKeyboard(this Native.Entry control, Keyboard keyboard, bool isSpellCheckEnabled, bool isTextPredictionEnabled)
 		{
 			control.Keyboard = keyboard.ToNative();
 			if (keyboard is CustomKeyboard customKeyboard)
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				control.AutoCapital = AutoCapital.None;
 			}
-			control.InputHint = keyboard.ToInputHints(isSpellCheckEnabled);
+			control.InputHint = keyboard.ToInputHints(isSpellCheckEnabled, isTextPredictionEnabled);
 		}
 	}
 }

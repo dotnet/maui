@@ -121,12 +121,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
-			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled);
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, true);
 		}
 
 		void UpdateIsSpellCheckEnabled()
 		{
-			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled);
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled, true);
 		}
 
 		void UpdateMaxLength()
