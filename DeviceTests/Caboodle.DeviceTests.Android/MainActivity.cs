@@ -11,6 +11,8 @@ namespace Caboodle.DeviceTests.Droid
     {
         protected override void OnCreate(Bundle bundle)
         {
+            Microsoft.Caboodle.Platform.Init(this, bundle);
+
             var hostIp = Intent.Extras?.GetString("HOST_IP", null);
             var hostPort = Intent.Extras?.GetInt("HOST_PORT", 10578) ?? 10578;
 
