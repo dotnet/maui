@@ -56,12 +56,12 @@ namespace Xamarin.Forms.Platform.MacOS
 			_application.SendResume();
 		}
 
-		public override async void DidResignActive(Foundation.NSNotification notification)
+		public override void DidResignActive(Foundation.NSNotification notification)
 		{
 			// applicationWillResignActive
 			if (_application == null) return;
 			_isSuspended = true;
-			await _application.SendSleepAsync();
+			_application.SendSleep();
 		}
 
 		void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs e)

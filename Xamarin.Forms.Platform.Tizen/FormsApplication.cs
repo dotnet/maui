@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			base.OnPause();
 			if (_application != null)
 			{
-				_application.SendSleepAsync();
+				_application.SendSleep();
 			}
 		}
 

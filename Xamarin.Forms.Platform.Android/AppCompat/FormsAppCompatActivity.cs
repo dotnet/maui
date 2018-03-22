@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.Android
 				RegisterHandlerForDefaultRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(TabbedPage), typeof(TabbedPageRenderer), typeof(TabbedRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(MasterDetailPage), typeof(MasterDetailPageRenderer), typeof(MasterDetailRenderer));
-                RegisterHandlerForDefaultRenderer(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
+				RegisterHandlerForDefaultRenderer(typeof(Switch), typeof(AppCompat.SwitchRenderer), typeof(SwitchRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(Picker), typeof(AppCompat.PickerRenderer), typeof(PickerRenderer));
 				RegisterHandlerForDefaultRenderer(typeof(CarouselPage), typeof(AppCompat.CarouselPageRenderer), typeof(CarouselPageRenderer));
 
@@ -123,7 +123,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (application?.MainPage != null)
 			{
 				var iver = Platform.GetRenderer(application.MainPage);
-				if (iver != null) {
+				if (iver != null)
+				{
 					iver.Dispose();
 					application.MainPage.ClearValue(Platform.RendererProperty);
 				}
@@ -138,7 +139,7 @@ namespace Xamarin.Forms.Platform.Android
 			ActivityResultCallbackRegistry.InvokeCallback(requestCode, resultCode, data);
 		}
 
-		protected override async void OnCreate(Bundle savedInstanceState)
+		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			if (!AllowFragmentRestore)
 			{
@@ -159,7 +160,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			else
 				bar = new AToolbar(this);
-			
+
 			SetSupportActionBar(bar);
 
 			_layout = new ARelativeLayout(BaseContext);
@@ -170,7 +171,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnCreate;
 
-			await OnStateChanged();
+			OnStateChanged();
 
 			if (Forms.IsLollipopOrNewer)
 			{
@@ -194,7 +195,7 @@ namespace Xamarin.Forms.Platform.Android
 			CheckForAppLink(intent);
 		}
 
-		protected override async void OnPause()
+		protected override void OnPause()
 		{
 			_layout.HideKeyboard(true);
 
@@ -207,20 +208,20 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
 
-			await OnStateChanged();
+			OnStateChanged();
 		}
 
-		protected override async void OnRestart()
+		protected override void OnRestart()
 		{
 			base.OnRestart();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnRestart;
 
-			await OnStateChanged();
+			OnStateChanged();
 		}
 
-		protected override async void OnResume()
+		protected override void OnResume()
 		{
 			// counterpart to OnPause
 			base.OnResume();
@@ -236,24 +237,24 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
 
-			await OnStateChanged();
+			OnStateChanged();
 		}
 
-		protected override async void OnStart()
+		protected override void OnStart()
 		{
 			base.OnStart();
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnStart;
 
-			await OnStateChanged();
+			OnStateChanged();
 		}
 
 		// Scenarios that stop and restart your app
 		// -- Switches from your app to another app, activity restarts when clicking on the app again.
 		// -- Action in your app that starts a new Activity, the current activity is stopped and the second is created, pressing back restarts the activity
 		// -- The user receives a phone call while using your app on his or her phone
-		protected override async void OnStop()
+		protected override void OnStop()
 		{
 			// writing to storage happens here!
 			// full UI obstruction
@@ -266,7 +267,7 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnStop;
 
-			await OnStateChanged();
+			OnStateChanged();
 		}
 
 		void AppOnPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -309,7 +310,7 @@ namespace Xamarin.Forms.Platform.Android
 			_layout.BringToFront();
 		}
 
-		async Task OnStateChanged()
+		void OnStateChanged()
 		{
 			if (_application == null)
 				return;
@@ -319,7 +320,7 @@ namespace Xamarin.Forms.Platform.Android
 			else if (_previousState == AndroidApplicationLifecycleState.OnStop && _currentState == AndroidApplicationLifecycleState.OnRestart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
-				await _application.SendSleepAsync();
+				_application.SendSleep();
 		}
 
 		void RegisterHandlerForDefaultRenderer(Type target, Type handler, Type filter)

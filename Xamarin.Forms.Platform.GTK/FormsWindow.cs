@@ -132,7 +132,7 @@ namespace Xamarin.Forms.Platform.GTK
 				var windowState = args.Event.NewWindowState;
 
 				if (windowState == Gdk.WindowState.Iconified)
-					await _application.SendSleepAsync ();
+					_application.SendSleep();
 				else
 					_application.SendResume ();
 			}

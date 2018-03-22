@@ -59,7 +59,7 @@ namespace Xamarin.Forms
 		public static Application Current
 		{
 			get { return s_current; }
-			set 
+			set
 			{
 				if (s_current == value)
 					return;
@@ -138,7 +138,8 @@ namespace Xamarin.Forms
 
 		public ResourceDictionary Resources
 		{
-			get {
+			get
+			{
 				if (_resources != null)
 					return _resources;
 
@@ -173,12 +174,42 @@ namespace Xamarin.Forms
 
 		public event EventHandler<Page> PageDisappearing;
 
+
+		async void SaveProperties()
+		{
+			try
+			{
+				await SetPropertiesAsync();
+			}
+			catch (Exception exc)
+			{
+				Internals.Log.Warning(nameof(Application), $"Exception while saving Application Properties: {exc}");
+			}
+		}
+
 		public async Task SavePropertiesAsync()
 		{
 			if (Device.IsInvokeRequired)
-				Device.BeginInvokeOnMainThread(async () => await SetPropertiesAsync());
+			{
+				Device.BeginInvokeOnMainThread(SaveProperties);
+			}
 			else
+			{
 				await SetPropertiesAsync();
+			}
+		}
+
+		// Don't use this unless there really is no better option
+		internal void SavePropertiesAsFireAndForget()
+		{
+			if (Device.IsInvokeRequired)
+			{
+				Device.BeginInvokeOnMainThread(SaveProperties);
+			}
+			else
+			{
+				SaveProperties();
+			}
 		}
 
 		public IPlatformElementConfiguration<T, Application> On<T>() where T : IConfigPlatform
@@ -255,6 +286,13 @@ namespace Xamarin.Forms
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		public void SendSleep()
+		{
+			OnSleep();
+			SavePropertiesAsFireAndForget();
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Task SendSleepAsync()
 		{
 			OnSleep();
@@ -311,14 +349,14 @@ namespace Xamarin.Forms
 		async Task SetPropertiesAsync()
 		{
 			await SaveSemaphore.WaitAsync();
-            try
-            {
-                await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
-            }
-            finally
-            {
-                SaveSemaphore.Release();
-            }
+			try
+			{
+				await DependencyService.Get<IDeserializer>().SerializePropertiesAsync(Properties);
+			}
+			finally
+			{
+				SaveSemaphore.Release();
+			}
 
 		}
 
