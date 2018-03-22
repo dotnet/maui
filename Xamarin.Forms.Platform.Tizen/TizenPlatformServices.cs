@@ -52,42 +52,27 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
 		{
-			// In case of TV profile The base named size sholud be lager than mobile profile
-			if (Device.Idiom != TargetIdiom.Phone)
-			{
-				switch (size)
-				{
-					case NamedSize.Micro:
-						return Forms.ConvertToDPFont(24);
-					case NamedSize.Small:
-						return Forms.ConvertToDPFont(26);
-					case NamedSize.Default:
-					case NamedSize.Medium:
-						return Forms.ConvertToDPFont(28);
-					case NamedSize.Large:
-						return Forms.ConvertToDPFont(84);
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-
-			}
-
-			double baseSize = Forms.ConvertToDPFont(19);
-			double baseSizeSpan = 3;
+			int pt;
+			// Actual font size depends on the target idiom.
 			switch (size)
 			{
 				case NamedSize.Micro:
-					return baseSize;
+					pt = Device.Idiom == TargetIdiom.TV || Device.Idiom == TargetIdiom.Watch ? 24 : 19;
+					break;
 				case NamedSize.Small:
-					return baseSize + baseSizeSpan;
+					pt = Device.Idiom == TargetIdiom.TV ? 26 : (Device.Idiom == TargetIdiom.Watch ? 30 : 22);
+					break;
 				case NamedSize.Default:
 				case NamedSize.Medium:
-					return baseSize + (baseSizeSpan * 2);
+					pt = Device.Idiom == TargetIdiom.TV ? 28 : (Device.Idiom == TargetIdiom.Watch ? 32 : 25);
+					break;
 				case NamedSize.Large:
-					return baseSize + (baseSizeSpan * 4);
+					pt = Device.Idiom == TargetIdiom.TV ? 84 : (Device.Idiom == TargetIdiom.Watch ? 36 : 31);
+					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+			return Forms.ConvertToDPFont(pt);
 		}
 
 		public void OpenUriAction(Uri uri)
