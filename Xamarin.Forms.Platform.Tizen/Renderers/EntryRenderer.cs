@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 			RegisterPropertyHandler(Entry.ReturnTypeProperty, UpdateReturnType);
 			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
+			RegisterPropertyHandler(Entry.IsTextPredictionEnabledProperty, UpdateIsSpellCheckEnabled);
 
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
@@ -121,12 +122,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
-			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled);
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
 		}
 
 		void UpdateIsSpellCheckEnabled()
 		{
-			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled);
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
 		}
 
 		void UpdatePlaceholder()
