@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue1583Test ()
 		{
-			RunningApp.WaitForElement (q => q.Marked ("webview"));
+			RunningApp.WaitForElement (q => q.Marked ("webview"), "Could not find webview", System.TimeSpan.FromSeconds(60), null, null);
 			RunningApp.Screenshot ("I didn't crash and i can see Skøyen");
 		}
 #endif
