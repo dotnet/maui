@@ -20,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Caboodle\Caboodle.csproj" />
   </ItemGroup>
-
+  
   <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 
 </Project>

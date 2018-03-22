@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Caboodle.Samples.View.DataTransferPage"
+             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
+             Title="Data Transfer">
+    <ContentPage.BindingContext>
+        <viewmodels:DataTransferViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <ScrollView>
+        <StackLayout Padding="8">
+            <Label Text="Share text and websites to other applications on the users device." />
+
+                <Label Text="Title (Optional)"/>
+                <Entry Text="{Binding Title}"/>
+
+
+                <Label Text="Subject (Optional)"/>
+                <Entry Text="{Binding Subject}"/>
+
+                <StackLayout Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Text="Text" HorizontalOptions="StartAndExpand"/>
+                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareText}"/>
+                </StackLayout>
+                <Entry Text="{Binding Text}" Placeholder="Enter text to share here."/>
+            
+                <StackLayout Orientation="Horizontal" Margin="0,8,0,0">
+                    <Label Text="Uri" HorizontalOptions="StartAndExpand"/>
+                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareUri}"/>
+                </StackLayout>
+                <Entry Text="{Binding Uri}" Placeholder="Enter uri to share here."/>
+
+                <Button Text="Request Transfer" Command="{Binding RequestCommand}"/>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
