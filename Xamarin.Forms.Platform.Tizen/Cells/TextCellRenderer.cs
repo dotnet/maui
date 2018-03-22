@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		bool _groupMode = false;
 		// TextCell.Detail property is not supported on TV profile due to UX limitation.
-		public TextCellRenderer() : this(Device.Idiom == TargetIdiom.Phone ? "double_label" : "default") { }
+		public TextCellRenderer() : this(Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.Watch ? "double_label" : "default") { }
 
 		protected TextCellRenderer(string style) : base(style)
 		{

@@ -247,6 +247,10 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				Device.SetIdiom(TargetIdiom.Desktop);
 			}
+			else if (profile == "wearable")
+			{
+				Device.SetIdiom(TargetIdiom.Watch);
+			}
 			else
 			{
 				Device.SetIdiom(TargetIdiom.Unsupported);
