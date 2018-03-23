@@ -112,7 +112,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Marked("btnAdd"));
 			RunningApp.Tap(q => q.Marked("btnAdd"));
-			RunningApp.Tap(q => q.Marked("btnToogle"));
+			RunningApp.Tap(q => q.Marked("btnToggle"));
 			RunningApp.Screenshot("Verify we see uneven rows");
 		}
 #endif
