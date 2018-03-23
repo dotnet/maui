@@ -29,7 +29,7 @@ The following cross-platform APIs are planned for our first release:
  - [X] Clipboard
  - [ ] Compass
  - [ ] Connectivity
- - [ ] Device Capabilities
+ - [x] Data Transfer
  - [x] Device Information
  - [x] File System Helpers
  - [ ] Email
@@ -37,12 +37,13 @@ The following cross-platform APIs are planned for our first release:
  - [ ] Geolocation 
  - [ ] Gyroscope
  - [ ] Magnetometer
- - [ ] Open Browser
+ - [x] Open Browser
  - [ ] Permissions
  - [ ] Phone Dialer
  - [x] Preferences
- - [ ] Share Text
- - [ ] SMS
+ - [x] Screen Lock
+ - [ ] Secure Storage
+ - [x] SMS
  - [ ] Text-to-Speech
  
 ## Contributing
