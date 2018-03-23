@@ -406,6 +406,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60382.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59925.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60691.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1326.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1436.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1567.cs" />

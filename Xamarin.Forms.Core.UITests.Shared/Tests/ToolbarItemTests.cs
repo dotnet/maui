@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		public void ToolbarButtonsExist()
+		public void ToolbarButtons_1_Exist()
 		{
 			ShouldHideMenu();
 #if __MACOS__
@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Core.UITests
 		}
 
 		[Test]
-		public void ToolbarButtonsOrder()
+		public void ToolbarButtons_2_Order()
 		{
 			ShouldHideMenu();
 #if __MACOS__
