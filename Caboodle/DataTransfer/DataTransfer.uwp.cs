@@ -19,8 +19,6 @@ namespace Microsoft.Caboodle
 
             void ShareTextHandler(DataTransferManager sender, DataRequestedEventArgs e)
             {
-                dataTransferManager.DataRequested -= ShareTextHandler;
-
                 var newRequest = e.Request;
 
                 newRequest.Data.Properties.Title = request.Title ?? AppInfo.Name;
@@ -34,6 +32,8 @@ namespace Microsoft.Caboodle
                 {
                     newRequest.Data.SetWebLink(new Uri(request.Uri));
                 }
+
+                dataTransferManager.DataRequested -= ShareTextHandler;
             }
 
             return Task.CompletedTask;
