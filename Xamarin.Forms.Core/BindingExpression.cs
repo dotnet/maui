@@ -288,7 +288,21 @@ namespace Xamarin.Forms
 
 				part.IndexerName = indexerName;
 
+#if NETSTANDARD2_0
+				try {
+					property = sourceType.GetDeclaredProperty(indexerName);
+				}
+				catch (AmbiguousMatchException) {
+					// Get most derived instance of property
+					foreach (var p in sourceType.GetProperties().Where(prop => prop.Name == indexerName)) {
+						if (property == null || property.DeclaringType.IsAssignableFrom(property.DeclaringType))
+							property = p;
+					}
+				}
+#else
 				property = sourceType.GetDeclaredProperty(indexerName);
+#endif
+
 				if (property == null) //is the indexer defined on the base class?
 					property = sourceType.BaseType.GetProperty(indexerName);
 				if (property == null) //is the indexer defined on implemented interface ?

@@ -839,8 +839,8 @@ namespace Xamarin.Forms
 			}
 
 			VisualStateManager.GoToState(element, isFocused
-				? VisualStateManager.CommonStates.Normal
-				: VisualStateManager.CommonStates.Focused);
+				? VisualStateManager.CommonStates.Focused
+				: VisualStateManager.CommonStates.Normal);
 		}
 
 		static void OnRequestChanged(BindableObject bindable, object oldvalue, object newvalue)
