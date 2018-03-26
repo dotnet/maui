@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Provider;
@@ -17,7 +18,10 @@ namespace Microsoft.Caboodle
             if (!IsComposeSupported)
                 throw new FeatureNotSupportedException();
 
-            var intent = CreateIntent(message);
+            var intent = CreateIntent(message)
+                .SetFlags(ActivityFlags.ClearTop)
+                .SetFlags(ActivityFlags.NewTask);
+
             Platform.CurrentContext.StartActivity(intent);
 
             return Task.FromResult(true);
@@ -28,39 +32,37 @@ namespace Microsoft.Caboodle
 
         static Intent CreateIntent(string recipient, string body = null)
         {
-            Intent intent;
-            if (!string.IsNullOrWhiteSpace(recipient))
-            {
-                var uri = AndroidUri.Parse("smsto:" + recipient);
-                intent = new Intent(Intent.ActionSendto, uri);
+            Intent intent = null;
 
-                if (!string.IsNullOrWhiteSpace(body))
-                    intent.PutExtra("sms_body", body);
-            }
-            else
+            body = body ?? string.Empty;
+            recipient = recipient ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(recipient) && Platform.HasApiLevel(BuildVersionCodes.Kitkat))
             {
-                var pm = Platform.CurrentContext.PackageManager;
                 var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.CurrentContext);
-                intent = pm.GetLaunchIntentForPackage(packageName);
+                if (!string.IsNullOrWhiteSpace(packageName))
+                {
+                    intent = new Intent(Intent.ActionSend);
+                    intent.SetType("text/plain");
+                    intent.PutExtra(Intent.ExtraText, body);
+                    intent.SetPackage(packageName);
+
+                    return intent;
+                }
             }
+
+            // Fall back to normal send
+            intent = new Intent(Intent.ActionView);
+
+            if (!string.IsNullOrWhiteSpace(body))
+                intent.PutExtra("sms_body", body);
+
+            intent.PutExtra("address", recipient);
+
+            var uri = AndroidUri.Parse("smsto:" + AndroidUri.Encode(recipient));
+            intent.SetData(uri);
 
             return intent;
-        }
-
-        static string GetDefaultSmsPackage(Context context)
-        {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat)
-            {
-                return Telephony.Sms.GetDefaultSmsPackage(context);
-            }
-            else
-            {
-                var defApp = Settings.Secure.GetString(context.ContentResolver, "sms_default_application");
-                var pm = context.ApplicationContext.PackageManager;
-                var intent = pm.GetLaunchIntentForPackage(defApp);
-                var mInfo = pm.ResolveActivity(intent, 0);
-                return mInfo.ActivityInfo.PackageName;
-            }
         }
     }
 }
