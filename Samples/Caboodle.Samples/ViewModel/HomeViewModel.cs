@@ -17,6 +17,7 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("Device Info", typeof(DeviceInfoPage), "Find out about the device with ease."),
                 new SampleItem("File System", typeof(FileSystemPage), "Easily save files to app data."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
+                new SampleItem("Phone Dialer", typeof(PhoneDialerPage), "Easily open phone dialer."),
                 new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),
                 new SampleItem("Screen Lock", typeof(ScreenLockPage), "Keep the device screen awake."),
                 new SampleItem("SMS", typeof(SMSPage), "Easily send SMS messages."),

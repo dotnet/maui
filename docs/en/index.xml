@@ -54,6 +54,8 @@
       <Type Name="BatteryChangedEventHandler" Kind="Delegate" />
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
+      <Type Name="Browser" Kind="Class" />
+      <Type Name="BrowserLaunchType" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="DataTransfer" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
@@ -68,6 +70,7 @@
       <Type Name="LocationExtensions" Kind="Class" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="PermissionException" Kind="Class" />
+      <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />

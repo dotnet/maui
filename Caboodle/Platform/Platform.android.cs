@@ -41,6 +41,33 @@ namespace Microsoft.Caboodle
             return activities.Any();
         }
 
+        internal static bool HasKitKat =>
+            (int)Build.VERSION.SdkInt >= 19;
+
+        internal static bool HasKitKatWatch =>
+            (int)Build.VERSION.SdkInt >= 20;
+
+        internal static bool HasLollipop =>
+            (int)Build.VERSION.SdkInt >= 21;
+
+        internal static bool HasLollipopMr1 =>
+            (int)Build.VERSION.SdkInt >= 22;
+
+        internal static bool HasMarshmallow =>
+           (int)Build.VERSION.SdkInt >= 23;
+
+        internal static bool HasNougat =>
+            (int)Build.VERSION.SdkInt >= 24;
+
+        internal static bool HasNougatMr1 =>
+            (int)Build.VERSION.SdkInt >= 25;
+
+        internal static bool HasOreo =>
+            (int)Build.VERSION.SdkInt >= 26;
+
+        internal static bool HasOreoMr1 =>
+            (int)Build.VERSION.SdkInt >= 27;
+
         public static void BeginInvokeOnMainThread(Action action)
         {
             if (handler?.Looper != Looper.MainLooper)

@@ -94,6 +94,11 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.6" />
   </ItemGroup>
   <ItemGroup>
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Caboodle\Caboodle.csproj">
       <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
       <Name>Caboodle</Name>
