@@ -29,7 +29,7 @@ namespace Caboodle.Samples.ViewModel
                 IsBusy = true;
                 try
                 {
-                    await Browser.OpenAsync(uri, launchType);
+                    await Browser.OpenAsync(uri, (BrowserLaunchType)BrowserType);
                 }
                 catch (Exception e)
                 {
@@ -59,25 +59,12 @@ namespace Caboodle.Samples.ViewModel
 
         public List<string> BrowserLaunchTypes => browserlaunchertypes;
 
-        BrowserLaunchType launchType = BrowserLaunchType.SystemPreferred;
+        int browserType = 1;
 
-        string browserType = $"System Browser(CustomTabs, Safari)";
-
-        public string BrowserType
+        public int BrowserType
         {
             get => browserType;
-            set
-            {
-                SetProperty(ref browserType, value);
-                if (browserType == "Uri Launcher")
-                {
-                    launchType = BrowserLaunchType.External;
-                }
-                else
-                {
-                    launchType = BrowserLaunchType.SystemPreferred;
-                }
-            }
+            set => SetProperty(ref browserType, value);
         }
     }
 }
