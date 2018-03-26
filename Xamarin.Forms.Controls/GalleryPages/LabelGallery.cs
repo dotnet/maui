@@ -37,10 +37,10 @@ namespace Xamarin.Forms.Controls
 			var formatted = new Label { FormattedText = new FormattedString { 
 					Spans = { 
 #pragma warning disable 618
-						new Span {Text="FormattedStrings ", ForegroundColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
+						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
 #pragma warning restore 618
-						new Span {Text="are ", ForegroundColor=Color.Red, BackgroundColor = Color.Gray},
-						new Span {Text="not pretty!", ForegroundColor = Color.Green,},
+						new Span {Text="are ", TextColor=Color.Red, BackgroundColor = Color.Gray},
+						new Span {Text="not pretty!", TextColor = Color.Green,},
 					}
 				} };
 			var missingfont = new Label { Text = "Missing font: use default" };

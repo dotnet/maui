@@ -2,38 +2,50 @@
 using AppKit;
 using System.ComponentModel;
 using Foundation;
+using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
-	public class PickerRenderer : ViewRenderer<Picker, NSComboBox>
+	public class PickerRenderer : ViewRenderer<Picker, NSPopUpButton>
 	{
 		bool _disposed;
-		NSColor _defaultTextColor;
 		NSColor _defaultBackgroundColor;
 
 		IElementController ElementController => Element;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
 		{
+			if (e.OldElement != null)
+				((INotifyCollectionChanged)e.OldElement.Items).CollectionChanged -= RowsCollectionChanged;
+
 			if (e.NewElement != null)
 			{
 				if (Control == null)
-					SetNativeControl(new NSComboBox { Editable = false });
+					SetNativeControl(new NSPopUpButton());
 
-				_defaultTextColor = Control.TextColor;
-				_defaultBackgroundColor = Control.BackgroundColor;
+				_defaultBackgroundColor = Control.Cell.BackgroundColor;
 
-				Control.UsesDataSource = true;
-				Control.DataSource = new ComboDataSource(this);
-
-				Control.SelectionChanged += ComboBoxSelectionChanged;
-
+				Control.Activated -= ComboBoxSelectionChanged;
+				Control.Activated += ComboBoxSelectionChanged;
 				UpdatePicker();
 				UpdateFont();
 				UpdateTextColor();
+
+				((INotifyCollectionChanged)e.NewElement.Items).CollectionChanged -= RowsCollectionChanged;
+				((INotifyCollectionChanged)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		private void UpdateItems()
+		{
+			if (Control == null || Element == null)
+				return;
+
+			Control.RemoveAllItems();
+			Control.AddItems(Element.Items.ToArray());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -44,13 +56,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
 			if (e.PropertyName == Picker.TextColorProperty.PropertyName ||
-			    e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
+				e.PropertyName == Picker.SelectedItemProperty.PropertyName)
 				UpdateTextColor();
 			if (e.PropertyName == Picker.FontSizeProperty.PropertyName ||
 				e.PropertyName == Picker.FontFamilyProperty.PropertyName ||
 				e.PropertyName == Picker.FontAttributesProperty.PropertyName)
 				UpdateFont();
-				
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -60,7 +72,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null)
 				return;
 
-			Control.BackgroundColor = color == Color.Default ? _defaultBackgroundColor : color.ToNSColor();
+			Control.Cell.BackgroundColor = color == Color.Default ? _defaultBackgroundColor : color.ToNSColor();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -71,13 +83,10 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					_disposed = true;
 					if (Element != null)
-					{
-						//TODO: Implement ObservableList picker source change 
-						//((ObservableList<string>)Element.Items).CollectionChanged -= RowsCollectionChanged;
-					}
+						((INotifyCollectionChanged)Element.Items).CollectionChanged -= RowsCollectionChanged;
 
 					if (Control != null)
-						Control.SelectionChanged -= ComboBoxSelectionChanged;
+						Control.Activated -= ComboBoxSelectionChanged;
 				}
 			}
 			base.Dispose(disposing);
@@ -85,7 +94,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void ComboBoxSelectionChanged(object sender, EventArgs e)
 		{
-			ElementController?.SetValueFromRenderer(Picker.SelectedIndexProperty, (int)Control.SelectedIndex);
+			ElementController?.SetValueFromRenderer(Picker.SelectedIndexProperty, (int)Control.IndexOfSelectedItem);
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
@@ -108,7 +117,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null || Element == null)
 				return;
 
-			Control.Font = Element.ToNSFont();
+			//Control.Menu.Font = Element.ToNSFont();
 		}
 
 		void UpdatePicker()
@@ -118,8 +127,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var selectedIndex = Element.SelectedIndex;
 			var items = Element.Items;
-			Control.PlaceholderString = Element.Title ?? string.Empty;
-			Control.ReloadData();
+			UpdateItems();
+
 			if (items == null || items.Count == 0 || selectedIndex < 0)
 				return;
 
@@ -131,37 +140,16 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (Control == null || Element == null)
 				return;
 
-			var textColor = Element.TextColor;
-
-			if (textColor.IsDefault || !Element.IsEnabled)
-				Control.TextColor = _defaultTextColor;
-			else
-				Control.TextColor = textColor.ToNSColor();
-		}
-
-		class ComboDataSource : NSComboBoxDataSource
-		{
-			readonly PickerRenderer _renderer;
-
-			public ComboDataSource(PickerRenderer model)
+			foreach (NSMenuItem it in Control.Items())
 			{
-				_renderer = model;
+				it.AttributedTitle = new NSAttributedString();
 			}
 
-			public override nint ItemCount(NSComboBox comboBox)
+			var color = Element.TextColor;
+			if (color != Color.Default && Control.SelectedItem != null)
 			{
-				return _renderer.Element.Items?.Count ?? 0;
-			}
-
-			public override NSObject ObjectValueForItem(NSComboBox comboBox, nint index)
-			{
-				return new NSString(_renderer.Element.Items[(int)index]);
-			}
-
-			public override nint IndexOfItem(NSComboBox comboBox, string value)
-			{
-				var index = _renderer.Element.Items?.IndexOf(value) ?? -1;
-				return index;
+				NSAttributedString textWithColor = new NSAttributedString(Control.SelectedItem.Title, foregroundColor: color.ToNSColor(), paragraphStyle: new NSMutableParagraphStyle() { Alignment = NSTextAlignment.Left });
+				Control.SelectedItem.AttributedTitle = textWithColor;
 			}
 		}
 	}

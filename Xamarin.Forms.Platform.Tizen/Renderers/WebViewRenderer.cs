@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Xamarin.Forms.Internals;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
+using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -42,6 +43,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (Element != null)
 				{
 					Element.EvalRequested -= OnEvalRequested;
+					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested -= OnGoBackRequested;
 					Element.GoForwardRequested -= OnGoForwardRequested;
 				}
@@ -72,6 +74,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (e.NewElement != null)
 			{
 				e.NewElement.EvalRequested += OnEvalRequested;
+				e.NewElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				e.NewElement.GoForwardRequested += OnGoForwardRequested;
 				e.NewElement.GoBackRequested += OnGoBackRequested;
 				Load();
@@ -135,6 +138,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			_control.Eval(eventArg.Script);
+		}
+
+		Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			_control.Eval(script);
+			return null;
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)

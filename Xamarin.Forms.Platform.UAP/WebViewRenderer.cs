@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
 using static System.String;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using System.Threading.Tasks;
 
 
 namespace Xamarin.Forms.Platform.UWP
@@ -91,6 +92,7 @@ if(bases.length == 0){
 			{
 				var oldElement = e.OldElement;
 				oldElement.EvalRequested -= OnEvalRequested;
+				oldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElement.GoBackRequested -= OnGoBackRequested;
 				oldElement.GoForwardRequested -= OnGoForwardRequested;
 			}
@@ -109,6 +111,7 @@ if(bases.length == 0){
 
 				var newElement = e.NewElement;
 				newElement.EvalRequested += OnEvalRequested;
+				newElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElement.GoForwardRequested += OnGoForwardRequested;
 				newElement.GoBackRequested += OnGoBackRequested;
 
@@ -138,6 +141,11 @@ if(bases.length == 0){
 		async void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			await Control.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () => await Control.InvokeScriptAsync("eval", new[] { eventArg.Script }));
+		}
+
+		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			return await Control.InvokeScriptAsync("eval", new[] { script });
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)

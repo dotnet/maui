@@ -2,11 +2,17 @@
 using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class SliderRenderer : ViewRenderer<Slider, Windows.UI.Xaml.Controls.Slider>
+	public class SliderRenderer : ViewRenderer<Slider, FormsSlider>
 	{
+		Brush defaultforegroundcolor;
+		Brush defaultbackgroundcolor;
+		Brush _defaultThumbColor;
+
 		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
 			base.OnElementChanged(e);
@@ -15,14 +21,23 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var slider = new Windows.UI.Xaml.Controls.Slider();
+					var slider = new FormsSlider();
 					SetNativeControl(slider);
+
+					slider.Ready += (sender, args) =>
+					{
+						UpdateThumbColor();
+						UpdateThumbImage();
+					};
 
 					Control.Minimum = e.NewElement.Minimum;
 					Control.Maximum = e.NewElement.Maximum;
 					Control.Value = e.NewElement.Value;
 
 					slider.ValueChanged += OnNativeValueChanged;
+
+					defaultforegroundcolor = slider.Foreground;
+					defaultbackgroundcolor = slider.Background;
 
 					// Even when using Center/CenterAndExpand, a Slider has an oddity where it looks
 					// off-center in its layout by a smidge. The default templates are slightly different
@@ -45,6 +60,35 @@ namespace Xamarin.Forms.Platform.UWP
 				Control.StepFrequency = stepping;
 				Control.SmallChange = stepping;
 				UpdateFlowDirection();
+				UpdateSliderColors();
+			}
+		}
+
+		void UpdateSliderColors()
+		{
+			UpdateMinimumTrackColor();
+			UpdateMaximumTrackColor();
+		}
+
+		void UpdateMinimumTrackColor()
+		{
+			if (Control != null)
+			{
+				if (Element.MinimumTrackColor == Color.Default)
+					Control.Foreground = defaultforegroundcolor;
+				else
+					Control.Foreground = Element.MinimumTrackColor.ToBrush();
+			}
+		}
+
+		void UpdateMaximumTrackColor()
+		{
+			if (Control != null)
+			{
+				if (Element.MaximumTrackColor == Color.Default)
+					Control.Background = defaultbackgroundcolor;
+				else
+					Control.Background = Element.MaximumTrackColor.ToBrush();
 			}
 		}
 
@@ -63,6 +107,50 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
+			else if (e.PropertyName == Slider.MinimumTrackColorProperty.PropertyName)
+				UpdateMinimumTrackColor();
+			else if (e.PropertyName == Slider.MaximumTrackColorProperty.PropertyName)
+				UpdateMaximumTrackColor();
+			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
+				UpdateThumbColor();
+			else if (e.PropertyName == Slider.ThumbImageProperty.PropertyName)
+				UpdateThumbImage();
+		}
+
+		void UpdateThumbColor()
+		{
+			if (Element == null)
+			{
+				return;
+			}
+
+			var thumb = Control?.Thumb;
+
+			if (thumb == null)
+			{
+				return;
+			}
+			
+			BrushHelpers.UpdateColor(Element.ThumbColor, ref _defaultThumbColor, 
+				() => thumb.Background, brush => thumb.Background = brush);
+		}
+
+		void UpdateThumbImage()
+		{
+			if (Element == null || Control == null)
+			{
+				return;
+			}
+
+			var thumbImage = Element.ThumbImage;
+
+			if (thumbImage == null)
+			{
+				Control.ThumbImage = null;
+				return;
+			}
+
+			Control.ThumbImage = new BitmapImage(new Uri($"ms-appx:///{thumbImage.File}"));
 		}
 
 		protected override void UpdateBackgroundColor()

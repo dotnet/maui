@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		DescendantFocusToggler _descendantFocusToggler;
 
-		internal FormsEditText(Context context) : base(context)
+		public FormsEditText(Context context) : base(context)
 		{
 			DrawableCompat.Wrap(Background);
 		}
@@ -47,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 	[Obsolete("EntryEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
 	public class EntryEditText : FormsEditText
 	{
-		internal EntryEditText(Context context) : base(context)
+		public EntryEditText(Context context) : base(context)
 		{
 		}
 	}
@@ -55,7 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 	[Obsolete("EditorEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
 	public class EditorEditText : FormsEditText
 	{
-		internal EditorEditText(Context context) : base(context)
+		public EditorEditText(Context context) : base(context)
 		{
 		}
 	}

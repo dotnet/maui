@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		public WindowsBasePage()
 		{
-			if (!DesignMode.DesignModeEnabled)
+			if (!Windows.ApplicationModel.DesignMode.DesignModeEnabled)
 			{
 				Windows.UI.Xaml.Application.Current.Suspending += OnApplicationSuspending;
 				Windows.UI.Xaml.Application.Current.Resuming += OnApplicationResuming;
@@ -46,8 +46,14 @@ namespace Xamarin.Forms.Platform.UWP
 		async void OnApplicationSuspending(object sender, SuspendingEventArgs e)
 		{
 			SuspendingDeferral deferral = e.SuspendingOperation.GetDeferral();
-			await Application.Current.SendSleepAsync();
-			deferral.Complete();
+			try
+			{
+				await Application.Current.SendSleepAsync();
+			}
+			finally
+			{
+				deferral.Complete();
+			}
 		}
 	}
 }

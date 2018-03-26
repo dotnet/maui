@@ -8,8 +8,8 @@ namespace Xamarin.Forms
 	[RenderWith(typeof(_EditorRenderer))]
 	public class Editor : InputView, IEditorController, IFontElement, ITextElement, IElementConfiguration<Editor>
 	{
-		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue)
-			=> ((Editor)bindable).TextChanged?.Invoke(bindable, new TextChangedEventArgs((string)oldValue, (string)newValue)));
+		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue)
+			=> OnTextChanged((Editor)bindable, (string)oldValue, (string)newValue));
 
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
@@ -19,7 +19,17 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
+		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
+			=> ((Editor)bindable)?.InvalidateMeasure());
+
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
+
+
+		public EditorAutoSizeOption AutoSize
+		{
+			get { return (EditorAutoSizeOption)GetValue(AutoSizeProperty); }
+			set { SetValue(AutoSizeProperty, value); }
+		}
 
 		public string Text
 		{
@@ -52,16 +62,27 @@ namespace Xamarin.Forms
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		protected void UpdateAutoSizeOption()
+		{
+			if (AutoSize == EditorAutoSizeOption.TextChanges)
+			{
+				InvalidateMeasure();
+			}
+		}
+
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
 		{
+			UpdateAutoSizeOption();
 		}
 
 		void IFontElement.OnFontSizeChanged(double oldValue, double newValue)
 		{
+			UpdateAutoSizeOption();
 		}
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue)
 		{
+			UpdateAutoSizeOption();
 		}
 
 		double IFontElement.FontSizeDefaultValueCreator() =>
@@ -69,6 +90,7 @@ namespace Xamarin.Forms
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue)
 		{
+			UpdateAutoSizeOption();
 		}
 
 		public event EventHandler Completed;
@@ -91,6 +113,15 @@ namespace Xamarin.Forms
 
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
 		{
+		}
+
+		private static void OnTextChanged(Editor bindable, string oldValue, string newValue)
+		{
+			bindable.TextChanged?.Invoke(bindable, new TextChangedEventArgs(oldValue, newValue));
+			if (bindable.AutoSize == EditorAutoSizeOption.TextChanges)
+			{
+				bindable.InvalidateMeasure();
+			}
 		}
 	}
 }

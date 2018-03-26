@@ -74,13 +74,13 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		// transitioning to background
-		public override async void OnResignActivation(UIApplication uiApplication)
+		public override void OnResignActivation(UIApplication uiApplication)
 		{
 			// applicationWillResignActive
 			if (_application != null)
 			{
 				_isSuspended = true;
-				await _application.SendSleepAsync();
+				_application.SendSleep();
 			}
 		}
 

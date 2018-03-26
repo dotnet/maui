@@ -22,6 +22,9 @@ namespace Xamarin.Forms.Platform.UWP
 		public static readonly DependencyProperty ShouldShowSplitModeProperty = DependencyProperty.Register(nameof(ShouldShowSplitMode), typeof(bool), typeof(MasterDetailControl),
 			new PropertyMetadata(default(bool), OnShouldShowSplitModeChanged));
 
+		public static readonly DependencyProperty ShouldShowNavigationBarProperty = DependencyProperty.Register(nameof(ShouldShowNavigationBar), typeof(bool), typeof(MasterDetailControl),
+		new PropertyMetadata(true, OnShouldShowSplitModeChanged));
+
 		public static readonly DependencyProperty CollapseStyleProperty = DependencyProperty.Register(nameof(CollapseStyle), typeof(CollapseStyle), 
 			typeof(MasterDetailControl), new PropertyMetadata(CollapseStyle.Full, CollapseStyleChanged));
 
@@ -215,6 +218,12 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(ToolbarForegroundProperty, value); }
 		}
 
+		public bool ShouldShowNavigationBar
+		{
+			get { return (bool)GetValue(ShouldShowNavigationBarProperty); }
+			set { SetValue(ShouldShowNavigationBarProperty, value); }
+		}
+
 		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
 		{
 			if (_commandBar != null)
@@ -302,9 +311,13 @@ namespace Xamarin.Forms.Platform.UWP
 			ContentTogglePaneButtonVisibility = _split.DisplayMode == SplitViewDisplayMode.Overlay 
 				? Visibility.Visible 
 				: Visibility.Collapsed;
-
+			
 			if (ContentTogglePaneButtonVisibility == Visibility.Visible)
 				DetailTitleVisibility = Visibility.Visible;
+
+			if (DetailTitleVisibility == Visibility.Visible && !ShouldShowNavigationBar)
+				DetailTitleVisibility = Visibility.Collapsed;
+			
 		}
 	}
 }

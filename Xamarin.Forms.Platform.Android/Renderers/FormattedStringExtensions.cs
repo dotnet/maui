@@ -17,10 +17,11 @@ namespace Xamarin.Forms.Platform.Android
 			var builder = new StringBuilder();
 			foreach (Span span in formattedString.Spans)
 			{
-				if (span.Text == null)
+				var text = span.Text;
+				if (text == null)
 					continue;
 
-				builder.Append(span.Text);
+				builder.Append(text);
 			}
 
 			var spannable = new SpannableString(builder.ToString());
@@ -28,16 +29,17 @@ namespace Xamarin.Forms.Platform.Android
 			var c = 0;
 			foreach (Span span in formattedString.Spans)
 			{
-				if (span.Text == null)
+				var text = span.Text;
+				if (text == null)
 					continue;
 
 				int start = c;
-				int end = start + span.Text.Length;
+				int end = start + text.Length;
 				c = end;
 
-				if (span.ForegroundColor != Color.Default)
+				if (span.TextColor != Color.Default)
 				{
-					spannable.SetSpan(new ForegroundColorSpan(span.ForegroundColor.ToAndroid()), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new ForegroundColorSpan(span.TextColor.ToAndroid()), start, end, SpanTypes.InclusiveExclusive);
 				}
 				else if (defaultForegroundColor != Color.Default)
 				{

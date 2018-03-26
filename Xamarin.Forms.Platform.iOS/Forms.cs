@@ -258,7 +258,12 @@ namespace Xamarin.Forms
 
 			public void OpenUriAction(Uri uri)
 			{
-				var url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
+				NSUrl url;
+
+				if (uri.Scheme == "tel")
+					url = new NSUrl(uri.AbsoluteUri);
+				else
+					url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
 #if __MOBILE__
 				UIApplication.SharedApplication.OpenUrl(url);
 #else

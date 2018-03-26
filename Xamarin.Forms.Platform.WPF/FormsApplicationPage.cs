@@ -44,14 +44,14 @@ namespace Xamarin.Forms.Platform.WPF
 		}
 
 		// when app gets tombstoned, user press back past first page
-		async void OnClosing(object sender, ExitEventArgs e)
+		void OnClosing(object sender, ExitEventArgs e)
 		{
-			await Application.SendSleepAsync();
+			Application.SendSleep();
 		}
 
-		async void OnDeactivated(object sender, System.EventArgs e)
+		void OnDeactivated(object sender, System.EventArgs e)
 		{
-			await Application.SendSleepAsync();
+			Application.SendSleep();
 		}
 
 		void OnLaunching(object sender, StartupEventArgs e)

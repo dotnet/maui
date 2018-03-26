@@ -5,134 +5,145 @@ using System.Threading;
 
 namespace Xamarin.Forms.Platform.GTK
 {
-    public class FormsWindow : Window
-    {
-        private Application _application;
-        private Gdk.Size _lastSize;
+	public class FormsWindow : Window
+	{
+		private Application _application;
+		private Gdk.Size _lastSize;
 
-        public FormsWindow()
-            : base(WindowType.Toplevel)
-        {
-            SetDefaultSize(800, 600);
-            SetSizeRequest(400, 400);
+		public FormsWindow ()
+			: base (WindowType.Toplevel)
+		{
+			SetDefaultSize (800, 600);
+			SetSizeRequest (400, 400);
 
-            MainThreadID = Thread.CurrentThread.ManagedThreadId;
-            MainWindow = this;
+			MainThreadID = Thread.CurrentThread.ManagedThreadId;
+			MainWindow = this;
 
-            if (SynchronizationContext.Current == null)
-                SynchronizationContext.SetSynchronizationContext(new GtkSynchronizationContext());
-        }
+			if (SynchronizationContext.Current == null)
+				SynchronizationContext.SetSynchronizationContext (new GtkSynchronizationContext ());
 
-        public static int MainThreadID { get; set; }
-        public static Window MainWindow { get; set; }
+			WindowStateEvent += OnWindowStateEvent;
+		}
 
-        public void LoadApplication(Application application)
-        {
-            if (application == null)
-                throw new ArgumentNullException(nameof(application));
+		public static int MainThreadID { get; set; }
+		public static Window MainWindow { get; set; }
 
-            Application.SetCurrentApplication(application);
-            _application = application;
+		public void LoadApplication (Application application)
+		{
+			if (application == null)
+				throw new ArgumentNullException (nameof (application));
 
-            application.PropertyChanged += ApplicationOnPropertyChanged;
-            UpdateMainPage();
-        }
+			Application.SetCurrentApplication (application);
+			_application = application;
 
-        public void SetApplicationTitle(string title)
-        {
-            if (string.IsNullOrEmpty(title))
-                return;
+			application.PropertyChanged += ApplicationOnPropertyChanged;
+			UpdateMainPage ();
 
-            Title = title;
-        }
+			_application.SendStart ();
+		}
 
-        public void SetApplicationIcon(string icon)
-        {
-            if (string.IsNullOrEmpty(icon))
-                return;
+		public void SetApplicationTitle (string title)
+		{
+			if (string.IsNullOrEmpty (title))
+				return;
 
-            var appliccationIconPixbuf = new Gdk.Pixbuf(icon);
-            Icon = appliccationIconPixbuf;
-        }
+			Title = title;
+		}
 
-        public sealed override void Dispose()
-        {
-            base.Dispose();
+		public void SetApplicationIcon (string icon)
+		{
+			if (string.IsNullOrEmpty (icon))
+				return;
 
-            Dispose(true);
-        }
+			var appliccationIconPixbuf = new Gdk.Pixbuf(icon);
+			Icon = appliccationIconPixbuf;
+		}
 
-        protected override bool OnDeleteEvent(Gdk.Event evnt)
-        {
-            base.OnDeleteEvent(evnt);
+		public sealed override void Dispose ()
+		{
+			base.Dispose ();
 
-            Gtk.Application.Quit();
+			Dispose (true);
+		}
 
-            return true;
-        }
+		protected override bool OnDeleteEvent (Gdk.Event evnt)
+		{
+			base.OnDeleteEvent (evnt);
 
-        private void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
-        {
-            if (args.PropertyName == nameof(Application.MainPage))
-            {
-                UpdateMainPage();
-            }
-        }
+			Gtk.Application.Quit ();
 
-        protected override bool OnConfigureEvent(Gdk.EventConfigure evnt)
-        {
-            Gdk.Size newSize = new Gdk.Size(evnt.Width, evnt.Height);
+			return true;
+		}
 
-            if (_lastSize != newSize)
-            {
-                _lastSize = newSize;
-                var pageRenderer = Platform.GetRenderer(_application.MainPage);
-                pageRenderer?.SetElementSize(new Size(newSize.Width, newSize.Height));
-            }
+		private void ApplicationOnPropertyChanged (object sender, PropertyChangedEventArgs args)
+		{
+			if (args.PropertyName == nameof (Application.MainPage)) {
+				UpdateMainPage ();
+			}
+		}
 
-            return base.OnConfigureEvent(evnt);
-        }
+		protected override bool OnConfigureEvent (Gdk.EventConfigure evnt)
+		{
+			Gdk.Size newSize = new Gdk.Size(evnt.Width, evnt.Height);
 
-        private void UpdateMainPage()
-        {
-            if (_application.MainPage == null)
-                return;
+			if (_lastSize != newSize) {
+				_lastSize = newSize;
+				var pageRenderer = Platform.GetRenderer(_application.MainPage);
+				pageRenderer?.SetElementSize (new Size (newSize.Width, newSize.Height));
+			}
 
-            var platformRenderer = Child as PlatformRenderer;
+			return base.OnConfigureEvent (evnt);
+		}
 
-            if (platformRenderer != null)
-            {
-                RemoveChildIfExists();
-                ((IDisposable)platformRenderer.Platform).Dispose();
-            }
+		private void UpdateMainPage ()
+		{
+			if (_application.MainPage == null)
+				return;
 
-            var platform = new Platform();
-            platform.PlatformRenderer.SetSizeRequest(WidthRequest, HeightRequest);
-            Add(platform.PlatformRenderer);
-            platform.SetPage(_application.MainPage);
+			var platformRenderer = Child as PlatformRenderer;
 
-            Child.ShowAll();
-        }
+			if (platformRenderer != null) {
+				RemoveChildIfExists ();
+				((IDisposable)platformRenderer.Platform).Dispose ();
+			}
 
-        private void RemoveChildIfExists()
-        {
-            foreach (var child in Children)
-            {
-                var widget = child as Widget;
+			var platform = new Platform();
+			platform.PlatformRenderer.SetSizeRequest (WidthRequest, HeightRequest);
+			Add (platform.PlatformRenderer);
+			platform.SetPage (_application.MainPage);
 
-                if (widget != null)
-                {
-                    Remove(widget);
-                }
-            }
-        }
+			Child.ShowAll ();
+		}
 
-        private void Dispose(bool disposing)
-        {
-            if (disposing && _application != null)
-            {
-                _application.PropertyChanged -= ApplicationOnPropertyChanged;
-            }
-        }
-    }
+		private void RemoveChildIfExists ()
+		{
+			foreach (var child in Children) {
+				var widget = child as Widget;
+
+				if (widget != null) {
+					Remove (widget);
+				}
+			}
+		}
+
+		private async void OnWindowStateEvent (object o, WindowStateEventArgs args)
+		{
+			if (args.Event.ChangedMask == Gdk.WindowState.Iconified) {
+				var windowState = args.Event.NewWindowState;
+
+				if (windowState == Gdk.WindowState.Iconified)
+					_application.SendSleep();
+				else
+					_application.SendResume ();
+			}
+		}
+
+		private void Dispose (bool disposing)
+		{
+			if (disposing && _application != null) {
+				WindowStateEvent -= OnWindowStateEvent;
+				_application.PropertyChanged -= ApplicationOnPropertyChanged;
+			}
+		}
+	}
 }

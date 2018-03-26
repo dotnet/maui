@@ -96,7 +96,8 @@ namespace Xamarin.Forms.Platform.Android
 			if (application?.MainPage != null)
 			{
 				var iver = Platform.GetRenderer(application.MainPage);
-				if (iver != null) {
+				if (iver != null)
+				{
 					iver.Dispose();
 					application.MainPage.ClearValue(Platform.RendererProperty);
 				}
@@ -234,7 +235,7 @@ namespace Xamarin.Forms.Platform.Android
 			_layout.AddView(_canvas.GetViewGroup());
 		}
 
-		async void OnStateChanged()
+		void OnStateChanged()
 		{
 			if (_application == null)
 				return;
@@ -244,7 +245,7 @@ namespace Xamarin.Forms.Platform.Android
 			else if (_previousState == AndroidApplicationLifecycleState.OnStop && _currentState == AndroidApplicationLifecycleState.OnRestart)
 				_application.SendResume();
 			else if (_previousState == AndroidApplicationLifecycleState.OnPause && _currentState == AndroidApplicationLifecycleState.OnStop)
-				await _application.SendSleepAsync();
+				_application.SendSleep();
 		}
 
 		void SetMainPage()

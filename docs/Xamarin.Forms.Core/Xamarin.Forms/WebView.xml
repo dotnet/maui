@@ -214,6 +214,54 @@ namespace FormsGallery
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="EvaluateJavaScriptAsync">
+      <MemberSignature Language="C#" Value="public System.Threading.Tasks.Task&lt;string&gt; EvaluateJavaScriptAsync (string script);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance class System.Threading.Tasks.Task`1&lt;string&gt; EvaluateJavaScriptAsync(string script) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.Diagnostics.DebuggerStepThrough</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.AsyncStateMachine(typeof(Xamarin.Forms.WebView/&lt;EvaluateJavaScriptAsync&gt;d__21))</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="script" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="script">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EvaluateJavaScriptRequested">
+      <MemberSignature Language="C#" Value="public event Xamarin.Forms.Internals.EvaluateJavaScriptDelegate EvaluateJavaScriptRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Forms.Internals.EvaluateJavaScriptDelegate EvaluateJavaScriptRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Attributes>
+        <Attribute>
+          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
+        </Attribute>
+      </Attributes>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.EvaluateJavaScriptDelegate</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="GoBack">
       <MemberSignature Language="C#" Value="public void GoBack ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void GoBack() cil managed" />

@@ -263,6 +263,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_estimatedRowHeight = false;
 				Control.Source = _dataSource = Element.HasUnevenRows ? new UnevenListViewDataSource(_dataSource) : new ListViewDataSource(_dataSource);
+				Control.ReloadData();
 			}
 			else if (e.PropertyName == Xamarin.Forms.ListView.IsPullToRefreshEnabledProperty.PropertyName)
 				UpdatePullToRefreshEnabled();
@@ -555,7 +556,8 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EndUpdates();
 
 					if (_estimatedRowHeight && TemplatedItemsView.TemplatedItems.Count == 0)
-						_estimatedRowHeight = false;
+						InvalidateCellCache();
+
 
 					break;
 
@@ -579,7 +581,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EndUpdates();
 
 					if (_estimatedRowHeight && e.OldStartingIndex == 0)
-						_estimatedRowHeight = false;
+						InvalidateCellCache();
 
 					break;
 
@@ -591,15 +593,22 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EndUpdates();
 
 					if (_estimatedRowHeight && e.OldStartingIndex == 0)
-						_estimatedRowHeight = false;
+						InvalidateCellCache();
+
 
 					break;
 
 				case NotifyCollectionChangedAction.Reset:
-					_estimatedRowHeight = false;
+					InvalidateCellCache();
 					Control.ReloadData();
 					return;
 			}
+		}
+
+		void InvalidateCellCache()
+		{
+			_estimatedRowHeight = false;
+			_dataSource.InvalidatePrototypicalCellCache();
 		}
 
 		void UpdatePullToRefreshEnabled()
@@ -706,6 +715,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			internal override void InvalidatePrototypicalCellCache()
 			{
+				ClearPrototype();
 				_prototypicalCellByTypeOrDataTemplate.Clear();
 			}
 
@@ -799,14 +809,21 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (disposing)
 				{
-					if (_prototype != null)
-					{
-						_prototype.Dispose();
-						_prototype = null;
-					}
+					ClearPrototype();
 				}
 
 				base.Dispose(disposing);
+			}
+
+			void ClearPrototype()
+			{
+				if (_prototype != null)
+				{
+					var element = _prototype.Element;
+					element?.ClearValue(Platform.RendererProperty);
+					_prototype?.Dispose();
+					_prototype = null;
+				}
 			}
 		}
 

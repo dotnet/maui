@@ -633,7 +633,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			if(Forms.IsiOS11OrNewer)
 			{
-				NavigationBar.LargeTitleTextAttributes = NavigationBar.TitleTextAttributes;      
+				var globalLargeTitleAttributes = UINavigationBar.Appearance.LargeTitleTextAttributes;
+				if(globalLargeTitleAttributes == null)
+					NavigationBar.LargeTitleTextAttributes = NavigationBar.TitleTextAttributes;      
 			}
 
 			var statusBarColorMode = (Element as NavigationPage).OnThisPlatform().GetStatusBarTextColorMode();

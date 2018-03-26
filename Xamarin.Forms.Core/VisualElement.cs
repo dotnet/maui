@@ -123,7 +123,7 @@ namespace Xamarin.Forms
 
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
 
-		readonly MergedStyle _mergedStyle;
+		internal readonly MergedStyle _mergedStyle;
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -278,9 +278,15 @@ namespace Xamarin.Forms
 			set { SetValue(StyleProperty, value); }
 		}
 
+		
 		[TypeConverter(typeof(ListStringTypeConverter))]
-		public IList<string> StyleClass
-		{
+		public IList<string> StyleClass {
+			get { return @class; }
+			set { @class = value; }
+		}
+
+		[TypeConverter(typeof(ListStringTypeConverter))]
+		public IList<string> @class {
 			get { return _mergedStyle.StyleClass; }
 			set { _mergedStyle.StyleClass = value; }
 		}
@@ -833,8 +839,8 @@ namespace Xamarin.Forms
 			}
 
 			VisualStateManager.GoToState(element, isFocused
-				? VisualStateManager.CommonStates.Normal
-				: VisualStateManager.CommonStates.Focused);
+				? VisualStateManager.CommonStates.Focused
+				: VisualStateManager.CommonStates.Normal);
 		}
 
 		static void OnRequestChanged(BindableObject bindable, object oldvalue, object newvalue)

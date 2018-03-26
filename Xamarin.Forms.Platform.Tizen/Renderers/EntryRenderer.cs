@@ -1,5 +1,4 @@
 using System;
-using ElmSharp;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Entry;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -15,10 +14,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.FontFamilyProperty, UpdateFontFamily);
 			RegisterPropertyHandler(Entry.FontAttributesProperty, UpdateFontAttributes);
 			RegisterPropertyHandler(Entry.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);
-			RegisterPropertyHandler(Entry.KeyboardProperty, UpdateKeyboard);
+			RegisterPropertyHandler(InputView.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(Entry.PlaceholderProperty, UpdatePlaceholder);
 			RegisterPropertyHandler(Entry.PlaceholderColorProperty, UpdatePlaceholderColor);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
+			RegisterPropertyHandler(Entry.ReturnTypeProperty, UpdateReturnType);
+			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
+			RegisterPropertyHandler(Entry.IsTextPredictionEnabledProperty, UpdateIsSpellCheckEnabled);
+
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -29,7 +32,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				var entry = new Native.Entry(Forms.NativeParent)
+				var entry = new Native.EditfieldEntry(Forms.NativeParent)
 				{
 					IsSingleLine = true,
 					PropagateEvents = false,
@@ -56,6 +59,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			base.Dispose(disposing);
+		}
+
+		protected override Size MinimumSize()
+		{
+			return (Control as Native.IMeasurable).Measure(Control.MinimumWidth, Control.MinimumHeight).ToDP();
 		}
 
 		void OnTextChanged(object sender, EventArgs e)
@@ -114,8 +122,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.Keyboard == Keyboard.Default)
 				return;
+			Control.UpdateKeyboard(Element.Keyboard, Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
+		}
 
-			Control.Keyboard = Element.Keyboard.ToNative();
+		void UpdateIsSpellCheckEnabled()
+		{
+			Control.InputHint = Element.Keyboard.ToInputHints(Element.IsSpellCheckEnabled, Element.IsTextPredictionEnabled);
 		}
 
 		void UpdatePlaceholder()
@@ -145,6 +157,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				return s;
 
 			return null;
+		}
+
+		void UpdateReturnType()
+		{
+			Control.SetInputPanelReturnKeyType(Element.ReturnType.ToInputPanelReturnKeyType());
 		}
 	}
 }

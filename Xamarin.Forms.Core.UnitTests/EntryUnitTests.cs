@@ -51,5 +51,50 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (initial, oldValue);
 			Assert.AreEqual (final, newValue);
 		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void ReturnTypeCommand(bool isEnabled)
+		{
+			var entry = new Entry()
+			{
+				IsEnabled = isEnabled,
+			};
+
+			bool result = false;
+
+			var bindingContext = new
+			{
+				Command = new Command(() => { result = true; }, () => true)
+			};
+
+			entry.SetBinding(Entry.ReturnCommandProperty, "Command");
+			entry.BindingContext = bindingContext;
+
+			entry.SendCompleted();
+
+			Assert.True(result == isEnabled ? true : false);
+		}
+
+		[TestCase(true)]
+		[TestCase(false)]
+		public void ReturnTypeCommandNullTestIsEnabled(bool isEnabled)
+		{
+			var entry = new Entry()
+			{
+				IsEnabled = isEnabled,
+			};
+
+			bool result = false;
+		
+			entry.SetBinding(Entry.ReturnCommandProperty, "Command");
+			entry.BindingContext = null;
+			entry.Completed += (s, e) => {
+				result = true;
+			};
+			entry.SendCompleted();
+
+			Assert.True(result == isEnabled ? true : false);
+		}
 	}
 }

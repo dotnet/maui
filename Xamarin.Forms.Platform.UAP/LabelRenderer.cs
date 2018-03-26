@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var run = new Run { Text = span.Text ?? string.Empty };
 
-			if (span.ForegroundColor != Color.Default)
-				run.Foreground = span.ForegroundColor.ToBrush();
+			if (span.TextColor != Color.Default)
+				run.Foreground = span.TextColor.ToBrush();
 
 			if (!span.IsDefault())
 #pragma warning disable 618
@@ -263,10 +263,7 @@ namespace Xamarin.Forms.Platform.UWP
 					textBlock.Inlines.Clear();
 
 					for (var i = 0; i < formatted.Spans.Count; i++)
-					{
-						if (formatted.Spans[i].Text != null)
-							textBlock.Inlines.Add(formatted.Spans[i].ToRun());
-					}
+						textBlock.Inlines.Add(formatted.Spans[i].ToRun());
 				}
 			}
 		}

@@ -62,6 +62,21 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="EvaluateJavaScriptRequested">
+      <MemberSignature Language="C#" Value="public event Xamarin.Forms.Internals.EvaluateJavaScriptDelegate EvaluateJavaScriptRequested;" />
+      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Forms.Internals.EvaluateJavaScriptDelegate EvaluateJavaScriptRequested" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.Internals.EvaluateJavaScriptDelegate</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="GoBackRequested">
       <MemberSignature Language="C#" Value="public event EventHandler GoBackRequested;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler GoBackRequested" />

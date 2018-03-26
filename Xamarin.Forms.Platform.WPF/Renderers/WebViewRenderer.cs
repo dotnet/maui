@@ -16,12 +16,13 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		WebNavigationEvent _eventState;
 		bool _updating;
-		
+
 		protected override void OnElementChanged(ElementChangedEventArgs<WebView> e)
 		{
 			if (e.OldElement != null) // Clear old element event
 			{
 				e.OldElement.EvalRequested -= OnEvalRequested;
+				e.OldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				e.OldElement.GoBackRequested -= OnGoBackRequested;
 				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
 			}
@@ -40,13 +41,14 @@ namespace Xamarin.Forms.Platform.WPF
 
 				// Suscribe element event
 				Element.EvalRequested += OnEvalRequested;
+				Element.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				Element.GoBackRequested += OnGoBackRequested;
 				Element.GoForwardRequested += OnGoForwardRequested;
 			}
 
 			base.OnElementChanged(e);
 		}
-		
+
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
@@ -57,7 +59,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Load();
 			}
 		}
-		
+
 		void Load()
 		{
 			if (Element.Source != null)
@@ -66,15 +68,12 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateCanGoBackForward();
 		}
 
-		public async void LoadHtml(string html, string baseUrl)
+		public void LoadHtml(string html, string baseUrl)
 		{
 			if (html == null)
 				return;
 
-			string fileName = string.Format("formslocal_{0}.html", DateTime.Now.Ticks);
-
-			await SaveToIsoStore(fileName, html);
-			Control.Navigate(new Uri(fileName, UriKind.Relative));
+			Control.NavigateToString(html);
 		}
 
 		public void LoadUrl(string url)
@@ -89,6 +88,18 @@ namespace Xamarin.Forms.Platform.WPF
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
 			Control.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => Control.InvokeScript("eval", eventArg.Script)));
+		}
+
+		async Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			var tcr = new TaskCompletionSource<string>();
+			var task = tcr.Task;
+
+			Device.BeginInvokeOnMainThread(() => {
+				tcr.SetResult((string)Control.InvokeScript("eval", new[] { script }));
+			});
+
+			return await task.ConfigureAwait(false);
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
@@ -112,16 +123,6 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateCanGoBackForward();
 		}
 
-		async Task SaveToIsoStore(string fileName, string html)
-		{
-			IIsolatedStorageFile store = Device.PlatformServices.GetUserStoreForApplication();
-			using (var file = await store.OpenFileAsync(fileName, FileMode.CreateNew, FileAccess.Write).ConfigureAwait(false))
-			{
-				byte[] bytes = Encoding.UTF8.GetBytes(html);
-				await file.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-			}
-		}
-
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			Console.WriteLine("SendNavigated : " + source.Url);
@@ -134,7 +135,7 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateCanGoBackForward();
 			_eventState = WebNavigationEvent.NewPage;
 		}
-		
+
 		void UpdateCanGoBackForward()
 		{
 			((IWebViewController)Element).CanGoBack = Control.CanGoBack;
@@ -143,16 +144,17 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void WebBrowserOnNavigated(object sender, System.Windows.Navigation.NavigationEventArgs navigationEventArgs)
 		{
-			Console.WriteLine("WebBrowserOnNavigated");
+			if (navigationEventArgs.Uri == null) return;
 
 			string url = navigationEventArgs.Uri.IsAbsoluteUri ? navigationEventArgs.Uri.AbsoluteUri : navigationEventArgs.Uri.OriginalString;
-		  	SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Success);
-
+			SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Success);
 			UpdateCanGoBackForward();
 		}
 
 		void WebBrowserOnNavigating(object sender, NavigatingCancelEventArgs navigatingEventArgs)
 		{
+			if (navigatingEventArgs.Uri == null) return;
+
 			string url = navigatingEventArgs.Uri.IsAbsoluteUri ? navigatingEventArgs.Uri.AbsoluteUri : navigatingEventArgs.Uri.OriginalString;
 			var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
 
@@ -167,6 +169,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void WebBrowserOnNavigationFailed(object sender, NavigationFailedEventArgs navigationFailedEventArgs)
 		{
+			if (navigationFailedEventArgs.Uri == null) return;
+
 			string url = navigationFailedEventArgs.Uri.IsAbsoluteUri ? navigationFailedEventArgs.Uri.AbsoluteUri : navigationFailedEventArgs.Uri.OriginalString;
 			SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Failure);
 		}
@@ -191,6 +195,7 @@ namespace Xamarin.Forms.Platform.WPF
 				if (Element != null)
 				{
 					Element.EvalRequested -= OnEvalRequested;
+					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested -= OnGoBackRequested;
 					Element.GoForwardRequested -= OnGoForwardRequested;
 				}

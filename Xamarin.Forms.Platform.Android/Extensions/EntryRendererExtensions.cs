@@ -4,6 +4,28 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal static class EntryRendererExtensions
 	{
+
+		internal static ImeAction ToAndroidImeAction(this ReturnType returnType)
+		{
+			switch (returnType)
+			{
+				case ReturnType.Go:
+					return ImeAction.Go;
+				case ReturnType.Next:
+					return ImeAction.Next;
+				case ReturnType.Send:
+					return ImeAction.Send;
+				case ReturnType.Search:
+					return ImeAction.Search;
+				case ReturnType.Done:
+					return ImeAction.Done;
+				case ReturnType.Default:
+					return ImeAction.Done;
+				default:
+					throw new System.NotImplementedException($"ReturnType {returnType} not supported");
+			}
+		}
+
 		public static ImeAction ToAndroidImeOptions(this PlatformConfiguration.AndroidSpecific.ImeFlags flags)
 		{
 			switch (flags)

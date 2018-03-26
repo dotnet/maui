@@ -45,6 +45,7 @@ namespace Xamarin.Forms.Xaml.Internals
 			get { return xamlFileProvider; }
 			internal set {
 				xamlFileProvider = value;
+				Xamarin.Forms.DesignMode.IsDesignModeEnabled = true;
 				//¯\_(ツ)_/¯ the previewer forgot to set that bool
 				DoNotThrowOnExceptions = value != null;
 			}

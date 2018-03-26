@@ -6,7 +6,10 @@
 		<Setter Property="HeaderTemplate">
 			<Setter.Value>
 				<DataTemplate>
-					<TextBlock Name="TabbedPageHeaderTextBlock" Text="{Binding Title}" Style="{ThemeResource BodyTextBlockStyle}" />
+					<StackPanel Orientation="Vertical" Name="TabbedPageHeaderStackPanel">
+						<Image Name="TabbedPageHeaderImage" DataContext="{Binding Icon, Converter={StaticResource ImageConverter}}" Source="{Binding Value}" Width="16" Height="16" Visibility="Collapsed" Margin="0,12,0,0"/>
+						<TextBlock Name="TabbedPageHeaderTextBlock" Text="{Binding Title}" Style="{ThemeResource BodyTextBlockStyle}"/>
+					</StackPanel>
 				</DataTemplate>
 			</Setter.Value>
 		</Setter>
@@ -76,6 +79,10 @@
 
                         <Grid Grid.Row="1">
 							<Grid.Resources>
+								<Style TargetType="PivotHeaderItem">
+									<Setter Property="Height" Value="Auto" />
+									<Setter Property="MinHeight" Value="48" />
+								</Style>
 								<ControlTemplate x:Key="NextTemplate" TargetType="Button">
 									<Border x:Name="Root" BorderBrush="{ThemeResource SystemControlForegroundTransparentBrush}" BorderThickness="{ThemeResource PivotNavButtonBorderThemeThickness}" Background="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}">
 										<VisualStateManager.VisualStateGroups>

@@ -1,5 +1,8 @@
 using System;
+using System.ComponentModel;
 using Android.Content;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Support.V7.Widget;
 using Android.Widget;
 
@@ -8,6 +11,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	public class SwitchRenderer : ViewRenderer<Switch, SwitchCompat>, CompoundButton.IOnCheckedChangeListener
 	{
 		bool _disposed;
+		Drawable _defaultTrackDrawable;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -23,6 +27,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton buttonView, bool isChecked)
 		{
 			((IViewController)Element).SetValueFromRenderer(Switch.IsToggledProperty, isChecked);
+			UpdateOnColor();
 		}
 
 		public override SizeRequest GetDesiredSize(int widthConstraint, int heightConstraint)
@@ -75,12 +80,44 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					SwitchCompat aswitch = CreateNativeControl();
 					aswitch.SetOnCheckedChangeListener(this);
 					SetNativeControl(aswitch);
+					_defaultTrackDrawable = aswitch.TrackDrawable;
 				}
 				else
 					UpdateEnabled(); // Normally set by SetNativeControl, but not when the Control is reused.
 
 				e.NewElement.Toggled += HandleToggled;
 				Control.Checked = e.NewElement.IsToggled;
+				UpdateOnColor();
+			}
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+
+			if (e.PropertyName == Switch.OnColorProperty.PropertyName)
+				UpdateOnColor();
+		}
+
+		void UpdateOnColor()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			if (Control.Checked)
+			{
+				if (Element.OnColor == Color.Default)
+				{
+					Control.TrackDrawable = _defaultTrackDrawable;
+				}
+				else
+				{
+					Control.TrackDrawable.SetColorFilter(Element.OnColor.ToAndroid(), PorterDuff.Mode.Multiply);
+				}
+			}
+			else
+			{
+				Control.TrackDrawable.ClearColorFilter();
 			}
 		}
 

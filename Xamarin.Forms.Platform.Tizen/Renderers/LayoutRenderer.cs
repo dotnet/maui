@@ -57,7 +57,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (initialize && Element.InputTransparent == default(bool))
 			{
-				NativeView.RepeatEvents = Element.CascadeInputTransparent;
 				return;
 			}
 
@@ -67,23 +66,21 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					//Ignore all events of both layout and it's chidren
 					NativeView.PassEvents = true;
-					GestureDetector.IsEnabled = Element.IsEnabled;
 				}
 				else
 				{
 					//Ignore Layout's event only. Children's events should be allowded.
 					NativeView.PassEvents = false;
 					NativeView.RepeatEvents = true;
-					GestureDetector.IsEnabled = false;
 				}
 			}
 			else
 			{
 				//Allow layout's events and children's events would be determined by CascadeInputParent.
 				NativeView.PassEvents = false;
-				NativeView.RepeatEvents = Element.CascadeInputTransparent;
-				GestureDetector.IsEnabled = Element.IsEnabled;
+				NativeView.RepeatEvents = false;
 			}
+			GestureDetector.InputTransparent = Element.InputTransparent;
 		}
 
 		void OnLayoutUpdated(object sender, Native.LayoutEventArgs e)

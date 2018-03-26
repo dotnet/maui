@@ -1,0 +1,45 @@
+<Type Name="EditorAutoSizeOption" FullName="Xamarin.Forms.EditorAutoSizeOption">
+  <TypeSignature Language="C#" Value="public enum EditorAutoSizeOption" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed EditorAutoSizeOption extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Forms.Core</AssemblyName>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>To be added.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Disabled">
+      <MemberSignature Language="C#" Value="Disabled" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.EditorAutoSizeOption Disabled = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.EditorAutoSizeOption</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="TextChanges">
+      <MemberSignature Language="C#" Value="TextChanges" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Forms.EditorAutoSizeOption TextChanges = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>2.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Forms.EditorAutoSizeOption</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
