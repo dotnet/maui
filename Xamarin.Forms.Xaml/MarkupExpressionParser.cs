@@ -36,12 +36,12 @@ using System.Text;
 
 namespace Xamarin.Forms.Xaml
 {
-	internal abstract class MarkupExpressionParser
+	abstract class MarkupExpressionParser
 	{
 		public object ParseExpression(ref string expression, IServiceProvider serviceProvider)
 		{
 			if (serviceProvider == null)
-				throw new ArgumentNullException("serviceProvider");
+				throw new ArgumentNullException(nameof(serviceProvider));
 			if (expression.StartsWith("{}", StringComparison.Ordinal))
 				return expression.Substring(2);
 
@@ -130,6 +130,8 @@ namespace Xamarin.Forms.Xaml
 				remaining = remaining.TrimStart();
 
 				if (remaining.Length > 0 && remaining[0] == ',')
+					remaining = remaining.Substring(1);
+				else if (remaining.Length > 0 && remaining[0] == '}')
 					remaining = remaining.Substring(1);
 
 				str_value = value as string;
