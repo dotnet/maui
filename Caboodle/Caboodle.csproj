@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
     <Compile Include="**\*.netstandard.cs" />
+    <Compile Include="**\*.netstandard.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.0.6" />
@@ -54,13 +55,16 @@
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
     <Compile Include="**\*.uwp.cs" />
+    <Compile Include="**\*.uwp.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="26.1.0.1" />
     <Compile Include="**\*.android.cs" />
+    <Compile Include="**\*.android.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <Compile Include="**\*.ios.cs" />
+    <Compile Include="**\*.ios.*.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
   <Import Project="$(MSBuildThisFileDirectory)mdoc.targets" />

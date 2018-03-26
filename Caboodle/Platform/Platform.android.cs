@@ -3,6 +3,8 @@ using System.Linq;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Net;
+using Android.Net.Wifi;
 using Android.OS;
 
 namespace Microsoft.Caboodle
@@ -53,6 +55,15 @@ namespace Microsoft.Caboodle
 
             handler.Post(action);
         }
+
+        internal static ClipboardManager ClipboardManager
+            => (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
+
+        internal static ConnectivityManager ConnectivityManager =>
+            (ConnectivityManager)Application.Context.GetSystemService(Context.ConnectivityService);
+
+        internal static WifiManager WifiManager =>
+            (WifiManager)Application.Context.GetSystemService(Context.WifiService);
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks

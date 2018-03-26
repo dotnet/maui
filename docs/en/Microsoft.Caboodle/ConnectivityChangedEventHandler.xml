@@ -1,0 +1,24 @@
+<Type Name="ConnectivityChangedEventHandler" FullName="Microsoft.Caboodle.ConnectivityChangedEventHandler">
+  <TypeSignature Language="C#" Value="public delegate void ConnectivityChangedEventHandler(ConnectivityChangedEventArgs e);" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed ConnectivityChangedEventHandler extends System.MulticastDelegate" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Delegate</BaseTypeName>
+  </Base>
+  <Parameters>
+    <Parameter Name="e" Type="Microsoft.Caboodle.ConnectivityChangedEventArgs" />
+  </Parameters>
+  <ReturnValue>
+    <ReturnType>System.Void</ReturnType>
+  </ReturnValue>
+  <Docs>
+    <param name="e">Connectivity changed event information.</param>
+    <summary>Event handler for connectivity change events.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+</Type>

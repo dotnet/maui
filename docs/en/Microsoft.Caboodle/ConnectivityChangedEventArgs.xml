@@ -1,0 +1,56 @@
+<Type Name="ConnectivityChangedEventArgs" FullName="Microsoft.Caboodle.ConnectivityChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class ConnectivityChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ConnectivityChangedEventArgs extends System.EventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The current connectivity information from the change event.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="NetworkAccess">
+      <MemberSignature Language="C#" Value="public Microsoft.Caboodle.NetworkAccess NetworkAccess { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Caboodle.NetworkAccess NetworkAccess" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.NetworkAccess</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
+        <value>The current network access state.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Profiles">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Microsoft.Caboodle.ConnectionProfile&gt; Profiles { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;valuetype Microsoft.Caboodle.ConnectionProfile&gt; Profiles" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;Microsoft.Caboodle.ConnectionProfile&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the active connectivity types for the device.</summary>
+        <value>List of all connection profiles.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
