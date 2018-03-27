@@ -8,6 +8,7 @@ using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
 using System;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -161,6 +162,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFooter();
 				UpdateIsSwipeToRefreshEnabled();
 				UpdateFastScrollEnabled();
+				UpdateSelectionMode();
 			}
 		}
 
@@ -196,6 +198,8 @@ namespace Xamarin.Forms.Platform.Android
 				_adapter.NotifyDataSetChanged();
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabledProperty.PropertyName)
 				UpdateFastScrollEnabled();
+			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
+				UpdateSelectionMode();
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
@@ -392,6 +396,22 @@ namespace Xamarin.Forms.Platform.Android
 			if (Control != null)
 			{
 				Control.FastScrollEnabled = Element.OnThisPlatform().IsFastScrollEnabled();
+			}
+		}
+
+		void UpdateSelectionMode()
+		{
+			if (Control != null)
+			{
+				if (Element.SelectionMode == ListViewSelectionMode.None)
+				{
+					Control.ChoiceMode = ChoiceMode.None;
+					Element.SelectedItem = null;
+				}
+				else if (Element.SelectionMode == ListViewSelectionMode.Single)
+				{
+					Control.ChoiceMode = ChoiceMode.Single;
+				}
 			}
 		}
 

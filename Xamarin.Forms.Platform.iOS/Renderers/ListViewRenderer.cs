@@ -243,6 +243,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateIsRefreshing();
 				UpdateSeparatorColor();
 				UpdateSeparatorVisibility();
+				UpdateSelectionMode();
 
 				var selected = e.NewElement.SelectedItem;
 				if (selected != null)
@@ -279,6 +280,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateFooter();
 			else if (e.PropertyName == "RefreshAllowed")
 				UpdatePullToRefreshEnabled();
+			else if (e.PropertyName == Xamarin.Forms.ListView.SelectionModeProperty.PropertyName)
+				UpdateSelectionMode();
 		}
 
 		NSIndexPath[] GetPaths(int section, int index, int count)
@@ -654,6 +657,18 @@ namespace Xamarin.Forms.Platform.iOS
 					throw new ArgumentOutOfRangeException();
 			}
 		}
+
+		void UpdateSelectionMode()
+		{
+			if (Element.SelectionMode == ListViewSelectionMode.None)
+			{
+				Element.SelectedItem = null;
+				var selectedIndexPath = Control.IndexPathForSelectedRow;
+				if (selectedIndexPath != null)
+					Control.DeselectRow(selectedIndexPath, false);
+			}
+		}
+
 
 		internal class UnevenListViewDataSource : ListViewDataSource
 		{
@@ -1050,6 +1065,9 @@ namespace Xamarin.Forms.Platform.iOS
 					formsCell = (Cell)((INativeElementView)cell).Element;
 
 				SetCellBackgroundColor(cell, UIColor.Clear);
+
+				if (List.SelectionMode == ListViewSelectionMode.None)
+					tableView.DeselectRow(indexPath, false);
 
 				_selectionFromNative = true;
 

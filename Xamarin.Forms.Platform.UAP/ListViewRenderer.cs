@@ -73,6 +73,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateHeader();
 				UpdateFooter();
 				UpdateSelectionMode();
+				UpdateWindowsSpecificSelectionMode();
 				ClearSizeEstimate();
 			}
 		}
@@ -115,9 +116,13 @@ namespace Xamarin.Forms.Platform.UWP
 				ClearSizeEstimate();
 				((CollectionViewSource)List.DataContext).Source = Element.ItemsSource;
 			}
-			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
+			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
 			{
 				UpdateSelectionMode();
+			}
+			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
+			{
+				UpdateWindowsSpecificSelectionMode();
 			}
 		}
 
@@ -255,6 +260,20 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		void UpdateSelectionMode()
+		{
+			if (Element.SelectionMode == ListViewSelectionMode.None)
+			{
+				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.None;
+				List.SelectedIndex = -1;
+				Element.SelectedItem = null;
+			}
+			else if (Element.SelectionMode == ListViewSelectionMode.Single)
+			{
+				List.SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.Single;
+			}
+		}
+
+		void UpdateWindowsSpecificSelectionMode()
 		{
 			if (Element.OnThisPlatform().GetSelectionMode() == PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Accessible)
 			{

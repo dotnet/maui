@@ -31,6 +31,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create("SelectedItem", typeof(object), typeof(ListView), null, BindingMode.OneWayToSource,
 			propertyChanged: OnSelectedItemChanged);
 
+		public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(ListView), ListViewSelectionMode.Single);
+
 		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(ListView), false);
 
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(ListView), -1);
@@ -201,6 +203,12 @@ namespace Xamarin.Forms
 		{
 			get { return GetValue(SelectedItemProperty); }
 			set { SetValue(SelectedItemProperty, value); }
+		}
+
+		public ListViewSelectionMode SelectionMode
+		{
+			get { return (ListViewSelectionMode)GetValue(SelectionModeProperty); }
+			set { SetValue(SelectionModeProperty, value); }
 		}
 
 		public Color SeparatorColor
@@ -406,7 +414,8 @@ namespace Xamarin.Forms
 			}
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
-			SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
+			if (SelectionMode != ListViewSelectionMode.None)
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
 
 			cell?.OnTapped();
 
