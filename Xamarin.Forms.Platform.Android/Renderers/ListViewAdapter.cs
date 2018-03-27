@@ -459,7 +459,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (_lastSelected != view)
 				_fromNative = true;
-			Select(position, view);
+			if (_listView.SelectionMode != ListViewSelectionMode.None)
+				Select(position, view);
 			Controller.NotifyRowTapped(position, cell);
 		}
 

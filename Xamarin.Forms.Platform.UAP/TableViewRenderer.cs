@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.UWP
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["CellTemplate"],
 						GroupStyle = { new GroupStyle { HidesIfEmpty = false, HeaderTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["TableSection"] } },
 						HeaderTemplate = (Windows.UI.Xaml.DataTemplate)Windows.UI.Xaml.Application.Current.Resources["TableRoot"],
-						SelectionMode = ListViewSelectionMode.Single
+						SelectionMode = Windows.UI.Xaml.Controls.ListViewSelectionMode.Single
 					});
 
 					// You can't set ItemsSource directly to a CollectionViewSource, it crashes.
