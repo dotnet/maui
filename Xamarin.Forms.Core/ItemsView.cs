@@ -4,7 +4,6 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-
 	public abstract class ItemsView<TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
@@ -17,25 +16,25 @@ namespace Xamarin.Forms
 			set { SetValue (InfiniteScrollingProperty, value); }
 		}*/
 
-		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create("ItemsSource", typeof(IEnumerable), typeof(ItemsView<TVisual>), null, propertyChanged: OnItemsSourceChanged);
+		public static readonly BindableProperty ItemsSourceProperty =
+			BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(ItemsView<TVisual>), null,
+									propertyChanged: OnItemsSourceChanged);
 
-		public static readonly BindableProperty ItemTemplateProperty = BindableProperty.Create("ItemTemplate", typeof(DataTemplate), typeof(ItemsView<TVisual>), null, validateValue: ValidateItemTemplate);
+		public static readonly BindableProperty ItemTemplateProperty =
+			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView<TVisual>), null,
+									validateValue: (b, v) => ((ItemsView<TVisual>)b).ValidateItemTemplate((DataTemplate)v));
 
 		internal ItemsView()
-		{
-			TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
+			=> TemplatedItems = new TemplatedItemsList<ItemsView<TVisual>, TVisual>(this, ItemsSourceProperty, ItemTemplateProperty);
+
+		public IEnumerable ItemsSource {
+			get => (IEnumerable)GetValue(ItemsSourceProperty);
+			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		public IEnumerable ItemsSource
-		{
-			get { return (IEnumerable)GetValue(ItemsSourceProperty); }
-			set { SetValue(ItemsSourceProperty, value); }
-		}
-
-		public DataTemplate ItemTemplate
-		{
-			get { return (DataTemplate)GetValue(ItemTemplateProperty); }
-			set { SetValue(ItemTemplateProperty, value); }
+		public DataTemplate ItemTemplate {
+			get => (DataTemplate)GetValue(ItemTemplateProperty);
+			set => SetValue(ItemTemplateProperty, value);
 		}
 
 		/*public void UpdateNonNotifyingList()
@@ -43,30 +42,18 @@ namespace Xamarin.Forms
 			this.templatedItems.ForceUpdate();
 		}*/
 
-		IListProxy ITemplatedItemsView<TVisual>.ListProxy
-		{
-			get { return TemplatedItems.ListProxy; }
-		}
+		IListProxy ITemplatedItemsView<TVisual>.ListProxy => TemplatedItems.ListProxy;
 
-		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems { get { return TemplatedItems; } }
+		ITemplatedItemsList<TVisual> ITemplatedItemsView<TVisual>.TemplatedItems => TemplatedItems;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public TemplatedItemsList<ItemsView<TVisual>, TVisual> TemplatedItems { get; }
 
-		TVisual IItemsView<TVisual>.CreateDefault(object item)
-		{
-			return CreateDefault(item);
-		}
+		TVisual IItemsView<TVisual>.CreateDefault(object item) => CreateDefault(item);
 
-		void IItemsView<TVisual>.SetupContent(TVisual content, int index)
-		{
-			SetupContent(content, index);
-		}
+		void IItemsView<TVisual>.SetupContent(TVisual content, int index) => SetupContent(content, index);
 
-		void IItemsView<TVisual>.UnhookContent(TVisual content)
-		{
-			UnhookContent(content);
-		}
+		void IItemsView<TVisual>.UnhookContent(TVisual content) => UnhookContent(content);
 
 		protected abstract TVisual CreateDefault(object item);
 
@@ -86,18 +73,6 @@ namespace Xamarin.Forms
 			element.Parent = (Element)bindable;
 		}
 
-		static bool ValidateItemTemplate(BindableObject bindable, object value)
-		{
-			var listView = bindable as ListView;
-			if (listView == null)
-				return true;
-
-			var isRetainStrategy = listView.CachingStrategy == ListViewCachingStrategy.RetainElement;
-			var isDataTemplateSelector = listView.ItemTemplate is DataTemplateSelector;
-			if (isRetainStrategy && isDataTemplateSelector)
-				return false;
-
-			return true;
-		}
+		protected virtual bool ValidateItemTemplate(DataTemplate template) => true;
 	}
 }
