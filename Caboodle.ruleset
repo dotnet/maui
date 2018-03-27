@@ -196,6 +196,7 @@
     <Rule Id="SX1101" Action="Warning" />
     <Rule Id="SX1309" Action="None" />
     <Rule Id="SX1309S" Action="None" />
+    <Rule Id="xUnit1026" Action="None" />
     <!--
       =================================================================================================================
       Rules that are configured in the stylecop.json file

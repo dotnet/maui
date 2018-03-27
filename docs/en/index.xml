@@ -36,6 +36,18 @@
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
         </Attribute>
         <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.Tests")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.DeviceTests.Android")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.DeviceTests.UWP")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("CaboodleDeviceTestsiOS")</AttributeName>
+        </Attribute>
+        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>
         <Attribute>
@@ -80,6 +92,7 @@
       <Type Name="ScreenMetricsChanagedEventHandler" Kind="Delegate" />
       <Type Name="ScreenOrientation" Kind="Enumeration" />
       <Type Name="ScreenRotation" Kind="Enumeration" />
+      <Type Name="SecureStorage" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
