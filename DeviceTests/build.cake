@@ -43,6 +43,15 @@ Func<int, FilePath, Task> DownloadTcpTextAsync = (int port, FilePath filename) =
             stream.CopyTo(file);
     });
 
+Action<FilePath, string> AddPlatformToTestResults = (FilePath testResultsFile, string platformName) => {
+    if (FileExists(testResultsFile)) {
+        var txt = FileReadText(testResultsFile);
+        txt = txt.Replace("<test-case name=\"Caboodle.DeviceTests.", $"<test-case name=\"Caboodle.DeviceTests.{platformName}.");
+        txt = txt.Replace("name=\"Test collection for Caboodle.DeviceTests.", $"name=\"Test collection for Caboodle.DeviceTests.{platformName}.");        
+        FileWriteText(testResultsFile, txt);
+    }
+};
+
 Task ("build-ios")
     .Does (() =>
 {
@@ -106,6 +115,8 @@ Task ("test-ios-emu")
     // Wait for the TCP listener to get results
     Information("Waiting for tests...");
     tcpListenerTask.Wait ();
+
+    AddPlatformToTestResults(IOS_TEST_RESULTS_PATH, "iOS");
 
     // Close up simulators
     Information("Closing Simulator");
@@ -215,6 +226,8 @@ Task ("test-android-emu")
     Information("Waiting for tests...");
     tcpListenerTask.Wait ();
 
+    AddPlatformToTestResults(ANDROID_TEST_RESULTS_PATH, "Android");
+
     // Close emulator
     emu.Kill();
 });
@@ -271,6 +284,8 @@ Task ("test-uwp-emu")
     // Wait for the test results to come back
     Information("Waiting for tests...");
     tcpListenerTask.Wait ();
+
+    AddPlatformToTestResults(UWP_TEST_RESULTS_PATH, "UWP");
 
     // Uninstall the app (this will terminate it too)
     uninstallPS();
