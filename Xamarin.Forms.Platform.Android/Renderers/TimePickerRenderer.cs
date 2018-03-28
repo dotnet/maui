@@ -17,7 +17,6 @@ namespace Xamarin.Forms.Platform.Android
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
 		protected bool _is24HourFormat;
-		string _timeFormat;
 
 		bool Is24HourView
 		{
