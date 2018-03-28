@@ -2,13 +2,12 @@
 <views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:Caboodle.Samples.View"
-                xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel"
                 x:Class="Caboodle.Samples.View.BatteryPage"
-                Title="Battery">
+                Title="Battery"
+                xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel">
     <ContentPage.BindingContext>
-        <viewmodels:BatteryViewModel />
+        <viewmodels:BatteryViewModel/>
     </ContentPage.BindingContext>
-
     <StackLayout>
         <Label Text="Easily detect battery level, source, and state." FontAttributes="Bold" Margin="12" />
 

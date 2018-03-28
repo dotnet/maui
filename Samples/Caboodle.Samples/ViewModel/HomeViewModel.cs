@@ -13,6 +13,7 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("Battery", typeof(BatteryPage), "Easily detect battery level, source, and state."),
                 new SampleItem("Browser", typeof(BrowserPage), "Quickly and easily open a browser to a specific website."),
                 new SampleItem("Clipboard", typeof(ClipboardPage), "Quickly and easily use clipboard"),
+                new SampleItem("Compass", typeof(CompassPage), "Monitor compass for changes."),
                 new SampleItem("Connectivity", typeof(ConnectivityPage), "Check connectivity state and detect changes."),
                 new SampleItem("Data Transfer", typeof(DataTransferPage), "Send text and website uris to other apps."),
                 new SampleItem("Device Info", typeof(DeviceInfoPage), "Find out about the device with ease."),

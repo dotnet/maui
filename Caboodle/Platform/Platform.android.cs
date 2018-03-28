@@ -3,6 +3,7 @@ using System.Linq;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Hardware;
 using Android.Hardware.Camera2;
 using Android.Net;
 using Android.Net.Wifi;
@@ -66,20 +67,23 @@ namespace Microsoft.Caboodle
             handler.Post(action);
         }
 
-        internal static CameraManager CameraManager
-            => (CameraManager)Application.Context.GetSystemService(Context.CameraService);
-
-        internal static ClipboardManager ClipboardManager
-            => (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
+        internal static CameraManager CameraManager =>
+            Application.Context.GetSystemService(Context.CameraService) as CameraManager;
 
         internal static ConnectivityManager ConnectivityManager =>
-            (ConnectivityManager)Application.Context.GetSystemService(Context.ConnectivityService);
+            Application.Context.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
         internal static Vibrator Vibrator =>
             (Vibrator)Application.Context.GetSystemService(Context.VibratorService);
 
         internal static WifiManager WifiManager =>
-            (WifiManager)Application.Context.GetSystemService(Context.WifiService);
+            Application.Context.GetSystemService(Context.WifiService) as WifiManager;
+
+        internal static SensorManager SensorManager =>
+            Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+
+        internal static ClipboardManager ClipboardManager =>
+            Application.Context.GetSystemService(Context.ClipboardService) as ClipboardManager;
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks

@@ -69,6 +69,8 @@
       <Type Name="Browser" Kind="Class" />
       <Type Name="BrowserLaunchType" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
+      <Type Name="Compass" Kind="Class" />
+      <Type Name="CompassData" Kind="Structure" />
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
@@ -99,6 +101,7 @@
       <Type Name="ScreenOrientation" Kind="Enumeration" />
       <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />
+      <Type Name="SensorSpeed" Kind="Enumeration" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />

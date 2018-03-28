@@ -1,0 +1,77 @@
+<Type Name="Compass" FullName="Microsoft.Caboodle.Compass">
+  <TypeSignature Language="C#" Value="public static class Compass" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Compass extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Monitor changes to the orientation of the user's device.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="IsMonitoring">
+      <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if compass is actively being monitored.</summary>
+        <value>If compass is being monitored.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Monitor (Microsoft.Caboodle.SensorSpeed sensorSpeed, Action&lt;Microsoft.Caboodle.CompassData&gt; handler);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Monitor(valuetype Microsoft.Caboodle.SensorSpeed sensorSpeed, class System.Action`1&lt;valuetype Microsoft.Caboodle.CompassData&gt; handler) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Microsoft.Caboodle.SensorSpeed" />
+        <Parameter Name="handler" Type="System.Action&lt;Microsoft.Caboodle.CompassData&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">The speed to monitor for changes.</param>
+        <param name="handler">Handler to call when compass changes.</param>
+        <summary>Start monitoring for changes to the compass.</summary>
+        <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw InvalidOperationException if already monitoring. Will throw ArgumentNullException if handler is null.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Stop">
+      <MemberSignature Language="C#" Value="public static void StopMonitor ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void StopMonitor() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Stop monitoring for changes to the compass.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

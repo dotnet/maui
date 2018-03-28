@@ -27,7 +27,7 @@ The following cross-platform APIs are planned for our first release:
  - [X] App Information
  - [x] Battery
  - [X] Clipboard
- - [ ] Compass
+ - [x] Compass
  - [x] Connectivity
  - [x] Data Transfer
  - [x] Device Information
