@@ -16,9 +16,7 @@ namespace Microsoft.Caboodle
             if (hasBatteryStatsPermission)
                 return;
 
-            var permission = Manifest.Permission.BatteryStats;
-            if (!Platform.HasPermissionInManifest(permission))
-                throw new PermissionException(permission);
+            Permissions.EnsureDeclared(PermissionType.Battery);
 
             hasBatteryStatsPermission = true;
         }

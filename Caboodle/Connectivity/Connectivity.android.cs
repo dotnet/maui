@@ -21,9 +21,8 @@ namespace Microsoft.Caboodle
             if (hasPermission)
                 return;
 
-            var permission = Manifest.Permission.AccessNetworkState;
-            if (!Platform.HasPermissionInManifest(permission))
-                throw new PermissionException(permission);
+            // Make sure the manifest has declared this permission
+            Permissions.EnsureDeclared(PermissionType.NetworkState);
 
             hasPermission = true;
         }

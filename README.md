@@ -38,7 +38,6 @@ The following cross-platform APIs are planned for our first release:
  - [ ] Gyroscope
  - [ ] Magnetometer
  - [x] Open Browser
- - [ ] Permissions
  - [x] Phone Dialer
  - [x] Preferences
  - [x] Screen Lock

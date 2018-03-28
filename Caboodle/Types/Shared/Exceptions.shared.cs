@@ -12,8 +12,8 @@ namespace Microsoft.Caboodle
 
     public class PermissionException : UnauthorizedAccessException
     {
-        public PermissionException(string permission)
-            : base($"API requires the {permission} permission to be set.")
+        public PermissionException(string message)
+            : base(message)
         {
         }
     }

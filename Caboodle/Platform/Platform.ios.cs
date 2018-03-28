@@ -18,6 +18,9 @@ namespace Microsoft.Caboodle
             NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
         }
 
+        internal static bool HasOSVersion(int major, int minor) =>
+            UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
+
         internal static UIViewController GetCurrentViewController(bool throwIfNull = true)
         {
             UIViewController viewController = null;
