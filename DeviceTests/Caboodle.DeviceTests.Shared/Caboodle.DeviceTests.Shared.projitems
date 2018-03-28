@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Battery_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clipboard_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeviceInfo_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Flashlight_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PhoneDialer_Tests.cs" />

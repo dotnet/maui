@@ -17,6 +17,7 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("Data Transfer", typeof(DataTransferPage), "Send text and website uris to other apps."),
                 new SampleItem("Device Info", typeof(DeviceInfoPage), "Find out about the device with ease."),
                 new SampleItem("File System", typeof(FileSystemPage), "Easily save files to app data."),
+                new SampleItem("Flashlight", typeof(FlashlightPage), "A simple way to turn the flashlight on/off."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
                 new SampleItem("Phone Dialer", typeof(PhoneDialerPage), "Easily open phone dialer."),
                 new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),

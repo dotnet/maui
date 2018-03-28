@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Caboodle.Samples.View.FlashlightPage"
+             Title="Flashlight"
+             xmlns:viewmodels="clr-namespace:Caboodle.Samples.ViewModel">
+    <ContentPage.BindingContext>
+        <viewmodels:FlashlightViewModel/>
+    </ContentPage.BindingContext>
+
+    <StackLayout>
+        <Label Text="A simple way to turn the flashlight on/off" FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <StackLayout Padding="12,0,12,12" Spacing="6">
+                <Button Text="Toggle Flashlight" Command="{Binding ToggleCommand}" />
+                <Label Text="Flashlight is on." FontAttributes="Italic"
+                       IsVisible="{Binding IsOn}" />
+                <Label Text="Flashlight is off." FontAttributes="Italic"
+                       IsVisible="{Binding IsOn, Converter={StaticResource NegativeConverter}}" />
+                <Label Text="Flashlight is not supported." TextColor="Red" FontAttributes="Italic"
+                       IsVisible="{Binding IsSupported, Converter={StaticResource NegativeConverter}}" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+</ContentPage>

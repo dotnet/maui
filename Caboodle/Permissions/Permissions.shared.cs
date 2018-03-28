@@ -14,5 +14,11 @@ namespace Microsoft.Caboodle
 
         internal static Task<PermissionStatus> RequestAsync(PermissionType permission) =>
             PlatformRequestAsync(permission);
+
+        internal static async Task RequireAsync(PermissionType permission)
+        {
+            if (await RequestAsync(permission) != PermissionStatus.Granted)
+                throw new PermissionException($"{permission} was not granted.");
+        }
     }
 }

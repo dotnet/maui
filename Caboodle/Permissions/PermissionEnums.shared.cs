@@ -26,7 +26,10 @@ namespace Microsoft.Caboodle
     {
         Unknown,
         Battery,
+        Camera,
+        Flashlight,
         LocationWhenInUse,
         NetworkState,
+        Vibrate,
     }
 }

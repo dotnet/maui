@@ -56,7 +56,7 @@ namespace Microsoft.Caboodle
             {
                 if (targetsMOrHigher)
                 {
-                    if (context.CheckSelfPermission(ap) != Permission.Granted)
+                    if (ContextCompat.CheckSelfPermission(context, ap) != Permission.Granted)
                         return Task.FromResult(PermissionStatus.Denied);
                 }
                 else
@@ -143,12 +143,22 @@ namespace Microsoft.Caboodle
                 case PermissionType.Battery:
                     permissions.Add((Manifest.Permission.BatteryStats, false));
                     break;
+                case PermissionType.Camera:
+                    permissions.Add((Manifest.Permission.Camera, true));
+                    break;
+                case PermissionType.Flashlight:
+                    permissions.Add((Manifest.Permission.Camera, true));
+                    permissions.Add((Manifest.Permission.Flashlight, false));
+                    break;
                 case PermissionType.LocationWhenInUse:
                     permissions.Add((Manifest.Permission.AccessFineLocation, true));
                     permissions.Add((Manifest.Permission.AccessCoarseLocation, true));
                     break;
                 case PermissionType.NetworkState:
                     permissions.Add((Manifest.Permission.AccessNetworkState, false));
+                    break;
+                case PermissionType.Vibrate:
+                    permissions.Add((Manifest.Permission.Vibrate, true));
                     break;
             }
 
