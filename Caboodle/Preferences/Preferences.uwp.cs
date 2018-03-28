@@ -2,50 +2,63 @@
 
 namespace Microsoft.Caboodle
 {
-    public partial class Preferences
+    public static partial class Preferences
     {
         static readonly object locker = new object();
 
-        public bool ContainsKey(string key)
+        static bool PlatformContainsKey(string key, string sharedName)
         {
             lock (locker)
             {
-                return Settings.Values.ContainsKey(key);
+                var appDataContainer = GetApplicationDataContainer(sharedName);
+                return appDataContainer.Values.ContainsKey(key);
             }
         }
 
-        public void Remove(string key)
+        static void PlatformRemove(string key, string sharedName)
         {
             lock (locker)
             {
-                if (Settings.Values.ContainsKey(key))
-                    Settings.Values.Remove(key);
+                var appDataContainer = GetApplicationDataContainer(sharedName);
+                if (appDataContainer.Values.ContainsKey(key))
+                    appDataContainer.Values.Remove(key);
             }
         }
 
-        public void Clear()
+        static void PlatformClear(string sharedName)
         {
             lock (locker)
             {
-                Settings.Values.Clear();
+                var appDataContainer = GetApplicationDataContainer(sharedName);
+                appDataContainer.Values.Clear();
             }
         }
 
-        void Set<T>(string key, T value)
+        static void PlatformSet<T>(string key, T value, string sharedName)
         {
             lock (locker)
             {
-                Settings.Values[key] = value;
-            }
-        }
+                var appDataContainer = GetApplicationDataContainer(sharedName);
 
-        T Get<T>(string key, T defaultValue)
-        {
-            lock (locker)
-            {
-                if (Settings.Values.ContainsKey(key))
+                if (value == null)
                 {
-                    var tempValue = settings.Values[key];
+                    if (appDataContainer.Values.ContainsKey(key))
+                        appDataContainer.Values.Remove(key);
+                    return;
+                }
+
+                appDataContainer.Values[key] = value;
+            }
+        }
+
+        static T PlatformGet<T>(string key, T defaultValue, string sharedName)
+        {
+            lock (locker)
+            {
+                var appDataContainer = GetApplicationDataContainer(sharedName);
+                if (appDataContainer.Values.ContainsKey(key))
+                {
+                    var tempValue = appDataContainer.Values[key];
                     if (tempValue != null)
                         return (T)tempValue;
                 }
@@ -54,29 +67,16 @@ namespace Microsoft.Caboodle
             return defaultValue;
         }
 
-        ApplicationDataContainer settings;
-
-        ApplicationDataContainer Settings
+        static ApplicationDataContainer GetApplicationDataContainer(string sharedName)
         {
-            get
-            {
-                if (settings == null)
-                {
-                    var localSettings = ApplicationData.Current.LocalSettings;
-                    if (string.IsNullOrWhiteSpace(SharedName))
-                    {
-                        settings = localSettings;
-                    }
-                    else
-                    {
-                        if (!localSettings.Containers.ContainsKey(SharedName))
-                            localSettings.CreateContainer(SharedName, ApplicationDataCreateDisposition.Always);
-                        settings = localSettings.Containers[SharedName];
-                    }
-                }
+            var localSettings = ApplicationData.Current.LocalSettings;
+            if (string.IsNullOrWhiteSpace(sharedName))
+                return localSettings;
 
-                return settings;
-            }
+            if (!localSettings.Containers.ContainsKey(sharedName))
+                localSettings.CreateContainer(sharedName, ApplicationDataCreateDisposition.Always);
+
+            return localSettings.Containers[sharedName];
         }
     }
 }

@@ -4,21 +4,21 @@ using System.Text;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Preferences
+    public static partial class Preferences
     {
-        public bool ContainsKey(string key) =>
+        static bool PlatformContainsKey(string key, string sharedName) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public void Remove(string key) =>
+        static void PlatformRemove(string key, string sharedName) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public void Clear() =>
+        static void PlatformClear(string sharedName) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        void Set<T>(string key, T value) =>
+        static void PlatformSet<T>(string key, T value, string sharedName) =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        T Get<T>(string key, T defaultValue) =>
+        static T PlatformGet<T>(string key, T defaultValue, string sharedName) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

@@ -4,128 +4,137 @@ using Foundation;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Preferences
+    public static partial class Preferences
     {
         static readonly object locker = new object();
 
-        public bool ContainsKey(string key)
+        static bool PlatformContainsKey(string key, string sharedName)
         {
             lock (locker)
             {
-                return UserDefaults[key] != null;
+                return GetUserDefaults(sharedName)[key] != null;
             }
         }
 
-        public void Remove(string key)
+        static void PlatformRemove(string key, string sharedName)
         {
             lock (locker)
             {
-                if (UserDefaults[key] != null)
-                    UserDefaults.RemoveObject(key);
-            }
-        }
-
-        public void Clear()
-        {
-            lock (locker)
-            {
-                var items = UserDefaults.ToDictionary();
-
-                foreach (var item in items.Keys)
+                using (var userDefaults = GetUserDefaults(sharedName))
                 {
-                    if (item is NSString nsString)
-                        UserDefaults.RemoveObject(nsString);
+                    if (userDefaults[key] != null)
+                        userDefaults.RemoveObject(key);
                 }
             }
         }
 
-        void Set<T>(string key, T value)
+        static void PlatformClear(string sharedName)
         {
             lock (locker)
             {
-                switch (value)
+                using (var userDefaults = GetUserDefaults(sharedName))
                 {
-                    case string s:
-                        UserDefaults.SetString(s, key);
-                        break;
-                    case int i:
-                        UserDefaults.SetInt(i, key);
-                        break;
-                    case bool b:
-                        UserDefaults.SetBool(b, key);
-                        break;
-                    case long l:
-                        var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                        UserDefaults.SetString(valueString, key);
-                        break;
-                    case double d:
-                        UserDefaults.SetDouble(d, key);
-                        break;
-                    case float f:
-                        UserDefaults.SetFloat(f, key);
-                        break;
+                    var items = userDefaults.ToDictionary();
+
+                    foreach (var item in items.Keys)
+                    {
+                        if (item is NSString nsString)
+                            userDefaults.RemoveObject(nsString);
+                    }
                 }
             }
         }
 
-        T Get<T>(string key, T defaultValue)
+        static void PlatformSet<T>(string key, T value, string sharedName)
+        {
+            lock (locker)
+            {
+                using (var userDefaults = GetUserDefaults(sharedName))
+                {
+                    if (value == null)
+                    {
+                        if (userDefaults[key] != null)
+                            userDefaults.RemoveObject(key);
+                        return;
+                    }
+
+                    switch (value)
+                    {
+                        case string s:
+                            userDefaults.SetString(s, key);
+                            break;
+                        case int i:
+                            userDefaults.SetInt(i, key);
+                            break;
+                        case bool b:
+                            userDefaults.SetBool(b, key);
+                            break;
+                        case long l:
+                            var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
+                            userDefaults.SetString(valueString, key);
+                            break;
+                        case double d:
+                            userDefaults.SetDouble(d, key);
+                            break;
+                        case float f:
+                            userDefaults.SetFloat(f, key);
+                            break;
+                    }
+                }
+            }
+        }
+
+        static T PlatformGet<T>(string key, T defaultValue, string sharedName)
         {
             object value = null;
 
             lock (locker)
             {
-                if (UserDefaults[key] == null)
-                    return defaultValue;
-
-                switch (defaultValue)
+                using (var userDefaults = GetUserDefaults(sharedName))
                 {
-                    case int i:
-                        value = (int)(nint)UserDefaults.IntForKey(key);
-                        break;
-                    case bool b:
-                        value = UserDefaults.BoolForKey(key);
-                        break;
-                    case long l:
-                        var savedLong = UserDefaults.StringForKey(key);
-                        value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
-                        break;
-                    case double d:
-                        value = UserDefaults.DoubleForKey(key);
-                        break;
-                    case float f:
-                        value = UserDefaults.FloatForKey(key);
-                        break;
-                    case string s:
-                        // the case when the string is not null
-                        value = UserDefaults.StringForKey(key);
-                        break;
-                    default:
-                        // the case when the string is null
-                        if (typeof(T) == typeof(string))
-                            value = UserDefaults.StringForKey(key);
-                        break;
+                    if (userDefaults[key] == null)
+                        return defaultValue;
+
+                    switch (defaultValue)
+                    {
+                        case int i:
+                            value = (int)(nint)userDefaults.IntForKey(key);
+                            break;
+                        case bool b:
+                            value = userDefaults.BoolForKey(key);
+                            break;
+                        case long l:
+                            var savedLong = userDefaults.StringForKey(key);
+                            value = Convert.ToInt64(savedLong, CultureInfo.InvariantCulture);
+                            break;
+                        case double d:
+                            value = userDefaults.DoubleForKey(key);
+                            break;
+                        case float f:
+                            value = userDefaults.FloatForKey(key);
+                            break;
+                        case string s:
+                            // the case when the string is not null
+                            value = userDefaults.StringForKey(key);
+                            break;
+                        default:
+                            // the case when the string is null
+                            if (typeof(T) == typeof(string))
+                                value = userDefaults.StringForKey(key);
+                            break;
+                    }
                 }
             }
 
             return (T)value;
         }
 
-        NSUserDefaults userDefaults = null;
-
-        NSUserDefaults UserDefaults
+        static NSUserDefaults GetUserDefaults(string sharedName)
         {
-            get
-            {
-                if (userDefaults == null)
-                {
-                    if (!string.IsNullOrWhiteSpace(SharedName))
-                        userDefaults = new NSUserDefaults(SharedName, NSUserDefaultsType.SuiteName);
-                    else
-                        userDefaults = NSUserDefaults.StandardUserDefaults;
-                }
-
-                return userDefaults;
-            }
+            if (!string.IsNullOrWhiteSpace(sharedName))
+                return new NSUserDefaults(sharedName, NSUserDefaultsType.SuiteName);
+            else
+                return NSUserDefaults.StandardUserDefaults;
         }
     }
 }

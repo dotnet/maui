@@ -6,15 +6,11 @@ namespace Caboodle.Samples.ViewModel
     {
         const string preferenceKey = "PreferenceKey";
 
-        readonly Preferences preferences;
-
         string preferenceValue;
 
         public PreferencesViewModel()
         {
-            preferences = new Preferences();
-
-            preferenceValue = preferences.Get(preferenceKey, string.Empty);
+            preferenceValue = Preferences.Get(preferenceKey, string.Empty);
         }
 
         public string PreferenceValue
@@ -23,7 +19,7 @@ namespace Caboodle.Samples.ViewModel
             set
             {
                 preferenceValue = value;
-                preferences.Set(preferenceKey, value);
+                Preferences.Set(preferenceKey, value);
 
                 OnPropertyChanged();
             }

@@ -6,26 +6,26 @@ using Android.Preferences;
 
 namespace Microsoft.Caboodle
 {
-    public partial class Preferences
+    public static partial class Preferences
     {
         static readonly object locker = new object();
 
-        public bool ContainsKey(string key)
+        static bool PlatformContainsKey(string key, string sharedName)
         {
             lock (locker)
             {
-                using (var sharedPreferences = GetSharedPreferences())
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 {
                     return sharedPreferences.Contains(key);
                 }
             }
         }
 
-        public void Remove(string key)
+        static void PlatformRemove(string key, string sharedName)
         {
             lock (locker)
             {
-                using (var sharedPreferences = GetSharedPreferences())
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 using (var editor = sharedPreferences.Edit())
                 {
                     editor.Remove(key).Commit();
@@ -33,11 +33,11 @@ namespace Microsoft.Caboodle
             }
         }
 
-        public void Clear()
+        static void PlatformClear(string sharedName)
         {
             lock (locker)
             {
-                using (var sharedPreferences = GetSharedPreferences())
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 using (var editor = sharedPreferences.Edit())
                 {
                     editor.Clear().Commit();
@@ -45,88 +45,96 @@ namespace Microsoft.Caboodle
             }
         }
 
-        void Set<T>(string key, T value)
+        static void PlatformSet<T>(string key, T value, string sharedName)
         {
             lock (locker)
             {
-                using (var sharedPreferences = GetSharedPreferences())
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 using (var editor = sharedPreferences.Edit())
                 {
-                    switch (value)
+                    if (value == null)
                     {
-                        case string s:
-                            editor.PutString(key, s);
-                            break;
-                        case int i:
-                            editor.PutInt(key, i);
-                            break;
-                        case bool b:
-                            editor.PutBoolean(key, b);
-                            break;
-                        case long l:
-                            editor.PutLong(key, l);
-                            break;
-                        case double d:
-                            var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                            editor.PutString(key, valueString);
-                            break;
-                        case float f:
-                            editor.PutFloat(key, f);
-                            break;
+                        editor.Remove(key);
+                    }
+                    else
+                    {
+                        switch (value)
+                        {
+                            case string s:
+                                editor.PutString(key, s);
+                                break;
+                            case int i:
+                                editor.PutInt(key, i);
+                                break;
+                            case bool b:
+                                editor.PutBoolean(key, b);
+                                break;
+                            case long l:
+                                editor.PutLong(key, l);
+                                break;
+                            case double d:
+                                var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
+                                editor.PutString(key, valueString);
+                                break;
+                            case float f:
+                                editor.PutFloat(key, f);
+                                break;
+                        }
                     }
                     editor.Apply();
                 }
             }
         }
 
-        T Get<T>(string key, T defaultValue)
+        static T PlatformGet<T>(string key, T defaultValue, string sharedName)
         {
             lock (locker)
             {
                 object value = null;
-                using (var sharedPreferences = GetSharedPreferences())
+                using (var sharedPreferences = GetSharedPreferences(sharedName))
                 {
-                    switch (defaultValue)
+                    if (defaultValue == null)
                     {
-                        case int i:
-                            value = sharedPreferences.GetInt(key, i);
-                            break;
-                        case bool b:
-                            value = sharedPreferences.GetBoolean(key, b);
-                            break;
-                        case long l:
-                            value = sharedPreferences.GetLong(key, l);
-                            break;
-                        case double d:
-                            var savedDouble = sharedPreferences.GetString(key, null);
-                            if (string.IsNullOrWhiteSpace(savedDouble))
-                            {
-                                value = defaultValue;
-                            }
-                            else
-                            {
-                                double outDouble;
-                                if (!double.TryParse(savedDouble, out outDouble))
+                        value = sharedPreferences.GetString(key, null);
+                    }
+                    else
+                    {
+                        switch (defaultValue)
+                        {
+                            case int i:
+                                value = sharedPreferences.GetInt(key, i);
+                                break;
+                            case bool b:
+                                value = sharedPreferences.GetBoolean(key, b);
+                                break;
+                            case long l:
+                                value = sharedPreferences.GetLong(key, l);
+                                break;
+                            case double d:
+                                var savedDouble = sharedPreferences.GetString(key, null);
+                                if (string.IsNullOrWhiteSpace(savedDouble))
                                 {
-                                    var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
-                                    outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
+                                    value = defaultValue;
                                 }
+                                else
+                                {
+                                    if (!double.TryParse(savedDouble, NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out double outDouble))
+                                    {
+                                        var maxString = Convert.ToString(double.MaxValue, CultureInfo.InvariantCulture);
+                                        outDouble = savedDouble.Equals(maxString) ? double.MaxValue : double.MinValue;
+                                    }
 
-                                value = outDouble;
-                            }
-                            break;
-                        case float f:
-                            value = sharedPreferences.GetFloat(key, f);
-                            break;
-                        case string s:
-                            // the case when the string is not null
-                            value = sharedPreferences.GetString(key, s);
-                            break;
-                        default:
-                            // the case when the string is null
-                            if (typeof(T) == typeof(string))
-                                value = sharedPreferences.GetString(key, null);
-                            break;
+                                    value = outDouble;
+                                }
+                                break;
+                            case float f:
+                                value = sharedPreferences.GetFloat(key, f);
+                                break;
+                            case string s:
+                                // the case when the string is not null
+                                value = sharedPreferences.GetString(key, s);
+                                break;
+                        }
                     }
                 }
 
@@ -134,13 +142,13 @@ namespace Microsoft.Caboodle
             }
         }
 
-        ISharedPreferences GetSharedPreferences()
+        static ISharedPreferences GetSharedPreferences(string sharedName)
         {
             var context = Application.Context;
 
-            return string.IsNullOrWhiteSpace(SharedName) ?
+            return string.IsNullOrWhiteSpace(sharedName) ?
                 PreferenceManager.GetDefaultSharedPreferences(context) :
-                    context.GetSharedPreferences(SharedName, FileCreationMode.Private);
+                    context.GetSharedPreferences(sharedName, FileCreationMode.Private);
         }
     }
 }

@@ -1,6 +1,6 @@
 <Type Name="Preferences" FullName="Microsoft.Caboodle.Preferences">
-  <TypeSignature Language="C#" Value="public sealed class Preferences" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed beforefieldinit Preferences extends System.Object" />
+  <TypeSignature Language="C#" Value="public static class Preferences" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Preferences extends System.Object" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -27,54 +27,9 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Preferences ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberType>Constructor</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Parameters />
-      <Docs>
-        <summary>
-          <para>Default constructor for preferences.</para>
-        </summary>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public Preferences (string sharedName);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string sharedName) cil managed" />
-      <MemberType>Constructor</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Parameters>
-        <Parameter Name="sharedName" Type="System.String" />
-      </Parameters>
-      <Docs>
-        <param name="sharedName">Optionally specify a container name to use for the instance.</param>
-        <summary>Creates and instance that interacts with a shared container name:</summary>
-        <remarks>
-          <list type="bullet">
-            <item>
-              <term>iOS: SuiteName - required to share preferences between apps and/or app extensions</term>
-            </item>
-            <item>
-              <term>Android: Preferences File - can be used to share between apps</term>
-            </item>
-            <item>
-              <term>UWP: Container - specific container within the application settings</term>
-            </item>
-          </list>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Clear">
-      <MemberSignature Language="C#" Value="public void Clear ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Clear() cil managed" />
+      <MemberSignature Language="C#" Value="public static void Clear ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Clear() cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -85,14 +40,31 @@
       <Parameters />
       <Docs>
         <summary>Clears all keys and values.</summary>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Clear">
+      <MemberSignature Language="C#" Value="public static void Clear (string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Clear(string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Clears all keys and values.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ContainsKey">
-      <MemberSignature Language="C#" Value="public bool ContainsKey (string key);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance bool ContainsKey(string key) cil managed" />
+      <MemberSignature Language="C#" Value="public static bool ContainsKey (string key);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool ContainsKey(string key) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -110,9 +82,31 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="ContainsKey">
+      <MemberSignature Language="C#" Value="public static bool ContainsKey (string key, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool ContainsKey(string key, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Checks the existence of a given key.</summary>
+        <returns>Returns true if the key exists.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public bool Get (string key, bool defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance bool Get(string key, bool defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static bool Get (string key, bool defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool Get(string key, bool defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -129,14 +123,12 @@
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public double Get (string key, double defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance float64 Get(string key, float64 defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static double Get (string key, double defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 Get(string key, float64 defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -152,15 +144,13 @@
         <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
-        <returns>Preference value, or default value specified if one does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public int Get (string key, int defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance int32 Get(string key, int32 defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static int Get (string key, int defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 Get(string key, int32 defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -176,15 +166,13 @@
         <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
-        <returns>Preference value, or default value specified if one does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public long Get (string key, long defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance int64 Get(string key, int64 defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static long Get (string key, long defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int64 Get(string key, int64 defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -200,15 +188,13 @@
         <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
-        <returns>Preference value, or default value specified if one does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public float Get (string key, float defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance float32 Get(string key, float32 defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static float Get (string key, float defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float32 Get(string key, float32 defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -221,18 +207,16 @@
         <Parameter Name="defaultValue" Type="System.Single" />
       </Parameters>
       <Docs>
-        <param name="key">Preference key.</param>
+       <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
-        <returns>Preference value, or default value specified if one does not exist.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Get">
-      <MemberSignature Language="C#" Value="public string Get (string key, string defaultValue);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance string Get(string key, string defaultValue) cil managed" />
+      <MemberSignature Language="C#" Value="public static string Get (string key, string defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig string Get(string key, string defaultValue) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -248,15 +232,159 @@
         <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
-        <returns>Preference value, or default value specified if one does not exist.</returns>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static bool Get (string key, bool defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool Get(string key, bool defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.Boolean" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
         <remarks>
           <para />
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static double Get (string key, double defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 Get(string key, float64 defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.Double" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static int Get (string key, int defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int32 Get(string key, int32 defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.Int32" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static long Get (string key, long defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig int64 Get(string key, int64 defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int64</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.Int64" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static float Get (string key, float defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float32 Get(string key, float32 defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Single</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.Single" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static string Get (string key, string defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig string Get(string key, string defaultValue, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.String" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Remove">
-      <MemberSignature Language="C#" Value="public void Remove (string key);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Remove(string key) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Remove (string key);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Remove(string key) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -270,14 +398,35 @@
       <Docs>
         <param name="key">Preference key.</param>
         <summary>Removes a key and its associated value if it exists.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Remove">
+      <MemberSignature Language="C#" Value="public static void Remove (string key, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Remove(string key, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Removes a key and its associated value if it exists.</summary>
         <remarks>
           <para />
         </remarks>
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, bool value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, bool value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, bool value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, bool value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -299,8 +448,8 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, double value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, float64 value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, double value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, float64 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -322,8 +471,8 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, int value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, int32 value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, int value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, int32 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -345,8 +494,8 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, long value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, int64 value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, long value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, int64 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -368,8 +517,8 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, float value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, float32 value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, float value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, float32 value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -391,8 +540,8 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
-      <MemberSignature Language="C#" Value="public void Set (string key, string value);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void Set(string key, string value) cil managed" />
+      <MemberSignature Language="C#" Value="public static void Set (string key, string value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, string value) cil managed" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -413,22 +562,142 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="SharedName">
-      <MemberSignature Language="C#" Value="public string SharedName { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string SharedName" />
-      <MemberType>Property</MemberType>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, bool value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, bool value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.String</ReturnType>
+        <ReturnType>System.Void</ReturnType>
       </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Boolean" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
       <Docs>
-        <summary>Gets the shared name (or null for none) of the Preferences instance.</summary>
-        <value>The shared (container) name.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, double value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, float64 value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Double" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, int value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, int32 value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Int32" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, long value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, int64 value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Int64" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, float value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, float32 value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.Single" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, string value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, string value, string sharedName) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.String" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>
