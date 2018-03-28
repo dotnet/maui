@@ -13,9 +13,24 @@
     <remarks>Recommended to use the SystemBrowser as it is the default and falls back to UriLauncher.</remarks>
   </Docs>
   <Members>
-    <Member MemberName="SystemBrowser">
-      <MemberSignature Language="C#" Value="SystemBrowser" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BrowserLaunchType SystemBrowser = int32(1)" />
+    <Member MemberName="External">
+      <MemberSignature Language="C#" Value="External" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BrowserLaunchType External = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.BrowserLaunchType</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Launch an external browser using the system's default launcher (eg: Safari or Chrome).</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="SystemPreferred">
+      <MemberSignature Language="C#" Value="SystemPreferred" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BrowserLaunchType SystemPreferred = int32(1)" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -26,21 +41,6 @@
       <MemberValue>1</MemberValue>
       <Docs>
         <summary>Launch the optimized system browser and stay inside of your application. (Chrome Custom Tabs and SFSafariViewController).</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="UriLauncher">
-      <MemberSignature Language="C#" Value="UriLauncher" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.BrowserLaunchType UriLauncher = int32(0)" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Caboodle.BrowserLaunchType</ReturnType>
-      </ReturnValue>
-      <MemberValue>0</MemberValue>
-      <Docs>
-        <summary>Use the default external launcher to open the browser outside of the app.</summary>
       </Docs>
     </Member>
   </Members>

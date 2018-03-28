@@ -17,17 +17,17 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public PermissionException (string permission);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string permission) cil managed" />
+      <MemberSignature Language="C#" Value="public PermissionException (string message);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string message) cil managed" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="permission" Type="System.String" />
+        <Parameter Name="message" Type="System.String" Index="0" FrameworkAlternate="Empty" />
       </Parameters>
       <Docs>
-        <param name="permission">Permission that is required.</param>
+        <param name="message">Permission that is required.</param>
         <summary>Constructor with permission information.</summary>
         <remarks>
           <para />

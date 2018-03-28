@@ -69,6 +69,10 @@
       <Type Name="Browser" Kind="Class" />
       <Type Name="BrowserLaunchType" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
+      <Type Name="ConnectionProfile" Kind="Enumeration" />
+      <Type Name="Connectivity" Kind="Class" />
+      <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
+      <Type Name="ConnectivityChangedEventHandler" Kind="Delegate" />
       <Type Name="DataTransfer" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceInfo+Idioms" Kind="Class" />
@@ -81,6 +85,7 @@
       <Type Name="Geocoding" Kind="Class" />
       <Type Name="Location" Kind="Class" />
       <Type Name="LocationExtensions" Kind="Class" />
+      <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="PermissionException" Kind="Class" />
       <Type Name="PhoneDialer" Kind="Class" />

@@ -75,5 +75,25 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="OnRequestPermissionsResult">
+      <MemberSignature Language="C#" Value="public static void OnRequestPermissionsResult (int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnRequestPermissionsResult(int32 requestCode, string[] permissions, valuetype Android.Content.PM.Permission[] grantResults) cil managed" />
+      <MemberType>Method</MemberType>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="requestCode" Type="System.Int32" />
+        <Parameter Name="permissions" Type="System.String[]" />
+        <Parameter Name="grantResults" Type="Android.Content.PM.Permission[]" />
+      </Parameters>
+      <Docs>
+        <param name="requestCode">The requestCode from the corresponding overridden method in an activity.</param>
+        <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
+        <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
+        <summary>Pass permission request results from an activity's overridden method to the library for handling internal permission requests.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
   </Members>
 </Type>
