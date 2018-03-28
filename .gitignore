@@ -5,6 +5,9 @@
 
 Output/
 
+# Cake tools
+tools/
+
 # User-specific files
 *.suo
 *.user
