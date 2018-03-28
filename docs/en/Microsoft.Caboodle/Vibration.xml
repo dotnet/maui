@@ -1,0 +1,88 @@
+<Type Name="Vibration" FullName="Microsoft.Caboodle.Vibration">
+  <TypeSignature Language="C#" Value="public static class Vibration" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Vibration extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Provides an easy way to make the device vibrate.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Cancel">
+      <MemberSignature Language="C#" Value="public static void Cancel ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Cancel() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Cancel any current vibrations.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Vibrate">
+      <MemberSignature Language="C#" Value="public static void Vibrate ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate() cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Vibrate the device fo 500ms.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Vibrate">
+      <MemberSignature Language="C#" Value="public static void Vibrate (double duration);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate(float64 duration) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="duration" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="duration">The number of milliseconds to vibrate for.</param>
+        <summary>Vibrate the device for the specified number of milliseconds in the range [0, 5000].</summary>
+        <remarks>On iOS, the device will only vibrate for 500ms, regardless of the value specified.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Vibrate">
+      <MemberSignature Language="C#" Value="public static void Vibrate (TimeSpan duration);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate(valuetype System.TimeSpan duration) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="duration" Type="System.TimeSpan" />
+      </Parameters>
+      <Docs>
+        <param name="duration">The time to vibrate for.</param>
+        <summary>Vibrate the device for the specified time in the range [0, 5000]ms.</summary>
+        <remarks>On iOS, the device will only vibrate for 500ms, regardless of the value specified.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

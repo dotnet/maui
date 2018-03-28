@@ -45,7 +45,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] Secure Storage
  - [x] SMS
  - [ ] Text-to-Speech
- - [ ] Vibrate
+ - [x] Vibrate
  
 ## Contributing
 Please read through our [Contribution Guide](CONTRIBUTING.md). We are not accepting new PRs for full features, however any issue that is marked as `up for grabs` are open for community contributions. We encourage creating new issues for bugs found during usage that the team will triage. Additionally, we are open for code refactoring suggestions in PRs.

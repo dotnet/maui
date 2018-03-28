@@ -25,7 +25,7 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>Launch an external browser using the system's default launcher (eg: Safari or Chrome).</summary>
+        <summary>Use the default external launcher to open the browser outside of the app.</summary>
       </Docs>
     </Member>
     <Member MemberName="SystemPreferred">
