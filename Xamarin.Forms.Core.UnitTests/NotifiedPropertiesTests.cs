@@ -91,8 +91,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			new PropertyTestCase<Entry, string> ("Placeholder", v => v.Placeholder, (v, o) => v.Placeholder = o, () => null, "Foo"),
 			new PropertyTestCase<Entry, bool> ("IsPassword", v => v.IsPassword, (v, o) => v.IsPassword = o, () => false, true),
 			new PropertyTestCase<Entry, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => Color.Default, new Color (0, 1, 0)),
-			new PropertyTestCase<Entry, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => true, false),
-			new PropertyTestCase<Editor, bool> ("IsReadOnly", v => v.IsReadOnly, (v, o) => v.IsReadOnly = o, () => true, false),
 			new PropertyTestCase<Frame, Color> ("BackgroundColor", v => v.BackgroundColor, (v, o) => v.BackgroundColor = o, () => Color.Default, new Color (0, 1, 0)),
 			new PropertyTestCase<Frame, Color> ("OutlineColor", v => v.OutlineColor, (v, o) => v.OutlineColor = o, () => Color.Default, new Color (0, 1, 0)),
 			new PropertyTestCase<Frame, bool> ("HasShadow", v => v.HasShadow, (v, o) => v.HasShadow = o, () => true, false),
