@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
 using System.Web;
+using UnitTests.HeadlessRunner;
 using Windows.ApplicationModel.Activation;
-using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -30,7 +29,7 @@ namespace Caboodle.DeviceTests.UWP
 #pragma warning disable 4014
                         try
                         {
-                            UnitTests.HeadlessRunner.Tests.RunAsync(ip, port, typeof(Battery_Tests).Assembly);
+                            Tests.RunAsync(ip, port, Traits.GetCommonTraits(), typeof(Battery_Tests).Assembly);
                         }
                         catch (Exception ex)
                         {

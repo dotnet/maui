@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Foundation;
 using UIKit;
+using UnitTests.HeadlessRunner;
 
 namespace Caboodle.DeviceTests.iOS
 {
@@ -16,7 +17,9 @@ namespace Caboodle.DeviceTests.iOS
                 var ip = testCfg[0];
                 int port;
                 if (int.TryParse(testCfg[1], out port))
-                    UnitTests.HeadlessRunner.Tests.RunAsync(ip, port, typeof(Battery_Tests).Assembly);
+                {
+                    Tests.RunAsync(ip, port, Traits.GetCommonTraits(), typeof(Battery_Tests).Assembly);
+                }
             }
 
             // We need this to ensure the execution assembly is part of the app bundle
