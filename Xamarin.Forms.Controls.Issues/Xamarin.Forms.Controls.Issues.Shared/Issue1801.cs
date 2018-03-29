@@ -39,8 +39,8 @@ namespace Xamarin.Forms.Controls
 			Func<ListView, object, string, object> logEvent = (_, item, e) =>
 			{
 				var line = $"Item '{item}' {e}. SelectedItem = '{list.SelectedItem}'";
-				if (Device.RuntimePlatform == Device.Android)
-					// Android scrolls to show the last line so append to the log to make sure this line is visible
+				if (Device.RuntimePlatform == Device.Android || Device.RuntimePlatform == Device.Tizen)
+					// Android/Tizen scroll to show the last line so append to the log to make sure this line is visible
 					log.Text += line + "\n";
 				else
 					// iOS/UWP don't scroll to show the last line so prepend instead to make sure this line is visible
