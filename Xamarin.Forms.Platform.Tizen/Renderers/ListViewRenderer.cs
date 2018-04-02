@@ -42,6 +42,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(ListView.ItemsSourceProperty, UpdateSource);
 			RegisterPropertyHandler("HeaderElement", UpdateHeader);
 			RegisterPropertyHandler("FooterElement", UpdateFooter);
+			RegisterPropertyHandler(ListView.SelectionModeProperty, UpdateSelectionMode);
 		}
 
 		/// <summary>
@@ -378,6 +379,19 @@ namespace Xamarin.Forms.Platform.Tizen
 					Control.ApplySelectedItem(cell);
 					--_selectedItemChanging;
 				}
+			}
+		}
+
+		void UpdateSelectionMode()
+		{
+			if (Element.SelectionMode == ListViewSelectionMode.None)
+			{
+				Element.SelectedItem = null;
+				Control.IsHighlight = false;
+			}
+			else
+			{
+				Control.IsHighlight = true;
 			}
 		}
 	}
