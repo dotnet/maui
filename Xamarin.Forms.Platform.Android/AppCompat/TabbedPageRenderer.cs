@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			if(_previousPage != Element.CurrentPage)
 			{
-				_previousPage.SendDisappearing();
+				_previousPage?.SendDisappearing();
 				_previousPage = Element.CurrentPage;
 			}
 			Element.CurrentPage = Element.Children[position];
