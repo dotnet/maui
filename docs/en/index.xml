@@ -70,6 +70,8 @@
       <Type Name="BrowserLaunchType" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="Compass" Kind="Class" />
+      <Type Name="CompassChangedEventArgs" Kind="Class" />
+      <Type Name="CompassChangedEventHandler" Kind="Delegate" />
       <Type Name="CompassData" Kind="Structure" />
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />

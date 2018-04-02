@@ -5,35 +5,13 @@ namespace Microsoft.Caboodle
 {
     public static partial class Compass
     {
-        public static bool IsMonitoring =>
-            MonitorCTS != null && !MonitorCTS.IsCancellationRequested;
+        public static event CompassChangedEventHandler ReadingChanged;
 
-        public static void Start(SensorSpeed sensorSpeed, Action<CompassData> handler)
-        {
-            if (handler == null)
-            {
-                throw new ArgumentNullException(nameof(handler));
-            }
+        public static bool IsMonitoring { get; private set; }
 
-            PreMonitorValidation();
-            CreateToken();
-            PlatformStart(sensorSpeed, handler);
-        }
+        internal static bool UseSyncContext { get; set; }
 
-        public static void Stop()
-        {
-            if (MonitorCTS == null)
-                return;
-
-            if (!MonitorCTS.Token.CanBeCanceled || MonitorCTS.Token.IsCancellationRequested)
-                return;
-
-            MonitorCTS.Cancel();
-        }
-
-        internal static CancellationTokenSource MonitorCTS { get; set; }
-
-        internal static void PreMonitorValidation()
+        public static void Start(SensorSpeed sensorSpeed)
         {
             if (!IsSupported)
             {
@@ -42,24 +20,45 @@ namespace Microsoft.Caboodle
 
             if (IsMonitoring)
             {
-                throw new InvalidOperationException("Compass is already being monitored. Please stop to start a new session.");
+                return;
             }
+
+            PlatformStart(sensorSpeed);
+            IsMonitoring = true;
         }
 
-        internal static void CreateToken()
+        public static void Stop()
         {
-            DisposeToken();
-            MonitorCTS = new CancellationTokenSource();
+            PlatformStop();
+            IsMonitoring = false;
         }
 
-        internal static void DisposeToken()
+        internal static void OnChanged(CompassData reading)
+            => OnChanged(new CompassChangedEventArgs(reading));
+
+        internal static void OnChanged(CompassChangedEventArgs e)
         {
-            if (MonitorCTS == null)
+            if (ReadingChanged == null)
                 return;
 
-            MonitorCTS.Dispose();
-            MonitorCTS = null;
+            if (UseSyncContext)
+            {
+                Platform.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(e));
+            }
+            else
+            {
+                ReadingChanged?.Invoke(e);
+            }
         }
+    }
+
+    public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);
+
+    public class CompassChangedEventArgs : EventArgs
+    {
+        internal CompassChangedEventArgs(CompassData reading) => Reading = reading;
+
+        public CompassData Reading { get; }
     }
 
     public struct CompassData

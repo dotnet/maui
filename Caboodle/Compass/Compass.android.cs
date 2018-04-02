@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using Android.Hardware;
 using Android.Runtime;
 
@@ -13,10 +11,13 @@ namespace Microsoft.Caboodle
             Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null &&
             Platform.SensorManager?.GetDefaultSensor(SensorType.MagneticField) != null;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed, Action<CompassData> handler)
+        static SensorListener listener;
+        static Sensor magnetometer;
+        static Sensor accelerometer;
+
+        internal static void PlatformStart(SensorSpeed sensorSpeed)
         {
             var delay = SensorDelay.Normal;
-            var useSyncContext = false;
             switch (sensorSpeed)
             {
                 case SensorSpeed.Normal:
@@ -27,49 +28,51 @@ namespace Microsoft.Caboodle
                     break;
                 case SensorSpeed.Game:
                     delay = SensorDelay.Game;
-                    useSyncContext = true;
                     break;
                 case SensorSpeed.Ui:
                     delay = SensorDelay.Ui;
-                    useSyncContext = true;
                     break;
             }
 
-            var sensorListener = new SensorListener(useSyncContext, handler, delay);
+            accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
+            magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
+            listener = new SensorListener(accelerometer, magnetometer, delay);
+            Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
+            Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
+        }
 
-            MonitorCTS.Token.Register(CancelledToken, useSyncContext);
+        internal static void PlatformStop()
+        {
+            if (listener == null)
+                return;
 
-            void CancelledToken()
-            {
-                sensorListener.Dispose();
-                sensorListener = null;
-                DisposeToken();
-            }
+            Platform.SensorManager.UnregisterListener(listener, accelerometer);
+            Platform.SensorManager.UnregisterListener(listener, magnetometer);
+            listener.Dispose();
+            listener = null;
+            magnetometer?.Dispose();
+            magnetometer = null;
+            accelerometer?.Dispose();
+            accelerometer = null;
         }
     }
 
     internal class SensorListener : Java.Lang.Object, ISensorEventListener, IDisposable
     {
-        Action<CompassData> handler;
         float[] lastAccelerometer = new float[3];
         float[] lastMagnetometer = new float[3];
         bool lastAccelerometerSet;
         bool lastMagnetometerSet;
         float[] r = new float[9];
         float[] orientation = new float[3];
-        bool useSyncContext;
-        Sensor accelerometer;
+
         Sensor magnetometer;
+        Sensor accelerometer;
 
-        internal SensorListener(bool useSyncContext, Action<CompassData> handler, SensorDelay delay)
+        internal SensorListener(Sensor accelerometer, Sensor magnetometer, SensorDelay delay)
         {
-            this.handler = handler;
-            this.useSyncContext = useSyncContext;
-
-            accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
-            magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-            Platform.SensorManager.RegisterListener(this, accelerometer, delay);
-            Platform.SensorManager.RegisterListener(this, magnetometer, delay);
+            this.magnetometer = magnetometer;
+            this.accelerometer = accelerometer;
         }
 
         public void OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
@@ -97,14 +100,7 @@ namespace Microsoft.Caboodle
                 var azimuthInDegress = (Java.Lang.Math.ToDegrees(azimuthInRadians) + 360.0) % 360.0;
 
                 var data = new CompassData(azimuthInDegress);
-                if (useSyncContext)
-                {
-                    Platform.BeginInvokeOnMainThread(() => handler?.Invoke(data));
-                }
-                else
-                {
-                    handler?.Invoke(data);
-                }
+                Compass.OnChanged(data);
                 lastMagnetometerSet = false;
                 lastAccelerometerSet = false;
             }
@@ -118,21 +114,17 @@ namespace Microsoft.Caboodle
             }
         }
 
-        bool disposed = false;
+        bool disposed;
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    Platform.SensorManager.UnregisterListener(this, accelerometer);
-                    Platform.SensorManager.UnregisterListener(this, magnetometer);
-                }
+            if (!disposing || disposed)
+                return;
 
-                disposed = true;
-            }
+            disposed = true;
+            accelerometer = null;
+            magnetometer = null;
         }
     }
 }

@@ -83,19 +83,9 @@ namespace Caboodle.Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass2();
 
-                Compass.Start((SensorSpeed)Speed1, (data) =>
-                {
-                    switch ((SensorSpeed)Speed1)
-                    {
-                        case SensorSpeed.Fastest:
-                        case SensorSpeed.Game:
-                            Platform.BeginInvokeOnMainThread(() => { Compass1 = data.HeadingMagneticNorth; });
-                            break;
-                        default:
-                            Compass1 = data.HeadingMagneticNorth;
-                            break;
-                    }
-                });
+                Compass.ReadingChanged += Compass1_ReadingChanged;
+
+                Compass.Start((SensorSpeed)Speed1);
                 Compass1IsActive = true;
             }
             catch (Exception)
@@ -104,10 +94,25 @@ namespace Caboodle.Samples.ViewModel
             }
         }
 
+        private void Compass1_ReadingChanged(CompassChangedEventArgs e)
+        {
+            switch ((SensorSpeed)Speed1)
+            {
+                case SensorSpeed.Fastest:
+                case SensorSpeed.Game:
+                    Platform.BeginInvokeOnMainThread(() => { Compass1 = e.Reading.HeadingMagneticNorth; });
+                    break;
+                default:
+                    Compass1 = e.Reading.HeadingMagneticNorth;
+                    break;
+            }
+        }
+
         void OnStopCompass1()
         {
             Compass1IsActive = false;
             Compass.Stop();
+            Compass.ReadingChanged -= Compass1_ReadingChanged;
         }
 
         async void OnStartCompass2()
@@ -117,19 +122,8 @@ namespace Caboodle.Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass1();
 
-                Compass.Start((SensorSpeed)Speed2, (data) =>
-                {
-                    switch ((SensorSpeed)Speed2)
-                    {
-                        case SensorSpeed.Fastest:
-                        case SensorSpeed.Game:
-                            Platform.BeginInvokeOnMainThread(() => { Compass2 = data.HeadingMagneticNorth; });
-                            break;
-                        default:
-                            Compass2 = data.HeadingMagneticNorth;
-                            break;
-                    }
-                });
+                Compass.ReadingChanged += Compass2_ReadingChanged;
+                Compass.Start((SensorSpeed)Speed2);
                 Compass2IsActive = true;
             }
             catch (Exception)
@@ -138,10 +132,26 @@ namespace Caboodle.Samples.ViewModel
             }
         }
 
+        private void Compass2_ReadingChanged(CompassChangedEventArgs e)
+        {
+            var data = e.Reading;
+            switch ((SensorSpeed)Speed2)
+            {
+                case SensorSpeed.Fastest:
+                case SensorSpeed.Game:
+                    Platform.BeginInvokeOnMainThread(() => { Compass2 = data.HeadingMagneticNorth; });
+                    break;
+                default:
+                    Compass2 = data.HeadingMagneticNorth;
+                    break;
+            }
+        }
+
         void OnStopCompass2()
         {
             Compass2IsActive = false;
             Compass.Stop();
+            Compass.ReadingChanged -= Compass2_ReadingChanged;
         }
 
         public override void OnDisappearing()

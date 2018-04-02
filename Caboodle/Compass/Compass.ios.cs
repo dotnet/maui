@@ -14,11 +14,11 @@ namespace Microsoft.Caboodle
         internal static bool IsSupported =>
             CLLocationManager.HeadingAvailable;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed, Action<CompassData> handler)
-        {
-            var useSyncContext = false;
+        static CLLocationManager locationManager;
 
-            var locationManager = new CLLocationManager();
+        internal static void PlatformStart(SensorSpeed sensorSpeed)
+        {
+            locationManager = new CLLocationManager();
             switch (sensorSpeed)
             {
                 case SensorSpeed.Fastest:
@@ -32,44 +32,34 @@ namespace Microsoft.Caboodle
                 case SensorSpeed.Normal:
                     locationManager.HeadingFilter = NormalFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccuracyBest;
-                    useSyncContext = true;
                     break;
                 case SensorSpeed.Ui:
                     locationManager.HeadingFilter = UiFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccuracyBest;
-                    useSyncContext = true;
                     break;
             }
 
-            MonitorCTS.Token.Register(CancelledToken, useSyncContext);
-
             locationManager.UpdatedHeading += LocationManagerUpdatedHeading;
             locationManager.StartUpdatingHeading();
+        }
 
-            void CancelledToken()
+        static void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
+        {
+            var data = new CompassData(e.NewHeading.MagneticHeading);
+            OnChanged(data);
+        }
+
+        internal static void PlatformStop()
+        {
+            if (locationManager == null)
             {
-                if (locationManager != null)
-                {
-                    locationManager.UpdatedHeading -= LocationManagerUpdatedHeading;
-                    locationManager.StopUpdatingHeading();
-                    locationManager.Dispose();
-                    locationManager = null;
-                }
-                DisposeToken();
+                return;
             }
 
-            void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
-            {
-                var data = new CompassData(e.NewHeading.MagneticHeading);
-                if (useSyncContext)
-                {
-                    Platform.BeginInvokeOnMainThread(() => handler?.Invoke(data));
-                }
-                else
-                {
-                    handler?.Invoke(data);
-                }
-            }
+            locationManager.UpdatedHeading -= LocationManagerUpdatedHeading;
+            locationManager.StopUpdatingHeading();
+            locationManager.Dispose();
+            locationManager = null;
         }
     }
 }

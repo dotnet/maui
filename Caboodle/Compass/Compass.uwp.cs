@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using Windows.Devices.Sensors;
+﻿using Windows.Devices.Sensors;
 
 using WindowsCompass = Windows.Devices.Sensors.Compass;
 
@@ -13,16 +11,17 @@ namespace Microsoft.Caboodle
         internal const uint GameInterval = 22;
         internal const uint NormalInterval = 33;
 
+        static WindowsCompass sensor;
+
         internal static WindowsCompass DefaultCompass =>
             WindowsCompass.GetDefault();
 
         internal static bool IsSupported =>
             DefaultCompass != null;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed, Action<CompassData> handler)
+        internal static void PlatformStart(SensorSpeed sensorSpeed)
         {
-            var compass = DefaultCompass;
-            var useSyncContext = false;
+            sensor = DefaultCompass;
             var interval = NormalInterval;
             switch (sensorSpeed)
             {
@@ -32,38 +31,22 @@ namespace Microsoft.Caboodle
                 case SensorSpeed.Game:
                     interval = GameInterval;
                     break;
-                default:
-                    useSyncContext = true;
-                    break;
             }
 
-            compass.ReportInterval = compass.MinimumReportInterval >= interval ? interval : compass.MinimumReportInterval;
+            sensor.ReportInterval = sensor.MinimumReportInterval >= interval ? sensor.MinimumReportInterval : interval;
 
-            MonitorCTS.Token.Register(CancelledToken);
+            sensor.ReadingChanged += CompassReportedInterval;
+        }
 
-            void CancelledToken()
-            {
-                Platform.BeginInvokeOnMainThread(() =>
-                {
-                    compass.ReadingChanged -= CompassReportedInterval;
-                    DisposeToken();
-                });
-            }
+        static void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
+        {
+            var data = new CompassData(e.Reading.HeadingMagneticNorth);
+            OnChanged(data);
+        }
 
-            compass.ReadingChanged += CompassReportedInterval;
-
-            void CompassReportedInterval(object sender, CompassReadingChangedEventArgs e)
-            {
-                var data = new CompassData(e.Reading.HeadingMagneticNorth);
-                if (useSyncContext)
-                {
-                    Platform.BeginInvokeOnMainThread(() => handler?.Invoke(data));
-                }
-                else
-                {
-                    handler?.Invoke(data);
-                }
-            }
+        internal static void PlatformStop()
+        {
+            sensor.ReadingChanged -= CompassReportedInterval;
         }
     }
 }
