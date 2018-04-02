@@ -589,5 +589,15 @@ namespace Xamarin.Forms
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
+
+		protected override bool ValidateItemTemplate(DataTemplate template)
+		{
+			var isRetainStrategy = CachingStrategy == ListViewCachingStrategy.RetainElement;
+			var isDataTemplateSelector = ItemTemplate is DataTemplateSelector;
+			if (isRetainStrategy && isDataTemplateSelector)
+				return false;
+
+			return true;
+		}
 	}
 }
