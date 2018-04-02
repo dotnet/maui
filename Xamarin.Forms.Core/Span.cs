@@ -39,7 +39,7 @@ namespace Xamarin.Forms
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		[Obsolete("Foreground is obsolete as of version 2.6.0. Please use the TextColor property instead.")]
+		[Obsolete("Foreground is obsolete as of version 3.1.0. Please use the TextColor property instead.")]
 		public static readonly BindableProperty ForegroundColorProperty = TextColorProperty;
 		
 #pragma warning disable 618
