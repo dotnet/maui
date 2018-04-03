@@ -98,8 +98,22 @@ namespace Microsoft.Caboodle
         Virtual
     }
 
-    public class ScreenMetrics
+#if __ANDROID__
+    [Android.Runtime.Preserve(AllMembers = true)]
+#elif __IOS__
+    [Foundation.Preserve(AllMembers = true)]
+#endif
+    public struct ScreenMetrics
     {
+        internal ScreenMetrics(double width, double height, double density, ScreenOrientation orientation, ScreenRotation rotation)
+        {
+            Width = width;
+            Height = height;
+            Density = density;
+            Orientation = orientation;
+            Rotation = rotation;
+        }
+
         public double Width { get; set; }
 
         public double Height { get; set; }

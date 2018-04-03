@@ -24,8 +24,9 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <MtouchArch>x86_64</MtouchArch>
-    <MtouchLink>None</MtouchLink>
+    <MtouchLink>Full</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
+    <MtouchExtraArgs>--linkskip=Xamarin.Forms.Platform.iOS --linkskip=Xamarin.Forms.Platform --linkskip=Xamarin.Forms.Core --linkskip=Xamarin.Forms.Xaml --linkskip=Caboodle.Samples</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,6 +52,8 @@
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchExtraArgs>--linkskip=Xamarin.Forms.Platform.iOS --linkskip=Xamarin.Forms.Platform --linkskip=Xamarin.Forms.Core --linkskip=Xamarin.Forms.Xaml --linkskip=Caboodle.Samples</MtouchExtraArgs>
+    <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugSymbols>true</DebugSymbols>

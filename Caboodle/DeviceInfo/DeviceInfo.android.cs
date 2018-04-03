@@ -113,20 +113,16 @@ namespace Microsoft.Caboodle
 
         static ScreenMetrics GetScreenMetrics()
         {
-            var metrics = new ScreenMetrics();
-
             var displayMetrics = CaboodlePlatform.CurrentContext.Resources?.DisplayMetrics;
-            if (displayMetrics != null)
+
+            return new ScreenMetrics
             {
-                metrics.Width = displayMetrics.WidthPixels;
-                metrics.Height = displayMetrics.HeightPixels;
-                metrics.Density = displayMetrics.Density;
-            }
-
-            metrics.Orientation = CalculateOrientation();
-            metrics.Rotation = CalculateRotation();
-
-            return metrics;
+                Orientation = CalculateOrientation(),
+                Rotation = CalculateRotation(),
+                Width = displayMetrics?.WidthPixels ?? 0,
+                Height = displayMetrics?.HeightPixels ?? 0,
+                Density = displayMetrics?.Density ?? 0
+            };
         }
 
         static void StartScreenMetricsListeners()
