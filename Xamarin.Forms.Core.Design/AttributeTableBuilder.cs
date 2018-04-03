@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Core.Design
 			foreach (var fontElement in fontElements) {
 				AddCallback (fontElement, builder => builder.AddCustomAttributes (
 					"FontSize",
-					new System.ComponentModel.TypeConverterAttribute (typeof (EnumConverter<NamedSize>))));
+					new System.ComponentModel.TypeConverterAttribute (typeof (NonExclusiveEnumConverter<NamedSize>))));
 			}
 
 			// TODO: OnPlatform/OnIdiom

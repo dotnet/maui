@@ -51,6 +51,7 @@
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <Compile Include="AttributeTableBuilder.cs" />
     <Compile Include="EnumConverter.cs" />
+    <Compile Include="NonExclusiveEnumConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisterMetadata.cs" />
   </ItemGroup>
