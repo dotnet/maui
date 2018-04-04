@@ -32,7 +32,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] Data Transfer
  - [x] Device Information
  - [x] File System Helpers
- - [ ] Email
+ - [x] Email
  - [x] Flashlight
  - [x] Geocoding 
  - [ ] Geolocation 
