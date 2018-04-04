@@ -18,7 +18,7 @@
   <Members>
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ScreenMetricsChanagedEventArgs (Microsoft.Caboodle.ScreenMetrics metrics);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Microsoft.Caboodle.ScreenMetrics metrics) cil managed" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Microsoft.Caboodle.ScreenMetrics metrics) cil managed" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -36,7 +36,7 @@
     </Member>
     <Member MemberName="Metrics">
       <MemberSignature Language="C#" Value="public Microsoft.Caboodle.ScreenMetrics Metrics { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Caboodle.ScreenMetrics Metrics" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Caboodle.ScreenMetrics Metrics" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

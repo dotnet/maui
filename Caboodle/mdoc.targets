@@ -117,7 +117,7 @@
             var typename = xdoc.Root.Attribute("FullName").Value;
             var member = node.Attribute("MemberName").Value;
             var memberType = node.Element("MemberType").Value.ToLower();
-            Log.LogMessage(MessageImportance.High, "Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
+            Log.LogWarning("Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
           }
 
           // write

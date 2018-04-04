@@ -5,14 +5,11 @@ namespace Microsoft.Caboodle
 {
     public static partial class Sms
     {
-        static bool IsComposeSupported
+        internal static bool IsComposeSupported
             => MFMessageComposeViewController.CanSendText;
 
-        public static Task ComposeAsync(SmsMessage message)
+        static Task PlatformComposeAsync(SmsMessage message)
         {
-            if (!IsComposeSupported)
-                throw new FeatureNotSupportedException();
-
             // do this first so we can throw as early as possible
             var controller = Platform.GetCurrentViewController();
 

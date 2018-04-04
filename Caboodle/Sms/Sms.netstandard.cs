@@ -4,7 +4,9 @@ namespace Microsoft.Caboodle
 {
     public static partial class Sms
     {
-        public static Task ComposeAsync(SmsMessage message)
+        internal static bool IsComposeSupported => false;
+
+        static Task PlatformComposeAsync(SmsMessage message)
             => throw new NotImplementedInReferenceAssemblyException();
     }
 }

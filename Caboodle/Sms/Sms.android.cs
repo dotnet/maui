@@ -10,14 +10,11 @@ namespace Microsoft.Caboodle
 {
     public static partial class Sms
     {
-        static bool IsComposeSupported
+        internal static bool IsComposeSupported
             => Platform.IsIntentSupported(CreateIntent("0000000000"));
 
-        public static Task ComposeAsync(SmsMessage message)
+        static Task PlatformComposeAsync(SmsMessage message)
         {
-            if (!IsComposeSupported)
-                throw new FeatureNotSupportedException();
-
             var intent = CreateIntent(message)
                 .SetFlags(ActivityFlags.ClearTop)
                 .SetFlags(ActivityFlags.NewTask);

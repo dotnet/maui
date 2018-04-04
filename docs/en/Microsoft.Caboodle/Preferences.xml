@@ -207,7 +207,7 @@
         <Parameter Name="defaultValue" Type="System.Single" />
       </Parameters>
       <Docs>
-       <param name="key">Preference key.</param>
+        <param name="key">Preference key.</param>
         <param name="defaultValue">Default value to return if the key does not exist.</param>
         <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
         <returns>Value for the given key, or the default if it does not exist.</returns>

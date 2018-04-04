@@ -68,7 +68,7 @@ namespace Microsoft.Caboodle
             observer = null;
         }
 
-        private static void OnScreenMetricsChanaged(NSNotification obj)
+        static void OnScreenMetricsChanaged(NSNotification obj)
         {
             var metrics = GetScreenMetrics();
             OnScreenMetricsChanaged(metrics);

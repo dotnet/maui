@@ -7,14 +7,11 @@ namespace Microsoft.Caboodle
 {
     public static partial class Sms
     {
-        static bool IsComposeSupported
+        internal static bool IsComposeSupported
             => ApiInformation.IsTypePresent("Windows.ApplicationModel.Chat.ChatMessageManager");
 
-        public static Task ComposeAsync(SmsMessage message)
+        static Task PlatformComposeAsync(SmsMessage message)
         {
-            if (!IsComposeSupported)
-                throw new FeatureNotSupportedException();
-
             var chat = new ChatMessage();
             if (!string.IsNullOrWhiteSpace(message?.Body))
                 chat.Body = message.Body;

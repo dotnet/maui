@@ -6,6 +6,14 @@ namespace Microsoft.Caboodle
     {
         public static Task ComposeAsync()
             => ComposeAsync(null);
+
+        public static Task ComposeAsync(SmsMessage message)
+        {
+            if (!IsComposeSupported)
+                throw new FeatureNotSupportedException();
+
+            return PlatformComposeAsync(message);
+        }
     }
 
     public class SmsMessage

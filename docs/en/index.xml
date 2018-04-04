@@ -83,6 +83,9 @@
       <Type Name="DeviceInfo+Platforms" Kind="Class" />
       <Type Name="DeviceType" Kind="Enumeration" />
       <Type Name="DistanceUnits" Kind="Enumeration" />
+      <Type Name="Email" Kind="Class" />
+      <Type Name="EmailBodyFormat" Kind="Enumeration" />
+      <Type Name="EmailMessage" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
@@ -97,7 +100,7 @@
       <Type Name="Platform" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ScreenLock" Kind="Class" />
-      <Type Name="ScreenMetrics" Kind="Class" />
+      <Type Name="ScreenMetrics" Kind="Structure" />
       <Type Name="ScreenMetricsChanagedEventArgs" Kind="Class" />
       <Type Name="ScreenMetricsChanagedEventHandler" Kind="Delegate" />
       <Type Name="ScreenOrientation" Kind="Enumeration" />

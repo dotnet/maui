@@ -1,0 +1,47 @@
+<Type Name="EmailBodyFormat" FullName="Microsoft.Caboodle.EmailBodyFormat">
+  <TypeSignature Language="C#" Value="public enum EmailBodyFormat" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed EmailBodyFormat extends System.Enum" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Enum</BaseTypeName>
+  </Base>
+  <Docs>
+    <summary>Represents various types of email body formats.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Html">
+      <MemberSignature Language="C#" Value="Html" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.EmailBodyFormat Html = int32(1)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.EmailBodyFormat</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>The email message body is HTML.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="PlainText">
+      <MemberSignature Language="C#" Value="PlainText" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.EmailBodyFormat PlainText = int32(0)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.EmailBodyFormat</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>The email message body is plain text.</summary>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

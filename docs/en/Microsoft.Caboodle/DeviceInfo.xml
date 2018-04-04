@@ -126,7 +126,7 @@
     </Member>
     <Member MemberName="ScreenMetrics">
       <MemberSignature Language="C#" Value="public static Microsoft.Caboodle.ScreenMetrics ScreenMetrics { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property class Microsoft.Caboodle.ScreenMetrics ScreenMetrics" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Microsoft.Caboodle.ScreenMetrics ScreenMetrics" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

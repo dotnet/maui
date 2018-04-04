@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Compass_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Connectivity_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Email_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Battery_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Clipboard_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeviceInfo_Tests.cs" />

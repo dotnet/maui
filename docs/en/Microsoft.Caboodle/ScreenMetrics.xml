@@ -1,12 +1,12 @@
 <Type Name="ScreenMetrics" FullName="Microsoft.Caboodle.ScreenMetrics">
-  <TypeSignature Language="C#" Value="public class ScreenMetrics" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ScreenMetrics extends System.Object" />
+  <TypeSignature Language="C#" Value="public struct ScreenMetrics" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit ScreenMetrics extends System.ValueType" />
   <AssemblyInfo>
     <AssemblyName>Microsoft.Caboodle</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
   </AssemblyInfo>
   <Base>
-    <BaseTypeName>System.Object</BaseTypeName>
+    <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
   <Interfaces />
   <Docs>
@@ -16,21 +16,6 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public ScreenMetrics ();" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberType>Constructor</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <Parameters />
-      <Docs>
-        <summary>Creates a new instance of the ScreenMetrics type.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Density">
       <MemberSignature Language="C#" Value="public double Density { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Density" />
