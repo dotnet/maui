@@ -7,6 +7,11 @@ namespace Caboodle.DeviceTests
 {
     public class Compass_Tests
     {
+        bool TestSupported =>
+               DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
+               DeviceInfo.Platform == DeviceInfo.Platforms.UWP ||
+               (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
+
         public Compass_Tests()
         {
             Compass.Stop();
@@ -15,7 +20,7 @@ namespace Caboodle.DeviceTests
         [Fact]
         public void IsSupported()
         {
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS)
+            if (!TestSupported)
             {
                 Assert.False(Compass.IsSupported);
                 return;
@@ -28,7 +33,7 @@ namespace Caboodle.DeviceTests
         [InlineData(SensorSpeed.Fastest)]
         public async Task Monitor(SensorSpeed sensorSpeed)
         {
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS)
+            if (!TestSupported)
             {
                 return;
             }
@@ -53,7 +58,7 @@ namespace Caboodle.DeviceTests
         [InlineData(SensorSpeed.Fastest)]
         public async Task IsMonitoring(SensorSpeed sensorSpeed)
         {
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS)
+            if (!TestSupported)
             {
                 return;
             }
@@ -77,7 +82,7 @@ namespace Caboodle.DeviceTests
         [InlineData(SensorSpeed.Fastest)]
         public async Task Stop_Monitor(SensorSpeed sensorSpeed)
         {
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS)
+            if (!TestSupported)
             {
                 return;
             }

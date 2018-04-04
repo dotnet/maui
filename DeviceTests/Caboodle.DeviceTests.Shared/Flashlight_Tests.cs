@@ -14,6 +14,14 @@ namespace Caboodle.DeviceTests
         [InlineData(false)]
         public async Task Turn_On_Off(bool oldCameraApi)
         {
+            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
+            {
+                await Utils.OnMainThread(async () =>
+                {
+                    await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Flashlight.TurnOnAsync());
+                });
+                return;
+            }
 #if __ANDROID__
             // API 23+ we need user interaction for camera permission
             // can't really test so easily on device.

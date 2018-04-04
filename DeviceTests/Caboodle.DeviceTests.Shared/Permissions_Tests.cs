@@ -25,6 +25,11 @@ namespace Caboodle.DeviceTests
         [InlineData(PermissionType.LocationWhenInUse)]
         internal void Ensure_Declared_Throws(PermissionType permission)
         {
+            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
+            {
+                return;
+            }
+
             Assert.Throws<PermissionException>(() => Permissions.EnsureDeclared(permission));
         }
 
@@ -42,6 +47,11 @@ namespace Caboodle.DeviceTests
         [InlineData(PermissionType.LocationWhenInUse)]
         internal Task Check_Status_Throws(PermissionType permission)
         {
+            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
+            {
+                return Task.CompletedTask;
+            }
+
             return Assert.ThrowsAsync<PermissionException>(async () => await Permissions.CheckStatusAsync(permission));
         }
 

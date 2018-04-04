@@ -11,9 +11,11 @@ namespace Caboodle.DeviceTests
         [InlineData("some really long test text")]
         public Task Set_Clipboard_Values(string text)
         {
-            return Utils.OnMainThread(() =>
+            return Utils.OnMainThread(async () =>
             {
                 Clipboard.SetText(text);
+
+                await Task.Delay(100);
 
                 Assert.True(Clipboard.HasText);
             });
