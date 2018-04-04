@@ -1,0 +1,24 @@
+<Type Name="AccelerometerChangedEventHandler" FullName="Microsoft.Caboodle.AccelerometerChangedEventHandler">
+  <TypeSignature Language="C#" Value="public delegate void AccelerometerChangedEventHandler(AccelerometerChangedEventArgs e);" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed AccelerometerChangedEventHandler extends System.MulticastDelegate" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Delegate</BaseTypeName>
+  </Base>
+  <Parameters>
+    <Parameter Name="e" Type="Microsoft.Caboodle.AccelerometerChangedEventArgs" />
+  </Parameters>
+  <ReturnValue>
+    <ReturnType>System.Void</ReturnType>
+  </ReturnValue>
+  <Docs>
+    <param name="e">Arguments for changes.</param>
+    <summary>Event handler when gyrochanges.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+</Type>

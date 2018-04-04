@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Threading;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class Compass
+    public static partial class Magnetometer
     {
-        public static event CompassChangedEventHandler ReadingChanged;
+        public static event MagnetometerChangedEventHandler ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
-
-        internal static bool UseSyncContext { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {
@@ -57,10 +54,12 @@ namespace Microsoft.Caboodle
             }
         }
 
-        internal static void OnChanged(CompassData reading)
-            => OnChanged(new CompassChangedEventArgs(reading));
+        internal static bool UseSyncContext { get; set; }
 
-        internal static void OnChanged(CompassChangedEventArgs e)
+        internal static void OnChanged(MagnetometerData reading)
+            => OnChanged(new MagnetometerChangedEventArgs(reading));
+
+        internal static void OnChanged(MagnetometerChangedEventArgs e)
         {
             if (ReadingChanged == null)
                 return;
@@ -76,22 +75,28 @@ namespace Microsoft.Caboodle
         }
     }
 
-    public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);
+    public delegate void MagnetometerChangedEventHandler(MagnetometerChangedEventArgs e);
 
-    public class CompassChangedEventArgs : EventArgs
+    public class MagnetometerChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) => Reading = reading;
+        internal MagnetometerChangedEventArgs(MagnetometerData reading) => Reading = reading;
 
-        public CompassData Reading { get; }
+        public MagnetometerData Reading { get; }
     }
 
-    public struct CompassData
+    public struct MagnetometerData
     {
-        internal CompassData(double headingMagneticNorth)
+        internal MagnetometerData(double x, double y, double z)
         {
-            HeadingMagneticNorth = headingMagneticNorth;
+            MagneticFieldX = x;
+            MagneticFieldY = y;
+            MagneticFieldZ = z;
         }
 
-        public double HeadingMagneticNorth { get; }
+        public double MagneticFieldX { get; }
+
+        public double MagneticFieldY { get; }
+
+        public double MagneticFieldZ { get; }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.Caboodle
 
             accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
             magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-            listener = new SensorListener(accelerometer, magnetometer, delay);
+            listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay);
             Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
             Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
         }
@@ -50,10 +50,6 @@ namespace Microsoft.Caboodle
             Platform.SensorManager.UnregisterListener(listener, magnetometer);
             listener.Dispose();
             listener = null;
-            magnetometer?.Dispose();
-            magnetometer = null;
-            accelerometer?.Dispose();
-            accelerometer = null;
         }
     }
 
@@ -66,10 +62,10 @@ namespace Microsoft.Caboodle
         float[] r = new float[9];
         float[] orientation = new float[3];
 
-        Sensor magnetometer;
-        Sensor accelerometer;
+        string magnetometer;
+        string accelerometer;
 
-        internal SensorListener(Sensor accelerometer, Sensor magnetometer, SensorDelay delay)
+        internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
         {
             this.magnetometer = magnetometer;
             this.accelerometer = accelerometer;
@@ -81,12 +77,12 @@ namespace Microsoft.Caboodle
 
         public void OnSensorChanged(SensorEvent e)
         {
-            if (e.Sensor == accelerometer && !lastAccelerometerSet)
+            if (e.Sensor.Name == accelerometer && !lastAccelerometerSet)
             {
                 CopyValues(e.Values, lastAccelerometer);
                 lastAccelerometerSet = true;
             }
-            else if (e.Sensor == magnetometer && !lastMagnetometerSet)
+            else if (e.Sensor.Name == magnetometer && !lastMagnetometerSet)
             {
                 CopyValues(e.Values, lastMagnetometer);
                 lastMagnetometerSet = true;
@@ -112,19 +108,6 @@ namespace Microsoft.Caboodle
             {
                 destination[i] = source[i];
             }
-        }
-
-        bool disposed;
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if (!disposing || disposed)
-                return;
-
-            disposed = true;
-            accelerometer = null;
-            magnetometer = null;
         }
     }
 }

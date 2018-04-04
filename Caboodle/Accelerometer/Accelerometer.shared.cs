@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Threading;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class Compass
+    public static partial class Accelerometer
     {
-        public static event CompassChangedEventHandler ReadingChanged;
+        public static event AccelerometerChangedEventHandler ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
-
-        internal static bool UseSyncContext { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {
@@ -57,10 +54,12 @@ namespace Microsoft.Caboodle
             }
         }
 
-        internal static void OnChanged(CompassData reading)
-            => OnChanged(new CompassChangedEventArgs(reading));
+        internal static bool UseSyncContext { get; set; }
 
-        internal static void OnChanged(CompassChangedEventArgs e)
+        internal static void OnChanged(AccelerometerData reading)
+            => OnChanged(new AccelerometerChangedEventArgs(reading));
+
+        internal static void OnChanged(AccelerometerChangedEventArgs e)
         {
             if (ReadingChanged == null)
                 return;
@@ -76,22 +75,28 @@ namespace Microsoft.Caboodle
         }
     }
 
-    public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);
+    public delegate void AccelerometerChangedEventHandler(AccelerometerChangedEventArgs e);
 
-    public class CompassChangedEventArgs : EventArgs
+    public class AccelerometerChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) => Reading = reading;
+        internal AccelerometerChangedEventArgs(AccelerometerData reading) => Reading = reading;
 
-        public CompassData Reading { get; }
+        public AccelerometerData Reading { get; }
     }
 
-    public struct CompassData
+    public struct AccelerometerData
     {
-        internal CompassData(double headingMagneticNorth)
+        internal AccelerometerData(double x, double y, double z)
         {
-            HeadingMagneticNorth = headingMagneticNorth;
+            AccelerometerX = x;
+            AccelerometerY = y;
+            AccelerometerZ = z;
         }
 
-        public double HeadingMagneticNorth { get; }
+        public double AccelerometerX { get; }
+
+        public double AccelerometerY { get; }
+
+        public double AccelerometerZ { get; }
     }
 }

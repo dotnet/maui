@@ -47,22 +47,7 @@
     </Member>
     <Member MemberName="Normal">
       <MemberSignature Language="C#" Value="Normal" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.SensorSpeed Normal = int32(2)" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Caboodle.SensorSpeed</ReturnType>
-      </ReturnValue>
-      <MemberValue>2</MemberValue>
-      <Docs>
-        <summary>Default rate suitable for screen orientation changes.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Ui">
-      <MemberSignature Language="C#" Value="Ui" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.SensorSpeed Ui = int32(3)" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.SensorSpeed Normal = int32(3)" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -71,6 +56,21 @@
         <ReturnType>Microsoft.Caboodle.SensorSpeed</ReturnType>
       </ReturnValue>
       <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Default rate suitable for screen orientation changes.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Ui">
+      <MemberSignature Language="C#" Value="Ui" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Microsoft.Caboodle.SensorSpeed Ui = int32(2)" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.SensorSpeed</ReturnType>
+      </ReturnValue>
+      <MemberValue>2</MemberValue>
       <Docs>
         <summary>Rate suitable for general user interface.</summary>
       </Docs>

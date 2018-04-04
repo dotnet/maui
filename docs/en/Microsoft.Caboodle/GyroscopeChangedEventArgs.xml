@@ -1,0 +1,36 @@
+<Type Name="GyroscopeChangedEventArgs" FullName="Microsoft.Caboodle.GyroscopeChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class GyroscopeChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit GyroscopeChangedEventArgs extends System.EventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Event arguments containing the current reading.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Reading">
+      <MemberSignature Language="C#" Value="public Microsoft.Caboodle.GyroscopeData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Caboodle.GyroscopeData Reading" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.GyroscopeData</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the reading of the gyro.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

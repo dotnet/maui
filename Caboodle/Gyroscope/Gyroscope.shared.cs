@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Threading;
 
 namespace Microsoft.Caboodle
 {
-    public static partial class Compass
+    public static partial class Gyroscope
     {
-        public static event CompassChangedEventHandler ReadingChanged;
+        public static event GyroscopeChangedEventHandler ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
-
-        internal static bool UseSyncContext { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {
@@ -57,10 +54,12 @@ namespace Microsoft.Caboodle
             }
         }
 
-        internal static void OnChanged(CompassData reading)
-            => OnChanged(new CompassChangedEventArgs(reading));
+        internal static bool UseSyncContext { get; set; }
 
-        internal static void OnChanged(CompassChangedEventArgs e)
+        internal static void OnChanged(GyroscopeData reading)
+            => OnChanged(new GyroscopeChangedEventArgs(reading));
+
+        internal static void OnChanged(GyroscopeChangedEventArgs e)
         {
             if (ReadingChanged == null)
                 return;
@@ -76,22 +75,28 @@ namespace Microsoft.Caboodle
         }
     }
 
-    public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);
+    public delegate void GyroscopeChangedEventHandler(GyroscopeChangedEventArgs e);
 
-    public class CompassChangedEventArgs : EventArgs
+    public class GyroscopeChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) => Reading = reading;
+        internal GyroscopeChangedEventArgs(GyroscopeData reading) => Reading = reading;
 
-        public CompassData Reading { get; }
+        public GyroscopeData Reading { get; }
     }
 
-    public struct CompassData
+    public struct GyroscopeData
     {
-        internal CompassData(double headingMagneticNorth)
+        internal GyroscopeData(double x, double y, double z)
         {
-            HeadingMagneticNorth = headingMagneticNorth;
+            AngularVelocityX = x;
+            AngularVelocityY = y;
+            AngularVelocityZ = z;
         }
 
-        public double HeadingMagneticNorth { get; }
+        public double AngularVelocityX { get; }
+
+        public double AngularVelocityY { get; }
+
+        public double AngularVelocityZ { get; }
     }
 }

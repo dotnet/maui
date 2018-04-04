@@ -4,7 +4,7 @@
     {
         Fastest,
         Game,
+        Ui,
         Normal,
-        Ui
     }
 }

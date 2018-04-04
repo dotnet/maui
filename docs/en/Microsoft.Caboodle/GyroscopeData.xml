@@ -1,0 +1,72 @@
+<Type Name="GyroscopeData" FullName="Microsoft.Caboodle.GyroscopeData">
+  <TypeSignature Language="C#" Value="public struct GyroscopeData" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit GyroscopeData extends System.ValueType" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Gyroscope information</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="AngularVelocityX">
+      <MemberSignature Language="C#" Value="public double AngularVelocityX { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityX" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the value for the X-Axis in rad/s.</summary>
+        <value>The X-Axis value.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AngularVelocityY">
+      <MemberSignature Language="C#" Value="public double AngularVelocityY { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityY" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the value for the Y-Axis in rad/s.</summary>
+        <value>The Y-Axis value.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AngularVelocityZ">
+      <MemberSignature Language="C#" Value="public double AngularVelocityZ { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityZ" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the value for the Z-Axis in rad/s.</summary>
+        <value>The Z-Axis value.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

@@ -1,0 +1,36 @@
+<Type Name="AccelerometerChangedEventArgs" FullName="Microsoft.Caboodle.AccelerometerChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class AccelerometerChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit AccelerometerChangedEventArgs extends System.EventArgs" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.EventArgs</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Event arguments containing the current reading.</summary>
+    <remarks>To be added.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Reading">
+      <MemberSignature Language="C#" Value="public Microsoft.Caboodle.AccelerometerData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Microsoft.Caboodle.AccelerometerData Reading" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Microsoft.Caboodle.AccelerometerData</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The current values of accelerometer.</summary>
+        <value>The readin.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

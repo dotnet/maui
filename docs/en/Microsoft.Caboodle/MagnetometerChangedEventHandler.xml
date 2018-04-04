@@ -1,0 +1,24 @@
+<Type Name="MagnetometerChangedEventHandler" FullName="Microsoft.Caboodle.MagnetometerChangedEventHandler">
+  <TypeSignature Language="C#" Value="public delegate void MagnetometerChangedEventHandler(MagnetometerChangedEventArgs e);" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed MagnetometerChangedEventHandler extends System.MulticastDelegate" />
+  <AssemblyInfo>
+    <AssemblyName>Microsoft.Caboodle</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Delegate</BaseTypeName>
+  </Base>
+  <Parameters>
+    <Parameter Name="e" Type="Microsoft.Caboodle.MagnetometerChangedEventArgs" />
+  </Parameters>
+  <ReturnValue>
+    <ReturnType>System.Void</ReturnType>
+  </ReturnValue>
+  <Docs>
+    <param name="e">Arguments for changes.</param>
+    <summary>Event handler when megnetomoter changes.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+</Type>

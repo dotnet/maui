@@ -10,6 +10,8 @@ namespace Caboodle.Samples.ViewModel
         {
             Items = new ObservableCollection<SampleItem>
             {
+                new SampleItem("Accelerometer", typeof(AccelerometerPage), "Retrieve acceleration data of the device in three dimensional space."),
+                new SampleItem("All Sensors", typeof(AllSensorsPage), "All Sensors on 1 Page"),
                 new SampleItem("Battery", typeof(BatteryPage), "Easily detect battery level, source, and state."),
                 new SampleItem("Browser", typeof(BrowserPage), "Quickly and easily open a browser to a specific website."),
                 new SampleItem("Clipboard", typeof(ClipboardPage), "Quickly and easily use clipboard"),
@@ -21,6 +23,8 @@ namespace Caboodle.Samples.ViewModel
                 new SampleItem("File System", typeof(FileSystemPage), "Easily save files to app data."),
                 new SampleItem("Flashlight", typeof(FlashlightPage), "A simple way to turn the flashlight on/off."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
+                new SampleItem("Gyroscope", typeof(GyroscopePage), "Retrieve  rotation around the device's three primary axes."),
+                new SampleItem("Magnetometer", typeof(MagnetometerPage), "Detect device's orientation relative to Earth's magnetic field."),
                 new SampleItem("Phone Dialer", typeof(PhoneDialerPage), "Easily open phone dialer."),
                 new SampleItem("Preferences", typeof(PreferencesPage), "Quickly and easily add persistent preferences."),
                 new SampleItem("Screen Lock", typeof(ScreenLockPage), "Keep the device screen awake."),

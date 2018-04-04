@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using CoreMotion;
 using Foundation;
 using UIKit;
 
@@ -51,5 +52,10 @@ namespace Microsoft.Caboodle
 
             return viewController;
         }
+
+        static CMMotionManager motionManager;
+
+        internal static CMMotionManager MotionManager =>
+            motionManager ?? (motionManager = new CMMotionManager());
     }
 }
