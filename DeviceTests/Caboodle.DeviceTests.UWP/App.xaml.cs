@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using UnitTests.HeadlessRunner;
 using Windows.ApplicationModel.Activation;
@@ -12,31 +13,39 @@ namespace Caboodle.DeviceTests.UWP
 {
     public sealed partial class App : RunnerApplication
     {
-        protected override async void OnActivated(IActivatedEventArgs args)
+        protected override void OnActivated(IActivatedEventArgs args)
         {
             base.OnActivated(args);
 
             if (args.Kind == ActivationKind.Protocol)
             {
                 var protocolArgs = (ProtocolActivatedEventArgs)args;
-                if (!string.IsNullOrEmpty(protocolArgs?.Uri?.Query))
+                if (!string.IsNullOrEmpty(protocolArgs?.Uri?.Host))
                 {
-                    var q = HttpUtility.ParseQueryString(protocolArgs.Uri.Query);
-                    var ip = q["host_ip"];
-                    int port;
-                    if (!string.IsNullOrEmpty(ip) && int.TryParse(q["host_port"], out port))
+                    var parts = protocolArgs.Uri.Host.Split('_');
+                    if (parts.Length >= 2 && !string.IsNullOrEmpty(parts[0]))
                     {
-#pragma warning disable 4014
-                        try
+                        var ip = parts[0]?.Replace('-', '.');
+
+                        if (int.TryParse(parts[1], out var port))
                         {
-                            Tests.RunAsync(ip, port, Traits.GetCommonTraits(), typeof(Battery_Tests).Assembly);
+                            Task.Run(() =>
+                            {
+                                var xunitRunner = new UnitTests.HeadlessRunner.Xunit.XUnitTestInstrumentation
+                                {
+                                    NetworkLogEnabled = true,
+                                    NetworkLogHost = ip,
+                                    NetworkLogPort = port,
+                                    ResultsFormat = TestResultsFormat.XunitV2,
+                                    Filters = Traits.GetCommonTraits()
+                                };
+
+                                var asm = typeof(App).GetTypeInfo().Assembly;
+                                var asmFilename = asm.GetName().Name + ".exe";
+
+                                xunitRunner.Run(new TestAssemblyInfo(asm, asmFilename));
+                            });
                         }
-                        catch (Exception ex)
-                        {
-                            var m = new MessageDialog("Ex: " + ex.ToString());
-                            await m.ShowAsync();
-                        }
-#pragma warning restore 4014
                     }
                 }
             }

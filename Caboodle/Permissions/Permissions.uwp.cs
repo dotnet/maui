@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Windows.Devices.Geolocation;
@@ -22,12 +23,14 @@ namespace Microsoft.Caboodle
                 return;
 
             var doc = XDocument.Load(appManifestFilename, LoadOptions.None);
-            var xname = XNamespace.Get(appManifestXmlns);
-
+            var reader = doc.CreateReader();
+            var namespaceManager = new XmlNamespaceManager(reader.NameTable);
+            namespaceManager.AddNamespace("x", appManifestXmlns);
             foreach (var cap in uwpCapabilities)
             {
                 // If the manifest doesn't contain a capability we need, throw
-                if (!doc.Root.XPathSelectElements($"//{xname}Capabilities[@Name='{cap}'")?.Any() ?? false)
+                if ((!doc.Root.XPathSelectElements($"//x:DeviceCapability[@Name='{cap}']", namespaceManager)?.Any() ?? false) &&
+                    (!doc.Root.XPathSelectElements($"//x:Capability[@Name='{cap}']", namespaceManager)?.Any() ?? false))
                     throw new PermissionException($"You need to declare the capability `{cap}` in your AppxManifest.xml file");
             }
         }

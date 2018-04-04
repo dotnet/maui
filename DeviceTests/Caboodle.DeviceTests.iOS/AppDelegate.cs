@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 using UnitTests.HeadlessRunner;
@@ -15,10 +17,20 @@ namespace Caboodle.DeviceTests.iOS
             if (testCfg != null && testCfg.Length > 1)
             {
                 var ip = testCfg[0];
-                int port;
-                if (int.TryParse(testCfg[1], out port))
+                if (int.TryParse(testCfg[1], out var port))
                 {
-                    Tests.RunAsync(ip, port, Traits.GetCommonTraits(), typeof(Battery_Tests).Assembly);
+                    // Run the headless test runner for CI
+                    Task.Run(() =>
+                    {
+                        return Tests.RunAsync(new TestOptions
+                        {
+                            Assemblies = new List<Assembly> { typeof(Battery_Tests).Assembly },
+                            NetworkLogHost = ip,
+                            NetworkLogPort = port,
+                            Filters = Traits.GetCommonTraits(),
+                            Format = TestResultsFormat.XunitV2
+                        });
+                    });
                 }
             }
 

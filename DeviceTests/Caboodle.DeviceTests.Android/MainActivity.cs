@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -20,7 +22,18 @@ namespace Caboodle.DeviceTests.Droid
 
             if (!string.IsNullOrEmpty(hostIp))
             {
-                Tests.RunAsync(hostIp, hostPort, Traits.GetCommonTraits(), typeof(Battery_Tests).Assembly);
+                // Run the headless test runner for CI
+                Task.Run(() =>
+                {
+                    return Tests.RunAsync(new TestOptions
+                    {
+                        Assemblies = new List<Assembly> { typeof(Battery_Tests).Assembly },
+                        NetworkLogHost = hostIp,
+                        NetworkLogPort = hostPort,
+                        Filters = Traits.GetCommonTraits(),
+                        Format = TestResultsFormat.XunitV2
+                    });
+                });
             }
 
             // tests can be inside the main assembly
