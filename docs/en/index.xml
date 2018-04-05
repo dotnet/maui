@@ -122,6 +122,7 @@
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
+      <Type Name="VersionTracking" Kind="Class" />
       <Type Name="Vibration" Kind="Class" />
     </Namespace>
   </Types>

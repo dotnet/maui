@@ -1,11 +1,15 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using Caboodle.Samples.Model;
 using Caboodle.Samples.View;
+using Microsoft.Caboodle;
 
 namespace Caboodle.Samples.ViewModel
 {
     public class HomeViewModel : BaseViewModel
     {
+        private bool alreadyAppeared;
+
         public HomeViewModel()
         {
             Items = new ObservableCollection<SampleItem>
@@ -35,5 +39,25 @@ namespace Caboodle.Samples.ViewModel
         }
 
         public ObservableCollection<SampleItem> Items { get; }
+
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (!alreadyAppeared)
+            {
+                alreadyAppeared = true;
+
+                if (VersionTracking.IsFirstLaunchEver)
+                {
+                    DisplayAlert("Welcome to the Caboodle samples!");
+                }
+                else if (VersionTracking.IsFirstLaunchForCurrentVersion)
+                {
+                    var count = VersionTracking.VersionHistory.Count();
+                    DisplayAlert($"Welcome to the NEW Caboodle samples! You have tried {count} versions.");
+                }
+            }
+        }
     }
 }
