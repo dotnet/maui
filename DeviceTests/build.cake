@@ -15,7 +15,7 @@ var IOS_TEST_RESULTS_PATH = "./xunit-ios.xml";
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
 var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials.devicetests-Signed.apk";
 var ANDROID_TEST_RESULTS_PATH = "./xunit-android.xml";
-var ANDROID_AVD = "Xamarin.Essentials";
+var ANDROID_AVD = "CABOODLE";
 var ANDROID_PKG_NAME = "com.xamarin.essentials.devicetests";
 var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
 var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
@@ -280,7 +280,7 @@ Task ("test-uwp-emu")
     // Launch the app
     Information("Running appx: {0}", appxBundlePath);
     var ip = TCP_LISTEN_HOST.Replace(".", "-");
-    System.Diagnostics.Process.Start($ "xamarin-essentials-device-tests://{ip}_{TCP_LISTEN_PORT}");
+    System.Diagnostics.Process.Start($"xamarin-essentials-device-tests://{ip}_{TCP_LISTEN_PORT}");
 
     // Wait for the test results to come back
     Information("Waiting for tests...");
