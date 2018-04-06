@@ -17,28 +17,6 @@
   </Docs>
   <Members>
     <Member MemberName="RequestAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (Xamarin.Essentials.ShareTextRequest request);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(class Xamarin.Essentials.ShareTextRequest request) cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="request" Type="Xamarin.Essentials.ShareTextRequest" />
-      </Parameters>
-      <Docs>
-        <param name="request">Share request with options.</param>
-        <summary>Show the share user interface to share text or uri.</summary>
-        <returns>Task when completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RequestAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (string text);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(string text) cil managed" />
       <MemberType>Method</MemberType>
@@ -57,6 +35,28 @@
         <returns>Task when completed.</returns>
         <remarks>
           <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RequestAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (Xamarin.Essentials.ShareTextRequest request);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(class Xamarin.Essentials.ShareTextRequest request) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="request" Type="Xamarin.Essentials.ShareTextRequest" />
+      </Parameters>
+      <Docs>
+        <param name="request">Share request with options.</param>
+        <summary>Show the share user interface to share text or uri.</summary>
+        <returns>Task when completed.</returns>
+        <remarks>
+          <para></para>
         </remarks>
       </Docs>
     </Member>
