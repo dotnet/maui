@@ -8,9 +8,9 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 
 | Build Server | Type         | Platform | Status                                                                                                                                                                                 |
 |--------------|--------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Xamarin.Essentials)](https://jenkins.mono-project.com/view/Components/job/Components-Xamarin.Essentials/)        |
+| Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials)](https://jenkins.mono-project.com/view/Components/job/Components-Essentials/)        |
 | VSTS         | Build        | Windows  | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                                   |
-| Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Xamarin.Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Xamarin.Essentials-DeviceTests-Mac) |
+| Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Essentials-DeviceTests-Mac) |
 
 ## Installation
 Coming soon... 
