@@ -47,6 +47,7 @@ Action<FilePath, string> AddPlatformToTestResults = (FilePath testResultsFile, s
     if (FileExists(testResultsFile)) {
         var txt = FileReadText(testResultsFile);
         txt = txt.Replace("<test-case name=\"DeviceTests.", $"<test-case name=\"DeviceTests.{platformName}.");
+        txt = txt.Replace("<test name=\"DeviceTests.", $"<test name=\"DeviceTests.{platformName}.");
         txt = txt.Replace("name=\"Test collection for DeviceTests.", $"name=\"Test collection for DeviceTests.{platformName}.");        
         FileWriteText(testResultsFile, txt);
     }
