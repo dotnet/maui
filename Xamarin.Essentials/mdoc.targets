@@ -88,13 +88,27 @@
     </PropertyGroup>
     <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --debug --preserve --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies) &quot;%(MDocAssembly.Identity)&quot;" />
     <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />
+    <_VerifyAllDocsAreComplete DocsRoot="$(MDocDocumentationDirectory)" />
+  </Target>
+
+  <!--
+    ============================================================
+    MDocVerifyDocs
+
+    Makes sure all the docs are filled in.
+    This runs as a separate task.
+    ============================================================
+  -->
+  <Target Name="MDocVerifyDocs"
+          DependsOnTargets="_MDocSetup">
+    <_VerifyAllDocsAreComplete DocsRoot="$(MDocDocumentationDirectory)" />
   </Target>
 
   <!--
     ===================================================================================================================
     _FormatDocs
 
-    Make sure the docs are all unifor after editing in various apps or tools.
+    Make sure the docs are all uniform after editing in various apps or tools.
     ===================================================================================================================
   -->
   <UsingTask TaskName="_FormatDocs" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >  
@@ -108,19 +122,7 @@
       <Using Namespace="System.Xml.Linq" />
       <Code Type="Fragment" Language="cs"><![CDATA[
         foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
-          // load the docs
           var xdoc = XDocument.Load(file);
-
-          // check for any incomplete elements
-          var incomplete = xdoc.Descendants("Member").Where(x => x.Descendants().Any(d => d.Value == "To be added."));
-          foreach (var node in incomplete) {
-            var typename = xdoc.Root.Attribute("FullName").Value;
-            var member = node.Attribute("MemberName").Value;
-            var memberType = node.Element("MemberType").Value.ToLower();
-            Log.LogWarning("Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
-          }
-
-          // write
           var settings = new XmlWriterSettings {
               Encoding = new UTF8Encoding(),
               Indent = true,
@@ -132,6 +134,37 @@
               writer.Flush();
           }
           File.AppendAllText(file, "\n");
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!--
+    ===================================================================================================================
+    _VerifyAllDocsAreComplete
+
+    Make sure the docs are all filled in.
+    ===================================================================================================================
+  -->
+  <UsingTask TaskName="_VerifyAllDocsAreComplete" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >  
+    <ParameterGroup>
+      <DocsRoot ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Xml.Linq" />
+      <Using Namespace="System.Xml" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
+          var xdoc = XDocument.Load(file);
+          var incomplete = xdoc.Descendants("Member").Where(x => x.Descendants().Any(d => d.Value == "To be added."));
+          foreach (var node in incomplete) {
+            var typename = xdoc.Root.Attribute("FullName").Value;
+            var member = node.Attribute("MemberName").Value;
+            var memberType = node.Element("MemberType").Value.ToLower();
+            Log.LogWarning("Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
+          }
         }
       ]]></Code>
     </Task>
