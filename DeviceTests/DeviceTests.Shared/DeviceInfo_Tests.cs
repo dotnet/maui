@@ -31,9 +31,9 @@ namespace DeviceTests
 #if WINDOWS_UWP
             Assert.Equal("ec0cc741-fd3e-485c-81be-68815c480690", AppInfo.PackageName);
 #elif __IOS__
-            Assert.Equal("com.xamarin.DeviceTests", AppInfo.PackageName);
+            Assert.Equal("com.xamarin.essentials.devicetests", AppInfo.PackageName);
 #elif __ANDROID__
-            Assert.Equal("com.xamarin.DeviceTests", AppInfo.PackageName);
+            Assert.Equal("com.xamarin.essentials.devicetests", AppInfo.PackageName);
 #else
             throw new PlatformNotSupportedException();
 #endif
