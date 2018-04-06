@@ -1,0 +1,251 @@
+<Type Name="Placemark" FullName="Xamarin.Essentials.Placemark">
+  <TypeSignature Language="C#" Value="public class Placemark" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Placemark extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>User-friendly description of a geographic coordinate. This contains information such as the name of the place, its address, and other information.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Placemark ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Default constructor for placemark.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Placemark (Xamarin.Essentials.Placemark placemark);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.Placemark placemark) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" />
+      </Parameters>
+      <Docs>
+        <param name="placemark">Placemark to copy.</param>
+        <summary>Constructor to create a deep copy.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="AdminArea">
+      <MemberSignature Language="C#" Value="public string AdminArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string AdminArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the administrative area name of the address, for example, "CA", or null if it is unknown.</summary>
+        <value>The admin area.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CountryCode">
+      <MemberSignature Language="C#" Value="public string CountryCode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string CountryCode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the country ISO code.</summary>
+        <value>The country ISO code.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CountryName">
+      <MemberSignature Language="C#" Value="public string CountryName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string CountryName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the country name.</summary>
+        <value>The country name.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="FeatureName">
+      <MemberSignature Language="C#" Value="public string FeatureName { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string FeatureName" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the feature name.</summary>
+        <value>The feature name.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Locality">
+      <MemberSignature Language="C#" Value="public string Locality { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Locality" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the city or town.</summary>
+        <value>The city or town of the locality.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Location">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.Location Location { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Location Location" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.Location</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the location of the placemark.</summary>
+        <value>The location of the palcemark.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="PostalCode">
+      <MemberSignature Language="C#" Value="public string PostalCode { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string PostalCode" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the postal code.</summary>
+        <value>The postal code.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubAdminArea">
+      <MemberSignature Language="C#" Value="public string SubAdminArea { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubAdminArea" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the sub-administrative area name of the address, for example, "Santa Clara County", or null if it is unknown.</summary>
+        <value>The sub-admin area.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubLocality">
+      <MemberSignature Language="C#" Value="public string SubLocality { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubLocality" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the sub locality.</summary>
+        <value>The sub locality.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="SubThoroughfare">
+      <MemberSignature Language="C#" Value="public string SubThoroughfare { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string SubThoroughfare" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets optional info: sub street or region.</summary>
+        <value>The sub thoroughfare.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Thoroughfare">
+      <MemberSignature Language="C#" Value="public string Thoroughfare { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Thoroughfare" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the streen name.</summary>
+        <value>The street name.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

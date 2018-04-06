@@ -7,43 +7,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
-		Caboodle.ruleset = Caboodle.ruleset
+		Xamarin.Essentials.ruleset = Xamarin.Essentials.ruleset
 		README.md = README.md
 		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A14D061F-382D-4609-A3B0-E1D0BF7AB6AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caboodle", "Caboodle\Caboodle.csproj", "{63A4F6A1-48BF-4D32-AED7-82F605EDB042}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Essentials", "Xamarin.Essentials\Xamarin.Essentials.csproj", "{63A4F6A1-48BF-4D32-AED7-82F605EDB042}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caboodle.Tests", "Caboodle.Tests\Caboodle.Tests.csproj", "{77C2F93D-6EB7-49F7-A74A-C80499EC206A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{77C2F93D-6EB7-49F7-A74A-C80499EC206A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{706C0487-6930-4E55-8720-C17D9FE6CA91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Caboodle.Samples", "Samples\Caboodle.Samples\Caboodle.Samples.csproj", "{2550ED91-8AE1-4E9A-A964-C11515C8FA28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples", "Samples\Samples\Samples.csproj", "{2550ED91-8AE1-4E9A-A964-C11515C8FA28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.Samples.Android", "Samples\Caboodle.Samples.Android\Caboodle.Samples.Android.csproj", "{C1CD30D3-52CA-4F8E-8499-BE88567CA2F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Android", "Samples\Samples.Android\Samples.Android.csproj", "{C1CD30D3-52CA-4F8E-8499-BE88567CA2F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.Samples.iOS", "Samples\Caboodle.Samples.iOS\Caboodle.Samples.iOS.csproj", "{E2571C97-C048-4F91-8BB3-546CF7410C4C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.iOS", "Samples\Samples.iOS\Samples.iOS.csproj", "{E2571C97-C048-4F91-8BB3-546CF7410C4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.Samples.UWP", "Samples\Caboodle.Samples.UWP\Caboodle.Samples.UWP.csproj", "{A0798FC9-AB9D-4CCA-AF44-71B7A4691D5A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.UWP", "Samples\Samples.UWP\Samples.UWP.csproj", "{A0798FC9-AB9D-4CCA-AF44-71B7A4691D5A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DeviceTests", "DeviceTests", "{EA9AC363-45BC-4959-BD17-FE3A1B724529}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Caboodle.DeviceTests.Shared", "DeviceTests\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.shproj", "{BE0DE9A3-D92C-47C5-9EC4-DFB546BBDF77}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "DeviceTests.Shared", "DeviceTests\DeviceTests.Shared\DeviceTests.Shared.shproj", "{BE0DE9A3-D92C-47C5-9EC4-DFB546BBDF77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.DeviceTests.Android", "DeviceTests\Caboodle.DeviceTests.Android\Caboodle.DeviceTests.Android.csproj", "{CB2072E0-A437-4811-AE17-16CAE0DDA1B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTests.Android", "DeviceTests\DeviceTests.Android\DeviceTests.Android.csproj", "{CB2072E0-A437-4811-AE17-16CAE0DDA1B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.DeviceTests.iOS", "DeviceTests\Caboodle.DeviceTests.iOS\Caboodle.DeviceTests.iOS.csproj", "{EE8FC716-27FC-405B-BD27-AF17E01A6671}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTests.iOS", "DeviceTests\DeviceTests.iOS\DeviceTests.iOS.csproj", "{EE8FC716-27FC-405B-BD27-AF17E01A6671}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Caboodle.DeviceTests.UWP", "DeviceTests\Caboodle.DeviceTests.UWP\Caboodle.DeviceTests.UWP.csproj", "{4BD0D88F-7E7A-4C3B-9E34-BF3717A8FF4B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTests.UWP", "DeviceTests\DeviceTests.UWP\DeviceTests.UWP.csproj", "{4BD0D88F-7E7A-4C3B-9E34-BF3717A8FF4B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		DeviceTests\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.projitems*{4bd0d88f-7e7a-4c3b-9e34-bf3717a8ff4b}*SharedItemsImports = 4
-		DeviceTests\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.projitems*{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}*SharedItemsImports = 13
-		DeviceTests\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.projitems*{cb2072e0-a437-4811-ae17-16cae0dda1b1}*SharedItemsImports = 4
-		DeviceTests\Caboodle.DeviceTests.Shared\Caboodle.DeviceTests.Shared.projitems*{ee8fc716-27fc-405b-bd27-af17e01a6671}*SharedItemsImports = 4
+		DeviceTests\DeviceTests.Shared\DeviceTests.Shared.projitems*{4bd0d88f-7e7a-4c3b-9e34-bf3717a8ff4b}*SharedItemsImports = 4
+		DeviceTests\DeviceTests.Shared\DeviceTests.Shared.projitems*{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}*SharedItemsImports = 13
+		DeviceTests\DeviceTests.Shared\DeviceTests.Shared.projitems*{cb2072e0-a437-4811-ae17-16cae0dda1b1}*SharedItemsImports = 4
+		DeviceTests\DeviceTests.Shared\DeviceTests.Shared.projitems*{ee8fc716-27fc-405b-bd27-af17e01a6671}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

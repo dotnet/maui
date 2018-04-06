@@ -1,6 +1,6 @@
 <Overview>
   <Assemblies>
-    <Assembly Name="Microsoft.Caboodle" Version="1.0.0.0">
+    <Assembly Name="Xamarin.Essentials" Version="1.0.0.0">
       <Attributes>
         <Attribute>
           <AttributeName>System.Diagnostics.Debuggable(System.Diagnostics.DebuggableAttribute+DebuggingModes.IgnoreSymbolStoreSequencePoints)</AttributeName>
@@ -15,7 +15,7 @@
           <AttributeName>System.Reflection.AssemblyCopyright("© Microsoft Corporation. All rights reserved.")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyDescription("Microsoft Caboodle: a kit of essential API's for your apps")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyDescription("Xamarin.Essentials: a kit of essential API's for your apps")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Reflection.AssemblyFileVersion("1.0.0.0")</AttributeName>
@@ -24,10 +24,10 @@
           <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyProduct("Microsoft.Caboodle (netstandard2.0)")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (netstandard2.0)")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyTitle("Microsoft.Caboodle")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyTitle("Xamarin.Essentials")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Resources.NeutralResourcesLanguage("en")</AttributeName>
@@ -36,16 +36,16 @@
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.Tests")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Tests")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.DeviceTests.Android")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.Android")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Caboodle.DeviceTests.UWP")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.UWP")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("CaboodleDeviceTestsiOS")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.EssentialsDeviceTestsiOS")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
@@ -59,7 +59,7 @@
   <Remarks>To be added.</Remarks>
   <Copyright>To be added.</Copyright>
   <Types>
-    <Namespace Name="Microsoft.Caboodle">
+    <Namespace Name="Xamarin.Essentials">
       <Type Name="Accelerometer" Kind="Class" />
       <Type Name="AccelerometerChangedEventArgs" Kind="Class" />
       <Type Name="AccelerometerChangedEventHandler" Kind="Delegate" />
@@ -130,19 +130,19 @@
   <ExtensionMethods>
     <ExtensionMethod>
       <Targets>
-        <Target Type="T:Microsoft.Caboodle.Location" />
+        <Target Type="T:Xamarin.Essentials.Location" />
       </Targets>
       <Member MemberName="CalculateDistance">
-        <MemberSignature Language="C#" Value="public static double CalculateDistance (this Microsoft.Caboodle.Location locationStart, Microsoft.Caboodle.Location locationEnd, Microsoft.Caboodle.DistanceUnits units);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Microsoft.Caboodle.Location locationStart, class Microsoft.Caboodle.Location locationEnd, valuetype Microsoft.Caboodle.DistanceUnits units) cil managed" />
+        <MemberSignature Language="C#" Value="public static double CalculateDistance (this Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Double</ReturnType>
         </ReturnValue>
         <Parameters>
-          <Parameter Name="locationStart" Type="Microsoft.Caboodle.Location" RefType="this" />
-          <Parameter Name="locationEnd" Type="Microsoft.Caboodle.Location" />
-          <Parameter Name="units" Type="Microsoft.Caboodle.DistanceUnits" />
+          <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" RefType="this" />
+          <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+          <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
         </Parameters>
         <Docs>
           <param name="locationStart">Start location to calculate from.</param>
@@ -150,7 +150,7 @@
           <param name="units">Units to use during calculation.</param>
           <summary>Extension to calculate distance from location to another location.</summary>
         </Docs>
-        <Link Type="Microsoft.Caboodle.LocationExtensions" Member="M:Microsoft.Caboodle.LocationExtensions.CalculateDistance(Microsoft.Caboodle.Location,Microsoft.Caboodle.Location,Microsoft.Caboodle.DistanceUnits)" />
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       </Member>
     </ExtensionMethod>
   </ExtensionMethods>

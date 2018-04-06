@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Caboodle.Tests
+namespace Tests
 {
     public class FileSystem_Tests
     {

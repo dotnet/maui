@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Microsoft.Caboodle.Tests
+namespace Tests
 {
     public class Preferences_Tests
     {

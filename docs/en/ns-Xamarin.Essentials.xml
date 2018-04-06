@@ -1,0 +1,8 @@
+<Namespace Name="Xamarin.Essentials">
+  <Docs>
+    <summary>Xamarin.Essentials offers a cross-patform APIs for platform specific features.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+</Namespace>

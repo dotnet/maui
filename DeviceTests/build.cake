@@ -7,20 +7,20 @@ var TARGET = Argument("target", "Default");
 
 var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone X";
 var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 11.1";
-var IOS_PROJ = "./Caboodle.DeviceTests.iOS/Caboodle.DeviceTests.iOS.csproj";
-var IOS_BUNDLE_ID = "com.xamarin.caboodle.devicetests";
-var IOS_IPA_PATH = "./Caboodle.DeviceTests.iOS/bin/iPhoneSimulator/Release/CaboodleDeviceTestsiOS.app";
+var IOS_PROJ = "./DeviceTests.iOS/DeviceTests.iOS.csproj";
+var IOS_BUNDLE_ID = "com.xamarin.essentials.devicetests";
+var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/Xamarin.EssentialsDeviceTestsiOS.app";
 var IOS_TEST_RESULTS_PATH = "./xunit-ios.xml";
 
-var ANDROID_PROJ = "./Caboodle.DeviceTests.Android/Caboodle.DeviceTests.Android.csproj";
-var ANDROID_APK_PATH = "./Caboodle.DeviceTests.Android/bin/Release/com.xamarin.caboodle.devicetests-Signed.apk";
+var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
+var ANDROID_APK_PATH = "./DeviceTests.Android/bin/Release/com.xamarin.essentials.devicetests-Signed.apk";
 var ANDROID_TEST_RESULTS_PATH = "./xunit-android.xml";
-var ANDROID_AVD = "CABOODLE";
-var ANDROID_PKG_NAME = "com.xamarin.caboodle.devicetests";
+var ANDROID_AVD = "Xamarin.Essentials";
+var ANDROID_PKG_NAME = "com.xamarin.essentials.devicetests";
 var ANDROID_EMU_TARGET = EnvironmentVariable("ANDROID_EMU_TARGET") ?? "system-images;android-26;google_apis;x86";
 var ANDROID_EMU_DEVICE = EnvironmentVariable("ANDROID_EMU_DEVICE") ?? "Nexus 5X";
 
-var UWP_PROJ = "./Caboodle.DeviceTests.UWP/Caboodle.DeviceTests.UWP.csproj";
+var UWP_PROJ = "./DeviceTests.UWP/DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./xunit-uwp.xml";
 var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 
@@ -46,8 +46,8 @@ Func<int, FilePath, Task> DownloadTcpTextAsync = (int port, FilePath filename) =
 Action<FilePath, string> AddPlatformToTestResults = (FilePath testResultsFile, string platformName) => {
     if (FileExists(testResultsFile)) {
         var txt = FileReadText(testResultsFile);
-        txt = txt.Replace("<test-case name=\"Caboodle.DeviceTests.", $"<test-case name=\"Caboodle.DeviceTests.{platformName}.");
-        txt = txt.Replace("name=\"Test collection for Caboodle.DeviceTests.", $"name=\"Test collection for Caboodle.DeviceTests.{platformName}.");        
+        txt = txt.Replace("<test-case name=\"DeviceTests.", $"<test-case name=\"DeviceTests.{platformName}.");
+        txt = txt.Replace("name=\"Test collection for DeviceTests.", $"name=\"Test collection for DeviceTests.{platformName}.");        
         FileWriteText(testResultsFile, txt);
     }
 };
@@ -280,7 +280,7 @@ Task ("test-uwp-emu")
     // Launch the app
     Information("Running appx: {0}", appxBundlePath);
     var ip = TCP_LISTEN_HOST.Replace(".", "-");
-    System.Diagnostics.Process.Start($"caboodle-device-tests://{ip}_{TCP_LISTEN_PORT}");
+    System.Diagnostics.Process.Start($ "xamarin-essentials-device-tests://{ip}_{TCP_LISTEN_PORT}");
 
     // Wait for the test results to come back
     Information("Waiting for tests...");

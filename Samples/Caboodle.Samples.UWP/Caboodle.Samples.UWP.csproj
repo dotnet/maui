@@ -7,8 +7,8 @@
     <ProjectGuid>{A0798FC9-AB9D-4CCA-AF44-71B7A4691D5A}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Caboodle.Samples.UWP</RootNamespace>
-    <AssemblyName>Caboodle.Samples.UWP</AssemblyName>
+    <RootNamespace>Samples.UWP</RootNamespace>
+    <AssemblyName>Samples.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
@@ -17,7 +17,7 @@
     <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>Caboodle.Samples.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>Samples.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
     <PackageCertificateThumbprint>C6BC5BC8980F7F989B31D5313F863DE37B9AB9C2</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
@@ -99,13 +99,13 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Caboodle\Caboodle.csproj">
+    <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
-      <Name>Caboodle</Name>
+      <Name>Xamarin.Essentials</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Caboodle.Samples\Caboodle.Samples.csproj">
+    <ProjectReference Include="..\Samples\Samples.csproj">
       <Project>{9CAC176D-6356-4F0F-A219-FDE2CA542ED9}</Project>
-      <Name>Caboodle.Samples</Name>
+      <Name>Samples</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -168,7 +168,7 @@
     <Content Include="Assets\Wide310x150Logo.scale-400.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Caboodle.Samples.UWP_TemporaryKey.pfx" />
+    <None Include="Samples.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -1,0 +1,40 @@
+<Type Name="CompassData" FullName="Xamarin.Essentials.CompassData">
+  <TypeSignature Language="C#" Value="public struct CompassData" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit CompassData extends System.ValueType" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+      <para>Contains the orientation of the user's device.</para>
+    </summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="HeadingMagneticNorth">
+      <MemberSignature Language="C#" Value="public double HeadingMagneticNorth { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 HeadingMagneticNorth" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The heading (measured in degrees) relative to magnetic north.</summary>
+        <value>The magnetic north heading.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

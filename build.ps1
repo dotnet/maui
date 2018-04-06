@@ -17,18 +17,18 @@ if ($IsMacOS) {
 Write-Output "Using MSBuild from: $msbuild"
 
 # Build the projects
-& $msbuild "./Caboodle.sln" /t:"Restore;Build" /p:Configuration=Release
+& $msbuild "./Xamarin.Essentials.sln" /t:"Restore;Build" /p:Configuration=Release
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
 # Create the stable NuGet package
-& $msbuild "./Caboodle/Caboodle.csproj" /t:Pack /p:Configuration=Release /p:VersionSuffix=".$env:BUILD_NUMBER"
+& $msbuild "./Xamarin.Essentials/Xamarin.Essentials.csproj" /t:Pack /p:Configuration=Release /p:VersionSuffix=".$env:BUILD_NUMBER"
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
 # Create the beta NuGet package
-& $msbuild "./Caboodle/Caboodle.csproj" /t:Pack /p:Configuration=Release /p:VersionSuffix=".$env:BUILD_NUMBER-beta"
+& $msbuild "./Xamarin.Essentials/Xamarin.Essentials.csproj" /t:Pack /p:Configuration=Release /p:VersionSuffix=".$env:BUILD_NUMBER-beta"
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
 # Copy everything into the output folder
-Copy-Item "./Caboodle/bin/Release" "./Output" -Recurse -Force
+Copy-Item "./Xamarin.Essentials/bin/Release" "./Output" -Recurse -Force
 
 exit $lastexitcode;

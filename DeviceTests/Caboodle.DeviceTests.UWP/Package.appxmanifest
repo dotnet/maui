@@ -3,7 +3,7 @@
   <Identity Name="ec0cc741-fd3e-485c-81be-68815c480690" Publisher="CN=Xamarin Inc." Version="1.0.1.0" />
   <mp:PhoneIdentity PhoneProductId="ec0cc741-fd3e-485c-81be-68815c480690" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Caboodle Tests</DisplayName>
+    <DisplayName>Tests</DisplayName>
     <PublisherDisplayName>Xamarin Inc.</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -14,16 +14,16 @@
     <Resource Language="x-generate" />
   </Resources>
   <Applications>
-    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="Caboodle.DeviceTests.UWP.App">
-      <uap:VisualElements DisplayName="Caboodle Tests" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Microsoft Caboodle Tests" BackgroundColor="transparent">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="DeviceTests.UWP.App">
+      <uap:VisualElements DisplayName="Tests" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Tests" BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
         </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
         <uap:Extension Category="windows.protocol">
-          <uap:Protocol Name="caboodle-device-tests">
-            <uap:DisplayName>Caboodle Device Tests</uap:DisplayName>
+          <uap:Protocol Name="Xamarin.Essentials-device-tests">
+            <uap:DisplayName>Xamarin.Essentials Device Tests</uap:DisplayName>
           </uap:Protocol>
         </uap:Extension>
       </Extensions>

@@ -1,0 +1,251 @@
+<Type Name="Location" FullName="Xamarin.Essentials.Location">
+  <TypeSignature Language="C#" Value="public class Location" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Location extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>The latitude, longitude, and time information reported by the device.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Constructor for a location.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (Xamarin.Essentials.Location point);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.Location point) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="point" Type="Xamarin.Essentials.Location" />
+      </Parameters>
+      <Docs>
+        <param name="point">Location to copy values from.</param>
+        <summary>Constructor for a location.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (double latitude, double longitude);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 latitude, float64 longitude) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Default latitude for location.</param>
+        <param name="longitude">Default longitude for location.</param>
+        <summary>Constructor for a location.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public Location (double latitude, double longitude, DateTimeOffset timestamp);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 latitude, float64 longitude, valuetype System.DateTimeOffset timestamp) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="latitude" Type="System.Double" />
+        <Parameter Name="longitude" Type="System.Double" />
+        <Parameter Name="timestamp" Type="System.DateTimeOffset" />
+      </Parameters>
+      <Docs>
+        <param name="latitude">Default latitude for location.</param>
+        <param name="longitude">Default longitude for location.</param>
+        <param name="timestamp">Timestamp for the location (Utc based).</param>
+        <summary>Constructor for a location.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="locationStart">Start location to calculate from.</param>
+        <param name="locationEnd">End location to calculate from.</param>
+        <param name="units">Units to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance between two locations in the unit selected.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double latitudeEnd, double longitudeStart, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 latitudeEnd, float64 longitudeStart, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="latitudeStart" Type="System.Double" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
+        <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="longitudeEnd" Type="System.Double" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="latitudeStart">Start latitude to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
+        <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="longitudeEnd">End longitude to calculate from.</param>
+        <param name="units">Units to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance between two locations in the unit selected.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="KilometersToMiles">
+      <MemberSignature Language="C#" Value="public static double KilometersToMiles (double kilometers);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilometersToMiles(float64 kilometers) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="kilometers" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="kilometers">
+          <para>Kilometers to convert to miles.</para>
+        </param>
+        <summary>Convert kilometers to miles.</summary>
+        <returns>Miles conversion from kilometers.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Latitude">
+      <MemberSignature Language="C#" Value="public double Latitude { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Latitude" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the latitude of location.</summary>
+        <value>Latitude of the location.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Longitude">
+      <MemberSignature Language="C#" Value="public double Longitude { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Longitude" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the longitude of location.</summary>
+        <value>Longitude of the location.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="MilesToKilometers">
+      <MemberSignature Language="C#" Value="public static double MilesToKilometers (double miles);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MilesToKilometers(float64 miles) cil managed" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="miles" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="miles">Miles to be converted.</param>
+        <summary>Converts miles to kilometers.</summary>
+        <returns>Value of miles converted to kilometers.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="TimestampUtc">
+      <MemberSignature Language="C#" Value="public DateTimeOffset TimestampUtc { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTimeOffset TimestampUtc" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTimeOffset</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the timestamp of the location.</summary>
+        <value>Utc timestamp.</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
