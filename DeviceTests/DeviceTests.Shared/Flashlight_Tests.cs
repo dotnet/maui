@@ -1,17 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xunit;
 
 namespace DeviceTests
 {
+    // TEST NOTES:
+    //   - a human needs to accept permissions on Android
+    //   - the camera flash is not emulated on iOS simulators
     public class Flashlight_Tests
     {
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+#if __ANDROID__
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+#endif
+#if __IOS__
+        [Trait(Traits.DeviceType, Traits.DeviceTypes.Physical)]
+#endif
         public async Task Turn_On_Off(bool oldCameraApi)
         {
             if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
@@ -22,18 +28,9 @@ namespace DeviceTests
                 });
                 return;
             }
-#if __ANDROID__
-            // API 23+ we need user interaction for camera permission
-            // can't really test so easily on device.
-            if (Platform.HasApiLevel(Android.OS.BuildVersionCodes.M))
-                return;
 
+#if __ANDROID__
             Flashlight.AlwaysUseCameraApi = oldCameraApi;
-#elif __IOS__
-            // TODO: remove this as soon as the test harness can filter
-            // the iOS simulator does not emulate a flashlight
-            if (DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS)
-                return;
 #endif
             await Flashlight.TurnOnAsync();
             await Flashlight.TurnOffAsync();
