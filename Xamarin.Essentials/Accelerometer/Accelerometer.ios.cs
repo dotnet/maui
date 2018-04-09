@@ -34,7 +34,7 @@ namespace Xamarin.Essentials
                     break;
             }
 
-            manager.StartAccelerometerUpdates(NSOperationQueue.CurrentQueue, DataUpdated);
+            manager.StartAccelerometerUpdates(Platform.GetCurrentQueue(), DataUpdated);
         }
 
         static void DataUpdated(CMAccelerometerData data, NSError error)
