@@ -54,6 +54,11 @@ namespace Xamarin.Essentials
             }
         }
 
+        [Preserve]
+        public static void Track()
+        {
+        }
+
         public static bool IsFirstLaunchEver { get; private set; }
 
         public static bool IsFirstLaunchForCurrentVersion { get; private set; }

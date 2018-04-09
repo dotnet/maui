@@ -97,11 +97,7 @@ namespace Xamarin.Essentials
         Virtual
     }
 
-#if __ANDROID__
-    [global::Android.Runtime.Preserve(AllMembers = true)]
-#elif __IOS__
-    [Foundation.Preserve(AllMembers = true)]
-#endif
+    [Preserve(AllMembers = true)]
     public struct ScreenMetrics
     {
         internal ScreenMetrics(double width, double height, double density, ScreenOrientation orientation, ScreenRotation rotation)
