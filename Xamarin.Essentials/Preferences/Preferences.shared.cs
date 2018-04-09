@@ -2,6 +2,9 @@
 {
     public static partial class Preferences
     {
+        internal static string PrivatePreferencesSharedName =>
+            $"{AppInfo.PackageName}.xamarinessentials";
+
         public static bool ContainsKey(string key) =>
             PlatformContainsKey(key, null);
 

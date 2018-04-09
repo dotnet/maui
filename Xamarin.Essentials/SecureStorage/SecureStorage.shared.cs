@@ -4,8 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class SecureStorage
     {
-        static string Alias =>
-            $"{AppInfo.PackageName}.Xamarin.Essentials";
+        internal static readonly string Alias = Preferences.PrivatePreferencesSharedName;
 
         public static Task<string> GetAsync(string key)
             => PlatformGetAsync(key);
