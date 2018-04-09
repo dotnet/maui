@@ -13,6 +13,8 @@ namespace Samples
         {
             InitializeComponent();
 
+            VersionTracking.Track();
+
             MainPage = new NavigationPage(new HomePage());
         }
 
