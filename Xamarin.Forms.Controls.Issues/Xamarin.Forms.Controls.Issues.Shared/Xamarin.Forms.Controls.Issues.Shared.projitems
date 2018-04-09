@@ -238,6 +238,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GroupListViewHeaderIndexOutOfRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1975.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1601.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1717.cs" />

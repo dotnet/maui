@@ -967,10 +967,10 @@ namespace Xamarin.Forms.Platform.iOS
 				if (cell.HasContextActions)
 					throw new NotSupportedException("Header cells do not support context actions");
 
-					var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
+				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 
-					view = new HeaderWrapperView();
-					view.AddSubview(renderer.GetCell(cell, null, tableView));
+				view = new HeaderWrapperView { Cell = cell };
+				view.AddSubview(renderer.GetCell(cell, null, tableView));
 
 				return view;
 			}
@@ -980,8 +980,11 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!List.IsGroupingEnabled)
 					return;
 
-				var cell = TemplatedItemsView.TemplatedItems[(int)section];
-				cell.SendDisappearing();
+				if (headerView is HeaderWrapperView wrapper)
+				{
+					wrapper.Cell?.SendDisappearing();
+					wrapper.Cell = null;
+				}
 			}
 
 			public override nint NumberOfSections(UITableView tableView)
@@ -1254,6 +1257,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 	internal class HeaderWrapperView : UIView
 	{
+		public Cell Cell { get; set; }
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
