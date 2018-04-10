@@ -31,6 +31,12 @@ namespace Samples.ViewModel
                     "Have a look at the accelerometer, compass, gyroscope and magnetometer.",
                     new[] { "accelerometer", "compass", "gyroscope", "magnetometer", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "📦",
+                    "App Info",
+                    typeof(AppInfoPage),
+                    "Find out about the app with ease.",
+                    new[] { "app", "info" }),
+                new SampleItem(
                     "🔋",
                     "Battery",
                     typeof(BatteryPage),
@@ -71,7 +77,7 @@ namespace Samples.ViewModel
                     "Device Info",
                     typeof(DeviceInfoPage),
                     "Find out about the device with ease.",
-                    new[] { "hardware", "device" }),
+                    new[] { "hardware", "device", "info" }),
                 new SampleItem(
                     "📧",
                     "Email",

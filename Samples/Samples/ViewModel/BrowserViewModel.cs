@@ -11,7 +11,7 @@ namespace Samples.ViewModel
     {
         string browserStatus;
         string uri = "http://xamarin.com";
-        int browserType = 1;
+        int browserType = (int)BrowserLaunchType.SystemPreferred;
 
         public BrowserViewModel()
         {

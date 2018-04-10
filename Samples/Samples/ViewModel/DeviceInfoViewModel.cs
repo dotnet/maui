@@ -6,10 +6,6 @@ namespace Samples.ViewModel
     {
         ScreenMetrics screenMetrics;
 
-        public DeviceInfoViewModel()
-        {
-        }
-
         public string Model => DeviceInfo.Model;
 
         public string Manufacturer => DeviceInfo.Manufacturer;
@@ -17,14 +13,6 @@ namespace Samples.ViewModel
         public string Name => DeviceInfo.Name;
 
         public string Version => DeviceInfo.VersionString;
-
-        public string AppPackageName => AppInfo.PackageName;
-
-        public string AppName => AppInfo.Name;
-
-        public string AppVersion => AppInfo.VersionString;
-
-        public string AppBuild => AppInfo.BuildString;
 
         public string Platform => DeviceInfo.Platform;
 
