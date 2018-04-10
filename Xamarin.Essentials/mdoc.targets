@@ -88,13 +88,13 @@
       <BinConfigDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\</BinConfigDir>
       <TmpDir>$(MSBuildProjectDirectory)\tmp\</TmpDir>
     </PropertyGroup>
-    <ItemGroup>
-      <MDocAssembly Include="$(BinConfigDir)**\$(AssemblyName).dll" />
-    </ItemGroup>
     <RemoveDir Directories="$(TmpDir)" />
     <MakeDir Directories="$(TmpDir)" />
     <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
-    <Copy SourceFiles="%(MDocAssembly.Identity)" DestinationFolder="$(TmpDir)$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(MDocAssembly.Identity)))))" />
+    <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)Xamarin.Essentials" />
+    <Copy SourceFiles="$(BinConfigDir)monoandroid71\$(AssemblyName).dll" DestinationFolder="$(TmpDir)Xamarin.Essentials.Android" />
+    <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)Xamarin.Essentials.iOS" />
+    <Copy SourceFiles="$(BinConfigDir)uap10.0.16299\$(AssemblyName).dll" DestinationFolder="$(TmpDir)Xamarin.Essentials.UWP" />
     <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update -lang=DocId --frameworks=&quot;$(TmpDir)frameworks.xml&quot; --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies)" />
     <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />
     <_VerifyAllDocsAreComplete DocsRoot="$(MDocDocumentationDirectory)" />
