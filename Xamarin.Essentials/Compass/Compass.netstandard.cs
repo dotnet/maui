@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace Xamarin.Essentials
+﻿namespace Xamarin.Essentials
 {
     public static partial class Compass
     {

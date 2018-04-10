@@ -1,6 +1,8 @@
 ﻿using System;
+#if __ANDROID_26__
 using Android;
 using Android.OS;
+#endif
 
 namespace Xamarin.Essentials
 {

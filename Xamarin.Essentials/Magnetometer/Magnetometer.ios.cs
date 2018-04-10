@@ -1,5 +1,4 @@
-﻿using System;
-using CoreMotion;
+﻿using CoreMotion;
 using Foundation;
 
 namespace Xamarin.Essentials

@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Android;
-using Android.App;
 using Android.Content;
 using Android.Net;
-using Android.Net.Wifi;
 using Android.OS;
 
 namespace Xamarin.Essentials

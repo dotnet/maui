@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Android.App;
 using Android.Content;
 
 namespace Xamarin.Essentials

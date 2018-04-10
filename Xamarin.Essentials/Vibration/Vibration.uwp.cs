@@ -11,14 +11,10 @@ namespace Xamarin.Essentials
 
         static VibrationDevice DefaultDevice => VibrationDevice.GetDefault();
 
-        static void PlatformVibrate(TimeSpan duration)
-        {
+        static void PlatformVibrate(TimeSpan duration) =>
             DefaultDevice.Vibrate(duration);
-        }
 
-        static void PlatformCancel()
-        {
+        static void PlatformCancel() =>
             DefaultDevice.Cancel();
-        }
     }
 }
