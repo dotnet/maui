@@ -56,8 +56,8 @@
       </Attributes>
     </Assembly>
   </Assemblies>
-  <Remarks>To be added.</Remarks>
-  <Copyright>To be added.</Copyright>
+  <Remarks></Remarks>
+  <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
   <Types>
     <Namespace Name="Xamarin.Essentials">
       <Type Name="Accelerometer" Kind="Class" />
@@ -94,6 +94,9 @@
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
       <Type Name="Geocoding" Kind="Class" />
+      <Type Name="Geolocation" Kind="Class" />
+      <Type Name="GeolocationAccuracy" Kind="Enumeration" />
+      <Type Name="GeolocationRequest" Kind="Class" />
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
       <Type Name="GyroscopeChangedEventHandler" Kind="Delegate" />

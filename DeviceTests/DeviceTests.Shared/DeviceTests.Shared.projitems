@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DeviceInfo_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Flashlight_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geocoding_Tests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Geolocation_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PhoneDialer_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScreenLock_Tests.cs" />

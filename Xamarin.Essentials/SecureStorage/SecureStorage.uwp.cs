@@ -19,6 +19,7 @@ namespace Xamarin.Essentials
                 return null;
 
             var provider = new DataProtectionProvider();
+
             var buffer = await provider.UnprotectAsync(encBytes.AsBuffer());
 
             return Encoding.UTF8.GetString(buffer.ToArray());
@@ -32,7 +33,9 @@ namespace Xamarin.Essentials
 
             // LOCAL=user and LOCAL=machine do not require enterprise auth capability
             var provider = new DataProtectionProvider("LOCAL=user");
+
             var buffer = await provider.ProtectAsync(bytes.AsBuffer());
+
             var encBytes = buffer.ToArray();
 
             settings.Values[key] = encBytes;

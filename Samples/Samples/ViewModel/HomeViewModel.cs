@@ -27,6 +27,7 @@ namespace Samples.ViewModel
                 new SampleItem("File System", typeof(FileSystemPage), "Easily save files to app data."),
                 new SampleItem("Flashlight", typeof(FlashlightPage), "A simple way to turn the flashlight on/off."),
                 new SampleItem("Geocoding", typeof(GeocodingPage), "Easily geocode and reverse geocoding."),
+                new SampleItem("Geolocation", typeof(GeolocationPage), "Quickly get the current location."),
                 new SampleItem("Gyroscope", typeof(GyroscopePage), "Retrieve  rotation around the device's three primary axes."),
                 new SampleItem("Magnetometer", typeof(MagnetometerPage), "Detect device's orientation relative to Earth's magnetic field."),
                 new SampleItem("Phone Dialer", typeof(PhoneDialerPage), "Easily open phone dialer."),

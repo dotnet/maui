@@ -46,6 +46,8 @@ namespace Xamarin.Essentials
 
         public double Longitude { get; set; }
 
+        public double? Accuracy { get; set; }
+
         public static double CalculateDistance(Location locationStart, Location locationEnd, DistanceUnits units) =>
             CalculateDistance(locationStart.Latitude, locationStart.Longitude, locationEnd.Latitude, locationEnd.Longitude, units);
 

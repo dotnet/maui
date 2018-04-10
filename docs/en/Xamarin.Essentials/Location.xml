@@ -100,6 +100,22 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="Accuracy">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Accuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Accuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the accuracy (in meters) of the location.</summary>
+        <value>The location accuracy.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="CalculateDistance">
       <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
@@ -264,7 +280,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the timestamp of the location.</summary>
-        <value>Utc timestamp.</value>
+        <value>UTC timestamp.</value>
         <remarks>
           <para></para>
         </remarks>

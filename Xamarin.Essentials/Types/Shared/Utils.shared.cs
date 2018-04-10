@@ -3,6 +3,7 @@
 using System.Security.Cryptography;
 #endif
 using System.Text;
+using System.Threading;
 
 namespace Xamarin.Essentials
 {
@@ -30,6 +31,19 @@ namespace Xamarin.Essentials
 
             return hash.ToString();
 #endif
+        }
+
+        internal static CancellationToken TimeoutToken(CancellationToken cancellationToken, TimeSpan timeout)
+        {
+            // create a new linked cancellation token source
+            var cancelTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            // if a timeout was given, make the token source cancel after it expires
+            if (timeout > TimeSpan.Zero)
+                cancelTokenSrc.CancelAfter(timeout);
+
+            // our Cancel method will handle the actual cancellation logic
+            return cancelTokenSrc.Token;
         }
     }
 }

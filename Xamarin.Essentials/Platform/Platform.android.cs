@@ -5,6 +5,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Hardware;
 using Android.Hardware.Camera2;
+using Android.Locations;
 using Android.Net;
 using Android.Net.Wifi;
 using Android.OS;
@@ -74,7 +75,7 @@ namespace Xamarin.Essentials
             Application.Context.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
         internal static Vibrator Vibrator =>
-            (Vibrator)Application.Context.GetSystemService(Context.VibratorService);
+            Application.Context.GetSystemService(Context.VibratorService) as Vibrator;
 
         internal static WifiManager WifiManager =>
             Application.Context.GetSystemService(Context.WifiService) as WifiManager;
@@ -84,6 +85,9 @@ namespace Xamarin.Essentials
 
         internal static ClipboardManager ClipboardManager =>
             Application.Context.GetSystemService(Context.ClipboardService) as ClipboardManager;
+
+        internal static LocationManager LocationManager =>
+            Application.Context.GetSystemService(Context.LocationService) as LocationManager;
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks

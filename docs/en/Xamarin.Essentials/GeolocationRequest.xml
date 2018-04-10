@@ -1,0 +1,97 @@
+<Type Name="GeolocationRequest" FullName="Xamarin.Essentials.GeolocationRequest">
+  <TypeSignature Language="C#" Value="public class GeolocationRequest" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit GeolocationRequest extends System.Object" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Represents the criteria for a location request.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public GeolocationRequest ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary>Creates a new instance of GeolocationRequest.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public GeolocationRequest (Xamarin.Essentials.GeolocationAccuracy accuracy);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.GeolocationAccuracy accuracy) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="accuracy" Type="Xamarin.Essentials.GeolocationAccuracy" />
+      </Parameters>
+      <Docs>
+        <param name="accuracy">The desired accuracy.</param>
+        <summary>Creates a new instance of GeolocationRequest with the specified accuracy.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public GeolocationRequest (Xamarin.Essentials.GeolocationAccuracy accuracy, TimeSpan timeout);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.GeolocationAccuracy accuracy, valuetype System.TimeSpan timeout) cil managed" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="accuracy" Type="Xamarin.Essentials.GeolocationAccuracy" />
+        <Parameter Name="timeout" Type="System.TimeSpan" />
+      </Parameters>
+      <Docs>
+        <param name="accuracy">The desired accuracy.</param>
+        <param name="timeout">The request timeout.</param>
+        <summary>Creates a new instance of GeolocationRequest with the specified accuracy and timeout.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="DesiredAccuracy">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.GeolocationAccuracy DesiredAccuracy { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.GeolocationAccuracy DesiredAccuracy" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the desired accuracy of the resulting location.</summary>
+        <value>The desired accuracy of the location.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Timeout">
+      <MemberSignature Language="C#" Value="public TimeSpan Timeout { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.TimeSpan Timeout" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.TimeSpan</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or sets the location request timeout.</summary>
+        <value>The location request timeout.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
