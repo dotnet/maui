@@ -1,6 +1,7 @@
 <Type Name="Platform" FullName="Xamarin.Essentials.Platform">
   <TypeSignature Language="C#" Value="public static class Platform" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Platform extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Platform" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="BeginInvokeOnMainThread">
       <MemberSignature Language="C#" Value="public static void BeginInvokeOnMainThread (Action action);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void BeginInvokeOnMainThread(class System.Action action) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.BeginInvokeOnMainThread(System.Action)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -40,7 +43,12 @@
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public static void Init (Android.App.Application application);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Application application) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -58,7 +66,12 @@
     <Member MemberName="Init">
       <MemberSignature Language="C#" Value="public static void Init (Android.App.Activity activity, Android.OS.Bundle bundle);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Init(class Android.App.Activity activity, class Android.OS.Bundle bundle) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
@@ -78,7 +91,12 @@
     <Member MemberName="OnRequestPermissionsResult">
       <MemberSignature Language="C#" Value="public static void OnRequestPermissionsResult (int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnRequestPermissionsResult(int32 requestCode, string[] permissions, valuetype Android.Content.PM.Permission[] grantResults) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
       <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>

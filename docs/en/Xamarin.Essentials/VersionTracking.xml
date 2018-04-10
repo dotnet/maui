@@ -1,6 +1,7 @@
 <Type Name="VersionTracking" FullName="Xamarin.Essentials.VersionTracking">
   <TypeSignature Language="C#" Value="public static class VersionTracking" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed VersionTracking extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.VersionTracking" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -14,30 +15,14 @@
     <remarks></remarks>
   </Docs>
   <Members>
-    <Member MemberName="Track">
-      <MemberSignature Language="C#" Value="public static void Track ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Track() cil managed" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters />
-      <Docs>
-        <summary>Starts tracking version information.</summary>
-        <returns></returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
     <Member MemberName="BuildHistory">
       <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;string&gt; BuildHistory { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IEnumerable`1&lt;string&gt; BuildHistory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.BuildHistory" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>
@@ -51,9 +36,11 @@
     <Member MemberName="CurrentBuild">
       <MemberSignature Language="C#" Value="public static string CurrentBuild { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string CurrentBuild" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.CurrentBuild" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -67,9 +54,11 @@
     <Member MemberName="CurrentVersion">
       <MemberSignature Language="C#" Value="public static string CurrentVersion { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string CurrentVersion" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.CurrentVersion" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -83,9 +72,11 @@
     <Member MemberName="FirstInstalledBuild">
       <MemberSignature Language="C#" Value="public static string FirstInstalledBuild { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string FirstInstalledBuild" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.FirstInstalledBuild" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -99,9 +90,11 @@
     <Member MemberName="FirstInstalledVersion">
       <MemberSignature Language="C#" Value="public static string FirstInstalledVersion { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string FirstInstalledVersion" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.FirstInstalledVersion" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -115,9 +108,11 @@
     <Member MemberName="IsFirstLaunchEver">
       <MemberSignature Language="C#" Value="public static bool IsFirstLaunchEver { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsFirstLaunchEver" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchEver" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -131,9 +126,11 @@
     <Member MemberName="IsFirstLaunchForBuild">
       <MemberSignature Language="C#" Value="public static bool IsFirstLaunchForBuild (string build);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsFirstLaunchForBuild(string build) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -151,9 +148,11 @@
     <Member MemberName="IsFirstLaunchForCurrentBuild">
       <MemberSignature Language="C#" Value="public static bool IsFirstLaunchForCurrentBuild { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsFirstLaunchForCurrentBuild" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentBuild" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -167,9 +166,11 @@
     <Member MemberName="IsFirstLaunchForCurrentVersion">
       <MemberSignature Language="C#" Value="public static bool IsFirstLaunchForCurrentVersion { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsFirstLaunchForCurrentVersion" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -183,9 +184,11 @@
     <Member MemberName="IsFirstLaunchForVersion">
       <MemberSignature Language="C#" Value="public static bool IsFirstLaunchForVersion (string version);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool IsFirstLaunchForVersion(string version) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForVersion(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -203,9 +206,11 @@
     <Member MemberName="PreviousBuild">
       <MemberSignature Language="C#" Value="public static string PreviousBuild { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string PreviousBuild" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.PreviousBuild" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -219,9 +224,11 @@
     <Member MemberName="PreviousVersion">
       <MemberSignature Language="C#" Value="public static string PreviousVersion { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string PreviousVersion" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.PreviousVersion" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -232,12 +239,32 @@
         <remarks></remarks>
       </Docs>
     </Member>
+    <Member MemberName="Track">
+      <MemberSignature Language="C#" Value="public static void Track ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Track() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.VersionTracking.Track" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Starts tracking version information.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="VersionHistory">
       <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;string&gt; VersionHistory { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IEnumerable`1&lt;string&gt; VersionHistory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.VersionTracking.VersionHistory" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IEnumerable&lt;System.String&gt;</ReturnType>

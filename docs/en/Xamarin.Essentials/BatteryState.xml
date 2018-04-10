@@ -1,6 +1,7 @@
 <Type Name="BatteryState" FullName="Xamarin.Essentials.BatteryState">
   <TypeSignature Language="C#" Value="public enum BatteryState" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed BatteryState extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BatteryState" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,9 +19,11 @@
     <Member MemberName="Charging">
       <MemberSignature Language="C#" Value="Charging" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState Charging = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.Charging" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
@@ -33,9 +36,11 @@
     <Member MemberName="Discharging">
       <MemberSignature Language="C#" Value="Discharging" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState Discharging = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.Discharging" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
@@ -48,9 +53,11 @@
     <Member MemberName="Full">
       <MemberSignature Language="C#" Value="Full" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState Full = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.Full" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
@@ -63,9 +70,11 @@
     <Member MemberName="NotCharging">
       <MemberSignature Language="C#" Value="NotCharging" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState NotCharging = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.NotCharging" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
@@ -78,9 +87,11 @@
     <Member MemberName="Unknown">
       <MemberSignature Language="C#" Value="Unknown" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.Unknown" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>

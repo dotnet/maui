@@ -1,6 +1,7 @@
 <Type Name="ScreenMetricsChanagedEventArgs" FullName="Xamarin.Essentials.ScreenMetricsChanagedEventArgs">
   <TypeSignature Language="C#" Value="public class ScreenMetricsChanagedEventArgs : EventArgs" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit ScreenMetricsChanagedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ScreenMetricsChanagedEventArgs" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public ScreenMetricsChanagedEventArgs (Xamarin.Essentials.ScreenMetrics metrics);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.ScreenMetrics metrics) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="metrics" Type="Xamarin.Essentials.ScreenMetrics" />
@@ -37,9 +40,11 @@
     <Member MemberName="Metrics">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.ScreenMetrics Metrics { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ScreenMetrics Metrics" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.Metrics" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.ScreenMetrics</ReturnType>

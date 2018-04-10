@@ -1,6 +1,7 @@
 <Type Name="EmailBodyFormat" FullName="Xamarin.Essentials.EmailBodyFormat">
   <TypeSignature Language="C#" Value="public enum EmailBodyFormat" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed EmailBodyFormat extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.EmailBodyFormat" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -16,9 +17,11 @@
     <Member MemberName="Html">
       <MemberSignature Language="C#" Value="Html" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.EmailBodyFormat Html = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.EmailBodyFormat.Html" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.EmailBodyFormat</ReturnType>
@@ -31,9 +34,11 @@
     <Member MemberName="PlainText">
       <MemberSignature Language="C#" Value="PlainText" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.EmailBodyFormat PlainText = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.EmailBodyFormat.PlainText" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.EmailBodyFormat</ReturnType>

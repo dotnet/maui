@@ -1,6 +1,7 @@
 <Type Name="MagnetometerData" FullName="Xamarin.Essentials.MagnetometerData">
   <TypeSignature Language="C#" Value="public struct MagnetometerData" />
   <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit MagnetometerData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.MagnetometerData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="MagneticFieldX">
       <MemberSignature Language="C#" Value="public double MagneticFieldX { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldX" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldX" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -35,9 +38,11 @@
     <Member MemberName="MagneticFieldY">
       <MemberSignature Language="C#" Value="public double MagneticFieldY { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldY" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldY" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -53,9 +58,11 @@
     <Member MemberName="MagneticFieldZ">
       <MemberSignature Language="C#" Value="public double MagneticFieldZ { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldZ" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldZ" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>

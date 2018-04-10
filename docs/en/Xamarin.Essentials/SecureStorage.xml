@@ -1,6 +1,7 @@
 <Type Name="SecureStorage" FullName="Xamarin.Essentials.SecureStorage">
   <TypeSignature Language="C#" Value="public static class SecureStorage" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit SecureStorage extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SecureStorage" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -31,9 +32,11 @@
     <Member MemberName="GetAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;string&gt; GetAsync (string key);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;string&gt; GetAsync(string key) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
@@ -51,9 +54,11 @@
     <Member MemberName="SetAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetAsync (string key, string value);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetAsync(string key, string value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task</ReturnType>

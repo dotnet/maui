@@ -1,6 +1,7 @@
 <Type Name="Browser" FullName="Xamarin.Essentials.Browser">
   <TypeSignature Language="C#" Value="public static class Browser" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Browser extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Browser" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,9 +18,11 @@
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (string uri);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(string uri) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Browser.OpenAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task</ReturnType>
@@ -39,9 +42,11 @@
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Uri uri);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class System.Uri uri) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task</ReturnType>
@@ -61,16 +66,18 @@
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (string uri, Xamarin.Essentials.BrowserLaunchType launchType);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(string uri, valuetype Xamarin.Essentials.BrowserLaunchType launchType) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Browser.OpenAsync(System.String,Xamarin.Essentials.BrowserLaunchType)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="uri" Type="System.String" Index="0" />
-        <Parameter Name="launchType" Type="Xamarin.Essentials.BrowserLaunchType" Index="1" FrameworkAlternate="Empty" />
+        <Parameter Name="launchType" Type="Xamarin.Essentials.BrowserLaunchType" Index="1" FrameworkAlternate="Empty;monoandroid71;netstandard1.0;netstandard2.0;uap10.0.16299;xamarin.ios10" />
       </Parameters>
       <Docs>
         <param name="uri">Uri to launch.</param>
@@ -85,9 +92,11 @@
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Uri uri, Xamarin.Essentials.BrowserLaunchType launchType);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class System.Uri uri, valuetype Xamarin.Essentials.BrowserLaunchType launchType) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchType)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task</ReturnType>

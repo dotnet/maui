@@ -1,6 +1,7 @@
 <Type Name="Geocoding" FullName="Xamarin.Essentials.Geocoding">
   <TypeSignature Language="C#" Value="public static class Geocoding" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Geocoding extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Geocoding" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="GetLocationsAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Location&gt;&gt; GetLocationsAsync (string address);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Location&gt;&gt; GetLocationsAsync(string address) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetLocationsAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Attributes>
         <Attribute>
@@ -48,9 +51,11 @@
     <Member MemberName="GetPlacemarksAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync (Xamarin.Essentials.Location location);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync(class Xamarin.Essentials.Location location) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt;</ReturnType>
@@ -70,9 +75,11 @@
     <Member MemberName="GetPlacemarksAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync (double latitude, double longitude);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Placemark&gt;&gt; GetPlacemarksAsync(float64 latitude, float64 longitude) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(System.Double,System.Double)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Attributes>
         <Attribute>
@@ -99,9 +106,11 @@
     <Member MemberName="MapKey">
       <MemberSignature Language="C#" Value="public static string MapKey { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property string MapKey" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Geocoding.MapKey" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>

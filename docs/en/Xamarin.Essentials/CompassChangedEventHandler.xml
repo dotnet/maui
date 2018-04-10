@@ -1,6 +1,7 @@
 <Type Name="CompassChangedEventHandler" FullName="Xamarin.Essentials.CompassChangedEventHandler">
   <TypeSignature Language="C#" Value="public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed CompassChangedEventHandler extends System.MulticastDelegate" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.CompassChangedEventHandler" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>

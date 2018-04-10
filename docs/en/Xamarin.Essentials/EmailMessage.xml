@@ -1,6 +1,7 @@
 <Type Name="EmailMessage" FullName="Xamarin.Essentials.EmailMessage">
   <TypeSignature Language="C#" Value="public class EmailMessage" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit EmailMessage extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.EmailMessage" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,9 +18,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public EmailMessage ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EmailMessage.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters />
       <Docs>
@@ -30,9 +33,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public EmailMessage (string subject, string body, params string[] to);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string subject, string body, string[] to) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EmailMessage.#ctor(System.String,System.String,System.String[])" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="subject" Type="System.String" />
@@ -56,9 +61,11 @@
     <Member MemberName="Bcc">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; Bcc { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;string&gt; Bcc" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.Bcc" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.List&lt;System.String&gt;</ReturnType>
@@ -72,9 +79,11 @@
     <Member MemberName="Body">
       <MemberSignature Language="C#" Value="public string Body { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Body" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.Body" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -88,9 +97,11 @@
     <Member MemberName="BodyFormat">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.EmailBodyFormat BodyFormat { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.EmailBodyFormat BodyFormat" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.BodyFormat" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.EmailBodyFormat</ReturnType>
@@ -104,9 +115,11 @@
     <Member MemberName="Cc">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; Cc { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;string&gt; Cc" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.Cc" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.List&lt;System.String&gt;</ReturnType>
@@ -120,9 +133,11 @@
     <Member MemberName="Subject">
       <MemberSignature Language="C#" Value="public string Subject { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Subject" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.Subject" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -136,9 +151,11 @@
     <Member MemberName="To">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; To { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;string&gt; To" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.EmailMessage.To" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.List&lt;System.String&gt;</ReturnType>

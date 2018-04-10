@@ -1,6 +1,7 @@
 <Type Name="Placemark" FullName="Xamarin.Essentials.Placemark">
   <TypeSignature Language="C#" Value="public class Placemark" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit Placemark extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Placemark" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Placemark ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Placemark.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters />
       <Docs>
@@ -34,9 +37,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public Placemark (Xamarin.Essentials.Placemark placemark);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(class Xamarin.Essentials.Placemark placemark) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Placemark.#ctor(Xamarin.Essentials.Placemark)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" />
@@ -52,9 +57,11 @@
     <Member MemberName="AdminArea">
       <MemberSignature Language="C#" Value="public string AdminArea { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string AdminArea" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.AdminArea" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -70,9 +77,11 @@
     <Member MemberName="CountryCode">
       <MemberSignature Language="C#" Value="public string CountryCode { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string CountryCode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.CountryCode" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -88,9 +97,11 @@
     <Member MemberName="CountryName">
       <MemberSignature Language="C#" Value="public string CountryName { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string CountryName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.CountryName" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -106,9 +117,11 @@
     <Member MemberName="FeatureName">
       <MemberSignature Language="C#" Value="public string FeatureName { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string FeatureName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.FeatureName" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -124,9 +137,11 @@
     <Member MemberName="Locality">
       <MemberSignature Language="C#" Value="public string Locality { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Locality" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Locality" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -142,9 +157,11 @@
     <Member MemberName="Location">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.Location Location { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Location Location" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Location" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.Location</ReturnType>
@@ -160,9 +177,11 @@
     <Member MemberName="PostalCode">
       <MemberSignature Language="C#" Value="public string PostalCode { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string PostalCode" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.PostalCode" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -178,9 +197,11 @@
     <Member MemberName="SubAdminArea">
       <MemberSignature Language="C#" Value="public string SubAdminArea { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string SubAdminArea" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubAdminArea" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -196,9 +217,11 @@
     <Member MemberName="SubLocality">
       <MemberSignature Language="C#" Value="public string SubLocality { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string SubLocality" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubLocality" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -214,9 +237,11 @@
     <Member MemberName="SubThoroughfare">
       <MemberSignature Language="C#" Value="public string SubThoroughfare { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string SubThoroughfare" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.SubThoroughfare" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -232,9 +257,11 @@
     <Member MemberName="Thoroughfare">
       <MemberSignature Language="C#" Value="public string Thoroughfare { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Thoroughfare" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Placemark.Thoroughfare" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>

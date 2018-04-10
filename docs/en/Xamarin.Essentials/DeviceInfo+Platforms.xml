@@ -1,6 +1,7 @@
 <Type Name="DeviceInfo+Platforms" FullName="Xamarin.Essentials.DeviceInfo+Platforms">
   <TypeSignature Language="C#" Value="public static class DeviceInfo.Platforms" />
   <TypeSignature Language="ILAsm" Value=".class nested public auto ansi abstract sealed beforefieldinit DeviceInfo/Platforms extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DeviceInfo.Platforms" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="Android">
       <MemberSignature Language="C#" Value="public const string Android;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string Android" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceInfo.Platforms.Android" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -36,9 +39,11 @@
     <Member MemberName="iOS">
       <MemberSignature Language="C#" Value="public const string iOS;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string iOS" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceInfo.Platforms.iOS" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -53,9 +58,11 @@
     <Member MemberName="Unsupported">
       <MemberSignature Language="C#" Value="public const string Unsupported;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string Unsupported" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceInfo.Platforms.Unsupported" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -70,9 +77,11 @@
     <Member MemberName="UWP">
       <MemberSignature Language="C#" Value="public const string UWP;" />
       <MemberSignature Language="ILAsm" Value=".field public static literal string UWP" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceInfo.Platforms.UWP" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>

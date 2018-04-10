@@ -1,6 +1,7 @@
 <Type Name="AppInfo" FullName="Xamarin.Essentials.AppInfo">
   <TypeSignature Language="C#" Value="public static class AppInfo" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit AppInfo extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AppInfo" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,9 +18,11 @@
     <Member MemberName="BuildString">
       <MemberSignature Language="C#" Value="public static string BuildString { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string BuildString" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.BuildString" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -33,9 +36,11 @@
     <Member MemberName="Name">
       <MemberSignature Language="C#" Value="public static string Name { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string Name" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.Name" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -49,9 +54,11 @@
     <Member MemberName="PackageName">
       <MemberSignature Language="C#" Value="public static string PackageName { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string PackageName" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.PackageName" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -65,9 +72,11 @@
     <Member MemberName="Version">
       <MemberSignature Language="C#" Value="public static Version Version { get; }" />
       <MemberSignature Language="ILAsm" Value=".property class System.Version Version" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.Version" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Version</ReturnType>
@@ -81,9 +90,11 @@
     <Member MemberName="VersionString">
       <MemberSignature Language="C#" Value="public static string VersionString { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string VersionString" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AppInfo.VersionString" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>

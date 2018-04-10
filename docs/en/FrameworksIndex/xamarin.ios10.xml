@@ -1,0 +1,366 @@
+<Framework Name="xamarin.ios10">
+  <Namespace Name="Xamarin.Essentials">
+    <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
+      <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.Accelerometer.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.Accelerometer.Stop" />
+      <Member Id="P:Xamarin.Essentials.Accelerometer.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AccelerometerChangedEventArgs" Id="T:Xamarin.Essentials.AccelerometerChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.AccelerometerChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AccelerometerChangedEventHandler" Id="T:Xamarin.Essentials.AccelerometerChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.AccelerometerData" Id="T:Xamarin.Essentials.AccelerometerData">
+      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerX" />
+      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerY" />
+      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerZ" />
+    </Type>
+    <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
+      <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
+      <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
+      <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
+      <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.Battery.PowerSource" />
+      <Member Id="P:Xamarin.Essentials.Battery.State" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BatteryChangedEventArgs" Id="T:Xamarin.Essentials.BatteryChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.PowerSource" />
+      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.State" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BatteryChangedEventHandler" Id="T:Xamarin.Essentials.BatteryChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.BatteryPowerSource" Id="T:Xamarin.Essentials.BatteryPowerSource">
+      <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Ac" />
+      <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Battery" />
+      <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Unknown" />
+      <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Usb" />
+      <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Wireless" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BatteryState" Id="T:Xamarin.Essentials.BatteryState">
+      <Member Id="F:Xamarin.Essentials.BatteryState.Charging" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.Discharging" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.Full" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.NotCharging" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Browser" Id="T:Xamarin.Essentials.Browser">
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.String,Xamarin.Essentials.BrowserLaunchType)" />
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchType)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BrowserLaunchType" Id="T:Xamarin.Essentials.BrowserLaunchType">
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchType.External" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchType.SystemPreferred" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
+      <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
+      <Member Id="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+      <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
+      <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.Compass.Stop" />
+      <Member Id="P:Xamarin.Essentials.Compass.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.CompassChangedEventArgs" Id="T:Xamarin.Essentials.CompassChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.CompassChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.CompassChangedEventHandler" Id="T:Xamarin.Essentials.CompassChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.CompassData" Id="T:Xamarin.Essentials.CompassData">
+      <Member Id="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ConnectionProfile" Id="T:Xamarin.Essentials.ConnectionProfile">
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Other" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiMAX" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Connectivity" Id="T:Xamarin.Essentials.Connectivity">
+      <Member Id="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.Profiles" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ConnectivityChangedEventArgs" Id="T:Xamarin.Essentials.ConnectivityChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ConnectivityChangedEventHandler" Id="T:Xamarin.Essentials.ConnectivityChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.DataTransfer" Id="T:Xamarin.Essentials.DataTransfer">
+      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DeviceInfo" Id="T:Xamarin.Essentials.DeviceInfo">
+      <Member Id="E:Xamarin.Essentials.DeviceInfo.ScreenMetricsChanaged" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.DeviceType" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Idiom" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Manufacturer" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Model" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Name" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Platform" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.ScreenMetrics" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.Version" />
+      <Member Id="P:Xamarin.Essentials.DeviceInfo.VersionString" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DeviceInfo/Idioms" Id="T:Xamarin.Essentials.DeviceInfo.Idioms">
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Desktop" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Phone" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Tablet" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.TV" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Unsupported" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DeviceInfo/Platforms" Id="T:Xamarin.Essentials.DeviceInfo.Platforms">
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.Android" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.iOS" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.Unsupported" />
+      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.UWP" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
+      <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
+      <Member Id="F:Xamarin.Essentials.DeviceType.Virtual" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DistanceUnits" Id="T:Xamarin.Essentials.DistanceUnits">
+      <Member Id="F:Xamarin.Essentials.DistanceUnits.Kilometers" />
+      <Member Id="F:Xamarin.Essentials.DistanceUnits.Miles" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Email" Id="T:Xamarin.Essentials.Email">
+      <Member Id="M:Xamarin.Essentials.Email.ComposeAsync" />
+      <Member Id="M:Xamarin.Essentials.Email.ComposeAsync(System.String,System.String,System.String[])" />
+      <Member Id="M:Xamarin.Essentials.Email.ComposeAsync(Xamarin.Essentials.EmailMessage)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.EmailBodyFormat" Id="T:Xamarin.Essentials.EmailBodyFormat">
+      <Member Id="F:Xamarin.Essentials.EmailBodyFormat.Html" />
+      <Member Id="F:Xamarin.Essentials.EmailBodyFormat.PlainText" />
+    </Type>
+    <Type Name="Xamarin.Essentials.EmailMessage" Id="T:Xamarin.Essentials.EmailMessage">
+      <Member Id="M:Xamarin.Essentials.EmailMessage.#ctor" />
+      <Member Id="M:Xamarin.Essentials.EmailMessage.#ctor(System.String,System.String,System.String[])" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.Bcc" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.Body" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.BodyFormat" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.Cc" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.Subject" />
+      <Member Id="P:Xamarin.Essentials.EmailMessage.To" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FeatureNotSupportedException" Id="T:Xamarin.Essentials.FeatureNotSupportedException">
+      <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor" />
+      <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor(System.String,System.Exception)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.FileSystem" Id="T:Xamarin.Essentials.FileSystem">
+      <Member Id="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
+      <Member Id="P:Xamarin.Essentials.FileSystem.AppDataDirectory" />
+      <Member Id="P:Xamarin.Essentials.FileSystem.CacheDirectory" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Flashlight" Id="T:Xamarin.Essentials.Flashlight">
+      <Member Id="M:Xamarin.Essentials.Flashlight.TurnOffAsync" />
+      <Member Id="M:Xamarin.Essentials.Flashlight.TurnOnAsync" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Geocoding" Id="T:Xamarin.Essentials.Geocoding">
+      <Member Id="M:Xamarin.Essentials.Geocoding.GetLocationsAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
+      <Member Id="P:Xamarin.Essentials.Geocoding.MapKey" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Gyroscope" Id="T:Xamarin.Essentials.Gyroscope">
+      <Member Id="E:Xamarin.Essentials.Gyroscope.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.Gyroscope.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.Gyroscope.Stop" />
+      <Member Id="P:Xamarin.Essentials.Gyroscope.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.GyroscopeChangedEventArgs" Id="T:Xamarin.Essentials.GyroscopeChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.GyroscopeChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.GyroscopeChangedEventHandler" Id="T:Xamarin.Essentials.GyroscopeChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
+      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityX" />
+      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityY" />
+      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityZ" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
+      <Member Id="M:Xamarin.Essentials.Location.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.DateTimeOffset)" />
+      <Member Id="M:Xamarin.Essentials.Location.#ctor(Xamarin.Essentials.Location)" />
+      <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      <Member Id="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
+      <Member Id="P:Xamarin.Essentials.Location.Latitude" />
+      <Member Id="P:Xamarin.Essentials.Location.Longitude" />
+      <Member Id="P:Xamarin.Essentials.Location.TimestampUtc" />
+    </Type>
+    <Type Name="Xamarin.Essentials.LocationExtensions" Id="T:Xamarin.Essentials.LocationExtensions">
+      <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Magnetometer" Id="T:Xamarin.Essentials.Magnetometer">
+      <Member Id="E:Xamarin.Essentials.Magnetometer.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.Magnetometer.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.Magnetometer.Stop" />
+      <Member Id="P:Xamarin.Essentials.Magnetometer.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.MagnetometerChangedEventArgs" Id="T:Xamarin.Essentials.MagnetometerChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.MagnetometerChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.MagnetometerChangedEventHandler" Id="T:Xamarin.Essentials.MagnetometerChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
+      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldX" />
+      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldY" />
+      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldZ" />
+    </Type>
+    <Type Name="Xamarin.Essentials.NetworkAccess" Id="T:Xamarin.Essentials.NetworkAccess">
+      <Member Id="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />
+      <Member Id="F:Xamarin.Essentials.NetworkAccess.Internet" />
+      <Member Id="F:Xamarin.Essentials.NetworkAccess.Local" />
+      <Member Id="F:Xamarin.Essentials.NetworkAccess.None" />
+      <Member Id="F:Xamarin.Essentials.NetworkAccess.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.NotImplementedInReferenceAssemblyException" Id="T:Xamarin.Essentials.NotImplementedInReferenceAssemblyException">
+      <Member Id="M:Xamarin.Essentials.NotImplementedInReferenceAssemblyException.#ctor" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">
+      <Member Id="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.PhoneDialer" Id="T:Xamarin.Essentials.PhoneDialer">
+      <Member Id="M:Xamarin.Essentials.PhoneDialer.Open(System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Placemark" Id="T:Xamarin.Essentials.Placemark">
+      <Member Id="M:Xamarin.Essentials.Placemark.#ctor" />
+      <Member Id="M:Xamarin.Essentials.Placemark.#ctor(Xamarin.Essentials.Placemark)" />
+      <Member Id="P:Xamarin.Essentials.Placemark.AdminArea" />
+      <Member Id="P:Xamarin.Essentials.Placemark.CountryCode" />
+      <Member Id="P:Xamarin.Essentials.Placemark.CountryName" />
+      <Member Id="P:Xamarin.Essentials.Placemark.FeatureName" />
+      <Member Id="P:Xamarin.Essentials.Placemark.Locality" />
+      <Member Id="P:Xamarin.Essentials.Placemark.Location" />
+      <Member Id="P:Xamarin.Essentials.Placemark.PostalCode" />
+      <Member Id="P:Xamarin.Essentials.Placemark.SubAdminArea" />
+      <Member Id="P:Xamarin.Essentials.Placemark.SubLocality" />
+      <Member Id="P:Xamarin.Essentials.Placemark.SubThoroughfare" />
+      <Member Id="P:Xamarin.Essentials.Placemark.Thoroughfare" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
+      <Member Id="M:Xamarin.Essentials.Platform.BeginInvokeOnMainThread(System.Action)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
+      <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Clear(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.ContainsKey(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.ContainsKey(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int32)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int32,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int64)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int64,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Single,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Remove(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Remove(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int32)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int32,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int64)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int64,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Single)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Single,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String,System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenLock" Id="T:Xamarin.Essentials.ScreenLock">
+      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestActive" />
+      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestRelease" />
+      <Member Id="P:Xamarin.Essentials.ScreenLock.IsActive" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenMetrics" Id="T:Xamarin.Essentials.ScreenMetrics">
+      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Density" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Height" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Orientation" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Width" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenMetricsChanagedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChanagedEventArgs">
+      <Member Id="M:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.Metrics" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenMetricsChanagedEventHandler" Id="T:Xamarin.Essentials.ScreenMetricsChanagedEventHandler" />
+    <Type Name="Xamarin.Essentials.ScreenOrientation" Id="T:Xamarin.Essentials.ScreenOrientation">
+      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Landscape" />
+      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Portrait" />
+      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ScreenRotation" Id="T:Xamarin.Essentials.ScreenRotation">
+      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation0" />
+      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation180" />
+      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation270" />
+      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation90" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
+      <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
+      <Member Id="F:Xamarin.Essentials.SensorSpeed.Fastest" />
+      <Member Id="F:Xamarin.Essentials.SensorSpeed.Game" />
+      <Member Id="F:Xamarin.Essentials.SensorSpeed.Normal" />
+      <Member Id="F:Xamarin.Essentials.SensorSpeed.Ui" />
+    </Type>
+    <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
+      <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />
+      <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor(System.String)" />
+      <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Subject" />
+      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Text" />
+      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Title" />
+      <Member Id="P:Xamarin.Essentials.ShareTextRequest.Uri" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Sms" Id="T:Xamarin.Essentials.Sms">
+      <Member Id="M:Xamarin.Essentials.Sms.ComposeAsync" />
+      <Member Id="M:Xamarin.Essentials.Sms.ComposeAsync(Xamarin.Essentials.SmsMessage)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SmsMessage" Id="T:Xamarin.Essentials.SmsMessage">
+      <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor" />
+      <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
+      <Member Id="P:Xamarin.Essentials.SmsMessage.Body" />
+      <Member Id="P:Xamarin.Essentials.SmsMessage.Recipient" />
+    </Type>
+    <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
+      <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />
+      <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForVersion(System.String)" />
+      <Member Id="M:Xamarin.Essentials.VersionTracking.Track" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.BuildHistory" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.CurrentBuild" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.CurrentVersion" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.FirstInstalledBuild" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.FirstInstalledVersion" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchEver" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentBuild" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.PreviousBuild" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.PreviousVersion" />
+      <Member Id="P:Xamarin.Essentials.VersionTracking.VersionHistory" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Vibration" Id="T:Xamarin.Essentials.Vibration">
+      <Member Id="M:Xamarin.Essentials.Vibration.Cancel" />
+      <Member Id="M:Xamarin.Essentials.Vibration.Vibrate" />
+      <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Vibration.Vibrate(System.TimeSpan)" />
+    </Type>
+  </Namespace>
+</Framework>

@@ -1,6 +1,7 @@
 <Type Name="Vibration" FullName="Xamarin.Essentials.Vibration">
   <TypeSignature Language="C#" Value="public static class Vibration" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Vibration extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Vibration" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,9 +18,11 @@
     <Member MemberName="Cancel">
       <MemberSignature Language="C#" Value="public static void Cancel ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Cancel() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Vibration.Cancel" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -33,9 +36,11 @@
     <Member MemberName="Vibrate">
       <MemberSignature Language="C#" Value="public static void Vibrate ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Vibration.Vibrate" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -49,9 +54,11 @@
     <Member MemberName="Vibrate">
       <MemberSignature Language="C#" Value="public static void Vibrate (double duration);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate(float64 duration) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Vibration.Vibrate(System.Double)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -68,9 +75,11 @@
     <Member MemberName="Vibrate">
       <MemberSignature Language="C#" Value="public static void Vibrate (TimeSpan duration);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Vibrate(valuetype System.TimeSpan duration) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Vibration.Vibrate(System.TimeSpan)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

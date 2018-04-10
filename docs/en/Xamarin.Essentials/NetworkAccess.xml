@@ -1,6 +1,7 @@
 <Type Name="NetworkAccess" FullName="Xamarin.Essentials.NetworkAccess">
   <TypeSignature Language="C#" Value="public enum NetworkAccess" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed NetworkAccess extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.NetworkAccess" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -16,9 +17,11 @@
     <Member MemberName="ConstrainedInternet">
       <MemberSignature Language="C#" Value="ConstrainedInternet" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.NetworkAccess ConstrainedInternet = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
@@ -31,9 +34,11 @@
     <Member MemberName="Internet">
       <MemberSignature Language="C#" Value="Internet" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.NetworkAccess Internet = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.NetworkAccess.Internet" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
@@ -46,9 +51,11 @@
     <Member MemberName="Local">
       <MemberSignature Language="C#" Value="Local" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.NetworkAccess Local = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.NetworkAccess.Local" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
@@ -61,9 +68,11 @@
     <Member MemberName="None">
       <MemberSignature Language="C#" Value="None" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.NetworkAccess None = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.NetworkAccess.None" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>
@@ -76,9 +85,11 @@
     <Member MemberName="Unknown">
       <MemberSignature Language="C#" Value="Unknown" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.NetworkAccess Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.NetworkAccess.Unknown" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.NetworkAccess</ReturnType>

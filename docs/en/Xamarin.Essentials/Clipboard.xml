@@ -1,6 +1,7 @@
 <Type Name="Clipboard" FullName="Xamarin.Essentials.Clipboard">
   <TypeSignature Language="C#" Value="public static class Clipboard" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Clipboard extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Clipboard" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="GetTextAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;string&gt; GetTextAsync ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;string&gt; GetTextAsync() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
@@ -38,9 +41,11 @@
     <Member MemberName="HasText">
       <MemberSignature Language="C#" Value="public static bool HasText { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool HasText" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Clipboard.HasText" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -58,9 +63,11 @@
     <Member MemberName="SetText">
       <MemberSignature Language="C#" Value="public static void SetText (string text);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetText(string text) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>

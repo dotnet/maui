@@ -1,6 +1,7 @@
 <Type Name="GyroscopeData" FullName="Xamarin.Essentials.GyroscopeData">
   <TypeSignature Language="C#" Value="public struct GyroscopeData" />
   <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit GyroscopeData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.GyroscopeData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="AngularVelocityX">
       <MemberSignature Language="C#" Value="public double AngularVelocityX { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityX" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityX" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -37,9 +40,11 @@
     <Member MemberName="AngularVelocityY">
       <MemberSignature Language="C#" Value="public double AngularVelocityY { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityY" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityY" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -53,9 +58,11 @@
     <Member MemberName="AngularVelocityZ">
       <MemberSignature Language="C#" Value="public double AngularVelocityZ { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityZ" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityZ" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>

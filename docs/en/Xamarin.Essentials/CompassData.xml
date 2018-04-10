@@ -1,6 +1,7 @@
 <Type Name="CompassData" FullName="Xamarin.Essentials.CompassData">
   <TypeSignature Language="C#" Value="public struct CompassData" />
   <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit CompassData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.CompassData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -21,9 +22,11 @@
     <Member MemberName="HeadingMagneticNorth">
       <MemberSignature Language="C#" Value="public double HeadingMagneticNorth { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 HeadingMagneticNorth" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>

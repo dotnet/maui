@@ -1,6 +1,7 @@
 <Type Name="SensorSpeed" FullName="Xamarin.Essentials.SensorSpeed">
   <TypeSignature Language="C#" Value="public enum SensorSpeed" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed SensorSpeed extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SensorSpeed" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,9 +19,11 @@
     <Member MemberName="Fastest">
       <MemberSignature Language="C#" Value="Fastest" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Fastest = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Fastest" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
@@ -33,9 +36,11 @@
     <Member MemberName="Game">
       <MemberSignature Language="C#" Value="Game" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Game = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Game" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
@@ -48,9 +53,11 @@
     <Member MemberName="Normal">
       <MemberSignature Language="C#" Value="Normal" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Normal = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Normal" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
@@ -63,9 +70,11 @@
     <Member MemberName="Ui">
       <MemberSignature Language="C#" Value="Ui" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Ui = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Ui" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>

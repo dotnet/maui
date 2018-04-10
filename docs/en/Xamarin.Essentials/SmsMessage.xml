@@ -1,6 +1,7 @@
 <Type Name="SmsMessage" FullName="Xamarin.Essentials.SmsMessage">
   <TypeSignature Language="C#" Value="public class SmsMessage" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit SmsMessage extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SmsMessage" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -17,9 +18,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SmsMessage ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters />
       <Docs>
@@ -30,9 +33,11 @@
     <Member MemberName=".ctor">
       <MemberSignature Language="C#" Value="public SmsMessage (string body, string recipient);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string body, string recipient) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="body" Type="System.String" />
@@ -48,9 +53,11 @@
     <Member MemberName="Body">
       <MemberSignature Language="C#" Value="public string Body { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Body" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SmsMessage.Body" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -64,9 +71,11 @@
     <Member MemberName="Recipient">
       <MemberSignature Language="C#" Value="public string Recipient { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Recipient" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SmsMessage.Recipient" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>

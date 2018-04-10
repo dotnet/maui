@@ -1,6 +1,7 @@
 <Type Name="AccelerometerData" FullName="Xamarin.Essentials.AccelerometerData">
   <TypeSignature Language="C#" Value="public struct AccelerometerData" />
   <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit AccelerometerData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.AccelerometerData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="AccelerometerX">
       <MemberSignature Language="C#" Value="public double AccelerometerX { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerX" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerX" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -37,9 +40,11 @@
     <Member MemberName="AccelerometerY">
       <MemberSignature Language="C#" Value="public double AccelerometerY { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerY" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerY" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -55,9 +60,11 @@
     <Member MemberName="AccelerometerZ">
       <MemberSignature Language="C#" Value="public double AccelerometerZ { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerZ" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerZ" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>

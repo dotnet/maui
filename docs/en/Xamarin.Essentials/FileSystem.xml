@@ -1,6 +1,7 @@
 <Type Name="FileSystem" FullName="Xamarin.Essentials.FileSystem">
   <TypeSignature Language="C#" Value="public static class FileSystem" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit FileSystem extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.FileSystem" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="AppDataDirectory">
       <MemberSignature Language="C#" Value="public static string AppDataDirectory { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string AppDataDirectory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileSystem.AppDataDirectory" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -35,9 +38,11 @@
     <Member MemberName="CacheDirectory">
       <MemberSignature Language="C#" Value="public static string CacheDirectory { get; }" />
       <MemberSignature Language="ILAsm" Value=".property string CacheDirectory" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.FileSystem.CacheDirectory" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.String</ReturnType>
@@ -51,9 +56,11 @@
     <Member MemberName="OpenAppPackageFileAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.IO.Stream&gt; OpenAppPackageFileAsync (string filename);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.IO.Stream&gt; OpenAppPackageFileAsync(string filename) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.FileSystem.OpenAppPackageFileAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Threading.Tasks.Task&lt;System.IO.Stream&gt;</ReturnType>

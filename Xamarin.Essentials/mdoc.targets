@@ -68,6 +68,7 @@
   -->
   <Target Name="MDocUpdateDocs"
           DependsOnTargets="_MDocSetup">
+    <!-- bits for resolving references on Windows -->
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <FrameowrkReferenceAssemblyPath>$(DevEnvDir)\ReferenceAssemblies\Microsoft\Framework</FrameowrkReferenceAssemblyPath>
     </PropertyGroup>
@@ -79,14 +80,22 @@
       <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.WatchOS\v1.0" />
       <MDocReferenceAssembly Include="$(FrameowrkReferenceAssemblyPath)\Xamarin.Mac\v2.0" />
     </ItemGroup>
-    <ItemGroup>
-      <MDocAssembly Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\$(AssemblyName).dll" />
-    </ItemGroup>
-    <PropertyGroup>
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
       <MDocReferenceAssemblies>@(MDocReferenceAssembly -> '--lib=&quot;%(Identity)&quot;', ' ')</MDocReferenceAssemblies>
-      <MDocAssemblies>@(MDocAssembly -> '&quot;%(Identity)&quot;', ' ')</MDocAssemblies>
     </PropertyGroup>
-    <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update --debug --preserve --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies) &quot;%(MDocAssembly.Identity)&quot;" />
+    <!-- the actual task -->
+    <PropertyGroup>
+      <BinConfigDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\</BinConfigDir>
+      <TmpDir>$(MSBuildProjectDirectory)\tmp\</TmpDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <MDocAssembly Include="$(BinConfigDir)**\$(AssemblyName).dll" />
+    </ItemGroup>
+    <RemoveDir Directories="$(TmpDir)" />
+    <MakeDir Directories="$(TmpDir)" />
+    <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
+    <Copy SourceFiles="%(MDocAssembly.Identity)" DestinationFolder="$(TmpDir)$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(MDocAssembly.Identity)))))" />
+    <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update -lang=DocId --frameworks=&quot;$(TmpDir)frameworks.xml&quot; --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies)" />
     <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />
     <_VerifyAllDocsAreComplete DocsRoot="$(MDocDocumentationDirectory)" />
   </Target>

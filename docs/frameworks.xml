@@ -1,0 +1,6 @@
+<Frameworks>
+  <Framework Name="Xamarin.Essentials" Source="netstandard2.0" />
+  <Framework Name="Xamarin.Essentials.Android" Source="monoandroid71" />
+  <Framework Name="Xamarin.Essentials.iOS" Source="xamarin.ios10" />
+  <Framework Name="Xamarin.Essentials.UWP" Source="uap10.0.16299" />
+</Frameworks>

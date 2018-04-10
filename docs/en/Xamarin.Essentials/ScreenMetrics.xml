@@ -1,6 +1,7 @@
 <Type Name="ScreenMetrics" FullName="Xamarin.Essentials.ScreenMetrics">
   <TypeSignature Language="C#" Value="public struct ScreenMetrics" />
   <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit ScreenMetrics extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.ScreenMetrics" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="Density">
       <MemberSignature Language="C#" Value="public double Density { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Density" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetrics.Density" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -37,9 +40,11 @@
     <Member MemberName="Height">
       <MemberSignature Language="C#" Value="public double Height { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Height" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetrics.Height" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>
@@ -55,9 +60,11 @@
     <Member MemberName="Orientation">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.ScreenOrientation Orientation { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ScreenOrientation Orientation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetrics.Orientation" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.ScreenOrientation</ReturnType>
@@ -71,9 +78,11 @@
     <Member MemberName="Rotation">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.ScreenRotation Rotation { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.ScreenRotation Rotation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.ScreenRotation</ReturnType>
@@ -87,9 +96,11 @@
     <Member MemberName="Width">
       <MemberSignature Language="C#" Value="public double Width { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Width" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ScreenMetrics.Width" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Double</ReturnType>

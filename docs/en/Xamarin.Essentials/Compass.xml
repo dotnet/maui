@@ -1,6 +1,7 @@
 <Type Name="Compass" FullName="Xamarin.Essentials.Compass">
   <TypeSignature Language="C#" Value="public static class Compass" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Compass extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Compass" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -19,9 +20,11 @@
     <Member MemberName="IsMonitoring">
       <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.IsMonitoring" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Boolean</ReturnType>
@@ -37,9 +40,11 @@
     <Member MemberName="ReadingChanged">
       <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.CompassChangedEventHandler ReadingChanged;" />
       <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.CompassChangedEventHandler ReadingChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Compass.ReadingChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.CompassChangedEventHandler</ReturnType>
@@ -54,9 +59,11 @@
     <Member MemberName="Start">
       <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
@@ -73,9 +80,11 @@
     <Member MemberName="Stop">
       <MemberSignature Language="C#" Value="public static void Stop ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Stop" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
