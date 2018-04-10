@@ -289,7 +289,7 @@ Task ("test-uwp-emu")
     AddPlatformToTestResults(UWP_TEST_RESULTS_PATH, "UWP");
 
     // Uninstall the app (this will terminate it too)
-    uninstallPS();
+    // uninstallPS();
 });
 
 RunTarget(TARGET);
