@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Xamarin.Essentials
+﻿namespace Xamarin.Essentials
 {
     internal enum PermissionStatus
     {

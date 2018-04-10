@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.ApplicationModel.Calls;
+﻿using Windows.ApplicationModel.Calls;
 using Windows.Foundation.Metadata;
 
 namespace Xamarin.Essentials

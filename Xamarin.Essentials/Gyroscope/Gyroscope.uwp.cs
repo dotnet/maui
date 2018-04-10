@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.Devices.Sensors;
+﻿using Windows.Devices.Sensors;
 using WindowsGyro = Windows.Devices.Sensors.Gyrometer;
 
 namespace Xamarin.Essentials

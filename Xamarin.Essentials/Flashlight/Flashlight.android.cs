@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Android;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.Hardware.Camera2;
