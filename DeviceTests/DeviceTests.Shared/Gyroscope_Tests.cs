@@ -8,6 +8,9 @@ namespace DeviceTests
     {
         bool TestSupported =>
             (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.Android) ||
+#if WINDOWS_UWP
+            (Windows.Devices.Sensors.Gyrometer.GetDefault() != null) ||
+#endif
             (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
 
         public Gyroscope_Tests()

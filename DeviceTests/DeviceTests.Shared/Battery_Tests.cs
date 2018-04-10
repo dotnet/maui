@@ -13,7 +13,10 @@ namespace DeviceTests
 #endif
         public void Charge_Level()
         {
-            Assert.InRange(Battery.ChargeLevel, 0.01, 100.0);
+            if (Battery.State == BatteryState.Unknown || Battery.State == BatteryState.NotPresent)
+                Assert.Equal(-1.0, Battery.ChargeLevel);
+            else
+                Assert.InRange(Battery.ChargeLevel, 0, 1.0);
         }
 
         [Fact]
@@ -22,7 +25,7 @@ namespace DeviceTests
 #endif
         public void Charge_State()
         {
-            Assert.NotEqual(BatteryState.Unknown, Battery.State);
+           Assert.NotEqual(BatteryState.Unknown, Battery.State);
         }
 
         [Fact]

@@ -12,6 +12,8 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task Compose_Shows_New_Window()
         {
+            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
+                return;
             await Email.ComposeAsync();
         }
 
@@ -19,6 +21,9 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task Compose_With_Message_Shows_New_Window()
         {
+            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
+                return;
+
             var email = new EmailMessage
             {
                 Subject = "Hello World!",

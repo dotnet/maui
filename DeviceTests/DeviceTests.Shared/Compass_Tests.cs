@@ -8,7 +8,9 @@ namespace DeviceTests
     {
         bool TestSupported =>
                DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
-               DeviceInfo.Platform == DeviceInfo.Platforms.UWP ||
+#if WINDOWS_UWP
+               (Windows.Devices.Sensors.Compass.GetDefault() != null) ||
+#endif
                (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
 
         public Compass_Tests()

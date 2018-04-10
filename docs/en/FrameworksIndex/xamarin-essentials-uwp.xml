@@ -46,6 +46,7 @@
       <Member Id="F:Xamarin.Essentials.BatteryState.Discharging" />
       <Member Id="F:Xamarin.Essentials.BatteryState.Full" />
       <Member Id="F:Xamarin.Essentials.BatteryState.NotCharging" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.NotPresent" />
       <Member Id="F:Xamarin.Essentials.BatteryState.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.Browser" Id="T:Xamarin.Essentials.Browser">

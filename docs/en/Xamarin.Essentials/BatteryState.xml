@@ -84,6 +84,23 @@
         <summary>Battery is not charging or discharging, but in an inbetween state.</summary>
       </Docs>
     </Member>
+    <Member MemberName="NotPresent">
+      <MemberSignature Language="C#" Value="NotPresent" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState NotPresent = int32(5)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryState.NotPresent" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.BatteryState</ReturnType>
+      </ReturnValue>
+      <MemberValue>5</MemberValue>
+      <Docs>
+        <summary>Battery does not exist on the device.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Unknown">
       <MemberSignature Language="C#" Value="Unknown" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryState Unknown = int32(0)" />
