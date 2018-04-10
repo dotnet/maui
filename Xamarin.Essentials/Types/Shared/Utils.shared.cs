@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Xamarin.Essentials
 {
-    internal class Utils
+    class Utils
     {
         internal static Version ParseVersion(string version)
         {

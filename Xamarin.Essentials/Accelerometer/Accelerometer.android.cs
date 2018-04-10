@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal class AccelerometerListener : Java.Lang.Object, ISensorEventListener
+    class AccelerometerListener : Java.Lang.Object, ISensorEventListener
     {
         public AccelerometerListener()
         {
