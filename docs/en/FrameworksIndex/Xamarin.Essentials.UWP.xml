@@ -1,4 +1,4 @@
-<Framework Name="uap10.0.16299">
+<Framework Name="Xamarin.Essentials.UWP">
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
