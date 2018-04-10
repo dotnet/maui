@@ -26,7 +26,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] Accelerometer
  - [X] App Information
  - [x] Battery
- - [X] Clipboard
+ - [x] Clipboard
  - [x] Compass
  - [x] Connectivity
  - [x] Data Transfer
@@ -35,7 +35,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] Email
  - [x] Flashlight
  - [x] Geocoding 
- - [ ] Geolocation 
+ - [x] Geolocation 
  - [x] Gyroscope
  - [x] Magnetometer
  - [x] Open Browser
