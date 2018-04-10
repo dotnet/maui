@@ -31,6 +31,13 @@ namespace Samples.ViewModel
             set => SetProperty(ref isSupported, value);
         }
 
+        public override void OnDisappearing()
+        {
+            OnCancel();
+
+            base.OnDisappearing();
+        }
+
         void OnVibrate()
         {
             try

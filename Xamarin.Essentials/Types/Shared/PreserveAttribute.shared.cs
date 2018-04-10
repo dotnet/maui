@@ -1,11 +1,25 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Xamarin.Essentials
 {
+    [AttributeUsage(AttributeTargets.All)]
+    [EditorBrowsable(EditorBrowsableState.Never)]
     internal sealed class PreserveAttribute : Attribute
     {
-        public bool AllMembers { get; set; }
+#pragma warning disable SA1401 // Fields should be private
+        public bool AllMembers;
+        public bool Conditional;
+#pragma warning restore SA1401 // Fields should be private
 
-        public bool Conditional { get; set; }
+        public PreserveAttribute(bool allMembers, bool conditional)
+        {
+            AllMembers = allMembers;
+            Conditional = conditional;
+        }
+
+        public PreserveAttribute()
+        {
+        }
     }
 }

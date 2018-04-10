@@ -26,20 +26,20 @@ namespace Samples.ViewModel
         {
             base.OnAppearing();
 
-            Connectivity.ConnectivityChanged += Connectivity_ConnectivityChanged;
-        }
-
-        void Connectivity_ConnectivityChanged(ConnectivityChangedEventArgs e)
-        {
-            OnPropertyChanged(nameof(Profiles));
-            OnPropertyChanged(nameof(NetworkAccess));
+            Connectivity.ConnectivityChanged += OnConnectivityChanged;
         }
 
         public override void OnDisappearing()
         {
-            Connectivity.ConnectivityChanged -= Connectivity_ConnectivityChanged;
+            Connectivity.ConnectivityChanged -= OnConnectivityChanged;
 
             base.OnDisappearing();
+        }
+
+        void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(Profiles));
+            OnPropertyChanged(nameof(NetworkAccess));
         }
     }
 }

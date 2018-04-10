@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal class MagnetometerListener : Java.Lang.Object, ISensorEventListener
+    class MagnetometerListener : Java.Lang.Object, ISensorEventListener
     {
         public MagnetometerListener()
         {

@@ -1,8 +1,8 @@
 ﻿namespace Samples.View
 {
-    public partial class GeocodingPage : BasePage
+    public partial class AppInfoPage : BasePage
     {
-        public GeocodingPage()
+        public AppInfoPage()
         {
             InitializeComponent();
         }

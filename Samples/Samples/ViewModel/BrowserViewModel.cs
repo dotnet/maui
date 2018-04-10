@@ -10,6 +10,13 @@ namespace Samples.ViewModel
     public class BrowserViewModel : BaseViewModel
     {
         string browserStatus;
+        string uri = "http://xamarin.com";
+        int browserType = (int)BrowserLaunchType.SystemPreferred;
+
+        public BrowserViewModel()
+        {
+            OpenUriCommand = new Command(OpenUri);
+        }
 
         public ICommand OpenUriCommand { get; }
 
@@ -19,52 +26,44 @@ namespace Samples.ViewModel
             set => SetProperty(ref browserStatus, value);
         }
 
-        public BrowserViewModel()
-        {
-            OpenUriCommand = new Command(async () =>
-            {
-                if (IsBusy)
-                    return;
-
-                IsBusy = true;
-                try
-                {
-                    await Browser.OpenAsync(uri, (BrowserLaunchType)BrowserType);
-                }
-                catch (Exception e)
-                {
-                    BrowserStatus = $"Unable to open Uri {e.Message}";
-                    Debug.WriteLine(browserStatus);
-                }
-                finally
-                {
-                    IsBusy = false;
-                }
-            });
-        }
-
-        string uri = "http://xamarin.com";
-
         public string Uri
         {
             get => uri;
             set => SetProperty(ref uri, value);
         }
 
-        List<string> browserlaunchertypes = new List<string>
-        {
-            $"Uri Launcher",
-            $"System Browser(CustomTabs, Safari)",
-        };
-
-        public List<string> BrowserLaunchTypes => browserlaunchertypes;
-
-        int browserType = 1;
+        public List<string> BrowserLaunchTypes { get; } =
+            new List<string>
+            {
+                $"Use Default Browser App",
+                $"Use System-Preferred Browser",
+            };
 
         public int BrowserType
         {
             get => browserType;
             set => SetProperty(ref browserType, value);
+        }
+
+        async void OpenUri()
+        {
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+            try
+            {
+                await Browser.OpenAsync(uri, (BrowserLaunchType)BrowserType);
+            }
+            catch (Exception e)
+            {
+                BrowserStatus = $"Unable to open Uri {e.Message}";
+                Debug.WriteLine(browserStatus);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }

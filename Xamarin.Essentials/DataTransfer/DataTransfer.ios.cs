@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
             return vc.PresentViewControllerAsync(activityController, true);
         }
 
-        internal class ShareActivityItemSource : UIActivityItemSource
+        class ShareActivityItemSource : UIActivityItemSource
         {
             NSObject item;
             string subject;

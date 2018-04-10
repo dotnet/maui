@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -9,23 +6,19 @@ namespace Samples.ViewModel
 {
     class DataTransferViewModel : BaseViewModel
     {
+        bool shareText = true;
+        bool shareUri;
+        string text;
+        string uri;
+        string subject;
+        string title;
+
         public ICommand RequestCommand { get; }
 
         public DataTransferViewModel()
         {
-            RequestCommand = new Command(async () =>
-            {
-                await DataTransfer.RequestAsync(new ShareTextRequest
-                {
-                    Subject = Subject,
-                    Text = ShareText ? Text : null,
-                    Uri = ShareUri ? Uri : null,
-                    Title = Title
-                });
-            });
+            RequestCommand = new Command(OnRequest);
         }
-
-        bool shareText = true;
 
         public bool ShareText
         {
@@ -33,15 +26,11 @@ namespace Samples.ViewModel
             set => SetProperty(ref shareText, value);
         }
 
-        bool shareUri;
-
         public bool ShareUri
         {
             get => shareUri;
             set => SetProperty(ref shareUri, value);
         }
-
-        string text;
 
         public string Text
         {
@@ -49,15 +38,11 @@ namespace Samples.ViewModel
             set => SetProperty(ref text, value);
         }
 
-        string uri;
-
         public string Uri
         {
             get => uri;
             set => SetProperty(ref uri, value);
         }
-
-        string subject;
 
         public string Subject
         {
@@ -65,12 +50,21 @@ namespace Samples.ViewModel
             set => SetProperty(ref subject, value);
         }
 
-        string title;
-
         public string Title
         {
             get => title;
             set => SetProperty(ref title, value);
+        }
+
+        async void OnRequest()
+        {
+            await DataTransfer.RequestAsync(new ShareTextRequest
+            {
+                Subject = Subject,
+                Text = ShareText ? Text : null,
+                Uri = ShareUri ? Uri : null,
+                Title = Title
+            });
         }
     }
 }

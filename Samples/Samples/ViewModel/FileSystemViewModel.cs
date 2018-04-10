@@ -12,7 +12,7 @@ namespace Samples.ViewModel
 
         static string localPath = Path.Combine(FileSystem.AppDataDirectory, localFileName);
 
-        private string currentContents;
+        string currentContents;
 
         public FileSystemViewModel()
         {
@@ -35,7 +35,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref currentContents, value);
         }
 
-        private async void DoLoadFile()
+        async void DoLoadFile()
         {
             if (File.Exists(localPath))
             {
@@ -51,12 +51,12 @@ namespace Samples.ViewModel
             }
         }
 
-        private void DoSaveFile()
+        void DoSaveFile()
         {
             File.WriteAllText(localPath, CurrentContents);
         }
 
-        private void DoDeleteFile()
+        void DoDeleteFile()
         {
             if (File.Exists(localPath))
                 File.Delete(localPath);

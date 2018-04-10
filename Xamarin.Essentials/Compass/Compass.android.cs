@@ -53,7 +53,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal class SensorListener : Java.Lang.Object, ISensorEventListener, IDisposable
+    class SensorListener : Java.Lang.Object, ISensorEventListener, IDisposable
     {
         float[] lastAccelerometer = new float[3];
         float[] lastMagnetometer = new float[3];

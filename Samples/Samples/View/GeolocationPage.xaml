@@ -1,13 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:Samples.View"
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.GeolocationPage"
                 Title="Geolocation">
-    <ContentPage.BindingContext>
+    <views:BasePage.BindingContext>
         <viewmodels:GeolocationViewModel />
-    </ContentPage.BindingContext>
+    </views:BasePage.BindingContext>
 
     <StackLayout>
         <Label Text="Quickly get the current location." FontAttributes="Bold" Margin="12" />

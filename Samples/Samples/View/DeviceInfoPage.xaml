@@ -1,13 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:Samples.View"
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.DeviceInfoPage"
                 Title="Device Info">
-    <ContentPage.BindingContext>
+    <views:BasePage.BindingContext>
         <viewmodels:DeviceInfoViewModel />
-    </ContentPage.BindingContext>
+    </views:BasePage.BindingContext>
 
     <StackLayout>
         <Label Text="Find out about the device with ease." FontAttributes="Bold" Margin="12" />
@@ -22,12 +21,6 @@
                 <Label Text="{Binding Platform, StringFormat='Platform: {0}'}" />
                 <Label Text="{Binding Idiom, StringFormat='Idiom: {0}'}" />
                 <Label Text="{Binding DeviceType, StringFormat='Device Type: {0}'}" />
-
-                <Label Text="App Info:" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Label Text="{Binding AppName, StringFormat='Name: {0}'}" />
-                <Label Text="{Binding AppPackageName, StringFormat='Package Name: {0}'}" />
-                <Label Text="{Binding AppVersion, StringFormat='Version: {0}'}" />
-                <Label Text="{Binding AppBuild, StringFormat='Build: {0}'}" />
 
                 <Label Text="Screen Metrics:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding ScreenMetrics.Width, StringFormat='Width: {0}'}" />

@@ -1,9 +1,6 @@
-﻿using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
-
-namespace Samples.View
+﻿namespace Samples.View
 {
-    public partial class EmailPage : ContentPage
+    public partial class EmailPage : BasePage
     {
         public EmailPage()
         {
