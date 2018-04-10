@@ -31,7 +31,7 @@
         ]
       },
       "ECMA2Yaml": {
-        "SourceXmlFolder": "docs/en/xml",
+        "SourceXmlFolder": "docs/en",
         "OutputYamlFolder": "docs/en/api",
         "Flatten": true,
         "id": "XamarinEssentials"
