@@ -27,7 +27,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="message" Type="System.String" Index="0" FrameworkAlternate="Empty;monoandroid71;netstandard1.0;netstandard2.0;uap10.0.16299;xamarin.ios10" />
+        <Parameter Name="message" Type="System.String" Index="0" />
       </Parameters>
       <Docs>
         <param name="message">Permission that is required.</param>

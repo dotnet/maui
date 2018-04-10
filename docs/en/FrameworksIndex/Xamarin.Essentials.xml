@@ -1,4 +1,4 @@
-<Framework Name="monoandroid71">
+<Framework Name="Xamarin.Essentials">
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
@@ -250,9 +250,6 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
       <Member Id="M:Xamarin.Essentials.Platform.BeginInvokeOnMainThread(System.Action)" />
-      <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
-      <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
-      <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
