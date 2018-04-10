@@ -12,6 +12,8 @@ namespace Samples.ViewModel
             RequestReleaseCommand = new Command(OnRequestRelease);
         }
 
+        public bool IsActive => ScreenLock.IsActive;
+
         public ICommand RequestActiveCommand { get; }
 
         public ICommand RequestReleaseCommand { get; }
@@ -29,7 +31,5 @@ namespace Samples.ViewModel
 
             OnPropertyChanged(nameof(IsActive));
         }
-
-        public bool IsActive => ScreenLock.IsActive;
     }
 }

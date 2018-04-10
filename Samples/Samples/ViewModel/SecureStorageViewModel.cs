@@ -29,6 +29,8 @@ namespace Samples.ViewModel
 
         public ICommand LoadCommand { get; }
 
+        public ICommand SaveCommand { get; }
+
         async void OnLoad()
         {
             if (IsBusy)
@@ -39,8 +41,6 @@ namespace Samples.ViewModel
 
             IsBusy = false;
         }
-
-        public ICommand SaveCommand { get; }
 
         async void OnSave()
         {

@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms;
-
-namespace Samples.View
+﻿namespace Samples.View
 {
-    public partial class FlashlightPage : ContentPage
+    public partial class FlashlightPage : BasePage
     {
         public FlashlightPage()
         {

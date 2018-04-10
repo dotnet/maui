@@ -1,16 +1,15 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:Samples.View"
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.ClipboardPage"
                 Title="Clipboard">
-    <ContentPage.BindingContext>
+    <views:BasePage.BindingContext>
         <viewmodels:ClipboardViewModel />
-    </ContentPage.BindingContext>
+    </views:BasePage.BindingContext>
 
     <StackLayout>
-        <Label Text="Quickly and easily use clipboard." FontAttributes="Bold" Margin="12" />
+        <Label Text="Quickly and easily use the clipboard." FontAttributes="Bold" Margin="12" />
 
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">

@@ -1,13 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                 xmlns:views="clr-namespace:Samples.View"
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 x:Class="Samples.View.ConnectivityPage"
                 Title="Connectivity">
-    <ContentPage.BindingContext>
+    <views:BasePage.BindingContext>
         <viewmodels:ConnectivityViewModel />
-    </ContentPage.BindingContext>
+    </views:BasePage.BindingContext>
 
     <StackLayout>
         <Label Text="Easily detect connectivity state." FontAttributes="Bold" Margin="12" />
@@ -15,8 +14,8 @@
         <ScrollView>
             <StackLayout Padding="12,6,12,12" Spacing="6">
                 <Label Text="Connectivity State:" FontAttributes="Bold" />
-                <Label Text="{Binding NetworkAccess, StringFormat='NetworkAccess: {0}'}"/>
-                <Label Text="{Binding Profiles, StringFormat='Profiles: {0}'}"/>
+                <Label Text="{Binding NetworkAccess, StringFormat='NetworkAccess: {0}'}" />
+                <Label Text="{Binding Profiles, StringFormat='Profiles: {0}'}" />
             </StackLayout>
         </ScrollView>
     </StackLayout>

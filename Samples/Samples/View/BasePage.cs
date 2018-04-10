@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Samples.ViewModel;
 using Xamarin.Forms;
 
@@ -9,6 +8,7 @@ namespace Samples.View
     {
         public BasePage()
         {
+            NavigationPage.SetBackButtonTitle(this, "Back");
         }
 
         protected override void OnAppearing()

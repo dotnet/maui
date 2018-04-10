@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms;
-
-namespace Samples.View
+﻿namespace Samples.View
 {
-    public partial class DataTransferPage : ContentPage
+    public partial class DataTransferPage : BasePage
     {
         public DataTransferPage()
         {

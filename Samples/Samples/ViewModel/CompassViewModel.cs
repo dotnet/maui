@@ -76,6 +76,14 @@ namespace Samples.ViewModel
                 "User Interface"
             };
 
+        public override void OnDisappearing()
+        {
+            OnStopCompass1();
+            OnStopCompass2();
+
+            base.OnDisappearing();
+        }
+
         async void OnStartCompass1()
         {
             try
@@ -83,7 +91,7 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass2();
 
-                Compass.ReadingChanged += Compass1_ReadingChanged;
+                Compass.ReadingChanged += OnCompass1ReadingChanged;
 
                 Compass.Start((SensorSpeed)Speed1);
                 Compass1IsActive = true;
@@ -94,7 +102,7 @@ namespace Samples.ViewModel
             }
         }
 
-        private void Compass1_ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass1ReadingChanged(CompassChangedEventArgs e)
         {
             switch ((SensorSpeed)Speed1)
             {
@@ -112,7 +120,7 @@ namespace Samples.ViewModel
         {
             Compass1IsActive = false;
             Compass.Stop();
-            Compass.ReadingChanged -= Compass1_ReadingChanged;
+            Compass.ReadingChanged -= OnCompass1ReadingChanged;
         }
 
         async void OnStartCompass2()
@@ -122,7 +130,7 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass1();
 
-                Compass.ReadingChanged += Compass2_ReadingChanged;
+                Compass.ReadingChanged += OnCompass2ReadingChanged;
                 Compass.Start((SensorSpeed)Speed2);
                 Compass2IsActive = true;
             }
@@ -132,7 +140,7 @@ namespace Samples.ViewModel
             }
         }
 
-        private void Compass2_ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass2ReadingChanged(CompassChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed2)
@@ -151,15 +159,7 @@ namespace Samples.ViewModel
         {
             Compass2IsActive = false;
             Compass.Stop();
-            Compass.ReadingChanged -= Compass2_ReadingChanged;
-        }
-
-        public override void OnDisappearing()
-        {
-            OnStopCompass1();
-            OnStopCompass2();
-
-            base.OnDisappearing();
+            Compass.ReadingChanged -= OnCompass2ReadingChanged;
         }
     }
 }

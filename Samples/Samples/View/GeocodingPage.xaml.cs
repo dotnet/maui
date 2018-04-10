@@ -1,6 +1,4 @@
-﻿using Xamarin.Forms;
-
-namespace Samples.View
+﻿namespace Samples.View
 {
     public partial class GeocodingPage : BasePage
     {

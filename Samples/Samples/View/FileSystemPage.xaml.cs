@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms;
-
-namespace Samples.View
+﻿namespace Samples.View
 {
-    public partial class FileSystemPage : ContentPage
+    public partial class FileSystemPage : BasePage
     {
         public FileSystemPage()
         {

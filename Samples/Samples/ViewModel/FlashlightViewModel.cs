@@ -6,8 +6,8 @@ namespace Samples.ViewModel
 {
     public class FlashlightViewModel : BaseViewModel
     {
-        private bool isOn;
-        private bool isSupported = true;
+        bool isOn;
+        bool isSupported = true;
 
         public FlashlightViewModel()
         {
@@ -26,6 +26,21 @@ namespace Samples.ViewModel
         {
             get => isSupported;
             set => SetProperty(ref isSupported, value);
+        }
+
+        public override void OnDisappearing()
+        {
+            try
+            {
+                Flashlight.TurnOffAsync();
+                IsOn = false;
+            }
+            catch (FeatureNotSupportedException)
+            {
+                IsSupported = false;
+            }
+
+            base.OnDisappearing();
         }
 
         async void OnToggle()
@@ -47,21 +62,6 @@ namespace Samples.ViewModel
             {
                 IsSupported = false;
             }
-        }
-
-        public override void OnDisappearing()
-        {
-            try
-            {
-                Flashlight.TurnOffAsync();
-                IsOn = false;
-            }
-            catch (FeatureNotSupportedException)
-            {
-                IsSupported = false;
-            }
-
-            base.OnDisappearing();
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Samples.ViewModel
             IsBusy = false;
         }
 
-        private string FormatLocation(Location location)
+        string FormatLocation(Location location)
         {
             if (location == null)
             {

@@ -18,6 +18,12 @@ namespace Samples.ViewModel
 
         public ICommand PasteCommand { get; }
 
+        public string FieldValue
+        {
+            get => fieldValue;
+            set => SetProperty(ref fieldValue, value);
+        }
+
         void OnCopy() => Clipboard.SetText(FieldValue);
 
         async void OnPaste()
@@ -27,12 +33,6 @@ namespace Samples.ViewModel
             {
                 FieldValue = text;
             }
-        }
-
-        public string FieldValue
-        {
-            get => fieldValue;
-            set => SetProperty(ref fieldValue, value);
         }
     }
 }

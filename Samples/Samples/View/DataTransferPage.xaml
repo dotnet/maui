@@ -1,38 +1,43 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Samples.View.DataTransferPage"
-             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
-             Title="Data Transfer">
-    <ContentPage.BindingContext>
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.DataTransferPage"
+                Title="Data Transfer">
+    <views:BasePage.BindingContext>
         <viewmodels:DataTransferViewModel />
-    </ContentPage.BindingContext>
-    <ContentPage.Content>
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Share text and websites to other applications on the users device." FontAttributes="Bold" Margin="12" />
+
         <ScrollView>
-        <StackLayout Padding="8">
-            <Label Text="Share text and websites to other applications on the users device." />
+            <StackLayout Padding="12,0,12,12" Spacing="6">
 
-                <Label Text="Title (Optional)"/>
-                <Entry Text="{Binding Title}"/>
+                <Label Text="Title (Optional)" />
+                <Entry Text="{Binding Title}" />
 
+                <Label Text="Subject (Optional)" />
+                <Entry Text="{Binding Subject}" />
 
-                <Label Text="Subject (Optional)"/>
-                <Entry Text="{Binding Subject}"/>
-
-                <StackLayout Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Text="Text" HorizontalOptions="StartAndExpand"/>
-                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareText}"/>
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Text" HorizontalOptions="StartAndExpand" VerticalOptions="End" />
+                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareText}" VerticalOptions="End" />
                 </StackLayout>
-                <Entry Text="{Binding Text}" Placeholder="Enter text to share here."/>
-            
-                <StackLayout Orientation="Horizontal" Margin="0,8,0,0">
-                    <Label Text="Uri" HorizontalOptions="StartAndExpand"/>
-                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareUri}"/>
-                </StackLayout>
-                <Entry Text="{Binding Uri}" Placeholder="Enter uri to share here."/>
 
-                <Button Text="Request Transfer" Command="{Binding RequestCommand}"/>
+                <Entry Text="{Binding Text}" Placeholder="Enter text to share here." />
+
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="URI" HorizontalOptions="StartAndExpand" VerticalOptions="End" />
+                    <Switch HorizontalOptions="End" IsToggled="{Binding ShareUri}" VerticalOptions="End" />
+                </StackLayout>
+
+                <Entry Text="{Binding Uri}" Placeholder="Enter URI to share here." />
+
+                <Button Text="Request Transfer" Command="{Binding RequestCommand}" />
+
             </StackLayout>
         </ScrollView>
-    </ContentPage.Content>
-</ContentPage>
+    </StackLayout>
+
+</views:BasePage>
