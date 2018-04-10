@@ -31,16 +31,16 @@
         ]
       },
       "ECMA2Yaml": {
-        "SourceXmlFolder": "dotnet/xml",
-        "OutputYamlFolder": "dotnet/api",
+        "SourceXmlFolder": "docs/en/xml",
+        "OutputYamlFolder": "docs/en/api",
         "Flatten": true,
-        "id": "dotnet-template"
+        "id": "XamarinEssentials"
       },
       "SplitTOC": [
-        "dotnet/api/dotnet-template/toc.yml"
+        "docs/en/api/XamarinEssentials/toc.yml"
       ],
       "DiffFolder": [
-        "dotnet/api"
+        "docs/en/api"
       ]
     }
   ],
