@@ -1,5 +1,49 @@
 {
-  "docsets_to_publish": [],
+  "docsets_to_publish": [
+    {
+      "docset_name": "XamarinEssentials",
+      "build_source_folder": "docs/en",
+      "build_output_subfolder": "XamarinEssentials",
+      "locale": "en-us",
+      "monikers": [],
+      "moniker_ranges": [],
+      "open_to_public_contributors": true,
+      "type_mapping": {
+        "Conceptual": "Content",
+        "ManagedReference": "Content",
+        "RestApi": "Content"
+      },
+      "build_entry_point": "docs",
+      "template_folder": "_themes",
+      "base_path": "dotnet",
+      "site_name": "Docs",
+      "customized_template_paths": [
+        "_dependentPackages/memberpage.plugins/content"
+      ],
+      "customized_tasks": {
+        "docset_prebuild": [
+          "_dependentPackages/ECMA2Yaml/tools/Run.ps1",
+          "_dependentPackages/CommonPlugins/tools/SplitTOC.ps1",
+          "_dependentPackages/CommonPlugins/tools/DiffFolder.ps1"
+        ],
+        "docset_postbuild": [
+          "_dependentPackages/ECMA2Yaml/tools/PostBuild.ps1"
+        ]
+      },
+      "ECMA2Yaml": {
+        "SourceXmlFolder": "dotnet/xml",
+        "OutputYamlFolder": "dotnet/api",
+        "Flatten": true,
+        "id": "dotnet-template"
+      },
+      "SplitTOC": [
+        "dotnet/api/dotnet-template/toc.yml"
+      ],
+      "DiffFolder": [
+        "dotnet/api"
+      ]
+    }
+  ],
   "notification_subscribers": [],
   "branches_to_filter": [],
   "skip_source_output_uploading": false,

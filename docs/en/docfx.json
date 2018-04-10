@@ -1,0 +1,57 @@
+{
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.md",
+          "**/*.yml"
+        ],
+        "exclude": [
+          "**/obj/**",
+          "**/includes/**",
+          "**/_themes/**",
+          "api/overwrites/**",
+          "README.md",
+          "LICENSE",
+          "LICENSE-CODE",
+          "ThirdPartyNotices"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "**/*.png",
+          "**/*.jpg",
+          "**/*.svg",
+          "**/*.gif",
+          "**/*.bmp"
+        ],
+        "exclude": [
+          "**/obj/**",
+          "**/includes/**"
+        ]
+      }
+    ],
+    "overwrite": {
+      "files": [
+        "api/overwrites/**/*.md"
+      ]
+    },
+    "globalMetadata": {
+      "apiPlatform": "dotnet",
+      "breadcrumb_path": "~/breadcrumb/toc.yml"
+    },
+    "fileMetadata": {
+      "author": {
+        "api/**.yml": "dotnet-bot"
+      }
+    },
+    "template": [],
+    "dest": "_site",
+    "xref": [
+      "_zip/msdn.4.5.2.zip"
+    ],
+    "lruSize": 0
+  }
+}
