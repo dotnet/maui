@@ -259,18 +259,17 @@ Task ("test-uwp-emu")
     .WithCriteria(IsRunningOnWindows())
     .Does (() =>
 {
-    var uninstallPS = new Action (() => {
-        StartProcess ("powershell", $"Remove-AppxPackage -Package (Get-AppxPackage -Name {UWP_PACKAGE_ID}).PackageFullName");
-    });
+    // var uninstallPS = new Action (() => {
+    //    StartProcess ("powershell", $"Remove-AppxPackage -Package (Get-AppxPackage -Name {UWP_PACKAGE_ID}).PackageFullName");
+    // });
 
-    var appxBundlePath = GetFiles("./**/AppPackages/**/*.appxbundle").First ();
-
-    try {
-        // Try to uninstall the app if it exists from before
-        uninstallPS();
-    } catch { }
+    // try {
+    //    // Try to uninstall the app if it exists from before
+    //    uninstallPS();
+    // } catch { }
 
     // Install the appx
+    var appxBundlePath = GetFiles("./**/AppPackages/**/*.appxbundle").First ();
     Information("Installing appx: {0}", appxBundlePath);
     StartProcess ("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(appxBundlePath).FullPath + "\"");
 
@@ -290,7 +289,7 @@ Task ("test-uwp-emu")
     AddPlatformToTestResults(UWP_TEST_RESULTS_PATH, "UWP");
 
     // Uninstall the app (this will terminate it too)
-    uninstallPS();
+    // uninstallPS();
 });
 
 RunTarget(TARGET);

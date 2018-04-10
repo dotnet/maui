@@ -1,4 +1,4 @@
-<Framework Name="Xamarin.Essentials">
+<Framework Name="xamarin-essentials-uwp">
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
@@ -46,6 +46,7 @@
       <Member Id="F:Xamarin.Essentials.BatteryState.Discharging" />
       <Member Id="F:Xamarin.Essentials.BatteryState.Full" />
       <Member Id="F:Xamarin.Essentials.BatteryState.NotCharging" />
+      <Member Id="F:Xamarin.Essentials.BatteryState.NotPresent" />
       <Member Id="F:Xamarin.Essentials.BatteryState.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.Browser" Id="T:Xamarin.Essentials.Browser">

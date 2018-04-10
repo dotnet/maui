@@ -9,6 +9,9 @@ namespace DeviceTests
     {
         bool TestSupported =>
             DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
+#if WINDOWS_UWP
+            (Windows.Devices.Sensors.Magnetometer.GetDefault() != null) ||
+#endif
             (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
 
         public Magnetometer_Tests()

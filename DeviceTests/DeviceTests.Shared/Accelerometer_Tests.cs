@@ -8,6 +8,9 @@ namespace DeviceTests
     {
         bool TestSupported =>
             DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
+#if WINDOWS_UWP
+            (Windows.Devices.Sensors.Accelerometer.GetDefault() != null) ||
+#endif
             (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
 
         public Accelerometer_Tests()
