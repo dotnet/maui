@@ -1,4 +1,4 @@
-If you think you've found a bug to report, before doing anything else you should check the [Issues](https://github.com/xamarin/Xamarin.Essentials/issues) page to see if an issue has already been filed! This can help reduce the number of duplicate reports.
+If you think you've found a bug to report, before doing anything else you should check the [Issues](https://github.com/xamarin/Essentials/issues) page to see if an issue has already been filed! This can help reduce the number of duplicate reports.
 
 If you're ready to submit a new issue, taking the following steps helps expedite the bug triage process:
 
