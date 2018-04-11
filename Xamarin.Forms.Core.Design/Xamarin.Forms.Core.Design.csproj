@@ -65,302 +65,16 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <None Include="packages.config" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16%402x.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark%402x.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark~sel.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark~sel%402x.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~sel.png" />
-    <None Include="toolbox\icons\mac\layout-FlexLayout-16~sel%402x.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~dark.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~dark%402x.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~dark~sel.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~dark~sel%402x.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~sel.png" />
-    <None Include="toolbox\icons\mac\view-Label-16~sel%402x.png" />
-    <None Include="toolbox\icons\win\layout-FlexLayout-16.png" />
   </ItemGroup>
+
+  <!-- The IDE will look for a top level assembly resource called 'Xamarin.Forms.toolbox.xml' to -->
+  <!-- load the toolbox metadata from.                                                           -->
   <ItemGroup>
-    <EmbeddedResource Include="toolbox\Xamarin.Forms.toolbox.xml" />
+    <EmbeddedResource Include="toolbox\Xamarin.Forms.toolbox.xml">
+      <LogicalName>Xamarin.Forms.toolbox.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-EntryCell-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ImageCell-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-SwitchCell-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-TextCell-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\cell-ViewCell-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-AbsoluteLayout-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ContentView-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Frame-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-Grid-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-RelativeLayout-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-ScrollView-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\layout-StackLayout-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ActivityIndicator-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-BoxView-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Button-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-DatePicker-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Editor-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Entry-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Map-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Picker-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-ProgressBar-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-SearchBar-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Slider-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Stepper-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Switch-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TableView-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-TimePicker-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~dark%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~dark.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~dark~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~dark~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~sel%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-WebView-16~sel.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="toolbox\icons\win\view-BoxView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\cell-EntryCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\cell-ImageCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\cell-SwitchCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\cell-TextCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\cell-ViewCell-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-AbsoluteLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-ContentView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-Frame-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-Grid-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-RelativeLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-ScrollView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\layout-StackLayout-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-ActivityIndicator-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Button-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-DatePicker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Editor-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Entry-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Image-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Label-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-ListView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Map-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Picker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-ProgressBar-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-SearchBar-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Slider-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Stepper-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-Switch-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-TableView-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-TimePicker-16.png" />
-    <EmbeddedResource Include="toolbox\icons\win\view-WebView-16.png" />
-  </ItemGroup>
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets" Condition="Exists('..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets') And '$(OS)' != 'Unix' " />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition=" '$(OS)' != 'Unix'">
@@ -369,4 +83,31 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Forms.Design.1.0.23-pre\build\Xamarin.Forms.Design.targets'))" />
   </Target>
+
+  <!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->
+  <!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
+  <!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
+  <PropertyGroup>
+      <AssignTargetPathsDependsOn>
+      $(AssignTargetPathsDependsOn);
+      IncludeToolboxImages
+    </AssignTargetPathsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="IncludeToolboxImages">
+    <!-- Be explicit about the prefix rather than relying on the directory name being exactly what we need -->
+    <ItemGroup>
+      <Images Include="toolbox\icons\mac\*.png">
+        <Prefix>mac</Prefix>
+      </Images>
+      <Images Include="toolbox\icons\win\*.png">
+        <Prefix>win</Prefix>
+      </Images>
+    </ItemGroup>
+
+    <CreateItem Include="@(Images)" AdditionalMetadata="LogicalName=%(Prefix).%(Filename)%(Extension)">
+      <Output TaskParameter="Include" ItemName="EmbeddedResource" />
+    </CreateItem>
+  </Target>
+
 </Project>
