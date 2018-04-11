@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Build.Tasks;
+
+using static Mono.Cecil.Cil.Instruction;
+using static Mono.Cecil.Cil.OpCodes;
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -21,12 +22,11 @@ namespace Xamarin.Forms.Core.XamlC
 			if (string.IsNullOrEmpty(value) || !double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out size))
 				throw new XamlParseException($"Cannot convert \"{value}\" into {typeof(Constraint)}", node);
 
-			yield return Instruction.Create(OpCodes.Ldc_R8, size);
-			var constantReference = module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),
-																 methodName: "Constant",
-																 paramCount: 1,
-																 predicate: md => md.IsStatic);
-			yield return Instruction.Create(OpCodes.Call, constantReference);
+			yield return Create(Ldc_R8, size);
+			yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Constraint"),
+																   methodName: "Constant",
+																   parameterTypes: new[] { ("mscorlib", "System", "Double") },
+																   isStatic: true));
 		}
 	}
 }
