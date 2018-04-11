@@ -49,5 +49,5 @@ namespace Xamarin.Essentials
         public override NSObject GetPlaceholderData(UIActivityViewController activityViewController) => item;
 
         public override string GetSubjectForActivity(UIActivityViewController activityViewController, NSString activityType) => subject;
-    }s
+    }
 }

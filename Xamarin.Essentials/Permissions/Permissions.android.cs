@@ -10,7 +10,7 @@ using Android.Support.V4.Content;
 
 namespace Xamarin.Essentials
 {
-    static partial class Permissions
+    internal static partial class Permissions
     {
         static readonly object locker = new object();
         static int requestCode = 0;
