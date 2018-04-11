@@ -1,4 +1,4 @@
-Bug report best practices: https://github.com/xamarin/Xamarin.Forms/wiki/Submitting-Issues
+<!-- Bug report best practices: https://github.com/xamarin/Xamarin.Forms/wiki/Submitting-Issues -->
 
 ### Description
 
