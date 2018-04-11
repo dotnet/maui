@@ -103,7 +103,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (options.Accept != null)
 				alertDialog.PrimaryButtonText = options.Accept;
 
-			if (s_currentAlert != null)
+			while (s_currentAlert != null)
 			{
 				await s_currentAlert;
 			}
