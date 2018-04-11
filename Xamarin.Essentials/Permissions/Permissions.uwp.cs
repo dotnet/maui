@@ -65,7 +65,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal static class PermissionTypeExtensions
+    static class PermissionTypeExtensions
     {
         internal static string[] ToUWPCapabilities(this PermissionType permissionType)
         {

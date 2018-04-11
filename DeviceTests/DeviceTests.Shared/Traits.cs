@@ -6,7 +6,7 @@ using XUnitFilter = UnitTests.HeadlessRunner.Xunit.XUnitFilter;
 
 namespace DeviceTests
 {
-    internal static class Traits
+    static class Traits
     {
         public const string DeviceType = "DeviceType";
         public const string InteractionType = "InteractionType";

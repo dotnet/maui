@@ -44,6 +44,7 @@ dotnet_style_qualification_for_event = false:suggestion
 # Use language keywords instead of framework type names for type references
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_require_accessibility_modifiers = omit_if_default:warning
 
 # Suggest more modern language features when available
 dotnet_style_object_initializer = true:suggestion

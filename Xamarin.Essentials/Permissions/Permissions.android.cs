@@ -10,7 +10,7 @@ using Android.Support.V4.Content;
 
 namespace Xamarin.Essentials
 {
-    internal static partial class Permissions
+    static partial class Permissions
     {
         static readonly object locker = new object();
         static int requestCode = 0;
@@ -133,7 +133,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal static class PermissionTypeExtensions
+    static class PermissionTypeExtensions
     {
         internal static IEnumerable<string> ToAndroidPermissions(this PermissionType permissionType, bool onlyRuntimePermissions)
         {

@@ -87,35 +87,6 @@ namespace Xamarin.Essentials
             }
         }
 
-        class SingleLocationListener : Java.Lang.Object, ILocationListener
-        {
-            bool wasRaised = false;
-
-            public Action<AndroidLocation> LocationHandler { get; set; }
-
-            public void OnLocationChanged(AndroidLocation location)
-            {
-                if (wasRaised)
-                    return;
-
-                wasRaised = true;
-
-                LocationHandler?.Invoke(location);
-            }
-
-            public void OnProviderDisabled(string provider)
-            {
-            }
-
-            public void OnProviderEnabled(string provider)
-            {
-            }
-
-            public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
-            {
-            }
-        }
-
         static string GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
         {
             var criteria = new Criteria();
@@ -189,6 +160,35 @@ namespace Xamarin.Essentials
                 return true;
 
             return false;
+        }
+    }
+
+    class SingleLocationListener : Java.Lang.Object, ILocationListener
+    {
+        bool wasRaised = false;
+
+        public Action<AndroidLocation> LocationHandler { get; set; }
+
+        public void OnLocationChanged(AndroidLocation location)
+        {
+            if (wasRaised)
+                return;
+
+            wasRaised = true;
+
+            LocationHandler?.Invoke(location);
+        }
+
+        public void OnProviderDisabled(string provider)
+        {
+        }
+
+        public void OnProviderEnabled(string provider)
+        {
+        }
+
+        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+        {
         }
     }
 }

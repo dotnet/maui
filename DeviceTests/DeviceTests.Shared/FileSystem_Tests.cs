@@ -7,7 +7,7 @@ namespace DeviceTests
 {
     public class FileSystem_Tests
     {
-        private const string bundleFileContents = "This file was in the app bundle.";
+        const string bundleFileContents = "This file was in the app bundle.";
 
         [Fact]
         public void CacheDirectory_Is_Valid()

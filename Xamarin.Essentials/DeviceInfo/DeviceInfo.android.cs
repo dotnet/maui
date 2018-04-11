@@ -184,18 +184,18 @@ namespace Xamarin.Essentials
 
         static string GetSystemSetting(string name)
            => Settings.System.GetString(Essentials.Platform.CurrentContext.ContentResolver, name);
+    }
 
-        class Listener : OrientationEventListener
+    class Listener : OrientationEventListener
+    {
+        Action onChanged;
+
+        public Listener(Context context, Action handler)
+            : base(context)
         {
-            Action onChanged;
-
-            public Listener(Context context, Action handler)
-                : base(context)
-            {
-                onChanged = handler;
-            }
-
-            public override void OnOrientationChanged(int orientation) => onChanged();
+            onChanged = handler;
         }
+
+        public override void OnOrientationChanged(int orientation) => onChanged();
     }
 }

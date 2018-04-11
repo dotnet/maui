@@ -31,23 +31,23 @@ namespace Xamarin.Essentials
 
             return vc.PresentViewControllerAsync(activityController, true);
         }
-
-        class ShareActivityItemSource : UIActivityItemSource
-        {
-            NSObject item;
-            string subject;
-
-            public ShareActivityItemSource(NSObject item, string subject)
-            {
-                this.item = item;
-                this.subject = subject;
-            }
-
-            public override NSObject GetItemForActivity(UIActivityViewController activityViewController, NSString activityType) => item;
-
-            public override NSObject GetPlaceholderData(UIActivityViewController activityViewController) => item;
-
-            public override string GetSubjectForActivity(UIActivityViewController activityViewController, NSString activityType) => subject;
-        }
     }
+
+    class ShareActivityItemSource : UIActivityItemSource
+    {
+        NSObject item;
+        string subject;
+
+        public ShareActivityItemSource(NSObject item, string subject)
+        {
+            this.item = item;
+            this.subject = subject;
+        }
+
+        public override NSObject GetItemForActivity(UIActivityViewController activityViewController, NSString activityType) => item;
+
+        public override NSObject GetPlaceholderData(UIActivityViewController activityViewController) => item;
+
+        public override string GetSubjectForActivity(UIActivityViewController activityViewController, NSString activityType) => subject;
+    }s
 }
