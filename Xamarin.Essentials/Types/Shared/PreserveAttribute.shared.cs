@@ -5,7 +5,7 @@ namespace Xamarin.Essentials
 {
     [AttributeUsage(AttributeTargets.All)]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal sealed class PreserveAttribute : Attribute
+    sealed class PreserveAttribute : Attribute
     {
 #pragma warning disable SA1401 // Fields should be private
         public bool AllMembers;

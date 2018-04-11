@@ -133,7 +133,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    internal static class PermissionTypeExtensions
+    static class PermissionTypeExtensions
     {
         internal static IEnumerable<string> ToAndroidPermissions(this PermissionType permissionType, bool onlyRuntimePermissions)
         {

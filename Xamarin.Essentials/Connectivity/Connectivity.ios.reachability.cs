@@ -8,14 +8,14 @@ using SystemConfiguration;
 
 namespace Xamarin.Essentials
 {
-    internal enum NetworkStatus
+    enum NetworkStatus
     {
         NotReachable,
         ReachableViaCarrierDataNetwork,
         ReachableViaWiFiNetwork
     }
 
-    internal static class Reachability
+    static class Reachability
     {
         static string hostName = "www.microsoft.com";
 

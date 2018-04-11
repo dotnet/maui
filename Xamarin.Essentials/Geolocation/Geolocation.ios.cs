@@ -66,27 +66,27 @@ namespace Xamarin.Essentials
                 tcs.TrySetResult(null);
             }
         }
+    }
 
-        class SingleLocationListener : CLLocationManagerDelegate
+    class SingleLocationListener : CLLocationManagerDelegate
+    {
+        bool wasRaised = false;
+
+        public Action<CLLocation> LocationHandler { get; set; }
+
+        public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
         {
-            bool wasRaised = false;
+            if (wasRaised)
+                return;
 
-            public Action<CLLocation> LocationHandler { get; set; }
+            wasRaised = true;
 
-            public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
-            {
-                if (wasRaised)
-                    return;
+            var location = locations.LastOrDefault();
 
-                wasRaised = true;
+            if (location == null)
+                return;
 
-                var location = locations.LastOrDefault();
-
-                if (location == null)
-                    return;
-
-                LocationHandler?.Invoke(location);
-            }
+            LocationHandler?.Invoke(location);
         }
     }
 }

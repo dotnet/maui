@@ -1,6 +1,6 @@
 ﻿namespace Xamarin.Essentials
 {
-    internal enum PermissionStatus
+    enum PermissionStatus
     {
         // Denied by user
         Denied,
@@ -18,7 +18,7 @@
         Unknown
     }
 
-    internal enum PermissionType
+    enum PermissionType
     {
         Unknown,
         Battery,
