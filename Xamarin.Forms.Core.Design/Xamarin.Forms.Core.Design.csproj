@@ -65,6 +65,21 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
     <None Include="packages.config" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16%402x.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark%402x.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark~sel.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~dark~sel%402x.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~sel.png" />
+    <None Include="toolbox\icons\mac\layout-FlexLayout-16~sel%402x.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~dark.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~dark%402x.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~dark~sel.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~dark~sel%402x.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~sel.png" />
+    <None Include="toolbox\icons\mac\view-Label-16~sel%402x.png" />
+    <None Include="toolbox\icons\win\layout-FlexLayout-16.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="toolbox\Xamarin.Forms.toolbox.xml" />
@@ -222,13 +237,7 @@
     <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~dark~sel.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~sel%402x.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-Image-16~sel.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16%402x-1.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16%402x-2.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16%402x-3.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-Label-16%402x.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16-1.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16-2.png" />
-    <EmbeddedResource Include="toolbox\icons\mac\view-Label-16-3.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-Label-16.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16%402x.png" />
     <EmbeddedResource Include="toolbox\icons\mac\view-ListView-16.png" />
