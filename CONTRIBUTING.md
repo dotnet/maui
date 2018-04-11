@@ -8,7 +8,7 @@ Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Prerequisite
 
-You will need to complete a Contribution License Agreement before any pull request can be accepted. Complete the CLA at https://cla2.dotnetfoundation.org/.
+You will need to complete a Contribution License Agreement before any pull request can be accepted. Review the CLA at https://cla.dotnetfoundation.org/. When you submit a pull request, a CLA assistant bot will confirm you have completed the agreement, or provide you with an opportunitiy to do so.
 
 ## Contributing Code
 
