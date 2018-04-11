@@ -24,6 +24,7 @@ var UWP_PROJ = "./DeviceTests.UWP/DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./xunit-uwp.xml";
 var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 
+var TCP_LISTEN_TIMEOUT = 60;
 var TCP_LISTEN_PORT = 10578;
 var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
         .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
@@ -34,13 +35,37 @@ Func<int, FilePath, Task> DownloadTcpTextAsync = (int port, FilePath filename) =
     System.Threading.Tasks.Task.Run (() => {
         var tcpListener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, port);
         tcpListener.Start();
+        var listening = true;
 
-        var tcpClient = tcpListener.AcceptTcpClient();
-        var fileName = MakeAbsolute (filename).FullPath;
+        System.Threading.Tasks.Task.Run(() => {
+            // Sleep until timeout elapses or tcp listener stopped after a successful connection
+            var elapsed = 0;
+            while (elapsed <= TCP_LISTEN_TIMEOUT && listening) {
+                System.Threading.Thread.Sleep(1000);
+                elapsed++;
+            }
 
-        using (var file = System.IO.File.Open(fileName, System.IO.FileMode.Create))
-        using (var stream = tcpClient.GetStream())
-            stream.CopyTo(file);
+            // If still listening, timeout elapsed, stop the listener
+            if (listening) {
+                tcpListener.Stop();
+                listening = false;
+            }
+        });
+
+        try {
+            var tcpClient = tcpListener.AcceptTcpClient();
+            var fileName = MakeAbsolute (filename).FullPath;
+
+            using (var file = System.IO.File.Open(fileName, System.IO.FileMode.Create))
+            using (var stream = tcpClient.GetStream())
+                stream.CopyTo(file);
+
+            tcpClient.Close();
+            tcpListener.Stop();
+            listening = false; 
+        } catch {
+            throw new Exception("Test results listener failed or timed out.");
+        }
     });
 
 Action<FilePath, string> AddPlatformToTestResults = (FilePath testResultsFile, string platformName) => {
@@ -262,7 +287,7 @@ Task ("test-uwp-emu")
     var uninstallPS = new Action (() => {
         try {
             StartProcess ("powershell",
-                $"$app = Get-AppxPackage -Name {UWP_PACKAGE_ID}; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }");
+                "$app = Get-AppxPackage -Name " + UWP_PACKAGE_ID + "; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }");
         } catch { }
     });
 
