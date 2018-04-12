@@ -13,9 +13,7 @@ namespace Xamarin.Essentials
         public static Task OpenAsync(Uri uri, BrowserLaunchType launchType)
         {
             if (uri == null)
-            {
-                throw new ArgumentNullException(nameof(uri), "Uri cannot be null.");
-            }
+                throw new ArgumentNullException(nameof(uri));
 
             var nativeUri = AndroidUri.Parse(uri.OriginalString);
 

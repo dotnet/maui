@@ -10,30 +10,22 @@ namespace Xamarin.Essentials
     public partial class Connectivity
     {
         static ConnectivityBroadcastReceiver conectivityReceiver;
-        static bool hasPermission;
-
-        static void ValidatePermission()
-        {
-            if (hasPermission)
-                return;
-
-            // Make sure the manifest has declared this permission
-            Permissions.EnsureDeclared(PermissionType.NetworkState);
-
-            hasPermission = true;
-        }
 
         static void StartListeners()
         {
-            ValidatePermission();
+            Permissions.EnsureDeclared(PermissionType.NetworkState);
+
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
             Platform.CurrentContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
         }
 
         static void StopListeners()
         {
+            if (conectivityReceiver == null)
+                return;
+
             Platform.CurrentContext.UnregisterReceiver(conectivityReceiver);
-            conectivityReceiver?.Dispose();
+            conectivityReceiver.Dispose();
             conectivityReceiver = null;
         }
 
@@ -44,7 +36,8 @@ namespace Xamarin.Essentials
         {
             get
             {
-                ValidatePermission();
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
+
                 try
                 {
                     var currentAccess = NetworkAccess.None;
@@ -114,7 +107,8 @@ namespace Xamarin.Essentials
         {
             get
             {
-                ValidatePermission();
+                Permissions.EnsureDeclared(PermissionType.NetworkState);
+
                 var manager = Platform.ConnectivityManager;
                 if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
                 {

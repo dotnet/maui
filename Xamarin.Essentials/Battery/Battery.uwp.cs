@@ -21,11 +21,12 @@
                 var finalReport = DefaultBattery.GetReport();
                 var finalPercent = -1.0;
 
-                if (finalReport.RemainingCapacityInMilliwattHours.HasValue && finalReport.FullChargeCapacityInMilliwattHours.HasValue)
-                {
-                    finalPercent = (double)finalReport.RemainingCapacityInMilliwattHours.Value /
-                                     (double)finalReport.FullChargeCapacityInMilliwattHours.Value;
-                }
+                var remaining = finalReport.RemainingCapacityInMilliwattHours;
+                var full = finalReport.FullChargeCapacityInMilliwattHours;
+
+                if (remaining.HasValue && full.HasValue)
+                    finalPercent = (double)remaining.Value / (double)full.Value;
+
                 return finalPercent;
             }
         }
@@ -61,14 +62,17 @@
         {
             get
             {
-                var currentStatus = State;
-                if (currentStatus == BatteryState.Full || currentStatus == BatteryState.Charging || currentState == BatteryState.NotPresent)
-                    return BatteryPowerSource.Ac;
-
-                if (currentStatus == BatteryState.Unknown)
-                    return BatteryPowerSource.Unknown;
-
-                return BatteryPowerSource.Battery;
+                switch (State)
+                {
+                    case BatteryState.Full:
+                    case BatteryState.Charging:
+                    case BatteryState.NotPresent:
+                        return BatteryPowerSource.Ac;
+                    case BatteryState.Unknown:
+                        return BatteryPowerSource.Unknown;
+                    default:
+                        return BatteryPowerSource.Battery;
+                }
             }
         }
     }

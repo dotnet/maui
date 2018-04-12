@@ -4,40 +4,24 @@ using Xunit;
 
 namespace DeviceTests
 {
+    // TEST NOTES:
+    //   - these tests require a compass to be present
     public class Compass_Tests
     {
-        bool TestSupported =>
-               DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
-#if WINDOWS_UWP
-               (Windows.Devices.Sensors.Compass.GetDefault() != null) ||
-#endif
-               (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
-
-        public Compass_Tests()
-        {
-            Compass.Stop();
-        }
-
         [Fact]
         public void IsSupported()
         {
-            if (!TestSupported)
-            {
-                Assert.False(Compass.IsSupported);
-                return;
-            }
-
-            Assert.True(Compass.IsSupported);
+            Assert.Equal(HardwareSupport.HasCompass, Compass.IsSupported);
         }
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Compass, Traits.FeatureSupport.Supported)]
         public async Task Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasCompass)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<CompassData>();
 
@@ -57,12 +41,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Compass, Traits.FeatureSupport.Supported)]
         public async Task IsMonitoring(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasCompass)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<CompassData>();
             Compass.ReadingChanged += Compass_ReadingChanged;
@@ -81,12 +65,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Compass, Traits.FeatureSupport.Supported)]
         public async Task Stop_Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasCompass)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<CompassData>();
             Compass.ReadingChanged += Compass_ReadingChanged;

@@ -38,9 +38,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             if (listener == null || magnetometer == null)
-            {
                 return;
-            }
 
             Platform.SensorManager.UnregisterListener(listener, magnetometer);
             listener.Dispose();

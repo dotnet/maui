@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xunit;
@@ -7,7 +6,7 @@ using Xunit;
 namespace DeviceTests
 {
     // TEST NOTES:
-    //   - a human needs to accept permissions
+    //   - a human needs to accept permissions on all systems
     public class Geolocation_Tests
     {
         [Fact]

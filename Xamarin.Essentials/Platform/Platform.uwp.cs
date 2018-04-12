@@ -11,13 +11,9 @@ namespace Xamarin.Essentials
             var dispatcher = CoreApplication.MainView.CoreWindow.Dispatcher;
 
             if (dispatcher != null)
-            {
                 dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
-            }
             else
-            {
                 action();
-            }
         }
     }
 }

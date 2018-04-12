@@ -4,40 +4,24 @@ using Xunit;
 
 namespace DeviceTests
 {
+    // TEST NOTES:
+    //   - these tests require an accelerometer to be present
     public class Accelerometer_Tests
     {
-        bool TestSupported =>
-            DeviceInfo.Platform == DeviceInfo.Platforms.Android ||
-#if WINDOWS_UWP
-            (Windows.Devices.Sensors.Accelerometer.GetDefault() != null) ||
-#endif
-            (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
-
-        public Accelerometer_Tests()
-        {
-            Accelerometer.Stop();
-        }
-
         [Fact]
         public void IsSupported()
         {
-            if (!TestSupported)
-            {
-                Assert.False(Accelerometer.IsSupported);
-                return;
-            }
-
-            Assert.True(Accelerometer.IsSupported);
+            Assert.Equal(HardwareSupport.HasAccelerometer, Accelerometer.IsSupported);
         }
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Accelerometer, Traits.FeatureSupport.Supported)]
         public async Task Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasAccelerometer)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<AccelerometerData>();
             Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
@@ -56,12 +40,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Accelerometer, Traits.FeatureSupport.Supported)]
         public async Task IsMonitoring(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasAccelerometer)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<AccelerometerData>();
             Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
@@ -80,12 +64,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Accelerometer, Traits.FeatureSupport.Supported)]
         public async Task Stop_Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasAccelerometer)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<AccelerometerData>();
 

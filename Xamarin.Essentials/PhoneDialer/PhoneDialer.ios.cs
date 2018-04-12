@@ -14,10 +14,9 @@ namespace Xamarin.Essentials
             get
             {
                 var isDialerInstalled = UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
+
                 if (!isDialerInstalled)
-                {
                     return false;
-                }
 
                 using (var netInfo = new CTTelephonyNetworkInfo())
                 {

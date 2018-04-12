@@ -27,19 +27,13 @@ namespace Xamarin.Essentials
 
             var phoneNumber = string.Empty;
             if (Platform.HasApiLevel(BuildVersionCodes.N))
-            {
                 phoneNumber = PhoneNumberUtils.FormatNumber(number, Locale.GetDefault(Locale.Category.Format).Country);
-            }
             else if (Platform.HasApiLevel(BuildVersionCodes.Lollipop))
-            {
                 phoneNumber = PhoneNumberUtils.FormatNumber(number, Locale.Default.Country);
-            }
             else
-            {
 #pragma warning disable CS0618
                 phoneNumber = PhoneNumberUtils.FormatNumber(number);
 #pragma warning restore CS0618
-            }
 
             var dialIntent = ResolveDialIntent(phoneNumber)
                 .SetFlags(ActivityFlags.ClearTop)

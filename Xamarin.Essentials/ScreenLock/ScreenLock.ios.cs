@@ -8,13 +8,9 @@ namespace Xamarin.Essentials
             => UIApplication.SharedApplication.IdleTimerDisabled;
 
         public static void RequestActive()
-        {
-            UIApplication.SharedApplication.IdleTimerDisabled = true;
-        }
+            => UIApplication.SharedApplication.IdleTimerDisabled = true;
 
         public static void RequestRelease()
-        {
-            UIApplication.SharedApplication.IdleTimerDisabled = false;
-        }
+            => UIApplication.SharedApplication.IdleTimerDisabled = false;
     }
 }

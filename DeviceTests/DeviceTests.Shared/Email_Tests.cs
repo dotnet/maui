@@ -10,28 +10,26 @@ namespace DeviceTests
     {
         [Fact]
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
-        public async Task Compose_Shows_New_Window()
+        public Task Compose_Shows_New_Window()
         {
-            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
-                return;
-            await Email.ComposeAsync();
+            return Utils.OnMainThread(() => Email.ComposeAsync());
         }
 
         [Fact]
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
-        public async Task Compose_With_Message_Shows_New_Window()
+        public Task Compose_With_Message_Shows_New_Window()
         {
-            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
-                return;
-
-            var email = new EmailMessage
+            return Utils.OnMainThread(() =>
             {
-                Subject = "Hello World!",
-                Body = "This is a greeting email.",
-                To = { "everyone@example.org" }
-            };
+                var email = new EmailMessage
+                {
+                    Subject = "Hello World!",
+                    Body = "This is a greeting email.",
+                    To = { "everyone@example.org" }
+                };
 
-            await Email.ComposeAsync(email);
+                return Email.ComposeAsync(email);
+            });
         }
     }
 }

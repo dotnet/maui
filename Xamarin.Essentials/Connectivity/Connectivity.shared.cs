@@ -8,8 +8,9 @@ namespace Xamarin.Essentials
     {
         static event ConnectivityChangedEventHandler ConnectivityChanagedInternal;
 
+        // a cache so that events aren't fired unnecessarily
+        // this is mainly an issue on Android, but we can stiil do this everywhere
         static NetworkAccess currentAccess;
-
         static List<ConnectionProfile> currentProfiles;
 
         public static event ConnectivityChangedEventHandler ConnectivityChanged
@@ -52,8 +53,7 @@ namespace Xamarin.Essentials
 
         static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
         {
-            if (currentAccess != e.NetworkAccess ||
-                !currentProfiles.SequenceEqual(e.Profiles))
+            if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.Profiles))
             {
                 SetCurrent();
                 Platform.BeginInvokeOnMainThread(() => ConnectivityChanagedInternal?.Invoke(e));

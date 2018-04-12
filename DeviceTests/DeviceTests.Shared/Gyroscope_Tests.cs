@@ -4,40 +4,24 @@ using Xunit;
 
 namespace DeviceTests
 {
+    // TEST NOTES:
+    //   - these tests require a gyroscope to be present
     public class Gyroscope_Tests
     {
-        bool TestSupported =>
-            (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.Android) ||
-#if WINDOWS_UWP
-            (Windows.Devices.Sensors.Gyrometer.GetDefault() != null) ||
-#endif
-            (DeviceInfo.DeviceType == DeviceType.Physical && DeviceInfo.Platform == DeviceInfo.Platforms.iOS);
-
-        public Gyroscope_Tests()
-        {
-            Gyroscope.Stop();
-        }
-
         [Fact]
         public void IsSupported()
         {
-            if (!TestSupported)
-            {
-                Assert.False(Gyroscope.IsSupported);
-                return;
-            }
-
-            Assert.True(Gyroscope.IsSupported);
+            Assert.Equal(HardwareSupport.HasGyroscope, Gyroscope.IsSupported);
         }
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
         public async Task Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasGyroscope)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<GyroscopeData>();
             Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
@@ -56,12 +40,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
         public async Task IsMonitoring(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasGyroscope)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<GyroscopeData>();
             Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
@@ -80,12 +64,12 @@ namespace DeviceTests
 
         [Theory]
         [InlineData(SensorSpeed.Fastest)]
+        [Trait(Traits.Hardware.Gyroscope, Traits.FeatureSupport.Supported)]
         public async Task Stop_Monitor(SensorSpeed sensorSpeed)
         {
-            if (!TestSupported)
-            {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasGyroscope)
                 return;
-            }
 
             var tcs = new TaskCompletionSource<GyroscopeData>();
 

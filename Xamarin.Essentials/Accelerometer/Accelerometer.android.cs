@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
     public static partial class Accelerometer
     {
         internal static bool IsSupported =>
-               Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
+            Platform.SensorManager?.GetDefaultSensor(SensorType.Accelerometer) != null;
 
         static AccelerometerListener listener;
         static Sensor accelerometer;
@@ -38,9 +38,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             if (listener == null || accelerometer == null)
-            {
                 return;
-            }
 
             Platform.SensorManager.UnregisterListener(listener, accelerometer);
             listener.Dispose();

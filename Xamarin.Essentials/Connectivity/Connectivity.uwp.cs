@@ -43,14 +43,14 @@ namespace Xamarin.Essentials
             get
             {
                 var networkInterfaceList = NetworkInformation.GetConnectionProfiles();
-                foreach (var networkInterfaceInfo in networkInterfaceList.Where(networkInterfaceInfo => networkInterfaceInfo.GetNetworkConnectivityLevel() != NetworkConnectivityLevel.None))
+                foreach (var interfaceInfo in networkInterfaceList.Where(nii => nii.GetNetworkConnectivityLevel() != NetworkConnectivityLevel.None))
                 {
                     var type = ConnectionProfile.Other;
 
-                    if (networkInterfaceInfo.NetworkAdapter != null)
+                    if (interfaceInfo.NetworkAdapter != null)
                     {
                         // http://www.iana.org/assignments/ianaiftype-mib/ianaiftype-mib
-                        switch (networkInterfaceInfo.NetworkAdapter.IanaInterfaceType)
+                        switch (interfaceInfo.NetworkAdapter.IanaInterfaceType)
                         {
                             case 6:
                                 type = ConnectionProfile.Ethernet;

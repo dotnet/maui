@@ -6,7 +6,7 @@ namespace DeviceTests
 {
     // TEST NOTES:
     //   - a human needs to accept permissions on Android
-    //   - the camera flash is not emulated on iOS simulators
+    //   - the camera flash is not always available
     public class Flashlight_Tests
     {
         [Theory]
@@ -15,19 +15,12 @@ namespace DeviceTests
 #if __ANDROID__
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 #endif
-#if __IOS__
-        [Trait(Traits.DeviceType, Traits.DeviceTypes.Physical)]
-#endif
+        [Trait(Traits.Hardware.Flash, Traits.FeatureSupport.Supported)]
         public async Task Turn_On_Off(bool oldCameraApi)
         {
-            if (DeviceInfo.Platform == DeviceInfo.Platforms.UWP)
-            {
-                await Utils.OnMainThread(async () =>
-                {
-                    await Assert.ThrowsAsync<FeatureNotSupportedException>(() => Flashlight.TurnOnAsync());
-                });
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasFlash)
                 return;
-            }
 
 #if __ANDROID__
             Flashlight.AlwaysUseCameraApi = oldCameraApi;

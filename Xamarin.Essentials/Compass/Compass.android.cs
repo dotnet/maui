@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Android.Hardware;
 using Android.Runtime;
 
@@ -65,7 +64,7 @@ namespace Xamarin.Essentials
         string magnetometer;
         string accelerometer;
 
-        internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
+        public SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
         {
             this.magnetometer = magnetometer;
             this.accelerometer = accelerometer;
@@ -79,12 +78,12 @@ namespace Xamarin.Essentials
         {
             if (e.Sensor.Name == accelerometer && !lastAccelerometerSet)
             {
-                CopyValues(e.Values, lastAccelerometer);
+                e.Values.CopyTo(lastAccelerometer, 0);
                 lastAccelerometerSet = true;
             }
             else if (e.Sensor.Name == magnetometer && !lastMagnetometerSet)
             {
-                CopyValues(e.Values, lastMagnetometer);
+                e.Values.CopyTo(lastMagnetometer, 0);
                 lastMagnetometerSet = true;
             }
 
@@ -99,14 +98,6 @@ namespace Xamarin.Essentials
                 Compass.OnChanged(data);
                 lastMagnetometerSet = false;
                 lastAccelerometerSet = false;
-            }
-        }
-
-        void CopyValues(IList<float> source, float[] destination)
-        {
-            for (var i = 0; i < source.Count; ++i)
-            {
-                destination[i] = source[i];
             }
         }
     }

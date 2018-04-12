@@ -13,13 +13,13 @@ namespace Xamarin.Essentials
             if (permission == PermissionType.LocationWhenInUse)
             {
                 if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
-                    throw new PermissionException("On iOS 8.0 and higher you must set either `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates!");
+                    throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates.");
             }
         }
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
         {
-            PlatformEnsureDeclared(permission);
+            EnsureDeclared(permission);
 
             switch (permission)
             {
@@ -36,15 +36,15 @@ namespace Xamarin.Essentials
             if (await PlatformCheckStatusAsync(permission) == PermissionStatus.Granted)
                 return PermissionStatus.Granted;
 
-            PlatformEnsureDeclared(permission);
+            EnsureDeclared(permission);
 
             switch (permission)
             {
                 case PermissionType.LocationWhenInUse:
                     return await RequestLocationAsync();
+                default:
+                    return PermissionStatus.Granted;
             }
-
-            return PermissionStatus.Granted;
         }
 
         static PermissionStatus GetLocationStatus()

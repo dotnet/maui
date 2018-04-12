@@ -5,27 +5,23 @@ namespace Xamarin.Essentials
 {
     public static partial class Compass
     {
+        static bool useSyncContext;
+
         public static event CompassChangedEventHandler ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
 
-        internal static bool UseSyncContext { get; set; }
-
         public static void Start(SensorSpeed sensorSpeed)
         {
             if (!IsSupported)
-            {
                 throw new FeatureNotSupportedException();
-            }
 
             if (IsMonitoring)
-            {
                 return;
-            }
 
             IsMonitoring = true;
+            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.Ui;
 
-            UseSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.Ui;
             try
             {
                 PlatformStart(sensorSpeed);
@@ -39,10 +35,11 @@ namespace Xamarin.Essentials
 
         public static void Stop()
         {
+            if (!IsSupported)
+                throw new FeatureNotSupportedException();
+
             if (!IsMonitoring)
-            {
                 return;
-            }
 
             IsMonitoring = false;
 
@@ -62,17 +59,14 @@ namespace Xamarin.Essentials
 
         internal static void OnChanged(CompassChangedEventArgs e)
         {
-            if (ReadingChanged == null)
+            var handler = ReadingChanged;
+            if (handler == null)
                 return;
 
-            if (UseSyncContext)
-            {
-                Platform.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(e));
-            }
+            if (useSyncContext)
+                Platform.BeginInvokeOnMainThread(() => handler?.Invoke(e));
             else
-            {
-                ReadingChanged?.Invoke(e);
-            }
+                handler?.Invoke(e);
         }
     }
 

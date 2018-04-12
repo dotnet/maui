@@ -4,7 +4,8 @@ using Foundation;
 namespace Xamarin.Essentials
 {
     public static partial class Accelerometer
-    { // Timing intervales to match android sensor speeds in seconds
+    {
+        // Timing intervales to match android sensor speeds in seconds
         // https://stackoverflow.com/questions/10044158/android-sensors
         internal const double FastestInterval = .02;
         internal const double GameInterval = .04;

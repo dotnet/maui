@@ -51,9 +51,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             if (locationManager == null)
-            {
                 return;
-            }
 
             locationManager.UpdatedHeading -= LocationManagerUpdatedHeading;
             locationManager.StopUpdatingHeading();

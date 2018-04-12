@@ -41,9 +41,7 @@ namespace Xamarin.Essentials
             foreach (var feature in packageManager.GetSystemAvailableFeatures())
             {
                 if (feature.Name.Equals(systemFeature, StringComparison.OrdinalIgnoreCase))
-                {
                     return true;
-                }
             }
             return false;
         }
@@ -61,9 +59,7 @@ namespace Xamarin.Essentials
         public static void BeginInvokeOnMainThread(Action action)
         {
             if (handler?.Looper != Looper.MainLooper)
-            {
                 handler = new Handler(Looper.MainLooper);
-            }
 
             handler.Post(action);
         }

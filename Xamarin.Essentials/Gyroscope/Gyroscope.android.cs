@@ -38,9 +38,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             if (listener == null || gyroscope == null)
-            {
                 return;
-            }
 
             Platform.SensorManager.UnregisterListener(listener, gyroscope);
             listener.Dispose();

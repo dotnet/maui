@@ -41,7 +41,7 @@ namespace Xamarin.Essentials
 
         static Task<PermissionStatus> PlatformCheckStatusAsync(PermissionType permission)
         {
-            PlatformEnsureDeclared(permission);
+            EnsureDeclared(permission);
 
             // If there are no android permissions for the given permission type
             // just return granted since we have none to ask for

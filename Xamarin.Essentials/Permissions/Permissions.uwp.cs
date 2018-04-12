@@ -41,9 +41,9 @@ namespace Xamarin.Essentials
             {
                 case PermissionType.LocationWhenInUse:
                     return CheckLocationAsync();
+                default:
+                    return Task.FromResult(PermissionStatus.Granted);
             }
-
-            return Task.FromResult(PermissionStatus.Granted);
         }
 
         static Task<PermissionStatus> PlatformRequestAsync(PermissionType permission) =>
@@ -52,16 +52,15 @@ namespace Xamarin.Essentials
         static async Task<PermissionStatus> CheckLocationAsync()
         {
             var accessStatus = await Geolocator.RequestAccessAsync();
-
             switch (accessStatus)
             {
                 case GeolocationAccessStatus.Allowed:
                     return PermissionStatus.Granted;
                 case GeolocationAccessStatus.Unspecified:
                     return PermissionStatus.Unknown;
+                default:
+                    return PermissionStatus.Denied;
             }
-
-            return PermissionStatus.Denied;
         }
     }
 
@@ -73,9 +72,9 @@ namespace Xamarin.Essentials
             {
                 case PermissionType.LocationWhenInUse:
                     return new[] { "location" };
+                default:
+                    return null;
             }
-
-            return null;
         }
     }
 }

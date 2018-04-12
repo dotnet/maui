@@ -6,9 +6,6 @@ namespace DeviceTests
 {
     public class Utils
     {
-        public static bool IsiOSSimulator
-            => DeviceInfo.DeviceType == DeviceType.Virtual && DeviceInfo.Platform == DeviceInfo.Platforms.iOS;
-
 #if WINDOWS_UWP
         public static async Task OnMainThread(Windows.UI.Core.DispatchedHandler action)
         {

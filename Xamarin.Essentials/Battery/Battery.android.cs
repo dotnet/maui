@@ -8,21 +8,10 @@ namespace Xamarin.Essentials
     {
         static BatteryBroadcastReceiver batteryReceiver;
 
-        static bool hasBatteryStatsPermission;
-
-        static void ValidateBatteryStatsPermission()
-        {
-            if (hasBatteryStatsPermission)
-                return;
-
-            Permissions.EnsureDeclared(PermissionType.Battery);
-
-            hasBatteryStatsPermission = true;
-        }
-
         static void StartBatteryListeners()
         {
-            ValidateBatteryStatsPermission();
+            Permissions.EnsureDeclared(PermissionType.Battery);
+
             batteryReceiver = new BatteryBroadcastReceiver(OnBatteryChanged);
             Platform.CurrentContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
         }
@@ -38,7 +27,7 @@ namespace Xamarin.Essentials
         {
             get
             {
-                ValidateBatteryStatsPermission();
+                Permissions.EnsureDeclared(PermissionType.Battery);
 
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
@@ -58,7 +47,8 @@ namespace Xamarin.Essentials
         {
             get
             {
-                ValidateBatteryStatsPermission();
+                Permissions.EnsureDeclared(PermissionType.Battery);
+
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
                 {
@@ -84,7 +74,8 @@ namespace Xamarin.Essentials
         {
             get
             {
-                ValidateBatteryStatsPermission();
+                Permissions.EnsureDeclared(PermissionType.Battery);
+
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
                 {

@@ -11,6 +11,7 @@ namespace Xamarin.Essentials
         internal const uint GameInterval = 22;
         internal const uint NormalInterval = 33;
 
+        // keep around a reference so we can stop this same instance
         static WindowsCompass sensor;
 
         internal static WindowsCompass DefaultCompass =>
@@ -22,6 +23,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStart(SensorSpeed sensorSpeed)
         {
             sensor = DefaultCompass;
+
             var interval = NormalInterval;
             switch (sensorSpeed)
             {
@@ -46,9 +48,6 @@ namespace Xamarin.Essentials
 
         internal static void PlatformStop()
         {
-            if (sensor == null)
-                return;
-
             sensor.ReadingChanged -= CompassReportedInterval;
         }
     }

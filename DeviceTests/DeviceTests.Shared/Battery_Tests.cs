@@ -4,15 +4,17 @@ using Xunit;
 namespace DeviceTests
 {
     // TEST NOTES:
-    //   - the battery is not emulated on iOS simulators
+    //   - these tests require a battery to be present
     public class Battery_Tests
     {
         [Fact]
-#if __IOS__
-        [Trait(Traits.DeviceType, Traits.DeviceTypes.Physical)]
-#endif
+        [Trait(Traits.Hardware.Battery, Traits.FeatureSupport.Supported)]
         public void Charge_Level()
         {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasBattery)
+                return;
+
             if (Battery.State == BatteryState.Unknown || Battery.State == BatteryState.NotPresent)
                 Assert.Equal(-1.0, Battery.ChargeLevel);
             else
@@ -20,20 +22,24 @@ namespace DeviceTests
         }
 
         [Fact]
-#if __IOS__
-        [Trait(Traits.DeviceType, Traits.DeviceTypes.Physical)]
-#endif
+        [Trait(Traits.Hardware.Battery, Traits.FeatureSupport.Supported)]
         public void Charge_State()
         {
-           Assert.NotEqual(BatteryState.Unknown, Battery.State);
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasBattery)
+                return;
+
+            Assert.NotEqual(BatteryState.Unknown, Battery.State);
         }
 
         [Fact]
-#if __IOS__
-        [Trait(Traits.DeviceType, Traits.DeviceTypes.Physical)]
-#endif
+        [Trait(Traits.Hardware.Battery, Traits.FeatureSupport.Supported)]
         public void Charge_Power()
         {
+            // TODO: the test runner app (UI version) should do this, until then...
+            if (!HardwareSupport.HasBattery)
+                return;
+
             Assert.NotEqual(BatteryPowerSource.Unknown, Battery.PowerSource);
         }
     }

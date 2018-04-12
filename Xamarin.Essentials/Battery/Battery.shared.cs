@@ -6,10 +6,10 @@ namespace Xamarin.Essentials
     {
         static event BatteryChangedEventHandler BatteryChanagedInternal;
 
+        // a cache so that events aren't fired unnecessarily
+        // this is mainly an issue on Android, but we can stiil do this everywhere
         static double currentLevel;
-
         static BatteryPowerSource currentSource;
-
         static BatteryState currentState;
 
         public static event BatteryChangedEventHandler BatteryChanged
@@ -53,9 +53,7 @@ namespace Xamarin.Essentials
 
         static void OnBatteryChanged(BatteryChangedEventArgs e)
         {
-            if (currentLevel != e.ChargeLevel ||
-                currentSource != e.PowerSource ||
-                currentState != e.State)
+            if (currentLevel != e.ChargeLevel || currentSource != e.PowerSource || currentState != e.State)
             {
                 SetCurrent();
                 BatteryChanagedInternal?.Invoke(e);
