@@ -85,10 +85,7 @@
 		</CompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlC" AfterTargets="AfterCompile" Condition="'$(_XamlCAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_XamlCAlreadyExecuted>true</_XamlCAlreadyExecuted>
-		</PropertyGroup>
+	<Target Name="XamlC" AfterTargets="AfterCompile" Inputs="$(IntermediateOutputPath)$(TargetFileName)" Outputs="$(IntermediateOutputPath)XamlC.stamp">
 		<XamlCTask
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"
@@ -96,6 +93,9 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
 			KeepXamlResources = "$(XFKeepXamlResources)" />
+		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True">
+			<Output TaskParameter="TouchedFiles" ItemName="FileWrites"/>
+		</Touch>
 	</Target>
 
 	<!-- CssG -->
