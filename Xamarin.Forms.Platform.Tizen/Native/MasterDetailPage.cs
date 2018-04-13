@@ -432,6 +432,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 			bound.Width = (int)((_popoverRatio * bound.Width));
 			_drawer.Geometry = bound;
+			// When a _drawer.IsOpen was false, Content of _drawer area is not allocated. So, need to manaully set the content area
+			if (!IsSplit)
+				_masterCanvas.Geometry = bound;
 		}
 
 		/// <summary>

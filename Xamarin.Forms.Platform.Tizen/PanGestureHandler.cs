@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected override void OnMoved(View sender, object data)
 		{
 			var lineData = (GestureLayer.MomentumData)data;
-			(Recognizer as IPanGestureController)?.SendPan(sender, lineData.X2 - lineData.X1, lineData.Y2 - lineData.Y1, _currentPanGestureId);
+			(Recognizer as IPanGestureController)?.SendPan(sender, Forms.ConvertToScaledDP(lineData.X2 - lineData.X1), Forms.ConvertToScaledDP(lineData.Y2 - lineData.Y1), _currentPanGestureId);
 		}
 
 		protected override void OnCompleted(View sender, object data)

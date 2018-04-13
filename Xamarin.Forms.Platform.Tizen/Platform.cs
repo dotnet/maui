@@ -89,6 +89,8 @@ namespace Xamarin.Forms.Platform.Tizen
 		int _pageBusyCount;
 		Naviframe _internalNaviframe;
 
+		HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
+
 		public event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
 
 		internal DefaultPlatform(EvasObject parent)
@@ -464,6 +466,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			};
 
 			alert.Show();
+			_alerts.Add(alert);
+			alert.Dismissed += (s, e) => _alerts.Remove(alert);
 		}
 
 		void ActionSheetSignalNameHandler(Page sender, ActionSheetArguments arguments)
@@ -529,6 +533,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			};
 
 			alert.Show();
+
+			_alerts.Add(alert);
+			alert.Dismissed += (s, e) => _alerts.Remove(alert);
 		}
 
 		bool PageIsChildOfPlatform(Page page)

@@ -20,11 +20,14 @@ namespace Xamarin.Forms.Platform.Tizen
 		List<EToolbarItem> _toolbarItemList = new List<EToolbarItem>();
 		bool _isResettingToolbarItems = false;
 		bool _isInitialized = false;
+		bool _isUpdateByToolbar = false;
+		bool _isUpdateByScroller = false;
+		bool _isUpdateByCurrentPage = false;
 
 		public TabbedPageRenderer()
 		{
 			RegisterPropertyHandler(Page.TitleProperty, UpdateTitle);
-			RegisterPropertyHandler("CurrentPage", CurrentPageChanged);
+			RegisterPropertyHandler(nameof(Element.CurrentPage), OnCurrentPageChanged);
 			RegisterPropertyHandler(TabbedPage.BarBackgroundColorProperty, UpdateBarBackgroundColor);
 		}
 
@@ -171,12 +174,30 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (_toolbar.SelectedItem == null)
 				return;
 			int currentPage = MultiPage<Page>.GetIndex(_itemToItemPage[_toolbar.SelectedItem]);
-			_scroller.ScrollTo(currentPage, 0, true);
+			_scroller.ScrollTo(currentPage, 0, false);
 		}
 
 		void OnItemPageScrolled(object sender, System.EventArgs e)
 		{
-			_toolbarItemList[_scroller.HorizontalPageIndex].IsSelected = true;
+			if (_isUpdateByToolbar || _isUpdateByCurrentPage)
+				return;
+			_isUpdateByScroller = true;
+
+			var oldPage = Element.CurrentPage;
+			var toBeSelectedItem = _toolbarItemList[_scroller.HorizontalPageIndex];
+			var newPage = _itemToItemPage[toBeSelectedItem];
+
+			if (oldPage != newPage)
+			{
+				oldPage?.SendDisappearing();
+				newPage.SendAppearing();
+
+				toBeSelectedItem.IsSelected = true;
+				Element.CurrentPage = newPage;
+				Element.UpdateFocusTreePolicy();
+			}
+
+			_isUpdateByScroller = false;
 		}
 
 		void UpdateBarBackgroundColor(bool initialize)
@@ -332,34 +353,46 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (_toolbar.SelectedItem == null || _isResettingToolbarItems)
 				return;
+			if (_isUpdateByCurrentPage || _isUpdateByScroller)
+				return;
+			_isUpdateByToolbar = true;
 
 			var oldPage = Element.CurrentPage;
 			var newPage = _itemToItemPage[_toolbar.SelectedItem];
 
-			if (oldPage == newPage)
+			if (oldPage != newPage)
+			{
+				oldPage?.SendDisappearing();
+				Element.CurrentPage = newPage;
+				newPage?.SendAppearing();
+
+				int index = MultiPage<Page>.GetIndex(newPage);
+				_scroller.ScrollTo(index, 0, true);
+
+				Element.UpdateFocusTreePolicy();
+			}
+			_isUpdateByToolbar = false;
+		}
+
+		void OnCurrentPageChanged()
+		{
+			if (_isUpdateByScroller || _isUpdateByToolbar || !_isInitialized)
 				return;
 
+			_isUpdateByCurrentPage = true;
+			Page oldPage = null;
+			if (_toolbar.SelectedItem != null && _itemToItemPage.ContainsKey(_toolbar.SelectedItem))
+				oldPage = _itemToItemPage[_toolbar.SelectedItem];
+
 			oldPage?.SendDisappearing();
+			Element.CurrentPage?.SendAppearing();
 
-			Element.CurrentPage = newPage;
-			newPage?.SendAppearing();
-
-			int index = MultiPage<Page>.GetIndex(newPage);
+			int index = MultiPage<Page>.GetIndex(Element.CurrentPage);
+			_toolbarItemList[index].IsSelected = true;
 			_scroller.ScrollTo(index, 0, true);
 
 			Element.UpdateFocusTreePolicy();
-		}
-
-		void CurrentPageChanged()
-		{
-			foreach (var pair in _itemToItemPage)
-			{
-				if (pair.Value == Element.CurrentPage)
-				{
-					pair.Key.IsSelected = true;
-					return;
-				}
-			}
+			_isUpdateByCurrentPage = false;
 		}
 	}
 }
