@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Threading;
 using WControl = System.Windows.Controls.Control;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -125,8 +119,7 @@ namespace Xamarin.Forms.Platform.WPF
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
 			for (var i = 0; i < _elementChangedHandlers.Count; i++)
 				_elementChangedHandlers[i](this, args);
-
-			UpdateRequests();
+			
 			ElementChanged?.Invoke(this, e);
 		}
 
@@ -134,10 +127,10 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdateEnabled();
-			else if (e.PropertyName == Frame.HeightRequestProperty.PropertyName)
-				UpdateRequests();
-			else if (e.PropertyName == Frame.WidthRequestProperty.PropertyName)
-				UpdateRequests();
+			else if (e.PropertyName == Frame.HeightProperty.PropertyName)
+				UpdateHeight();
+			else if (e.PropertyName == Frame.WidthProperty.PropertyName)
+				UpdateWidth();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName)
 				UpdateBackground();
 			else if (e.PropertyName == View.HorizontalOptionsProperty.PropertyName || e.PropertyName == View.VerticalOptionsProperty.PropertyName)
@@ -201,15 +194,22 @@ namespace Xamarin.Forms.Platform.WPF
 			control.UpdateDependencyColor(WControl.BackgroundProperty, Element.BackgroundColor);
 		}
 
-		protected virtual void UpdateRequests()
+		protected virtual void UpdateHeight()
+		{
+			if (Control == null || Element == null)
+				return;
+			
+			Control.Height = Element.Height > 0 ? Element.Height : Double.NaN;
+		}
+
+		protected virtual void UpdateWidth()
 		{
 			if (Control == null || Element == null)
 				return;
 
-			Control.Width = Element.WidthRequest >= 0 ? Element.WidthRequest : Double.NaN;
-			Control.Height = Element.HeightRequest >= 0 ? Element.HeightRequest : Double.NaN;
+			Control.Width = Element.Width > 0 ? Element.Width : Double.NaN;
 		}
-
+		
 		protected virtual void UpdateNativeWidget()
 		{
 			UpdateEnabled();
