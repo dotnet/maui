@@ -86,6 +86,8 @@ namespace Xamarin.Forms.Platform.UWP
 				List.DataContext =
 					new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
 			}
+
+      List.UpdateLayout();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
