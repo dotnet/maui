@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Controls
 	{
 		protected override void Init()
 		{
-			var button = new Button { Text = "Click to call DisplayAlert twice" };
+			var button = new Button { Text = "Click to call DisplayAlert three times" };
 
 			button.Clicked += (sender, args) =>
 			{
@@ -28,6 +28,11 @@ namespace Xamarin.Forms.Controls
 				Device.BeginInvokeOnMainThread(new Action(async () =>
 				{
 					await DisplayAlert("Second", "Text", "Cancel");
+				}));
+
+				Device.BeginInvokeOnMainThread(new Action(async () =>
+				{
+					await DisplayAlert("Three", "Text", "Cancel");
 				}));
 			};
 
