@@ -146,6 +146,143 @@
 		</Setter>
 	</Style>
 
+	<Style
+		TargetType="{x:Type wpf:FormsTextBox}">
+		<Setter
+			Property="Foreground"
+			Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+		<Setter
+			Property="Background"
+			Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+		<Setter
+			Property="BorderThickness"
+			Value="1" />
+		<Setter
+			Property="Padding"
+			Value="3" />
+		<Setter
+			Property="AllowDrop"
+			Value="true" />
+		<Setter
+			Property="FocusVisualStyle"
+			Value="{x:Null}" />
+		<Setter
+			Property="ScrollViewer.PanningMode"
+			Value="VerticalFirst" />
+		<Setter
+			Property="Stylus.IsFlicksEnabled"
+			Value="False" />
+		<Setter
+			Property="Template">
+			<Setter.Value>
+				<ControlTemplate
+					TargetType="{x:Type wpf:FormsTextBox}">
+					<Grid>
+						<Border
+							x:Name="Border"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							CornerRadius="1"
+							Background="{TemplateBinding Background}">
+							<Grid>
+								<ScrollViewer
+									x:Name="PART_ContentHost"
+									SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+								</ScrollViewer>
+								<TextBlock
+									x:Name="PART_WatermarkHost"
+									Text="{TemplateBinding PlaceholderText}"
+									Foreground="{TemplateBinding PlaceholderForegroundBrush}"
+									VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+									IsHitTestVisible="False"
+									Margin="{TemplateBinding Padding}"
+									Visibility="Collapsed" />
+							</Grid>
+						</Border>
+						<Border
+							x:Name="MouseOverVisual"
+							Opacity="0"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="1" />
+						<Border
+							x:Name="FocusVisual"
+							Opacity="0"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="1" />
+					</Grid>
+					<ControlTemplate.Triggers>
+						<MultiTrigger>
+							<MultiTrigger.Conditions>
+								<Condition
+									Property="IsFocused"
+									Value="False" />
+								<Condition
+									Property="Text"
+									Value="" />
+							</MultiTrigger.Conditions>
+							<MultiTrigger.Setters>
+								<Setter
+									Property="Visibility"
+									TargetName="PART_WatermarkHost"
+									Value="Visible" />
+							</MultiTrigger.Setters>
+						</MultiTrigger>
+						<MultiTrigger>
+							<MultiTrigger.Conditions>
+								<Condition
+									Property="Text"
+									Value="" />
+							</MultiTrigger.Conditions>
+							<MultiTrigger.Setters>
+								<Setter
+									Property="Visibility"
+									TargetName="PART_WatermarkHost"
+									Value="Visible" />
+							</MultiTrigger.Setters>
+						</MultiTrigger>
+						<MultiTrigger>
+							<MultiTrigger.Conditions>
+								<Condition
+									Property="IsFocused"
+									Value="True" />
+							</MultiTrigger.Conditions>
+							<MultiTrigger.Setters>
+								<Setter
+									Property="Visibility"
+									TargetName="PART_WatermarkHost"
+									Value="Collapsed" />
+							</MultiTrigger.Setters>
+						</MultiTrigger>
+						<Trigger
+							Property="IsMouseOver"
+							Value="True">
+							<Setter
+								TargetName="MouseOverVisual"
+								Property="Opacity"
+								Value="1" />
+						</Trigger>
+						<Trigger
+							Property="IsFocused"
+							Value="True">
+							<Setter
+								TargetName="FocusVisual"
+								Property="Opacity"
+								Value="1" />
+						</Trigger>
+						<Trigger
+							Property="IsEnabled"
+							Value="false">
+							<Setter
+								Property="Foreground"
+								Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
 	<DataTemplate x:Key="CellTemplate">
 		<wpf:CellControl Cell="{Binding}" Margin="5,0,0,0"
 						 Height="{Binding Cell.RenderHeight,RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource HeightConverter}}" >

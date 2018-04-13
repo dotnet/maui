@@ -17,15 +17,20 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		const char ObfuscationCharacter = '●';
 
+		public static readonly DependencyProperty PlaceholderTextProperty = DependencyProperty.Register("PlaceholderText", typeof(string), typeof(FormsTextBox),
+			new PropertyMetadata(string.Empty));
+
 		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = DependencyProperty.Register("PlaceholderForegroundBrush", typeof(Brush), typeof(FormsTextBox),
 			new PropertyMetadata(default(Brush)));
 
 		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register("IsPassword", typeof(bool), typeof(FormsTextBox),
 			new PropertyMetadata(default(bool), OnIsPasswordChanged));
 
-		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
+		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(FormsTextBox), 
+			new PropertyMetadata("", TextPropertyChanged));
 
-		protected internal static readonly DependencyProperty DisabledTextProperty = DependencyProperty.Register("DisabledText", typeof(string), typeof(FormsTextBox), new PropertyMetadata(""));
+		protected internal static readonly DependencyProperty DisabledTextProperty = DependencyProperty.Register("DisabledText", typeof(string), typeof(FormsTextBox), 
+			new PropertyMetadata(""));
 
 		static InputScope s_passwordInputScope;
 		InputScope _cachedInputScope;
@@ -42,6 +47,12 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			get { return (bool)GetValue(IsPasswordProperty); }
 			set { SetValue(IsPasswordProperty, value); }
+		}
+
+		public string PlaceholderText
+		{
+			get { return (string)GetValue (PlaceholderTextProperty); }
+			set { SetValue (PlaceholderTextProperty, value); }
 		}
 
 		public Brush PlaceholderForegroundBrush
@@ -235,5 +246,4 @@ namespace Xamarin.Forms.Platform.WPF
 				InputScope = _cachedInputScope;
 		}
 	}
-
 }
