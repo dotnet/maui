@@ -27,8 +27,7 @@ namespace Xamarin.Forms.Build.Tasks
 			                       MethodAttributes.SpecialName |
 			                       MethodAttributes.RTSpecialName;
 
-			var parentctor =    module.ImportCtorReference(parentType, paramCount: 0, predicate: md => (!md.IsPrivate && !md.IsStatic))
-							 ?? module.ImportCtorReference(("mscorlib", "System", "Object"), paramCount: 0);
+			var parentctor = module.ImportCtorReference(parentType, paramCount: 0) ?? module.ImportCtorReference(("mscorlib", "System", "Object"), parameterTypes: null);
 
 			var ctor = new MethodDefinition(".ctor", methodAttributes, voidType)
 			{

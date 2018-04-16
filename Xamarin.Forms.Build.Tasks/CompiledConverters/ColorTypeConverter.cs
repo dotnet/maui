@@ -29,10 +29,11 @@ namespace Xamarin.Forms.Core.XamlC
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.B);
 					yield return Instruction.Create(OpCodes.Ldc_R8, color.A);
 
-					var colorCtorRef = module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
-																  paramCount: 4,
-																  predicate: md => md.Parameters.All(p => p.ParameterType.FullName == "System.Double"));
-					yield return Instruction.Create(OpCodes.Newobj, colorCtorRef);
+					yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"), parameterTypes: new[] {
+						("mscorlib", "System", "Double"),
+						("mscorlib", "System", "Double"),
+						("mscorlib", "System", "Double"),
+						("mscorlib", "System", "Double")}));
 					yield break;
 				}
 				var parts = value.Split('.');
@@ -41,14 +42,12 @@ namespace Xamarin.Forms.Core.XamlC
 
 					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
 																	 color,
-																	 fd => fd.IsStatic);
+																	 isStatic: true);
 					if (fieldReference != null) {
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;
 					}
-					var propertyGetterReference = module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
-																					   color,
-																					   pd => pd.GetMethod.IsStatic);
+					var propertyGetterReference = module.ImportPropertyGetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"), color, isStatic: true);
 					if (propertyGetterReference != null) {
 						yield return Instruction.Create(OpCodes.Call, propertyGetterReference);
 						yield break;

@@ -25,18 +25,26 @@ namespace Xamarin.Forms.Build.Tasks
 				return y == null;
 			if (y == null)
 				return x == null;
-			if (x.FullName != y.FullName)
+
+			//strip the leading `&` as byref typered fullnames have a `&`
+			var xname = x.FullName.EndsWith("&", StringComparison.InvariantCulture) ? x.FullName.Substring(0, x.FullName.Length - 1) : x.FullName;
+			var yname = y.FullName.EndsWith("&", StringComparison.InvariantCulture) ? y.FullName.Substring(0, y.FullName.Length - 1) : y.FullName;
+			if (xname != yname)
 				return false;
 			var xasm = GetAssembly(x);
 			var yasm = GetAssembly(y);
 
 			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
-			if (   (xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+			if ((      xasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+					|| xasm.StartsWith("System", StringComparison.Ordinal)
 					|| xasm.StartsWith("mscorlib", StringComparison.Ordinal)
-					|| xasm.StartsWith("netstandard", StringComparison.Ordinal))
-				&& (yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+					|| xasm.StartsWith("netstandard", StringComparison.Ordinal)
+					|| xasm.StartsWith("System.Xml", StringComparison.Ordinal))
+				&& (   yasm.StartsWith("System.Runtime", StringComparison.Ordinal)
+					|| yasm.StartsWith("System", StringComparison.Ordinal)
 					|| yasm.StartsWith("mscorlib", StringComparison.Ordinal)
-					|| yasm.StartsWith("netstandard", StringComparison.Ordinal)))
+					|| yasm.StartsWith("netstandard", StringComparison.Ordinal)
+					|| yasm.StartsWith("System.Xml", StringComparison.Ordinal)))
 				return true;
 			return xasm == yasm;
 		}
@@ -215,7 +223,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public static CustomAttribute GetCustomAttribute(this TypeReference typeRef, ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) attributeType)
 		{
-			return typeRef.GetCustomAttribute(module.ImportReference(module.GetTypeDefinition(attributeType)));
+			return typeRef.GetCustomAttribute(module.ImportReference(attributeType));
 		}
 
 		[Obsolete]

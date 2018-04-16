@@ -49,13 +49,15 @@ namespace Xamarin.Forms.Core.XamlC
 			yield return Create(Stloc, uriVarDef);
 			yield return Create(Ldstr, resourcePath); //resourcePath
 			yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
-			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", paramCount: 1, predicate: md => md.IsStatic));
-			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", paramCount: 1, predicate: md => md.IsStatic));
+			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+			yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 			yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
-			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"), methodName: "SetAndLoadSource", paramCount: 4));
+			yield return Create(Callvirt, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms", "ResourceDictionary"),
+			                                                           methodName: "SetAndLoadSource",
+			                                                           parameterTypes: new[] { ("System", "System", "Uri"), ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") }));
 			//ldloc the stored uri as return value
 			yield return Create(Ldloc, uriVarDef);
 		}

@@ -15,6 +15,8 @@ namespace Xamarin.Forms.Controls
 		readonly ListView _listView;
 		protected abstract DataTemplate CellTemplate();
 
+		_43313ViewModel ViewModel => BindingContext as _43313ViewModel;
+
 		protected Bugzilla43313_Template()
 		{
 			BindingContext = new _43313ViewModel();
@@ -48,7 +50,7 @@ namespace Xamarin.Forms.Controls
 				ItemTemplate = CellTemplate()
 			};
 
-			_listView.SetBinding(ListView.ItemsSourceProperty, new Binding("ListViewContent"));
+			_listView.SetBinding(ListView.ItemsSourceProperty, new Binding(nameof(_43313ViewModel.ListViewContent)));
 			_listView.ItemTapped += (sender, e) => ((ListView)sender).SelectedItem = null;
 
 			var instructions = new Label() { FontSize = 12, Text = "Tap the 'Add Item' button; a new item should be added to the bottom of the list and the list should scroll smoothly to display it. If the list scrolls back to the top before scrolling down to the new item, the test has failed." };
@@ -69,14 +71,14 @@ namespace Xamarin.Forms.Controls
 		{
 			string str = $"Item {ItemCount++}";
 			var item = new _43313Model { Name = str };
-			(BindingContext as _43313ViewModel).ListViewContent.Add(item);
+			ViewModel.ListViewContent.Add(item);
 
 			_listView.ScrollTo(item, ScrollToPosition.End, true);
 		}
 
 		void BtnBottomOnClicked(object sender, EventArgs e)
 		{
-			_43313Model item = (BindingContext as _43313ViewModel).ListViewContent.Last();
+			_43313Model item = ViewModel.ListViewContent.Last();
 			_listView.ScrollTo(item, ScrollToPosition.End, true);
 		}
 
@@ -129,7 +131,7 @@ namespace Xamarin.Forms.Controls
 			return new DataTemplate(() =>
 			{
 				var label = new Label { FontSize = 16, VerticalOptions = LayoutOptions.Center };
-				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, nameof(_43313Model.Name));
 				int height = 60 + new Random().Next(10, 100);
 
 				return new ViewCell
@@ -157,7 +159,7 @@ namespace Xamarin.Forms.Controls
 			return new DataTemplate(() =>
 			{
 				var label = new Label { FontSize = 16, VerticalOptions = LayoutOptions.Center };
-				label.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, nameof(_43313Model.Name));
 
 				label.FontSize = 12 + new Random().Next(1, 6);
 

@@ -28,7 +28,7 @@ namespace Xamarin.Forms.Core.XamlC
 
 					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "LayoutOptions"),
 																	 fieldName: options,
-																	 predicate: fd => fd.IsStatic);
+																	 isStatic: true);
 					if (fieldReference != null) {
 						yield return Instruction.Create(OpCodes.Ldsfld, fieldReference);
 						yield break;

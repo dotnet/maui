@@ -167,6 +167,13 @@ namespace Xamarin.Forms.ControlGallery.iOS
 				{
 					//	e.NativeView.AccessibilityIdentifier = e.View.StyleId;
 				}
+
+				if (e.NativeView != null)
+				{
+					var view = e.NativeView;
+					var tapGestureRecognizer = new UITapGestureRecognizer(() => Reset("")) { NumberOfTapsRequired = 5 };
+					view.AddGestureRecognizer(tapGestureRecognizer);
+				}
 			};
 
 			if (App.IOSVersion == 11)
@@ -190,6 +197,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			LoadApplication(app);
+
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
 

@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Controls.Issues
 			model.Change();
 		}
 	}
-
+	[Preserve(AllMembers = true)]
 	public class Bugzilla45284Model : INotifyPropertyChanged
 	{
 		public List<Bugzilla45284TabModel> Tabs => new List<Bugzilla45284TabModel> { 
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Controls.Issues
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Tabs)));
 		}
 	}
-
+	[Preserve(AllMembers = true)]
 	public class Bugzilla45284TabModel
 	{
 		public string Title { get; set; } = "Title";

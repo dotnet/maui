@@ -437,22 +437,24 @@ namespace Xamarin.Forms.Build.Tasks
 //					IL_0016:  pop
 					yield return Create(Ldstr, valueString);
 					yield return Create(Ldc_I4, 0x6f); //NumberStyles.Number
-					var getInvariant = module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
-																			propertyName: "InvariantCulture");
-					yield return Create(Call, getInvariant);
+					yield return Create(Call, module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+																			propertyName: "InvariantCulture",
+																			isStatic: true));
 					yield return Create(Ldloca, vardef);
-					var tryParse = module.ImportMethodReference(("mscorlib", "System", "Decimal"),
-																methodName: "TryParse",
-																paramCount: 4);
-					yield return Create(Call, tryParse);
+					yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Decimal"),
+																		   methodName: "TryParse",
+																		   parameterTypes: new[] {
+																			   ("mscorlib", "System", "String"),
+																			   ("mscorlib", "System.Globalization", "NumberStyles"),
+																			   ("mscorlib", "System", "IFormatProvider"),
+																			   ("mscorlib", "System", "Decimal"),
+																		   },
+																		   isStatic: true));
 					yield return Create(Pop);
 					yield return Create(Ldloc, vardef);
 				} else {
 					yield return Create(Ldc_I4_0);
-					var decimalctor = module.ImportCtorReference(("mscorlib", "System", "Decimal"),
-																 paramCount: 1,
-																 predicate: md => md.Parameters[0].ParameterType.FullName == "System.Int32");
-					yield return Create(Newobj, decimalctor);
+					yield return Create(Newobj, module.ImportCtorReference(("mscorlib", "System", "Decimal"), parameterTypes: new[] { ("mscorlib", "System", "Int32") }));
 				}
 				break;
 			case "System.Single":
@@ -473,23 +475,22 @@ namespace Xamarin.Forms.Build.Tasks
 					Context.Body.Variables.Add(vardef);
 					//Use an extra temp var so we can push the value to the stack, just like other cases
 					yield return Create(Ldstr, valueString);
-					var getInvariant = module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
-																			propertyName: "InvariantCulture");
-					yield return Create(Call, getInvariant);
+					yield return Create(Call, module.ImportPropertyGetterReference(("mscorlib", "System.Globalization", "CultureInfo"),
+																				   propertyName: "InvariantCulture", isStatic: true));
 					yield return Create(Ldloca, vardef);
-					var tryParse = module.ImportMethodReference(("mscorlib", "System", "TimeSpan"),
-																methodName: "TryParse",
-																paramCount: 3);
-
-					yield return Create(Call, tryParse);
+					yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "TimeSpan"),
+																		   methodName: "TryParse",
+																		   parameterTypes: new[] {
+																			   ("mscorlib", "System", "String"),
+																			   ("mscorlib", "System", "IFormatProvider"),
+																			   ("mscorlib", "System", "TimeSpan"),
+																		   },
+																		   isStatic: true));
 					yield return Create(Pop);
 					yield return Create(Ldloc, vardef);
 				} else {
 					yield return Create(Ldc_I8, 0L);
-					var timespanctor = module.ImportCtorReference(("mscorlib", "System", "TimeSpan"),
-																  paramCount: 1,
-																  predicate: md => md.Parameters[0].ParameterType.FullName == "System.Int64");
-					yield return Create(Newobj, timespanctor);
+					yield return Create(Newobj, module.ImportCtorReference(("mscorlib", "System", "TimeSpan"), parameterTypes: new[] { ("mscorlib", "System", "Int64") }));
 				}
 				break;
 			case "System.Uri":
@@ -500,17 +501,21 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return Create(Ldstr, valueString);
 					yield return Create(Ldc_I4, (int)UriKind.RelativeOrAbsolute);
 					yield return Create(Ldloca, vardef);
-					var tryCreate = module.ImportMethodReference(("System", "System", "Uri"),
-																 methodName: "TryCreate",
-																 paramCount: 3);
-					yield return Create(Call, tryCreate);
+					yield return Create(Call, module.ImportMethodReference(("System", "System", "Uri"),
+																		   methodName: "TryCreate",
+																		   parameterTypes: new[] {
+																			   ("mscorlib", "System", "String"),
+																			   ("System", "System", "UriKind"),
+																			   ("System", "System", "Uri"),
+																		   },
+																		   isStatic: true));
 					yield return Create(Pop);
 					yield return Create(Ldloc, vardef);
 				} else
 					yield return Create(Ldnull);
 				break;
 			default:
-				var defaultCtor = module.ImportCtorReference(typedef, paramCount: 0);
+				var defaultCtor = module.ImportCtorReference(typedef, parameterTypes: null);
 				if (defaultCtor != null)
 					yield return Create(Newobj, defaultCtor);
 				else {

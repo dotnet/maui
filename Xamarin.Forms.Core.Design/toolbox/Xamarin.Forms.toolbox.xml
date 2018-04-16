@@ -97,7 +97,7 @@
 				<TimePicker />
 			</Snippet>
 		</Item>
-		<Item Class="Xamarin.Forms.WebView" Name="WebViewWebView" Image="view-WebView.png">
+		<Item Class="Xamarin.Forms.WebView" Name="WebView" Image="view-WebView.png">
 			<Snippet>
 				<WebView Source="" />
 			</Snippet>
@@ -124,6 +124,11 @@
 				<AbsoluteLayout></AbsoluteLayout>
 			</Snippet>
 		</Item>
+		<Item Class="Xamarin.Forms.FlexLayout" Name="FlexLayout" Image="layout-FlexLayout.png">
+			<Snippet>
+				<FlexLayout></FlexLayout>
+			</Snippet>
+		</Item>		
 		<Item Class="Xamarin.Forms.Grid" Name="Grid" Image="layout-Grid.png">
 			<Snippet>
 				<Grid>

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-
-using System.Xml;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -12,7 +9,6 @@ using Xamarin.Forms.Xaml;
 
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
-
 
 namespace Xamarin.Forms.Core.XamlC
 {
@@ -48,8 +44,8 @@ namespace Xamarin.Forms.Core.XamlC
 				yield return Create(Ldstr, style);
 				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
 																	   methodName: "FromString",
-																	   paramCount: 1,
-																	   predicate: md => md.IsStatic));
+																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
+																	   isStatic: true));
 			}
 			else {
 				var source = (sourceNode as ValueNode)?.Value as string;
@@ -67,8 +63,8 @@ namespace Xamarin.Forms.Core.XamlC
 					throw new XamlParseException($"Resource '{source}' not found.", node);
 
 				yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
-				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", paramCount: 1, predicate: md => md.IsStatic));
-				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", paramCount: 1, predicate: md => md.IsStatic));
+				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System.Reflection", "IntrospectionExtensions"), methodName: "GetTypeInfo", parameterTypes: new[] { ("mscorlib", "System", "Type") }, isStatic: true));
 				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System.Reflection", "TypeInfo"), propertyName: "Assembly", flatten: true));
 
 				yield return Create(Ldstr, resourceId); //resourceId
@@ -78,8 +74,8 @@ namespace Xamarin.Forms.Core.XamlC
 
 				yield return Create(Call, module.ImportMethodReference(("Xamarin.Forms.Core", "Xamarin.Forms.StyleSheets", "StyleSheet"),
 																	   methodName: "FromAssemblyResource",
-																	   paramCount: 3,
-																	   predicate: md => md.IsStatic));
+																	   parameterTypes: new[] { ("mscorlib", "System.Reflection", "Assembly"), ("mscorlib", "System", "String"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
+																	   isStatic: true));
 			}
 
 			//the variable is of type `object`. fix that

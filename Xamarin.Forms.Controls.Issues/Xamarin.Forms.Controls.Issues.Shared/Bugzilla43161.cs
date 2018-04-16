@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Controls.Issues
 		const string ListView2 = "Accessory with RecycleElement";
 		const string ListView3 = "Accessory with RetainElement";
 
+		[Preserve(AllMembers = true)]
 		public class AccessoryViewCell : ViewCell
 		{
 			public AccessoryViewCell()
@@ -29,6 +30,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
+		[Preserve(AllMembers = true)]
 		public class AccessoryViewCellWithContextActions : AccessoryViewCell
 		{
 			public AccessoryViewCellWithContextActions()
