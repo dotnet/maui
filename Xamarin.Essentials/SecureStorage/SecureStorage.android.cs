@@ -204,7 +204,7 @@ namespace Xamarin.Essentials
             var cipher = Cipher.GetInstance(cipherTransformationSymmetric);
 
             // Use GCMParameterSpec on newer API levels and IvParameterSpec on older
-            if (Platform.HasApiLevel(BuildVersionCodes.M) && !alwaysUseAsymmetricKey)
+            if (Platform.HasApiLevel(BuildVersionCodes.M))
                 cipher.Init(CipherMode.EncryptMode, key, new GCMParameterSpec(128, iv));
             else
                 cipher.Init(CipherMode.EncryptMode, key, new IvParameterSpec(iv));
