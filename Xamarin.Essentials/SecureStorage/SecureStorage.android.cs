@@ -202,7 +202,12 @@ namespace Xamarin.Essentials
             sr.NextBytes(iv);
 
             var cipher = Cipher.GetInstance(cipherTransformationSymmetric);
-            cipher.Init(CipherMode.EncryptMode, key, new IvParameterSpec(iv));
+
+            // Use GCMParameterSpec on newer API levels and IvParameterSpec on older
+            if (Platform.HasApiLevel(BuildVersionCodes.M) && !alwaysUseAsymmetricKey)
+                cipher.Init(CipherMode.EncryptMode, key, new GCMParameterSpec(128, iv));
+            else
+                cipher.Init(CipherMode.EncryptMode, key, new IvParameterSpec(iv));
 
             var decryptedData = Encoding.UTF8.GetBytes(data);
             var encryptedBytes = cipher.DoFinal(decryptedData);
