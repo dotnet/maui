@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Gyroscope information</summary>
+    <summary>Gyroscope information.</summary>
     <remarks>
       <para></para>
     </remarks>
@@ -32,9 +32,7 @@
       <Docs>
         <summary>Gets the value for the X-Axis in rad/s.</summary>
         <value>The X-Axis value.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="AngularVelocityY">
@@ -52,7 +50,7 @@
       <Docs>
         <summary>Gets the value for the Y-Axis in rad/s.</summary>
         <value>The Y-Axis value.</value>
-        <remarks>To be added.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="AngularVelocityZ">
@@ -70,9 +68,7 @@
       <Docs>
         <summary>Gets the value for the Z-Axis in rad/s.</summary>
         <value>The Z-Axis value.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

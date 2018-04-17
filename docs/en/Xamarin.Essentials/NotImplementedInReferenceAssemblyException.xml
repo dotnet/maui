@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Exception that occurs when executed from a platform that is not supported.</summary>
+    <summary>Exception that occurs when executed from a reference assembly. This usually means that the NuGet was not installed into the app project.</summary>
     <remarks>
       <para />
     </remarks>

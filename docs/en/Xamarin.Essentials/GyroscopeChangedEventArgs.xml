@@ -31,8 +31,8 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the reading of the gyro.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
+        <value>The reading.</value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

@@ -51,7 +51,7 @@
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>
-        <remarks>To be added.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">

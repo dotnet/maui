@@ -10,8 +10,8 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Various states of the connection to the internet.</summary>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ConstrainedInternet">
@@ -28,7 +28,7 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Limited internet access.</summary>
       </Docs>
     </Member>
     <Member MemberName="Internet">
@@ -45,7 +45,7 @@
       </ReturnValue>
       <MemberValue>4</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Local and Internet access.</summary>
       </Docs>
     </Member>
     <Member MemberName="Local">
@@ -62,7 +62,7 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Local network access only.</summary>
       </Docs>
     </Member>
     <Member MemberName="None">
@@ -79,7 +79,7 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>No connectivity.</summary>
       </Docs>
     </Member>
     <Member MemberName="Unknown">
@@ -96,7 +96,7 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>The state of the connectivity is not known.</summary>
       </Docs>
     </Member>
   </Members>
