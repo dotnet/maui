@@ -1,6 +1,7 @@
 <Type Name="GeolocationAccuracy" FullName="Xamarin.Essentials.GeolocationAccuracy">
   <TypeSignature Language="C#" Value="public enum GeolocationAccuracy" />
   <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed GeolocationAccuracy extends System.Enum" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.GeolocationAccuracy" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -16,9 +17,11 @@
     <Member MemberName="Best">
       <MemberSignature Language="C#" Value="Best" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Best = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
@@ -31,9 +34,11 @@
     <Member MemberName="High">
       <MemberSignature Language="C#" Value="High" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy High = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.High" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
@@ -46,9 +51,11 @@
     <Member MemberName="Low">
       <MemberSignature Language="C#" Value="Low" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Low = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
@@ -61,9 +68,11 @@
     <Member MemberName="Lowest">
       <MemberSignature Language="C#" Value="Lowest" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Lowest = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
@@ -76,9 +85,11 @@
     <Member MemberName="Medium">
       <MemberSignature Language="C#" Value="Medium" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Medium = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Medium" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
