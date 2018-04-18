@@ -242,6 +242,8 @@ namespace Xamarin.Essentials
             var iv = new byte[initializationVectorLen];
             Buffer.BlockCopy(data, 0, iv, 0, initializationVectorLen);
 
+            Cipher cipher;
+
             // Attempt to use GCMParameterSpec by default
             try
             {
