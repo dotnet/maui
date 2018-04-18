@@ -55,7 +55,7 @@
 				</x:Array>
 			</ListView.ItemsSource>
 		</ListView>
-		<Label x:Name="label12" TextColor="Red" />
+		<Label x:Name="label12" TextColor="red" />
 		<Label x:Name="label13">
 			<Label.TextColor>
 				<Color>Pink</Color>

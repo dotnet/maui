@@ -128,7 +128,7 @@ namespace Xamarin.Forms.Build.Tasks
 			return ctorRef;
 		}
 
-		static MethodReference ImportPropertyGetterReference(this ModuleDefinition module, TypeReference type, string propertyName, Func<PropertyDefinition, bool> predicate = null, bool flatten = false)
+		static MethodReference ImportPropertyGetterReference(this ModuleDefinition module, TypeReference type, string propertyName, Func<PropertyDefinition, bool> predicate = null, bool flatten = false, bool caseSensitive = true)
 		{
 			var properties = module.ImportReference(type).Resolve().Properties;
 			var getter = module
@@ -136,18 +136,18 @@ namespace Xamarin.Forms.Build.Tasks
 				.ResolveCached()
 				.Properties(flatten)
 				.FirstOrDefault(pd =>
-								   pd.Name == propertyName
-				                && !pd.GetMethod.IsPrivate
+								   string.Equals(pd.Name, propertyName, caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase)
+								&& !pd.GetMethod.IsPrivate
 								&& (predicate?.Invoke(pd) ?? true))
 				?.GetMethod;
 			return getter == null ? null : module.ImportReference(getter);
 		}
 
-		public static MethodReference ImportPropertyGetterReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, string propertyName, bool isStatic = false, bool flatten = false)
+		public static MethodReference ImportPropertyGetterReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, string propertyName, bool isStatic = false, bool flatten = false, bool caseSensitive = true)
 		{
 			var getterKey = $"{(isStatic ? "static " : "")}{type}.get_{propertyName}{(flatten ? "*" : "")}";
 			if (!MethodRefCache.TryGetValue((module, getterKey), out var methodReference))
-				MethodRefCache.Add((module, getterKey), methodReference = module.ImportPropertyGetterReference(module.GetTypeDefinition(type), propertyName, pd => pd.GetMethod.IsStatic == isStatic, flatten));
+				MethodRefCache.Add((module, getterKey), methodReference = module.ImportPropertyGetterReference(module.GetTypeDefinition(type), propertyName, pd => pd.GetMethod.IsStatic == isStatic, flatten, caseSensitive: caseSensitive));
 			return methodReference;
 		}
 
@@ -244,23 +244,23 @@ namespace Xamarin.Forms.Build.Tasks
 		}
 
 		static Dictionary<(ModuleDefinition module, string fieldRefKey), FieldReference> FieldRefCache = new Dictionary<(ModuleDefinition module, string fieldRefKey), FieldReference>();
-		static FieldReference ImportFieldReference(this ModuleDefinition module, TypeReference type, string fieldName, Func<FieldDefinition, bool> predicate = null)
+		static FieldReference ImportFieldReference(this ModuleDefinition module, TypeReference type, string fieldName, Func<FieldDefinition, bool> predicate = null, bool caseSensitive = true)
 		{
 			var field = module
 				.ImportReference(type)
 				.ResolveCached()
 				.Fields
 				.FirstOrDefault(fd =>
-								   fd.Name == fieldName
+								   string.Equals(fd.Name, fieldName, caseSensitive ? StringComparison.InvariantCulture : StringComparison.InvariantCultureIgnoreCase)
 								&& (predicate?.Invoke(fd) ?? true));
 			return field == null ? null : module.ImportReference(field);
 		}
 
-		public static FieldReference ImportFieldReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, string fieldName, bool isStatic = false)
+		public static FieldReference ImportFieldReference(this ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type, string fieldName, bool isStatic = false, bool caseSensitive = true)
 		{
-			var fieldKey = $"{(isStatic ? "static " : "")}{type}.{fieldName}";
+			var fieldKey = $"{(isStatic ? "static " : "")}{type}.{(caseSensitive ? fieldName : fieldName.ToLowerInvariant())}";
 			if (!FieldRefCache.TryGetValue((module, fieldKey), out var fieldReference))
-				FieldRefCache.Add((module, fieldKey), fieldReference = module.ImportFieldReference(module.GetTypeDefinition(type), fieldName: fieldName, predicate: fd => fd.IsStatic == isStatic));
+				FieldRefCache.Add((module, fieldKey), fieldReference = module.ImportFieldReference(module.GetTypeDefinition(type), fieldName: fieldName, predicate: fd => fd.IsStatic == isStatic, caseSensitive: caseSensitive));
 			return fieldReference;
 		}
 
