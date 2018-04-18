@@ -209,7 +209,7 @@ namespace Xamarin.Essentials
                 cipher = Cipher.GetInstance(cipherTransformationSymmetric);
                 cipher.Init(CipherMode.EncryptMode, key, new GCMParameterSpec(128, iv));
             }
-            catch (Java.Security.InvalidAlgorithmParameterException apEx)
+            catch (Java.Security.InvalidAlgorithmParameterException)
             {
                 // If we encounter this error, it's likely an old bouncycastle provider version
                 // is being used which does not recognize GCMParameterSpec, but should work
