@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 
@@ -23,6 +25,11 @@ namespace Xamarin.Forms.Platform.Android
 
 				RemoveAllViews();
 
+				if (_childView is Layout layout1)
+				{
+					layout1.LayoutChanged -= OnLayoutChanged;
+				}
+
 				_childView = value;
 
 				if (_childView == null)
@@ -36,7 +43,17 @@ namespace Xamarin.Forms.Platform.Android
 					renderer.View.RemoveFromParent();
 
 				AddView(renderer.View);
+
+				if (_childView is Layout layout)
+				{ 
+					layout.LayoutChanged += OnLayoutChanged;
+				}
 			}
+		}
+
+		void OnLayoutChanged(object sender, EventArgs e)
+		{
+			RequestLayout();
 		}
 
 		protected override void Dispose(bool disposing)
