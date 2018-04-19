@@ -63,7 +63,7 @@
 		</CoreCompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
 		<PropertyGroup>
 			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
 		</PropertyGroup>
@@ -105,7 +105,7 @@
 			$(CoreCompileDependsOn);
 		</CoreCompileDependsOn>
 	</PropertyGroup>
-	<Target Name="CssG" BeforeTargets="BeforeCompile" Condition="'$(_CssGAlreadyExecuted)'!='true'">
+	<Target Name="CssG" BeforeTargets="BeforeCompile"  DependsOnTargets="PrepareResourceNames" Condition="'$(_CssGAlreadyExecuted)'!='true'">
 		<PropertyGroup>
 			<_CssGAlreadyExecuted>true</_CssGAlreadyExecuted>
 		</PropertyGroup>
