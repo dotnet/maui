@@ -51,11 +51,9 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Bugzilla51825SearchBar"));
 			RunningApp.EnterText(q => q.Marked("Bugzilla51825SearchBar"), "Hello");
-			var entry = RunningApp.Query(q => q.Marked("Bugzilla51825Label"))[0];
-			Assert.AreEqual("Hello", entry.Text);
+			RunningApp.WaitForElement (q => q.Text ("Hello"));
 			RunningApp.Tap("Bugzilla51825Button");
-			entry = RunningApp.Query(q => q.Marked("Bugzilla51825Label"))[0];
-			Assert.AreEqual("Test", entry.Text);
+			RunningApp.WaitForElement (q => q.Text ("Test"));
 		}
 #endif
 	}

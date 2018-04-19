@@ -73,16 +73,14 @@ namespace Xamarin.Forms.Core.UITests
 #else
 			App.WaitForElement(btn4Id);
 			App.Tap(c => c.Marked(btn4Id));
-			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
-			Assert.False(textLabel.Text == "tb4");
+			App.WaitForNoElement(c => c.Text("button 4 new text"));
 #if __MACOS__
 			App.Tap(c => c.Button().Index(6));
 #else
 			App.Tap(c => c.Marked("tb3"));
 #endif
 			App.Tap(c => c.Marked(btn4Id));
-			textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
-			Assert.IsTrue(textLabel.Text == "tb4");
+			App.WaitForElement(c => c.Text("button 4 new text"));
 #if __MACOS__
 			App.Tap(c => c.Button().Index(6));
 #else

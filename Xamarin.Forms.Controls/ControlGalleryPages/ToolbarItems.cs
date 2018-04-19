@@ -14,7 +14,7 @@ namespace Xamarin.Forms.Controls
 
 			var command = new Command((obj) =>
 							{
-								label.Text = "tb4";
+								label.Text = "button 4 new text";
 							}, (obj) => _isEnable);
 			var tb1 = new ToolbarItem("tb1", "menuIcon.png", () =>
 			{
