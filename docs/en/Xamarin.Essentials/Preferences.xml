@@ -13,7 +13,7 @@
   <Docs>
     <summary>A class to interact with the preferences/settings of the native platform.</summary>
     <remarks>
-      <para>Each platform uses the platform provided native APIââââ‚¬Å¡¬âââ‚¬Å¾¢s for storing application/user preferences:</para>
+      <para>Each platform uses the platform provided native APIs for storing application/user preferences:</para>
       <list type="bullet">
         <item>
           <term>iOS: NSUserDefaults</term>
