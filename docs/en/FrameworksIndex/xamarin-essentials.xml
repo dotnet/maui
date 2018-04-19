@@ -172,6 +172,26 @@
       <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
       <Member Id="P:Xamarin.Essentials.Geocoding.MapKey" />
     </Type>
+    <Type Name="Xamarin.Essentials.Geolocation" Id="T:Xamarin.Essentials.Geolocation">
+      <Member Id="M:Xamarin.Essentials.Geolocation.GetLastKnownLocationAsync" />
+      <Member Id="M:Xamarin.Essentials.Geolocation.GetLocationAsync" />
+      <Member Id="M:Xamarin.Essentials.Geolocation.GetLocationAsync(Xamarin.Essentials.GeolocationRequest)" />
+      <Member Id="M:Xamarin.Essentials.Geolocation.GetLocationAsync(Xamarin.Essentials.GeolocationRequest,System.Threading.CancellationToken)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.GeolocationAccuracy" Id="T:Xamarin.Essentials.GeolocationAccuracy">
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.High" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Medium" />
+    </Type>
+    <Type Name="Xamarin.Essentials.GeolocationRequest" Id="T:Xamarin.Essentials.GeolocationRequest">
+      <Member Id="M:Xamarin.Essentials.GeolocationRequest.#ctor" />
+      <Member Id="M:Xamarin.Essentials.GeolocationRequest.#ctor(Xamarin.Essentials.GeolocationAccuracy)" />
+      <Member Id="M:Xamarin.Essentials.GeolocationRequest.#ctor(Xamarin.Essentials.GeolocationAccuracy,System.TimeSpan)" />
+      <Member Id="P:Xamarin.Essentials.GeolocationRequest.DesiredAccuracy" />
+      <Member Id="P:Xamarin.Essentials.GeolocationRequest.Timeout" />
+    </Type>
     <Type Name="Xamarin.Essentials.Gyroscope" Id="T:Xamarin.Essentials.Gyroscope">
       <Member Id="E:Xamarin.Essentials.Gyroscope.ReadingChanged" />
       <Member Id="M:Xamarin.Essentials.Gyroscope.Start(Xamarin.Essentials.SensorSpeed)" />
@@ -196,6 +216,7 @@
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
+      <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
       <Member Id="P:Xamarin.Essentials.Location.Longitude" />
       <Member Id="P:Xamarin.Essentials.Location.TimestampUtc" />

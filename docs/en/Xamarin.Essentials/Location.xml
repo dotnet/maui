@@ -103,9 +103,11 @@
     <Member MemberName="Accuracy">
       <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Accuracy { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Accuracy" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Accuracy" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
