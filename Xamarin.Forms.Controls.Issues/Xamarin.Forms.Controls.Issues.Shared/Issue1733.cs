@@ -206,17 +206,17 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 
 			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(10);
+			await Task.Delay(1000);
 			TestGrowth(false);
 			RunningApp.Tap(q => q.Marked(btnChangeFont));
-			await Task.Delay(10);
+			await Task.Delay(1000);
 			TestGrowth(true);
 
 
 			// Reset back to being empty and make sure everything sets back to original size
 			RunningApp.Tap(q => q.Marked(btnChangeFont));
 			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(10);
+			await Task.Delay(1000);
 
 			foreach (var editor in editors)
 			{
