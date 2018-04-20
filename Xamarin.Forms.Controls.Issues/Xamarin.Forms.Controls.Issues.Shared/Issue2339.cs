@@ -2,39 +2,51 @@
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+#if UITEST
+using NUnit.Framework;
+#endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
-	[Preserve (AllMembers=true)]
-	[Issue (IssueTracker.Github, 2339, "Picker not shown when .Focus() is called", PlatformAffected.WinPhone)]
-	public class Issue2339 : ContentPage
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 2339, "Picker not shown when .Focus() is called")]
+	public class Issue2339 : TestContentPage
 	{
-		public Issue2339 ()
+		protected override void Init()
 		{
-			var picker = new Picker { Items = {"One", "Two", "Three"} };
-			var pickerBtn = new Button {
-				Text = "Click me to call .Focus on Picker"
+			var picker = new Picker { Items = { "One", "Two", "Three" } };
+			var pickerBtn = new Button
+			{
+				Text = "Click me to call .Focus on Picker",
+				AutomationId = "btnFocus"
 			};
 
-			pickerBtn.Clicked += (sender, args) => {
-				picker.Focus ();
+			pickerBtn.Clicked += (sender, args) =>
+			{
+				picker.Focus();
 			};
 
-			var pickerBtn2 = new Button {
-				Text = "Click me to call .Unfocus on Picker"
+			var pickerBtn2 = new Button
+			{
+				Text = "Click me to call .Unfocus on Picker",
+				AutomationId = "btnUnFocus"
 			};
 
-			pickerBtn2.Clicked += (sender, args) => {
-				picker.Unfocus ();
+			pickerBtn2.Clicked += (sender, args) =>
+			{
+				picker.Unfocus();
 			};
 
-			var pickerBtn3 = new Button {
+			var pickerBtn3 = new Button
+			{
 				Text = "Click me to .Focus () picker, wait 2 seconds, and .Unfocus () picker",
-				Command = new Command (async () => {
-					picker.Focus ();
-					await Task.Delay (2000);
-					picker.Unfocus ();
-				})
+				Command = new Command(async () =>
+				{
+					picker.Focus();
+					await Task.Delay(2000);
+					picker.Unfocus();
+				}),
+				AutomationId = "btnFocusThenUnFocus"
 			};
 
 			var focusFiredCount = 0;
@@ -43,18 +55,21 @@ namespace Xamarin.Forms.Controls
 			var focusFiredLabel = new Label { Text = "Picker Focused: " + focusFiredCount };
 			var unfocusedFiredLabel = new Label { Text = "Picker UnFocused: " + unfocusFiredCount };
 
-			picker.Focused += (s, e) => {
+			picker.Focused += (s, e) =>
+			{
 				focusFiredCount++;
 				focusFiredLabel.Text = "Picker Focused: " + focusFiredCount;
 			};
-			picker.Unfocused += (s, e) => {
+			picker.Unfocused += (s, e) =>
+			{
 				unfocusFiredCount++;
 				unfocusedFiredLabel.Text = "Picker UnFocused: " + unfocusFiredCount;
 			};
 
-			Content = new StackLayout {
+			Content = new StackLayout
+			{
 				Children = {
-					focusFiredLabel, 
+					focusFiredLabel,
 					unfocusedFiredLabel,
 					pickerBtn,
 					pickerBtn2,
@@ -62,6 +77,23 @@ namespace Xamarin.Forms.Controls
 					picker
 				}
 			};
-		}
+		} 
+
+#if UITEST
+		[Test]
+#if __WINDOWS__
+		[Ignore("Focus Behavior is different on UWP")]
+#endif
+		public void FocusAndUnFocusMultipleTimes ()
+		{
+			RunningApp.WaitForElement("btnFocusThenUnFocus");
+			RunningApp.Tap (c => c.Marked ("btnFocusThenUnFocus"));
+			RunningApp.WaitForElement(cw => cw.Marked("Picker Focused: 1"));
+			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 1")); 
+			RunningApp.Tap (c => c.Marked ("btnFocusThenUnFocus"));
+			RunningApp.WaitForElement(cw => cw.Marked("Picker Focused: 2"));
+			RunningApp.WaitForElement(cw => cw.Marked("Picker UnFocused: 2")); 
+		} 
+#endif
 	}
 }
