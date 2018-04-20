@@ -189,13 +189,14 @@ namespace Xamarin.Forms.Build.Tasks
 
 			protected override void SetPropertyValue(string prop, string strValue, object value, IServiceProvider serviceProvider)
 			{
+				var nsResolver = serviceProvider.GetService(typeof(IXmlNamespaceResolver)) as IXmlNamespaceResolver;
 				if (prop != null)
 				{
 					var name = new XmlName(node.NamespaceURI, prop);
-					node.Properties[name] = value as INode ?? new ValueNode(strValue, null);
+					node.Properties[name] = value as INode ?? new ValueNode(strValue, nsResolver);
 				}
 				else //ContentProperty
-					node.CollectionItems.Add(value as INode ?? new ValueNode(strValue, null));
+					node.CollectionItems.Add(value as INode ?? new ValueNode(strValue, nsResolver));
 			}
 		}
 	}
