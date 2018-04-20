@@ -65,6 +65,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 		}
 
+		public bool IsResourceDictionary(ElementNode node) => IsResourceDictionary((IElementNode)node);
+
 		bool IsResourceDictionary(IElementNode node)
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
