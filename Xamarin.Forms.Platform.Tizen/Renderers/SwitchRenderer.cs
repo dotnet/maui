@@ -1,16 +1,23 @@
 using System;
-using System.ComponentModel;
 using ElmSharp;
 using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
+using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
 	public class SwitchRenderer : ViewRenderer<Switch, Check>
 	{
+		readonly string _onColorPart;
+		readonly bool _isTV;
+		string _onColorEdjePart;
+
 		public SwitchRenderer()
 		{
+			_isTV = Device.Idiom == TargetIdiom.TV;
+			_onColorPart = _isTV ? "slider_on" : Device.Idiom == TargetIdiom.Watch ? "outer_bg_on" : "bg_on";
 			RegisterPropertyHandler(Switch.IsToggledProperty, HandleToggled);
+			RegisterPropertyHandler(Switch.OnColorProperty, UpdateOnColor);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Switch> e)
@@ -23,6 +30,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					Style = SwitchStyle.Toggle
 				});
 				Control.StateChanged += OnStateChanged;
+				_onColorEdjePart = Control.ClassName.ToLower().Replace("elm_", "") + "/" + _onColorPart;
 			}
 			base.OnElementChanged(e);
 		}
@@ -68,6 +76,26 @@ namespace Xamarin.Forms.Platform.Tizen
 		void HandleToggled()
 		{
 			Control.IsChecked = Element.IsToggled;
+		}
+
+		void UpdateOnColor(bool initialize)
+		{
+			if (initialize && Element.OnColor.IsDefault)
+				return;
+
+			if (Element.OnColor.IsDefault)
+			{
+				Control.EdjeObject.DeleteColorClass(_onColorEdjePart);
+				if (_isTV)
+					Control.EdjeObject.DeleteColorClass(_onColorEdjePart.Replace(_onColorPart, "slider_focused_on"));
+			}
+			else
+			{
+				EColor color = Element.OnColor.ToNative();
+				Control.SetPartColor(_onColorPart, color);
+				if (_isTV)
+					Control.SetPartColor("slider_focused_on", color);
+			}
 		}
 	}
 }
