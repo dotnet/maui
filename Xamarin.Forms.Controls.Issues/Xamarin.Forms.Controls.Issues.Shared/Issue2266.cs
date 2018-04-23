@@ -96,7 +96,7 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.WaitForElement(q => q.Text("MasterDetail Navigation"));
 			RunningApp.Tap(q => q.Text("MasterDetail Navigation"));
-			RunningApp.Tap(q => q.Marked("OK"));
+			RunningApp.Tap(q => q.Marked("OpenMaster"));
 			RunningApp.Tap(q => q.Text("Page 1"));
 			RunningApp.Tap(q => q.Text("START"));
 			RunningApp.Tap(q => q.Text("MasterDetail Navigation ->> Page 1"));
@@ -142,7 +142,8 @@ namespace Xamarin.Forms.Controls.Issues
 				Content = new StackLayout
 				{
 					Children = {
-						new Label { Text = "Select a menu item" }
+						new Label { Text = "Select a menu item" },
+						new Button {Command = new Command(() => this.IsPresented = true), AutomationId = "OpenMaster", Text = "Open Master"}
 					}
 				}
 			});
