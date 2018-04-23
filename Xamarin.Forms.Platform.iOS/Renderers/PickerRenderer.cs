@@ -96,9 +96,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnEnded(object sender, EventArgs eventArgs)
 		{
 			var s = (PickerSource)_picker.Model;
-			if (s.SelectedIndex == -1)
-				return;
-			if (s.SelectedIndex != _picker.SelectedRowInComponent(0))
+			if (s.SelectedIndex != -1 && s.SelectedIndex != _picker.SelectedRowInComponent(0))
 			{
 				_picker.Select(s.SelectedIndex, 0, false);
 			}

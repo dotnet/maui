@@ -33,6 +33,7 @@ namespace Xamarin.Forms.Xaml
 		public bool StopOnResourceDictionary => false;
 		public bool VisitNodeOnDataTemplate => true;
 		public bool SkipChildren(INode node, INode parentNode) => false;
+		public bool IsResourceDictionary(ElementNode node) => false;
 
 		public void Visit(ValueNode node, INode parentNode)
 		{
