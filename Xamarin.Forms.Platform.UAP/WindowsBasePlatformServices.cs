@@ -113,13 +113,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return new WindowsIsolatedStorage(ApplicationData.Current.LocalFolder);
 		}
 
-		// Per https://docs.microsoft.com/en-us/windows-hardware/drivers/partnerapps/create-a-kiosk-app-for-assigned-access:
-		// "Each view or window has its own dispatcher. In assigned access mode, you should not use the MainView dispatcher, 
-		// instead you should use the CurrentView dispatcher." Checking to see if this isn't null (i.e. the current window is
-		// running above lock) calls through GetCurrentView(), and otherwise through MainView.
-		public bool IsInvokeRequired => LockApplicationHost.GetForCurrentView() != null
-			? !CoreApplication.GetCurrentView().Dispatcher.HasThreadAccess
-			: !CoreApplication.MainView.CoreWindow.Dispatcher.HasThreadAccess;
+		public bool IsInvokeRequired => !_dispatcher.HasThreadAccess;
 
 		public string RuntimePlatform => Device.UWP;
 
