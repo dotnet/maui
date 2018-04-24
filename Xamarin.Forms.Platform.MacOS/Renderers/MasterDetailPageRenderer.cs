@@ -144,6 +144,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (view == null)
 				return;
 
+			// Ignore the IsPresented value being set to false for Split mode on desktop
+			// and allow the master view to be made initially visible
+			if (Device.Idiom == TargetIdiom.Desktop && !view.Hidden)
+				return;
+
 			if (MasterDetailPage.IsPresented && view.Hidden)
 				view.Hidden = false;
 			else if (!MasterDetailPage.IsPresented && !view.Hidden)
