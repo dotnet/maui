@@ -1,36 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
-        static void StartListeners() =>
-            Reachability.ReachabilityChanged += ReachabilityChanged;
+        static ReachabilityListener listener;
 
-        static async void ReachabilityChanged(object sender, EventArgs e)
+        static void StartListeners()
         {
-            await Task.Delay(100);
-            OnConnectivityChanged();
+            listener = new ReachabilityListener();
+            listener.ReachabilityChanged += OnConnectivityChanged;
         }
 
-        static void StopListeners() =>
-            Reachability.ReachabilityChanged -= ReachabilityChanged;
+        static void StopListeners()
+        {
+            if (listener == null)
+                return;
+
+            listener.ReachabilityChanged -= OnConnectivityChanged;
+            listener.Dispose();
+            listener = null;
+        }
 
         public static NetworkAccess NetworkAccess
         {
             get
             {
-                var remoteHostStatus = Reachability.RemoteHostStatus();
                 var internetStatus = Reachability.InternetConnectionStatus();
+                if (internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork || internetStatus == NetworkStatus.ReachableViaWiFiNetwork)
+                    return NetworkAccess.Internet;
 
-                var isConnected = (internetStatus == NetworkStatus.ReachableViaCarrierDataNetwork ||
-                                internetStatus == NetworkStatus.ReachableViaWiFiNetwork) ||
-                              (remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork ||
-                                remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork);
+                var remoteHostStatus = Reachability.RemoteHostStatus();
+                if (remoteHostStatus == NetworkStatus.ReachableViaCarrierDataNetwork || remoteHostStatus == NetworkStatus.ReachableViaWiFiNetwork)
+                    return NetworkAccess.Internet;
 
-                return isConnected ? NetworkAccess.Internet : NetworkAccess.None;
+                return NetworkAccess.None;
             }
         }
 
