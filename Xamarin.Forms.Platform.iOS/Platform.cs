@@ -163,6 +163,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
+			EndEditing();
+
 			_modals.Add(modal);
 			modal.Platform = this;
 
@@ -476,8 +478,28 @@ namespace Xamarin.Forms.Platform.iOS
 			// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
 			// presentation is complete before it really is. It does not however inform you when it is really done (and thus 
 			// would be safe to dismiss the VC). Fortunately this is almost never an issue
+			
 			await _renderer.PresentViewControllerAsync(wrapper, animated);
 			await Task.Delay(5);
+		}
+
+		void EndEditing()
+		{
+			// If any text entry controls have focus, we need to end their editing session
+			// so that they are not the first responder; if we don't some things (like the activity indicator
+			// on pull-to-refresh) will not work correctly. 
+
+			// The topmost modal on the stack will have the Window; we can use that to end any current
+			// editing that's going on 
+			if (_modals.Count > 0)
+			{
+				var uiViewController = GetRenderer(_modals[_modals.Count - 1]) as UIViewController;
+				uiViewController?.View?.Window?.EndEditing(true);
+				return;
+			}
+
+			// If there aren't any modals, then the platform renderer will have the Window
+			_renderer.View?.Window?.EndEditing(true);
 		}
 
 		internal class DefaultRenderer : VisualElementRenderer<VisualElement>

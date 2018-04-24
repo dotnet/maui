@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ObjCRuntime;
 using UIKit;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -527,6 +528,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnPushRequested(object sender, NavigationRequestedEventArgs e)
 		{
+			// If any text entry controls have focus, we need to end their editing session
+			// so that they are not the first responder; if we don't some things (like the activity indicator
+			// on pull-to-refresh) will not work correctly.
+			View?.Window?.EndEditing(true);
+
 			e.Task = PushPageAsync(e.Page, e.Animated);
 		}
 
