@@ -15,11 +15,5 @@
         static string GetIdiom() => throw new NotImplementedInReferenceAssemblyException();
 
         static DeviceType GetDeviceType() => throw new NotImplementedInReferenceAssemblyException();
-
-        static ScreenMetrics GetScreenMetrics() => throw new NotImplementedInReferenceAssemblyException();
-
-        static void StartScreenMetricsListeners() => throw new NotImplementedInReferenceAssemblyException();
-
-        static void StopScreenMetricsListeners() => throw new NotImplementedInReferenceAssemblyException();
     }
 }

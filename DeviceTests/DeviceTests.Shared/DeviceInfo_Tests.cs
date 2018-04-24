@@ -71,7 +71,7 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(() =>
             {
-                var metrics = DeviceInfo.ScreenMetrics;
+                var metrics = DeviceDisplay.ScreenMetrics;
 
                 Assert.True(metrics.Width > 0);
                 Assert.True(metrics.Height > 0);
