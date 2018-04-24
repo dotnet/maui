@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -312,6 +313,11 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || 
 					e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparent();
+			if (e.PropertyName == Specifics.AccessKeyProperty.PropertyName ||
+					e.PropertyName == Specifics.AccessKeyPlacementProperty.PropertyName ||
+					e.PropertyName == Specifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
+					e.PropertyName == Specifics.AccessKeyVerticalOffsetProperty.PropertyName)
+				UpdateAccessKey();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -469,10 +475,19 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
+		protected void UpdateAccessKey() {
+			var control = Control;
+			var element = Element as IElementConfiguration<TElement>;
+
+			if (element != null && control != null)
+				AccessKeyHelper.UpdateAccessKey(Control, Element);
+		}
+
 		protected virtual void UpdateNativeControl()
 		{
 			UpdateEnabled();
 			UpdateInputTransparent();
+			UpdateAccessKey();
 			SetAutomationPropertiesHelpText();
 			SetAutomationPropertiesName();
 			SetAutomationPropertiesAccessibilityView();

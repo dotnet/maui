@@ -3,7 +3,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
@@ -16,6 +15,9 @@ using WStackPanel = Windows.UI.Xaml.Controls.StackPanel;
 using WImage = Windows.UI.Xaml.Controls.Image;
 using WTextBlock = Windows.UI.Xaml.Controls.TextBlock;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.TabbedPage;
+using VisualElementSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
+using PageSpecifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
+using Windows.UI.Xaml.Input;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -150,6 +152,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 				((INotifyCollectionChanged)oldElement.Children).CollectionChanged -= OnPagesChanged;
+				Control?.GetDescendantsByName<TextBlock>(TabBarHeaderTextBlockName).ForEach(t => { t.AccessKeyInvoked -= AccessKeyInvokedForTab; });
 			}
 
 			if (element != null)
@@ -223,6 +226,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateBarIcons();
 			else if (e.PropertyName == Specifics.HeaderIconsSizeProperty.PropertyName)
 				UpdateBarIcons();
+			else if (e.PropertyName == PageSpecifics.ToolbarPlacementProperty.PropertyName)
+				UpdateToolbarPlacement();
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
@@ -232,14 +237,46 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBarTextColor();
 			UpdateBarBackgroundColor();
 			UpdateBarIcons();
+			UpdateAccessKeys();
 		}
 
-		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
+		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e) {
 			e.Apply(Element.Children, Control.Items);
-
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+				case NotifyCollectionChangedAction.Remove:
+				case NotifyCollectionChangedAction.Replace:
+					if (e.NewItems != null)
+						for (int i = 0; i< e.NewItems.Count; i++)
+							(e.NewItems[i] as Page).PropertyChanged += OnChildPagePropertyChanged;
+					if (e.OldItems != null)
+						for (int i = 0; i < e.OldItems.Count; i++)
+							(e.OldItems[i] as Page).PropertyChanged -= OnChildPagePropertyChanged;
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					foreach (var p in Element.Children)
+						p.PropertyChanged += OnChildPagePropertyChanged;
+					break;
+				default:
+					break;
+			}
 			// Potential performance issue, UpdateLayout () is called for every page change
 			Control.UpdateLayout();
+		}
+
+		void OnChildPagePropertyChanged(object sender, PropertyChangedEventArgs e) {
+			var page = sender as Page;
+			if (page != null)
+			{
+				// If AccessKeys properties are updated on a child (tab) we want to
+				// update the access key on the native control.
+				if (e.PropertyName == VisualElementSpecifics.AccessKeyProperty.PropertyName ||
+					e.PropertyName == VisualElementSpecifics.AccessKeyPlacementProperty.PropertyName ||
+					e.PropertyName == VisualElementSpecifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
+					e.PropertyName == VisualElementSpecifics.AccessKeyVerticalOffsetProperty.PropertyName)
+					UpdateAccessKeys();
+			}
 		}
 
 		void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -344,13 +381,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.SelectedItem = page;
 		}
 
-		void UpdateToolbarPlacement()
-		{
-			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
-		}
-
-		void UpdateBarIcons()
-		{
+		void UpdateBarIcons() {
 			if (Control == null)
 				return;
 
@@ -427,6 +458,35 @@ namespace Xamarin.Forms.Platform.UWP
 				// If items have been made visible or collapsed in panel, invalidate current control measures.
 				if (invalidateMeasure)
 					Control.InvalidateMeasure();
+			}
+		}
+		void UpdateToolbarPlacement()
+		{
+			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
+		}
+
+		protected void UpdateAccessKeys()
+		{
+			Control?.GetDescendantsByName<TextBlock>(TabBarHeaderTextBlockName).ForEach(UpdateAccessKey);
+		}
+
+		void AccessKeyInvokedForTab(UIElement sender, AccessKeyInvokedEventArgs arg)
+		{
+			var tab = sender as TextBlock;
+			if (tab != null && tab.DataContext is Page page)
+				Element.CurrentPage = page;
+		}
+
+		protected void UpdateAccessKey(TextBlock control) {
+
+			if (control != null && control.DataContext is Page page)
+			{
+				var windowsElement = page.On<PlatformConfiguration.Windows>();
+				if (page.IsSet(VisualElementSpecifics.AccessKeyProperty))
+				{
+					control.AccessKeyInvoked += AccessKeyInvokedForTab;
+				}
+				AccessKeyHelper.UpdateAccessKey(control, page);
 			}
 		}
 	}

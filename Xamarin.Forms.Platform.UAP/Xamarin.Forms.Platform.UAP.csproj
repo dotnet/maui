@@ -62,6 +62,7 @@
     <Compile Include="NativePropertyListener.cs" />
     <Compile Include="NativeViewWrapper.cs" />
     <Compile Include="NativeViewWrapperRenderer.cs" />
+    <Compile Include="AccessKeyHelper.cs" />
     <Compile Include="PlatformConfigurationExtensions.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="UriImageSourceHandler.cs" />
