@@ -53,6 +53,7 @@ namespace Xamarin.Forms.Platform.UWP
 		
 		CommandBar _commandBar;
 		readonly ToolbarPlacementHelper _toolbarPlacementHelper = new ToolbarPlacementHelper();
+		bool _firstLoad;
 
 		public bool ShouldShowToolbar
 		{
@@ -142,8 +143,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 				// On first load, the _commandBar will still occupy space by the time this is called.
 				// Check ShouldShowToolbar to make sure the _commandBar will still be there on render.
-				if (_commandBar != null && ShouldShowToolbar)
+				if (_firstLoad && _commandBar != null && ShouldShowToolbar)
+				{
 					height -= _commandBar.ActualHeight;
+					_firstLoad = false;
+				}
 
 				if (_split != null)
 					width = _split.OpenPaneLength;
@@ -317,7 +321,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (DetailTitleVisibility == Visibility.Visible && !ShouldShowNavigationBar)
 				DetailTitleVisibility = Visibility.Collapsed;
-			
+
+			_firstLoad = true;
 		}
 	}
 }
