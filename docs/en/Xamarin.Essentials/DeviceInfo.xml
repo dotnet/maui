@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Represents information about the device and application.</summary>
+    <summary>Represents information about the device.</summary>
     <remarks>
       <para />
     </remarks>
@@ -135,43 +135,6 @@
         <remarks>
           <para />
         </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ScreenMetrics">
-      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.ScreenMetrics ScreenMetrics { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.ScreenMetrics ScreenMetrics" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.ScreenMetrics" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ScreenMetrics</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the screen metrics of the device.</summary>
-        <value>The screen metrics.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ScreenMetricsChanaged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged" />
-      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.DeviceInfo.ScreenMetricsChanaged" />
-      <MemberType>Event</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ScreenMetricsChanagedEventHandler</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Event that is triggered when the screen matrics change.</summary>
-        <remarks>Such as screen rotation.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Version">

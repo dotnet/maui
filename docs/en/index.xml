@@ -82,6 +82,7 @@
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
       <Type Name="ConnectivityChangedEventHandler" Kind="Delegate" />
       <Type Name="DataTransfer" Kind="Class" />
+      <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceInfo+Idioms" Kind="Class" />
       <Type Name="DeviceInfo+Platforms" Kind="Class" />

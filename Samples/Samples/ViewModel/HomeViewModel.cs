@@ -77,7 +77,7 @@ namespace Samples.ViewModel
                     "Device Info",
                     typeof(DeviceInfoPage),
                     "Find out about the device with ease.",
-                    new[] { "hardware", "device", "info" }),
+                    new[] { "hardware", "device", "info", "screen", "display", "orientation", "rotation" }),
                 new SampleItem(
                     "📧",
                     "Email",

@@ -100,15 +100,17 @@
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
+    <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
+      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanaged" />
+      <Member Id="P:Xamarin.Essentials.DeviceDisplay.ScreenMetrics" />
+    </Type>
     <Type Name="Xamarin.Essentials.DeviceInfo" Id="T:Xamarin.Essentials.DeviceInfo">
-      <Member Id="E:Xamarin.Essentials.DeviceInfo.ScreenMetricsChanaged" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.DeviceType" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Idiom" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Manufacturer" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Model" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Name" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Platform" />
-      <Member Id="P:Xamarin.Essentials.DeviceInfo.ScreenMetrics" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Version" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.VersionString" />
     </Type>
