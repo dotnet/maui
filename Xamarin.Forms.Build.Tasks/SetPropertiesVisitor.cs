@@ -387,6 +387,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var properties = ParsePath(path, tSourceRef, node as IXmlLineInfo, module);
 			var tPropertyRef = properties != null && properties.Any() ? properties.Last().Item1.PropertyType : tSourceRef;
+			tPropertyRef = module.ImportReference(tPropertyRef);
 
 			var funcRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef }));
 			var actionRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Action`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef }));
