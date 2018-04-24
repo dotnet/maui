@@ -88,5 +88,7 @@ namespace Xamarin.Essentials
 
             LocationHandler?.Invoke(location);
         }
+
+        public override bool ShouldDisplayHeadingCalibration(CLLocationManager manager) => false;
     }
 }
