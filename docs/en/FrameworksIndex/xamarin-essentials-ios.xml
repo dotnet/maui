@@ -11,9 +11,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.AccelerometerChangedEventHandler" Id="T:Xamarin.Essentials.AccelerometerChangedEventHandler" />
     <Type Name="Xamarin.Essentials.AccelerometerData" Id="T:Xamarin.Essentials.AccelerometerData">
-      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerX" />
-      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerY" />
-      <Member Id="P:Xamarin.Essentials.AccelerometerData.AccelerometerZ" />
+      <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
@@ -205,9 +203,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.GyroscopeChangedEventHandler" Id="T:Xamarin.Essentials.GyroscopeChangedEventHandler" />
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
-      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityX" />
-      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityY" />
-      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocityZ" />
+      <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
     <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
@@ -237,9 +233,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.MagnetometerChangedEventHandler" Id="T:Xamarin.Essentials.MagnetometerChangedEventHandler" />
     <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
-      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldX" />
-      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldY" />
-      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticFieldZ" />
+      <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
     <Type Name="Xamarin.Essentials.NetworkAccess" Id="T:Xamarin.Essentials.NetworkAccess">
       <Member Id="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />

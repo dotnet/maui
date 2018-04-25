@@ -82,15 +82,15 @@ namespace Samples.ViewModel
                 case SensorSpeed.Game:
                     Platform.BeginInvokeOnMainThread(() =>
                     {
-                        X = data.MagneticFieldX;
-                        Y = data.MagneticFieldY;
-                        Z = data.MagneticFieldZ;
+                        X = data.MagneticField.X;
+                        Y = data.MagneticField.Y;
+                        Z = data.MagneticField.Z;
                     });
                     break;
                 default:
-                    X = data.MagneticFieldX;
-                    Y = data.MagneticFieldY;
-                    Z = data.MagneticFieldZ;
+                    X = data.MagneticField.X;
+                    Y = data.MagneticField.Y;
+                    Z = data.MagneticField.Z;
                     break;
             }
         }

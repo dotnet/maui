@@ -82,15 +82,15 @@ namespace Samples.ViewModel
                 case SensorSpeed.Game:
                     Platform.BeginInvokeOnMainThread(() =>
                     {
-                        X = data.AngularVelocityX;
-                        Y = data.AngularVelocityY;
-                        Z = data.AngularVelocityZ;
+                        X = data.AngularVelocity.X;
+                        Y = data.AngularVelocity.Y;
+                        Z = data.AngularVelocity.Z;
                     });
                     break;
                 default:
-                    X = data.AngularVelocityX;
-                    Y = data.AngularVelocityY;
-                    Z = data.AngularVelocityZ;
+                    X = data.AngularVelocity.X;
+                    Y = data.AngularVelocity.Y;
+                    Z = data.AngularVelocity.Z;
                     break;
             }
         }

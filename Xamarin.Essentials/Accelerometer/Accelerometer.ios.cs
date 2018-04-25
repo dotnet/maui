@@ -43,7 +43,7 @@ namespace Xamarin.Essentials
                 return;
 
             var field = data.Acceleration;
-            var accelData = new AccelerometerData(field.X, field.Y, field.Z);
+            var accelData = new AccelerometerData(field.X * -1, field.Y * -1, field.Z * -1);
             OnChanged(accelData);
         }
 

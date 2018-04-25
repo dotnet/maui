@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Xamarin.Essentials
 {
@@ -81,16 +82,13 @@ namespace Xamarin.Essentials
     public struct MagnetometerData
     {
         internal MagnetometerData(double x, double y, double z)
+            : this((float)x, (float)y, (float)z)
         {
-            MagneticFieldX = x;
-            MagneticFieldY = y;
-            MagneticFieldZ = z;
         }
 
-        public double MagneticFieldX { get; }
+        internal MagnetometerData(float x, float y, float z) =>
+            MagneticField = new Vector3(x, y, z);
 
-        public double MagneticFieldY { get; }
-
-        public double MagneticFieldZ { get; }
+        public Vector3 MagneticField { get; }
     }
 }

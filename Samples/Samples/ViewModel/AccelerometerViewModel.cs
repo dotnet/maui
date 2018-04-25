@@ -101,15 +101,15 @@ namespace Samples.ViewModel
                 case SensorSpeed.Game:
                     Platform.BeginInvokeOnMainThread(() =>
                     {
-                        X = data.AccelerometerX;
-                        Y = data.AccelerometerY;
-                        Z = data.AccelerometerZ;
+                        X = data.Acceleration.X;
+                        Y = data.Acceleration.Y;
+                        Z = data.Acceleration.Z;
                     });
                     break;
                 default:
-                    X = data.AccelerometerX;
-                    Y = data.AccelerometerY;
-                    Z = data.AccelerometerZ;
+                    X = data.Acceleration.X;
+                    Y = data.Acceleration.Y;
+                    Z = data.Acceleration.Z;
                     break;
             }
         }

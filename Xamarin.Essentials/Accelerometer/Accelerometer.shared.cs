@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Xamarin.Essentials
 {
@@ -81,16 +82,13 @@ namespace Xamarin.Essentials
     public struct AccelerometerData
     {
         internal AccelerometerData(double x, double y, double z)
+            : this((float)x, (float)y, (float)z)
         {
-            AccelerometerX = x;
-            AccelerometerY = y;
-            AccelerometerZ = z;
         }
 
-        public double AccelerometerX { get; }
+        internal AccelerometerData(float x, float y, float z) =>
+            Acceleration = new Vector3(x, y, z);
 
-        public double AccelerometerY { get; }
-
-        public double AccelerometerZ { get; }
+        public Vector3 Acceleration { get; }
     }
 }

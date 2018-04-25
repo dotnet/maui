@@ -48,6 +48,9 @@ namespace Xamarin.Essentials
 
     class AccelerometerListener : Java.Lang.Object, ISensorEventListener
     {
+        // acceleration due to gravity
+        const double gravity = 9.81;
+
         public AccelerometerListener()
         {
         }
@@ -58,7 +61,7 @@ namespace Xamarin.Essentials
 
         public void OnSensorChanged(SensorEvent e)
         {
-            var data = new AccelerometerData(e.Values[0], e.Values[1], e.Values[2]);
+            var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
             Accelerometer.OnChanged(data);
         }
     }

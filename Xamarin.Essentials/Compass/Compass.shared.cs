@@ -81,10 +81,8 @@ namespace Xamarin.Essentials
 
     public struct CompassData
     {
-        internal CompassData(double headingMagneticNorth)
-        {
+        internal CompassData(double headingMagneticNorth) =>
             HeadingMagneticNorth = headingMagneticNorth;
-        }
 
         public double HeadingMagneticNorth { get; }
     }

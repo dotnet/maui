@@ -17,57 +17,21 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="AngularVelocityX">
-      <MemberSignature Language="C#" Value="public double AngularVelocityX { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityX" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityX" />
+    <Member MemberName="AngularVelocity">
+      <MemberSignature Language="C#" Value="public System.Numerics.Vector3 AngularVelocity { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Vector3 AngularVelocity" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
+        <ReturnType>System.Numerics.Vector3</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets the value for the X-Axis in rad/s.</summary>
-        <value>The X-Axis value.</value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AngularVelocityY">
-      <MemberSignature Language="C#" Value="public double AngularVelocityY { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityY" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityY" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the value for the Y-Axis in rad/s.</summary>
-        <value>The Y-Axis value.</value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AngularVelocityZ">
-      <MemberSignature Language="C#" Value="public double AngularVelocityZ { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AngularVelocityZ" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.GyroscopeData.AngularVelocityZ" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the value for the Z-Axis in rad/s.</summary>
-        <value>The Z-Axis value.</value>
+        <summary>Gets the angular velocity vector in rad/s.</summary>
+        <value></value>
         <remarks></remarks>
       </Docs>
     </Member>

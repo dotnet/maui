@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Xamarin.Essentials
 {
@@ -81,16 +82,13 @@ namespace Xamarin.Essentials
     public struct GyroscopeData
     {
         internal GyroscopeData(double x, double y, double z)
+            : this((float)x, (float)y, (float)z)
         {
-            AngularVelocityX = x;
-            AngularVelocityY = y;
-            AngularVelocityZ = z;
         }
 
-        public double AngularVelocityX { get; }
+        internal GyroscopeData(float x, float y, float z) =>
+            AngularVelocity = new Vector3(x, y, z);
 
-        public double AngularVelocityY { get; }
-
-        public double AngularVelocityZ { get; }
+        public Vector3 AngularVelocity { get; }
     }
 }

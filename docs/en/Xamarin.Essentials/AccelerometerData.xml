@@ -17,64 +17,22 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="AccelerometerX">
-      <MemberSignature Language="C#" Value="public double AccelerometerX { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerX" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerX" />
+    <Member MemberName="Acceleration">
+      <MemberSignature Language="C#" Value="public System.Numerics.Vector3 Acceleration { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Vector3 Acceleration" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
+        <ReturnType>System.Numerics.Vector3</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets the value for the X-Axis in m/s². </summary>
-        <value>The X-Axis value.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AccelerometerY">
-      <MemberSignature Language="C#" Value="public double AccelerometerY { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerY" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerY" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the value for the Y-Axis in m/s². </summary>
-        <value>The Y-Axis value.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="AccelerometerZ">
-      <MemberSignature Language="C#" Value="public double AccelerometerZ { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 AccelerometerZ" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.AccelerometerData.AccelerometerZ" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the value for the Z-Axis in m/s². </summary>
-        <value>The Z-Axis value.</value>
-        <remarks>
-          <para />
-        </remarks>
+        <summary>Gets the acceleration vector in G's (gravitational force). </summary>
+        <value></value>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

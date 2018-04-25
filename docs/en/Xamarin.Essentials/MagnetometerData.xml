@@ -17,62 +17,22 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="MagneticFieldX">
-      <MemberSignature Language="C#" Value="public double MagneticFieldX { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldX" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldX" />
+    <Member MemberName="MagneticField">
+      <MemberSignature Language="C#" Value="public System.Numerics.Vector3 MagneticField { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Vector3 MagneticField" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
+        <ReturnType>System.Numerics.Vector3</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets X-axis magnetic field in mciroteslas.</summary>
-        <value>X-axis data</value>
+        <summary>Gets the magnetic field vector in microteslas.</summary>
+        <value></value>
         <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MagneticFieldY">
-      <MemberSignature Language="C#" Value="public double MagneticFieldY { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldY" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldY" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets Y-axis magnetic field in mciroteslas.</summary>
-        <value>Y-axis data.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MagneticFieldZ">
-      <MemberSignature Language="C#" Value="public double MagneticFieldZ { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 MagneticFieldZ" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MagnetometerData.MagneticFieldZ" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets Z-axis magnetid field in mciroteslas.</summary>
-        <value>Z-axis data.</value>
-        <remarks>
-          <para></para>
-        </remarks>
       </Docs>
     </Member>
   </Members>

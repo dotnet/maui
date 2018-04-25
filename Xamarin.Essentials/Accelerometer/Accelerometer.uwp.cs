@@ -42,7 +42,7 @@ namespace Xamarin.Essentials
         static void DataUpdated(object sender, AccelerometerReadingChangedEventArgs e)
         {
             var reading = e.Reading;
-            var data = new AccelerometerData(reading.AccelerationX, reading.AccelerationY, reading.AccelerationZ);
+            var data = new AccelerometerData(reading.AccelerationX * -1, reading.AccelerationY * -1, reading.AccelerationZ * -1);
             OnChanged(data);
         }
 
