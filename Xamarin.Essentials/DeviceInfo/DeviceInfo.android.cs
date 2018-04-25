@@ -1,11 +1,8 @@
 ﻿using System;
 using Android.App;
-using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Provider;
-using Android.Runtime;
-using Android.Views;
 
 namespace Xamarin.Essentials
 {
@@ -34,7 +31,7 @@ namespace Xamarin.Essentials
             var currentIdiom = Idioms.Unsupported;
 
             // first try UiModeManager
-            using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.CurrentContext))
+            using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext))
             {
                 var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;
                 currentIdiom = DetectIdiom(uiMode);
@@ -43,7 +40,7 @@ namespace Xamarin.Essentials
             // then try Configuration
             if (currentIdiom == Idioms.Unsupported)
             {
-                var configuration = Essentials.Platform.CurrentContext.Resources?.Configuration;
+                var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
                 if (configuration != null)
                 {
                     var uiMode = configuration.UiMode;
@@ -62,7 +59,7 @@ namespace Xamarin.Essentials
             // start clutching at straws
             if (currentIdiom == Idioms.Unsupported)
             {
-                var metrics = Essentials.Platform.CurrentContext.Resources?.DisplayMetrics;
+                var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
                 if (metrics != null)
                 {
                     var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
@@ -106,6 +103,6 @@ namespace Xamarin.Essentials
         }
 
         static string GetSystemSetting(string name)
-           => Settings.System.GetString(Essentials.Platform.CurrentContext.ContentResolver, name);
+           => Settings.System.GetString(Essentials.Platform.AppContext.ContentResolver, name);
     }
 }

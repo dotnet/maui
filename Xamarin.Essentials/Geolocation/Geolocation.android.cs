@@ -89,10 +89,14 @@ namespace Xamarin.Essentials
 
         static string GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
         {
-            var criteria = new Criteria();
-            criteria.BearingRequired = false;
-            criteria.AltitudeRequired = false;
-            criteria.SpeedRequired = false;
+            // Criteria: https://developer.android.com/reference/android/location/Criteria
+
+            var criteria = new Criteria
+            {
+                BearingRequired = false,
+                AltitudeRequired = false,
+                SpeedRequired = false
+            };
 
             switch (accuracy)
             {
@@ -102,23 +106,23 @@ namespace Xamarin.Essentials
                     criteria.PowerRequirement = Power.NoRequirement;
                     break;
                 case GeolocationAccuracy.Low:
-                    criteria.Accuracy = Accuracy.Low;
+                    criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Low;
                     criteria.PowerRequirement = Power.Low;
                     break;
                 case GeolocationAccuracy.Medium:
-                    criteria.Accuracy = Accuracy.Medium;
+                    criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Medium;
                     criteria.PowerRequirement = Power.Medium;
                     break;
                 case GeolocationAccuracy.High:
-                    criteria.Accuracy = Accuracy.High;
+                    criteria.Accuracy = Accuracy.Fine;
                     criteria.HorizontalAccuracy = Accuracy.High;
                     criteria.PowerRequirement = Power.High;
                     break;
                 case GeolocationAccuracy.Best:
                     criteria.Accuracy = Accuracy.Fine;
-                    criteria.HorizontalAccuracy = Accuracy.Fine;
+                    criteria.HorizontalAccuracy = Accuracy.High;
                     criteria.PowerRequirement = Power.High;
                     break;
             }

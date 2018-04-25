@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
     {
         public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
         {
-            using (var geocoder = new Geocoder(Application.Context))
+            using (var geocoder = new Geocoder(Platform.AppContext))
             {
                 var addressList = await geocoder.GetFromLocationAsync(latitude, longitude, 10);
                 return addressList?.ToPlacemarks();
@@ -22,7 +22,7 @@ namespace Xamarin.Essentials
             if (address == null)
                 throw new ArgumentNullException(nameof(address));
 
-            using (var geocoder = new Geocoder(Application.Context))
+            using (var geocoder = new Geocoder(Platform.AppContext))
             {
                 var addressList = await geocoder.GetFromLocationNameAsync(address, 10);
 

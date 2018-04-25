@@ -8,10 +8,10 @@ namespace Xamarin.Essentials
     public partial class FileSystem
     {
         public static string CacheDirectory
-            => Application.Context.CacheDir.AbsolutePath;
+            => Platform.AppContext.CacheDir.AbsolutePath;
 
         public static string AppDataDirectory
-            => Application.Context.FilesDir.AbsolutePath;
+            => Platform.AppContext.FilesDir.AbsolutePath;
 
         public static Task<Stream> OpenAppPackageFileAsync(string filename)
         {
@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
             filename = filename.Replace('\\', Path.DirectorySeparatorChar);
             try
             {
-                return Task.FromResult(Application.Context.Assets.Open(filename));
+                return Task.FromResult(Platform.AppContext.Assets.Open(filename));
             }
             catch (Java.IO.FileNotFoundException ex)
             {

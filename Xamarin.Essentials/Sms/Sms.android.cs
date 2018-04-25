@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
                 .SetFlags(ActivityFlags.ClearTop)
                 .SetFlags(ActivityFlags.NewTask);
 
-            Platform.CurrentContext.StartActivity(intent);
+            Platform.AppContext.StartActivity(intent);
 
             return Task.FromResult(true);
         }
@@ -35,7 +35,7 @@ namespace Xamarin.Essentials
 
             if (string.IsNullOrWhiteSpace(recipient) && Platform.HasApiLevel(BuildVersionCodes.Kitkat))
             {
-                var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.CurrentContext);
+                var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.AppContext);
                 if (!string.IsNullOrWhiteSpace(packageName))
                 {
                     intent = new Intent(Intent.ActionSend);

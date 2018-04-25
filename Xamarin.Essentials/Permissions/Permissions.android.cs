@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             if (androidPermissions == null || !androidPermissions.Any())
                 return;
 
-            var context = Platform.CurrentContext;
+            var context = Platform.AppContext;
 
             foreach (var ap in androidPermissions)
             {
@@ -50,7 +50,7 @@ namespace Xamarin.Essentials
             if (androidPermissions == null || !androidPermissions.Any())
                 return Task.FromResult(PermissionStatus.Granted);
 
-            var context = Platform.CurrentContext;
+            var context = Platform.AppContext;
             var targetsMOrHigher = context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.M;
 
             foreach (var ap in androidPermissions)

@@ -30,7 +30,7 @@ namespace Samples.ViewModel
             }
             catch (Exception)
             {
-                await DisplayAlert("Dialer is not supported.");
+                await DisplayAlertAsync("Dialer is not supported.");
             }
         }
     }

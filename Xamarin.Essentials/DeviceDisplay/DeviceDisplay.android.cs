@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
 
         static ScreenMetrics GetScreenMetrics()
         {
-            var displayMetrics = Essentials.Platform.CurrentContext.Resources?.DisplayMetrics;
+            var displayMetrics = Platform.AppContext.Resources?.DisplayMetrics;
 
             return new ScreenMetrics
             {
@@ -29,7 +29,7 @@ namespace Xamarin.Essentials
 
         static void StartScreenMetricsListeners()
         {
-            orientationListener = new Listener(Application.Context, OnScreenMetricsChanaged);
+            orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanaged);
             orientationListener.Enable();
         }
 
@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
 
         static ScreenRotation CalculateRotation()
         {
-            var service = Essentials.Platform.CurrentContext.GetSystemService(Context.WindowService);
+            var service = Platform.AppContext.GetSystemService(Context.WindowService);
             var display = service?.JavaCast<IWindowManager>()?.DefaultDisplay;
 
             if (display != null)
@@ -71,7 +71,7 @@ namespace Xamarin.Essentials
 
         static ScreenOrientation CalculateOrientation()
         {
-            var config = Essentials.Platform.CurrentContext.Resources?.Configuration;
+            var config = Platform.AppContext.Resources?.Configuration;
 
             if (config != null)
             {
@@ -89,7 +89,7 @@ namespace Xamarin.Essentials
         }
 
         static string GetSystemSetting(string name)
-           => Settings.System.GetString(Essentials.Platform.CurrentContext.ContentResolver, name);
+           => Settings.System.GetString(Platform.AppContext.ContentResolver, name);
     }
 
     class Listener : OrientationEventListener

@@ -98,7 +98,7 @@ namespace Samples.ViewModel
             }
             catch (Exception)
             {
-                await DisplayAlert("Compass not supported");
+                await DisplayAlertAsync("Compass not supported");
             }
         }
 
@@ -136,7 +136,7 @@ namespace Samples.ViewModel
             }
             catch (Exception)
             {
-                await DisplayAlert("Compass not supported");
+                await DisplayAlertAsync("Compass not supported");
             }
         }
 

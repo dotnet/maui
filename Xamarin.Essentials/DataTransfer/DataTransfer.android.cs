@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
             var chooserIntent = Intent.CreateChooser(intent, request.Title ?? string.Empty);
             chooserIntent.SetFlags(ActivityFlags.ClearTop);
             chooserIntent.SetFlags(ActivityFlags.NewTask);
-            Platform.CurrentContext.StartActivity(chooserIntent);
+            Platform.AppContext.StartActivity(chooserIntent);
 
             return Task.CompletedTask;
         }

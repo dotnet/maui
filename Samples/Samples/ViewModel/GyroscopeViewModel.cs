@@ -18,8 +18,6 @@ namespace Samples.ViewModel
         {
             StartCommand = new Command(OnStart);
             StopCommand = new Command(OnStop);
-
-            Gyroscope.ReadingChanged += OnReadingChanged;
         }
 
         public ICommand StartCommand { get; }
@@ -65,6 +63,12 @@ namespace Samples.ViewModel
             set => SetProperty(ref speed, value);
         }
 
+        public override void OnAppearing()
+        {
+            Gyroscope.ReadingChanged += OnReadingChanged;
+            base.OnAppearing();
+        }
+
         public override void OnDisappearing()
         {
             OnStop();
@@ -104,7 +108,7 @@ namespace Samples.ViewModel
             }
             catch (Exception)
             {
-                await DisplayAlert("Gyroscope not supported");
+                await DisplayAlertAsync("Gyroscope not supported");
             }
         }
 

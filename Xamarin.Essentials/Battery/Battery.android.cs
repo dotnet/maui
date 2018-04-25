@@ -13,13 +13,20 @@ namespace Xamarin.Essentials
             Permissions.EnsureDeclared(PermissionType.Battery);
 
             batteryReceiver = new BatteryBroadcastReceiver(OnBatteryChanged);
-            Platform.CurrentContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
+            Platform.AppContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
         }
 
         static void StopBatteryListeners()
         {
-            Platform.CurrentContext.UnregisterReceiver(batteryReceiver);
-            batteryReceiver?.Dispose();
+            try
+            {
+                Platform.AppContext.UnregisterReceiver(batteryReceiver);
+            }
+            catch (Java.Lang.IllegalArgumentException)
+            {
+                Console.WriteLine("Battery receiver already unregistered. Disposing of it.");
+            }
+            batteryReceiver.Dispose();
             batteryReceiver = null;
         }
 
@@ -30,7 +37,7 @@ namespace Xamarin.Essentials
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
+                using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
                     var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
@@ -50,7 +57,7 @@ namespace Xamarin.Essentials
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
+                using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
                     switch (status)
@@ -77,7 +84,7 @@ namespace Xamarin.Essentials
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
                 using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-                using (var battery = Platform.CurrentContext.RegisterReceiver(null, filter))
+                using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
@@ -96,9 +103,14 @@ namespace Xamarin.Essentials
         }
     }
 
-    class BatteryBroadcastReceiver : BroadcastReceiver
+    [BroadcastReceiver(Enabled = true, Exported = false, Label = "Essentials Battery Broadcast Receiver")]
+    internal class BatteryBroadcastReceiver : BroadcastReceiver
     {
         Action onChanged;
+
+        public BatteryBroadcastReceiver()
+        {
+        }
 
         public BatteryBroadcastReceiver(Action onChanged) =>
             this.onChanged = onChanged;

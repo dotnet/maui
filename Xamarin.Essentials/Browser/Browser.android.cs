@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
                     var tabsBuilder = new CustomTabsIntent.Builder();
                     var tabsIntent = tabsBuilder.Build();
                     tabsBuilder.SetShowTitle(true);
-                    tabsIntent.LaunchUrl(Platform.CurrentContext, nativeUri);
+                    tabsIntent.LaunchUrl(Platform.AppContext, nativeUri);
                     break;
                 case BrowserLaunchType.External:
                     var intent = new Intent(Intent.ActionView, nativeUri);
@@ -33,7 +33,7 @@ namespace Xamarin.Essentials
                     if (!Platform.IsIntentSupported(intent))
                         throw new FeatureNotSupportedException();
 
-                    Platform.CurrentContext.StartActivity(intent);
+                    Platform.AppContext.StartActivity(intent);
                     break;
             }
 

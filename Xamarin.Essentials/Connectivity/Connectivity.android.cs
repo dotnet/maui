@@ -16,15 +16,22 @@ namespace Xamarin.Essentials
             Permissions.EnsureDeclared(PermissionType.NetworkState);
 
             conectivityReceiver = new ConnectivityBroadcastReceiver(OnConnectivityChanged);
-            Platform.CurrentContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
+
+            Platform.AppContext.RegisterReceiver(conectivityReceiver, new IntentFilter(ConnectivityManager.ConnectivityAction));
         }
 
         static void StopListeners()
         {
             if (conectivityReceiver == null)
                 return;
-
-            Platform.CurrentContext.UnregisterReceiver(conectivityReceiver);
+            try
+            {
+                Platform.AppContext.UnregisterReceiver(conectivityReceiver);
+            }
+            catch (Java.Lang.IllegalArgumentException)
+            {
+                Console.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
+            }
             conectivityReceiver.Dispose();
             conectivityReceiver = null;
         }
@@ -195,9 +202,14 @@ namespace Xamarin.Essentials
         }
     }
 
+    [BroadcastReceiver(Enabled = true, Exported = false, Label = "Essentials Connectivity Broadcast Receiver")]
     class ConnectivityBroadcastReceiver : BroadcastReceiver
     {
         Action onChanged;
+
+        public ConnectivityBroadcastReceiver()
+        {
+        }
 
         public ConnectivityBroadcastReceiver(Action onChanged) =>
             this.onChanged = onChanged;

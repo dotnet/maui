@@ -187,12 +187,12 @@ namespace Samples.ViewModel
 
                 if (VersionTracking.IsFirstLaunchEver)
                 {
-                    DisplayAlert("Welcome to the Samples! This is the first time you are launching the app!");
+                    DisplayAlertAsync("Welcome to the Samples! This is the first time you are launching the app!");
                 }
                 else if (VersionTracking.IsFirstLaunchForCurrentVersion)
                 {
                     var count = VersionTracking.VersionHistory.Count();
-                    DisplayAlert($"Welcome to the NEW Samples! You have tried {count} versions.");
+                    DisplayAlertAsync($"Welcome to the NEW Samples! You have tried {count} versions.");
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
                 .SetFlags(ActivityFlags.ClearTop)
                 .SetFlags(ActivityFlags.NewTask);
 
-            Platform.CurrentContext.StartActivity(intent);
+            Platform.AppContext.StartActivity(intent);
 
             return Task.FromResult(true);
         }

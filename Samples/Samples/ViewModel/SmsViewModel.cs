@@ -41,7 +41,7 @@ namespace Samples.ViewModel
             }
             catch (FeatureNotSupportedException)
             {
-                await DisplayAlert("Sending an SMS is not supported on this device.");
+                await DisplayAlertAsync("Sending an SMS is not supported on this device.");
             }
 
             IsBusy = false;

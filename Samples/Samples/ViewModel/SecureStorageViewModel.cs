@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -37,7 +38,14 @@ namespace Samples.ViewModel
                 return;
             IsBusy = true;
 
-            SecuredValue = await SecureStorage.GetAsync(Key) ?? string.Empty;
+            try
+            {
+                SecuredValue = await SecureStorage.GetAsync(Key) ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync(ex.Message);
+            }
 
             IsBusy = false;
         }
@@ -48,8 +56,14 @@ namespace Samples.ViewModel
                 return;
             IsBusy = true;
 
-            await SecureStorage.SetAsync(Key, SecuredValue);
-
+            try
+            {
+                await SecureStorage.SetAsync(Key, SecuredValue);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync(ex.Message);
+            }
             IsBusy = false;
         }
     }

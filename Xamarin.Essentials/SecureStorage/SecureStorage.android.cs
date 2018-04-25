@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
     {
         static Task<string> PlatformGetAsync(string key)
         {
-            var context = Platform.CurrentContext;
+            var context = Platform.AppContext;
 
             string encStr;
             using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
 
         static Task PlatformSetAsync(string key, string data)
         {
-            var context = Platform.CurrentContext;
+            var context = Platform.AppContext;
 
             var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
             var encryptedData = ks.Encrypt(data);
@@ -164,7 +164,7 @@ namespace Xamarin.Essentials
             var endDate = new Java.Util.Date(end.Year, end.Month, end.Day);
 
 #pragma warning disable CS0618
-            var builder = new KeyPairGeneratorSpec.Builder(Platform.CurrentContext)
+            var builder = new KeyPairGeneratorSpec.Builder(Platform.AppContext)
                 .SetAlias(asymmetricAlias)
                 .SetSerialNumber(Java.Math.BigInteger.One)
                 .SetSubject(new Javax.Security.Auth.X500.X500Principal($"CN={asymmetricAlias} CA Certificate"))

@@ -17,8 +17,8 @@ namespace Xamarin.Essentials
         static Handler handler;
         static ActivityLifecycleContextListener lifecycleListener;
 
-        internal static Context CurrentContext =>
-            lifecycleListener?.Context ?? Application.Context;
+        internal static Context AppContext =>
+            Application.Context;
 
         internal static Activity CurrentActivity =>
             lifecycleListener?.Activity;
@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
 
         internal static bool HasSystemFeature(string systemFeature)
         {
-            var packageManager = CurrentContext.PackageManager;
+            var packageManager = AppContext.PackageManager;
             foreach (var feature in packageManager.GetSystemAvailableFeatures())
             {
                 if (feature.Name.Equals(systemFeature, StringComparison.OrdinalIgnoreCase))
@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
 
         internal static bool IsIntentSupported(Intent intent)
         {
-            var manager = CurrentContext.PackageManager;
+            var manager = AppContext.PackageManager;
             var activities = manager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
             return activities.Any();
         }
@@ -65,25 +65,25 @@ namespace Xamarin.Essentials
         }
 
         internal static CameraManager CameraManager =>
-            Application.Context.GetSystemService(Context.CameraService) as CameraManager;
+            AppContext.GetSystemService(Context.CameraService) as CameraManager;
 
         internal static ConnectivityManager ConnectivityManager =>
-            Application.Context.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
+            AppContext.GetSystemService(Context.ConnectivityService) as ConnectivityManager;
 
         internal static Vibrator Vibrator =>
-            Application.Context.GetSystemService(Context.VibratorService) as Vibrator;
+            AppContext.GetSystemService(Context.VibratorService) as Vibrator;
 
         internal static WifiManager WifiManager =>
-            Application.Context.GetSystemService(Context.WifiService) as WifiManager;
+            AppContext.GetSystemService(Context.WifiService) as WifiManager;
 
         internal static SensorManager SensorManager =>
-            Application.Context.GetSystemService(Context.SensorService) as SensorManager;
+            AppContext.GetSystemService(Context.SensorService) as SensorManager;
 
         internal static ClipboardManager ClipboardManager =>
-            Application.Context.GetSystemService(Context.ClipboardService) as ClipboardManager;
+            AppContext.GetSystemService(Context.ClipboardService) as ClipboardManager;
 
         internal static LocationManager LocationManager =>
-            Application.Context.GetSystemService(Context.LocationService) as LocationManager;
+            AppContext.GetSystemService(Context.LocationService) as LocationManager;
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks

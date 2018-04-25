@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -10,6 +11,7 @@ namespace Samples.ViewModel
         string lastLocation;
         string currentLocation;
         int accuracy = (int)GeolocationAccuracy.Medium;
+        CancellationTokenSource cts;
 
         public GeolocationViewModel()
         {
@@ -53,9 +55,9 @@ namespace Samples.ViewModel
                 var location = await Geolocation.GetLastKnownLocationAsync();
                 LastLocation = FormatLocation(location);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                LastLocation = FormatLocation(null);
+                LastLocation = FormatLocation(null, ex);
             }
             IsBusy = false;
         }
@@ -69,21 +71,27 @@ namespace Samples.ViewModel
             try
             {
                 var request = new GeolocationRequest((GeolocationAccuracy)Accuracy);
-                var location = await Geolocation.GetLocationAsync(request);
+                cts = new CancellationTokenSource();
+                var location = await Geolocation.GetLocationAsync(request, cts.Token);
                 CurrentLocation = FormatLocation(location);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                CurrentLocation = FormatLocation(null);
+                CurrentLocation = FormatLocation(null, ex);
+            }
+            finally
+            {
+                cts.Dispose();
+                cts = null;
             }
             IsBusy = false;
         }
 
-        string FormatLocation(Location location)
+        string FormatLocation(Location location, Exception ex = null)
         {
             if (location == null)
             {
-                return "Unable to detect location.";
+                return $"Unable to detect location. Exception: {ex?.Message ?? string.Empty}";
             }
 
             return
@@ -92,6 +100,16 @@ namespace Samples.ViewModel
                 $"Accuracy: {location.Accuracy}\n" +
                 $"Date (UTC): {location.TimestampUtc:d}\n" +
                 $"Time (UTC): {location.TimestampUtc:T}";
+        }
+
+        public override void OnDisappearing()
+        {
+            if (IsBusy)
+            {
+                if (cts != null && !cts.IsCancellationRequested)
+                    cts.Cancel();
+            }
+            base.OnDisappearing();
         }
     }
 }

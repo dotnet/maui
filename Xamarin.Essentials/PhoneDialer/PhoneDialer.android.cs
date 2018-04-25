@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
         {
             get
             {
-                var packageManager = Application.Context.PackageManager;
+                var packageManager = Platform.AppContext.PackageManager;
                 var dialIntent = ResolveDialIntent(intentCheck);
                 return dialIntent.ResolveActivity(packageManager) != null;
             }
@@ -39,7 +39,7 @@ namespace Xamarin.Essentials
                 .SetFlags(ActivityFlags.ClearTop)
                 .SetFlags(ActivityFlags.NewTask);
 
-            Application.Context.StartActivity(dialIntent);
+            Platform.AppContext.StartActivity(dialIntent);
         }
 
         static Intent ResolveDialIntent(string number)

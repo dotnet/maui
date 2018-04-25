@@ -25,7 +25,7 @@ namespace Samples.ViewModel
 
         internal event Func<string, Task> DoDisplayAlert;
 
-        public Task DisplayAlert(string message)
+        public Task DisplayAlertAsync(string message)
         {
             return DoDisplayAlert?.Invoke(message) ?? Task.CompletedTask;
         }
