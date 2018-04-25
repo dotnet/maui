@@ -59,7 +59,7 @@ If building on Visual Studio 2017 simply open the solution and build the project
 If using Visual Studio for Mac the project can be built at the command line with MSBuild. To change the project type that you are working with simply edit Xamarin.Essentials.csproj and modify the TargetFrameworks for only the project type you want to use.
 
 ## FAQ
-Here are some frequently asked questions about Xamarin.Essentials.
+Here are some frequently asked questions about Xamarin.Essentials, but be sure to read our full [FAQ on our Wiki](https://github.com/xamarin/Essentials/wiki#feature-faq).
 
 ### Where are the interfaces?
 Some developers prefer an interface based programming model for dependency injection and testing of code. Xamarin.Essentials does not offer any interfaces and delivers straight API access via direct classes and static properties/methods. There are many reasons that Xamarin.Essentials is architected this way that include performance, simplicity, and ease of use. We also consider Xamarin.Essentials a core API of the platform just like System classes, HttpClient, and our platform bindings. 
