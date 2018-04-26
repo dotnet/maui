@@ -17,7 +17,7 @@ if ($IsMacOS) {
 Write-Output "Using MSBuild from: $msbuild"
 
 # Build the projects
-& $msbuild "./Xamarin.Essentials.sln" /t:"Restore;Build" /p:Configuration=Release
+& $msbuild "./Xamarin.Essentials.sln" /restore /t:Build /p:Configuration=Release
 if ($lastexitcode -ne 0) { exit $lastexitcode; }
 
 # Create the stable NuGet package
