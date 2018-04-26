@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Xamarin.Forms.Xaml.UnitTests.Gh2508" xmlns:local="using:Xamarin.Forms.Xaml.UnitTests">
+	<Entry x:Name="entry">
+        <Entry.Triggers>
+            <Trigger TargetType="Entry"
+                     Property="Text"
+                     Value="Start Flashing" >
+                <Trigger.EnterActions>
+                    <local:Gh2508FlashingTriggerAction Duration="2000" />
+                </Trigger.EnterActions>
+            </Trigger>
+        </Entry.Triggers>
+    </Entry>
+</ContentPage>

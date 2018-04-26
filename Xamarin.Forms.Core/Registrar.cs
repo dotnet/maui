@@ -87,37 +87,18 @@ namespace Xamarin.Forms.Internals
 
 		public Type GetHandlerType(Type viewType)
 		{
-			Type type;
-			if (LookupHandlerType(viewType, out type))
-				return type;
+			// 1. Do we have this specific type registered already?
+			if (_handlers.TryGetValue(viewType, out Type specificTypeRenderer))
+				return specificTypeRenderer;
 
-			// lazy load render-view association with RenderWithAttribute (as opposed to using ExportRenderer)
-			var attribute = viewType.GetTypeInfo().GetCustomAttribute<RenderWithAttribute>();
-			if (attribute == null)
-			{
-				Register(viewType, null); // Cache this result so we don't have to do GetCustomAttribute again
+			// 2. Do we have a RenderWith for this type or its base types? Register them now.
+			RegisterRenderWithTypes(viewType);
+
+			// 3. Do we have a custom renderer for a base type or did we just register an appropriate renderer from RenderWith?
+			if (LookupHandlerType(viewType, out Type baseTypeRenderer))
+				return baseTypeRenderer;
+			else
 				return null;
-			}
-
-			type = attribute.Type;
-
-			if (type.Name.StartsWith("_", StringComparison.Ordinal))
-			{
-				// TODO: Remove attribute2 once renderer names have been unified across all platforms
-				var attribute2 = type.GetTypeInfo().GetCustomAttribute<RenderWithAttribute>();
-				if (attribute2 != null)
-					type = attribute2.Type;
-
-				if (type.Name.StartsWith("_", StringComparison.Ordinal))
-				{
-					Register(viewType, null); // Cache this result so we don't work through this chain again
-					return null;
-				}
-			}
-
-			Register(viewType, type); // Register this so we don't have to look for the RenderWith Attibute again in the future
-
-			return type;
 		}
 
 		public Type GetHandlerTypeForObject(object obj)
@@ -133,21 +114,63 @@ namespace Xamarin.Forms.Internals
 
 		bool LookupHandlerType(Type viewType, out Type handlerType)
 		{
-			Type type = viewType;
-
-			while (type != null)
+			while (viewType != null && viewType != typeof(Element))
 			{
-				if (_handlers.ContainsKey(type))
-				{
-					handlerType = _handlers[type];
+				if (_handlers.TryGetValue(viewType, out handlerType))
 					return true;
-				}
 
-				type = type.GetTypeInfo().BaseType;
+				viewType = viewType.GetTypeInfo().BaseType;
 			}
 
 			handlerType = null;
 			return false;
+		}
+
+		void RegisterRenderWithTypes(Type viewType)
+		{
+			// We're going to go through each type in this viewType's inheritance chain to look for classes
+			// decorated with a RenderWithAttribute. We're going to register each specific type with its
+			// renderer. 
+
+			while (viewType != null && viewType != typeof(Element))
+			{
+				// Only go through this process if we have not registered something for this type;
+				// we don't want RenderWith renderers to override ExportRenderers that are already registered.
+				// Plus, there's no need to do this again if we already have a renderer registered.
+				if (!_handlers.ContainsKey(viewType))
+				{
+					// get RenderWith attribute for just this type, do not inherit attributes from base types
+					var attribute = viewType.GetTypeInfo().GetCustomAttributes<RenderWithAttribute>(false).FirstOrDefault();
+					if (attribute == null)
+					{
+						Register(viewType, null); // Cache this result so we don't have to do GetCustomAttributes again
+					}
+					else
+					{
+						Type specificTypeRenderer = attribute.Type;
+
+						if (specificTypeRenderer.Name.StartsWith("_", StringComparison.Ordinal))
+						{
+							// TODO: Remove attribute2 once renderer names have been unified across all platforms
+							var attribute2 = specificTypeRenderer.GetTypeInfo().GetCustomAttribute<RenderWithAttribute>();
+							if (attribute2 != null)
+								specificTypeRenderer = attribute2.Type;
+
+							if (specificTypeRenderer.Name.StartsWith("_", StringComparison.Ordinal))
+							{
+								Register(viewType, null); // Cache this result so we don't work through this chain again
+
+								viewType = viewType.GetTypeInfo().BaseType;
+								continue;
+							}
+						}
+
+						Register(viewType, specificTypeRenderer); // Register this so we don't have to look for the RenderWithAttibute again in the future
+					}
+				}
+
+				viewType = viewType.GetTypeInfo().BaseType;
+			}
 		}
 	}
 
