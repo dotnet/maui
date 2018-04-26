@@ -964,8 +964,9 @@ namespace Xamarin.Forms.Platform.iOS
 				if (!List.IsGroupingEnabled)
 					return;
 
-				if (headerView is HeaderWrapperView wrapper)
+				if (headerView is HeaderWrapperView)
 				{
+					var wrapper = headerView as HeaderWrapperView;
 					wrapper.Cell?.SendDisappearing();
 					wrapper.Cell = null;
 				}
