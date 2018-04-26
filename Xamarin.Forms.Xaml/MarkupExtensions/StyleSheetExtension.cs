@@ -11,6 +11,8 @@ namespace Xamarin.Forms.Xaml
 	public sealed class StyleSheetExtension : IValueProvider
 	{
 		public string Style { get; set; }
+
+		[TypeConverter(typeof(UriTypeConverter))]
 		public Uri Source { get; set; }
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
