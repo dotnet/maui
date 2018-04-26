@@ -25,6 +25,6 @@ Describe any non-bug related behavioral changes that may change how users app be
 ### PR Checklist ###
 
 - [ ] Has tests (if omitted, state reason in description)
-- [ ] Rebased on top of master at time of PR
+- [ ] Rebased on top of the target branch at time of PR
 - [ ] Changes adhere to coding standard
 - [ ] Consolidate commits as makes sense
