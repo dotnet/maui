@@ -1,6 +1,6 @@
 namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
-	public enum TabsPlacement
+	public enum ToolbarPlacement
 	{
 		Default,
 		Top,
