@@ -30,6 +30,9 @@ namespace Samples.ViewModel
 
         public override void OnDisappearing()
         {
+            if (!IsOn)
+                return;
+
             try
             {
                 Flashlight.TurnOffAsync();
