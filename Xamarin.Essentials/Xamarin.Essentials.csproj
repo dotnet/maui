@@ -7,7 +7,7 @@
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <RootNamespace>Xamarin.Essentials</RootNamespace>
     <PackageId>Xamarin.Essentials</PackageId>
-    <PackageIconUrl>http://xamarin.com/content/images/nuget/xamarin.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/xamarin/Essentials/master/Assets/xamarin.essentials_128x128.png</PackageIconUrl>
     <Summary>Xamarin.Essentials: a kit of essential API's for your apps</Summary>
     <PackageTags>xamarin, windows, ios, android, xamarin.forms, toolkit, Xamarin.Essentials, kit</PackageTags>
     <Title>Xamarin.Essentials</Title>

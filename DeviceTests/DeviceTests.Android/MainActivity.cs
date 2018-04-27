@@ -10,7 +10,7 @@ using Xunit.Runners.UI;
 
 namespace DeviceTests.Droid
 {
-    [Activity(Name="com.xamarin.essentials.devicetests.MainActivity", Label = "@string/app_name", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Name="com.xamarin.essentials.devicetests.MainActivity", Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : RunnerActivity
     {
         protected override void OnCreate(Bundle bundle)
