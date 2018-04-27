@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace Xamarin.Essentials
             {
                 var location = lm.GetLastKnownLocation(provider);
 
-                if (bestLocation == null || IsBetterLocation(location, bestLocation))
+                if (location != null && IsBetterLocation(location, bestLocation))
                     bestLocation = location;
             }
 
@@ -42,16 +43,27 @@ namespace Xamarin.Essentials
             var locationManager = Platform.LocationManager;
 
             // get the best possible provider for the requested accuracy
-            var provider = GetBestProvider(locationManager, request.DesiredAccuracy);
+            var providerInfo = GetBestProvider(locationManager, request.DesiredAccuracy);
 
             // if no providers exist, we can't get a location
             // let's punt and try to get the last known location
-            if (string.IsNullOrEmpty(provider))
+            if (string.IsNullOrEmpty(providerInfo.Provider))
                 return await GetLastKnownLocationAsync();
 
             var tcs = new TaskCompletionSource<AndroidLocation>();
 
-            var listener = new SingleLocationListener();
+            var allProviders = locationManager.GetProviders(false);
+
+            var providers = new List<string>();
+            if (allProviders.Contains(LocationManager.GpsProvider))
+                providers.Add(LocationManager.GpsProvider);
+            if (allProviders.Contains(LocationManager.NetworkProvider))
+                providers.Add(LocationManager.NetworkProvider);
+
+            if (providers.Count == 0)
+                providers.Add(providerInfo.Provider);
+
+            var listener = new SingleLocationListener(locationManager, providerInfo.Accuracy, providers);
             listener.LocationHandler = HandleLocation;
 
             cancellationToken = Utils.TimeoutToken(cancellationToken, request.Timeout);
@@ -60,7 +72,9 @@ namespace Xamarin.Essentials
             // start getting location updates
             // make sure to use a thread with a looper
             var looper = Looper.MyLooper() ?? Looper.MainLooper;
-            locationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
+
+            foreach (var provider in providers)
+                locationManager.RequestLocationUpdates(provider, 0, 0, listener, looper);
 
             var androidLocation = await tcs.Task;
 
@@ -78,16 +92,17 @@ namespace Xamarin.Essentials
             void Cancel()
             {
                 RemoveUpdates();
-                tcs.TrySetResult(null);
+                tcs.TrySetResult(listener.BestLocation);
             }
 
             void RemoveUpdates()
             {
-                locationManager.RemoveUpdates(listener);
+                for (var i = 0; i < providers.Count; i++)
+                    locationManager.RemoveUpdates(listener);
             }
         }
 
-        static string GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
+        static (string Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
         {
             // Criteria: https://developer.android.com/reference/android/location/Criteria
 
@@ -98,36 +113,45 @@ namespace Xamarin.Essentials
                 SpeedRequired = false
             };
 
+            var accuracyDistance = 100;
+
             switch (accuracy)
             {
                 case GeolocationAccuracy.Lowest:
                     criteria.Accuracy = Accuracy.NoRequirement;
                     criteria.HorizontalAccuracy = Accuracy.NoRequirement;
                     criteria.PowerRequirement = Power.NoRequirement;
+                    accuracyDistance = 500;
                     break;
                 case GeolocationAccuracy.Low:
                     criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Low;
                     criteria.PowerRequirement = Power.Low;
+                    accuracyDistance = 500;
                     break;
                 case GeolocationAccuracy.Medium:
                     criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Medium;
                     criteria.PowerRequirement = Power.Medium;
+                    accuracyDistance = 250;
                     break;
                 case GeolocationAccuracy.High:
                     criteria.Accuracy = Accuracy.Fine;
                     criteria.HorizontalAccuracy = Accuracy.High;
                     criteria.PowerRequirement = Power.High;
+                    accuracyDistance = 100;
                     break;
                 case GeolocationAccuracy.Best:
                     criteria.Accuracy = Accuracy.Fine;
                     criteria.HorizontalAccuracy = Accuracy.High;
                     criteria.PowerRequirement = Power.High;
+                    accuracyDistance = 50;
                     break;
             }
 
-            return locationManager.GetBestProvider(criteria, true) ?? locationManager.GetProviders(true).FirstOrDefault();
+            var provider = locationManager.GetBestProvider(criteria, true) ?? locationManager.GetProviders(true).FirstOrDefault();
+
+            return (provider, accuracyDistance);
         }
 
         internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation bestLocation)
@@ -169,30 +193,76 @@ namespace Xamarin.Essentials
 
     class SingleLocationListener : Java.Lang.Object, ILocationListener
     {
+        readonly object locationSync = new object();
+
+        float desiredAccuracy;
+
+        public AndroidLocation BestLocation { get; set; }
+
+        HashSet<string> activeProviders = new HashSet<string>();
+
         bool wasRaised = false;
 
         public Action<AndroidLocation> LocationHandler { get; set; }
 
+        public SingleLocationListener(LocationManager manager, float desiredAccuracy, IEnumerable<string> activeProviders)
+        {
+            this.desiredAccuracy = desiredAccuracy;
+
+            this.activeProviders = new HashSet<string>(activeProviders);
+
+            foreach (var provider in activeProviders)
+            {
+                var location = manager.GetLastKnownLocation(provider);
+                if (location != null && Geolocation.IsBetterLocation(location, BestLocation))
+                    BestLocation = location;
+            }
+        }
+
         public void OnLocationChanged(AndroidLocation location)
         {
-            if (wasRaised)
+            if (location.Accuracy <= desiredAccuracy)
+            {
+                if (wasRaised)
+                    return;
+
+                wasRaised = true;
+
+                LocationHandler?.Invoke(location);
                 return;
+            }
 
-            wasRaised = true;
-
-            LocationHandler?.Invoke(location);
+            lock (locationSync)
+            {
+                if (Geolocation.IsBetterLocation(location, BestLocation))
+                    BestLocation = location;
+            }
         }
 
         public void OnProviderDisabled(string provider)
         {
+            lock (activeProviders)
+                activeProviders.Remove(provider);
         }
 
         public void OnProviderEnabled(string provider)
         {
+            lock (activeProviders)
+                activeProviders.Add(provider);
         }
 
         public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
+            switch (status)
+            {
+                case Availability.Available:
+                    OnProviderEnabled(provider);
+                    break;
+
+                case Availability.OutOfService:
+                    OnProviderDisabled(provider);
+                    break;
+            }
         }
     }
 }
