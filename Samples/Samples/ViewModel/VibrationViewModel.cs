@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -48,6 +49,10 @@ namespace Samples.ViewModel
             {
                 IsSupported = false;
             }
+            catch (Exception ex)
+            {
+                DisplayAlertAsync($"Unable to vibrate: {ex.Message}");
+            }
         }
 
         void OnCancel()
@@ -59,6 +64,10 @@ namespace Samples.ViewModel
             catch (FeatureNotSupportedException)
             {
                 IsSupported = false;
+            }
+            catch (Exception ex)
+            {
+                DisplayAlertAsync($"Unable to cancel: {ex.Message}");
             }
         }
     }

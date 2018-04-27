@@ -28,9 +28,9 @@ namespace Samples.ViewModel
             {
                 PhoneDialer.Open(PhoneNumber);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Dialer is not supported.");
+                await DisplayAlertAsync($"Dialer is not supported: {ex.Message}");
             }
         }
     }

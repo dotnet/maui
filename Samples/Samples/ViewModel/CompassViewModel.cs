@@ -96,9 +96,9 @@ namespace Samples.ViewModel
                 Compass.Start((SensorSpeed)Speed1);
                 Compass1IsActive = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Compass not supported");
+                await DisplayAlertAsync($"Unable to start compass: {ex.Message}");
             }
         }
 
@@ -134,9 +134,9 @@ namespace Samples.ViewModel
                 Compass.Start((SensorSpeed)Speed2);
                 Compass2IsActive = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Compass not supported");
+                await DisplayAlertAsync($"Unable to start compass: {ex.Message}");
             }
         }
 

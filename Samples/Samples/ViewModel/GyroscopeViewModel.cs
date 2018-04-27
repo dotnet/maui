@@ -106,9 +106,9 @@ namespace Samples.ViewModel
                 Gyroscope.Start((SensorSpeed)Speed);
                 IsActive = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Gyroscope not supported");
+                await DisplayAlertAsync($"Unable to start gyroscope: {ex.Message}");
             }
         }
 

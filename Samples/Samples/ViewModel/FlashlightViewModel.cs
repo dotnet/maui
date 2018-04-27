@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -61,9 +62,14 @@ namespace Samples.ViewModel
                     IsOn = true;
                 }
             }
-            catch (FeatureNotSupportedException)
+            catch (FeatureNotSupportedException fnsEx)
             {
                 IsSupported = false;
+                await DisplayAlertAsync($"Unable toggle flashlight: {fnsEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync($"Unable toggle flashlight: {ex.Message}");
             }
         }
     }

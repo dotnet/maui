@@ -106,9 +106,9 @@ namespace Samples.ViewModel
                 Magnetometer.Start((SensorSpeed)Speed);
                 IsActive = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Magnetometer not supported");
+                await DisplayAlertAsync($"Unable to start magnetometer: {ex.Message}");
             }
         }
 

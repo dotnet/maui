@@ -75,9 +75,9 @@ namespace Samples.ViewModel
                         $"{nameof(location.Longitude)}: {location.Longitude}\n";
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                GeocodePosition = "Unable to detect locations";
+                GeocodePosition = $"Unable to detect locations: {ex.Message}";
             }
             finally
             {
@@ -117,9 +117,9 @@ namespace Samples.ViewModel
                         $"{nameof(placemark.Thoroughfare)}: {placemark.Thoroughfare}\n";
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                GeocodeAddress = "Unable to detect placemarks.";
+                GeocodeAddress = $"Unable to detect placemarks: {ex.Message}";
             }
             finally
             {

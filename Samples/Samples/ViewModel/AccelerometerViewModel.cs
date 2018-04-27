@@ -84,9 +84,9 @@ namespace Samples.ViewModel
                 Accelerometer.Start((SensorSpeed)Speed);
                 IsActive = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                await DisplayAlertAsync("Accelerometer not supported");
+                await DisplayAlertAsync($"Unable to start accelerometer: {ex.Message}");
             }
         }
 
