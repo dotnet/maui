@@ -237,6 +237,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59248.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1677.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1801.cs" />
@@ -709,6 +711,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1733.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1583_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1323.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2399.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

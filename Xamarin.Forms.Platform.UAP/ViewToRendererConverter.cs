@@ -31,11 +31,13 @@ namespace Xamarin.Forms.Platform.UWP
 			throw new NotSupportedException();
 		}
 
-		class WrapperControl : Panel
+		internal class WrapperControl : Panel
 		{
 			readonly View _view;
 
 			FrameworkElement FrameworkElement { get; }
+
+			internal void CleanUp() => _view?.Cleanup();
 
 			public WrapperControl(View view)
 			{
@@ -91,10 +93,10 @@ namespace Xamarin.Forms.Platform.UWP
 					result = new Windows.Foundation.Size(request.Width, request.Height);
 				}
 
-				_view.Layout(new Rectangle(0, 0, result.Width, result.Height)); 
+				_view.Layout(new Rectangle(0, 0, result.Width, result.Height));
 
 				FrameworkElement?.Measure(availableSize);
-				
+
 				return result;
 			}
 		}

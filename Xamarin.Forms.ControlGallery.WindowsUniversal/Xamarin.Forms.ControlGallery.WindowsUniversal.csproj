@@ -124,6 +124,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachedStateEffectRenderer.cs" />
     <Compile Include="BorderEffect.cs" />
     <Compile Include="DisposePageRenderer.cs" />
     <Compile Include="_2489CustomRenderer.cs" />

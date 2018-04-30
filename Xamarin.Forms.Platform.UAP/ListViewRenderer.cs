@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (List == null)
 				{
-					List = new WListView 
+					List = new WListView
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
@@ -147,6 +147,11 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (List != null)
 				{
+					foreach (ViewToRendererConverter.WrapperControl wrapperControl in FindDescendants<ViewToRendererConverter.WrapperControl>(List))
+					{
+						wrapperControl.CleanUp();
+					}
+
 					if (_subscribedToTapped)
 					{
 						_subscribedToTapped = false;
@@ -352,7 +357,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
-				loadedHandler = async (o, e) => 
+				loadedHandler = async (o, e) =>
 				{
 					List.Loaded -= loadedHandler;
 
@@ -545,7 +550,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				var selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.ClickedItem);
-				
+
 				OnListItemClicked(selectedItemIndex);
 			}
 		}

@@ -52,6 +52,15 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_disposed = true;
 
+			if (ElementController != null)
+			{
+				for (var i = 0; i < ElementController.LogicalChildren.Count; i++)
+				{
+					var child = ElementController.LogicalChildren[i] as VisualElement;
+					child?.Cleanup();
+				}
+			}
+
 			VisualElement element = _renderer.Element;
 			if (element != null)
 			{
