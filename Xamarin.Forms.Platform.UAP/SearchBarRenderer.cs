@@ -102,6 +102,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs e)
 		{
+			// Modifies the text of the control if it does not match the query.
+			// This is possible because OnTextChanged is fired with a delay
+			if (e.QueryText != Element.Text)
+				Element.SetValueFromRenderer(SearchBar.TextProperty, e.QueryText);
+
 			Element.OnSearchButtonPressed();
 		}
 
