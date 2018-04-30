@@ -210,15 +210,15 @@ namespace Xamarin.Forms.Xaml
 
 				if (reader.NamespaceURI == X2006Uri)
 				{
-					switch (reader.Name) {
-					case "x:Key":
+					switch (reader.LocalName) {
+					case "Key":
 						propertyName = XmlName.xKey;
 						break;
-					case "x:Name":
+					case "Name":
 						propertyName = XmlName.xName;
 						break;
-					case "x:Class":
-					case "x:FieldModifier":
+					case "Class":
+					case "FieldModifier":
 						continue;
 					default:
 						Debug.WriteLine("Unhandled attribute {0}", reader.Name);
@@ -228,27 +228,27 @@ namespace Xamarin.Forms.Xaml
 
 				if (reader.NamespaceURI == X2009Uri)
 				{
-					switch (reader.Name) {
-					case "x:Key":
+					switch (reader.LocalName) {
+					case "Key":
 						propertyName = XmlName.xKey;
 						break;
-					case "x:Name":
+					case "Name":
 						propertyName = XmlName.xName;
 						break;
-					case "x:TypeArguments":
+					case "TypeArguments":
 						propertyName = XmlName.xTypeArguments;
 						value = TypeArgumentsParser.ParseExpression((string)value, (IXmlNamespaceResolver)reader, (IXmlLineInfo)reader);
 						break;
-					case "x:DataType":
+					case "DataType":
 						propertyName = XmlName.xDataType;
 						break;
-					case "x:Class":
-					case "x:FieldModifier":
+					case "Class":
+					case "FieldModifier":
 						continue;
-					case "x:FactoryMethod":
+					case "FactoryMethod":
 						propertyName = XmlName.xFactoryMethod;
 						break;
-					case "x:Arguments":
+					case "Arguments":
 						propertyName = XmlName.xArguments;
 						break;
 					default:
