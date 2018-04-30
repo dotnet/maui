@@ -378,7 +378,11 @@ namespace Xamarin.Forms.Build.Tasks
 			if (dataType == null)
 				yield break; //throw
 
-			var namespaceuri = dataType.Contains(":") ? node.NamespaceResolver.LookupNamespace(dataType.Split(':') [0].Trim()) : node.NamespaceResolver.LookupNamespace("");
+			var prefix = dataType.Contains(":") ? dataType.Substring(0, dataType.IndexOf(":", StringComparison.Ordinal)) : "";
+			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
+			if (!string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(namespaceuri))
+				throw new XamlParseException($"Undeclared xmlns prefix '{prefix}'", dataTypeNode as IXmlLineInfo);
+
 			var dtXType = new XmlType(namespaceuri, dataType, null);
 
 			var tSourceRef = dtXType.GetTypeReference(module, (IXmlLineInfo)node);
