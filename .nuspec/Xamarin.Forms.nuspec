@@ -42,9 +42,49 @@
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
     </dependencies>
+    
+    <references>    
+        <group> 
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+        </group>
+        <group targetFramework="Xamarin.iOS10"> 
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+            <reference file="Xamarin.Forms.Platform.iOS.dll" /> 
+        </group>    
+        <group targetFramework="MonoAndroid10"> 
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+            <reference file="FormsViewGroup.dll" /> 
+            <reference file="Xamarin.Forms.Platform.Android.dll" /> 
+        </group>    
+        <group targetFramework="uap10.0">   
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+            <reference file="Xamarin.Forms.Platform.UAP.dll" /> 
+        </group>    
+        <group targetFramework="Xamarin.Mac">   
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.macOS.dll" />   
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+        </group>    
+        <group targetFramework="tizen40">   
+            <reference file="Xamarin.Forms.Core.dll" /> 
+            <reference file="Xamarin.Forms.Platform.Tizen.dll" />   
+            <reference file="Xamarin.Forms.Platform.dll" /> 
+            <reference file="Xamarin.Forms.Xaml.dll" /> 
+        </group>    
+    </references>
+    
   </metadata>
-  <files>
 
+  <files>
 
     <!--netstandard 1.0-->
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard1.0\Xamarin.Forms.Core.dll" target="lib\netstandard1.0" />
@@ -105,6 +145,17 @@
     <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\netstandard1.0\Design" />
     <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\netstandard1.0\Design" />
 
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\MonoAndroid10\Design" /> 
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\MonoAndroid10\Design" /> 
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.iOS10\Design" /> 
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\uap10.0\Design" />   
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\uap10.0\Design" />   
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\Xamarin.Mac\Design" />   
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\Xamarin.Mac\Design" />   
+    <file src="..\Xamarin.Forms.Core.Design\bin\$Configuration$\Xamarin.Forms.Core.Design.dll" target="lib\tizen40\Design" />   
+    <file src="..\Xamarin.Forms.Xaml.Design\bin\$Configuration$\Xamarin.Forms.Xaml.Design.dll" target="lib\tizen40\Design" />
+    
     <!--Android-->
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\Xamarin.Forms.Platform.Android.dll" target="lib\MonoAndroid10" />
     <file src="..\Xamarin.Forms.Platform.Android\bin\$Configuration$\Xamarin.Forms.Platform.Android.*pdb" target="lib\MonoAndroid10" />
