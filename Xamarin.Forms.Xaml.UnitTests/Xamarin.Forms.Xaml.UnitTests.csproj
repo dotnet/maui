@@ -609,6 +609,9 @@
     <Compile Include="Issues\Gh2549.xaml.cs">
       <DependentUpon>Gh2549.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Gh2574.xaml.cs">
+      <DependentUpon>Gh2574.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   
@@ -1106,6 +1109,10 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Gh2549.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Gh2574.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

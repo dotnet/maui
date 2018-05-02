@@ -308,5 +308,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "publicLabel").Attributes, Is.EqualTo(MemberAttributes.Public));
 			}
 		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/2574
+		public void xNameOnRoot()
+		{
+			var xaml = @"<ContentPage
+		xmlns=""http://xamarin.com/schemas/2014/forms""
+		xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
+		x:Class=""Foo""
+		x:Name=""bar"">
+	</ContentPage>";
+
+			var generator = new XamlGenerator();
+			generator.ParseXaml(new StringReader(xaml));
+
+			Assert.AreEqual(1, generator.NamedFields.Count());
+			Assert.AreEqual("bar", generator.NamedFields.First().Name);
+			Assert.AreEqual("Xamarin.Forms.ContentPage", generator.NamedFields.First().Type.BaseType);
+		}
 	}
 }

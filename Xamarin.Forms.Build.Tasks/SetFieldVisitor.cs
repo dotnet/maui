@@ -30,16 +30,12 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			if (!IsXNameProperty(node, parentNode))
 				return;
-			if (!(parentNode is RootNode))
-			{
-				//no variable assigned for root 
-				var field = Context.Body.Method.DeclaringType.Fields.SingleOrDefault(fd => fd.Name == (string)node.Value);
-				if (field == null)
-					return;
-				Context.IL.Emit(OpCodes.Ldarg_0);
-				Context.IL.Emit(OpCodes.Ldloc, Context.Variables[(IElementNode)parentNode]);
-				Context.IL.Emit(OpCodes.Stfld, field);
-			}
+			var field = Context.Body.Method.DeclaringType.Fields.SingleOrDefault(fd => fd.Name == (string)node.Value);
+			if (field == null)
+				return;
+			Context.IL.Emit(OpCodes.Ldarg_0);
+			Context.IL.Emit(OpCodes.Ldloc, Context.Variables[(IElementNode)parentNode]);
+			Context.IL.Emit(OpCodes.Stfld, field);
 		}
 
 		public void Visit(MarkupNode node, INode parentNode)
