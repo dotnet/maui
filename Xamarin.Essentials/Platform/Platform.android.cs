@@ -56,7 +56,7 @@ namespace Xamarin.Essentials
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             (int)Build.VERSION.SdkInt >= (int)versionCode;
 
-        public static void BeginInvokeOnMainThread(Action action)
+        static void PlatformBeginInvokeOnMainThread(Action action)
         {
             if (handler?.Looper != Looper.MainLooper)
                 handler = new Handler(Looper.MainLooper);
@@ -90,39 +90,39 @@ namespace Xamarin.Essentials
     {
         WeakReference<Activity> currentActivity = new WeakReference<Activity>(null);
 
-        public Context Context =>
+        internal Context Context =>
             Activity ?? Application.Context;
 
-        public Activity Activity =>
+        internal Activity Activity =>
             currentActivity.TryGetTarget(out var a) ? a : null;
 
-        public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
+        void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState)
         {
         }
 
-        public void OnActivityDestroyed(Activity activity)
+        void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
         {
         }
 
-        public void OnActivityPaused(Activity activity)
+        void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity)
         {
             currentActivity.SetTarget(null);
         }
 
-        public void OnActivityResumed(Activity activity)
+        void Application.IActivityLifecycleCallbacks.OnActivityResumed(Activity activity)
         {
             currentActivity.SetTarget(activity);
         }
 
-        public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
+        void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState)
         {
         }
 
-        public void OnActivityStarted(Activity activity)
+        void Application.IActivityLifecycleCallbacks.OnActivityStarted(Activity activity)
         {
         }
 
-        public void OnActivityStopped(Activity activity)
+        void Application.IActivityLifecycleCallbacks.OnActivityStopped(Activity activity)
         {
         }
     }

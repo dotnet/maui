@@ -39,7 +39,7 @@ namespace Xamarin.Essentials
         static NetworkAccess IsBetterAccess(NetworkAccess currentAccess, NetworkAccess newAccess) =>
             newAccess > currentAccess ? newAccess : currentAccess;
 
-        public static NetworkAccess NetworkAccess
+        static NetworkAccess PlatformNetworkAccess
         {
             get
             {
@@ -110,7 +110,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static IEnumerable<ConnectionProfile> Profiles
+        static IEnumerable<ConnectionProfile> PlatformProfiles
         {
             get
             {

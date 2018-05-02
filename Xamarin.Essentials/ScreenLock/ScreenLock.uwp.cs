@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
         static readonly object locker = new object();
         static DisplayRequest displayRequest;
 
-        public static bool IsActive
+        static bool PlatformIsActive
         {
             get
             {
@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static void RequestActive()
+        static void PlatformRequestActive()
         {
             lock (locker)
             {
@@ -30,7 +30,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static void RequestRelease()
+        static void PlatformRequestRelease()
         {
             lock (locker)
             {

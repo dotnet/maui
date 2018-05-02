@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
         static void StopListeners() =>
              NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
 
-        public static NetworkAccess NetworkAccess
+        static NetworkAccess PlatformNetworkAccess
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static IEnumerable<ConnectionProfile> Profiles
+        static IEnumerable<ConnectionProfile> PlatformProfiles
         {
             get
             {

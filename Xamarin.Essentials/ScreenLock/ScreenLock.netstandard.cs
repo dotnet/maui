@@ -2,13 +2,13 @@
 {
     public static partial class ScreenLock
     {
-        public static bool IsActive
+        static bool PlatformIsActive
             => throw new NotImplementedInReferenceAssemblyException();
 
-        public static void RequestActive()
+        static void PlatformRequestActive()
             => throw new NotImplementedInReferenceAssemblyException();
 
-        public static void RequestRelease()
+        static void PlatformRequestRelease()
             => throw new NotImplementedInReferenceAssemblyException();
     }
 }

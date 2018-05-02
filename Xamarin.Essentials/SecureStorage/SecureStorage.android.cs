@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
         const string prefsMasterKey = "SecureStorageKey";
         const int initializationVectorLen = 12; // Android supports an IV of 12 for AES/GCM
 
-        public AndroidKeyStore(Context context, string keystoreAlias, bool alwaysUseAsymmetricKeyStorage)
+        internal AndroidKeyStore(Context context, string keystoreAlias, bool alwaysUseAsymmetricKeyStorage)
         {
             alwaysUseAsymmetricKey = alwaysUseAsymmetricKeyStorage;
             appContext = context;
@@ -192,7 +192,7 @@ namespace Xamarin.Essentials
             return unwrapped;
         }
 
-        public byte[] Encrypt(string data)
+        internal byte[] Encrypt(string data)
         {
             var key = GetKey();
 
@@ -231,7 +231,7 @@ namespace Xamarin.Essentials
             return r;
         }
 
-        public string Decrypt(byte[] data)
+        internal string Decrypt(byte[] data)
         {
             if (data.Length < initializationVectorLen)
                 return null;

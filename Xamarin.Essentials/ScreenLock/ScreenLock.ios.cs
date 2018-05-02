@@ -4,13 +4,13 @@ namespace Xamarin.Essentials
 {
     public static partial class ScreenLock
     {
-        public static bool IsActive
+        static bool PlatformIsActive
             => UIApplication.SharedApplication.IdleTimerDisabled;
 
-        public static void RequestActive()
+        static void PlatformRequestActive()
             => UIApplication.SharedApplication.IdleTimerDisabled = true;
 
-        public static void RequestRelease()
+        static void PlatformRequestRelease()
             => UIApplication.SharedApplication.IdleTimerDisabled = false;
     }
 }

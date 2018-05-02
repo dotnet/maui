@@ -12,6 +12,12 @@ namespace Xamarin.Essentials
         static BatteryPowerSource currentSource;
         static BatteryState currentState;
 
+        public static double ChargeLevel => PlatformChargeLevel;
+
+        public static BatteryState State => PlatformState;
+
+        public static BatteryPowerSource PowerSource => PlatformPowerSource;
+
         public static event BatteryChangedEventHandler BatteryChanged
         {
             add

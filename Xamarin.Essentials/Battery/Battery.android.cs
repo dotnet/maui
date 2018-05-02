@@ -30,7 +30,7 @@ namespace Xamarin.Essentials
             batteryReceiver = null;
         }
 
-        public static double ChargeLevel
+        static double PlatformChargeLevel
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static BatteryState State
+        static BatteryState PlatformState
         {
             get
             {
@@ -77,7 +77,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static BatteryPowerSource PowerSource
+        static BatteryPowerSource PlatformPowerSource
         {
             get
             {
@@ -104,7 +104,7 @@ namespace Xamarin.Essentials
     }
 
     [BroadcastReceiver(Enabled = true, Exported = false, Label = "Essentials Battery Broadcast Receiver")]
-    internal class BatteryBroadcastReceiver : BroadcastReceiver
+    class BatteryBroadcastReceiver : BroadcastReceiver
     {
         Action onChanged;
 

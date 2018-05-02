@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Geocoding
     {
-        public static async Task<IEnumerable<Placemark>> GetPlacemarksAsync(double latitude, double longitude)
+        static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
         {
             ValidateMapKey();
 
@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
             return queryResults?.Locations?.ToPlacemarks();
         }
 
-        public static async Task<IEnumerable<Location>> GetLocationsAsync(string address)
+        static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
         {
             ValidateMapKey();
 

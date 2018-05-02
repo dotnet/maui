@@ -197,15 +197,15 @@ namespace Xamarin.Essentials
 
         float desiredAccuracy;
 
-        public AndroidLocation BestLocation { get; set; }
+        internal AndroidLocation BestLocation { get; set; }
 
         HashSet<string> activeProviders = new HashSet<string>();
 
         bool wasRaised = false;
 
-        public Action<AndroidLocation> LocationHandler { get; set; }
+        internal Action<AndroidLocation> LocationHandler { get; set; }
 
-        public SingleLocationListener(LocationManager manager, float desiredAccuracy, IEnumerable<string> activeProviders)
+        internal SingleLocationListener(LocationManager manager, float desiredAccuracy, IEnumerable<string> activeProviders)
         {
             this.desiredAccuracy = desiredAccuracy;
 
@@ -219,7 +219,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public void OnLocationChanged(AndroidLocation location)
+        void ILocationListener.OnLocationChanged(AndroidLocation location)
         {
             if (location.Accuracy <= desiredAccuracy)
             {
@@ -239,28 +239,28 @@ namespace Xamarin.Essentials
             }
         }
 
-        public void OnProviderDisabled(string provider)
+        void ILocationListener.OnProviderDisabled(string provider)
         {
             lock (activeProviders)
                 activeProviders.Remove(provider);
         }
 
-        public void OnProviderEnabled(string provider)
+        void ILocationListener.OnProviderEnabled(string provider)
         {
             lock (activeProviders)
                 activeProviders.Add(provider);
         }
 
-        public void OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
+        void ILocationListener.OnStatusChanged(string provider, [GeneratedEnum] Availability status, Bundle extras)
         {
             switch (status)
             {
                 case Availability.Available:
-                    OnProviderEnabled(provider);
+                    ((ILocationListener)this).OnProviderEnabled(provider);
                     break;
 
                 case Availability.OutOfService:
-                    OnProviderDisabled(provider);
+                    ((ILocationListener)this).OnProviderDisabled(provider);
                     break;
             }
         }

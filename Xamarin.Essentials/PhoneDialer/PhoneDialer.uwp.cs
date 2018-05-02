@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
         internal static bool IsSupported =>
              ApiInformation.IsTypePresent("Windows.ApplicationModel.Calls.PhoneCallManager");
 
-        public static void Open(string number)
+        static void PlatformOpen(string number)
         {
             ValidateOpen(number);
 

@@ -14,7 +14,7 @@
         static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;
 
-        public static double ChargeLevel
+        static double PlatformChargeLevel
         {
             get
             {
@@ -31,7 +31,7 @@
             }
         }
 
-        public static BatteryState State
+        static BatteryState PlatformState
         {
             get
             {
@@ -58,7 +58,7 @@
             }
         }
 
-        public static BatteryPowerSource PowerSource
+        static BatteryPowerSource PlatformPowerSource
         {
             get
             {

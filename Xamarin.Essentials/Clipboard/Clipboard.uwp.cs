@@ -8,17 +8,17 @@ namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
-        public static void SetText(string text)
+        static void PlatformSetText(string text)
         {
             var dataPackage = new DataPackage();
             dataPackage.SetText(text);
             SetContent(dataPackage);
         }
 
-        public static bool HasText
+        static bool PlatformHasText
             => GetContent().Contains(StandardDataFormats.Text);
 
-        public static Task<string> GetTextAsync()
+        static Task<string> PlatformGetTextAsync()
         {
             var clipboardContent = GetContent();
             return clipboardContent.Contains(StandardDataFormats.Text)

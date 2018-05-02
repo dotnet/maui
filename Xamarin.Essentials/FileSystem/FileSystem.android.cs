@@ -7,13 +7,13 @@ namespace Xamarin.Essentials
 {
     public partial class FileSystem
     {
-        public static string CacheDirectory
+        static string PlatformCacheDirectory
             => Platform.AppContext.CacheDir.AbsolutePath;
 
-        public static string AppDataDirectory
+        static string PlatformAppDataDirectory
             => Platform.AppContext.FilesDir.AbsolutePath;
 
-        public static Task<Stream> OpenAppPackageFileAsync(string filename)
+        static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
         {
             if (filename == null)
                 throw new ArgumentNullException(nameof(filename));

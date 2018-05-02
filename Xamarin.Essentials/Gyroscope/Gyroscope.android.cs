@@ -48,15 +48,15 @@ namespace Xamarin.Essentials
 
     class GyroscopeListener : Java.Lang.Object, ISensorEventListener
     {
-        public GyroscopeListener()
+        internal GyroscopeListener()
         {
         }
 
-        public void OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
         {
         }
 
-        public void OnSensorChanged(SensorEvent e)
+        void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
             var data = new GyroscopeData(e.Values[0], e.Values[1], e.Values[2]);
             Gyroscope.OnChanged(data);

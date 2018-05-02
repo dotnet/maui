@@ -5,6 +5,9 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
+        public static void BeginInvokeOnMainThread(Action action)
+            => PlatformBeginInvokeOnMainThread(action);
+
         internal static Task InvokeOnMainThread(Action action)
         {
             var tcs = new TaskCompletionSource<object>();

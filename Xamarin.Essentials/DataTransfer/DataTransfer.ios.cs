@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
 {
     public static partial class DataTransfer
     {
-        public static Task RequestAsync(ShareTextRequest request)
+        static Task PlatformRequestAsync(ShareTextRequest request)
         {
             var items = new List<NSObject>();
             if (!string.IsNullOrWhiteSpace(request.Text))
@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
         NSObject item;
         string subject;
 
-        public ShareActivityItemSource(NSObject item, string subject)
+        internal ShareActivityItemSource(NSObject item, string subject)
         {
             this.item = item;
             this.subject = subject;
