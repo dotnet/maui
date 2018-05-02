@@ -68,11 +68,6 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>get: System.Runtime.CompilerServices.IteratorStateMachine(typeof(Xamarin.Essentials.Connectivity/&lt;get_Profiles&gt;d__18))</AttributeName>
-        </Attribute>
-      </Attributes>
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;</ReturnType>
       </ReturnValue>
