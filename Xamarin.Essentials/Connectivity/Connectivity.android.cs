@@ -207,11 +207,11 @@ namespace Xamarin.Essentials
     {
         Action onChanged;
 
-        internal ConnectivityBroadcastReceiver()
+        public ConnectivityBroadcastReceiver()
         {
         }
 
-        internal ConnectivityBroadcastReceiver(Action onChanged) =>
+        public ConnectivityBroadcastReceiver(Action onChanged) =>
             this.onChanged = onChanged;
 
         public override async void OnReceive(Context context, Intent intent)
