@@ -64,17 +64,17 @@ namespace Xamarin.Essentials
         string magnetometer;
         string accelerometer;
 
-        public SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
+        internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
         {
             this.magnetometer = magnetometer;
             this.accelerometer = accelerometer;
         }
 
-        public void OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
         {
         }
 
-        public void OnSensorChanged(SensorEvent e)
+        void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
             if (e.Sensor.Name == accelerometer && !lastAccelerometerSet)
             {

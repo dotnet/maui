@@ -72,7 +72,7 @@ namespace Xamarin.Essentials
     {
         bool wasRaised = false;
 
-        public Action<CLLocation> LocationHandler { get; set; }
+        internal Action<CLLocation> LocationHandler { get; set; }
 
         public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
         {

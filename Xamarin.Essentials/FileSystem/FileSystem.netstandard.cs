@@ -5,13 +5,13 @@ namespace Xamarin.Essentials
 {
     public static partial class FileSystem
     {
-        public static string CacheDirectory
+        static string PlatformCacheDirectory
             => throw new NotImplementedInReferenceAssemblyException();
 
-        public static string AppDataDirectory
+        static string PlatformAppDataDirectory
             => throw new NotImplementedInReferenceAssemblyException();
 
-        public static Task<Stream> OpenAppPackageFileAsync(string filename)
+        static Task<Stream> PlatformOpenAppPackageFileAsync(string filename)
              => throw new NotImplementedInReferenceAssemblyException();
     }
 }

@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static void Open(string number)
+        static void PlatformOpen(string number)
         {
             ValidateOpen(number);
 

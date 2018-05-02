@@ -12,5 +12,8 @@ namespace Xamarin.Essentials
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
         }
+
+        public static void Open(string number)
+            => PlatformOpen(number);
     }
 }

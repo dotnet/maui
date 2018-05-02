@@ -4,10 +4,10 @@ namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
-        public static NetworkAccess NetworkAccess =>
+        static NetworkAccess PlatformNetworkAccess =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public static IEnumerable<ConnectionProfile> Profiles =>
+        static IEnumerable<ConnectionProfile> PlatformProfiles =>
             throw new NotImplementedInReferenceAssemblyException();
 
         static void StartListeners() =>

@@ -48,15 +48,15 @@ namespace Xamarin.Essentials
 
     class MagnetometerListener : Java.Lang.Object, ISensorEventListener
     {
-        public MagnetometerListener()
+        internal MagnetometerListener()
         {
         }
 
-        public void OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
         {
         }
 
-        public void OnSensorChanged(SensorEvent e)
+        void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
             var data = new MagnetometerData(e.Values[0], e.Values[1], e.Values[2]);
             Magnetometer.OnChanged(data);

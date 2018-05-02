@@ -39,7 +39,7 @@ namespace Xamarin.Essentials
         static NetworkAccess IsBetterAccess(NetworkAccess currentAccess, NetworkAccess newAccess) =>
             newAccess > currentAccess ? newAccess : currentAccess;
 
-        public static NetworkAccess NetworkAccess
+        static NetworkAccess PlatformNetworkAccess
         {
             get
             {
@@ -110,7 +110,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static IEnumerable<ConnectionProfile> Profiles
+        static IEnumerable<ConnectionProfile> PlatformProfiles
         {
             get
             {
@@ -207,11 +207,11 @@ namespace Xamarin.Essentials
     {
         Action onChanged;
 
-        public ConnectivityBroadcastReceiver()
+        internal ConnectivityBroadcastReceiver()
         {
         }
 
-        public ConnectivityBroadcastReceiver(Action onChanged) =>
+        internal ConnectivityBroadcastReceiver(Action onChanged) =>
             this.onChanged = onChanged;
 
         public override async void OnReceive(Context context, Intent intent)

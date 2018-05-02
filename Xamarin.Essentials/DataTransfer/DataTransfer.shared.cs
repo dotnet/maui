@@ -9,6 +9,9 @@ namespace Xamarin.Essentials
 
         public static Task RequestAsync(string text, string title) =>
             RequestAsync(new ShareTextRequest(text, title));
+
+        public static Task RequestAsync(ShareTextRequest request) =>
+            PlatformRequestAsync(request);
     }
 
     public class ShareTextRequest

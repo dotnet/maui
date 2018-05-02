@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class ScreenLock
     {
-        public static bool IsActive
+        static bool PlatformIsActive
         {
             get
             {
@@ -14,13 +14,13 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static void RequestActive()
+        static void PlatformRequestActive()
         {
             var activity = Platform.CurrentActivity;
             activity?.Window?.AddFlags(WindowManagerFlags.KeepScreenOn);
         }
 
-        public static void RequestRelease()
+        static void PlatformRequestRelease()
         {
             var activity = Platform.CurrentActivity;
             activity?.Window?.ClearFlags(WindowManagerFlags.KeepScreenOn);

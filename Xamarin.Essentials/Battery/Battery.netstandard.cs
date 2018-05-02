@@ -8,13 +8,13 @@
         static void StopBatteryListeners() =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public static double ChargeLevel =>
+        static double PlatformChargeLevel =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public static BatteryState State =>
+        static BatteryState PlatformState =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public static BatteryPowerSource PowerSource =>
+        static BatteryPowerSource PlatformPowerSource =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

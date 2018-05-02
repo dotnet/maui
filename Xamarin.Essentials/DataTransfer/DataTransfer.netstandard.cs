@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class DataTransfer
     {
-        public static Task RequestAsync(ShareTextRequest request) =>
+        static Task PlatformRequestAsync(ShareTextRequest request) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

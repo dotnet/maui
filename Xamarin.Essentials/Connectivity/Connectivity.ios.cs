@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
@@ -22,7 +23,7 @@ namespace Xamarin.Essentials
             listener = null;
         }
 
-        public static NetworkAccess NetworkAccess
+        static NetworkAccess PlatformNetworkAccess
         {
             get
             {
@@ -38,7 +39,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static IEnumerable<ConnectionProfile> Profiles
+        static IEnumerable<ConnectionProfile> PlatformProfiles
         {
             get
             {

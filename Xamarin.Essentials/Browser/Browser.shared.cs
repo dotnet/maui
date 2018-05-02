@@ -20,6 +20,9 @@ namespace Xamarin.Essentials
 
         public static Task OpenAsync(Uri uri) =>
           OpenAsync(uri, BrowserLaunchType.SystemPreferred);
+
+        public static Task OpenAsync(Uri uri, BrowserLaunchType launchType) =>
+            PlatformOpenAsync(uri, launchType);
     }
 
     public enum BrowserLaunchType

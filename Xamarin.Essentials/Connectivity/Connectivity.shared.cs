@@ -13,6 +13,10 @@ namespace Xamarin.Essentials
         static NetworkAccess currentAccess;
         static List<ConnectionProfile> currentProfiles;
 
+        public static NetworkAccess NetworkAccess => PlatformNetworkAccess;
+
+        public static IEnumerable<ConnectionProfile> Profiles => PlatformProfiles;
+
         public static event ConnectivityChangedEventHandler ConnectivityChanged
         {
             add

@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        public static NetworkStatus InternetConnectionStatus()
+        internal static NetworkStatus InternetConnectionStatus()
         {
             var status = NetworkStatus.NotReachable;
 
@@ -124,7 +124,7 @@ namespace Xamarin.Essentials
         NetworkReachability defaultRouteReachability;
         NetworkReachability remoteHostReachability;
 
-        public ReachabilityListener()
+        internal ReachabilityListener()
         {
             var ip = new IPAddress(0);
             defaultRouteReachability = new NetworkReachability(ip);
@@ -141,9 +141,11 @@ namespace Xamarin.Essentials
             remoteHostReachability.Schedule(CFRunLoop.Main, CFRunLoop.ModeDefault);
         }
 
-        public event Action ReachabilityChanged;
+        internal event Action ReachabilityChanged;
 
-        public void Dispose()
+        void IDisposable.Dispose() => Dispose();
+
+        internal void Dispose()
         {
             defaultRouteReachability?.Dispose();
             defaultRouteReachability = null;

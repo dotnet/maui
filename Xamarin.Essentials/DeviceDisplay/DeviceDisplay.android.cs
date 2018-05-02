@@ -96,7 +96,7 @@ namespace Xamarin.Essentials
     {
         Action onChanged;
 
-        public Listener(Context context, Action handler)
+        internal Listener(Context context, Action handler)
             : base(context)
         {
             onChanged = handler;

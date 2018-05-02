@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
-        public static void BeginInvokeOnMainThread(Action action)
+        static void PlatformBeginInvokeOnMainThread(Action action)
         {
             if (NSThread.Current.IsMainThread)
             {

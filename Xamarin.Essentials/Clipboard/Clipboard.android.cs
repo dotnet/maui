@@ -5,13 +5,13 @@ namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
-        public static void SetText(string text)
+        static void PlatformSetText(string text)
             => Platform.ClipboardManager.PrimaryClip = ClipData.NewPlainText("Text", text);
 
-        public static bool HasText
+        static bool PlatformHasText
             => Platform.ClipboardManager.HasPrimaryClip;
 
-        public static Task<string> GetTextAsync()
+        static Task<string> PlatformGetTextAsync()
             => Task.FromResult(Platform.ClipboardManager.PrimaryClip?.GetItemAt(0)?.Text);
     }
 }

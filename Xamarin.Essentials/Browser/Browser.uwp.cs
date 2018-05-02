@@ -5,7 +5,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Browser
     {
-        public static Task OpenAsync(Uri uri, BrowserLaunchType launchType)
+        static Task PlatformOpenAsync(Uri uri, BrowserLaunchType launchType)
         {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));

@@ -5,7 +5,7 @@
         internal static bool IsSupported =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        public static void Open(string number) =>
+        static void PlatformOpen(string number) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

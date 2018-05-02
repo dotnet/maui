@@ -51,15 +51,15 @@ namespace Xamarin.Essentials
         // acceleration due to gravity
         const double gravity = 9.81;
 
-        public AccelerometerListener()
+        internal AccelerometerListener()
         {
         }
 
-        public void OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
         {
         }
 
-        public void OnSensorChanged(SensorEvent e)
+        void ISensorEventListener.OnSensorChanged(SensorEvent e)
         {
             var data = new AccelerometerData(e.Values[0] / gravity, e.Values[1] / gravity, e.Values[2] / gravity);
             Accelerometer.OnChanged(data);

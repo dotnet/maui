@@ -36,7 +36,7 @@ namespace Xamarin.Essentials
             };
         }
 
-        public string ValueForKey(string key, string service)
+        internal string ValueForKey(string key, string service)
         {
             var record = ExistingRecordForKey(key, service);
             SecStatusCode resultCode;
@@ -48,7 +48,7 @@ namespace Xamarin.Essentials
                 return string.Empty;
         }
 
-        public void SetValueForKey(string value, string key, string service)
+        internal void SetValueForKey(string value, string key, string service)
         {
             var record = ExistingRecordForKey(key, service);
             if (string.IsNullOrEmpty(value))
