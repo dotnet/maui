@@ -39,7 +39,8 @@ namespace Xamarin.Forms.Core.XamlC
 				var parts = value.Split('.');
 				if (parts.Length == 1 || (parts.Length == 2 && parts [0] == "Color")) {
 					var color = parts [parts.Length - 1];
-
+					if (color == "lightgrey")
+						color = "lightgray";
 					var fieldReference = module.ImportFieldReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Color"),
 																	 color,
 																	 isStatic: true,
