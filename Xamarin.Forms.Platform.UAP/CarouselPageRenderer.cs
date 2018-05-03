@@ -88,7 +88,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (_tracker == null)
 				{
-					_tracker = new BackgroundTracker<FlipView>(BackgroundProperty) { Control = this };
+					_tracker = new BackgroundTracker<FlipView>(BackgroundProperty) { Control = this, Container = this };
 				}
 
 				_tracker.Element = newPage;
