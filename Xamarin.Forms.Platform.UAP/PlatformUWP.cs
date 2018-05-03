@@ -91,10 +91,11 @@ namespace Xamarin.Forms.Platform.UWP
 			string content = options.Message ?? string.Empty;
 			string title = options.Title ?? string.Empty;
 
-			var alertDialog = new ContentDialog
+			var alertDialog = new AlertDialog
 			{
 				Content = content,
-				Title = title
+				Title = title,
+				VerticalScrollBarVisibility = ScrollBarVisibility.Auto
 			};
 
 			if (options.Cancel != null)

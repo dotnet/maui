@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="FormsCancelButton.cs" />
+    <Compile Include="AlertDialog.cs" />
     <Compile Include="FormsPivot.cs" />
     <Compile Include="AlignmentExtensions.cs" />
     <Compile Include="BrushHelpers.cs" />
