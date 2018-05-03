@@ -114,7 +114,7 @@ namespace Xamarin.Forms.Xaml
 				INode xKey;
 				if (!node.Properties.TryGetValue(XmlName.xKey, out xKey))
 					xKey = null;
-				
+
 				node.Properties.Clear();
 				node.CollectionItems.Clear();
 
@@ -124,8 +124,9 @@ namespace Xamarin.Forms.Xaml
 				Values[node] = value;
 			}
 
-			if (value is BindableObject)
-				NameScope.SetNameScope(value as BindableObject, node.Namescope);
+			var bindableValue = value as BindableObject;
+			if (bindableValue != null && node.Namescope != (parentNode as IElementNode)?.Namescope)
+				NameScope.SetNameScope(bindableValue, node.Namescope);
 		}
 
 		public void Visit(RootNode node, INode parentNode)

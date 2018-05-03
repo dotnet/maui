@@ -39,9 +39,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.That (Forms.Internals.NameScope.GetNameScope (layout), Is.TypeOf<Forms.Internals.NameScope> ());
 
 			foreach (var child in layout.Children) {
-				Assert.IsNotNull (Forms.Internals.NameScope.GetNameScope (child));
-				Assert.That (Forms.Internals.NameScope.GetNameScope (child), Is.TypeOf<Forms.Internals.NameScope> ());
-				Assert.AreSame (Forms.Internals.NameScope.GetNameScope (layout), Forms.Internals.NameScope.GetNameScope (child));
+				Assert.IsNull (Forms.Internals.NameScope.GetNameScope (child));
+				Assert.AreSame (Forms.Internals.NameScope.GetNameScope (layout), child.GetNameScope());
 			}
 		}
 

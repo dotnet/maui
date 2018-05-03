@@ -48,16 +48,18 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			VariableDefinition namescopeVarDef;
 			IList<string> namesInNamescope;
+			var setNameScope = false;
 			if (parentNode == null || IsDataTemplate(node, parentNode) || IsStyle(node, parentNode) || IsVisualStateGroupList(node)) {
 				namescopeVarDef = CreateNamescope();
 				namesInNamescope = new List<string>();
+				setNameScope = true;
 			} else {
 				namescopeVarDef = Context.Scopes[parentNode].Item1;
 				namesInNamescope = Context.Scopes[parentNode].Item2;
 			}
-			if (Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core","Xamarin.Forms","BindableObject"))))
+			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Body.Method.Module.ImportReference(("Xamarin.Forms.Core","Xamarin.Forms","BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
-			Context.Scopes[node] = new System.Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
+			Context.Scopes[node] = new Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
 		}
 	
 		public void Visit(RootNode node, INode parentNode)

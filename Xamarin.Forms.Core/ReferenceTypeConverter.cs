@@ -18,10 +18,19 @@ namespace Xamarin.Forms
 		{
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
+
+			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
+			if (referenceProvider != null) {
+				return referenceProvider.FindByName(value)
+					   ?? throw new XamlParseException($"Can't resolve name '{value}' on Element", serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo ?? new XmlLineInfo());
+			}
+
+#pragma warning disable CS0612 // Type or member is obsolete
+			//legacy path
+			var namescopeprovider = serviceProvider.GetService(typeof(INameScopeProvider)) as INameScopeProvider;
 			var valueProvider = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideParentValues;
 			if (valueProvider == null)
 				throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
-			var namescopeprovider = serviceProvider.GetService(typeof(INameScopeProvider)) as INameScopeProvider;
 			if (namescopeprovider != null && namescopeprovider.NameScope != null) {
 				var element = namescopeprovider.NameScope.FindByName(value);
 				if (element != null)
@@ -37,6 +46,7 @@ namespace Xamarin.Forms
 					return element;
 			}
 			throw new Exception("Can't resolve name on Element");
+#pragma warning restore CS0612 // Type or member is obsolete
 		}
 
 		public override object ConvertFromInvariantString(string value)

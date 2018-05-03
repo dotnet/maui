@@ -24,7 +24,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
-
 			[SetUp]
 			public void Setup()
 			{

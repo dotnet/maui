@@ -22,11 +22,7 @@ namespace Xamarin.Forms.Xaml.Internals
 				IXamlTypeResolver = new XamlTypeResolver(node.NamespaceResolver, XamlParser.GetElementType,
 					context.RootElement.GetType().GetTypeInfo().Assembly);
 
-				var enode = node;
-				while (enode != null && !(enode is IElementNode))
-					enode = enode.Parent;
-				if (enode != null)
-					INameScopeProvider = new NameScopeProvider { NameScope = (enode as IElementNode).Namescope };
+				Add(typeof(IReferenceProvider), new ReferenceProvider(node));
 			}
 
 			var xmlLineInfo = node as IXmlLineInfo;
@@ -65,6 +61,7 @@ namespace Xamarin.Forms.Xaml.Internals
 			set { services[typeof (IXmlLineInfoProvider)] = value; }
 		}
 
+		[Obsolete]
 		internal INameScopeProvider INameScopeProvider
 		{
 			get { return (INameScopeProvider)GetService(typeof (INameScopeProvider)); }
@@ -132,7 +129,7 @@ namespace Xamarin.Forms.Xaml.Internals
 		}
 	}
 
-	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget
+	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget, IReferenceProvider
 	{
 		readonly object[] objectAndParents;
 		readonly object targetProperty;
@@ -154,18 +151,26 @@ namespace Xamarin.Forms.Xaml.Internals
 		}
 
 		IEnumerable<object> IProvideParentValues.ParentObjects
-		{
-			get { return objectAndParents; }
-		}
+			=> objectAndParents;
 
 		object IProvideValueTarget.TargetObject
-		{
-			get { return objectAndParents[0]; }
-		}
+			=> objectAndParents[0];
 
 		object IProvideValueTarget.TargetProperty
+			=> targetProperty;
+
+		public object FindByName(string name)
 		{
-			get { return targetProperty; }
+			for (var i = 0; i < objectAndParents.Length; i++) {
+				var bo = objectAndParents[i] as BindableObject;
+				if (bo == null) continue;
+				var ns = NameScope.GetNameScope(bo) as INameScope;
+				if (ns == null) continue;
+				var value = ns.FindByName(name);
+				if (value != null)
+					return value;
+			}
+			return null;
 		}
 	}
 
@@ -270,6 +275,26 @@ namespace Xamarin.Forms.Xaml.Internals
 		public IXmlLineInfo XmlLineInfo { get; }
 	}
 
+	class ReferenceProvider : IReferenceProvider
+	{
+		readonly INode _node;
+		internal ReferenceProvider(INode node)
+			=> _node = node;
+
+		public object FindByName(string name)
+		{
+			var n = _node;
+			object value = null;
+			while (n != null) {
+				if ((value = (n as IElementNode)?.Namescope?.FindByName(name)) != null)
+					return value;
+				n = n.Parent;
+			}
+			return null;
+		}
+	}
+
+	[Obsolete]
 	public class NameScopeProvider : INameScopeProvider
 	{
 		public INameScope NameScope { get; set; }

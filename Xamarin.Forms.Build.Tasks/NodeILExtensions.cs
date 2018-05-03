@@ -482,7 +482,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 			yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "XamlServiceProvider"), parameterTypes: null));
 
-			//Add a SimpleValueTargetProvider
+			//Add a SimpleValueTargetProvider and register it as IProvideValueTarget and IReferenceProvider
 			var pushParentIl = node.PushParentObjectsArray(context).ToList();
 			if (pushParentIl[pushParentIl.Count - 1].OpCode != Ldnull) {
 				yield return Create(Dup); //Keep the serviceProvider on the stack
@@ -496,18 +496,17 @@ namespace Xamarin.Forms.Build.Tasks
 					yield return instruction;
 
 				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "SimpleValueTargetProvider"), paramCount: 2));
+				//store the provider so we can register it again with a different key
+				yield return Create(Dup);
+				var refProvider = new VariableDefinition(module.ImportReference(("mscorlib", "System", "Object")));
+				context.Body.Variables.Add(refProvider);
+				yield return Create(Stloc, refProvider);
 				yield return Create(Callvirt, addService);
-			}
 
-			//Add a NamescopeProvider
-			if (context.Scopes.ContainsKey(node)) {
-				yield return Create(Dup); //Duplicate the serviceProvider
-				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml.Internals", "INameScopeProvider")));
+				yield return Create(Dup); //Keep the serviceProvider on the stack
+				yield return Create(Ldtoken, module.ImportReference(("Xamarin.Forms.Core", "Xamarin.Forms.Xaml", "IReferenceProvider")));
 				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Newobj, module.ImportCtorReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "NameScopeProvider"), parameterTypes: null));
-				yield return Create(Dup); //Duplicate the namescopeProvider
-				yield return Create(Ldloc, context.Scopes[node].Item1);
-				yield return Create(Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Xaml", "Xamarin.Forms.Xaml.Internals", "NameScopeProvider"), propertyName: "NameScope"));
+				yield return Create(Ldloc, refProvider);
 				yield return Create(Callvirt, addService);
 			}
 
