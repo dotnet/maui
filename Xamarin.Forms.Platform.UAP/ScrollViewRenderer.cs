@@ -170,6 +170,11 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.SendScrollFinished();
 		}
 
+		Windows.UI.Xaml.Thickness AddMargin(Windows.UI.Xaml.Thickness original, double left, double top, double right, double bottom)
+		{
+			return new Windows.UI.Xaml.Thickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
+		}
+
 		void UpdateMargins()
 		{
 			var element = Control.Content as FrameworkElement;
@@ -180,15 +185,15 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				case ScrollOrientation.Horizontal:
 					// need to add left/right margins
-					element.Margin = new Windows.UI.Xaml.Thickness(Element.Padding.Left, 0, Element.Padding.Right, 0);
+					element.Margin = AddMargin(element.Margin, Element.Padding.Left, 0, Element.Padding.Right, 0);
 					break;
 				case ScrollOrientation.Vertical:
 					// need to add top/bottom margins
-					element.Margin = new Windows.UI.Xaml.Thickness(0, Element.Padding.Top, 0, Element.Padding.Bottom);
+					element.Margin = AddMargin(element.Margin, 0, Element.Padding.Top, 0, Element.Padding.Bottom);
 					break;
 				case ScrollOrientation.Both:
 					// need to add all margins
-					element.Margin = new Windows.UI.Xaml.Thickness(Element.Padding.Left, Element.Padding.Top, Element.Padding.Right, Element.Padding.Bottom);
+					element.Margin = AddMargin(element.Margin, Element.Padding.Left, Element.Padding.Top, Element.Padding.Right, Element.Padding.Bottom);
 					break;
 			}
 		}

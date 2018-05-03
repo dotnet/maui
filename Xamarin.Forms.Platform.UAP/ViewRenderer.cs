@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateBackgroundColor();
 				UpdateFlowDirection();
+				UpdateMargins();
 			}
 		}
 
@@ -129,6 +130,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateFlowDirection()
 		{
 			Control.UpdateFlowDirection(Element);
+		}
+
+		void UpdateMargins()
+		{
+			Margin = new Windows.UI.Xaml.Thickness(Element.Margin.Left, Element.Margin.Top, Element.Margin.Right, Element.Margin.Bottom);
 		}
 	}
 }
