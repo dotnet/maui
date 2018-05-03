@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using UIKit;
 using SizeF = CoreGraphics.CGSize;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Specifics = Xamarin.Forms.PlatformConfiguration.iOSSpecific.Slider;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -9,6 +11,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		SizeF _fitSize;
 		UIColor defaultmintrackcolor, defaultmaxtrackcolor, defaultthumbcolor;
+		UITapGestureRecognizer _sliderTapRecognizer;
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
@@ -18,7 +21,14 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)
+			{
 				Control.ValueChanged -= OnControlValueChanged;
+				if (_sliderTapRecognizer != null)
+				{
+					Control.RemoveGestureRecognizer(_sliderTapRecognizer);
+					_sliderTapRecognizer = null;
+				}
+			}
 
 			base.Dispose(disposing);
 		}
@@ -152,11 +162,49 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateThumbImage();
 			else if (e.PropertyName == Slider.ThumbColorProperty.PropertyName)
 				UpdateThumbColor();
+			else if (e.PropertyName == Specifics.UpdateOnTapProperty.PropertyName)
+				UpdateTapRecognizer();
 		}
 
 		void OnControlValueChanged(object sender, EventArgs eventArgs)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Control.Value);
+		}
+
+		void UpdateTapRecognizer()
+		{
+			if (Element != null && Element.IsSet(Specifics.UpdateOnTapProperty))
+			{
+				if (Element.OnThisPlatform().GetUpdateOnTap())
+				{
+					if (_sliderTapRecognizer == null)
+					{
+						_sliderTapRecognizer = new UITapGestureRecognizer((recognizer) =>
+						{
+							var control = Control;
+							if (control != null)
+							{
+								var tappedLocation = recognizer.LocationInView(control);
+								if (tappedLocation != null)
+								{
+									var val = (tappedLocation.X - control.Frame.X) * control.MaxValue / control.Frame.Size.Width;
+									Element.SetValueFromRenderer(Slider.ValueProperty, val);
+								}
+							}
+						});
+						Control.AddGestureRecognizer(_sliderTapRecognizer);
+					}
+				}
+				else
+				{
+					if (_sliderTapRecognizer != null)
+					{
+						Control.RemoveGestureRecognizer(_sliderTapRecognizer);
+						_sliderTapRecognizer = null;
+					}
+				}
+			}
+
 		}
 
 		void UpdateMaximum()
