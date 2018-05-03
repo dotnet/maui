@@ -205,6 +205,12 @@
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
+    <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
+      <Member Id="P:Xamarin.Essentials.Locale.Country" />
+      <Member Id="P:Xamarin.Essentials.Locale.Language" />
+      <Member Id="P:Xamarin.Essentials.Locale.Name" />
+      <Member Id="P:Xamarin.Essentials.Locale.Id" />
+    </Type>
     <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double)" />
@@ -360,6 +366,17 @@
       <Member Id="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Body" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Recipient" />
+    </Type>
+    <Type Name="Xamarin.Essentials.SpeakSettings" Id="T:Xamarin.Essentials.SpeakSettings">
+      <Member Id="M:Xamarin.Essentials.SpeakSettings.#ctor" />
+      <Member Id="P:Xamarin.Essentials.SpeakSettings.Locale" />
+      <Member Id="P:Xamarin.Essentials.SpeakSettings.Pitch" />
+      <Member Id="P:Xamarin.Essentials.SpeakSettings.Volume" />
+    </Type>
+    <Type Name="Xamarin.Essentials.TextToSpeech" Id="T:Xamarin.Essentials.TextToSpeech">
+      <Member Id="M:Xamarin.Essentials.TextToSpeech.GetLocalesAsync" />
+      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,System.Threading.CancellationToken)" />
+      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeakSettings,System.Threading.CancellationToken)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
       <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />

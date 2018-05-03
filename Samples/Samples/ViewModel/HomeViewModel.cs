@@ -151,6 +151,12 @@ namespace Samples.ViewModel
                     "Easily send SMS messages.",
                     new[] { "sms", "message", "text", "communication", "share" }),
                 new SampleItem(
+                    "🔊",
+                    "Text To Speech",
+                    typeof(TextToSpeechPage),
+                    "Vocalize text on the device.",
+                    new[] { "text", "message", "speech", "communication" }),
+                new SampleItem(
                     "📳",
                     "Vibration",
                     typeof(VibrationPage),

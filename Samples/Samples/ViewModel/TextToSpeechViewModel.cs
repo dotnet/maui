@@ -1,0 +1,135 @@
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Essentials;
+using Xamarin.Forms;
+
+namespace Samples.ViewModel
+{
+    public class TextToSpeechViewModel : BaseViewModel
+    {
+        CancellationTokenSource cts;
+
+        string text;
+        bool advancedSettings;
+        float volume;
+        float pitch;
+        string locale = "Default";
+        Locale selectedLocale;
+
+        public TextToSpeechViewModel()
+        {
+            SpeakCommand = new Command<bool>(OnSpeak);
+            CancelCommand = new Command(OnCancel);
+            PickLocaleCommand = new Command(async () => await OnPickLocale());
+
+            Text = "Xamarin Essentials makes text to speech easy!";
+
+            AdvancedSettings = false;
+            Volume = 1.0f;
+            Pitch = 1.0f;
+        }
+
+        public override void OnDisappearing()
+        {
+            OnCancel();
+
+            base.OnDisappearing();
+        }
+
+        void OnSpeak(bool multiple)
+        {
+            if (IsBusy)
+                return;
+
+            IsBusy = true;
+
+            cts = new CancellationTokenSource();
+
+            SpeakSettings settings = null;
+            if (AdvancedSettings)
+            {
+                settings = new SpeakSettings
+                {
+                    Volume = Volume,
+                    Pitch = Pitch,
+                    Locale = selectedLocale
+                };
+            }
+
+            Task speaks = null;
+            if (multiple)
+            {
+                speaks = Task.WhenAll(
+                    TextToSpeech.SpeakAsync(Text + " 1 ", settings, cancelToken: cts.Token),
+                    TextToSpeech.SpeakAsync(Text + " 2 ", settings, cancelToken: cts.Token),
+                    TextToSpeech.SpeakAsync(Text + " 3 ", settings, cancelToken: cts.Token));
+            }
+            else
+            {
+                speaks = TextToSpeech.SpeakAsync(Text, settings, cts.Token);
+            }
+
+            // use ContinueWith so we don't have to catch the cancelled exceptions
+            speaks.ContinueWith(t => IsBusy = false);
+        }
+
+        void OnCancel()
+        {
+            if (!IsBusy && !cts.IsCancellationRequested)
+                return;
+
+            cts.Cancel();
+
+            IsBusy = false;
+        }
+
+        async Task OnPickLocale()
+        {
+            var locales = await TextToSpeech.GetLocalesAsync();
+            var names = locales.Select(i => i.Name).ToArray();
+
+            var result = await Application.Current.MainPage.DisplayActionSheet("Pick", "OK", null, names);
+
+            selectedLocale = locales.FirstOrDefault(i => i.Name == result);
+            Locale = (result == "OK" || string.IsNullOrEmpty(result)) ? "Default" : result;
+        }
+
+        public ICommand CancelCommand { get; }
+
+        public ICommand SpeakCommand { get; }
+
+        public ICommand PickLocaleCommand { get; }
+
+        public string Text
+        {
+            get => text;
+            set => SetProperty(ref text, value);
+        }
+
+        public bool AdvancedSettings
+        {
+            get => advancedSettings;
+            set => SetProperty(ref advancedSettings, value);
+        }
+
+        public float Volume
+        {
+            get => volume;
+            set => SetProperty(ref volume, value);
+        }
+
+        public float Pitch
+        {
+            get => pitch;
+            set => SetProperty(ref pitch, value);
+        }
+
+        public string Locale
+        {
+            get => locale;
+            set => SetProperty(ref locale, value);
+        }
+    }
+}
