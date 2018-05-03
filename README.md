@@ -44,7 +44,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] Screen Lock
  - [x] Secure Storage
  - [x] SMS
- - [ ] Text-to-Speech
+ - [x] Text-to-Speech
  - [x] Version Tracking
  - [x] Vibrate
  
