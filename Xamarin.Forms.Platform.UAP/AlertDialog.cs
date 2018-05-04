@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class AlertDialog : ContentDialog
 	{
-		public ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
+		public Windows.UI.Xaml.Controls.ScrollBarVisibility VerticalScrollBarVisibility { get; set; }
 
 		protected override void OnApplyTemplate()
 		{

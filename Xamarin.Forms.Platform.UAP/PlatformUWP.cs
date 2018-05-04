@@ -95,7 +95,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Content = content,
 				Title = title,
-				VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+				VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Auto
 			};
 
 			if (options.Cancel != null)
