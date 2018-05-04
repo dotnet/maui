@@ -721,11 +721,11 @@ namespace Xamarin.Flex
 			float spacing = 0;
 			if (layout.flex_grows == 0 && layout.flex_dim > 0) {
 				layout_align(item.JustifyContent, layout.flex_dim, children_count, ref pos, ref spacing);
-
-				if (layout.reverse) {
-					pos = layout.size_dim - pos;
-				}
 			}
+
+			if (layout.reverse)
+				pos = layout.size_dim - pos;
+
 
 			if (layout.reverse) {
 				pos -= layout.vertical ? item.PaddingBottom : item.PaddingRight;
