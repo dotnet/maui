@@ -262,7 +262,7 @@ namespace Xamarin.Flex
 
 		/// <summary>This property defines the bottom edge absolute position of the item. It also defines the item's height if <see cref="P:Xamarin.Flex.Item.Top" /> is also set and if <see cref="P:Xamarin.Flex.Item.Height" /> isn't set. It is ignored if <see cref="P:Xamarin.Flex.Item.Position" /> isn't set to Absolute.</summary>
 		/// <value>The value for the property.</value>
-        /// <remarks>The default value for this property is NaN.</remarks>
+		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Bottom { get; set; } = float.NaN;
 
 		/// <summary>This property defines the direction and main-axis of child items. If set to Column (or ColumnReverse), the main-axis will be the y-axis and items will be stacked vertically. If set to Row (or RowReverse), the main-axis will be the x-axis and items will be stacked horizontally.</summary>
@@ -279,6 +279,8 @@ namespace Xamarin.Flex
 		/// <value>The height size dimension.</value>
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Height { get; set; } = float.NaN;
+
+		public bool IsVisible { get; set; } = true;
 
 		/// <summary>This property defines how the layout engine will distribute space between and around child items along the main-axis.</summary>
 		/// <value>Any value part of the<see cref="T:Xamarin.Flex.Align" /> enumeration, with the exception of Stretch and Auto.</value>
@@ -479,6 +481,8 @@ namespace Xamarin.Flex
 			int relative_children_count = 0;
 			for (int i = 0; i < item.Count; i++) {
 				var child = layout.child_at(item, i);
+				if (!child.IsVisible) continue;
+
 				// Items with an absolute position have their frames determined
 				// directly and are skipped during layout.
 				if (child.Position == Position.Absolute) {
@@ -745,8 +749,8 @@ namespace Xamarin.Flex
 			}
 
 			for (int i = child_begin; i < child_end; i++) {
-
 				Item child = layout.child_at(item, i);
+				if (!child.IsVisible) continue;
 				if (child.Position == Position.Absolute) {
 					// Already positioned.
 					continue;
