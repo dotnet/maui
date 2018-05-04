@@ -8,39 +8,62 @@ namespace Xamarin.Essentials
 {
     public static partial class SecureStorage
     {
-        static Task<string> PlatformGetAsync(string key)
+        public static SecAccessible DefaultAccessible { get; set; } =
+            SecAccessible.AfterFirstUnlock;
+
+        public static Task<string> GetAsync(string key, SecAccessible accessible)
         {
-            var kc = new KeyChain();
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException(nameof(key));
+
+            var kc = new KeyChain(accessible);
 
             return Task.FromResult(kc.ValueForKey(key, Alias));
         }
 
-        static Task PlatformSetAsync(string key, string data)
+        public static Task SetAsync(string key, string value, SecAccessible accessible)
         {
-            var kc = new KeyChain();
-            kc.SetValueForKey(data, key, Alias);
+            if (string.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException(nameof(key));
+
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            var kc = new KeyChain(accessible);
+            kc.SetValueForKey(value, key, Alias);
 
             return Task.CompletedTask;
         }
+
+        static Task<string> PlatformGetAsync(string key) =>
+            GetAsync(key, DefaultAccessible);
+
+        static Task PlatformSetAsync(string key, string data) =>
+            SetAsync(key, data, DefaultAccessible);
     }
 
     class KeyChain
     {
-        static SecRecord ExistingRecordForKey(string key, string service)
+        SecAccessible accessible;
+
+        internal KeyChain(SecAccessible accessible) =>
+            this.accessible = accessible;
+
+        SecRecord ExistingRecordForKey(string key, string service)
         {
             return new SecRecord(SecKind.GenericPassword)
             {
                 Account = key,
                 Service = service,
                 Label = key,
+                Accessible = accessible
             };
         }
 
         internal string ValueForKey(string key, string service)
         {
             var record = ExistingRecordForKey(key, service);
-            SecStatusCode resultCode;
-            var match = SecKeyChain.QueryAsRecord(record, out resultCode);
+            var match = SecKeyChain.QueryAsRecord(record, out var resultCode);
 
             if (resultCode == SecStatusCode.Success)
                 return NSString.FromData(match.ValueData, NSStringEncoding.UTF8);
@@ -75,6 +98,7 @@ namespace Xamarin.Essentials
                 Account = key,
                 Service = service,
                 Label = key,
+                Accessible = accessible,
                 ValueData = NSData.FromString(value, NSStringEncoding.UTF8),
             };
         }

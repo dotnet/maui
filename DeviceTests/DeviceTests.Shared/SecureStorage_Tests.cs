@@ -23,6 +23,13 @@ namespace DeviceTests
             // TODO: we don't know how to write iOS apps, it appears, so just skip for now
             if (DeviceInfo.DeviceType == DeviceType.Virtual)
                 return;
+
+            // Try the new platform specific api
+            await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
+
+            var b = await SecureStorage.GetAsync(key, Security.SecAccessible.AfterFirstUnlock);
+
+            Assert.Equal(data, b);
 #endif
 
 #if __ANDROID__
