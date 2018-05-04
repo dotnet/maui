@@ -404,5 +404,28 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(156, 6, 138, 20)));
 			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 32, 300, 20)));
 		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/2551
+		public void TestReverseWithGrow()
+		{
+			var platform = new UnitPlatform();
+			var label0 = new Label {
+				Platform = platform,
+				IsPlatformEnabled = true,
+			};
+			FlexLayout.SetGrow(label0, 1);
+			var layout = new FlexLayout {
+				Platform = platform,
+				IsPlatformEnabled = true,
+				Direction = FlexDirection.ColumnReverse,
+				Children = {
+					label0,
+				}
+			};
+
+			layout.Layout(new Rectangle(0, 0, 300, 300));
+			Assert.That(label0.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 300)));
+		}
 	}
 }
