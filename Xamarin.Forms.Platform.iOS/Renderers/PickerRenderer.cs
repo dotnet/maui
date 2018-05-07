@@ -1,12 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using Foundation;
+using ObjCRuntime;
 using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Xamarin.Forms.Platform.iOS
 {
+	internal class ReadOnlyField : NoCaretField
+	{
+		readonly HashSet<string> enableActions;
+
+		public ReadOnlyField() {
+			string[] actions = { "copy:", "select:", "selectAll:" };
+			enableActions = new HashSet<string> (actions);
+		}
+
+		public override bool CanPerform (Selector action, NSObject withSender)
+			=> enableActions.Contains(action.Name);
+	}
+
 	public class PickerRenderer : ViewRenderer<Picker, UITextField>
 	{
 		UIPickerView _picker;
@@ -25,7 +41,8 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					var entry = new NoCaretField { BorderStyle = UITextBorderStyle.RoundedRect };
+					// disabled cut, delete, and toggle actions because they can throw an unhandled native exception
+					var entry = new ReadOnlyField { BorderStyle = UITextBorderStyle.RoundedRect };
 
 					entry.EditingDidBegin += OnStarted;
 					entry.EditingDidEnd += OnEnded;
@@ -91,6 +108,8 @@ namespace Xamarin.Forms.Platform.iOS
 			var selectedIndex = Element.SelectedIndex;
 			var items = Element.Items;
 			Control.Text = selectedIndex == -1 || items == null ? "" : items[selectedIndex];
+			// Also clears the undo stack (undo/redo possible on iPads)
+			Control.UndoManager.RemoveAllActions();
 		}
 
 		void OnEnded(object sender, EventArgs eventArgs)
