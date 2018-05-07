@@ -6,6 +6,7 @@
 	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.GetTasksAbi" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
 
 	<PropertyGroup>
+		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
 		<EnableDefaultXamlItems Condition="'$(EnableDefaultXamlItems)'==''">True</EnableDefaultXamlItems>
 		<_DefaultXamlItemsEnabled>False</_DefaultXamlItemsEnabled>
 		<EnableDefaultCssItems Condition="'$(EnableDefaultCssItems)'==''">True</EnableDefaultCssItems>
