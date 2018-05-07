@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	internal sealed class LabelRenderer : FormsTextView, IVisualElementRenderer
+	internal sealed class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer
 	{
 		int? _defaultLabelFor;
 		bool _disposed;
@@ -136,6 +136,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			VisualElementTracker tracker = _visualElementTracker;
 			tracker?.UpdateLayout();
+		}
+
+		void IViewRenderer.MeasureExactly()
+		{
+			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
 		protected override void Dispose(bool disposing)

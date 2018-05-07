@@ -14,7 +14,7 @@ using static System.String;
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	internal sealed class ButtonRenderer : AppCompatButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
-		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener
+		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer
 	{
 		float _defaultFontSize;
 		int? _defaultLabelFor;
@@ -172,6 +172,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			var reference = Guid.NewGuid().ToString();
 			_tracker?.UpdateLayout();
+		}
+
+		void IViewRenderer.MeasureExactly()
+		{
+			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
 		protected override void Dispose(bool disposing)

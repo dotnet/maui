@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class FrameRenderer : CardView, IVisualElementRenderer, IEffectControlProvider
+	public class FrameRenderer : CardView, IVisualElementRenderer, IEffectControlProvider, IViewRenderer
 	{
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -103,6 +103,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			_effectControlProvider.RegisterEffect(effect);
+		}
+
+		void IViewRenderer.MeasureExactly()
+		{
+			ViewRenderer.MeasureExactly(this, Element, Context);
 		}
 
 		protected override void Dispose(bool disposing)
