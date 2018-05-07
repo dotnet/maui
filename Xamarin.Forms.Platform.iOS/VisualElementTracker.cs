@@ -79,7 +79,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 				e.PropertyName == VisualElement.HeightProperty.PropertyName || e.PropertyName == VisualElement.AnchorXProperty.PropertyName || e.PropertyName == VisualElement.AnchorYProperty.PropertyName ||
-				e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName || e.PropertyName == VisualElement.ScaleProperty.PropertyName ||
+				e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName || e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName || e.PropertyName == VisualElement.ScaleYProperty.PropertyName ||
 				e.PropertyName == VisualElement.RotationProperty.PropertyName || e.PropertyName == VisualElement.RotationXProperty.PropertyName || e.PropertyName == VisualElement.RotationYProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
 				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName || 
@@ -154,6 +154,8 @@ namespace Xamarin.Forms.Platform.MacOS
 			var rotationY = (float)view.RotationY;
 			var rotation = (float)view.Rotation;
 			var scale = (float)view.Scale;
+			var scaleX = (float)view.ScaleX * scale;
+			var scaleY = (float)view.ScaleY * scale;
 			var width = (float)view.Width;
 			var height = (float)view.Height;
 			var x = (float)view.X + (float)CompressedLayout.GetHeadlessOffset(view).X;
@@ -246,8 +248,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (Math.Abs(translationX) > epsilon || Math.Abs(translationY) > epsilon)
 					transform = transform.Translate(translationX, translationY, 0);
 
-				if (Math.Abs(scale - 1) > epsilon)
-					transform = transform.Scale(scale);
+				if (Math.Abs(scaleX - 1) > epsilon || Math.Abs(scaleY - 1) > epsilon)
+					transform = transform.Scale(scaleX, scaleY, scale);
 
 				// not just an optimization, iOS will not "pixel align" a view which has m34 set
 				if (Math.Abs(rotationY % 180) > epsilon || Math.Abs(rotationX % 180) > epsilon)

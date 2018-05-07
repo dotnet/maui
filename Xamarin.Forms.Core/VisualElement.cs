@@ -48,7 +48,11 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty RotationYProperty = BindableProperty.Create("RotationY", typeof(double), typeof(VisualElement), default(double));
 
-		public static readonly BindableProperty ScaleProperty = BindableProperty.Create("Scale", typeof(double), typeof(VisualElement), 1d);
+		public static readonly BindableProperty ScaleProperty = BindableProperty.Create(nameof(Scale), typeof(double), typeof(VisualElement), 1d);
+
+		public static readonly BindableProperty ScaleXProperty = BindableProperty.Create(nameof(ScaleX), typeof(double), typeof(VisualElement), 1d);
+
+		public static readonly BindableProperty ScaleYProperty = BindableProperty.Create(nameof(ScaleY), typeof(double), typeof(VisualElement), 1d);
 
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
@@ -266,10 +270,19 @@ namespace Xamarin.Forms
 			set { SetValue(RotationYProperty, value); }
 		}
 
-		public double Scale
-		{
-			get { return (double)GetValue(ScaleProperty); }
-			set { SetValue(ScaleProperty, value); }
+		public double Scale {
+			get => (double)GetValue(ScaleProperty);
+			set => SetValue(ScaleProperty, value);
+		}
+
+		public double ScaleX {
+			get => (double)GetValue(ScaleXProperty);
+			set => SetValue(ScaleXProperty, value);
+		}
+
+		public double ScaleY {
+			get => (double)GetValue(ScaleYProperty);
+			set => SetValue(ScaleYProperty, value);
 		}
 
 		public Style Style
