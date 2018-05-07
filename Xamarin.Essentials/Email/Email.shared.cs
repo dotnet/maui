@@ -53,6 +53,8 @@ namespace Xamarin.Essentials
 
         public EmailMessage(string subject, string body, params string[] to)
         {
+            Subject = subject;
+            Body = body;
             To = to?.ToList() ?? new List<string>();
         }
 
