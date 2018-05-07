@@ -9,7 +9,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	internal sealed class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController
+	internal sealed class ImageRenderer : AImageView, IVisualElementRenderer, IImageRendererController, IViewRenderer
 	{
 		bool _disposed;
 		Image _element;
@@ -144,6 +144,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		void IVisualElementRenderer.UpdateLayout() => _visualElementTracker?.UpdateLayout();
+
+		void IViewRenderer.MeasureExactly()
+		{
+			ViewRenderer.MeasureExactly(this, ((IVisualElementRenderer)this).Element, Context);
+		}
 
 		VisualElement IVisualElementRenderer.Element => _element;
 
