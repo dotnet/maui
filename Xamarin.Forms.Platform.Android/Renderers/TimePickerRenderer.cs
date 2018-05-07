@@ -112,7 +112,7 @@ namespace Xamarin.Forms.Platform.Android
 			var dialog = new TimePickerDialog(Context, this, hours, minutes, _is24HourFormat);
 
 			if (Forms.IsLollipopOrNewer)
-				_dialog.CancelEvent += OnCancelButtonClicked;
+				dialog.CancelEvent += OnCancelButtonClicked;
 
 			return dialog;
 		}
