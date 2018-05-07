@@ -65,13 +65,13 @@ namespace Xamarin.Forms.Internals
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
-					if (self.OldStartingIndex < 0)
+					if (self.OldStartingIndex < 0 || self.OldItems.Count != self.NewItems.Count)
 						goto case NotifyCollectionChangedAction.Reset;
 
 					for (var i = 0; i < self.OldItems.Count; i++)
 					{
 						removeAt(self.OldItems[i], i + self.OldStartingIndex);
-						insert(self.OldItems[i], i + self.OldStartingIndex, true);
+						insert(self.NewItems[i], i + self.OldStartingIndex, true);
 					}
 					break;
 
