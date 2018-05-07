@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		static void OnPageActionSheet(object sender, ActionSheetArguments options)
-		{ 
+		{
 			bool userDidSelect = false;
 			var flyoutContent = new FormsFlyout(options);
 
@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			s_currentAlert = ShowAlert(alertDialog);
-			options.SetResult(await s_currentAlert);
+			options.SetResult(await s_currentAlert.ConfigureAwait(false));
 			s_currentAlert = null;
 		}
 
