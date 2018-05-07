@@ -17,10 +17,13 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public static Run ToRun(this Span span)
 		{
-			var run = new Run { Text = span.Text };
+			var run = new Run { Text = span.Text ?? string.Empty };
 
 			if (span.TextColor != Color.Default)
 				run.Foreground = span.TextColor.ToBrush();
+			
+			if (span.BackgroundColor != Color.Default)
+				run.Background = span.BackgroundColor.ToBrush();
 
 			if (!span.IsDefault())
 #pragma warning disable 618

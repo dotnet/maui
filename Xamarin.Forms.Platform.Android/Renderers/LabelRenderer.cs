@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -7,6 +5,8 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using System;
+using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -25,6 +25,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool _wasFormatted;
 
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
+
+		SpannableString _spannableString;
 
 		public LabelRenderer(Context context) : base(context)
 		{
@@ -74,6 +76,12 @@ namespace Xamarin.Forms.Platform.Android
 			_lastSizeRequest = result;
 
 			return result;
+		}
+
+		protected override void OnLayout(bool changed, int l, int t, int r, int b)
+		{
+			base.OnLayout(changed, l, t, r, b);
+			Control.RecalculateSpanPositions(Element, _spannableString, new SizeRequest(new Size(r - l, b - t)));
 		}
 
 		protected override TextView CreateNativeControl()
@@ -181,7 +189,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				FormattedString formattedText = Element.FormattedText ?? Element.Text;
 #pragma warning disable 618 // We will need to update this when .Font goes away
-				_view.TextFormatted = formattedText.ToAttributed(Element.Font, Element.TextColor, _view);
+				_view.TextFormatted = _spannableString = formattedText.ToAttributed(Element.Font, Element.TextColor, _view);
 #pragma warning restore 618
 				_wasFormatted = true;
 			}

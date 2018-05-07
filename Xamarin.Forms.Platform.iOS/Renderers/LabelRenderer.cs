@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Foundation;
+using System.Collections.Generic;
 
 #if __MOBILE__
 using UIKit;
@@ -107,7 +109,10 @@ namespace Xamarin.Forms.Platform.MacOS
 #endif
 					break;
 			}
-		}
+
+			Control.RecalculateSpanPositions(Element);
+
+		}		
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
@@ -295,7 +300,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateFont()
 		{
-			if(isTextFormatted)
+			if (isTextFormatted)
 				return;
 			_perfectSizeValid = false;
 
@@ -311,7 +316,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (isTextFormatted)
 				return;
-			
+
 			_perfectSizeValid = false;
 
 			var textColor = (Color)Element.GetValue(Label.TextColorProperty);

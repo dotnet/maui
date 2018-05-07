@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -36,7 +34,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		bool _touchFrameReportedEventSet;
 		int _touchPoints = 1;
-		
+
 		public TNativeElement Control
 		{
 			get { return _control; }
@@ -63,7 +61,7 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateNativeControl();
 			}
 		}
-		
+
 		public TElement Element
 		{
 			get { return _element; }
@@ -98,15 +96,15 @@ namespace Xamarin.Forms.Platform.WPF
 			if ((fe != null && !fe.IsEnabled) || (vr != null && !vr.IsEnabled))
 				return;
 
-			e.Handled = ElementOnTap(e.ClickCount);
+			e.Handled = ElementOnTap(e.ClickCount, e.GetPosition(fe));
 		}
-		
+
 		protected virtual void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (Element.Batched)
 			{
-				if (e.PropertyName == VisualElement.XProperty.PropertyName || 
-					e.PropertyName == VisualElement.YProperty.PropertyName || 
+				if (e.PropertyName == VisualElement.XProperty.PropertyName ||
+					e.PropertyName == VisualElement.YProperty.PropertyName ||
 					e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 					e.PropertyName == VisualElement.HeightProperty.PropertyName)
 					_invalidateArrangeNeeded = true;
@@ -114,16 +112,16 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			if (e.PropertyName == VisualElement.XProperty.PropertyName ||
-				e.PropertyName == VisualElement.YProperty.PropertyName || 
+				e.PropertyName == VisualElement.YProperty.PropertyName ||
 				e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 				e.PropertyName == VisualElement.HeightProperty.PropertyName)
 				MaybeInvalidate();
-			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName || 
-				e.PropertyName == VisualElement.AnchorYProperty.PropertyName || 
+			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName ||
+				e.PropertyName == VisualElement.AnchorYProperty.PropertyName ||
 				e.PropertyName == VisualElement.ScaleProperty.PropertyName ||
 				e.PropertyName == VisualElement.TranslationXProperty.PropertyName ||
 				e.PropertyName == VisualElement.TranslationYProperty.PropertyName ||
-				e.PropertyName == VisualElement.RotationProperty.PropertyName || 
+				e.PropertyName == VisualElement.RotationProperty.PropertyName ||
 				e.PropertyName == VisualElement.RotationXProperty.PropertyName ||
 				e.PropertyName == VisualElement.RotationYProperty.PropertyName)
 				UpdateScaleAndTranslateAndRotation();
@@ -154,22 +152,35 @@ namespace Xamarin.Forms.Platform.WPF
 			OnUpdated();
 		}
 
-		bool ElementOnTap(int numberOfTapsRequired)
+		bool ElementOnTap(int numberOfTapsRequired, System.Windows.Point tapPosition)
 		{
 			var view = Element as View;
 			if (view == null)
 				return false;
 
-			var result = false;
-			foreach (TapGestureRecognizer gestureRecognizer in
+			var handled = false;
+
+			var children = (view as IGestureController)?.GetChildElements(new Point(tapPosition.X, tapPosition.Y));
+
+			if (children != null)
+				foreach (var recognizer in children.GetChildGesturesFor<TapGestureRecognizer>().Where(g => g.NumberOfTapsRequired == numberOfTapsRequired))
+				{
+					recognizer.SendTapped(view);
+					handled = true;
+				}
+
+			if (handled)
+				return handled;
+
+			foreach (var gestureRecognizer in
 				view.GestureRecognizers.OfType<TapGestureRecognizer>().Where(g => g.NumberOfTapsRequired == numberOfTapsRequired))
 			{
 				gestureRecognizer.SendTapped(view);
-				result = true;
+				handled = true;
 			}
-			return result;
+			return handled;
 		}
-		
+
 		void HandlePan(ManipulationDeltaEventArgs e, View view)
 		{
 			foreach (PanGestureRecognizer recognizer in
@@ -190,7 +201,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			UpdateNativeControl();
 		}
-		
+
 		void OnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
 		{
 			var view = Element as View;
@@ -222,7 +233,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			_touchPoints = e.GetTouchPoints(Control).Count;
 		}
-		
+
 		void MaybeInvalidate()
 		{
 			if (Element.IsInNativeLayout)
@@ -256,7 +267,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 			double offsetX = scale == 0 ? 0 : translationX / scale;
 			double offsetY = scale == 0 ? 0 : translationY / scale;
-			
+
 			Control.RenderTransformOrigin = new System.Windows.Point(anchorX, anchorY);
 			Control.RenderTransform = new TransformGroup()
 			{
@@ -273,16 +284,16 @@ namespace Xamarin.Forms.Platform.WPF
 						Y = offsetY
 					},
 					new RotateTransform()
-					{ 
-						 
+					{
+
 						CenterX = anchorX,
 						CenterY = anchorY,
-						Angle = Element.Rotation, 
+						Angle = Element.Rotation,
 					}
 				}
 			};
 		}
-		
+
 		void UpdateTouchFrameReportedEvent()
 		{
 			if (_touchFrameReportedEventSet)
@@ -302,7 +313,7 @@ namespace Xamarin.Forms.Platform.WPF
 			_touchFrameReportedEventSet = true;
 		}
 
-	    void UpdateVisibility()
+		void UpdateVisibility()
 		{
 			Control.Visibility = Element.IsVisible ? Visibility.Visible : Visibility.Collapsed;
 		}

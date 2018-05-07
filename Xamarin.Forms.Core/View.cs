@@ -7,8 +7,10 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public class View : VisualElement, IViewController
+	public class View : VisualElement, IViewController, IGestureController
 	{
+		protected internal IGestureController GestureController => this;
+
 		public static readonly BindableProperty VerticalOptionsProperty =
 			BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
 									propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -74,30 +76,41 @@ namespace Xamarin.Forms
 		{
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
+				void AddItems()
+				{
+					foreach (IElement item in args.NewItems.OfType<IElement>())
+					{
+						ValidateGesture(item as IGestureRecognizer);
+						item.Parent = this;
+						GestureController.CompositeGestureRecognizers.Add(item as IGestureRecognizer);
+					}
+				}
+
+				void RemoveItems()
+				{
+					foreach (IElement item in args.OldItems.OfType<IElement>())
+					{
+						item.Parent = null;
+						GestureController.CompositeGestureRecognizers.Remove(item as IGestureRecognizer);
+					}
+				}
+
 				switch (args.Action)
 				{
 					case NotifyCollectionChangedAction.Add:
-						foreach (IElement item in args.NewItems.OfType<IElement>())
-						{
-							ValidateGesture(item as IGestureRecognizer);
-							item.Parent = this;
-						}
+						AddItems();
 						break;
 					case NotifyCollectionChangedAction.Remove:
-						foreach (IElement item in args.OldItems.OfType<IElement>())
-							item.Parent = null;
+						RemoveItems();
 						break;
 					case NotifyCollectionChangedAction.Replace:
-						foreach (IElement item in args.NewItems.OfType<IElement>())
-						{
-							ValidateGesture(item as IGestureRecognizer);
-							item.Parent = this;
-						}
-						foreach (IElement item in args.OldItems.OfType<IElement>())
-							item.Parent = null;
+						AddItems();
+						RemoveItems();
 						break;
 					case NotifyCollectionChangedAction.Reset:
 						foreach (IElement item in _gestureRecognizers.OfType<IElement>())
+							item.Parent = this;
+						foreach (IElement item in GestureController.CompositeGestureRecognizers.OfType<IElement>())
 							item.Parent = this;
 						break;
 				}
@@ -107,6 +120,18 @@ namespace Xamarin.Forms
 		public IList<IGestureRecognizer> GestureRecognizers
 		{
 			get { return _gestureRecognizers; }
+		}
+
+		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
+
+		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
+		{
+			get { return _compositeGestureRecognizers ?? (_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>()); }
+		}
+
+		public virtual IList<GestureElement> GetChildElements(Point point)
+		{
+			return null;
 		}
 
 		public LayoutOptions HorizontalOptions

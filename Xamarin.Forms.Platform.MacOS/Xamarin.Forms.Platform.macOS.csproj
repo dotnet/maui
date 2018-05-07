@@ -68,6 +68,9 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\Extensions\LabelExtensions.cs">
+      <Link>Extensions\LabelExtensions.cs</Link>
+    </Compile>
     <Compile Include="..\Xamarin.Forms.Platform.iOS\Flags.cs">
       <Link>Flags.cs</Link>
     </Compile>

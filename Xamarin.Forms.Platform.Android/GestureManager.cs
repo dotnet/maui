@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
@@ -44,7 +45,7 @@ namespace Xamarin.Forms.Platform.Android
 				return false;
 			}
 
-			if (!DetectorsValid()) 
+			if (!DetectorsValid())
 			{
 				return false;
 			}
@@ -121,7 +122,13 @@ namespace Xamarin.Forms.Platform.Android
 		GestureDetector InitializeTapAndPanDetector()
 		{
 			var context = Control.Context;
-			var listener = new InnerGestureListener(new TapGestureHandler(() => View),
+			var listener = new InnerGestureListener(new TapGestureHandler(() => View, () =>
+			{
+				if (Element is View view)
+					return view.GetChildElements(Point.Zero) ?? new List<GestureElement>();
+
+				return new List<GestureElement>();
+			}),
 				new PanGestureHandler(() => View, context.FromPixels));
 
 			return new TapAndPanGestureDetector(context, listener);
@@ -151,7 +158,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (e.NewElement != null)
 			{
-                e.NewElement.PropertyChanged += OnElementPropertyChanged;
+				e.NewElement.PropertyChanged += OnElementPropertyChanged;
 			}
 
 			UpdateInputTransparent();

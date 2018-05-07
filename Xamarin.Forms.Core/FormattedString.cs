@@ -68,12 +68,12 @@ namespace Xamarin.Forms
 				}
 			}
 
-			OnPropertyChanged("Spans");
+			OnPropertyChanged(nameof(Spans));
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			OnPropertyChanged("Spans");
+			OnPropertyChanged(nameof(Spans));
 		}
 
 		class SpanCollection : ObservableCollection<Span>
@@ -92,6 +92,13 @@ namespace Xamarin.Forms
 					throw new ArgumentNullException("item");
 
 				base.SetItem(index, item);
+			}
+
+			protected override void ClearItems()
+			{
+				List<Span> removed = new List<Span>(this);
+				base.ClearItems();
+				base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));
 			}
 		}
 	}

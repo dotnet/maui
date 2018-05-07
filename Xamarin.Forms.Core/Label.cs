@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.Platform;
 
@@ -38,6 +42,12 @@ namespace Xamarin.Forms
 				if (oldvalue != null)
 				{
 					var formattedString = ((FormattedString)oldvalue);
+
+					// Remove spans here, to ensure all collection watching, removes necessary event hooks.
+					for (int i = formattedString.Spans.Count - 1; i >= 0; i--)
+						formattedString.Spans.RemoveAt(i);
+
+					((ObservableCollection<Span>)formattedString.Spans).CollectionChanged -= ((Label)bindable).Span_CollectionChanged;
 					formattedString.PropertyChanged -= ((Label)bindable).OnFormattedTextChanged;
 					formattedString.Parent = null;
 				}
@@ -45,9 +55,17 @@ namespace Xamarin.Forms
 			{
 				if (newvalue != null)
 				{
+					var label = ((Label)bindable);
 					var formattedString = (FormattedString)newvalue;
-					formattedString.PropertyChanged += ((Label)bindable).OnFormattedTextChanged;
-					formattedString.Parent = (Label)bindable;
+					formattedString.Parent = label;
+					formattedString.PropertyChanged += label.OnFormattedTextChanged;
+
+					((ObservableCollection<Span>)formattedString.Spans).CollectionChanged += label.Span_CollectionChanged;
+
+					// Initial Load of FormattedText could come preloaded with spans
+					for (int i = 0; i < formattedString.Spans.Count; i++)
+						for (int j = 0; j < formattedString.Spans[i].GestureRecognizers.Count; j++)
+							((IGestureController)label).CompositeGestureRecognizers.Add(new ChildGestureRecognizer() { GestureRecognizer = formattedString.Spans[i].GestureRecognizers[j] });
 				}
 
 				((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
@@ -169,6 +187,85 @@ namespace Xamarin.Forms
 			OnPropertyChanged("FormattedText");
 		}
 
+		void Span_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					AddItems();
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemoveItems();
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemoveItems();
+					AddItems();
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					// Is never called, because the clear command is overridden.
+					break;
+			}
+
+			void AddItems()
+			{
+				foreach (GestureElement span in e.NewItems)
+				{
+					((ObservableCollection<IGestureRecognizer>)span.GestureRecognizers).CollectionChanged += Span_GestureRecognizer_CollectionChanged;
+					// span could be preloaded with GestureRecognizers
+					for (int i = 0; i < span.GestureRecognizers.Count; i++)
+						((IGestureController)this).CompositeGestureRecognizers.Add(new ChildGestureRecognizer() { GestureRecognizer = span.GestureRecognizers[i] });
+				}
+			}
+
+			void RemoveItems()
+			{
+				foreach (GestureElement span in e.OldItems)
+				{
+					for (int i = span.GestureRecognizers.Count - 1; i >= 0; i--)
+						span.GestureRecognizers.RemoveAt(i);
+
+					((ObservableCollection<IGestureRecognizer>)span.GestureRecognizers).CollectionChanged -= Span_GestureRecognizer_CollectionChanged;
+				}
+			}
+		}
+
+		void Span_GestureRecognizer_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			void AddItems()
+			{
+				for (var i = 0; i < e.NewItems.Count; i++)
+					GestureController.CompositeGestureRecognizers.Add(new ChildGestureRecognizer()
+					{
+						GestureRecognizer = (IGestureRecognizer)e.NewItems[i]
+					});
+			}
+
+			void RemoveItems()
+			{
+				for (int i = 0; i < e.OldItems.Count; i++)
+					foreach (var spanRecognizer in GestureController.CompositeGestureRecognizers.ToList())
+						if (spanRecognizer is ChildGestureRecognizer && spanRecognizer == e.OldItems[i])
+							GestureController.CompositeGestureRecognizers.Remove(spanRecognizer);
+			}
+
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					AddItems();
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemoveItems();
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemoveItems();
+					AddItems();
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					// is never called, because the clear command is overridden.
+					break;
+			}
+		}
+
 		void ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(TextAlignment oldValue, TextAlignment newValue)
 		{
 #pragma warning disable 0618 // retain until XAlign removed
@@ -203,6 +300,24 @@ namespace Xamarin.Forms
 
 		void ITextElement.OnTextColorPropertyChanged(Color oldValue, Color newValue)
 		{
+		}
+
+		public override IList<GestureElement> GetChildElements(Point point)
+		{
+			if (FormattedText?.Spans == null || FormattedText?.Spans.Count == 0)
+				return null;
+
+			var spans = new List<GestureElement>();
+			foreach (var span in FormattedText.Spans)
+				if (span.GestureRecognizers.Count > 0 && (((ISpatialElement)span).Region.Contains(point) || point.IsEmpty))
+					spans.Add(span);
+
+			if (spans.Count > 1) // More than 2 elements overlapping, deflate to see which one is actually hit.
+				for (var i = spans.Count - 1; i >= 0; i--)
+					if (!((ISpatialElement)spans[i]).Region.Deflate().Contains(point))
+						spans.RemoveAt(i);
+
+			return spans;
 		}
 	}
 }

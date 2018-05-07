@@ -41,13 +41,17 @@ namespace Xamarin.Forms.Controls
 #pragma warning disable 618
 			var namedSizeSmallContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeSmall, new Label { Text = "Small Font", Font = Font.SystemFontOfSize (NamedSize.Small) });
 #pragma warning restore 618
+			
+			var formattedString = new FormattedString();
+			formattedString.Spans.Add(new Span { BackgroundColor = Color.Red, TextColor = Color.Olive, Text = "Span 1 " });
 
-			var formattedString = new FormattedString ();
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Red, TextColor = Color.Olive, Text = "Span 1 " });
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Black, TextColor = Color.White, Text = "Span 2 " });
-			formattedString.Spans.Add (new Span { BackgroundColor = Color.Pink, TextColor = Color.Purple, Text = "Span 3" });
+			Span span = new Span { BackgroundColor = Color.Black, TextColor = Color.White, Text = "Span 2 (tap me) " };
+			span.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Congratulations!", "This is a tapped span", "ok")) });
+			formattedString.Spans.Add(span);
 
-			var formattedTextContainer = new ViewContainer<Label> (Test.Label.FormattedText, new Label { FormattedText = formattedString });
+			formattedString.Spans.Add(new Span { BackgroundColor = Color.Pink, TextColor = Color.Purple, Text = "Span 3" });
+
+			var formattedTextContainer = new ViewContainer<Label>(Test.Label.FormattedText, new Label { FormattedText = formattedString });
 
 			const string longText = "Lorem ipsum dolor sit amet, cu mei malis petentium, dolor tempor delicata no qui, eos ex vitae utinam vituperata. Utroque habemus philosophia ut mei, doctus placerat eam cu. An inermis scaevola pro, quo legimus deleniti ei, equidem docendi urbanitas ea eum. Saepe doctus ut pri. Nec ex wisi dolorem. Duo dolor vituperatoribus ea. Id purto instructior per. Nec partem accusamus ne. Qui ad saepe accumsan appellantur, duis omnesque has et, vim nihil nemore scaevola ne. Ei populo appetere recteque cum, meliore splendide appellantur vix id.";
 			var lineBreakModeCharacterWrapContainer = new ViewContainer<Label> (Test.Label.LineBreakModeCharacterWrap, new Label { Text = longText, LineBreakMode = LineBreakMode.CharacterWrap });
@@ -59,7 +63,7 @@ namespace Xamarin.Forms.Controls
 
 			var textContainer = new ViewContainer<Label> (Test.Label.Text, new Label { Text = "I should have text" });
 			var textColorContainer = new ViewContainer<Label> (Test.Label.TextColor, new Label { Text = "I should have lime text", TextColor = Color.Lime });
-
+			
 			const int alignmentTestsHeightRequest = 100;
 			const int alignmentTestsWidthRequest = 100;
 
