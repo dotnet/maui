@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using System.ComponentModel;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Shapes;
 
@@ -14,13 +15,26 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				if (Control == null)
 				{
-					var rect = new Windows.UI.Xaml.Shapes.Rectangle();
-					rect.DataContext = Element;
-					rect.SetBinding(Shape.FillProperty, new Windows.UI.Xaml.Data.Binding { Converter = new ColorConverter(), Path = new PropertyPath("Color") });
+					var rect = new Windows.UI.Xaml.Shapes.Rectangle
+					{
+						DataContext = Element
+					};
 
+					rect.SetBinding(Shape.FillProperty, new Windows.UI.Xaml.Data.Binding { Converter = new ColorConverter(), Path = new PropertyPath("Color") });
+	
 					SetNativeControl(rect);
 				}
+
+				SetCornerRadius(Element.CornerRadius);
 			}
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
+
+			if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+				SetCornerRadius(Element.CornerRadius);
 		}
 
 		protected override AutomationPeer OnCreateAutomationPeer()
@@ -32,6 +46,12 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			return new FrameworkElementAutomationPeer(Control);
+		}
+
+		private void SetCornerRadius(CornerRadius cornerRadius)
+		{
+			Control.RadiusX = cornerRadius.TopLeft;
+			Control.RadiusY = cornerRadius.BottomRight;
 		}
 	}
 }

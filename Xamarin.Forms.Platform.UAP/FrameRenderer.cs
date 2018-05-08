@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (cornerRadius == -1f)
 				cornerRadius = 5f; // default corner radius
 
-			Control.CornerRadius = new CornerRadius(cornerRadius);
+			Control.CornerRadius = new Windows.UI.Xaml.CornerRadius(cornerRadius);
 		}
 	}
 }

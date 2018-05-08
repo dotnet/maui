@@ -8,6 +8,8 @@ namespace Xamarin.Forms
 	{
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create("Color", typeof(Color), typeof(BoxView), Color.Default);
 
+		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(CornerRadius), typeof(BoxView), default(CornerRadius));
+
 		readonly Lazy<PlatformConfigurationRegistry<BoxView>> _platformConfigurationRegistry;
 
 		public BoxView()
@@ -19,6 +21,12 @@ namespace Xamarin.Forms
 		{
 			get { return (Color)GetValue(ColorProperty); }
 			set { SetValue(ColorProperty, value); }
+		}
+
+		public CornerRadius CornerRadius
+		{
+			get { return (CornerRadius)GetValue(CornerRadiusProperty); }
+			set { SetValue(CornerRadiusProperty, value); }
 		}
 
 		public IPlatformElementConfiguration<T, BoxView> On<T>() where T : IConfigPlatform

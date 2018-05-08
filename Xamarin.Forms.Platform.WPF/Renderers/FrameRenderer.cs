@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateCornerRadius()
 		{
-			Control.CornerRadius = new CornerRadius(Element.CornerRadius >= 0 ? Element.CornerRadius : 0);
+			Control.CornerRadius = new System.Windows.CornerRadius(Element.CornerRadius >= 0 ? Element.CornerRadius : 0);
 		}
 	}
 }

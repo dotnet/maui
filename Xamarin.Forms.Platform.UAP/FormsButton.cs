@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 
 			if (_contentPresenter != null)
-				_contentPresenter.CornerRadius = new CornerRadius(BorderRadius);
+				_contentPresenter.CornerRadius = new Windows.UI.Xaml.CornerRadius(BorderRadius);
 		}
 	}
 }

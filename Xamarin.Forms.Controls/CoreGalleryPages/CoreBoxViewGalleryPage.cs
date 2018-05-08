@@ -32,6 +32,10 @@ namespace Xamarin.Forms.Controls
 			var colorContainer = new ViewContainer<BoxView> (Test.BoxView.Color, new BoxView { Color = Color.Pink });
 
 			Add (colorContainer);
+
+			var cornerRadiusContainer = new ViewContainer<BoxView>(Test.BoxView.CornerRadius, new BoxView { Color = Color.Red, CornerRadius = new CornerRadius(0, 12, 12, 0) });
+			
+			Add(cornerRadiusContainer);
 		}
 	}
 }

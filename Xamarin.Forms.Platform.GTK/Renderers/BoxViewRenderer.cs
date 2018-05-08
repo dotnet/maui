@@ -4,82 +4,93 @@ using Xamarin.Forms.PlatformConfiguration.GTKSpecific;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
-    public class BoxViewRenderer : ViewRenderer<BoxView, Controls.BoxView>
-    {
-        protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
-        {
-            if (e.NewElement != null)
-            {
-                if (Control == null)
-                {
-                    SetNativeControl(new Controls.BoxView());
-                }
+	public class BoxViewRenderer : ViewRenderer<BoxView, Controls.BoxView>
+	{
+		protected override void OnElementChanged(ElementChangedEventArgs<BoxView> e)
+		{
+			if (e.NewElement != null)
+			{
+				if (Control == null)
+				{
+					SetNativeControl(new Controls.BoxView());
+				}
 
-                SetColor(Element.Color);
-                SetSize();
-            }
+				SetColor(Element.Color);
+				SetCornerRadius(Element.CornerRadius);
+				SetSize();
+			}
 
-            base.OnElementChanged(e);
-        }
+			base.OnElementChanged(e);
+		}
 
-        protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            base.OnElementPropertyChanged(sender, e);
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
 
-            if (e.PropertyName == BoxView.ColorProperty.PropertyName)
-                SetColor(Element.Color);
-            else if (e.PropertyName ==
-              PlatformConfiguration.GTKSpecific.BoxView.HasCornerRadiusProperty.PropertyName)
-                SetHasCornerRadius();
-        }
+			if (e.PropertyName == BoxView.ColorProperty.PropertyName)
+				SetColor(Element.Color);
+			else if (e.PropertyName == BoxView.CornerRadiusProperty.PropertyName)
+				SetCornerRadius(Element.CornerRadius);
+			else if (e.PropertyName ==
+			  PlatformConfiguration.GTKSpecific.BoxView.HasCornerRadiusProperty.PropertyName)
+				SetHasCornerRadius();
+		}
 
-        protected override void OnSizeAllocated(Gdk.Rectangle allocation)
-        {
-            SetSize();
+		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+		{
+			SetSize();
 
-            base.OnSizeAllocated(allocation);
-        }
+			base.OnSizeAllocated(allocation);
+		}
 
-        protected override void UpdateBackgroundColor()
-        {
-            base.UpdateBackgroundColor();
+		protected override void UpdateBackgroundColor()
+		{
+			base.UpdateBackgroundColor();
 
-            var backgroundColor = Element.BackgroundColor == Color.Default ? Color.Transparent.ToGtkColor() : Element.BackgroundColor.ToGtkColor();
+			var backgroundColor = Element.BackgroundColor == Color.Default ? Color.Transparent.ToGtkColor() : Element.BackgroundColor.ToGtkColor();
 
-            Control.UpdateBackgroundColor(backgroundColor);
+			Control.UpdateBackgroundColor(backgroundColor);
 
-            Container.VisibleWindow = true;
-        }
+			Container.VisibleWindow = true;
+		}
 
-        private void SetColor(Color color)
-        {
-            if (Element == null || Control == null)
-                return;
+		private void SetColor(Color color)
+		{
+			if (Element == null || Control == null)
+				return;
 
-            if (color.IsDefaultOrTransparent())
-            {
-                Control.ResetColor();
-            }
-            else
-            {
-                var backgroundColor = color.ToGtkColor();
-                Control.UpdateColor(backgroundColor);
-            }
-        }
+			if (color.IsDefaultOrTransparent())
+			{
+				Control.ResetColor();
+			}
+			else
+			{
+				var backgroundColor = color.ToGtkColor();
+				Control.UpdateColor(backgroundColor);
+			}
+		}
 
-        private void SetSize()
-        {
-            int height = HeightRequest;
-            int width = WidthRequest;
+		private void SetCornerRadius(CornerRadius cornerRadius)
+		{
+			if (Element == null || Control == null)
+				return;
 
-            Control.UpdateSize(height, width);
-        }
+			Control.UpdateBorderRadius((int)cornerRadius.TopLeft, (int)cornerRadius.TopRight, (int)cornerRadius.BottomLeft, (int)cornerRadius.BottomRight);
+		}
 
-        private void SetHasCornerRadius()
-        {
-            var hasCornerRadius = Element.OnThisPlatform().GetHasCornerRadius();
+		private void SetSize()
+		{
+			int height = HeightRequest;
+			int width = WidthRequest;
 
-            Control.UpdateHasBorderRadius(hasCornerRadius);
-        }
-    }
+			Control.UpdateSize(height, width);
+		}
+
+		private void SetHasCornerRadius()
+		{
+			var hasCornerRadius = Element.OnThisPlatform().GetHasCornerRadius();
+
+			Control.UpdateBorderRadius();
+		}
+	}
 }
