@@ -152,7 +152,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateAlign(Control);
 			else if (e.PropertyName == Specifics.DetectReadingOrderFromContentProperty.PropertyName)
 				UpdateDetectReadingOrderFromContent(Control);
-
+			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+				UpdateLineHeight(Control);
 			base.OnElementPropertyChanged(sender, e);
 		}
 
@@ -294,6 +295,17 @@ namespace Xamarin.Forms.Platform.UWP
 				{
 					textBlock.TextReadingOrder = TextReadingOrder.UseFlowDirection;
 				}
+			}
+		}
+
+		void UpdateLineHeight(TextBlock textBlock) 
+		{
+			if (textBlock == null)
+				return;
+			
+			if (Element.LineHeight >= 0)
+			{
+				textBlock.LineHeight = Element.LineHeight * textBlock.FontSize;
 			}
 		}
 	}

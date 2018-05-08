@@ -11,7 +11,7 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
 	[RenderWith(typeof(_LabelRenderer))]
-	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Label>
+	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>
 	{
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
@@ -75,6 +75,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
+
+		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Label>> _platformConfigurationRegistry;
 
@@ -166,6 +168,12 @@ namespace Xamarin.Forms
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		public double LineHeight
+		{
+			get { return (double)GetValue(LineHeightProperty); }
+			set { SetValue(LineHeightProperty, value); }
+		}
+
 		double IFontElement.FontSizeDefaultValueCreator() =>
 			Device.GetNamedSize(NamedSize.Default, (Label)this);
 
@@ -180,6 +188,8 @@ namespace Xamarin.Forms
 
 		void IFontElement.OnFontChanged(Font oldValue, Font newValue) =>
 			 InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) =>
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		void OnFormattedTextChanged(object sender, PropertyChangedEventArgs e)
 		{

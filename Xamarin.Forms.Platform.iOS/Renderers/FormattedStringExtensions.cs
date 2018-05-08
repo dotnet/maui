@@ -1,4 +1,5 @@
 using Foundation;
+using System;
 using Xamarin.Forms.Internals;
 #if __MOBILE__
 using UIKit;
@@ -52,7 +53,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			return attributed;
 		}
 
-		internal static NSAttributedString ToAttributed(this Span span, Element owner, Color defaultForegroundColor)
+		internal static NSAttributedString ToAttributed(this Span span, Element owner, Color defaultForegroundColor, double lineHeight = -1.0)
 		{
 			if (span == null)
 				return null;
@@ -60,6 +61,14 @@ namespace Xamarin.Forms.Platform.MacOS
 			var text = span.Text;
 			if (text == null)
 				return null;
+
+			NSMutableParagraphStyle style = null;
+			lineHeight = span.LineHeight >= 0 ? span.LineHeight : lineHeight;
+			if (lineHeight >= 0)
+			{
+				style = new NSMutableParagraphStyle();
+				style.LineHeightMultiple = new nfloat(lineHeight);
+			}
 
 #if __MOBILE__
 			UIFont targetFont;
@@ -74,7 +83,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (fgcolor.IsDefault)
 				fgcolor = Color.Black; // as defined by apple docs
 
-			return new NSAttributedString(text, targetFont, fgcolor.ToUIColor(), span.BackgroundColor.ToUIColor());
+			return new NSAttributedString(text, targetFont, fgcolor.ToUIColor(), span.BackgroundColor.ToUIColor(), null, style);
 #else
 			NSFont targetFont;
 			if (span.IsDefault())
@@ -88,19 +97,21 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (fgcolor.IsDefault)
 				fgcolor = Color.Black; // as defined by apple docs
 
-			return new NSAttributedString(text, targetFont, fgcolor.ToNSColor(), span.BackgroundColor.ToNSColor());
+			return new NSAttributedString(text, targetFont, fgcolor.ToNSColor(), span.BackgroundColor.ToNSColor(),
+										  null, null, null, NSUnderlineStyle.None, NSUnderlineStyle.None, style);
 #endif
 		}
 
 		internal static NSAttributedString ToAttributed(this FormattedString formattedString, Element owner,
-			Color defaultForegroundColor)
+			Color defaultForegroundColor, double lineHeight = -1.0)
 		{
 			if (formattedString == null)
 				return null;
 			var attributed = new NSMutableAttributedString();
+
 			foreach (var span in formattedString.Spans)
 			{
-				var attributedString = span.ToAttributed(owner, defaultForegroundColor);				
+				var attributedString = span.ToAttributed(owner, defaultForegroundColor, lineHeight);
 				if (attributedString == null)
 					continue;
 

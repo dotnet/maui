@@ -4,7 +4,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
-	public sealed class Span : GestureElement, IFontElement, ITextElement
+	public sealed class Span : GestureElement, IFontElement, ITextElement, ILineHeightElement
 	{
 		internal readonly MergedStyle _mergedStyle;
 
@@ -67,6 +67,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
+
 		[Obsolete("Font is obsolete as of version 1.3.0. Please use the Font properties directly.")]
 		public Font Font
 		{
@@ -91,6 +93,11 @@ namespace Xamarin.Forms
 		{
 			get { return (double)GetValue(FontElement.FontSizeProperty); }
 			set { SetValue(FontElement.FontSizeProperty, value); }
+		}
+
+		public double LineHeight {
+			get { return (double)GetValue(LineHeightElement.LineHeightProperty); }
+			set { SetValue(LineHeightElement.LineHeightProperty, value); }
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
@@ -124,6 +131,10 @@ namespace Xamarin.Forms
 				throw new InvalidOperationException($"{nameof(PanGestureRecognizer)} is not supported on a {nameof(Span)}");
 			if (gesture is PinchGestureRecognizer)
 				throw new InvalidOperationException($"{nameof(PinchGestureRecognizer)} is not supported on a {nameof(Span)}");
+		}
+
+		void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue)
+		{
 		}
 	}
 }

@@ -215,6 +215,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				SkipNextInvalidate();
 				UpdateText();
+				UpdateLineHeight();
 				if (e.OldElement?.LineBreakMode != e.NewElement.LineBreakMode)
 					UpdateLineBreakMode();
 				if (e.OldElement?.HorizontalTextAlignment != e.NewElement.HorizontalTextAlignment
@@ -239,6 +240,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateLineBreakMode();
 			else if (e.PropertyName == Label.TextProperty.PropertyName || e.PropertyName == Label.FormattedTextProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+				UpdateLineHeight();
 		}
 
 		void UpdateColor()
@@ -314,6 +317,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_wasFormatted = false;
 			}
 
+			_lastSizeRequest = null;
+		}
+
+		void UpdateLineHeight() {
+			SetLineSpacing(0, (float) Element.LineHeight);
 			_lastSizeRequest = null;
 		}
 	}

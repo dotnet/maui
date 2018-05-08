@@ -132,6 +132,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateLineBreakMode();
 			else if (e.PropertyName == Label.TextProperty.PropertyName || e.PropertyName == Label.FormattedTextProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
+				UpdateLineHeight();
 		}
 
 		void UpdateColor()
@@ -181,6 +183,14 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_view.SetLineBreakMode(Element.LineBreakMode);
 			_lastSizeRequest = null;
+		}
+
+		void UpdateLineHeight()
+		{
+			if (Element.LineHeight >= 0)
+			{
+				_view.SetLineSpacing(0, (float)Element.LineHeight);
+			}
 		}
 
 		void UpdateText()
