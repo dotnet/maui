@@ -494,6 +494,7 @@ namespace Xamarin.Forms.CustomAttributes
 		{
 			Completed,
 			TextChanged,
+			Placeholder,
 			Text,
 			TextColor,
 			FontAttributes,

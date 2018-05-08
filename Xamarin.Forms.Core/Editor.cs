@@ -19,8 +19,13 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
+		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(Editor), default(string));
+
+		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(Editor), Color.Default);
+
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
 			=> ((Editor)bindable)?.InvalidateMeasure());
+
 
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
 
@@ -41,6 +46,18 @@ namespace Xamarin.Forms
 		{
 			get { return (Color)GetValue(TextElement.TextColorProperty); }
 			set { SetValue(TextElement.TextColorProperty, value); }
+		}
+
+		public string Placeholder
+		{
+			get { return (string)GetValue(PlaceholderProperty); }
+			set { SetValue(PlaceholderProperty, value); }
+		}
+
+		public Color PlaceholderColor
+		{
+			get { return (Color)GetValue(PlaceholderColorProperty); }
+			set { SetValue(PlaceholderColorProperty, value); }
 		}
 
 		public FontAttributes FontAttributes
