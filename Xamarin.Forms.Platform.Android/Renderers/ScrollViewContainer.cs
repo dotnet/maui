@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_childView is Layout layout1)
 				{
-					layout1.LayoutChanged -= OnLayoutChanged;
+					layout1.LayoutChanged -= OnChildLayoutChanged;
 				}
 
 				_childView = value;
@@ -46,13 +46,18 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_childView is Layout layout)
 				{ 
-					layout.LayoutChanged += OnLayoutChanged;
+					layout.LayoutChanged += OnChildLayoutChanged;
 				}
 			}
 		}
 
-		void OnLayoutChanged(object sender, EventArgs e)
+		void OnChildLayoutChanged(object sender, EventArgs e)
 		{
+			if (IsInLayout)
+			{
+				return;
+			}
+
 			RequestLayout();
 		}
 
