@@ -69,6 +69,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.AnchorXProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.AnchorYProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.ScaleProperty, ApplyTransformation);
+			RegisterPropertyHandler(VisualElement.ScaleXProperty, ApplyTransformation);
+			RegisterPropertyHandler(VisualElement.ScaleYProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.RotationProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.RotationXProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.RotationYProperty, ApplyTransformation);
@@ -948,11 +950,13 @@ namespace Xamarin.Forms.Platform.Tizen
 		void ApplyScale(EvasMap map, ERect geometry, ref bool changed)
 		{
 			var scale = Element.Scale;
+			var scaleX = Element.ScaleX * scale;
+			var scaleY = Element.ScaleY * scale;
 
 			// apply scale factor
-			if (scale != 1.0)
+			if (scaleX != 1.0 || scaleY != 1.0)
 			{
-				map.Zoom(scale, scale,
+				map.Zoom(scaleX, scaleY,
 					geometry.X + (int)(geometry.Width * Element.AnchorX),
 					geometry.Y + (int)(geometry.Height * Element.AnchorY));
 				changed = true;
