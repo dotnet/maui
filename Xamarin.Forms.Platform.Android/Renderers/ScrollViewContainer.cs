@@ -25,10 +25,7 @@ namespace Xamarin.Forms.Platform.Android
 
 				RemoveAllViews();
 
-				if (_childView is Layout layout1)
-				{
-					layout1.LayoutChanged -= OnChildLayoutChanged;
-				}
+				UnsubscribeChildLayoutChanges();
 
 				_childView = value;
 
@@ -61,12 +58,22 @@ namespace Xamarin.Forms.Platform.Android
 			RequestLayout();
 		}
 
+		void UnsubscribeChildLayoutChanges()
+		{
+			if (_childView is Layout layout)
+			{
+				layout.LayoutChanged -= OnChildLayoutChanged;
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
 
 			if (disposing)
 			{
+				UnsubscribeChildLayoutChanges();
+
 				if (ChildCount > 0)
 					GetChildAt(0).Dispose();
 				RemoveAllViews();
