@@ -146,7 +146,9 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateAnchorX();
 			else if (e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
 				UpdateAnchorY();
-			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName || e.PropertyName == VisualElement.ScaleYProperty.PropertyName)
+			else if (   e.PropertyName == VisualElement.ScaleProperty.PropertyName
+					 || e.PropertyName == VisualElement.ScaleXProperty.PropertyName
+					 || e.PropertyName == VisualElement.ScaleYProperty.PropertyName)
 				UpdateScale();
 			else if (e.PropertyName == VisualElement.RotationProperty.PropertyName)
 				UpdateRotation();
@@ -307,9 +309,8 @@ namespace Xamarin.Forms.Platform.Android
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
 
-			if (aview is FormsViewGroup)
+			if (aview is FormsViewGroup formsViewGroup)
 			{
-				var formsViewGroup = (FormsViewGroup)aview;
 				formsViewGroup.SendBatchUpdate((float)(view.AnchorX * _context.ToPixels(view.Width)),
 											   (float)(view.AnchorY * _context.ToPixels(view.Height)),
 											   (int)(view.IsVisible ? ViewStates.Visible : ViewStates.Invisible),
@@ -318,18 +319,26 @@ namespace Xamarin.Forms.Platform.Android
 											   (float)view.Rotation,
 											   (float)view.RotationX,
 											   (float)view.RotationY,
-											   (float)view.ScaleX,
-											   (float)view.ScaleY,
+											   (float)view.Scale * (float)view.ScaleX,
+											   (float)view.Scale * (float)view.ScaleY,
 											   _context.ToPixels(view.TranslationX),
 											   _context.ToPixels(view.TranslationY));
 			}
 			else
 			{
-				FormsViewGroup.SendViewBatchUpdate(aview, (float)(view.AnchorX * _context.ToPixels(view.Width)),
-					(float)(view.AnchorY * _context.ToPixels(view.Height)),
-					(int)(view.IsVisible ? ViewStates.Visible : ViewStates.Invisible), view.IsEnabled, (float)view.Opacity,
-					(float)view.Rotation, (float)view.RotationX, (float)view.RotationY,  (float)view.ScaleX,
-					(float)view.ScaleY, _context.ToPixels(view.TranslationX), _context.ToPixels(view.TranslationY));
+				FormsViewGroup.SendViewBatchUpdate(aview,
+												   (float)(view.AnchorX * _context.ToPixels(view.Width)),
+												   (float)(view.AnchorY * _context.ToPixels(view.Height)),
+												   (int)(view.IsVisible ? ViewStates.Visible : ViewStates.Invisible),
+												   view.IsEnabled,
+												   (float)view.Opacity,
+												   (float)view.Rotation,
+												   (float)view.RotationX,
+												   (float)view.RotationY,
+												   (float)view.Scale * (float)view.ScaleX,
+												   (float)view.Scale * (float)view.ScaleY,
+												   _context.ToPixels(view.TranslationX),
+												   _context.ToPixels(view.TranslationY));
 			}
 
 			Performance.Stop(reference);
