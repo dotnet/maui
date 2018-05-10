@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Views;
 
@@ -23,6 +25,8 @@ namespace Xamarin.Forms.Platform.Android
 
 				RemoveAllViews();
 
+				UnsubscribeChildLayoutChanges();
+
 				_childView = value;
 
 				if (_childView == null)
@@ -36,6 +40,29 @@ namespace Xamarin.Forms.Platform.Android
 					renderer.View.RemoveFromParent();
 
 				AddView(renderer.View);
+
+				if (_childView is Layout layout)
+				{ 
+					layout.LayoutChanged += OnChildLayoutChanged;
+				}
+			}
+		}
+
+		void OnChildLayoutChanged(object sender, EventArgs e)
+		{
+			if (IsInLayout)
+			{
+				return;
+			}
+
+			RequestLayout();
+		}
+
+		void UnsubscribeChildLayoutChanges()
+		{
+			if (_childView is Layout layout)
+			{
+				layout.LayoutChanged -= OnChildLayoutChanged;
 			}
 		}
 
@@ -45,6 +72,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				UnsubscribeChildLayoutChanges();
+
 				if (ChildCount > 0)
 					GetChildAt(0).Dispose();
 				RemoveAllViews();
