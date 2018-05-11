@@ -29,6 +29,7 @@ namespace Xamarin.Essentials
             public const string Tablet = "Tablet";
             public const string Desktop = "Desktop";
             public const string TV = "TV";
+            public const string Watch = "Watch";
 
             public const string Unsupported = "Unsupported";
         }
@@ -41,6 +42,7 @@ namespace Xamarin.Essentials
             public const string iOS = "iOS";
             public const string Android = "Android";
             public const string UWP = "UWP";
+            public const string Tizen = "Tizen";
 
             public const string Unsupported = "Unsupported";
         }
