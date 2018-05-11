@@ -18,7 +18,8 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = new StackLayout
 			{
 				Children = {
-					new Button { Text = "Call 123 4567", AutomationId = "tel", Command = new Command(() => Device.OpenUri(new System.Uri("tel:123 4567"))) }
+					new Button { Text = "Call 123 4567", AutomationId = "tel", Command = new Command(() => Device.OpenUri(new System.Uri("tel:123 4567"))) },
+					new Button { Text = "Mail support@xamarin.com", AutomationId = "mailto", Command = new Command(() => Device.OpenUri(new System.Uri("mailto:support@xamarin.com"))) }
 				}
 			};
 		}
