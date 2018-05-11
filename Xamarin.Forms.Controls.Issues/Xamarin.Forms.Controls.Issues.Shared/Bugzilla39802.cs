@@ -6,8 +6,9 @@ using System.Collections.Generic;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 39802, "Gap between ListView cells even if SeparatorVisablity is set to none ", PlatformAffected.iOS)]
-	public class Bugzilla39802 : TestContentPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 39802, "Gap between ListView cells even if SeparatorVisablity is set to none ", 
+		PlatformAffected.iOS)]
+	public class Bugzilla39802 : TestContentPage 
 	{
 		protected override void Init()
 		{
@@ -46,6 +47,7 @@ namespace Xamarin.Forms.Controls.Issues
 			Content = lst;
 		}
 
+		[Preserve(AllMembers = true)]
 		public class ItemTemplate : ViewCell
 		{
 			public ItemTemplate()
@@ -65,6 +67,8 @@ namespace Xamarin.Forms.Controls.Issues
 				View = stk;
 			}
 		}
+
+		[Preserve(AllMembers = true)]
 		public class GroupHeaderTemplate : ViewCell
 		{
 			public GroupHeaderTemplate()
@@ -84,6 +88,8 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 
 		public ObservableCollection<GroupedData> ListItems { get; set; }
+
+		[Preserve(AllMembers = true)]
 		public class MyItem
 		{
 			public string Title { get; set; }
