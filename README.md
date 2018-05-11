@@ -4,6 +4,8 @@ Xamarin.Essentials gives developers essential cross-platform APIs for their mobi
 
 iOS, Android, and UWP offer unique operating system and platform APIs that developers have access to all in C# leveraging Xamarin. It is great that developers have 100% API access in C# with Xamarin, but these APIs are different per platform. This means developers have to learn three different APIs to access platform specific features. With Xamarin.Essentials developers have a single cross-platform API that works with any iOS, Android, or UWP application that can be accessed from shared code no matter how the user interface is created.
 
+[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/xamarin/Essentials)
+
 ## Build Status
 
 | Build Server | Type         | Platform | Status                                                                                                                                                                                 |
@@ -13,7 +15,15 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 | Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Essentials-DeviceTests-Mac) |
 
 ## Installation
-Coming soon... 
+Xamarin.Essentials is available via:
+* NuGet Official Releases: [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Essentials.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Essentials)
+* MyGet Development Feed: https://www.myget.org/F/xamarin-essentials/api/v3/index.json
+
+Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started) for full setup instructions.
+
+## Documentation
+
+Browser our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials) including feature guides on how to use each feature.
 
 ## Supported Platforms
 Xamarin.Essentials is focused on the following platforms for our first release:
@@ -23,30 +33,30 @@ Xamarin.Essentials is focused on the following platforms for our first release:
 
 ## Current Features:
 The following cross-platform APIs are planned for our first release:
- - [x] Accelerometer
- - [X] App Information
- - [x] Battery
- - [x] Clipboard
- - [x] Compass
- - [x] Connectivity
- - [x] Data Transfer
- - [x] Device Information
- - [x] File System Helpers
- - [x] Email
- - [x] Flashlight
- - [x] Geocoding 
- - [x] Geolocation 
- - [x] Gyroscope
- - [x] Magnetometer
- - [x] Open Browser
- - [x] Phone Dialer
- - [x] Preferences
- - [x] Screen Lock
- - [x] Secure Storage
- - [x] SMS
- - [x] Text-to-Speech
- - [x] Version Tracking
- - [x] Vibrate
+ - [x] [Accelerometer](https://docs.microsoft.com/xamarin/essentials/accelerometer)
+ - [X] [App Information](https://docs.microsoft.com/xamarin/essentials/app-information)
+ - [x] [Battery](https://docs.microsoft.com/xamarin/essentials/battery)
+ - [x] [Clipboard](https://docs.microsoft.com/xamarin/essentials/clipboard)
+ - [x] [Compass](https://docs.microsoft.com/xamarin/essentials/compass)
+ - [x] [Connectivity](https://docs.microsoft.com/xamarin/essentials/connectivity)
+ - [x] [Data Transfer](https://docs.microsoft.com/xamarin/essentials/data-transfer)
+ - [x] [Device Information](https://docs.microsoft.com/xamarin/essentials/device-information)
+ - [x] [File System Helpers](https://docs.microsoft.com/xamarin/essentials/file-system-helpers)
+ - [x] [Email](https://docs.microsoft.com/xamarin/essentials/email)
+ - [x] [Flashlight](https://docs.microsoft.com/xamarin/essentials/flashlight)
+ - [x] [Geocoding](https://docs.microsoft.com/xamarin/essentials/geocoding)
+ - [x] [Geolocation](https://docs.microsoft.com/xamarin/essentials/geolocation)
+ - [x] [Gyroscope](https://docs.microsoft.com/xamarin/essentials/gyroscope)
+ - [x] [Magnetometer](https://docs.microsoft.com/xamarin/essentials/magnetometer)
+ - [x] [Open Browser](https://docs.microsoft.com/xamarin/essentials/open-browser)
+ - [x] [Phone Dialer](https://docs.microsoft.com/xamarin/essentials/phone-dialer)
+ - [x] [Preferences](https://docs.microsoft.com/xamarin/essentials/preferences)
+ - [x] [Screen Lock](https://docs.microsoft.com/xamarin/essentials/screen-lock)
+ - [x] [Secure Storage](https://docs.microsoft.com/xamarin/essentials/secure-storage)
+ - [x] [SMS](https://docs.microsoft.com/xamarin/essentials/sms)
+ - [x] [Text-to-Speech](https://docs.microsoft.com/xamarin/essentials/text-to-speech)
+ - [x] [Version Tracking](https://docs.microsoft.com/xamarin/essentials/version-tracking)
+ - [x] [Vibrate](https://docs.microsoft.com/xamarin/essentials/vibrate)
  
 ## Contributing
 Please read through our [Contribution Guide](CONTRIBUTING.md). We are not accepting new PRs for full features, however any issue that is marked as `up for grabs` are open for community contributions. We encourage creating new issues for bugs found during usage that the team will triage. Additionally, we are open for code refactoring suggestions in PRs.
