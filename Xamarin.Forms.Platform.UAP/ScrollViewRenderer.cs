@@ -41,9 +41,10 @@ namespace Xamarin.Forms.Platform.UWP
 		protected override void Dispose(bool disposing)
 		{
 			if (Control != null)
-			{
 				Control.ViewChanged -= OnViewChanged;
-			}
+
+			if (Element != null)
+				Element.ScrollToRequested -= OnScrollToRequested;
 
 			base.Dispose(disposing);
 		}
@@ -135,7 +136,7 @@ namespace Xamarin.Forms.Platform.UWP
 			// values. The ScrollViewRenderer for Android does something similar by waiting up
 			// to 10ms for layout to occur.
 			int cycle = 0;
-			while (!Element.IsInNativeLayout)
+			while (Element != null && !Element.IsInNativeLayout)
 			{
 				await Task.Delay(TimeSpan.FromMilliseconds(1));
 				cycle++;
@@ -143,6 +144,9 @@ namespace Xamarin.Forms.Platform.UWP
 				if (cycle >= 10)
 					break;
 			}
+
+			if (Element == null)
+				return;
 
 			double x = e.ScrollX, y = e.ScrollY;
 
@@ -212,7 +216,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		UwpScrollBarVisibility ScrollBarVisibilityToUwp(ScrollBarVisibility visibility)
 		{
-			switch(visibility)
+			switch (visibility)
 			{
 				case ScrollBarVisibility.Always:
 					return UwpScrollBarVisibility.Visible;
