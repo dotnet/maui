@@ -207,9 +207,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
+      <Member Id="P:Xamarin.Essentials.Locale.Id" />
       <Member Id="P:Xamarin.Essentials.Locale.Language" />
       <Member Id="P:Xamarin.Essentials.Locale.Name" />
-      <Member Id="P:Xamarin.Essentials.Locale.Id" />
     </Type>
     <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />

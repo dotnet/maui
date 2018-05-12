@@ -207,9 +207,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
+      <Member Id="P:Xamarin.Essentials.Locale.Id" />
       <Member Id="P:Xamarin.Essentials.Locale.Language" />
       <Member Id="P:Xamarin.Essentials.Locale.Name" />
-      <Member Id="P:Xamarin.Essentials.Locale.Id" />
     </Type>
     <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
@@ -337,7 +337,10 @@
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String,Security.SecAccessible)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String,Security.SecAccessible)" />
+      <Member Id="P:Xamarin.Essentials.SecureStorage.DefaultAccessible" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Fastest" />

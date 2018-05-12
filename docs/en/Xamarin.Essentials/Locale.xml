@@ -33,6 +33,24 @@
         <remarks>This value may vary between platforms.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Id">
+      <MemberSignature Language="C#" Value="public string Id { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance string Id" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Locale.Id" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Unique Id of the Locale.</summary>
+        <value></value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Language">
       <MemberSignature Language="C#" Value="public string Language { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Language" />
@@ -65,24 +83,6 @@
       </ReturnValue>
       <Docs>
         <summary>Display name of the Locale.</summary>
-        <value></value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-     <Member MemberName="Id">
-      <MemberSignature Language="C#" Value="public string Id { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string Id" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Locale.Id" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Unique Id of the Locale.</summary>
         <value></value>
         <remarks></remarks>
       </Docs>
