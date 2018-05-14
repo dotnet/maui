@@ -260,7 +260,7 @@ namespace Xamarin.Forms
 			{
 				NSUrl url;
 
-				if (uri.Scheme == "tel")
+				if (uri.Scheme == "tel" || uri.Scheme == "mailto")
 					url = new NSUrl(uri.AbsoluteUri);
 				else
 					url = NSUrl.FromString(uri.OriginalString) ?? new NSUrl(uri.Scheme, uri.Host, uri.PathAndQuery);
