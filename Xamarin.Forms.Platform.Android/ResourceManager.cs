@@ -9,6 +9,7 @@ using Android.Graphics.Drawables;
 using Android.Support.V4.Content;
 using Path = System.IO.Path;
 using Xamarin.Forms.Internals;
+using AndroidAppCompat = Android.Support.V7.Content.Res.AppCompatResources;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -22,7 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			var file = fileImageSource.File;
 			Drawable drawable = context.GetDrawable(fileImageSource);
-			if(drawable == null)
+			if (drawable == null)
 			{
 				var bitmap = GetBitmap(context.Resources, file) ?? BitmapFactory.DecodeFile(file);
 				if (bitmap == null)
@@ -57,7 +58,7 @@ namespace Xamarin.Forms.Platform.Android
 			return BitmapFactory.DecodeResourceAsync(resource, IdFromTitle(name, DrawableClass));
 		}
 
-		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. " 
+		[Obsolete("GetDrawable(this Resources, string) is obsolete as of version 2.5. "
 			+ "Please use GetDrawable(this Context, string) instead.")]
 		public static Drawable GetDrawable(this Resources resource, string name)
 		{
@@ -68,7 +69,7 @@ namespace Xamarin.Forms.Platform.Android
 				return null;
 			}
 
-			return ContextCompat.GetDrawable(Forms.Context, id);
+			return AndroidAppCompat.GetDrawable(Forms.Context, id);
 		}
 
 		public static Drawable GetDrawable(this Context context, string name)
@@ -80,7 +81,7 @@ namespace Xamarin.Forms.Platform.Android
 				return null;
 			}
 
-			return ContextCompat.GetDrawable(context, id);
+			return AndroidAppCompat.GetDrawable(context, id);
 		}
 
 		public static int GetDrawableByName(string name)

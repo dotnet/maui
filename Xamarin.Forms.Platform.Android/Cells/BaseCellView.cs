@@ -189,35 +189,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		async void UpdateBitmap(ImageSource source, ImageSource previousSource = null)
 		{
-			if (Equals(source, previousSource))
-				return;
-
-			_imageView.SetImageResource(global::Android.Resource.Color.Transparent);
-
-			Bitmap bitmap = null;
-			IImageSourceHandler handler;
-
-			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
-			{
-				try
-				{
-					bitmap = await handler.LoadImageAsync(source, Context);
-				}
-				catch (TaskCanceledException)
-				{
-				}
-				catch (IOException ex)
-				{
-					Log.Warning("Xamarin.Forms.Platform.Android.BaseCellView", "Error updating bitmap: {0}", ex);
-				}
-			}
-
-			if (bitmap == null && source is FileImageSource)
-				_imageView.SetImageResource(ResourceManager.GetDrawableByName(((FileImageSource)source).File));
-			else
-				_imageView.SetImageBitmap(bitmap);
-
-			bitmap?.Dispose();
+			await _imageView.UpdateBitmap(null, source, null, previousSource);
 		}
 	}
 }

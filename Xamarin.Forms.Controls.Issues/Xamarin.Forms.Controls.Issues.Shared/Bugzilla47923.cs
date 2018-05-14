@@ -17,108 +17,125 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			PushAsync(new LandingPage());
 		}
-	}
 
-	public class VectorImagePage : ContentPage
-	{
-		public VectorImagePage(Aspect aspect)
+		[Preserve(AllMembers = true)]
+		public class VectorImagePage : ContentPage
 		{
-			var scrollView = new ScrollView();
-			var stackLayout = new StackLayout
+			public VectorImagePage(Aspect aspect)
 			{
-				Orientation = StackOrientation.Vertical,
-				Spacing = 10
-			};
-
-			var vectors = new[] { "cartman", "heart", "error" };
-
-			for (var i = 0; i < vectors.Length; i++)
-			{
-				for (var j = 0; j < 3; j++)
+				var scrollView = new ScrollView();
+				var stackLayout = new StackLayout
 				{
-					var image = new Image
+					Orientation = StackOrientation.Vertical,
+					Spacing = 10
+				};
+
+				var vectors = new[] { "cartman", "heart", "error" };
+
+				for (var i = 0; i < vectors.Length; i++)
+				{
+					for (var j = 0; j < 3; j++)
 					{
-						Source = vectors[i],
-						WidthRequest = j == 1 ? 150 : 300,
-						HeightRequest = j == 2 ? 150 : 300,
-						BackgroundColor = i == 0 ? Color.Red : (i == 1 ? Color.Green : Color.Yellow),
-						HorizontalOptions = LayoutOptions.Center,
-						Aspect = aspect
-					};
-					stackLayout.Children.Add(image);
+						var image = new Image
+						{
+							Source = vectors[i],
+							WidthRequest = j == 1 ? 150 : 300,
+							HeightRequest = j == 2 ? 150 : 300,
+							BackgroundColor = i == 0 ? Color.Red : (i == 1 ? Color.Green : Color.Yellow),
+							HorizontalOptions = LayoutOptions.Center,
+							Aspect = aspect
+						};
+						stackLayout.Children.Add(image);
+					}
 				}
+
+				scrollView.Content = stackLayout;
+				Content = scrollView;
 			}
-
-			scrollView.Content = stackLayout;
-			Content = scrollView;
 		}
-	}
 
-	public class CellViewPage : ContentPage
-	{
-		public CellViewPage()
+		[Preserve(AllMembers = true)]
+		public class CellViewPage : ContentPage
 		{
-			var list = new List<int>();
-			for (var i = 0; i < 50; i++)
-				list.Add(i);
-
-			var listView = new ListView
+			public CellViewPage()
 			{
-				ItemsSource = list,
-				ItemTemplate = new DataTemplate(() => new ImageCell { ImageSource = "cartman" })
-			};
+				var list = new List<int>();
+				for (var i = 0; i < 50; i++)
+					list.Add(i);
 
-			Content = listView;
+				var listView = new ListView
+				{
+					ItemsSource = list,
+					ItemTemplate = new DataTemplate(() => new ImageCell { ImageSource = "cartman" })
+				};
+
+				Content = listView;
+			}
 		}
-	}
 
-	public class LandingPage : ContentPage
-	{
-		public LandingPage()
+		[Preserve(AllMembers = true)]
+		public class LandingPage : ContentPage
 		{
-			var scrollView = new ScrollView();
-			var stackLayout = new StackLayout
+			public LandingPage()
 			{
-				Orientation = StackOrientation.Vertical,
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-				Spacing = 10
-			};
+				var scrollView = new ScrollView();
+				var stackLayout = new StackLayout
+				{
+					Orientation = StackOrientation.Vertical,
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center,
+					Spacing = 10
+				};
 
-			var button1 = new Button
-			{
-				Text = "AspectFit",
-				Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.AspectFit)); }),
-				HorizontalOptions = LayoutOptions.Center
-			};
-			stackLayout.Children.Add(button1);
+				var button1 = new Button
+				{
+					Text = "AspectFit",
+					Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.AspectFit)); }),
+					HorizontalOptions = LayoutOptions.Center
+				};
+				stackLayout.Children.Add(button1);
 
-			var button2 = new Button
-			{
-				Text = "AspectFill",
-				Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.AspectFill)); }),
-				HorizontalOptions = LayoutOptions.Center
-			};
-			stackLayout.Children.Add(button2);
+				var button2 = new Button
+				{
+					Text = "AspectFill",
+					Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.AspectFill)); }),
+					HorizontalOptions = LayoutOptions.Center
+				};
+				stackLayout.Children.Add(button2);
 
-			var button3 = new Button
-			{
-				Text = "Fill",
-				Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.Fill)); }),
-				HorizontalOptions = LayoutOptions.Center
-			};
-			stackLayout.Children.Add(button3);
+				var button3 = new Button
+				{
+					Text = "Fill",
+					Command = new Command(() => { Navigation.PushAsync(new VectorImagePage(Aspect.Fill)); }),
+					HorizontalOptions = LayoutOptions.Center
+				};
+				stackLayout.Children.Add(button3);
 
-			var button4 = new Button
-			{
-				Text = "Test cell views",
-				Command = new Command(() => { Navigation.PushAsync(new CellViewPage()); }),
-				HorizontalOptions = LayoutOptions.Center
-			};
-			stackLayout.Children.Add(button4);
+				var button4 = new Button
+				{
+					Text = "Test cell views",
+					Command = new Command(() => { Navigation.PushAsync(new CellViewPage()); }),
+					HorizontalOptions = LayoutOptions.Center
+				};
+				stackLayout.Children.Add(button4);
 
-			scrollView.Content = stackLayout;
-			Content = scrollView;
+				scrollView.Content = stackLayout;
+				Content = scrollView;
+			}
 		}
+
+#if UITEST
+		[Test]
+		public void Bugzilla47923Test()
+		{
+			foreach (var testString in new[] { "AspectFit", "AspectFill", "Fill", "Test cell views" })
+			{
+				RunningApp.WaitForElement(q => q.Marked(testString));
+				RunningApp.Tap(q => q.Marked(testString));
+				RunningApp.Back();
+			}
+		}
+#endif
+
 	}
 }
