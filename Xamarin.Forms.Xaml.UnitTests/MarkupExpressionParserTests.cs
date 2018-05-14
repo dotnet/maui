@@ -1,10 +1,9 @@
 using System;
-using NUnit.Framework;
-using System.Xml;
 using System.Collections.Generic;
-
-using Xamarin.Forms.Core.UnitTests;
 using System.Reflection;
+using System.Xml;
+using NUnit.Framework;
+using Xamarin.Forms.Core.UnitTests;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -177,7 +176,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				}
 			}
 
-			public object TargetProperty { get; } = null;
+			public object TargetProperty { get; set; } = null;
 		}
 
 		[Test]
@@ -323,6 +322,65 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Assert.NotNull (binding);
 			Assert.AreEqual(".", binding.Path);
 			Assert.That (binding.Converter, Is.TypeOf<ReverseConverter> ());
+		}
+
+		public int FontSize { get; set; }
+
+		[TestCase("{OnPlatform 20, Android=23}", Device.Android, 23)]
+		[TestCase("{OnPlatform Android=20, iOS=25}", Device.iOS, 25)]
+		[TestCase("{OnPlatform Android=20, GTK=25}", Device.GTK, 25)]
+		[TestCase("{OnPlatform Android=20, macOS=25}", Device.macOS, 25)]
+		[TestCase("{OnPlatform Android=20, Tizen=25}", Device.Tizen, 25)]
+		[TestCase("{OnPlatform Android=20, UWP=25}", Device.UWP, 25)]
+		[TestCase("{OnPlatform Android=20, WPF=25}", Device.WPF, 25)]
+		[TestCase("{OnPlatform 20}", Device.iOS, 20)]
+		[TestCase("{OnPlatform 20}", Device.GTK, 20)]
+		[TestCase("{OnPlatform 20}", Device.macOS, 20)]
+		[TestCase("{OnPlatform 20}", Device.Tizen, 20)]
+		[TestCase("{OnPlatform 20}", Device.UWP, 20)]
+		[TestCase("{OnPlatform 20}", Device.WPF, 20)]
+		[TestCase("{OnPlatform 20}", "Foo", 20)]
+		[TestCase("{OnPlatform Android=23, Default=20}", "Foo", 20)]
+		public void OnPlatformExtension(string markup, string platform, int expected)
+		{
+			var services = new MockPlatformServices
+			{
+				RuntimePlatform = platform
+			};
+			Device.PlatformServices = services;
+
+			var actual = (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
+			{
+				IXamlTypeResolver = typeResolver,
+				IProvideValueTarget = new MockValueProvider("foo", new object())
+				{
+					TargetProperty = GetType().GetProperty(nameof(FontSize))
+				}
+			});
+
+			Assert.AreEqual(expected, actual);
+		}
+
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Phone, 23)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Default=20}", TargetIdiom.Tablet, 25)]
+		[TestCase("{OnIdiom 20, Phone=23, Tablet=25}", TargetIdiom.Desktop, 20)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Desktop, 26)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.TV, 30)]
+		[TestCase("{OnIdiom Phone=23, Tablet=25, Desktop=26, TV=30, Watch=10}", TargetIdiom.Watch, 10)]
+		[TestCase("{OnIdiom Phone=23}", TargetIdiom.Desktop, default(int))]
+		public void OnIdiomExtension(string markup, TargetIdiom idiom, int expected)
+		{
+			Device.SetIdiom(idiom);
+			var actual =  (new MarkupExtensionParser()).ParseExpression(ref markup, new Internals.XamlServiceProvider(null, null)
+			{
+				IXamlTypeResolver = typeResolver,
+				IProvideValueTarget = new MockValueProvider("foo", new object())
+				{
+					TargetProperty = GetType().GetProperty(nameof(FontSize))
+				}
+			});
+
+			Assert.AreEqual(expected, actual);
 		}
 	}
 }
