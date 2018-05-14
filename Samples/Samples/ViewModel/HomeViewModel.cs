@@ -28,8 +28,8 @@ namespace Samples.ViewModel
                     "📏",
                     "All Sensors",
                     typeof(AllSensorsPage),
-                    "Have a look at the accelerometer, compass, gyroscope and magnetometer.",
-                    new[] { "accelerometer", "compass", "gyroscope", "magnetometer", "sensors", "hardware", "device" }),
+                    "Have a look at the accelerometer, compass, gyroscope, magnetometer, and orientation sensors.",
+                    new[] { "accelerometer", "compass", "gyroscope", "magnetometer", "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
                     "📦",
                     "App Info",
@@ -120,6 +120,12 @@ namespace Samples.ViewModel
                     typeof(MagnetometerPage),
                     "Detect device's orientation relative to Earth's magnetic field.",
                     new[] { "compass", "magnetometer", "sensors", "hardware", "device" }),
+                new SampleItem(
+                    "📏",
+                    "Orientation Sensor",
+                    typeof(OrientationSensorPage),
+                    "Retrieve orientation of the device in 3D space.",
+                    new[] { "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
                     "📞",
                     "Phone Dialer",

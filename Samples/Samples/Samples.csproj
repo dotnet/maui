@@ -20,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj" />
   </ItemGroup>
-  
+
   <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 
 </Project>
