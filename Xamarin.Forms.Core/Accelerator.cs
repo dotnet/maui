@@ -53,8 +53,12 @@ namespace Xamarin.Forms
 
 			}
 
-			var keys = text.Split(new char[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
-			accelarat.Keys = keys;
+			if (text != Separator.ToString()) {
+				var keys = text.Split(new char[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
+				accelarat.Keys = keys;
+			} else {
+				accelarat.Keys = new[] { text };
+			}
 			return accelarat;
 		}
 

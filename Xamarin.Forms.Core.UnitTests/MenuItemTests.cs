@@ -56,7 +56,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		
 			Assert.AreEqual(MenuItem.GetAccelerator(item).ToString(), shourtCutKeyBinding);
 		}
-		
+
+		[Test]
+		public void AcceleratorPlus ()
+		{
+			var item = new MenuItem ();
+			string shourtCutKeyLikeSeparator = "+";
+			MenuItem.SetAccelerator (item, Xamarin.Forms.Accelerator.FromString (shourtCutKeyLikeSeparator));
+
+			var accelerator = MenuItem.GetAccelerator(item);
+			Assert.AreEqual (accelerator.ToString (), shourtCutKeyLikeSeparator);
+			Assert.AreEqual (accelerator.Keys.FirstOrDefault(), shourtCutKeyLikeSeparator);
+		}
+
 		protected override T CreateSource()
 		{
 			return new T();
