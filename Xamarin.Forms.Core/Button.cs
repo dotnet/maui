@@ -8,7 +8,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ButtonRenderer))]
-	public class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>
+	public class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement
 	{
 		const double DefaultSpacing = 10;
 		const int DefaultBorderRadius = 5;
@@ -49,6 +49,24 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ImageProperty = BindableProperty.Create("Image", typeof(FileImageSource), typeof(Button), default(FileImageSource),
 			propertyChanging: (bindable, oldvalue, newvalue) => ((Button)bindable).OnSourcePropertyChanging((ImageSource)oldvalue, (ImageSource)newvalue),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Button)bindable).OnSourcePropertyChanged((ImageSource)oldvalue, (ImageSource)newvalue));
+
+		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
+
+		public Thickness Padding
+		{
+			get { return (Thickness)GetValue (PaddingElement.PaddingProperty); }
+			set { SetValue (PaddingElement.PaddingProperty, value); }
+		}
+
+		Thickness IPaddingElement.PaddingDefaultValueCreator ()
+		{
+			return default (Thickness);
+		}
+
+		void IPaddingElement.OnPaddingPropertyChanged (Thickness oldValue, Thickness newValue)
+		{
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+		}
 
 		readonly Lazy<PlatformConfigurationRegistry<Button>> _platformConfigurationRegistry;
 

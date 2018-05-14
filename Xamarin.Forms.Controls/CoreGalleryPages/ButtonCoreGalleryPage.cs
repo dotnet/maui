@@ -93,6 +93,12 @@ namespace Xamarin.Forms.Controls
 				}
 			);
 
+			var paddingContainer = new ViewContainer<Button> (Test.Button.Padding,
+				new Button {
+					Text = "Padding", BackgroundColor = Color.Red, Padding = new Thickness (20, 30, 60, 15)
+				}
+			);
+
 			Add (borderButtonContainer);
 			Add (borderRadiusContainer);
 			Add (borderWidthContainer);
@@ -102,6 +108,7 @@ namespace Xamarin.Forms.Controls
 			Add (imageContainer);
 			Add (textContainer);
 			Add (textColorContainer);
+			Add (paddingContainer);
 			//stackLayout.Children.Add (textColorContainer);
 		}
 	}

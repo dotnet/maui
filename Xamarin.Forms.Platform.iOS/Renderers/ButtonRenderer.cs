@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Platform.iOS
 		bool _useLegacyColorManagement;
 		bool _titleChanged;
 		SizeF _titleSize;
+		UIEdgeInsets _paddingDelta = new UIEdgeInsets();
 
 		// This looks like it should be a const under iOS Classic,
 		// but that doesn't work under iOS 
@@ -80,6 +81,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateBorder();
 				UpdateImage();
 				UpdateTextColor();
+				UpdatePadding();
 			}
 		}
 
@@ -102,6 +104,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateBorder();
 			else if (e.PropertyName == Button.ImageProperty.PropertyName)
 				UpdateImage();
+			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
+				UpdatePadding();
 		}
     
 		protected override void SetAccessibilityLabel()
@@ -227,6 +231,25 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void UpdatePadding(UIButton button = null)
+		{
+			var uiElement = button ?? Control;
+			if (uiElement == null)
+				return;
+			uiElement.ContentEdgeInsets = new UIEdgeInsets(
+				(float)(Element.Padding.Top + _paddingDelta.Top),
+				(float)(Element.Padding.Left + _paddingDelta.Left),
+				(float)(Element.Padding.Bottom + _paddingDelta.Bottom),
+				(float)(Element.Padding.Right + _paddingDelta.Right)
+			);
+		}
+
+		void UpdateContentEdge(UIButton button, UIEdgeInsets? delta = null)
+		{
+			_paddingDelta = delta ?? new UIEdgeInsets ();
+			UpdatePadding(button);
+		}
+
 		void ClearEdgeInsets(UIButton button)
 		{
 			if (button == null)
@@ -234,7 +257,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			Control.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
 			Control.TitleEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
-			Control.ContentEdgeInsets = new UIEdgeInsets(0, 0, 0, 0);
+			UpdateContentEdge (Control);
 		}
 
 		void ComputeEdgeInsets(UIButton button, Button.ButtonContentLayout layout)
@@ -249,7 +272,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				button.ImageEdgeInsets = new UIEdgeInsets(0, -spacing, 0, spacing);
 				button.TitleEdgeInsets = new UIEdgeInsets(0, spacing, 0, -spacing);
-				button.ContentEdgeInsets = new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing);
+				UpdateContentEdge (button, new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing));
 				return;
 			}
 
@@ -268,7 +291,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				button.ImageEdgeInsets = new UIEdgeInsets(0, labelWidth + spacing, 0, -labelWidth - spacing);
 				button.TitleEdgeInsets = new UIEdgeInsets(0, -imageWidth - spacing, 0, imageWidth + spacing);
-				button.ContentEdgeInsets = new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing);
+				UpdateContentEdge (button, new UIEdgeInsets(0, 2 * spacing, 0, 2 * spacing));
 				return;
 			}
 
@@ -277,7 +300,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var edgeOffset = (float)Math.Min(imageVertOffset, titleVertOffset);
 
-			button.ContentEdgeInsets = new UIEdgeInsets(edgeOffset, 0, edgeOffset, 0);
+			UpdateContentEdge (button, new UIEdgeInsets (edgeOffset, 0, edgeOffset, 0));
 
 			var horizontalImageOffset = labelWidth / 2;
 			var horizontalTitleOffset = imageWidth / 2;

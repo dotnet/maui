@@ -55,6 +55,9 @@ namespace Xamarin.Forms.Platform.UWP
 				if (Element.IsSet(Button.CornerRadiusProperty) && Element.CornerRadius != (int)Button.CornerRadiusProperty.DefaultValue)
 					UpdateBorderRadius();
 
+				if (Element.IsSet(Button.PaddingProperty) && Element.Padding != (Thickness)Button.PaddingProperty.DefaultValue)
+					UpdatePadding();
+
 				UpdateFont();
 			}
 		}
@@ -103,6 +106,10 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Button.CornerRadiusProperty.PropertyName)
 			{
 				UpdateBorderRadius();
+			}
+			else if (e.PropertyName == Button.PaddingProperty.PropertyName)
+			{
+				UpdatePadding();
 			}
 		}
 
@@ -249,6 +256,16 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateTextColor()
 		{
 			Control.Foreground = Element.TextColor != Color.Default ? Element.TextColor.ToBrush() : (Brush)Windows.UI.Xaml.Application.Current.Resources["DefaultTextForegroundThemeBrush"];
+		}
+
+		void UpdatePadding()
+		{
+			Control.Padding = new WThickness(
+				Element.Padding.Left,
+				Element.Padding.Top,
+				Element.Padding.Right,
+				Element.Padding.Bottom
+			);
 		}
 	}
 }

@@ -227,6 +227,7 @@ namespace Xamarin.Forms.CustomAttributes
 			BorderColor,
 			BorderRadius,
 			Image,
+			Padding
 		}
 
 		public enum VisualElement
