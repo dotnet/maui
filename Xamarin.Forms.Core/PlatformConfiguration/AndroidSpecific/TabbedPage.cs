@@ -1,5 +1,6 @@
 ﻿namespace Xamarin.Forms.PlatformConfiguration.AndroidSpecific
 {
+	using System;
 	using FormsElement = Forms.TabbedPage;
 
 	public static class TabbedPage
@@ -64,6 +65,103 @@
 		{
 			SetOffscreenPageLimit(config.Element, value);
 			return config;
+		}
+
+		public static readonly BindableProperty ToolbarPlacementProperty =
+			BindableProperty.Create("ToolbarPlacement", typeof(ToolbarPlacement),
+			typeof(TabbedPage), ToolbarPlacement.Top);
+
+
+		public static ToolbarPlacement GetToolbarPlacement(BindableObject element)
+		{
+			return (ToolbarPlacement)element.GetValue(ToolbarPlacementProperty);
+		}
+
+		public static void SetToolbarPlacement(BindableObject element, ToolbarPlacement value)
+		{
+			if (element.IsSet(ToolbarPlacementProperty) && GetToolbarPlacement(element) != value)
+			{
+				throw new InvalidOperationException("Changing the tabs placement after it's been set is not supported.");
+			}
+
+			element.SetValue(ToolbarPlacementProperty, value);
+		}
+
+		public static ToolbarPlacement GetToolbarPlacement(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetToolbarPlacement(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> SetToolbarPlacement(this IPlatformElementConfiguration<Android, FormsElement> config, ToolbarPlacement value)
+		{
+			SetToolbarPlacement(config.Element, value);
+			return config;
+		}
+
+		public static int GetMaxItemCount(BindableObject element)
+		{
+			if (GetToolbarPlacement(element) == ToolbarPlacement.Bottom)
+			{
+				return 5;
+			}
+
+			return int.MaxValue;
+		}
+
+		public static int GetMaxItemCount(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetMaxItemCount(config.Element);
+		}
+
+		public static readonly BindableProperty BarItemColorProperty =
+			BindableProperty.Create("BarItemColor", typeof(Color),
+			typeof(TabbedPage), Color.Default);
+
+
+		public static Color GetBarItemColor(BindableObject element)
+		{
+			return (Color)element.GetValue(BarItemColorProperty);
+		}
+
+		public static void SetBarItemColor(BindableObject element, Color value)
+		{
+			element.SetValue(BarItemColorProperty, value);
+		}
+
+		public static Color GetBarItemColor(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetBarItemColor(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> SetBarItemColor(this IPlatformElementConfiguration<Android, FormsElement> config, Color value)
+		{
+			SetBarItemColor(config.Element, value);
+			return config;
+		}
+
+		public static readonly BindableProperty BarSelectedItemColorProperty =
+			BindableProperty.Create("BarSelectedItemColor", typeof(Color),
+			typeof(TabbedPage), Color.Default);
+
+
+		public static Color GetBarSelectedItemColor(BindableObject element)
+		{
+			return (Color)element.GetValue(BarSelectedItemColorProperty);
+		}
+
+		public static void SetBarSelectedItemColor(BindableObject element, Color value)
+		{
+			element.SetValue(BarSelectedItemColorProperty, value);
+		}
+		public static IPlatformElementConfiguration<Android, FormsElement> SetBarSelectedItemColor(this IPlatformElementConfiguration<Android, FormsElement> config, Color value)
+		{
+			SetBarSelectedItemColor(config.Element, value);
+			return config;
+		}
+
+		public static Color GetBarSelectedItemColor(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetBarSelectedItemColor(config.Element);
 		}
 	}
 }

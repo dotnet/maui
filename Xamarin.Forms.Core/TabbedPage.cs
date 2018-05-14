@@ -14,26 +14,14 @@ namespace Xamarin.Forms
 
 		public Color BarBackgroundColor
 		{
-			get
-			{
-				return (Color)GetValue(BarBackgroundColorProperty);
-			}
-			set
-			{
-				SetValue(BarBackgroundColorProperty, value);
-			}
+			get => (Color)GetValue(BarBackgroundColorProperty);
+			set => SetValue(BarBackgroundColorProperty, value);
 		}
 
 		public Color BarTextColor
 		{
-			get
-			{
-				return (Color)GetValue(BarTextColorProperty);
-			}
-			set
-			{
-				SetValue(BarTextColorProperty, value);
-			}
+			get => (Color)GetValue(BarTextColorProperty);
+			set => SetValue(BarTextColorProperty, value);
 		}
 
 		protected override Page CreateDefault(object item)

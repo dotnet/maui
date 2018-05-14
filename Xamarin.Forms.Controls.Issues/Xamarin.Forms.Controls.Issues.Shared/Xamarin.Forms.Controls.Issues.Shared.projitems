@@ -250,6 +250,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1415.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2247.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GroupListViewHeaderIndexOutOfRange.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1760.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1975.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1601.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1717.cs" />
@@ -304,6 +305,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1908.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1672.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2394.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2595.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2983.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2981.cs" />
@@ -372,6 +374,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla53179_1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RestartAppTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BottomTabbedPageTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\QuickCollectNavigationPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPages\ScreenshotConditionalApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla41842.cs" />
