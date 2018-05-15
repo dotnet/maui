@@ -136,6 +136,7 @@
     <Content Include="coffee.png" />
     <Content Include="cover1.jpg" />
     <Content Include="cover1small.jpg" />
+    <Content Include="crimson.jpg" />
     <Content Include="crimsonsmall.jpg" />
     <Content Include="default.css" />
     <Content Include="invalidimage.jpg" />
