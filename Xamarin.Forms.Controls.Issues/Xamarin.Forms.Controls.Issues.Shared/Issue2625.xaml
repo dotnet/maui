@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.Issues.Issue2625">
+    <ContentPage.Content>
+        <StackLayout>
+			
+			<Label Text="The buttons below should have their background colors set by the VisualStateManager. If they have the default button background color, this test has failed."></Label>
+
+			<Button
+				HorizontalOptions="Center"
+				Text="I should have a Lime background"
+				VerticalOptions="Center">
+				<VisualStateManager.VisualStateGroups>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Normal">
+							<VisualState.Setters>
+								<Setter Property="BackgroundColor" Value="Lime" />
+							</VisualState.Setters>
+						</VisualState>
+					</VisualStateGroup>
+				</VisualStateManager.VisualStateGroups>
+			</Button>
+			
+			<Button
+				HorizontalOptions="Center"
+				Text="I should have a Pink background"
+				IsEnabled="False"
+				VerticalOptions="Center">
+				<VisualStateManager.VisualStateGroups>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Disabled">
+							<VisualState.Setters>
+								<Setter Property="BackgroundColor" Value="Pink" />
+							</VisualState.Setters>
+						</VisualState>
+					</VisualStateGroup>
+				</VisualStateManager.VisualStateGroups>
+			</Button>
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
