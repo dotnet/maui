@@ -17,10 +17,19 @@ namespace Xamarin.Forms.Controls.Issues
 	{
 		protected override void Init()
 		{
+			var instructions = new Label
+			{
+				Text =
+					"If running on Android, all of the Label, Entry, Editor, and SearchBar text sizes below should be"
+					+ " the same size."
+					+ " If they are not, the test has failed."
+					+ " This test should be ignored on non-Android platforms."
+			};
+
 			var label = new Label { FontSize = 18 };
-			var entry = new Entry { };
-			var editor = new Editor { };
-			var searchBar = new SearchBar { };
+			var entry = new Entry();
+			var editor = new Editor();
+			var searchBar = new SearchBar();
 
 			label.Text = $"I am label. FontSize:{label.FontSize}";
 			entry.Text = $"I am entry. FontSize:{entry.FontSize}";
@@ -29,17 +38,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = new StackLayout
 			{
-				Children = { label, entry, editor, searchBar }
+				Children = { instructions, label, entry, editor, searchBar }
 			};
 		}
-
-#if UITEST
-		[Test]
-		[Category(UITestCategories.ManualReview)]
-		public void FontSizeComparisonTest()
-		{
-			RunningApp.Screenshot("If all of the font sizes are visibly the same size, this test has passed.");
-		}
-#endif
 	}
 }

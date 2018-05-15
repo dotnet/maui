@@ -16,7 +16,7 @@
 	                       HorizontalOptions="FillAndExpand"
                          AutomationId="LoginPageIdentifier"
 	                       FontSize="Large"
-	                       Text="Sign in with your Xamarin account to save and sync favorites and session feedback. Sign in with your Xamarin account to save and sync favorites and session feedback. Sign in with your Xamarin account to save and sync favorites and session feedback. Sign in with your Xamarin account to save and sync favorites and session feedback."/>
+	                       Text="This text should be wrapping. If it is not, the test has failed. This text should be wrapping. If it is not, the test has failed. This text should be wrapping. If it is not, the test has failed. This text should be wrapping. If it is not, the test has failed. This text should be wrapping. If it is not, the test has failed."/>
 	           
 	        </StackLayout>
 	    </Grid>

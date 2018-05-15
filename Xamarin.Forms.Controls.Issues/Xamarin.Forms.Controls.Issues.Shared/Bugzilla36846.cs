@@ -7,17 +7,12 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-// Apply the default category of "Issues" to all of the tests in this assembly
-// We use this as a catch-all for tests which haven't been individually categorized
-#if UITEST
-[assembly: NUnit.Framework.Category("Issues")]
-#endif
-
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 36846, "ActionBar does not dismiss when content which called it is removed", PlatformAffected.Android)]
-	public class Bugzilla36846 : TestNavigationPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Bugzilla, 36846, "ActionBar does not dismiss when content which called it is removed", 
+		PlatformAffected.Android)]
+	public class Bugzilla36846 : TestNavigationPage 
 	{
 		protected override void Init()
 		{
@@ -38,6 +33,16 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				Orientation = StackOrientation.Vertical
 			};
+
+			var instructions = new Label
+			{
+				Text = "This test only applies to Android. " 
+						+ "Long press one of the items in the list. The Action Bar should appear. "
+						+ "Tap the 'Clear List' button. The list should clear and the Action Bar should disappear. "
+						+ "If the action bar remains, this test has failed."
+			};
+
+			stackLayout.Children.Add(instructions);
 
 			var listView = new ListView
 			{

@@ -6,7 +6,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms.Controls
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 39853, "BorderRadius ignored on UWP", PlatformAffected.WinRT)]
+	[Issue(IssueTracker.Bugzilla, 39853, "BorderRadius ignored on UWP", PlatformAffected.UWP)]
 	public class Bugzilla39853 : TestContentPage
 	{
 		public class RoundedButton : Xamarin.Forms.Button
@@ -24,7 +24,7 @@ namespace Xamarin.Forms.Controls
 				BorderColor = Color.White;
 				TextColor = Color.Purple;
 				Text = "YAY";
-				Image = new FileImageSource { File = "crimson.jpg" };
+				//Image = new FileImageSource { File = "crimson.jpg" };
 			}
 
 			public new int BorderRadius
@@ -79,11 +79,19 @@ namespace Xamarin.Forms.Controls
 #pragma warning restore
 				}
 			}
-
 		}
+
 		protected override void Init()
 		{
-			Content = new RoundedButton(100);
+			var layout = new StackLayout();
+
+			var instructions = new Label { Text = "The button below should be round. " 
+												+ "If it has any right angles, the test has failed."};
+
+			layout.Children.Add(instructions);
+			layout.Children.Add(new RoundedButton(100));
+
+			Content = layout;
 		}
 	}
 }
