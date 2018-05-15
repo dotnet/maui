@@ -19,11 +19,20 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement), 
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged, 
-				defaultValueCreator: bindable => new VisualStateGroupList());
+				defaultValueCreator: bindable => new VisualStateGroupList {VisualElement = (VisualElement)bindable});
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			GoToState((VisualElement)bindable, CommonStates.Normal);
+			if (oldValue is VisualStateGroupList oldVisualStateGroupList)
+			{
+				oldVisualStateGroupList.VisualElement = null;
+			}
+
+			var visualElement = (VisualElement)bindable;
+
+			((VisualStateGroupList)newValue).VisualElement = visualElement;
+
+			visualElement.ChangeVisualState();
 		}
 
 		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)
@@ -94,7 +103,7 @@ namespace Xamarin.Forms
 	{
 		readonly IList<VisualStateGroup> _internalList;
 
-		void Validate(IList<VisualStateGroup> groups)
+		static void Validate(IList<VisualStateGroup> groups)
 		{ 
 			// If we have 1 group, no need to worry about duplicate group names
 			if (groups.Count > 1)
@@ -118,12 +127,18 @@ namespace Xamarin.Forms
 
 		public VisualStateGroupList() 
 		{
-			_internalList = new WatchAddList<VisualStateGroup>(Validate);
+			_internalList = new WatchAddList<VisualStateGroup>(ValidateAndNotify);
 		}
 
-		void ValidateOnStatesChanged(object sender, EventArgs eventArgs)
+		void ValidateAndNotify(object sender, EventArgs eventArgs)
 		{
-			Validate(_internalList);
+			ValidateAndNotify(_internalList);
+		}
+
+		void ValidateAndNotify(IList<VisualStateGroup> groups)
+		{
+			Validate(groups);
+			OnStatesChanged();
 		}
 
 		public IEnumerator<VisualStateGroup> GetEnumerator()
@@ -139,14 +154,14 @@ namespace Xamarin.Forms
 		public void Add(VisualStateGroup item)
 		{
 			_internalList.Add(item);
-			item.StatesChanged += ValidateOnStatesChanged;
+			item.StatesChanged += ValidateAndNotify;
 		}
 
 		public void Clear()
 		{
 			foreach (var group in _internalList)
 			{
-				group.StatesChanged -= ValidateOnStatesChanged;
+				group.StatesChanged -= ValidateAndNotify;
 			}
 
 			_internalList.Clear();
@@ -164,7 +179,7 @@ namespace Xamarin.Forms
 
 		public bool Remove(VisualStateGroup item)
 		{
-			item.StatesChanged -= ValidateOnStatesChanged;
+			item.StatesChanged -= ValidateAndNotify;
 			return _internalList.Remove(item);
 		}
 
@@ -179,13 +194,13 @@ namespace Xamarin.Forms
 
 		public void Insert(int index, VisualStateGroup item)
 		{
-			item.StatesChanged += ValidateOnStatesChanged;
+			item.StatesChanged += ValidateAndNotify;
 			_internalList.Insert(index, item);
 		}
 
 		public void RemoveAt(int index)
 		{
-			_internalList[index].StatesChanged -= ValidateOnStatesChanged;
+			_internalList[index].StatesChanged -= ValidateAndNotify;
 			_internalList.RemoveAt(index);
 		}
 
@@ -193,6 +208,13 @@ namespace Xamarin.Forms
 		{
 			get => _internalList[index];
 			set => _internalList[index] = value;
+		}
+
+		internal VisualElement VisualElement { get; set; }
+
+		void OnStatesChanged()
+		{
+			VisualElement?.ChangeVisualState();
 		}
 	}
 

@@ -113,6 +113,18 @@
 				</VisualStateGroup>
 			</VisualStateManager.VisualStateGroups>
 		</Entry>
+		
+		<Entry x:Name="Button1">
+			<VisualStateManager.VisualStateGroups>
+				<VisualStateGroup x:Name="CommonStates">
+					<VisualState x:Name="Normal">
+						<VisualState.Setters>
+							<Setter Property="BackgroundColor" Value="Lime" />
+						</VisualState.Setters>
+					</VisualState>
+				</VisualStateGroup>
+			</VisualStateManager.VisualStateGroups>
+		</Entry>
 
 	</StackLayout>
 

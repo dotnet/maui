@@ -170,6 +170,17 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(normal.Setters.Count, Is.EqualTo(0));
 				Assert.That(disabled.Setters.Count, Is.EqualTo(2));
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void VisualElementGoesToCorrectStateWhenAvailable(bool useCompiledXaml)
+			{
+				var layout = new VisualStateManagerTests(useCompiledXaml);
+
+				var button = layout.Button1;
+
+				Assert.That(button.BackgroundColor, Is.EqualTo(Color.Lime));
+			}
 		}
 	}
 }

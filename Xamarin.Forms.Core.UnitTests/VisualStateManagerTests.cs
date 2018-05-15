@@ -212,5 +212,55 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(groups1[0].CurrentState.Name, Is.EqualTo(NormalStateName));
 
 		}
+
+		[Test]
+		public void VisualElementGoesToCorrectStateWhenAvailable()
+		{
+			var label = new Label();
+			double targetBottomMargin = 1.5;
+
+			var group = new VisualStateGroup();
+			var list = new VisualStateGroupList();
+
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = View.MarginBottomProperty, Value = targetBottomMargin });
+
+			list.Add(group);
+			group.States.Add(normalState);
+
+			VisualStateManager.SetVisualStateGroups(label, list);
+
+			Assert.That(label.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+		}
+
+		[Test]
+		public void VisualElementGoesToCorrectStateWhenAvailableFromSetter()
+		{
+			double targetBottomMargin = 1.5;
+
+			var group = new VisualStateGroup();
+			var list = new VisualStateGroupList();
+
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = View.MarginBottomProperty, Value = targetBottomMargin });
+
+			var x = new Setter
+			{
+				Property = VisualStateManager.VisualStateGroupsProperty,
+				Value = list
+			};
+
+			list.Add(group);
+			group.States.Add(normalState);
+
+			var label1 = new Label();
+			var label2 = new Label();
+
+			x.Apply(label1);
+			x.Apply(label2);
+
+			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+			Assert.That(label2.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+		}
 	}
 }
