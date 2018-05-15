@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		float _lastTextSize = -1f;
 		Typeface _lastTypeface;
 		Color _lastUpdateColor = Color.Default;
+		float _lineSpacingExtraDefault = -1.0f;
+		float _lineSpacingMultiplierDefault = -1.0f;
 		VisualElementTracker _visualElementTracker;
 		VisualElementRenderer _visualElementRenderer;
 		readonly MotionEventHelper _motionEventHelper = new MotionEventHelper();
@@ -321,7 +323,16 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		void UpdateLineHeight() {
-			SetLineSpacing(0, (float) Element.LineHeight);
+			if (_lineSpacingExtraDefault < 0)
+				_lineSpacingExtraDefault = LineSpacingExtra;
+			if (_lineSpacingMultiplierDefault < 0)
+				_lineSpacingMultiplierDefault = LineSpacingMultiplier;
+
+			if (Element.LineHeight == -1)
+				SetLineSpacing(_lineSpacingExtraDefault, _lineSpacingMultiplierDefault);
+			else if (Element.LineHeight >= 0)
+				SetLineSpacing(0, (float) Element.LineHeight);
+
 			_lastSizeRequest = null;
 		}
 	}

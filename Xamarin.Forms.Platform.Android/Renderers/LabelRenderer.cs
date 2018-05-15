@@ -13,6 +13,8 @@ namespace Xamarin.Forms.Platform.Android
 	public class LabelRenderer : ViewRenderer<Label, TextView>
 	{
 		ColorStateList _labelTextColorDefault;
+		float _lineSpacingExtraDefault;
+		float _lineSpacingMultiplierDefault;
 		int _lastConstraintHeight;
 		int _lastConstraintWidth;
 
@@ -96,6 +98,8 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_view = (FormsTextView)CreateNativeControl();
 				_labelTextColorDefault = _view.TextColors;
+				_lineSpacingMultiplierDefault = _view.LineSpacingMultiplier;
+				_lineSpacingExtraDefault = _view.LineSpacingExtra;
 				SetNativeControl(_view);
 			}
 
@@ -187,10 +191,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateLineHeight()
 		{
-			if (Element.LineHeight >= 0)
-			{
+			if (Element.LineHeight == -1)
+				_view.SetLineSpacing(_lineSpacingExtraDefault, _lineSpacingMultiplierDefault);
+			else if (Element.LineHeight >= 0)
 				_view.SetLineSpacing(0, (float)Element.LineHeight);
-			}
 		}
 
 		void UpdateText()
