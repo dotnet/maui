@@ -184,7 +184,7 @@ namespace Xamarin.Forms.Platform.Android
 			IVisualElementRenderer renderer = Platform.GetRenderer(view);
 			if (renderer == null) // child is itself a compressed layout
 			{
-				if (_childPackagers.TryGetValue (view, out VisualElementPackager packager))
+				if (_childPackagers != null && _childPackagers.TryGetValue (view, out VisualElementPackager packager))
 				{
 					foreach (var child in view.LogicalChildren)
 					{
