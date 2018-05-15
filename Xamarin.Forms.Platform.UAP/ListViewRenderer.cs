@@ -325,6 +325,18 @@ namespace Xamarin.Forms.Platform.UWP
 			ScrollTo(listProxy.ProxiedEnumerable, listProxy[0], ScrollToPosition.Start, true, true);
 		}
 
+		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item)
+		{
+			var selectorItem = List.ContainerFromItem(item) as Windows.UI.Xaml.Controls.Primitives.SelectorItem;
+			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
+			var position = transform?.TransformPoint(new Windows.Foundation.Point(0, 0));
+			if (!position.HasValue)
+				return false;
+			// scroll with animation
+			viewer.ChangeView(position.Value.X, position.Value.Y, null);
+			return true;
+		}
+
 #pragma warning disable 1998 // considered for removal
 		async void ScrollTo(object group, object item, ScrollToPosition toPosition, bool shouldAnimate, bool includeGroup = false, bool previouslyFailed = false)
 #pragma warning restore 1998
@@ -350,6 +362,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			object[] t = templatedItems.GetGroup(location.Item1).ItemsSource.Cast<object>().ToArray();
 			object c = t[location.Item2];
+
+			// scroll to desired item with animation
+			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c))
+				return;
 
 			double viewportHeight = viewer.ViewportHeight;
 
