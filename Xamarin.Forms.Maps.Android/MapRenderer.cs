@@ -16,7 +16,7 @@ using Math = System.Math;
 
 namespace Xamarin.Forms.Maps.Android
 {
-	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback 
+	public class MapRenderer : ViewRenderer<Map, MapView>, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
 	{
 		const string MoveMessageName = "MapMoveToRegion";
 
@@ -192,31 +192,31 @@ namespace Xamarin.Forms.Maps.Android
 				MoveToRegion(Element.LastMoveToRegion, false);
 			}
 		}
-		
+
 		protected virtual void OnMapReady(GoogleMap map)
 		{
 			if (map == null)
 			{
 				return;
 			}
-			
+
 			map.SetOnCameraMoveListener(this);
 			map.InfoWindowClick += MapOnMarkerClick;
-			
+
 			map.UiSettings.ZoomControlsEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ZoomGesturesEnabled = Map.HasZoomEnabled;
 			map.UiSettings.ScrollGesturesEnabled = Map.HasScrollEnabled;
 			map.MyLocationEnabled = map.UiSettings.MyLocationButtonEnabled = Map.IsShowingUser;
 			SetMapType();
 		}
-		
+
 		protected virtual MarkerOptions CreateMarker(Pin pin)
 		{
 			var opts = new MarkerOptions();
 			opts.SetPosition(new LatLng(pin.Position.Latitude, pin.Position.Longitude));
 			opts.SetTitle(pin.Label);
 			opts.SetSnippet(pin.Address);
-			
+
 			return opts;
 		}
 
@@ -290,7 +290,7 @@ namespace Xamarin.Forms.Maps.Android
 				break;
 			}
 
-			// only consider event handled if a handler is present. 
+			// only consider event handled if a handler is present.
 			// Else allow default behavior of displaying an info window.
 			targetPin?.SendTap();
 		}
@@ -373,8 +373,8 @@ namespace Xamarin.Forms.Maps.Android
 			foreach (Pin p in pins)
 			{
 				p.PropertyChanged -= PinOnPropertyChanged;
+				var marker = _markers.FirstOrDefault(m => m.Id == (string)p.Id);
 
-				var marker = _markers.FirstOrDefault(m => (object)m.Id == p.Id);
 				if (marker == null)
 				{
 					continue;

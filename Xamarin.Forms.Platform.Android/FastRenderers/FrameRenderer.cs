@@ -247,7 +247,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return;
 
 			Color borderColor = Element.BorderColor;
-			_backgroundDrawable.SetStroke(3, borderColor.IsDefault ? AColor.White : borderColor.ToAndroid());
+
+			if (borderColor.IsDefault)
+				_backgroundDrawable.SetStroke(0, AColor.Transparent);
+			else
+				_backgroundDrawable.SetStroke(3, borderColor.ToAndroid());
 		}
 
 		void UpdateShadow()
