@@ -59,6 +59,11 @@ namespace Xamarin.Forms.Maps.MacOS
 					var mapModel = (Map)Element;
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 					((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
+
+					foreach (Pin pin in mapModel.Pins)
+					{
+						pin.PropertyChanged -= PinOnPropertyChanged;
+					}
 				}
 
 				var mkMapView = (MKMapView)Control;
@@ -101,6 +106,11 @@ namespace Xamarin.Forms.Maps.MacOS
 				var mapModel = (Map)e.OldElement;
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 				((ObservableCollection<Pin>)mapModel.Pins).CollectionChanged -= OnCollectionChanged;
+
+				foreach (Pin pin in mapModel.Pins)
+				{
+					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
 			}
 
 			if (e.NewElement != null)
@@ -283,10 +293,37 @@ namespace Xamarin.Forms.Maps.MacOS
 		{
 			foreach (Pin pin in pins)
 			{
+				pin.PropertyChanged += PinOnPropertyChanged;
+
 				var annotation = CreateAnnotation(pin);
 				pin.Id = annotation;
 				((MKMapView)Control).AddAnnotation(annotation);
 			}
+		}
+
+		void PinOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Pin pin = (Pin)sender;
+			var annotation = pin.Id as MKPointAnnotation;
+
+			if (annotation == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == Pin.LabelProperty.PropertyName)
+			{
+				annotation.Title = pin.Label;
+			}
+			else if (e.PropertyName == Pin.AddressProperty.PropertyName)
+			{
+				annotation.Subtitle = pin.Address;
+			}
+			else if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			{
+				annotation.Coordinate = new CLLocationCoordinate2D(pin.Position.Latitude, pin.Position.Longitude);
+			}
+
 		}
 
 		void MkMapViewOnRegionChanged(object sender, MKMapViewChangeEventArgs e)
@@ -335,8 +372,11 @@ namespace Xamarin.Forms.Maps.MacOS
 
 		void RemovePins(IList pins)
 		{
-			foreach (object pin in pins)
-				((MKMapView)Control).RemoveAnnotation((IMKAnnotation)((Pin)pin).Id);
+			foreach (Pin pin in pins)
+			{
+				pin.PropertyChanged -= PinOnPropertyChanged;
+				((MKMapView)Control).RemoveAnnotation((IMKAnnotation)pin.Id);
+			}
 		}
 
 		void UpdateHasScrollEnabled()

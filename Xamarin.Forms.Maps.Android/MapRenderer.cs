@@ -73,6 +73,11 @@ namespace Xamarin.Forms.Maps.Android
 				{
 					MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnCollectionChanged;
+
+					foreach (Pin pin in Element.Pins)
+					{
+						pin.PropertyChanged -= PinOnPropertyChanged;
+					}
 				}
 
 				if (NativeMap != null)
@@ -105,6 +110,11 @@ namespace Xamarin.Forms.Maps.Android
 			{
 				Map oldMapModel = e.OldElement;
 				((ObservableCollection<Pin>)oldMapModel.Pins).CollectionChanged -= OnCollectionChanged;
+
+				foreach (Pin pin in oldMapModel.Pins)
+				{
+					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
 
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 
@@ -229,10 +239,36 @@ namespace Xamarin.Forms.Maps.Android
 				var opts = CreateMarker(pin);
 				var marker = map.AddMarker(opts);
 
+				pin.PropertyChanged += PinOnPropertyChanged;
+
 				// associate pin with marker for later lookup in event handlers
 				pin.Id = marker.Id;
 				return marker;
 			}));
+		}
+
+		void PinOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Pin pin = (Pin)sender;
+			Marker marker = _markers.FirstOrDefault(m => m.Id == (string)pin.Id);
+
+			if (marker == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == Pin.LabelProperty.PropertyName)
+			{
+				marker.Title = pin.Label;
+			}
+			else if (e.PropertyName == Pin.AddressProperty.PropertyName)
+			{
+				marker.Snippet = pin.Address;
+			}
+			else if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			{
+				marker.Position = new LatLng(pin.Position.Latitude, pin.Position.Longitude);
+			}
 		}
 
 		void MapOnMarkerClick(object sender, GoogleMap.InfoWindowClickEventArgs eventArgs)
@@ -336,6 +372,8 @@ namespace Xamarin.Forms.Maps.Android
 
 			foreach (Pin p in pins)
 			{
+				p.PropertyChanged -= PinOnPropertyChanged;
+
 				var marker = _markers.FirstOrDefault(m => (object)m.Id == p.Id);
 				if (marker == null)
 				{
