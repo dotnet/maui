@@ -76,6 +76,12 @@ namespace Xamarin.Forms.Controls
 				map.MoveToRegion (MapSpan.FromCenterAndRadius (new Position (41.890202, 12.492049), Distance.FromMiles (0.5)));
 			};
 
+			var buttonRemove = new Button { Text = "Remove Pin" };
+			buttonRemove.Clicked += (a, e) =>
+			{
+				map.Pins.RemoveAt(0);
+			};
+
 			_stack = new StackLayout {
 				Spacing = 0,
 				Padding = new Thickness (30, 0)
@@ -102,6 +108,7 @@ namespace Xamarin.Forms.Controls
 			_stack.Children.Add (buttonAddressFromPosition);
 			_stack.Children.Add (buttonHome);
 			_stack.Children.Add (buttonZoomPin);
+			_stack.Children.Add (buttonRemove);
 
 			Content = _stack;
 		}

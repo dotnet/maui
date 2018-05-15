@@ -336,7 +336,7 @@ namespace Xamarin.Forms.Maps.Android
 
 			foreach (Pin p in pins)
 			{
-				var marker = _markers.FirstOrDefault(m => (object)m.Id == p.Id);
+				var marker = _markers.FirstOrDefault(m => m.Id == (string)p.Id);
 				if (marker == null)
 				{
 					continue;
