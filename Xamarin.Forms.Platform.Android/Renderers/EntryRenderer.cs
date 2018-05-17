@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Android
 		bool TextView.IOnEditorActionListener.OnEditorAction(TextView v, ImeAction actionId, KeyEvent e)
 		{
 			// Fire Completed and dismiss keyboard for hardware / physical keyboards
-			if (actionId == ImeAction.Done || actionId == _currentInputImeFlag || (actionId == ImeAction.ImeNull && e.KeyCode == Keycode.Enter && e.Action == KeyEventActions.Up) )
+			if (actionId == ImeAction.Done || actionId == _currentInputImeFlag || (actionId == ImeAction.ImeNull && e.KeyCode == Keycode.Enter && e.Action == KeyEventActions.Up))
 			{
 				Control.ClearFocus();
 				v.HideKeyboard();
@@ -76,7 +76,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.OldElement == null)
 			{
 				var textView = CreateNativeControl();
-				
+
 				textView.AddTextChangedListener(this);
 				textView.SetOnEditorActionListener(this);
 				textView.OnKeyboardBackPressed += OnKeyboardBackPressed;
@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateAlignment()
 		{
-			Control.UpdateHorizontalAlignment(Element.HorizontalTextAlignment);
+			Control.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport());
 		}
 
 		void UpdateColor()
@@ -232,7 +232,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Control?.ClearFocus();
 		}
-    
+
 		void UpdateMaxLength()
 		{
 			var currentFilters = new List<IInputFilter>(Control?.GetFilters() ?? new IInputFilter[0]);

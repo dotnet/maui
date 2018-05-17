@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Util;
 using Android.Views.InputMethods;
+using AApplicationInfoFlags = Android.Content.PM.ApplicationInfoFlags;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -37,6 +38,9 @@ namespace Xamarin.Forms.Platform.Android
 
 			return (float)Math.Round(dp * s_displayDensity);
 		}
+
+		public static bool HasRtlSupport(this Context self) =>
+			(self.ApplicationInfo.Flags & AApplicationInfoFlags.SupportsRtl) == AApplicationInfoFlags.SupportsRtl;
 
 		internal static double GetThemeAttributeDp(this Context self, int resource)
 		{
