@@ -138,6 +138,30 @@
       </Docs>
     </Member>
     <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static DateTime Get (string key, DateTime defaultValue);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.DateTime Get(string key, valuetype System.DateTime defaultValue) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.DateTime" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
       <MemberSignature Language="C#" Value="public static double Get (string key, double defaultValue);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 Get(string key, float64 defaultValue) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double)" />
@@ -272,6 +296,34 @@
       <Parameters>
         <Parameter Name="key" Type="System.String" />
         <Parameter Name="defaultValue" Type="System.Boolean" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="defaultValue">Default value to return if the key does not exist.</param>
+        <param name="sharedName">Shared container key.</param>
+        <summary>Gets the value for a given key, or the default specified if the key does not exist.</summary>
+        <returns>Value for the given key, or the default if it does not exist.</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Get">
+      <MemberSignature Language="C#" Value="public static DateTime Get (string key, DateTime defaultValue, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype System.DateTime Get(string key, valuetype System.DateTime defaultValue, string sharedName) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime,System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.DateTime</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="defaultValue" Type="System.DateTime" />
         <Parameter Name="sharedName" Type="System.String" />
       </Parameters>
       <Docs>
@@ -487,6 +539,31 @@
       </Docs>
     </Member>
     <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, DateTime value);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, valuetype System.DateTime value) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.DateTime" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
       <MemberSignature Language="C#" Value="public static void Set (string key, double value);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, float64 value) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double)" />
@@ -626,6 +703,31 @@
       <Parameters>
         <Parameter Name="key" Type="System.String" />
         <Parameter Name="value" Type="System.Boolean" />
+        <Parameter Name="sharedName" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="key">Preference key.</param>
+        <param name="value">Preference value.</param>
+        <param name="sharedName">Shared container name.</param>
+        <summary>Sets a value for a given key.</summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Set">
+      <MemberSignature Language="C#" Value="public static void Set (string key, DateTime value, string sharedName);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Set(string key, valuetype System.DateTime value, string sharedName) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime,System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="key" Type="System.String" />
+        <Parameter Name="value" Type="System.DateTime" />
         <Parameter Name="sharedName" Type="System.String" />
       </Parameters>
       <Docs>

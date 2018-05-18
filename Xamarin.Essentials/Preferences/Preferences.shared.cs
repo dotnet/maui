@@ -1,63 +1,69 @@
-﻿namespace Xamarin.Essentials
+﻿using System;
+
+namespace Xamarin.Essentials
 {
     public static partial class Preferences
     {
         internal static string PrivatePreferencesSharedName =>
             $"{AppInfo.PackageName}.xamarinessentials";
 
+        // overloads
+
         public static bool ContainsKey(string key) =>
-            PlatformContainsKey(key, null);
+            ContainsKey(key, null);
+
+        public static void Remove(string key) =>
+            Remove(key, null);
+
+        public static void Clear() =>
+            Clear(null);
+
+        public static string Get(string key, string defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static bool Get(string key, bool defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static int Get(string key, int defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static double Get(string key, double defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static float Get(string key, float defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static long Get(string key, long defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static void Set(string key, string value) =>
+            Set(key, value, null);
+
+        public static void Set(string key, bool value) =>
+            Set(key, value, null);
+
+        public static void Set(string key, int value) =>
+            Set(key, value, null);
+
+        public static void Set(string key, double value) =>
+            Set(key, value, null);
+
+        public static void Set(string key, float value) =>
+            Set(key, value, null);
+
+        public static void Set(string key, long value) =>
+            Set(key, value, null);
+
+        // shared -> platform
 
         public static bool ContainsKey(string key, string sharedName) =>
             PlatformContainsKey(key, sharedName);
 
-        public static void Remove(string key) =>
-            PlatformRemove(key, null);
-
         public static void Remove(string key, string sharedName) =>
             PlatformRemove(key, sharedName);
 
-        public static void Clear() =>
-            PlatformClear(null);
-
         public static void Clear(string sharedName) =>
             PlatformClear(sharedName);
-
-        public static string Get(string key, string defaultValue) =>
-            PlatformGet<string>(key, defaultValue, null);
-
-        public static bool Get(string key, bool defaultValue) =>
-            PlatformGet<bool>(key, defaultValue, null);
-
-        public static int Get(string key, int defaultValue) =>
-            PlatformGet<int>(key, defaultValue, null);
-
-        public static double Get(string key, double defaultValue) =>
-            PlatformGet<double>(key, defaultValue, null);
-
-        public static float Get(string key, float defaultValue) =>
-            PlatformGet<float>(key, defaultValue, null);
-
-        public static long Get(string key, long defaultValue) =>
-            PlatformGet<long>(key, defaultValue, null);
-
-        public static void Set(string key, string value) =>
-            PlatformSet<string>(key, value, null);
-
-        public static void Set(string key, bool value) =>
-            PlatformSet<bool>(key, value, null);
-
-        public static void Set(string key, int value) =>
-            PlatformSet<int>(key, value, null);
-
-        public static void Set(string key, double value) =>
-            PlatformSet<double>(key, value, null);
-
-        public static void Set(string key, float value) =>
-            PlatformSet<float>(key, value, null);
-
-        public static void Set(string key, long value) =>
-            PlatformSet<long>(key, value, null);
 
         public static string Get(string key, string defaultValue, string sharedName) =>
             PlatformGet<string>(key, defaultValue, sharedName);
@@ -94,5 +100,19 @@
 
         public static void Set(string key, long value, string sharedName) =>
             PlatformSet<long>(key, value, sharedName);
+
+        // DateTime
+
+        public static DateTime Get(string key, DateTime defaultValue) =>
+            Get(key, defaultValue, null);
+
+        public static void Set(string key, DateTime value) =>
+            Set(key, value, null);
+
+        public static DateTime Get(string key, DateTime defaultValue, string sharedName) =>
+            DateTime.FromBinary(PlatformGet<long>(key, defaultValue.ToBinary(), sharedName));
+
+        public static void Set(string key, DateTime value, string sharedName) =>
+            PlatformSet<long>(key, value.ToBinary(), sharedName);
     }
 }

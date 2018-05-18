@@ -282,6 +282,8 @@
       <Member Id="M:Xamarin.Essentials.Preferences.ContainsKey(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int32)" />
@@ -296,6 +298,8 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Remove(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int32)" />
