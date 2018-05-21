@@ -112,8 +112,8 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\debug\TabbedPageStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\FormsEmbeddedPageWrapper.xbf
 
 if "%1" == "droid" (
-   %NUGET_EXE% restore .xamarin.forms.android.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.android.sln
+   %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.android.nuget.sln
 )
 if "%1" == "ios" (
    %NUGET_EXE% restore .xamarin.forms.ios.sln
