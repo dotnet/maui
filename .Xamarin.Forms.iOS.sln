@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.Forms", "Xamarin.Forms", "{9AD757F5-E57A-459D-A0A7-E0675E045B84}"
 EndProject
@@ -62,8 +62,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UITests", "UITests", "{D4D5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DDDFBCAF-93DE-4868-8296-FD909EF32EF7}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "APIDocs", "docs\APIDocs.shproj", "{DC1F3933-AC99-4887-8B09-E13C2B346D4F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.iOS.UITests", "Xamarin.Forms.Core.iOS.UITests\Xamarin.Forms.Core.iOS.UITests.csproj", "{EADD8100-B3AE-4A31-92C4-267A64A1C6EB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xamarin.Forms.CustomAttributes", "Xamarin.Forms.CustomAttributes\Xamarin.Forms.CustomAttributes.csproj", "{4DCD0420-1168-4B77-86DB-6196EE4BD491}"
@@ -121,7 +119,6 @@ Global
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{0f0db9cc-ea65-429c-9363-38624bf8f49c}*SharedItemsImports = 13
 		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 4
-		docs\APIDocs.projitems*{dc1f3933-ac99-4887-8b09-e13c2b346d4f}*SharedItemsImports = 13
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
@@ -214,6 +211,7 @@ Global
 		{D597E3C6-1A50-4042-99FA-3E7CE28E4819}.Release|x86.ActiveCfg = Release|Any CPU
 		{D597E3C6-1A50-4042-99FA-3E7CE28E4819}.Release|x86.Build.0 = Release|Any CPU
 		{4B14D295-C09B-4C38-B880-7CC768E50585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B14D295-C09B-4C38-B880-7CC768E50585}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B14D295-C09B-4C38-B880-7CC768E50585}.Debug|ARM.ActiveCfg = Debug|Any CPU
 		{4B14D295-C09B-4C38-B880-7CC768E50585}.Debug|ARM.Build.0 = Debug|Any CPU
 		{4B14D295-C09B-4C38-B880-7CC768E50585}.Debug|iPhone.ActiveCfg = Debug|Any CPU
@@ -453,6 +451,7 @@ Global
 		{4DCD0420-1168-4B77-86DB-6196EE4BD491}.Release|x86.ActiveCfg = Release|Any CPU
 		{4DCD0420-1168-4B77-86DB-6196EE4BD491}.Release|x86.Build.0 = Release|Any CPU
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|ARM.ActiveCfg = Debug|iPhone
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|ARM.Build.0 = Debug|iPhone
 		{C7131F14-274F-4B55-ACA9-E81731AD012F}.Debug|iPhone.ActiveCfg = Debug|iPhone
@@ -548,6 +547,7 @@ Global
 		{447DC60E-C485-4427-8CF7-50074C6B61DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{447DC60E-C485-4427-8CF7-50074C6B61DE}.Release|x86.Build.0 = Release|Any CPU
 		{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}.Debug|ARM.ActiveCfg = Debug|Any CPU
 		{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}.Debug|ARM.Build.0 = Debug|Any CPU
 		{7B5F9E6A-6334-4C74-9B77-A55B3DA60E41}.Debug|iPhone.ActiveCfg = Debug|Any CPU
@@ -595,6 +595,7 @@ Global
 		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.ActiveCfg = Release|Any CPU
 		{C9696465-7657-4843-872E-3C01891C4A9B}.Release|x86.Build.0 = Release|Any CPU
 		{392156B2-760A-4EE3-A822-CABD3238A21D}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
+		{392156B2-760A-4EE3-A822-CABD3238A21D}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
 		{392156B2-760A-4EE3-A822-CABD3238A21D}.Debug|ARM.ActiveCfg = Debug|iPhone
 		{392156B2-760A-4EE3-A822-CABD3238A21D}.Debug|ARM.Build.0 = Debug|iPhone
 		{392156B2-760A-4EE3-A822-CABD3238A21D}.Debug|iPhone.ActiveCfg = Debug|iPhone
@@ -777,7 +778,6 @@ Global
 		{96D89208-4EB9-4451-BE73-8A9DF3D9D7B7} = {32F608E2-6406-4DCF-9105-E2A7CB7085CF}
 		{7D13BAC2-C6A4-416A-B07E-C169B199E52B} = {132FB9A4-613F-44CE-95D5-758D32D231DD}
 		{ABA078C4-F9BB-4924-8B2B-10FE0D2F5491} = {132FB9A4-613F-44CE-95D5-758D32D231DD}
-		{DC1F3933-AC99-4887-8B09-E13C2B346D4F} = {DDDFBCAF-93DE-4868-8296-FD909EF32EF7}
 		{EADD8100-B3AE-4A31-92C4-267A64A1C6EB} = {D4D57221-71D6-4031-A6F4-EC66AF0929D9}
 		{4DCD0420-1168-4B77-86DB-6196EE4BD491} = {D4D57221-71D6-4031-A6F4-EC66AF0929D9}
 		{C7131F14-274F-4B55-ACA9-E81731AD012F} = {4F5E2D21-17F6-4A42-B8FB-D03D82E24EC8}
