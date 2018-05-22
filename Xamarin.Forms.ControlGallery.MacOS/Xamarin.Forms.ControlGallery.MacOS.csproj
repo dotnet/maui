@@ -105,6 +105,8 @@
     <Compile Include="NativeServices.cs" />
     <Compile Include="BrokenNativeControl.cs" />
     <Compile Include="CustomRenderers.cs" />
+    <Compile Include="RegistrarValidationService.cs" />
+    <Compile Include="SampleNativeControl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Controls\Xamarin.Forms.Controls.csproj">

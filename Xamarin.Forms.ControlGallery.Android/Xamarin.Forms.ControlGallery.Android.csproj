@@ -200,9 +200,11 @@
     <Compile Include="PreApplicationClassActivity.cs" />
     <Compile Include="Properties\MapsKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistrarValidationService.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="CustomRenderers.cs" />
     <Compile Include="ColorPicker.cs" />
+    <Compile Include="SampleNativeControl.cs" />
     <Compile Include="StringProvider.cs" />
     <Compile Include="TestCloudService.cs" />
     <Compile Include="_1909CustomRenderer.cs" />
@@ -249,6 +251,10 @@
     <AndroidResource Include="Resources\drawable\cover1.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PagesGallery\PagesGallery.Droid\PagesGallery.Droid.csproj">
+      <Project>{5EB6EB6B-A412-4F41-A89B-D7C9AAD237F2}</Project>
+      <Name>PagesGallery.Droid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
       <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
       <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>

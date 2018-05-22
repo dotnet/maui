@@ -94,6 +94,8 @@
     <Compile Include="BasicOpenGLView.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistrarValidationService.cs" />
+    <Compile Include="SampleNativeControl.cs" />
     <Compile Include="StringProvider.cs" />
   </ItemGroup>
   <ItemGroup>
