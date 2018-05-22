@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (_editText == null)
 				return;
 
-			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment);
+			_editText.UpdateHorizontalAlignment(Element.HorizontalTextAlignment, Context.HasRtlSupport());
 		}
 
 		void UpdateCancelButtonColor()

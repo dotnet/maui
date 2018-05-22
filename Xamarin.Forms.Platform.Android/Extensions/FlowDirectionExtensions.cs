@@ -33,9 +33,9 @@ namespace Xamarin.Forms.Platform.Android
 				view.LayoutDirection = ALayoutDirection.Ltr;
 		}
 
-		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment)
+		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, bool hasRtlSupport)
 		{
-			if ((int)Build.VERSION.SdkInt < 17)
+			if ((int)Build.VERSION.SdkInt < 17 || !hasRtlSupport)
 				view.Gravity = alignment.ToHorizontalGravityFlags();
 			else
 				view.TextAlignment = alignment.ToTextAlignment();

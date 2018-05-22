@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 #if __MOBILE__
 using UIKit;
@@ -367,6 +368,9 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			var result = new UIPanGestureRecognizer(action);
 			result.MinimumNumberOfTouches = result.MaximumNumberOfTouches = (uint)numTouches;
+
+			// enable touches to pass through so that underlying scrolling views will still receive the pan
+			result.ShouldRecognizeSimultaneously = (g, o) => Application.Current?.OnThisPlatform().GetPanGestureRecognizerShouldRecognizeSimultaneously() ?? false;
 			return result;
 		}
 

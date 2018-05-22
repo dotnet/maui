@@ -71,6 +71,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			SetTime(e.NewElement.Time);
 			UpdateTextColor();
+			UpdateFont();
 
 			if ((int)Build.VERSION.SdkInt > 16)
 				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
