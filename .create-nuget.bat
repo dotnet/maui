@@ -116,8 +116,8 @@ if "%1" == "droid" (
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.android.nuget.sln
 )
 if "%1" == "ios" (
-   %NUGET_EXE% restore .xamarin.forms.ios.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.sln
+   %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
 )
 if "%1" == "build" (
    %NUGET_EXE% restore .xamarin.forms.sln
