@@ -23,8 +23,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 			
 			Cell = item;
 			Cell.PropertyChanged -= PropertyChangedHandler;
@@ -69,8 +68,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference, "GetCellCore");
+			Performance.Start(out string reference, "GetCellCore");
 
 			LayoutInflater inflater = LayoutInflater.FromContext(context);
 			const int type = global::Android.Resource.Layout.SimpleListItem1;

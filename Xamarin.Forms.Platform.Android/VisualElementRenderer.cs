@@ -130,8 +130,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateLayout()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 			Tracker?.UpdateLayout();
 			Performance.Stop(reference);
 		}
