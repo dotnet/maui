@@ -242,6 +242,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1396.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1415.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2653.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2247.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GroupListViewHeaderIndexOutOfRange.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1975.cs" />

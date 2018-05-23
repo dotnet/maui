@@ -15,7 +15,6 @@ namespace Xamarin.Forms.Platform.UWP
 		readonly int _rowSpan;
 		bool _disposed;
 		bool _isLoaded;
-		bool _isZChanged;
 
 		public VisualElementPackager(IVisualElementRenderer renderer)
 		{
@@ -92,17 +91,10 @@ namespace Xamarin.Forms.Platform.UWP
 				IVisualElementRenderer childRenderer = Platform.GetRenderer(child);
 
 				if (childRenderer == null)
-				{
 					continue;
-				}
 
 				if (Canvas.GetZIndex(childRenderer.ContainerElement) != (z + 1))
-				{
-					if (!_isZChanged)
-						_isZChanged = true;
-
 					Canvas.SetZIndex(childRenderer.ContainerElement, z + 1);
-				}
 			}
 		}
 
@@ -127,7 +119,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_panel.Children.Add(childRenderer.ContainerElement);
 
-			if (_isZChanged)
+			if (ElementController.LogicalChildren[ElementController.LogicalChildren.Count - 1] != view)
 				EnsureZIndex();
 		}
 
