@@ -50,7 +50,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (List == null)
 				{
-					List = new WListView 
+					List = new WListView
 					{
 						IsSynchronizedWithCurrentItem = false,
 						ItemTemplate = (Windows.UI.Xaml.DataTemplate)WApp.Current.Resources["CellTemplate"],
@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Platform.UWP
 					new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
 			}
 
-			List.UpdateLayout();
+			Device.BeginInvokeOnMainThread(() => List.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -345,7 +345,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
-				loadedHandler = async (o, e) => 
+				loadedHandler = async (o, e) =>
 				{
 					List.Loaded -= loadedHandler;
 
@@ -542,7 +542,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				var templatedItems = TemplatedItemsView.TemplatedItems;
 				var selectedItemIndex = templatedItems.GetGlobalIndexOfItem(e.ClickedItem);
-				
+
 				OnListItemClicked(selectedItemIndex);
 			}
 		}
