@@ -182,8 +182,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			var renderView = GetRenderer(view);
 			if (renderView == null || renderView.NativeView == null)

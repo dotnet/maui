@@ -302,8 +302,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateNativeControl()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			if (_disposed)
 				return;

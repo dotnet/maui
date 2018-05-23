@@ -1,6 +1,7 @@
 using System;
 
 using Android.App;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Plugin.CurrentActivity;
@@ -11,7 +12,9 @@ namespace Xamarin.Forms.ControlGallery.Android
     [Application]
     public class MainApplication : global::Android.App.Application, global::Android.App.Application.IActivityLifecycleCallbacks
     {
-        public MainApplication(IntPtr handle, JniHandleOwnership transer)
+		internal static Context ActivityContext { get; private set; }
+
+		public MainApplication(IntPtr handle, JniHandleOwnership transer)
           :base(handle, transer)
         {
         }
@@ -32,32 +35,39 @@ namespace Xamarin.Forms.ControlGallery.Android
         public void OnActivityCreated(Activity activity, Bundle savedInstanceState)
         {
             CrossCurrentActivity.Current.Activity = activity;
-        }
+			ActivityContext = activity;
+		}
 
         public void OnActivityDestroyed(Activity activity)
-        {
-        }
+		{
+			ActivityContext = activity;
+		}
 
         public void OnActivityPaused(Activity activity)
-        {
-        }
+		{
+			ActivityContext = activity;
+		}
 
         public void OnActivityResumed(Activity activity)
         {
             CrossCurrentActivity.Current.Activity = activity;
-        }
+			ActivityContext = activity;
+		}
 
         public void OnActivitySaveInstanceState(Activity activity, Bundle outState)
-        {
-        }
+		{
+			ActivityContext = activity;
+		}
 
         public void OnActivityStarted(Activity activity)
         {
             CrossCurrentActivity.Current.Activity = activity;
-        }
+			ActivityContext = activity;
+		}
 
         public void OnActivityStopped(Activity activity)
-        {
-        }
+		{
+			ActivityContext = activity;
+		}
     }
 }

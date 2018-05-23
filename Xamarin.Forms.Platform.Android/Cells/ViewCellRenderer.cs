@@ -12,8 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference, "GetCellCore");
+			Performance.Start(out string reference, "GetCellCore");
 			var cell = (ViewCell)item;
 
 			var container = convertView as ViewCellContainer;
@@ -150,9 +149,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			public void Update(ViewCell cell)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
-
+				Performance.Start(out string reference);
 				var renderer = GetChildAt(0) as IVisualElementRenderer;
 				var viewHandlerType = Registrar.Registered.GetHandlerTypeForObject(cell.View) ?? typeof(Platform.DefaultRenderer);
 				var reflectableType = renderer as System.Reflection.IReflectableType;
@@ -211,8 +208,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				double width = Context.FromPixels(r - l);
 				double height = Context.FromPixels(b - t);
@@ -227,8 +223,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				int width = MeasureSpec.GetSize(widthMeasureSpec);
 				int height;

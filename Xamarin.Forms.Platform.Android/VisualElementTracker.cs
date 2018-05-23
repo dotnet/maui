@@ -303,8 +303,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateNativeView(object sender, EventArgs e)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -346,8 +345,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateOpacity()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
