@@ -19,6 +19,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Label.HorizontalTextAlignmentProperty, UpdateHorizontalTextAlignment);
 			RegisterPropertyHandler(Label.VerticalTextAlignmentProperty, UpdateVerticalTextAlignment);
 			RegisterPropertyHandler(Label.FormattedTextProperty, UpdateFormattedText);
+			RegisterPropertyHandler(Label.LineHeightProperty, UpdateLineHeight);
 			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
 			{
 				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
@@ -57,6 +58,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				nativeSpan.FontSize = span.FontSize;
 				nativeSpan.ForegroundColor = span.TextColor.ToNative();
 				nativeSpan.BackgroundColor = span.BackgroundColor.ToNative();
+				nativeSpan.LineHeight = span.LineHeight;
 				nativeString.Spans.Add(nativeSpan);
 			}
 
@@ -108,6 +110,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateFontWeight()
 		{
 			Control.FontWeight = Specific.GetFontWeight(Element);
+		}
+
+		void UpdateLineHeight()
+		{
+			Control.LineHeight = Element.LineHeight;
 		}
 
 		Native.LineBreakMode ConvertToNativeLineBreakMode(LineBreakMode mode)

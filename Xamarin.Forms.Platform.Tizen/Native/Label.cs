@@ -175,6 +175,25 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
+		/// Gets or sets the line height.
+		/// </summary>
+		public double LineHeight
+		{
+			get
+			{
+				return _span.LineHeight;
+			}
+			set
+			{
+				if (value != _span.LineHeight)
+				{
+					_span.LineHeight = value;
+					ApplyTextAndStyle();
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets or sets the font weight for the text.
 		/// </summary>
 		/// <value>The weight of the font.</value>
