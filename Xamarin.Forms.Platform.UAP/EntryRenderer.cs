@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush _textDefaultBrush;
 		Brush _defaultTextColorFocusBrush;
 		Brush _defaultPlaceholderColorFocusBrush;
+		IElementController ElementController => Element as IElementController;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
 		{
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Platform.UWP
 					SetNativeControl(textBox);
 					textBox.TextChanged += OnNativeTextChanged;
 					textBox.KeyUp += TextBoxOnKeyUp;
-
+					textBox.SelectionChanged += SelectionChanged;
 					// If the Forms VisualStateManager is in play or the user wants to disable the Forms legacy
 					// color stuff, then the underlying textbox should just use the Forms VSM states
 					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
@@ -50,6 +51,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
 				UpdateReturnType();
+				UpdateCursorPosition();
+				UpdateSelectionLength();
 			}
 		}
 
@@ -59,6 +62,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				Control.TextChanged -= OnNativeTextChanged;
 				Control.KeyUp -= TextBoxOnKeyUp;
+				Control.SelectionChanged -= SelectionChanged;
 			}
 
 			base.Dispose(disposing);
@@ -100,6 +104,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateDetectReadingOrderFromContent();
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				UpdateReturnType();
+			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+				UpdateCursorPosition();
+			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+				UpdateSelectionLength();
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -264,6 +272,56 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			Control.InputScope = Element.ReturnType.ToInputScope();
+		}
+
+		void SelectionChanged(object sender, RoutedEventArgs e)
+		{
+			var control = Control;
+			if (control == null || Element == null)
+				return;
+
+			var start = Element.CursorPosition;
+
+			if (control.SelectionStart != start)
+				ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+
+			var selectionLength = control.SelectionLength;
+			if (selectionLength != Element.SelectionLength)
+				ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+		}
+
+		void UpdateSelectionLength()
+		{
+			var control = Control;
+			if (control == null || Element == null)
+				return;
+
+			if (Element.IsSet(Entry.SelectionLengthProperty))
+			{
+				var selectionLength = Element.SelectionLength;
+				if (selectionLength != control.SelectionLength)
+				{
+					control.SelectionLength = selectionLength;
+					control.Focus(FocusState.Programmatic);
+				}
+			}
+		}
+
+		void UpdateCursorPosition()
+		{
+			var control = Control;
+			if (control == null || Element == null)
+				return;
+
+			if (Element.IsSet(Entry.CursorPositionProperty))
+			{
+				var start = Element.CursorPosition;
+				if (start != control.SelectionStart)
+				{
+					control.SelectionStart = start;
+					control.Focus(FocusState.Programmatic);
+				}
+			}
 		}
 	}
 }

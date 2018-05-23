@@ -9,6 +9,7 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 		public static readonly BindableProperty AdjustsFontSizeToFitWidthProperty =
 			BindableProperty.Create("AdjustsFontSizeToFitWidth", typeof(bool),
 				typeof(Entry), false);
+		public static readonly BindableProperty CursorColorProperty = BindableProperty.Create("CursorColor", typeof(Color), typeof(Entry), Color.Default);
 
 		public static bool GetAdjustsFontSizeToFitWidth(BindableObject element)
 		{
@@ -43,6 +44,27 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 			this IPlatformElementConfiguration<iOS, FormsElement> config)
 		{
 			SetAdjustsFontSizeToFitWidth(config.Element, false);
+			return config;
+		}
+
+		public static Color GetCursorColor(BindableObject element)
+		{
+			return (Color)element.GetValue(CursorColorProperty);
+		}
+
+		public static void SetCursorColor(BindableObject element, Color value)
+		{
+			element.SetValue(CursorColorProperty, value);
+		}
+
+		public static Color GetCursorColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetCursorColor(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetCursorColor(this IPlatformElementConfiguration<iOS, FormsElement> config, Color value)
+		{
+			SetCursorColor(config.Element, value);
 			return config;
 		}
 	}

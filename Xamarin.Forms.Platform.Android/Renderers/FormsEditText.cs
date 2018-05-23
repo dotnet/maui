@@ -41,7 +41,26 @@ namespace Xamarin.Forms.Platform.Android
 			return (this as IDescendantFocusToggler).RequestFocus(this, () => base.RequestFocus(direction, previouslyFocusedRect));
 		}
 
+		protected override void OnSelectionChanged(int selStart, int selEnd)
+		{
+			base.OnSelectionChanged(selStart, selEnd);
+			SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(selStart, selEnd));
+		}
+
 		internal event EventHandler OnKeyboardBackPressed;
+		internal event EventHandler<SelectionChangedEventArgs> SelectionChanged;
+	}
+
+	public class SelectionChangedEventArgs : EventArgs
+	{
+		public int Start { get; private set; }
+		public int End { get; private set; }
+
+		public SelectionChangedEventArgs(int start, int end)
+		{
+			Start = start;
+			End = end;
+		}
 	}
 
 	[Obsolete("EntryEditText is obsolete as of version 2.4.0. Please use Xamarin.Forms.Platform.Android.FormsEditText instead.")]
