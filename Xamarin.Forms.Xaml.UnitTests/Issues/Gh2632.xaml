@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:Gh2632Base xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Xaml.UnitTests.Gh2632"
+             xmlns:local="clr-namespace:Xamarin.Forms.Xaml.UnitTests"
+             x:Name="Page">
+	<Label Text="{Binding BindingContext.Foo, Source={x:Reference Page}}" />
+</local:Gh2632Base>
