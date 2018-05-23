@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.Android
 			realListView.OnItemLongClickListener = this;
 
 			var platform = _listView.Platform;
-			if (platform.GetType() == typeof(AppCompat.Platform))
+			if (platform?.GetType() == typeof(AppCompat.Platform))
 				MessagingCenter.Subscribe<AppCompat.Platform>(this, AppCompat.Platform.CloseContextActionsSignalName, p => CloseContextActions());
 			else
 				MessagingCenter.Subscribe<Platform>(this, Platform.CloseContextActionsSignalName, p => CloseContextActions());
@@ -194,8 +194,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Cell cell = null;
 
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			ListViewCachingStrategy cachingStrategy = Controller.CachingStrategy;
 			var nextCellIsHeader = false;

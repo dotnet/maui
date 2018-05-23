@@ -11,8 +11,7 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			var viewCell = (ViewCell)item;
 
@@ -77,8 +76,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override void LayoutSubviews()
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				//This sets the content views frame.
 				base.LayoutSubviews();
@@ -107,8 +105,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			public override SizeF SizeThatFits(SizeF size)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				IVisualElementRenderer renderer;
 				if (!_rendererRef.TryGetTarget(out renderer))
@@ -167,8 +164,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void UpdateCell(ViewCell cell)
 			{
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				if (_viewCell != null)
 					Device.BeginInvokeOnMainThread(_viewCell.SendDisappearing);

@@ -89,8 +89,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void AddChild(VisualElement view, IVisualElementRenderer oldRenderer = null, RendererPool pool = null, bool sameChildren = false)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			if (CompressedLayout.GetIsHeadless(view))
 			{
@@ -165,8 +164,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnChildRemoved(object sender, ElementEventArgs e)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 			var view = e.Element as VisualElement;
 			if (view != null)
 				RemoveChild(view);
@@ -203,8 +201,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SetElement(VisualElement oldElement, VisualElement newElement)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			var sameChildrenTypes = false;
 

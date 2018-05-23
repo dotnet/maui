@@ -1232,8 +1232,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			// FIXME: potential crash
 			IVisualElementRenderer visualElementRenderer = GetRenderer(view);

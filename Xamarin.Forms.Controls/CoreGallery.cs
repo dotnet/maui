@@ -443,6 +443,8 @@ namespace Xamarin.Forms.Controls
 	{
 		public CoreRootPage(Page rootPage, NavigationBehavior navigationBehavior = NavigationBehavior.PushAsync)
 		{
+			ValidateRegistrar();
+
 			IStringProvider stringProvider = DependencyService.Get<IStringProvider>();
 
 			Title = stringProvider.CoreGalleryTitle;
@@ -493,7 +495,23 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 		}
+
+		void ValidateRegistrar()
+		{
+			foreach (var view in Issues.Helpers.ViewHelper.GetAllViews())
+			{
+				if (!DependencyService.Get<IRegistrarValidationService>().Validate(view, out string message))
+					throw new InvalidOperationException(message);
+			}
+
+			foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
+			{
+				if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
+					throw new InvalidOperationException(message);
+			}
+		}
 	}
+
 	[Preserve(AllMembers = true)]
 	public interface IStringProvider
 	{

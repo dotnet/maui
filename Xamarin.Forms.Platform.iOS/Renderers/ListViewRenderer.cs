@@ -911,8 +911,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Cell cell;
 				UITableViewCell nativeCell;
 
-				var reference = Guid.NewGuid().ToString();
-				Performance.Start(reference);
+				Performance.Start(out string reference);
 
 				var cachingStrategy = List.CachingStrategy;
 				if (cachingStrategy == ListViewCachingStrategy.RetainElement)

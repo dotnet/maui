@@ -85,8 +85,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			if (_isDisposed)
 				return;
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 			if (CompressedLayout.GetIsHeadless(view))
 			{
 				var packager = new VisualElementPackager(Renderer, view);
@@ -173,8 +172,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (oldElement == newElement)
 				return;
 
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			_element = newElement;
 
