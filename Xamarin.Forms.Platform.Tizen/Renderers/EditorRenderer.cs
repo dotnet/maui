@@ -14,6 +14,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(InputView.KeyboardProperty, UpdateKeyboard);
 			RegisterPropertyHandler(InputView.MaxLengthProperty, UpdateMaxLength);
 			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
+			RegisterPropertyHandler(Editor.PlaceholderProperty, UpdatePlaceholder);
+			RegisterPropertyHandler(Editor.PlaceholderColorProperty, UpdatePlaceholderColor);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
@@ -133,6 +135,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control.Text.Length > Element.MaxLength)
 				Control.Text = Control.Text.Substring(0, Element.MaxLength);
+		}
+
+		void UpdatePlaceholder()
+		{
+			Control.Placeholder = Element.Placeholder;
+		}
+
+		void UpdatePlaceholderColor()
+		{
+			Control.PlaceholderColor = Element.PlaceholderColor.ToNative();
 		}
 
 		string MaxLengthFilter(ElmSharp.Entry entry, string s)
