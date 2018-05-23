@@ -267,7 +267,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			var searchBar = new SearchBar() {
-				HeightRequest = 42, // Need this for Android N, see https://bugzilla.xamarin.com/show_bug.cgi?id=43975
+				MinimumHeightRequest = 42, // Need this for Android N, see https://bugzilla.xamarin.com/show_bug.cgi?id=43975
 				AutomationId = "SearchBarGo"
 			};
 
