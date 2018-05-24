@@ -13,12 +13,12 @@
     <description>Build native UIs for iOS, Android, UWP, macOS, Tizen and many more from a single, shared C# codebase</description>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <dependencies>
-      <group targetFramework="MonoAndroid71">
-        <dependency id="Xamarin.Android.Support.v4" version="25.4.0.2"/>
-        <dependency id="Xamarin.Android.Support.Design" version="25.4.0.2"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="25.4.0.2"/>
-        <dependency id="Xamarin.Android.Support.v7.CardView" version="25.4.0.2"/>
-        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="25.4.0.2"/>
+      <group targetFramework="MonoAndroid81">
+        <dependency id="Xamarin.Android.Support.v4" version="27.0.2"/>
+        <dependency id="Xamarin.Android.Support.Design" version="27.0.2"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="27.0.2"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="27.0.2"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="27.0.2"/>
       </group>
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>
