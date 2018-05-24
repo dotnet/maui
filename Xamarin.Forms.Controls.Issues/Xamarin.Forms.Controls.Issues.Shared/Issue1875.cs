@@ -47,6 +47,8 @@ namespace Xamarin.Forms.Controls
 
 		async void OnItemAppearing(object sender, ItemVisibilityEventArgs e)
 		{
+			if (e.Item == null)
+				return;
 			var item = (int)e.Item;
 			if (!_viewModel.IsLoading && item == _viewModel.Items.Last())
 				await LoadData();

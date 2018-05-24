@@ -18,12 +18,15 @@ using WApp = Windows.UI.Xaml.Application;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.ListView;
+using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms.Platform.UWP
 {
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
+		ObservableCollection<object> SourceItems => context?.Source as ObservableCollection<object>;
+		CollectionViewSource context;
 		bool _itemWasClicked;
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
@@ -65,8 +68,7 @@ namespace Xamarin.Forms.Platform.UWP
 					List.SetBinding(ItemsControl.ItemsSourceProperty, "");
 				}
 
-				// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
-				List.DataContext = new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
+				ReloadData();
 
 				if (Element.SelectedItem != null)
 					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem));
@@ -79,12 +81,55 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		void ReloadData()
 		{
-			if (e.Action == NotifyCollectionChangedAction.Reset)
+			var allSourceItems = new ObservableCollection<object>();
+			foreach (var item in Element.ItemsSource)
+				allSourceItems.Add(item);
+
+			// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
+			List.DataContext = context = new CollectionViewSource
 			{
-				List.DataContext =
-					new CollectionViewSource { Source = Element.ItemsSource, IsSourceGrouped = Element.IsGroupingEnabled };
+				Source = allSourceItems,
+				IsSourceGrouped = Element.IsGroupingEnabled
+			};
+		}
+
+		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			switch (e.Action)
+			{
+				case NotifyCollectionChangedAction.Add:
+					if (e.NewStartingIndex < 0)
+						goto case NotifyCollectionChangedAction.Reset;
+
+					for (int i = e.NewItems.Count - 1; i >= 0; i--)
+						SourceItems.Insert(e.NewStartingIndex, e.NewItems[i]);
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					foreach (var item in e.OldItems)
+						SourceItems.RemoveAt(e.OldStartingIndex);
+					break;
+				case NotifyCollectionChangedAction.Move:
+					for (var i = 0; i < e.OldItems.Count; i++)
+					{
+						var oldi = e.OldStartingIndex;
+						var newi = e.NewStartingIndex;
+
+						if (e.NewStartingIndex < e.OldStartingIndex)
+						{
+							oldi += i;
+							newi += i;
+						}
+
+						SourceItems.Move(oldi, newi);
+					}
+					break;
+				case NotifyCollectionChangedAction.Replace:
+				case NotifyCollectionChangedAction.Reset:
+				default:
+					ReloadData();
+					break;
 			}
 
 			Device.BeginInvokeOnMainThread(() => List.UpdateLayout());
