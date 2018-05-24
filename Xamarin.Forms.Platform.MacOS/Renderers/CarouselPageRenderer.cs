@@ -165,6 +165,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdateSource()
 		{
+			if (Element.LogicalChildren.Count == 0 && ArrangedObjects.Length == 0)
+				return;
+			
 			var pages = new List<NSPageContainer>();
 			for (var i = 0; i < Element.LogicalChildren.Count; i++)
 			{
