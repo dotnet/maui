@@ -20,7 +20,7 @@ namespace Xamarin.Forms.Maps.Tizen
 		Marker _marker;
 		bool _isLocatorStarted = false;
 		Lazy<Locator> _locator = new Lazy<Locator>(InitializeLocator);
-		Dictionary<Pin, MapObject> _pins = new Dictionary<Pin, MapObject>();
+		List<Pin> _pins = new List<Pin>();
 
 		static Locator InitializeLocator()
 		{
@@ -55,6 +55,11 @@ namespace Xamarin.Forms.Maps.Tizen
 			if (e.OldElement != null)
 			{
 				((ObservableCollection<Pin>)e.OldElement.Pins).CollectionChanged -= OnCollectionChanged;
+
+				foreach (Pin pin in e.OldElement.Pins)
+				{
+					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
 
 				MessagingCenter.Unsubscribe<Map, MapSpan>(this, MoveMessageName);
 			}
@@ -93,6 +98,12 @@ namespace Xamarin.Forms.Maps.Tizen
 				{
 					((ObservableCollection<Pin>)Element.Pins).CollectionChanged -= OnCollectionChanged;
 				}
+
+				foreach (Pin pin in Element.Pins)
+				{
+					pin.PropertyChanged -= PinOnPropertyChanged;
+				}
+
 				Control.RenderPost -= OnVisibleRegionChanged;
 				Control.Unrealize();
 			}
@@ -165,17 +176,24 @@ namespace Xamarin.Forms.Maps.Tizen
 
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (e.NewItems != null)
+			switch (e.Action)
 			{
-				AddPins(e.NewItems);
-			}
-			if (e.OldItems != null)
-			{
-				RemovePins(e.OldItems);
-			}
-			if (e.Action == NotifyCollectionChangedAction.Reset)
-			{
-				ClearPins();
+				case NotifyCollectionChangedAction.Add:
+					AddPins(e.NewItems);
+					break;
+				case NotifyCollectionChangedAction.Remove:
+					RemovePins(e.OldItems);
+					break;
+				case NotifyCollectionChangedAction.Replace:
+					RemovePins(e.OldItems);
+					AddPins(e.NewItems);
+					break;
+				case NotifyCollectionChangedAction.Reset:
+					ResetPins();
+					break;
+				case NotifyCollectionChangedAction.Move:
+					//do nothing
+					break;
 			}
 		}
 
@@ -183,14 +201,16 @@ namespace Xamarin.Forms.Maps.Tizen
 		{
 			foreach (Pin pin in pins)
 			{
+				pin.PropertyChanged += PinOnPropertyChanged;
 				var coordinates = new Geocoordinates(pin.Position.Latitude, pin.Position.Longitude);
 				var nativePin = new TPin(coordinates);
+				pin.Id = nativePin;
 				nativePin.Clicked += (s, e) =>
 				{
 					pin.SendTap();
 				};
 				Control.Add(nativePin);
-				_pins.Add(pin, nativePin);
+				_pins.Add(pin);
 			}
 		}
 
@@ -198,21 +218,21 @@ namespace Xamarin.Forms.Maps.Tizen
 		{
 			foreach (Pin pin in pins)
 			{
-				if (_pins.ContainsKey(pin))
-				{
-					Control.Remove(_pins[pin]);
-					_pins.Remove(pin);
-				}
+				pin.PropertyChanged -= PinOnPropertyChanged;
+				Control.Remove((TPin)pin.Id);
+				_pins.Remove(pin);
 			}
 		}
 
-		void ClearPins()
+		void ResetPins()
 		{
 			foreach (var pin in _pins)
 			{
-				Control.Remove(pin.Value);
+				pin.PropertyChanged -= PinOnPropertyChanged;
 			}
 			_pins.Clear();
+			Control.RemoveAll();
+			AddPins((Element as Map).Pins);
 		}
 
 		void UpdateHasZoomEnabled()
@@ -321,6 +341,23 @@ namespace Xamarin.Forms.Maps.Tizen
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
+			}
+		}
+
+		void PinOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			Pin pin = (Pin)sender;
+			var nativePin = pin.Id as TPin;
+
+			if (nativePin == null)
+			{
+				return;
+			}
+
+			//There is no corressponding native control propery for Label and Address.
+			if (e.PropertyName == Pin.PositionProperty.PropertyName)
+			{
+				nativePin.Coordinates = new Geocoordinates(pin.Position.Latitude, pin.Position.Longitude);
 			}
 		}
 	}
