@@ -12,21 +12,39 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class Issue1583 : TestContentPage
 	{
+		WebView webview;
+		Label label;
 		protected override void Init()
 		{
-			var webview = new WebView
+			webview = new WebView
 			{
-				AutomationId = "webview"	
+				AutomationId = "webview",
+				VerticalOptions = LayoutOptions.FillAndExpand
 			};
+
+			label = new Label();
+			Content = new StackLayout()
+			{
+				Children = {
+					label,
+					webview
+				}
+			};
+		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			label.Text = "Loaded";
 			webview.Source = new UrlWebViewSource { Url = "https://www.google.no/maps/place/Skøyen" };
 
-			Content = webview;
 		}
 
 #if UITEST
 		[Test]
 		public void Issue1583Test ()
 		{
+			RunningApp.WaitForElement(x=> x.Marked("Loaded"));
 			RunningApp.WaitForElement (q => q.Marked ("webview"), "Could not find webview", System.TimeSpan.FromSeconds(60), null, null);
 			RunningApp.Screenshot ("I didn't crash and i can see Skøyen");
 		}
