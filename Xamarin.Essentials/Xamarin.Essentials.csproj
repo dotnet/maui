@@ -21,8 +21,8 @@
     <Owners>microsoft,Xamarin,XamarinNuGet</Owners>
     <NeutralLanguage>en</NeutralLanguage>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <RepositoryUrl>https://github.com/xamarin/Xamarin.Essentials</RepositoryUrl>
-    <PackageReleaseNotes>See: https://github.com/xamarin/Xamarin.Essentials</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/xamarin/Essentials</RepositoryUrl>
+    <PackageReleaseNotes>See: https://github.com/xamarin/Essentials</PackageReleaseNotes>
     <LangVersion>7.1</LangVersion>
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
@@ -42,11 +42,11 @@
   <ItemGroup>
     <PackageReference Include="mdoc" Version="5.6.4" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.4.0" PrivateAssets="All" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <Compile Include="**\*.shared.cs" />
     <Compile Include="**\*.shared.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('netstandard')) ">
-    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0" />
     <Compile Include="**\*.netstandard.cs" />
     <Compile Include="**\*.netstandard.*.cs" />
   </ItemGroup>
@@ -59,7 +59,6 @@
     <Compile Include="**\*.uwp.*.cs" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid')) ">
-    
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="25.4.0.2" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="25.4.0.2" />
     <Reference Include="System.Numerics" />
