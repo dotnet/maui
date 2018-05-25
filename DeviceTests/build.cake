@@ -6,7 +6,7 @@
 var TARGET = Argument("target", "Default");
 
 var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone X";
-var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 11.1";
+var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 11.3";
 var IOS_PROJ = "./DeviceTests.iOS/DeviceTests.iOS.csproj";
 var IOS_BUNDLE_ID = "com.xamarin.essentials.devicetests";
 var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/Xamarin.EssentialsDeviceTestsiOS.app";
