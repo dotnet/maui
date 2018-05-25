@@ -36,12 +36,16 @@
     <NoWarn>0672;0219;0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Locator, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9dff12846e04bfbd, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Build.Locator.1.0.13\lib\net46\Microsoft.Build.Locator.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="Mono.Cecil">
       <HintPath>..\packages\Mono.Cecil.0.10.0-beta7\lib\net40\Mono.Cecil.dll</HintPath>
     </Reference>
@@ -109,6 +113,8 @@
       <DependentUpon>Bz41296.xaml</DependentUpon>
     </Compile>
     <Compile Include="LoaderTests.cs" />
+    <Compile Include="MSBuild\MSBuildTests.cs" />
+    <Compile Include="MSBuild\MSBuildXmlExtensions.cs" />
     <Compile Include="PlatformSpecifics.xaml.cs">
       <DependentUpon>PlatformSpecifics.xaml</DependentUpon>
     </Compile>
@@ -135,7 +141,7 @@
     <Compile Include="Issues\Issue1641.cs" />
     <Compile Include="Issues\Issue1594.cs" />
     <Compile Include="XamlgFileLockTests.cs" />
-    <Compile Include="DummyBuildEngine.cs" />
+    <Compile Include="MSBuild\DummyBuildEngine.cs" />
     <Compile Include="Issues\Issue1794.cs" />
     <Compile Include="StyleTests.xaml.cs">
       <DependentUpon>StyleTests.xaml</DependentUpon>
@@ -611,10 +617,8 @@
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
-  
   <ItemGroup>
     <ProjectReference Include="..\Xamarin.Forms.Core\Xamarin.Forms.Core.csproj">
       <Project>{57B8B73D-C3B5-4C42-869E-7B2F17D354AC}</Project>
@@ -1150,14 +1154,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="css\" />
-  </ItemGroup>
-  <ItemGroup />
-
-  <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="VisualStateManagerTests.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

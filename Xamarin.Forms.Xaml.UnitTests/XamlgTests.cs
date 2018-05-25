@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.Build.Framework;
 using NUnit.Framework;
-using System.IO;
 using System.CodeDom;
-using Xamarin.Forms.Build.Tasks;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Xamarin.Forms.Build.Tasks;
 
 using Xamarin.Forms.Core.UnitTests;
 
@@ -307,6 +306,24 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "internalLabel").Attributes, Is.EqualTo(MemberAttributes.Assembly));
 				Assert.That(generator.NamedFields.First(cmf => cmf.Name == "publicLabel").Attributes, Is.EqualTo(MemberAttributes.Public));
 			}
+		}
+		
+		[Test]
+		public void XamlGDifferentInputOutputLengths ()
+		{
+			var engine = new DummyBuildEngine ();
+			var generator = new XamlGTask () {
+				BuildEngine = engine,
+				AssemblyName = "test",
+				Language = "C#",
+				XamlFiles = new ITaskItem [1],
+				OutputFiles = new ITaskItem [2],
+			};
+
+			Assert.IsFalse (generator.Execute (), "XamlGTask.Execute() should fail.");
+			Assert.AreEqual (1, engine.Errors.Count, "XamlGTask should have 1 error.");
+			var error = engine.Errors.First ();
+			Assert.AreEqual ("\"XamlFiles\" refers to 1 item(s), and \"OutputFiles\" refers to 2 item(s). They must have the same number of items.", error.Message);
 		}
 	}
 }

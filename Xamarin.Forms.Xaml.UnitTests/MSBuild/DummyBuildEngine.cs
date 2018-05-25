@@ -1,21 +1,31 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
 	public class DummyBuildEngine : IBuildEngine
 	{
+		public List<BuildErrorEventArgs> Errors { get; } = new List<BuildErrorEventArgs> ();
+
+		public List<BuildWarningEventArgs> Warnings { get; } = new List<BuildWarningEventArgs> ();
+
+		public List<BuildMessageEventArgs> Messages { get; } = new List<BuildMessageEventArgs> ();
+
 		public void LogErrorEvent (BuildErrorEventArgs e)
 		{
+			Errors.Add (e);
 		}
 
 		public void LogWarningEvent (BuildWarningEventArgs e)
 		{
+			Warnings.Add (e);
 		}
 
 		public void LogMessageEvent (BuildMessageEventArgs e)
 		{
+			Messages.Add (e);
 		}
 
 		public void LogCustomEvent (CustomBuildEventArgs e)
