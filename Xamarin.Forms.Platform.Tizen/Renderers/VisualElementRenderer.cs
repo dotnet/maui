@@ -795,19 +795,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 		}
 
-		void UpdateFocusAllowed(bool initialize)
+		void UpdateFocusAllowed()
 		{
-			if (!initialize)
+			var widget = NativeView as Widget;
+			if (widget != null && Specific.IsFocusAllowed(Element).HasValue)
 			{
-				var widget = NativeView as Widget;
-				if (widget != null && Specific.IsFocusAllowed(Element).HasValue)
-				{
-					widget.AllowFocus((bool)Specific.IsFocusAllowed(Element));
-				}
-				else
-				{
-					Log.Warn("{0} uses {1} which does not support Focus management", this, NativeView);
-				}
+				widget.AllowFocus((bool)Specific.IsFocusAllowed(Element));
+			}
+			else
+			{
+				Log.Warn("{0} uses {1} which does not support Focus management", this, NativeView);
 			}
 		}
 

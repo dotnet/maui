@@ -35,7 +35,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				var entry = new Native.EditfieldEntry(Forms.NativeParent)
 				{
 					IsSingleLine = true,
-					PropagateEvents = false,
 				};
 				entry.SetVerticalTextAlignment("elm.text", 0.5);
 				entry.SetVerticalTextAlignment("elm.guide", 0.5);

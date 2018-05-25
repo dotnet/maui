@@ -49,6 +49,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				height = height > 0 ? height : FindCellContentHeight(viewCell);
 
 				renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(height);
+				renderer.NativeView.PropagateEvents = false;
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
 				return renderer.NativeView;

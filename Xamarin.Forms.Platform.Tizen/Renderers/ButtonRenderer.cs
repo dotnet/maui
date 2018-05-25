@@ -23,10 +23,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Button(Forms.NativeParent)
-				{
-					PropagateEvents = false,
-				});
+				SetNativeControl(new Native.Button(Forms.NativeParent));
 				Control.Clicked += OnButtonClicked;
 				Control.Pressed += OnButtonPressed;
 				Control.Released += OnButtonReleased;

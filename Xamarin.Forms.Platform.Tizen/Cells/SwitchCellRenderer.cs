@@ -48,7 +48,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (Device.Idiom == TargetIdiom.TV)
 				{
 					((Check)nativeView).AllowFocus(false);
-					((Check)nativeView).PropagateEvents = true;
+				}
+				else
+				{
+					nativeView.PropagateEvents = false;
 				}
 
 				return nativeView;

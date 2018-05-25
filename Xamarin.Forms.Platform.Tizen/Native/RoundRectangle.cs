@@ -41,6 +41,9 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Width = bound.Width;
 			Height = bound.Height;
 			Draw();
+			// It is workaround for fix geometry issue
+			// A polygon make a margin of 1 pixel at the outermost point
+			Geometry = bound;
 		}
 
 

@@ -16,10 +16,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new ESlider(Forms.NativeParent)
-				{
-					PropagateEvents = false,
-				});
+				SetNativeControl(new ESlider(Forms.NativeParent));
 				Control.ValueChanged += OnValueChanged;
 				_defaultMinColor = Control.GetPartColor("bar");
 				_defaultMaxColor = Control.GetPartColor("bg");

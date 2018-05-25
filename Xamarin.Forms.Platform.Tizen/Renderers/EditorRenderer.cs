@@ -26,7 +26,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				var entry = Device.Idiom == TargetIdiom.Phone || Device.Idiom == TargetIdiom.TV ? new Native.EditfieldEntry(Forms.NativeParent, "multiline") : new Native.Entry(Forms.NativeParent)
 				{
 					IsSingleLine = false,
-					PropagateEvents = false,
 				};
 				entry.Focused += OnFocused;
 				entry.Unfocused += OnUnfocused;

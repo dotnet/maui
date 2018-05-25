@@ -26,7 +26,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new Check(Forms.NativeParent)
 				{
-					PropagateEvents = false,
 					Style = SwitchStyle.Toggle
 				});
 				Control.StateChanged += OnStateChanged;
