@@ -285,6 +285,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
 				new GalleryPageFactory(() => new NavBarTitleTestPage(), "Titles And Navbar Windows"),
 				new GalleryPageFactory(() => new PanGestureGalleryPage(), "Pan gesture Gallery"),
+				new GalleryPageFactory(() => new SwipeGestureGalleryPage(), "Swipe gesture Gallery"),
 				new GalleryPageFactory(() => new PinchGestureTestPage(), "Pinch gesture Gallery"),
 				new GalleryPageFactory(() => new AutomationIdGallery(), "AutomationID Gallery"),
 				new GalleryPageFactory(() => new LayoutPerformanceGallery(), "Layout Perf Gallery"),

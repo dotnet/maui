@@ -214,6 +214,22 @@ namespace Xamarin.Forms.Platform.MacOS
 				var uiRecognizer = CreateTapRecognizer(tapRecognizer.NumberOfTapsRequired, returnAction);
 				return uiRecognizer;
 			}
+
+			var swipeRecognizer = recognizer as SwipeGestureRecognizer;
+			if (swipeRecognizer != null)
+			{
+				var returnAction = new Action<SwipeDirection>((direction) =>
+				{
+					var swipeGestureRecognizer = weakRecognizer.Target as SwipeGestureRecognizer;
+					var eventTracker = weakEventTracker.Target as EventTracker;
+					var view = eventTracker?._renderer.Element as View;
+
+					if (swipeGestureRecognizer != null && view != null)
+						swipeGestureRecognizer.SendSwiped(view, direction);
+				});
+				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
+				return uiRecognizer;
+			}
 #endif
 
 			if (recognizer is ChildGestureRecognizer childRecognizer)
@@ -377,6 +393,16 @@ namespace Xamarin.Forms.Platform.MacOS
 		UIPinchGestureRecognizer CreatePinchRecognizer(Action<UIPinchGestureRecognizer> action)
 		{
 			var result = new UIPinchGestureRecognizer(action);
+			return result;
+		}
+
+		UISwipeGestureRecognizer CreateSwipeRecognizer(SwipeDirection direction, Action<SwipeDirection> action, int numFingers = 1)
+		{
+			var result = new UISwipeGestureRecognizer();
+			result.NumberOfTouchesRequired = (uint)numFingers;
+			result.Direction = (UISwipeGestureRecognizerDirection)direction;
+			result.ShouldRecognizeSimultaneously = (g, o) => true;
+			result.AddTarget(() => action(direction));
 			return result;
 		}
 

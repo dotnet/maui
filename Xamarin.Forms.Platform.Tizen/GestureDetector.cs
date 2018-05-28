@@ -267,9 +267,35 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (timeout > 0)
 				_gestureLayer.FlickTimeLimit = (int)(timeout * 1000);
-			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.Start, (data) => { OnGestureStarted(type, data); });
-			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.Move, (data) => { OnGestureMoved(type, data); });
-			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.End, (data) => { OnGestureCompleted(type, data); });
+
+			// Task to correct wrong coordinates information when applying EvasMap(Xamarin ex: Translation, Scale, Rotate property)
+			// Always change to the absolute coordinates of the pointer.
+			int startX = 0;
+			int startY = 0;
+			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.Start, (data) =>
+			{
+				startX = _gestureLayer.EvasCanvas.Pointer.X;
+				startY = _gestureLayer.EvasCanvas.Pointer.Y;
+				data.X1 = startX;
+				data.Y1 = startY;
+				OnGestureStarted(type, data);
+			});
+			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.Move, (data) =>
+			{
+				data.X1 = startX;
+				data.Y1 = startY;
+				data.X2 = _gestureLayer.EvasCanvas.Pointer.X;
+				data.Y2 = _gestureLayer.EvasCanvas.Pointer.Y;
+				OnGestureMoved(type, data);
+			});
+			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.End, (data) =>
+			{
+				data.X1 = startX;
+				data.Y1 = startY;
+				data.X2 = _gestureLayer.EvasCanvas.Pointer.X;
+				data.Y2 = _gestureLayer.EvasCanvas.Pointer.Y;
+				OnGestureCompleted(type, data);
+			});
 			_gestureLayer.SetFlickCallback(GestureLayer.GestureState.Abort, (data) => { OnGestureCanceled(type, data); });
 		}
 

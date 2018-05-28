@@ -21,7 +21,6 @@
     </NuGetPackageImportStamp>
     <AndroidTlsProvider>
     </AndroidTlsProvider>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
@@ -283,6 +282,7 @@
     <Compile Include="FastRenderers\ImageRenderer.cs" />
     <Compile Include="Extensions\ImageViewExtensions.cs" />
     <Compile Include="Extensions\TextViewExtensions.cs" />
+    <Compile Include="SwipeGestureHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

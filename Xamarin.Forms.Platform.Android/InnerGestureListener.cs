@@ -11,18 +11,21 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		readonly TapGestureHandler _tapGestureHandler;
 		readonly PanGestureHandler _panGestureHandler;
+		readonly SwipeGestureHandler _swipeGestureHandler;
 		bool _isScrolling;		
 		float _lastX;
 		float _lastY;
 		bool _disposed;
 
+		Func<float, float, bool> _swipeDelegate;
+		Func<bool> _swipeCompletedDelegate;
 		Func<bool> _scrollCompleteDelegate;
 		Func<float, float, int, bool> _scrollDelegate;
 		Func<int, bool> _scrollStartedDelegate;
 		Func<int, Point, bool> _tapDelegate;
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
 
-		public InnerGestureListener(TapGestureHandler tapGestureHandler, PanGestureHandler panGestureHandler)
+		public InnerGestureListener(TapGestureHandler tapGestureHandler, PanGestureHandler panGestureHandler, SwipeGestureHandler swipeGestureHandler)
 		{
 			if (tapGestureHandler == null)
 			{
@@ -34,19 +37,27 @@ namespace Xamarin.Forms.Platform.Android
 				throw new ArgumentNullException(nameof(panGestureHandler));
 			}
 
+			if (swipeGestureHandler == null)
+			{
+				throw new ArgumentNullException(nameof(swipeGestureHandler));
+			}
+
 			_tapGestureHandler = tapGestureHandler;
 			_panGestureHandler = panGestureHandler;
+			_swipeGestureHandler = swipeGestureHandler;
 
 			_tapDelegate = tapGestureHandler.OnTap;
 			_tapGestureRecognizers = tapGestureHandler.TapGestureRecognizers;
 			_scrollDelegate = panGestureHandler.OnPan;
 			_scrollStartedDelegate = panGestureHandler.OnPanStarted;
 			_scrollCompleteDelegate = panGestureHandler.OnPanComplete;
+			_swipeDelegate = swipeGestureHandler.OnSwipe;
+			_swipeCompletedDelegate = swipeGestureHandler.OnSwipeComplete;
 		}
 
 		bool HasAnyGestures()
 		{
-			return _panGestureHandler.HasAnyGestures() || _tapGestureHandler.HasAnyGestures();
+			return _panGestureHandler.HasAnyGestures() || _tapGestureHandler.HasAnyGestures() || _swipeGestureHandler.HasAnyGestures();
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
@@ -173,6 +184,8 @@ namespace Xamarin.Forms.Platform.Android
 				_scrollDelegate = null;
 				_scrollStartedDelegate = null;
 				_scrollCompleteDelegate = null;
+				_swipeDelegate = null;
+				_swipeCompletedDelegate = null;
 			}
 
 			base.Dispose(disposing);
@@ -197,13 +210,15 @@ namespace Xamarin.Forms.Platform.Android
 			float totalX = e2.GetX() - _lastX;
 			float totalY = e2.GetY() - _lastY;
 
-			return _scrollDelegate(totalX, totalY, e2.PointerCount);
+			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}
 
 		internal void EndScrolling()
 		{
 			if (_isScrolling && _scrollCompleteDelegate != null)
 				_scrollCompleteDelegate();
+			if (_swipeCompletedDelegate != null)
+				_swipeCompletedDelegate();
 
 			_isScrolling = false;
 		}
