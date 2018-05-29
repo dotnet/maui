@@ -68,10 +68,13 @@ namespace Xamarin.Forms
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does
 			if (defaultBindingMode != BindingMode.Default && defaultBindingMode != BindingMode.OneWay && defaultBindingMode != BindingMode.OneWayToSource && defaultBindingMode != BindingMode.TwoWay && defaultBindingMode != BindingMode.OneTime)
 				throw new ArgumentException("Not a valid type of BindingMode", "defaultBindingMode");
+			
 			if (defaultValue == null && Nullable.GetUnderlyingType(returnType) == null && returnType.GetTypeInfo().IsValueType)
-				throw new ArgumentException("Not a valid default value", "defaultValue");
+				defaultValue = Activator.CreateInstance(returnType);
+
 			if (defaultValue != null && !returnType.IsInstanceOfType(defaultValue))
 				throw new ArgumentException("Default value did not match return type", "defaultValue");
+
 			if (defaultBindingMode == BindingMode.Default)
 				defaultBindingMode = BindingMode.OneWay;
 
