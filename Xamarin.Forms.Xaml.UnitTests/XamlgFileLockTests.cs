@@ -34,13 +34,13 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				BuildEngine= new DummyBuildEngine(),
 				AssemblyName = "test",
 				Language = "C#",
-				XamlFiles = new[] { item},
-				OutputPath = Path.GetDirectoryName(xamlInputFile),
+				XamlFiles = new[] { item },
+				OutputFiles = new[] { new TaskItem(xamlInputFile + ".g.cs") }
 			};
 
 			generator.Execute();
 
-			string xamlOutputFile = generator.GeneratedCodeFiles.First().ItemSpec;
+			string xamlOutputFile = generator.OutputFiles.First().ItemSpec;
 			File.Delete (xamlOutputFile);
 
 			Assert.DoesNotThrow (() => File.Delete (xamlInputFile));

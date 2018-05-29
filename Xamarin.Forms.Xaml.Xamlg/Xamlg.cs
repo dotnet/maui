@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Xaml
 					AssemblyName = "test",
 					Language = "C#",
 					XamlFiles = new[] { item },
-					OutputPath = Path.GetDirectoryName(f),
+					OutputFiles = new[] { new TaskItem(f + ".g.cs") }
 				};
 
 
