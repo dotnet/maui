@@ -64,18 +64,23 @@
 		</CoreCompileDependsOn>
 	</PropertyGroup>
 
-	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="PrepareResourceNames" Condition="'$(_XamlGAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_XamlGAlreadyExecuted>true</_XamlGAlreadyExecuted>
-		</PropertyGroup>
+	<Target Name="_FindXamlGFiles" DependsOnTargets="PrepareResourceNames">
+		<ItemGroup>
+			<_XamlGInputs Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
+			<_XamlGOutputs Include="@(_XamlGInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
+		</ItemGroup>
+	</Target>
+
+	<Target Name="XamlG" BeforeTargets="BeforeCompile" DependsOnTargets="_FindXamlGFiles" Inputs="@(_XamlGInputs)" Outputs="@(_XamlGOutputs)">
 		<XamlGTask
-			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.xaml' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
-			Language = "$(Language)"
-			AssemblyName = "$(AssemblyName)"
-			OutputPath = "$(IntermediateOutputPath)">
-			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
-			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
-		</XamlGTask>
+			XamlFiles="@(_XamlGInputs)"
+			OutputFiles="@(_XamlGOutputs)"
+			Language="$(Language)"
+			AssemblyName="$(AssemblyName)" />
+		<ItemGroup>
+			<FileWrites Include="@(_XamlGOutputs)" />
+			<Compile Include="@(_XamlGOutputs)" />
+		</ItemGroup>
 	</Target>
 
 	<!-- XamlC -->
@@ -94,9 +99,10 @@
 			DebugSymbols = "$(DebugSymbols)"
 			DebugType = "$(DebugType)"
 			KeepXamlResources = "$(XFKeepXamlResources)" />
-		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True">
-			<Output TaskParameter="TouchedFiles" ItemName="FileWrites"/>
-		</Touch>
+		<Touch Files="$(IntermediateOutputPath)XamlC.stamp" AlwaysCreate="True" />
+		<ItemGroup>
+			<FileWrites Include="$(IntermediateOutputPath)XamlC.stamp" />
+		</ItemGroup>
 	</Target>
 
 	<!-- CssG -->
@@ -115,7 +121,7 @@
 			Language = "$(Language)"
 			AssemblyName = "$(AssemblyName)"
 			OutputPath = "$(IntermediateOutputPath)">
-			<Output ItemName="FilesWrite" TaskParameter="GeneratedCodeFiles" />
+			<Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
 			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
 		</CssGTask>
 	</Target>
