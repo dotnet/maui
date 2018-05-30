@@ -1,30 +1,32 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Xamarin.Forms.Internals;
 using TChromium = Tizen.WebView.Chromium;
 using TWebView = Tizen.WebView.WebView;
-using System.Threading.Tasks;
+using Xamarin.Forms.Platform.Tizen.Native;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class WebViewRenderer : VisualElementRenderer<WebView>, IWebViewDelegate
+	public class WebViewRenderer : ViewRenderer<WebView, WebViewContainer>, IWebViewDelegate
 	{
-		bool _updating;
+		bool _isUpdating;
 		WebNavigationEvent _eventState;
-		TWebView _control = null;
+
+		TWebView NativeWebView => Control.WebView;
 
 		IWebViewController ElementController => Element;
 
-		public void LoadHtml(string html, string baseUrl)
+		void IWebViewDelegate.LoadHtml(string html, string baseUrl)
 		{
-			_control.LoadHtml(html, baseUrl);
+			NativeWebView.LoadHtml(html, baseUrl);
 		}
 
-		public void LoadUrl(string url)
+		void IWebViewDelegate.LoadUrl(string url)
 		{
 			if (!string.IsNullOrEmpty(url))
 			{
-				_control.LoadUrl(url);
+				NativeWebView.LoadUrl(url);
 			}
 		}
 
@@ -32,12 +34,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (disposing)
 			{
-				if (_control != null)
+				if (Control != null)
 				{
-					_control.StopLoading();
-					_control.LoadStarted -= OnLoadStarted;
-					_control.LoadFinished -= OnLoadFinished;
-					_control.LoadError -= OnLoadError;
+					NativeWebView.StopLoading();
+					NativeWebView.LoadStarted -= OnLoadStarted;
+					NativeWebView.LoadFinished -= OnLoadFinished;
+					NativeWebView.LoadError -= OnLoadError;
 				}
 
 				if (Element != null)
@@ -53,15 +55,14 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		protected override void OnElementChanged(ElementChangedEventArgs<WebView> e)
 		{
-			if (_control == null)
+			if (Control == null)
 			{
 				TChromium.Initialize();
 				Forms.Context.Terminated += (sender, arg) => TChromium.Shutdown();
-				_control = new TWebView(Forms.NativeParent);
-				_control.LoadStarted += OnLoadStarted;
-				_control.LoadFinished += OnLoadFinished;
-				_control.LoadError += OnLoadError;
-				SetNativeView(_control);
+				SetNativeControl(new WebViewContainer(Forms.NativeParent));
+				NativeWebView.LoadStarted += OnLoadStarted;
+				NativeWebView.LoadFinished += OnLoadFinished;
+				NativeWebView.LoadError += OnLoadError;
 			}
 
 			if (e.OldElement != null)
@@ -99,7 +100,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnLoadStarted(object sender, EventArgs e)
 		{
-			string url = _control.Url;
+			string url = NativeWebView.Url;
 			if (!string.IsNullOrEmpty(url))
 			{
 				var args = new WebNavigatingEventArgs(_eventState, new UrlWebViewSource { Url = url }, url);
@@ -114,17 +115,17 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnLoadFinished(object sender, EventArgs e)
 		{
-			string url = _control.Url;
+			string url = NativeWebView.Url;
 			if (!string.IsNullOrEmpty(url))
 				SendNavigated(new UrlWebViewSource { Url = url }, _eventState, WebNavigationResult.Success);
 
-			_control.SetFocus(true);
+			NativeWebView.SetFocus(true);
 			UpdateCanGoBackForward();
 		}
 
 		void Load()
 		{
-			if (_updating)
+			if (_isUpdating)
 				return;
 
 			if (Element.Source != null)
@@ -137,21 +138,21 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnEvalRequested(object sender, EvalRequested eventArg)
 		{
-			_control.Eval(eventArg.Script);
+			NativeWebView.Eval(eventArg.Script);
 		}
 
 		Task<string> OnEvaluateJavaScriptRequested(string script)
 		{
-			_control.Eval(script);
+			NativeWebView.Eval(script);
 			return null;
 		}
 
 		void OnGoBackRequested(object sender, EventArgs eventArgs)
 		{
-			if (_control.CanGoBack())
+			if (NativeWebView.CanGoBack())
 			{
 				_eventState = WebNavigationEvent.Back;
-				_control.GoBack();
+				NativeWebView.GoBack();
 			}
 
 			UpdateCanGoBackForward();
@@ -159,10 +160,10 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnGoForwardRequested(object sender, EventArgs eventArgs)
 		{
-			if (_control.CanGoForward())
+			if (NativeWebView.CanGoForward())
 			{
 				_eventState = WebNavigationEvent.Forward;
-				_control.GoForward();
+				NativeWebView.GoForward();
 			}
 
 			UpdateCanGoBackForward();
@@ -170,9 +171,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
-			_updating = true;
+			_isUpdating = true;
 			((IElementController)Element).SetValueFromRenderer(WebView.SourceProperty, source);
-			_updating = false;
+			_isUpdating = false;
 
 			Element.SendNavigated(new WebNavigatedEventArgs(evnt, source, source.Url, result));
 
@@ -182,8 +183,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateCanGoBackForward()
 		{
-			ElementController.CanGoBack = _control.CanGoBack();
-			ElementController.CanGoForward = _control.CanGoForward();
+			ElementController.CanGoBack = NativeWebView.CanGoBack();
+			ElementController.CanGoForward = NativeWebView.CanGoForward();
 		}
 	}
 }
