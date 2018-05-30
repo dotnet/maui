@@ -4,11 +4,9 @@ using EButton = ElmSharp.Button;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
-	public class DateTimePickerDialog<T> : Dialog where T : DateTimeSelector
+	public class DateTimePickerDialog : Dialog, IDateTimeDialog
 	{
-		T _dateTimePicker;
 		EvasObject _parent;
-
 		/// <summary>
 		/// Creates a dialog window.
 		/// </summary>
@@ -18,38 +16,23 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Initialize();
 		}
 
+		public DateTimePicker Picker { get; protected set; }
+
 		/// <summary>
 		/// Occurs when the date of this dialog has changed.
 		/// </summary>
 		public event EventHandler<DateChangedEventArgs> DateTimeChanged;
 
-		/// <summary>
-		/// Gets the <see cref="DateTimePicker"/> contained in this dialog.
-		/// </summary>
-		public T DateTimePicker
+		protected virtual DateTimePicker CreatePicker(EvasObject parent)
 		{
-			get
-			{
-				return _dateTimePicker;
-			}
-			private set
-			{
-				if (_dateTimePicker != value)
-				{
-					ApplyDateTimePicker(value);
-				}
-			}
-		}
-
-		void ApplyDateTimePicker(T dateTimePicker)
-		{
-			_dateTimePicker = dateTimePicker;
-			Content = _dateTimePicker;
+			return new DateTimePicker(parent);
 		}
 
 		void Initialize()
 		{
-			DateTimePicker = (T)Activator.CreateInstance(typeof(T), new object[] { _parent });
+			Picker = CreatePicker(_parent);
+			Picker.Show();
+			Content = Picker;
 
 			//TODO need to add internationalization support
 			PositiveButton = new EButton(_parent) { Text = "Set" };
@@ -77,7 +60,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				{
 					if (e.KeyName == "Return")
 					{
-						if (DateTimePicker != null && DateTimePicker.IsFocused)
+						if (Picker != null && Picker.IsFocused)
 						{
 							Confirm();
 							e.Flags |= EvasEventFlag.OnHold;
@@ -89,8 +72,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void Confirm()
 		{
-			DateTime oldDate = DateTimePicker.DateTime;
-			DateTimeChanged?.Invoke(this, new DateChangedEventArgs(oldDate, DateTimePicker.DateTime));
+			DateTimeChanged?.Invoke(this, new DateChangedEventArgs(Picker.DateTime));
 			Hide();
 		}
 	}

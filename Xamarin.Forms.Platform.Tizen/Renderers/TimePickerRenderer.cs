@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Xamarin.Forms.Platform.Tizen.Native;
+using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -8,17 +9,31 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		//TODO need to add internationalization support
 		const string DialogTitle = "Choose Time";
-
 		static readonly string s_defaultFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
 
 		TimeSpan _time = DateTime.Now.TimeOfDay;
-		Lazy<DateTimePickerDialog<Native.TimePicker>> _lazyDialog;
+		Lazy<IDateTimeDialog> _lazyDialog;
 
 		public TimePickerRenderer()
 		{
 			RegisterPropertyHandler(TimePicker.FormatProperty, UpdateFormat);
 			RegisterPropertyHandler(TimePicker.TimeProperty, UpdateTime);
 			RegisterPropertyHandler(TimePicker.TextColorProperty, UpdateTextColor);
+			RegisterPropertyHandler(TimePicker.FontAttributesProperty, UpdateFontAttributes);
+			RegisterPropertyHandler(TimePicker.FontFamilyProperty, UpdateFontFamily);
+			RegisterPropertyHandler(TimePicker.FontSizeProperty, UpdateFontSize);
+		}
+
+		protected virtual IDateTimeDialog CreateDialog()
+		{
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new WatchDataTimePickerDialog(Forms.NativeParent);
+			}
+			else
+			{
+				return new DateTimePickerDialog(Forms.NativeParent);
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
@@ -35,12 +50,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				entry.TextBlockFocused += OnTextBlockFocused;
 				SetNativeControl(entry);
 
-				_lazyDialog = new Lazy<DateTimePickerDialog<Native.TimePicker>>(() =>
-				{
-					var dialog = new DateTimePickerDialog<Native.TimePicker>(Forms.NativeParent)
-					{
-						Title = DialogTitle
-					};
+				_lazyDialog = new Lazy<IDateTimeDialog>(() => {
+					var dialog = CreateDialog();
+					dialog.Picker.Mode = DateTimePickerMode.Time;
+					dialog.Title = DialogTitle;
 					dialog.DateTimeChanged += OnDialogTimeChanged;
 					return dialog;
 				});
@@ -78,7 +91,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				var dialog = _lazyDialog.Value;
-				dialog.DateTimePicker.Time = Element.Time;
+				dialog.Picker.Time = Element.Time;
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
 				Device.BeginInvokeOnMainThread(() => dialog.Show());
@@ -105,6 +118,21 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			_time = Element.Time;
 			UpdateTimeAndFormat();
+		}
+
+		void UpdateFontSize()
+		{
+			Control.FontSize = Element.FontSize;
+		}
+
+		void UpdateFontFamily()
+		{
+			Control.FontFamily = Element.FontFamily;
+		}
+
+		void UpdateFontAttributes()
+		{
+			Control.FontAttributes = Element.FontAttributes;
 		}
 
 		void UpdateTimeAndFormat()

@@ -1,5 +1,6 @@
 using System;
 using Xamarin.Forms.Platform.Tizen.Native;
+using WatchDataTimePickerDialog = Xamarin.Forms.Platform.Tizen.Native.Watch.WatchDataTimePickerDialog;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -7,13 +8,28 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		//TODO need to add internationalization support
 		const string DialogTitle = "Choose Date";
-		Lazy<DateTimePickerDialog<Native.DatePicker>> _lazyDialog;
+		Lazy<IDateTimeDialog> _lazyDialog;
 
 		public DatePickerRenderer()
 		{
 			RegisterPropertyHandler(DatePicker.DateProperty, UpdateDate);
 			RegisterPropertyHandler(DatePicker.FormatProperty, UpdateDate);
 			RegisterPropertyHandler(DatePicker.TextColorProperty, UpdateTextColor);
+			RegisterPropertyHandler(DatePicker.FontAttributesProperty, UpdateFontAttributes);
+			RegisterPropertyHandler(DatePicker.FontFamilyProperty, UpdateFontFamily);
+			RegisterPropertyHandler(DatePicker.FontSizeProperty, UpdateFontSize);
+		}
+
+		protected virtual IDateTimeDialog CreateDialog()
+		{
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new WatchDataTimePickerDialog(Forms.NativeParent);
+			}
+			else
+			{
+				return new DateTimePickerDialog(Forms.NativeParent);
+			}
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
@@ -30,12 +46,10 @@ namespace Xamarin.Forms.Platform.Tizen
 				entry.TextBlockFocused += OnTextBlockFocused;
 				SetNativeControl(entry);
 
-				_lazyDialog = new Lazy<DateTimePickerDialog<Native.DatePicker>>(() =>
+				_lazyDialog = new Lazy<IDateTimeDialog>(() =>
 				{
-					var dialog = new DateTimePickerDialog<Native.DatePicker>(Forms.NativeParent)
-					{
-						Title = DialogTitle
-					};
+					var dialog = CreateDialog();
+					dialog.Title = DialogTitle;
 					dialog.DateTimeChanged += OnDateTimeChanged;
 					return dialog;
 				});
@@ -72,9 +86,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (Element.IsEnabled)
 			{
 				var dialog = _lazyDialog.Value;
-				dialog.DateTimePicker.Date = Element.Date;
-				dialog.DateTimePicker.MaximumDate = Element.MaximumDate;
-				dialog.DateTimePicker.MinimumDate = Element.MinimumDate;
+				dialog.Picker.DateTime = Element.Date;
+				dialog.Picker.MaximumDateTime = Element.MaximumDate;
+				dialog.Picker.MinimumDateTime = Element.MinimumDate;
 				// You need to call Show() after ui thread occupation because of EFL problem.
 				// Otherwise, the content of the popup will not receive focus.
 				Device.BeginInvokeOnMainThread(() => dialog.Show());
@@ -95,6 +109,21 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateTextColor()
 		{
 			Control.TextColor = Element.TextColor.ToNative();
+		}
+
+		void UpdateFontSize()
+		{
+			Control.FontSize = Element.FontSize;
+		}
+
+		void UpdateFontFamily()
+		{
+			Control.FontFamily = Element.FontFamily;
+		}
+
+		void UpdateFontAttributes()
+		{
+			Control.FontAttributes = Element.FontAttributes;
 		}
 	}
 }
