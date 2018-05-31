@@ -23,7 +23,7 @@ Please read our [Getting Started with Xamarin.Essentials guide](https://docs.mic
 
 ## Documentation
 
-Browser our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials) including feature guides on how to use each feature.
+Browse our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials) including feature guides on how to use each feature.
 
 ## Supported Platforms
 Xamarin.Essentials is focused on the following platforms for our first release:
