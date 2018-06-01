@@ -615,6 +615,7 @@
     <Compile Include="Issues\Gh2632.xaml.cs">
       <DependentUpon>Gh2632.xaml</DependentUpon>
     </Compile>
+    <Compile Include="XFCorePostProcessorCodeInjected.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
