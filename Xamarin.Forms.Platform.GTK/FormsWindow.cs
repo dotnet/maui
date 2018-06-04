@@ -126,7 +126,7 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
-		private async void OnWindowStateEvent (object o, WindowStateEventArgs args)
+		private void OnWindowStateEvent (object o, WindowStateEventArgs args)
 		{
 			if (args.Event.ChangedMask == Gdk.WindowState.Iconified) {
 				var windowState = args.Event.NewWindowState;

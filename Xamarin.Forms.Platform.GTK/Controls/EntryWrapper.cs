@@ -99,7 +99,6 @@ namespace Xamarin.Forms.Platform.GTK.Controls
         {
             if (string.IsNullOrEmpty(_entry.Text) && !string.IsNullOrEmpty(_placeholder.Text))
             {
-                Entry.Sensitive = false;
                 _placeholderContainer.GdkWindow?.Raise();
             }
             else
