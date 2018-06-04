@@ -299,6 +299,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue2681.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2929.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2983.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2963.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2981.cs" />
