@@ -52,33 +52,14 @@ namespace Xamarin.Forms.Controls.Issues
 					}
 				})
 			};
-			var buttonI = new Button
-			{
-				Text = "Insert odd",
-				AutomationId = BtnAdd,
-				Command = new Command(() =>
-				{
-					try
-					{
-						for (int j = 1; j < data.Count; j += 2)
-						{
-							data.Insert(j, $"Item {++i} inserted");
-						}
-					}
-					catch (ArgumentException)
-					{
-						label.Text = Success;
-					}
-				})
-			};
 			var button1 = new Button
 			{
 				Text = "Remove 2",
 				Command = new Command(() =>
 				{
-					if (data.Count > 3)
+					if (data.Count > 1)
 					{
-						data.RemoveRangeAt(2, 2);
+						data.RemoveRangeAt(0, 2);
 					}
 				})
 			};
@@ -95,7 +76,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = new StackLayout
 			{
-				Children = { label, button, buttonI, button1, button2, listView }
+				Children = { label, button, button1, button2, listView }
 			};
 
 			InitializeData();
@@ -131,9 +112,9 @@ namespace Xamarin.Forms.Controls.Issues
 			public void InsertRangeAt(int startIndex, params T[] items)
 			{
 				int idx = this.Count;
-				for (int i = items.Length - 1; i >= 0; i--)
+				foreach (var item in items)
 				{
-					base.Items.Insert(startIndex, items[i]);
+					base.Items.Insert(startIndex++, item);
 				}
 				if (idx < Count)
 				{

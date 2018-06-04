@@ -205,6 +205,12 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 #if __MOBILE__
 			_defaultColor = uiview.BackgroundColor;
+
+			// UIKit UIViews created via storyboard default IsAccessibilityElement to true, BUT
+			// UIViews created programmatically default IsAccessibilityElement to false.
+			// We need to default to true to allow all elements to be accessible by default and
+			// allow users to override this later via AutomationProperties.IsInAccessibleTree
+			uiview.IsAccessibilityElement = true;
 #else
 			uiview.WantsLayer = true;
 			_defaultColor = uiview.Layer.BackgroundColor;
