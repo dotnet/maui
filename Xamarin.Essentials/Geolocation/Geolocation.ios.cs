@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
             var manager = new CLLocationManager();
             var location = manager.Location;
 
-            return location.ToLocation();
+            return location?.ToLocation();
         }
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
@@ -49,10 +49,7 @@ namespace Xamarin.Essentials
 
             var clLocation = await tcs.Task;
 
-            if (clLocation == null)
-                return null;
-
-            return clLocation.ToLocation();
+            return clLocation?.ToLocation();
 
             void HandleLocation(CLLocation location)
             {
@@ -81,7 +78,7 @@ namespace Xamarin.Essentials
 
             wasRaised = true;
 
-            var location = locations.LastOrDefault();
+            var location = locations?.LastOrDefault();
 
             if (location == null)
                 return;
