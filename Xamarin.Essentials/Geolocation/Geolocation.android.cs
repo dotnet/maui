@@ -30,10 +30,7 @@ namespace Xamarin.Essentials
                     bestLocation = location;
             }
 
-            if (bestLocation == null)
-                return null;
-
-            return bestLocation.ToLocation();
+            return bestLocation?.ToLocation();
         }
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)

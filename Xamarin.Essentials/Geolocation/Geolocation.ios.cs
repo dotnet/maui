@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
             var manager = new CLLocationManager();
             var location = manager.Location;
 
-            return location.ToLocation();
+            return location?.ToLocation();
         }
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
