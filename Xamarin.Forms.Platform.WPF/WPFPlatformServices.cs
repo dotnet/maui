@@ -25,7 +25,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public void OpenUriAction(Uri uri)
 		{
-			//TODO : OpenUriAction
+			System.Diagnostics.Process.Start(uri.AbsoluteUri);
 		}
 		
 		public void BeginInvokeOnMainThread(Action action)
