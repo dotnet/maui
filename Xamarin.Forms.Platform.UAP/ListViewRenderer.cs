@@ -25,8 +25,8 @@ namespace Xamarin.Forms.Platform.UWP
 	public class ListViewRenderer : ViewRenderer<ListView, FrameworkElement>
 	{
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
-		ObservableCollection<object> SourceItems => context?.Source as ObservableCollection<object>;
-		CollectionViewSource context;
+		ObservableCollection<object> SourceItems => _context?.Source as ObservableCollection<object>;
+		CollectionViewSource _context;
 		bool _itemWasClicked;
 		bool _subscribedToItemClick;
 		bool _subscribedToTapped;
@@ -84,12 +84,17 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ReloadData()
 		{
+			if (Element?.ItemsSource == null)
+			{
+				return;
+			}
+
 			var allSourceItems = new ObservableCollection<object>();
 			foreach (var item in Element.ItemsSource)
 				allSourceItems.Add(item);
 
 			// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
-			List.DataContext = context = new CollectionViewSource
+			List.DataContext = _context = new CollectionViewSource
 			{
 				Source = allSourceItems,
 				IsSourceGrouped = Element.IsGroupingEnabled
@@ -279,6 +284,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateGrouping()
 		{
+			if (Element?.ItemsSource == null)
+			{
+				return;
+			}
+
 			bool grouping = Element.IsGroupingEnabled;
 
 			((CollectionViewSource)List.DataContext).IsSourceGrouped = grouping;

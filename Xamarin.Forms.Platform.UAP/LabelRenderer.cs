@@ -37,16 +37,20 @@ namespace Xamarin.Forms.Platform.UWP
 		bool _perfectSizeValid;
 		IList<double> _inlineHeights = new List<double>();
 
-		protected override AutomationPeer OnCreateAutomationPeer()
-		{
-			// We need an automation peer so we can interact with this in automated tests
-			if (Control == null)
-			{
-				return new FrameworkElementAutomationPeer(this);
-			}
+		//TODO: We need to revisit this later when we complete the UI Tests for UWP.
+		// Changing the AutomationPeer here prevents the Narrator from functioning properly.
+		// Oddly, it affects more than just the TextBlocks. It seems to break the entire scan mode.
 
-			return new FrameworkElementAutomationPeer(Control);
-		}
+		//protected override AutomationPeer OnCreateAutomationPeer()
+		//{
+		//	// We need an automation peer so we can interact with this in automated tests
+		//	if (Control == null)
+		//	{
+		//		return new FrameworkElementAutomationPeer(this);
+		//	}
+
+		//	return new TextBlockAutomationPeer(Control);
+		//}
 
 		protected override Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize)
 		{

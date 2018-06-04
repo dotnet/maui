@@ -91,10 +91,6 @@ namespace Xamarin.Forms.Controls
 			image.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Success", "You tapped the image", "OK")) });
 			image.SetAutomationPropertiesName(ImageName);
 			image.SetAutomationPropertiesHelpText(ImageHelpText);
-			// Images are ignored by default on iOS (at least, Forms Images are); 
-			// make accessible in order to enable the gesture and narration
-			image.SetAutomationPropertiesIsInAccessibleTree(true);
-
 
 			var instructions6 = new Label { Text = boxInstructions };
 			var boxView = new BoxView { Color = Color.Purple };
@@ -102,7 +98,7 @@ namespace Xamarin.Forms.Controls
 			boxView.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => DisplayAlert("Success", "You tapped the box", "OK")) });
 			boxView.SetAutomationPropertiesName(BoxName);
 			boxView.SetAutomationPropertiesHelpText(BoxHelpText);
-			// BoxViews are ignored by default on iOS and Win; 
+			// BoxViews are ignored by default on Win; 
 			// make accessible in order to enable the gesture and narration
 			boxView.SetAutomationPropertiesIsInAccessibleTree(true);
 

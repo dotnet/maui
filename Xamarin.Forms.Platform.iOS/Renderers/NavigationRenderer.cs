@@ -765,6 +765,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		class SecondaryToolbar : UIToolbar
 		{
+			nfloat _toolbarWidth;
+
 			readonly List<UIView> _lines = new List<UIView>();
 
 			public SecondaryToolbar()
@@ -792,6 +794,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void LayoutToolbarItems(nfloat toolbarWidth, nfloat toolbarHeight, nfloat padding)
 			{
+				if (_toolbarWidth == toolbarWidth)
+					return;
+
+				_toolbarWidth = toolbarWidth;
+
 				var x = padding;
 				var y = 0;
 				var itemH = toolbarHeight;
