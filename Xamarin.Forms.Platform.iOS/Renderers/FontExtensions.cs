@@ -231,8 +231,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 			if (italic)
 			{
-				Debug.WriteLine("Italic font requested, passing regular one");
-				return NSFont.UserFontOfSize(size);
+				var defaultFont = UIFont.SystemFontOfSize(size);
+				var descriptor = defaultFont.FontDescriptor.FontDescriptorWithSymbolicTraits(NSFontSymbolicTraits.ItalicTrait);
+				return NSFont.FromDescription(descriptor, 0);
 			}
 #endif
 			if (bold)
