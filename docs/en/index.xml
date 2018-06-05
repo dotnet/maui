@@ -111,6 +111,10 @@
       <Type Name="MagnetometerData" Kind="Structure" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
+      <Type Name="OrientationSensor" Kind="Class" />
+      <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
+      <Type Name="OrientationSensorChangedEventHandler" Kind="Delegate" />
+      <Type Name="OrientationSensorData" Kind="Structure" />
       <Type Name="PermissionException" Kind="Class" />
       <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />

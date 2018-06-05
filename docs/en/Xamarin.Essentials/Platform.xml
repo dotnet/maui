@@ -36,7 +36,7 @@
         <param name="action">Action to execute.</param>
         <summary>Invokes an action on the main thread of the application.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -59,7 +59,7 @@
         <param name="application">Application to initialize with.</param>
         <summary>Initialize Xamarin.Essentials with Android's application class.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
@@ -83,6 +83,26 @@
         <param name="activity">Activity to use for initialization.</param>
         <param name="bundle">Bundle of the activity.</param>
         <summary>Initialize Xamarin.Essentials with Android's activity and bundle.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsMainThread">
+      <MemberSignature Language="C#" Value="public static bool IsMainThread { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMainThread" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Platform.IsMainThread" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if it is the current main UI thread.</summary>
+        <value>If main thread.</value>
         <remarks>
           <para />
         </remarks>
@@ -110,7 +130,9 @@
         <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
         <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
         <summary>Pass permission request results from an activity's overridden method to the library for handling internal permission requests.</summary>
-        <remarks></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>

@@ -6,5 +6,8 @@ namespace Xamarin.Essentials
     {
         static void PlatformBeginInvokeOnMainThread(Action action) =>
             throw new NotImplementedInReferenceAssemblyException();
+
+        static bool PlatformIsMainThread =>
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }

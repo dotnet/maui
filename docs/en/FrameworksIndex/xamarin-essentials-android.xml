@@ -251,6 +251,19 @@
     <Type Name="Xamarin.Essentials.NotImplementedInReferenceAssemblyException" Id="T:Xamarin.Essentials.NotImplementedInReferenceAssemblyException">
       <Member Id="M:Xamarin.Essentials.NotImplementedInReferenceAssemblyException.#ctor" />
     </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensor" Id="T:Xamarin.Essentials.OrientationSensor">
+      <Member Id="E:Xamarin.Essentials.OrientationSensor.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.OrientationSensor.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.OrientationSensor.Stop" />
+      <Member Id="P:Xamarin.Essentials.OrientationSensor.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensorChangedEventArgs" Id="T:Xamarin.Essentials.OrientationSensorChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensorChangedEventHandler" Id="T:Xamarin.Essentials.OrientationSensorChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.OrientationSensorData" Id="T:Xamarin.Essentials.OrientationSensorData">
+      <Member Id="P:Xamarin.Essentials.OrientationSensorData.Orientation" />
+    </Type>
     <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">
       <Member Id="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
     </Type>
@@ -277,6 +290,7 @@
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
+      <Member Id="P:Xamarin.Essentials.Platform.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />

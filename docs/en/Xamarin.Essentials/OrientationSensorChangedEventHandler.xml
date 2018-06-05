@@ -1,0 +1,25 @@
+<Type Name="OrientationSensorChangedEventHandler" FullName="Xamarin.Essentials.OrientationSensorChangedEventHandler">
+  <TypeSignature Language="C#" Value="public delegate void OrientationSensorChangedEventHandler(OrientationSensorChangedEventArgs e);" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi sealed OrientationSensorChangedEventHandler extends System.MulticastDelegate" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OrientationSensorChangedEventHandler" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Delegate</BaseTypeName>
+  </Base>
+  <Parameters>
+    <Parameter Name="e" Type="Xamarin.Essentials.OrientationSensorChangedEventArgs" />
+  </Parameters>
+  <ReturnValue>
+    <ReturnType>System.Void</ReturnType>
+  </ReturnValue>
+  <Docs>
+    <param name="e">Event args.</param>
+    <summary>Event handler with reading.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+</Type>

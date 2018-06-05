@@ -1,0 +1,41 @@
+<Type Name="OrientationSensorData" FullName="Xamarin.Essentials.OrientationSensorData">
+  <TypeSignature Language="C#" Value="public struct OrientationSensorData" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit OrientationSensorData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OrientationSensorData" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Sensor data for orientation.</summary>
+    <remarks>
+      <para />
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Orientation">
+      <MemberSignature Language="C#" Value="public System.Numerics.Quaternion Orientation { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Quaternion Orientation" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.OrientationSensorData.Orientation" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Numerics.Quaternion</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current orientation that represents a Quaternion.</summary>
+        <value>Gets the current orientation</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>
