@@ -12,6 +12,7 @@ using AColorDraw = Android.Graphics.Drawables.ColorDrawable;
 using Xamarin.Forms.Internals;
 using Android.Support.V4.Widget;
 using Android.OS;
+using System;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -189,7 +190,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		async void UpdateBitmap(ImageSource source, ImageSource previousSource = null)
 		{
-			await _imageView.UpdateBitmap(null, source, null, previousSource);
+			try
+			{
+				await _imageView.UpdateBitmap(null, source, null, previousSource);
+			}
+			catch (Exception ex)
+			{
+				Log.Warning(nameof(BaseCellView), "Error loading image: {0}", ex);
+			}
 		}
 	}
 }

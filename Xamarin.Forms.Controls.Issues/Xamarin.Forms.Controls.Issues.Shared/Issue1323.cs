@@ -45,6 +45,8 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue1323Test()
 		{
+			RunningApp.WaitForElement(X => X.Marked("Page 1"));
+			RunningApp.WaitForElement(X => X.Marked("Page5"));
 			RunningApp.Screenshot("All tab bar items text should be white");
 		}
 #endif

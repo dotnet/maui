@@ -619,7 +619,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected virtual void SetTabIcon(TabLayout.Tab tab, FileImageSource icon)
 		{
-			tab.SetIcon(ResourceManager.IdFromTitle(icon, ResourceManager.DrawableClass));
+			tab.SetIcon(Context.GetDrawable(icon));
 			this.SetIconColorFilter(tab);
 		}
 
