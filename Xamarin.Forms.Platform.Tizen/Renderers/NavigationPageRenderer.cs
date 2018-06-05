@@ -8,6 +8,8 @@ using ElmSharp;
 using EButton = ElmSharp.Button;
 using EToolbar = ElmSharp.Toolbar;
 using EToolbarItem = ElmSharp.ToolbarItem;
+using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.NavigationPage;
+using SpecificPage = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Page;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -138,7 +140,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			// Tizen does not support 'Tint', but only 'BarBackgroundColor'
 			else if (e.PropertyName == NavigationPage.BarBackgroundColorProperty.PropertyName)
 				UpdateBarBackgroundColor(CurrentNaviItem);
-			else if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable && e.PropertyName == "HasBreadCrumbsBar")
+			else if (e.PropertyName == Specific.HasBreadCrumbsBarProperty.PropertyName)
 				UpdateBreadCrumbsBar(CurrentNaviItem);
 
 		}
@@ -168,7 +170,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				UpdateHasBackButton(sender as Page);
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitle(sender as Page);
-			else if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable && e.PropertyName == "BreadCrumb")
+			else if (e.PropertyName == SpecificPage.BreadCrumbProperty.PropertyName)
 				UpdateBreadCrumbsBar(GetNaviItemForPage(sender as Page));
 		}
 
@@ -183,8 +185,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			item.TitleBarVisible = (bool)page.GetValue(NavigationPage.HasNavigationBarProperty);
 			UpdateToolbarItem(page, item);
 			UpdateBarBackgroundColor(item);
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-				UpdateBreadCrumbsBar(item);
+			UpdateBreadCrumbsBar(item);
 		}
 
 		void UpdateToolbarItem(Page page, NaviItem item = null)

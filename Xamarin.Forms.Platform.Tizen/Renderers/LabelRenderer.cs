@@ -1,6 +1,4 @@
-using ElmSharp;
 using Xamarin.Forms.Platform.Tizen.Native;
-using EColor = ElmSharp.Color;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.Label;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -20,10 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Label.VerticalTextAlignmentProperty, UpdateVerticalTextAlignment);
 			RegisterPropertyHandler(Label.FormattedTextProperty, UpdateFormattedText);
 			RegisterPropertyHandler(Label.LineHeightProperty, UpdateLineHeight);
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-			{
-				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
-			}
+			RegisterPropertyHandler(Specific.FontWeightProperty, UpdateFontWeight);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Label> e)

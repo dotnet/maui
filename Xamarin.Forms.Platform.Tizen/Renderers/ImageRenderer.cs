@@ -35,7 +35,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				UpdateIsOpaque();
 			}
-			else if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable && e.PropertyName == "BlendColor")
+			else if (e.PropertyName == Specific.BlendColorProperty.PropertyName)
 			{
 				UpdateBlendColor();
 			}
@@ -64,10 +64,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		protected virtual void UpdateAfterLoading()
 		{
 			UpdateIsOpaque();
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-			{
-				UpdateBlendColor();
-			}
+			UpdateBlendColor();
 		}
 
 		void UpdateAspect()

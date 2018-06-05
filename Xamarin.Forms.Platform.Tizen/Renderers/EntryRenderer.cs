@@ -21,11 +21,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(Entry.ReturnTypeProperty, UpdateReturnType);
 			RegisterPropertyHandler(InputView.IsSpellCheckEnabledProperty, UpdateIsSpellCheckEnabled);
 			RegisterPropertyHandler(Entry.IsTextPredictionEnabledProperty, UpdateIsSpellCheckEnabled);
-
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-			{
-				RegisterPropertyHandler("FontWeight", UpdateFontWeight);
-			}
+			RegisterPropertyHandler(Specific.FontWeightProperty, UpdateFontWeight);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)

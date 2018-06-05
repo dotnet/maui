@@ -51,20 +51,16 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.InputTransparentProperty, UpdateInputTransparent);
 			RegisterPropertyHandler(VisualElement.BackgroundColorProperty, UpdateBackgroundColor);
 
-			// Use TizenSpecific APIs only if available
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-			{
-				RegisterPropertyHandler("ThemeStyle", UpdateThemeStyle);
-				RegisterPropertyHandler("IsFocusAllowed", UpdateFocusAllowed);
-				RegisterPropertyHandler("NextFocusDirection", UpdateFocusDirection);
-				RegisterPropertyHandler("NextFocusUpView", UpdateFocusUpView);
-				RegisterPropertyHandler("NextFocusDownView", UpdateFocusDownView);
-				RegisterPropertyHandler("NextFocusLeftView", UpdateFocusLeftView);
-				RegisterPropertyHandler("NextFocusRightView", UpdateFocusRightView);
-				RegisterPropertyHandler("NextFocusBackView", UpdateFocusBackView);
-				RegisterPropertyHandler("NextFocusForwardView", UpdateFocusForwardView);
-				RegisterPropertyHandler("ToolTip", UpdateToolTip);
-			}
+			RegisterPropertyHandler(Specific.StyleProperty, UpdateThemeStyle);
+			RegisterPropertyHandler(Specific.IsFocusAllowedProperty, UpdateFocusAllowed);
+			RegisterPropertyHandler(Specific.NextFocusDirectionProperty, UpdateFocusDirection);
+			RegisterPropertyHandler(Specific.NextFocusUpViewProperty, UpdateFocusUpView);
+			RegisterPropertyHandler(Specific.NextFocusDownViewProperty, UpdateFocusDownView);
+			RegisterPropertyHandler(Specific.NextFocusLeftViewProperty, UpdateFocusLeftView);
+			RegisterPropertyHandler(Specific.NextFocusRightViewProperty, UpdateFocusRightView);
+			RegisterPropertyHandler(Specific.NextFocusBackViewProperty, UpdateFocusBackView);
+			RegisterPropertyHandler(Specific.NextFocusForwardViewProperty, UpdateFocusForwardView);
+			RegisterPropertyHandler(Specific.ToolTipProperty, UpdateToolTip);
 
 			RegisterPropertyHandler(VisualElement.AnchorXProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.AnchorYProperty, ApplyTransformation);

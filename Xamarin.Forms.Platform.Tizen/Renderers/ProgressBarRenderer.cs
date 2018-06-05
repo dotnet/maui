@@ -46,7 +46,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				UpdateProgress();
 			}
-			else if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable && e.PropertyName == "ProgressBarPulsingStatus")
+			else if (e.PropertyName == Specific.ProgressBarPulsingStatusProperty.PropertyName)
 			{
 				UpdatePulsingStatus();
 			}
@@ -62,10 +62,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateAll()
 		{
 			UpdateProgress();
-			if (TizenPlatformServices.AppDomain.IsTizenSpecificAvailable)
-			{
-				UpdatePulsingStatus();
-			}
+			UpdatePulsingStatus();
 		}
 
 		void UpdateProgressColor(bool initialize)
