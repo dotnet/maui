@@ -347,7 +347,6 @@ namespace Xamarin.Forms
 				item.Width = ((View)sender).WidthRequest < 0 ? float.NaN : (float)((View)sender).WidthRequest;
 				item.Height = ((View)sender).HeightRequest < 0 ? float.NaN : (float)((View)sender).HeightRequest;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -361,7 +360,6 @@ namespace Xamarin.Forms
 				item.MarginRight = (float)margin.Right;
 				item.MarginBottom = (float)margin.Bottom;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -375,7 +373,6 @@ namespace Xamarin.Forms
 				item.PaddingRight = (float)padding.Right;
 				item.PaddingBottom = (float)padding.Bottom;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -385,7 +382,6 @@ namespace Xamarin.Forms
 					return;
 				item.IsVisible = (bool)((View)sender).GetValue(IsVisibleProperty);
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 		}
