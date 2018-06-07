@@ -165,9 +165,15 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(x => x.Marked(ClickShouldAddText));
 			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(ClickShouldAddText));
+
+		#if __IOS__
+			RunningApp.WaitForNoElement(x => x.Marked(ButtonText));
+		#else
 			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(TestForButtonClicked));
 			RunningApp.WaitForElement(x => x.Marked(BoxViewIsOverlappingButton));
+		#endif
+			
 		}
 		
 
