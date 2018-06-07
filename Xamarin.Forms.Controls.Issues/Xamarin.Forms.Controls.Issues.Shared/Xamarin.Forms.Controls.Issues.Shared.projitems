@@ -238,6 +238,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59457.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffect.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectLabel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2767.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
@@ -249,6 +250,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1705_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1396.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1415.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2829.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2653.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2247.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GroupListViewHeaderIndexOutOfRange.cs" />

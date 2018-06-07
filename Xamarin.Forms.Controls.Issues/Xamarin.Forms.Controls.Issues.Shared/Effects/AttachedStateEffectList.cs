@@ -41,7 +41,6 @@ namespace Xamarin.Forms.Controls.Effects
 				{
 					item.StateChanged -= AttachedStateEffectStateChanged;
 				}
-
 			}
 		}
 
@@ -54,7 +53,9 @@ namespace Xamarin.Forms.Controls.Effects
 			foreach (AttachedStateEffect item in this)
 			{
 				allAttached &= item.State == AttachedStateEffect.AttachedState.Attached;
-				allDetached &= item.State == AttachedStateEffect.AttachedState.Detached;
+
+				if (item.State != AttachedStateEffect.AttachedState.Unknown)
+					allDetached &= item.State == AttachedStateEffect.AttachedState.Detached;
 			}
 
 			if (allAttached)
