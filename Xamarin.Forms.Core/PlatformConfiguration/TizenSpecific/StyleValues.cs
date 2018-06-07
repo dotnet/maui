@@ -5,6 +5,8 @@ namespace Xamarin.Forms.PlatformConfiguration.TizenSpecific
 		public const string Default = "default";
 		public const string Circle = "circle";
 		public const string Bottom = "bottom";
+		public const string Text = "textbutton";
+		public const string SelectMode = "select_mode";
 	}
 
 	public static class SwitchStyle

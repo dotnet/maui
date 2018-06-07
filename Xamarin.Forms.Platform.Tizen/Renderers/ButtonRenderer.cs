@@ -1,5 +1,4 @@
 using System;
-using Xamarin.Forms.Platform.Tizen.Native;
 using Specific = Xamarin.Forms.PlatformConfiguration.TizenSpecific.VisualElement;
 
 namespace Xamarin.Forms.Platform.Tizen
@@ -23,7 +22,11 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl(new Native.Button(Forms.NativeParent));
+				if (Device.Idiom == TargetIdiom.Watch)
+					SetNativeControl(new Native.Watch.WatchButton(Forms.NativeParent));
+				else
+					SetNativeControl(new Native.Button(Forms.NativeParent));
+
 				Control.Clicked += OnButtonClicked;
 				Control.Pressed += OnButtonPressed;
 				Control.Released += OnButtonReleased;

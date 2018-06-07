@@ -1,5 +1,6 @@
-using ElmSharp;
 using System;
+using ElmSharp;
+using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
 using ESize = ElmSharp.Size;
@@ -179,17 +180,19 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Implementation of the IMeasurable.Measure() method.
 		/// </summary>
-		public ESize Measure(int availableWidth, int availableHeight)
+		public virtual ESize Measure(int availableWidth, int availableHeight)
 		{
-			switch (Style)
+			if (Style == ButtonStyle.Circle)
 			{
-				case "bottom":
-				case "circle":
-					return new ESize(MinimumWidth, MinimumHeight);
+				return new ESize(MinimumWidth, MinimumHeight);
+			}
+			else
+			{
+				if (Image != null)
+					MinimumWidth += Image.Geometry.Width;
 
-				default:
-					var rawSize = TextHelper.GetRawTextBlockSize(this);
-					return new ESize(rawSize.Width + MinimumWidth, Math.Max(MinimumHeight, rawSize.Height));
+				var rawSize = TextHelper.GetRawTextBlockSize(this);
+				return new ESize(rawSize.Width + MinimumWidth , Math.Max(MinimumHeight, rawSize.Height));
 			}
 		}
 
@@ -273,10 +276,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (Style != style)
 			{
 				Style = style;
-				if (Style == "circle")
-					_span.HorizontalTextAlignment = TextAlignment.Center;
-				else
+				if (Style == ButtonStyle.Default)
 					_span.HorizontalTextAlignment = TextAlignment.Auto;
+				else
+					_span.HorizontalTextAlignment = TextAlignment.Center;
 				ApplyTextAndStyle();
 			}
 		}
