@@ -60,6 +60,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMinimum();
 				UpdateValue();
 				UpdateSliderColors();
+				UpdateTapRecognizer();
 			}
 
 			base.OnElementChanged(e);
