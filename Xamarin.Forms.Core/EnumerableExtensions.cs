@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Internals
 			if (predicate == null)
 				predicate = x => true;
 
-			foreach (IGestureRecognizer item in gestures)
+			foreach (IGestureRecognizer item in new List<IGestureRecognizer>(gestures))
 			{
 				var gesture = item as T;
 				if (gesture != null && predicate(gesture))

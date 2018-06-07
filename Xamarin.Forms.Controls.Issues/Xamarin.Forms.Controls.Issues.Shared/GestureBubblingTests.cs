@@ -205,10 +205,11 @@ namespace Xamarin.Forms.Controls.Issues
 			col2.Children.Add(MenuButton(nameof(DatePicker), () => new DatePicker()));
 			col2.Children.Add(MenuButton(nameof(TimePicker), () => new TimePicker()));
 
-			if (DateTime.Now > new DateTime(2018, 5, 28))
-			{
-				col2.Children.Add(MenuButton(nameof(Slider), () => new Slider()));
-			}
+			//ignoring this test on 3.0.0 and 3.1.0
+			//if (DateTime.Now > new DateTime(2018, 5, 28))
+			//{
+			//	col2.Children.Add(MenuButton(nameof(Slider), () => new Slider()));
+			//}
 
 			col2.Children.Add(MenuButton(nameof(Switch), () => new Switch()));
 			col2.Children.Add(MenuButton(nameof(Stepper), () => new Stepper()));
