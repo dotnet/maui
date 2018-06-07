@@ -12,9 +12,11 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 2728, "[macOS] Label FontAttributes Italic is not working")]
 	public class Issue2728 : TestContentPage
 	{
+		const string _lblHome = "Hello Label";
+
 		protected override void Init()
 		{
-			var label = new Label { Text = "Hello Label", FontAttributes = FontAttributes.Italic };
+			var label = new Label { Text = _lblHome, FontAttributes = FontAttributes.Italic };
 
 			Content = new StackLayout
 			{
@@ -29,7 +31,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue2728TestsItalicLabel ()
 		{
-			RunningApp.WaitForElement(q => q.Text("Home"));
+			RunningApp.WaitForElement(q => q.Text(_lblHome));
 			RunningApp.Screenshot ("Label rendererd with italic font");
 		}
 #endif
