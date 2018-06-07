@@ -102,7 +102,7 @@ namespace Xamarin.Forms
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
-			UpdateChildrenLayout();
+			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
