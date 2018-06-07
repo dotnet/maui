@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnValueChanged(object sender, EventArgs e)
 		{
-			Element.Value = Control.Value;
+			Element.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
 		}
 
 		protected void UpdateValue()

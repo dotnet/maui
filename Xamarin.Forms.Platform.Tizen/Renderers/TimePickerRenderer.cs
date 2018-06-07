@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnDialogTimeChanged(object sender, Native.DateChangedEventArgs dcea)
 		{
-			Element.Time = dcea.NewDate.TimeOfDay;
+			Element.SetValueFromRenderer(TimePicker.TimeProperty, dcea.NewDate.TimeOfDay);
 			UpdateTime();
 		}
 

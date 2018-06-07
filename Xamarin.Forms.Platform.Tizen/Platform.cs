@@ -406,6 +406,12 @@ namespace Xamarin.Forms.Platform.Tizen
 					Orientation = PopupOrientation.Top,
 				};
 
+				if (Device.Idiom == TargetIdiom.Watch)
+				{
+					_pageBusyDialog.Style = "circle";
+					_pageBusyDialog.BackgroundColor = EColor.Transparent;
+				}
+
 				var activity = new EProgressBar(_pageBusyDialog)
 				{
 					Style = "process_large",

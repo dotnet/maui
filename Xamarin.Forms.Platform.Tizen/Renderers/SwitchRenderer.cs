@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnStateChanged(object sender, EventArgs e)
 		{
-			Element.SetValue(Switch.IsToggledProperty, Control.IsChecked);
+			Element.SetValueFromRenderer(Switch.IsToggledProperty, Control.IsChecked);
 		}
 
 		void HandleToggled()

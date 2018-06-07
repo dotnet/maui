@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <param name="sender">Sender.</param>
 		void OnTextChanged(object sender, EventArgs e)
 		{
-			Element.Text = Control.Text;
+			Element.SetValueFromRenderer(SearchBar.TextProperty, Control.Text);
 		}
 
 		/// <summary>

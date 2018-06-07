@@ -44,6 +44,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				toggle.Parent = cell.Parent;
 				var nativeView = Platform.GetOrCreateRenderer(toggle).NativeView;
 
+				if (Device.Idiom == TargetIdiom.Watch)
+				{
+					nativeView.MinimumWidth += 8;
+				}
+
 				//It is a temporary way to prevent that the check of the Cell gets focus until the UX about views in the Cell for TV is defined.
 				if (Device.Idiom == TargetIdiom.TV)
 				{

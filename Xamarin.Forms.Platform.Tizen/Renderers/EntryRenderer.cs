@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnTextChanged(object sender, EventArgs e)
 		{
-			Element.Text = Control.Text;
+			Element.SetValueFromRenderer(Entry.TextProperty, Control.Text);
 		}
 
 		void OnCompleted(object sender, EventArgs e)

@@ -93,7 +93,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnItemSelected(object senderObject, EventArgs ev)
 		{
-			Element.SelectedIndex = _itemToItemNumber[(senderObject as List).SelectedItem];
+			Element.SetValueFromRenderer(Picker.SelectedIndexProperty, _itemToItemNumber[(senderObject as List).SelectedItem]);
 			_dialog.Dismiss();
 		}
 

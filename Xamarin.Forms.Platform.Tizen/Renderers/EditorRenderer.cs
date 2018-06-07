@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnTextChanged(object sender, EventArgs e)
 		{
-			Element.Text = ((Native.Entry)sender).Text;
+			Element.SetValueFromRenderer(Editor.TextProperty, ((Native.Entry)sender).Text);
 		}
 
 		bool _isSendComplate = false;
