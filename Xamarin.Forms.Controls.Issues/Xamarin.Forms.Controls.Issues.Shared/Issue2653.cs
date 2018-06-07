@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Controls.Issues
 		const string Success = "BoxView Not Overlapping";
 		string instructions = $"Click {ButtonText}. If Box View shows up over me test has failed.";
 		const string TestForButtonClicked = "Test For Clicked";
-
+		const string FailureText = "If this is visible test fails";
+		const string ClickShouldAddText = "Clicking me should add a top layer of text";
 
 		protected override void Init()
 		{
@@ -38,6 +39,19 @@ namespace Xamarin.Forms.Controls.Issues
 
 			layout.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Star });
 			layout.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
+			layout.Children.Add(new Grid()
+			{
+				Children =
+				{
+					new Label()
+					{
+						Margin = 10,
+						Text = FailureText,
+						BackgroundColor = Color.White
+					}
+				}
+			});
+
 			layout.Children.Add(new Button()
 			{
 				Text = ButtonText,
@@ -73,17 +87,45 @@ namespace Xamarin.Forms.Controls.Issues
 						layout.LowerChild(bv);
 					}),  HeightRequest = 45},
 					layout,
-					new Button(){ Text = TestForButtonClicked, Command = new Command(() =>
+					new Button()
 					{
-						if(!layout.Children.Contains(bv))
+						Text = TestForButtonClicked, Command = new Command(() =>
 						{
-							labelInstructions.Text = Success;
-						}
-						else
+							if(bv == null)
+							{
+								labelInstructions.Text = String.Empty;
+							}
+							else if(!layout.Children.Contains(bv))
+							{
+								labelInstructions.Text = Success;
+							}
+							else
+							{
+								labelInstructions.Text = BoxViewIsOverlappingButton;
+							}
+						}),
+						HeightRequest = 45
+					},
+					new Button()
+					{
+						Text = ClickShouldAddText, Command = new Command(() =>
 						{
-							labelInstructions.Text = BoxViewIsOverlappingButton;
-						}
-					}),  HeightRequest = 45}
+							layout.Children.Insert(0, new Label());
+							layout.Children.Add(new Grid()
+							{
+								Children =
+								{
+									new Label()
+									{
+										Margin = 10,
+										Text = "If you can't see me test has failed",
+										BackgroundColor = Color.White
+									}
+								}
+							});
+						}),
+						HeightRequest = 45
+					}
 				}
 			};
 		}
@@ -117,16 +159,29 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(x => x.Marked(Success));
 		}
 
+		[Test]
+		public void InsertThenAddSetsZIndex()
+		{
+			RunningApp.WaitForElement(x => x.Marked(ClickShouldAddText));
+			RunningApp.Tap(x => x.Marked(ButtonText));
+			RunningApp.Tap(x => x.Marked(ClickShouldAddText));
+			RunningApp.Tap(x => x.Marked(ButtonText));
+			RunningApp.Tap(x => x.Marked(TestForButtonClicked));
+			RunningApp.WaitForElement(x => x.Marked(BoxViewIsOverlappingButton));
+		}
+		
+
 
 		[Test]
 		public void MoveUpAndMoveDown()
 		{
 			RunningApp.WaitForElement(x => x.Marked(MoveUp));
 			RunningApp.Tap(x => x.Marked(ButtonText));
+			RunningApp.Tap(x => x.Marked(MoveUp));
+			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(TestForButtonClicked));
 			RunningApp.WaitForElement(x => x.Marked(BoxViewIsOverlappingButton));
 
-			RunningApp.Tap(x => x.Marked(MoveUp));
 			RunningApp.Tap(x => x.Marked(MoveDown));
 			RunningApp.Tap(x => x.Marked(ButtonText));
 			RunningApp.Tap(x => x.Marked(TestForButtonClicked));
