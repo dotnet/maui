@@ -199,7 +199,7 @@ namespace Xamarin.Forms.Internals
 				Subscribe((TSource)sourceObject);
 
 			if (needsGetter) {
-				var value = property.DefaultValue;
+				var value = FallbackValue ?? property.DefaultValue;
 				if (isTSource) {
 					try {
 						value = GetSourceValue(_getter((TSource)sourceObject), property.ReturnType);

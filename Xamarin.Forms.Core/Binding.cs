@@ -28,9 +28,9 @@ namespace Xamarin.Forms
 		public Binding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (string.IsNullOrWhiteSpace(path))
-				throw new ArgumentException("path can not be an empty string", "path");
+				throw new ArgumentException("path can not be an empty string", nameof(path));
 
 			Path = path;
 			Converter = converter;
@@ -98,10 +98,9 @@ namespace Xamarin.Forms
 											  string stringFormat = null)
 		{
 			if (propertyGetter == null)
-				throw new ArgumentNullException("propertyGetter");
+				throw new ArgumentNullException(nameof(propertyGetter));
 
-			string path = GetBindingPath(propertyGetter);
-			return new Binding(path, mode, converter, converterParameter, stringFormat);
+			return new Binding(GetBindingPath(propertyGetter), mode, converter, converterParameter, stringFormat);
 		}
 
 		internal override void Apply(bool fromTarget)
@@ -114,17 +113,17 @@ namespace Xamarin.Forms
 			_expression.Apply(fromTarget);
 		}
 
-		internal override void Apply(object newContext, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
+		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
 		{
 			object src = _source;
 			var isApplied = IsApplied;
 
-			base.Apply(src ?? newContext, bindObj, targetProperty, fromBindingContextChanged: fromBindingContextChanged);
+			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged: fromBindingContextChanged);
 
 			if (src != null && isApplied && fromBindingContextChanged)
 				return;
 
-			object bindingContext = src ?? Context ?? newContext;
+			object bindingContext = src ?? Context ?? context;
 			if (_expression == null && bindingContext != null)
 				_expression = new BindingExpression(this, SelfPath);
 
@@ -133,7 +132,15 @@ namespace Xamarin.Forms
 
 		internal override BindingBase Clone()
 		{
-			return new Binding(Path, Mode) { Converter = Converter, ConverterParameter = ConverterParameter, StringFormat = StringFormat, Source = Source, UpdateSourceEventName = UpdateSourceEventName };
+			return new Binding(Path, Mode) {
+				Converter = Converter,
+				ConverterParameter = ConverterParameter,
+				StringFormat = StringFormat,
+				Source = Source,
+				UpdateSourceEventName = UpdateSourceEventName,
+				TargetNullValue = TargetNullValue,
+				FallbackValue = FallbackValue,
+			};
 		}
 
 		internal override object GetSourceValue(object value, Type targetPropertyType)

@@ -2211,5 +2211,25 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That(view.GetValue(bp1w), Is.EqualTo("qux"));
 			Assert.That(view.GetValue(bp1t), Is.EqualTo("qux"));
 		}
+
+		[Test]
+		public void FallbackValueWhenSourceIsNull()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Foo.Bar") { FallbackValue = "fallback" });
+			Assert.That(bindable.GetValue(property), Is.EqualTo("fallback"));
+		}
+
+		[Test]
+		public void TargetNullValue()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "fallback" });
+			Assert.That(bindable.GetValue(property), Is.EqualTo("default"));
+			bindable.BindingContext = new MockViewModel();
+			Assert.That(bindable.GetValue(property), Is.EqualTo("fallback"));
+		}
 	}
 }

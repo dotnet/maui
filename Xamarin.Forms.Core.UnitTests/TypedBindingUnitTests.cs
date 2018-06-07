@@ -975,6 +975,34 @@ namespace Xamarin.Forms.Core.UnitTests
 				"An error was logged: " + log.Messages.FirstOrDefault());
 		}
 
+		[Test, Category("[Binding] Complex paths")]
+		[Description("When part of a complex path can not be evaluated during an update, bindables should return to their default value, or TargetNullValue")]
+		public void NullContextUsesFallbackValue()
+		{
+			var vm = new ComplexMockViewModel {
+				Model = new ComplexMockViewModel {
+					Text = "vm value"
+				}
+			};
+
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), "foo bar");
+			var binding = new TypedBinding<ComplexMockViewModel, string>(cvm => cvm.Model.Text, (cvm, t) => cvm.Model.Text = t, new[] {
+				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm, "Model"),
+				new Tuple<Func<ComplexMockViewModel, object>, string>(cvm=>cvm.Model, "Text")
+			}) { Mode = BindingMode.OneWay, FallbackValue = "fallback" };
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = vm;
+
+			Assume.That(bindable.GetValue(property), Is.EqualTo(vm.Model.Text));
+
+			bindable.BindingContext = null;
+
+			Assert.AreEqual("fallback", bindable.GetValue(property));
+			Assert.That(log.Messages.Count, Is.EqualTo(0),
+				"An error was logged: " + log.Messages.FirstOrDefault());
+		}
+
 		[Test]
 		[Description("OneWay bindings should not double apply on source updates.")]
 		public void OneWayBindingsDontDoubleApplyOnSourceUpdates()

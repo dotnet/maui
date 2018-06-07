@@ -7,32 +7,25 @@ namespace Xamarin.Forms.Xaml
 	[AcceptEmptyServiceProvider]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{
-		public BindingExtension()
-		{
-			Mode = BindingMode.Default;
-			Path = Binding.SelfPath;
-		}
-
-		public string Path { get; set; }
-
-		public BindingMode Mode { get; set; }
-
+		public string Path { get; set; } = Binding.SelfPath;
+		public BindingMode Mode { get; set; } = BindingMode.Default;
 		public IValueConverter Converter { get; set; }
-
 		public object ConverterParameter { get; set; }
-
 		public string StringFormat { get; set; }
-
 		public object Source { get; set; }
-
 		public string UpdateSourceEventName { get; set; }
-
+		public object TargetNullValue { get; set; }
+		public object FallbackValue { get; set; }
 		public TypedBindingBase TypedBinding { get; set; }
 
 		BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (TypedBinding == null)
-				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) { UpdateSourceEventName = UpdateSourceEventName };
+				return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source) {
+					UpdateSourceEventName = UpdateSourceEventName,
+					FallbackValue = FallbackValue,
+					TargetNullValue = TargetNullValue,
+				};
 
 			TypedBinding.Mode = Mode;
 			TypedBinding.Converter = Converter;
@@ -40,6 +33,8 @@ namespace Xamarin.Forms.Xaml
 			TypedBinding.StringFormat = StringFormat;
 			TypedBinding.Source = Source;
 			TypedBinding.UpdateSourceEventName = UpdateSourceEventName;
+			TypedBinding.FallbackValue = FallbackValue;
+			TypedBinding.TargetNullValue = TargetNullValue;
 			return TypedBinding;
 		}
 

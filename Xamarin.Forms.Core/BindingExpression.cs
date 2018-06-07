@@ -162,7 +162,7 @@ namespace Xamarin.Forms
 					value = Binding.GetSourceValue(value, property.ReturnType);
 				}
 				else
-					value = property.DefaultValue;
+					value = Binding.FallbackValue ?? property.DefaultValue;
 
 				if (!TryConvert(part, ref value, property.ReturnType, true))
 				{
