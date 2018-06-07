@@ -56,6 +56,24 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="ShouldDisplayHeadingCalibration">
+      <MemberSignature Language="C#" Value="public static bool ShouldDisplayHeadingCalibration { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool ShouldDisplayHeadingCalibration" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.ShouldDisplayHeadingCalibration" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Determines if the calibration screen should be displayed.</summary>
+        <value>Gets or sets if this should be displayed when started.</value>
+        <remarks>Only available on iOS</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Start">
       <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />

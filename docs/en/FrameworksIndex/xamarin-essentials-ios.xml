@@ -67,6 +67,7 @@
       <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
       <Member Id="M:Xamarin.Essentials.Compass.Stop" />
       <Member Id="P:Xamarin.Essentials.Compass.IsMonitoring" />
+      <Member Id="P:Xamarin.Essentials.Compass.ShouldDisplayHeadingCalibration" />
     </Type>
     <Type Name="Xamarin.Essentials.CompassChangedEventArgs" Id="T:Xamarin.Essentials.CompassChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.CompassChangedEventArgs.Reading" />
