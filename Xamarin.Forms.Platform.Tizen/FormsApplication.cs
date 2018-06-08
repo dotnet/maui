@@ -131,18 +131,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				throw new InvalidOperationException("Call Forms.Init (UIApplication) before this");
 			}
 
-			if (_platform != null)
-			{
-				_platform.SetPage(page);
-				return;
-			}
-
-			_platform = Platform.CreatePlatform(BaseLayout);
-			_platform.HasAlpha = MainWindow.Alpha;
-			BaseLayout.SetContent(_platform.GetRootNativeView());
-
-			_platform.RootNativeViewChanged += (s, e) => BaseLayout.SetContent(e.RootNativeView);
-
 			if (_application != null)
 			{
 				_application.Platform = _platform;
@@ -191,6 +179,11 @@ namespace Xamarin.Forms.Platform.Tizen
 					}
 				}
 			};
+
+			_platform = Platform.CreatePlatform(BaseLayout);
+			_platform.HasAlpha = MainWindow.Alpha;
+			BaseLayout.SetContent(_platform.GetRootNativeView());
+			_platform.RootNativeViewChanged += (s, e) => BaseLayout.SetContent(e.RootNativeView);
 		}
 
 		public void Run()

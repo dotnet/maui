@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			_page.Platform = this;
 
-			var renderer = Platform.AttachRenderer(_page);
+			var renderer = Platform.CreateRenderer(_page);
 			_rootView = renderer.NativeView;
 			RootNativeViewChanged?.Invoke(this, new RootNativeViewChangedEventArgs(_rootView));
 			_rootView.Show();
