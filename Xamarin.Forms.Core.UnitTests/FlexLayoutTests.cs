@@ -469,6 +469,30 @@ namespace Xamarin.Forms.Core.UnitTests
 			label1.IsVisible = true;
 			Assert.That(label1.Bounds, Is.EqualTo(new Rectangle(0, 0, 300, 20)));
 			Assert.That(label2.Bounds, Is.EqualTo(new Rectangle(0, 20, 300, 20)));
-		}	
+		}
+
+		[Test]
+		public void ChangingGrowTriggersLayout()
+		//https://github.com/xamarin/Xamarin.Forms/issues/2821
+		{
+			var platform = new UnitPlatform();
+			var layout = new FlexLayout {
+				Platform = platform,
+				IsPlatformEnabled = true,
+				Direction = FlexDirection.Column,
+			};
+
+			layout.Layout(new Rectangle(0, 0, 300, 300));
+			for (var i = 0; i < 3; i++) {
+				var box = new BoxView {
+					Platform = platform,
+					IsPlatformEnabled = true,
+				};
+				layout.Children.Add(box);
+				FlexLayout.SetGrow(box, 1f);
+			}
+
+			Assert.That(layout.Children[2].Bounds, Is.EqualTo(new Rectangle(0, 200, 300, 100)));
+		}
 	}
 }

@@ -468,7 +468,7 @@ namespace Xamarin.Forms
 				ColumnDefinition col = _columns[index];
 				if (!col.Width.IsStar)
 					continue;
-				starColWidth = Math.Max(starColWidth, col.ActualWidth / col.Width.Value);
+				starColWidth = col.Width.Value != 0 ? Math.Max(starColWidth, col.ActualWidth / col.Width.Value) : 0;
 			}
 
 			return starColWidth;
@@ -567,7 +567,7 @@ namespace Xamarin.Forms
 				RowDefinition row = _rows[index];
 				if (!row.Height.IsStar)
 					continue;
-				starRowHeight = Math.Max(starRowHeight, row.ActualHeight / row.Height.Value);
+				starRowHeight = row.Height.Value != 0 ? Math.Max(starRowHeight, row.ActualHeight / row.Height.Value) : 0;
 			}
 
 			return starRowHeight;

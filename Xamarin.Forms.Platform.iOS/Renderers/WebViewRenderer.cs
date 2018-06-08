@@ -1,10 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Threading.Tasks;
 using Foundation;
 using UIKit;
 using Xamarin.Forms.Internals;
-using System.Threading.Tasks;
+using Uri = System.Uri;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -81,8 +82,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public void LoadUrl(string url)
 		{
-			var encodedStringUrl = new NSString(url).CreateStringByAddingPercentEscapes(NSStringEncoding.UTF8);
-			LoadRequest(new NSUrlRequest(new NSUrl(encodedStringUrl)));
+			var uri = new Uri(url);
+			var safeHostUri = new Uri($"{uri.Scheme}://{uri.IdnHost}", UriKind.Absolute);
+			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
+			LoadRequest(new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)));
 		}
 
 		public override void LayoutSubviews()

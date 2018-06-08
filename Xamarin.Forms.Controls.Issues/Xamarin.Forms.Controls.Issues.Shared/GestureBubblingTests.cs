@@ -119,9 +119,9 @@ namespace Xamarin.Forms.Controls.Issues
 			var rec = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
 			rec.Tapped += (s, e) => { label.Text = Tapped; };
 			frame.GestureRecognizers.Add(rec);
-			
+
 			var layout = new StackLayout();
-		
+
 			layout.Children.Add(instructions);
 			layout.Children.Add(label);
 			layout.Children.Add(frame);

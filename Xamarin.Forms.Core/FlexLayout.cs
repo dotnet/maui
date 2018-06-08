@@ -126,6 +126,7 @@ namespace Xamarin.Forms
 			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Order = (int)newValue;
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
 		static void OnGrowPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -133,6 +134,7 @@ namespace Xamarin.Forms
 			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Grow = (float)newValue;
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnShrinkPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -140,6 +142,7 @@ namespace Xamarin.Forms
 			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Shrink = (float)newValue;
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnAlignSelfPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -147,6 +150,7 @@ namespace Xamarin.Forms
 			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).AlignSelf = (Flex.AlignSelf)(FlexAlignSelf)newValue;
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnBasisPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -154,6 +158,7 @@ namespace Xamarin.Forms
 			if (!bindable.IsSet(FlexItemProperty))
 				return;
 			GetFlexItem(bindable).Basis = ((FlexBasis)newValue).ToFlexBasis();
+			((VisualElement)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		static void OnDirectionPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -342,7 +347,6 @@ namespace Xamarin.Forms
 				item.Width = ((View)sender).WidthRequest < 0 ? float.NaN : (float)((View)sender).WidthRequest;
 				item.Height = ((View)sender).HeightRequest < 0 ? float.NaN : (float)((View)sender).HeightRequest;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -356,7 +360,6 @@ namespace Xamarin.Forms
 				item.MarginRight = (float)margin.Right;
 				item.MarginBottom = (float)margin.Bottom;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -370,7 +373,6 @@ namespace Xamarin.Forms
 				item.PaddingRight = (float)padding.Right;
 				item.PaddingBottom = (float)padding.Bottom;
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 
@@ -379,15 +381,7 @@ namespace Xamarin.Forms
 				if (item == null)
 					return;
 				item.IsVisible = (bool)((View)sender).GetValue(IsVisibleProperty);
-			}
-
-			if (   e.PropertyName == OrderProperty.PropertyName
-				|| e.PropertyName == GrowProperty.PropertyName
-				|| e.PropertyName == ShrinkProperty.PropertyName
-				|| e.PropertyName == BasisProperty.PropertyName
-				|| e.PropertyName == AlignSelfProperty.PropertyName) {
 				InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-				UpdateChildrenLayout();
 				return;
 			}
 		}
