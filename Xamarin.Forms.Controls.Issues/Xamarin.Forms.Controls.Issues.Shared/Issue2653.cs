@@ -148,7 +148,8 @@ namespace Xamarin.Forms.Controls.Issues
 			return true;
 		}
 
-#if UITEST
+// https://github.com/xamarin/Xamarin.Forms/issues/2989
+#if UITEST && !__ANDROID__
 		[Test]
 		public void ZIndexWhenInsertingChildren()
 		{
