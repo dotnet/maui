@@ -172,7 +172,7 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == ListView.ItemsSourceProperty.PropertyName)
 			{
 				ClearSizeEstimate();
-				((CollectionViewSource)List.DataContext).Source = Element.ItemsSource;
+				ReloadData();
 			}
 			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
 			{
