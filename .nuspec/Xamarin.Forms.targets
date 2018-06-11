@@ -38,7 +38,7 @@
 		</GetTasksAbi >
 
 		<PropertyGroup>
-			<_XFTasksExpectedAbi>4</_XFTasksExpectedAbi>
+			<_XFTasksExpectedAbi>5</_XFTasksExpectedAbi>
 		</PropertyGroup>
 
 		<Error
@@ -112,17 +112,23 @@
 			$(CoreCompileDependsOn);
 		</CoreCompileDependsOn>
 	</PropertyGroup>
-	<Target Name="CssG" BeforeTargets="BeforeCompile"  DependsOnTargets="PrepareResourceNames" Condition="'$(_CssGAlreadyExecuted)'!='true'">
-		<PropertyGroup>
-			<_CssGAlreadyExecuted>true</_CssGAlreadyExecuted>
-		</PropertyGroup>
+
+	<Target Name="_FindCSSFiles" DependsOnTargets="PrepareResourceNames">
+		<ItemGroup>
+ 			<_CSSInputs Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs' AND '%(TargetPath)' != ''" />
+ 			<_CSSOutputs Include="@(_CSSInputs->'$(IntermediateOutputPath)%(TargetPath).g.cs')" />
+ 		</ItemGroup>
+	</Target>
+
+	<Target Name="CssG" BeforeTargets="BeforeCompile"  DependsOnTargets="_FindCSSFiles" Inputs="@(_CSSInputs)" Outputs="@(_CSSOutputs)">
 		<CssGTask
-			XamlFiles="@(EmbeddedResource)" Condition="'%(Extension)' == '.css' AND '$(DefaultLanguageSourceExtension)' == '.cs'"
+			CSSFiles="@(_CSSInputs)"
+			OutputFiles="@(_CSSOutputs)"
 			Language = "$(Language)"
-			AssemblyName = "$(AssemblyName)"
-			OutputPath = "$(IntermediateOutputPath)">
-			<Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
-			<Output ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
-		</CssGTask>
+			AssemblyName = "$(AssemblyName)" />
+		<ItemGroup>
+ 			<FileWrites Include="@(_CSSOutputs)" />
+ 			<Compile Include="@(_CSSOutputs)" />
+ 		</ItemGroup>
 	</Target>
 </Project>
