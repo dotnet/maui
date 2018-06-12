@@ -80,10 +80,10 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					_span.Text = value;
 					ApplyTextAndStyle();
 					Device.StartTimer(TimeSpan.FromTicks(1), () =>
-						{
-							TextChanged?.Invoke(this, new TextChangedEventArgs(old, value));
-							return false;
-						});
+					{
+						OnTextChanged(old, value);
+						return false;
+					});
 				}
 			}
 		}
@@ -295,7 +295,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Implementation of the IMeasurable.Measure() method.
 		/// </summary>
-		public ESize Measure(int availableWidth, int availableHeight)
+		public virtual ESize Measure(int availableWidth, int availableHeight)
 		{
 			var originalSize = Geometry;
 			// resize the control using the whole available width
@@ -343,6 +343,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				// width is fine, return the formatted text size
 				return formattedSize;
 			}
+		}
+
+		protected virtual void OnTextChanged(string oldValue, string newValue)
+		{
+			TextChanged?.Invoke(this, new TextChangedEventArgs(oldValue, newValue));
 		}
 
 		void IBatchable.OnBatchCommitted()
