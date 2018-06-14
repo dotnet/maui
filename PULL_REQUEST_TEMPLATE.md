@@ -4,7 +4,7 @@
 
 ### Issues Resolved ###
 
-<!-- Please use the format "fixes #xxxx" for each issue this PR addesses -->
+<!-- Please use the format "fixes #xxxx" for each issue this PR addresses -->
 
 - fixes #
 
