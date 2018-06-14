@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 		ScrollView _view;
 		int _previousBottom;
 		bool _isEnabled;
+		bool _disposed;
 
 		public ScrollViewRenderer(Context context) : base(context)
 		{
@@ -176,18 +177,24 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
+			if (_disposed)
+			{
+				return;
+			}
 
-			SetElement(null);
+			_disposed = true;
 
 			if (disposing)
 			{
-				Tracker.Dispose();
+				SetElement(null);
+				Tracker?.Dispose();
 				Tracker = null;
 				RemoveAllViews();
-				_container.Dispose();
+				_container?.Dispose();
 				_container = null;
 			}
+
+			base.Dispose(disposing);
 		}
 
 		protected override void OnAttachedToWindow()
