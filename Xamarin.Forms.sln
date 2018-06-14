@@ -174,7 +174,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Maps.Design",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Xaml.Design", "Xamarin.Forms.Xaml.Design\Xamarin.Forms.Xaml.Design.csproj", "{65BC4888-CC59-428A-9B75-540CF1C09480}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XFCorePostProcessor.Tasks", "XFCorePostProcessor.Tasks\XFCorePostProcessor.Tasks.csproj", "{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XFCorePostProcessor.Tasks", "XFCorePostProcessor.Tasks\XFCorePostProcessor.Tasks.csproj", "{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -187,7 +187,6 @@ Global
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{a34ebe01-25bf-4e69-a2dc-2288dc625541}*SharedItemsImports = 4
 		Xamarin.Flex\Xamarin.Flex.projitems*{a6703c7d-d362-452a-a7a5-73771194d38c}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{cb9c96ce-125c-4a68-b6a1-c3ff1fbf93e1}*SharedItemsImports = 4
-		docs\APIDocs.projitems*{dc1f3933-ac99-4887-8b09-e13c2b346d4f}*SharedItemsImports = 13
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 		Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
 		Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems*{eadd8100-b3ae-4a31-92c4-267a64a1c6eb}*SharedItemsImports = 4
@@ -1575,6 +1574,18 @@ Global
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x64.Build.0 = Release|Any CPU
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x86.ActiveCfg = Release|Any CPU
 		{65BC4888-CC59-428A-9B75-540CF1C09480}.Release|x86.Build.0 = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|ARM.ActiveCfg = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|x64.ActiveCfg = Release|Any CPU
+		{5BBF4A3F-4AD1-47FD-B250-05EA793F939D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
