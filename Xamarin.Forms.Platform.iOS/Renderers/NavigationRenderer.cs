@@ -276,9 +276,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void OnElementChanged(VisualElementChangedEventArgs e)
 		{
-			var changed = ElementChanged;
-			if (changed != null)
-				changed(this, e);
+			ElementChanged?.Invoke(this, e);
 		}
 
 		protected virtual async Task<bool> OnPopToRoot(Page page, bool animated)
@@ -318,18 +316,9 @@ namespace Xamarin.Forms.Platform.iOS
 			UIViewController poppedViewController;
 			poppedViewController = base.PopViewController(animated);
 
-			if (poppedViewController == null)
-			{
-				// this happens only when the user does something REALLY dumb like pop right after putting the page as visible.
-				poppedViewController = TopViewController;
-				var newControllers = ViewControllers.Remove(poppedViewController);
-				ViewControllers = newControllers;
-				actuallyRemoved = true;
-			}
-			else
-				actuallyRemoved = !await task;
+			actuallyRemoved = (poppedViewController == null) ? true : !await task;
 
-			poppedViewController.Dispose();
+			poppedViewController?.Dispose();
 
 			UpdateToolBarVisible();
 			return actuallyRemoved;

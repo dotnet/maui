@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2929, "[UWP] ListView with null ItemsSource crashes on 3.0.0.530893", 
+	[Issue(IssueTracker.Github, 2929, "[UWP] ListView with null ItemsSource crashes on 3.0.0.530893",
 		PlatformAffected.UWP)]
 	public class Issue2929 : TestContentPage
 	{
@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Controls.Issues
 #endif
 
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.None, 99, "Make sure setting ItemSource to null doesn't blow up", 
+	[Issue(IssueTracker.None, 99, "Make sure setting ItemSource to null doesn't blow up",
 		PlatformAffected.UWP)]
 	public class SetListViewItemSourceToNull : TestContentPage
 	{
@@ -100,6 +100,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
+		[NUnit.Framework.Category(UITestCategories.ListView)]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
 			RunningApp.WaitForElement(Go);

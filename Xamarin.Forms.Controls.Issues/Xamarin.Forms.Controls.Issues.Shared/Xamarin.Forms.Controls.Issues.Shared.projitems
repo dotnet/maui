@@ -246,6 +246,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue2499.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ISampleNativeControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\UITestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1677.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1801.cs" />
@@ -338,6 +339,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32462.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla36681.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla36479.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3008.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3019.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModalActivityIndicatorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla37625.cs" />
@@ -448,6 +451,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60699.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2035.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2299.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2837.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
