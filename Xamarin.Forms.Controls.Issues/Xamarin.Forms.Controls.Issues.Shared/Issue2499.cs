@@ -34,13 +34,20 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void Issue2499Test ()
+		public void Issue2499Test()
 		{
-			RunningApp.Tap ("picker");
+			RunningApp.Tap("picker");
 			AppResult[] items = RunningApp.Query("cat");
 			Assert.AreNotEqual(items.Length, 0);
-
-			RunningApp.Tap ("cat");
+			RunningApp.WaitForElement(q => q.Marked("mouse"));
+			RunningApp.Tap("mouse");
+#if __IOS__
+			System.Threading.Tasks.Task.Delay(500).Wait();
+			var cancelButtonText = "Done";
+			RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
+			RunningApp.Tap(q => q.Marked(cancelButtonText));
+			System.Threading.Tasks.Task.Delay(1000).Wait();
+ #endif
 			items = RunningApp.Query("cat");
 			Assert.AreEqual(items.Length, 0);
 		}
