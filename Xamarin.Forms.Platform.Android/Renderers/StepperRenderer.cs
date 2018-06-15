@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.OldElement == null)
 			{
 				_downButton = new AButton(Context) { Text = "-", Gravity = GravityFlags.Center, Tag = this };
+				_downButton.SetHeight((int)Context.ToPixels(10.0));
 
 				_downButton.SetOnClickListener(StepperListener.Instance);
 

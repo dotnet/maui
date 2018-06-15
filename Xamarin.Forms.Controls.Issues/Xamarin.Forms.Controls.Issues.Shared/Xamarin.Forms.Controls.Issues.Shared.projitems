@@ -242,7 +242,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1702.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub2598.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1931.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2767.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2499.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ISampleNativeControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />

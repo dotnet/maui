@@ -50,7 +50,7 @@ namespace Xamarin.Forms
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Stepper>>(() => new PlatformConfigurationRegistry<Stepper>(this));
 		}
 
-		public Stepper(double min, double max, double val, double increment)
+		public Stepper(double min, double max, double val, double increment) : this()
 		{
 			if (min >= max)
 				throw new ArgumentOutOfRangeException("min");
