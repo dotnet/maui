@@ -46,6 +46,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		MasterDetailPage _masterDetailPage;
 		bool _toolbarVisible;
 		bool _isAttachedToWindow;
+		bool _didInitialPushPages;
+
 
 		// The following is based on https://android.googlesource.com/platform/frameworks/support.git/+/4a7e12af4ec095c3a53bb8481d8d92f63157c3b7/v4/java/android/support/v4/app/FragmentManager.java#677
 		// Must be overriden in a custom renderer to match durations in XML animation resource files
@@ -491,6 +493,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void InsertPageBefore(Page page, Page before)
 		{
+			if (!_isAttachedToWindow)
+				PushCurrentPages();
+
 			UpdateToolbar();
 
 			int index = PageController.InternalChildren.IndexOf(before);
@@ -606,6 +611,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void RemovePage(Page page)
 		{
+			if (!_isAttachedToWindow)
+				PushCurrentPages();
+
 			Fragment fragment = GetPageFragment(page);
 
 			if (fragment == null)
@@ -918,15 +926,19 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return false;
 			});
 		}
-
+		
 		void PushCurrentPages()
 		{
+			if (_didInitialPushPages)
+				return;
+
 			var navController = (INavigationPageController)Element;
 
 			foreach (Page page in navController.Pages)
 			{
 				PushViewAsync(page, false);
 			}
+			_didInitialPushPages = true;
 		}
 
 		bool IsAttachedToRoot()
