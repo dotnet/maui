@@ -103,25 +103,50 @@ namespace Xamarin.Forms
 	{
 		readonly IList<VisualStateGroup> _internalList;
 
-		static void Validate(IList<VisualStateGroup> groups)
+		// Used to check for duplicate names; we keep it around because it's cheaper to create it once and clear it
+		// than to create one every time we need to validate
+		readonly HashSet<string> _names = new HashSet<string>();
+
+		void Validate(IList<VisualStateGroup> groups)
 		{ 
-			// If we have 1 group, no need to worry about duplicate group names
-			if (groups.Count > 1)
+			var groupCount = groups.Count;
+
+			// If we only have 1 group, no need to worry about duplicate group names
+			if (groupCount > 1)
 			{
-				if (groups.GroupBy(vsg => vsg.Name).Any(g => g.Count() > 1))
+				_names.Clear();
+
+				// Using a for loop to avoid allocating an enumerator
+				for (int n = 0; n < groupCount; n++)
 				{
-					throw new InvalidOperationException("VisualStateGroup Names must be unique");
+					// HashSet will return false if the string is already in the set
+					if (!_names.Add(groups[n].Name))
+					{
+						throw new InvalidOperationException("VisualStateGroup Names must be unique");
+					}
 				}
 			}
 
-			// State names must be unique within this group list, so pull in all 
-			// the states in all the groups, group them by name, and see if we have
-			// and duplicates
-			if (groups.SelectMany(group => group.States)
-				.GroupBy(state => state.Name)
-				.Any(g => g.Count() > 1))
+			// State names must be unique within this group list, so we'll iterate over all the groups
+			// and their states and add the state names to a HashSet; we throw an exception if a duplicate shows up
+
+			_names.Clear();
+
+			// Using nested for loops to avoid allocating enumerators
+			for (int groupIndex = 0; groupIndex < groupCount; groupIndex++)
 			{
-				throw new InvalidOperationException("VisualState Names must be unique");
+				// Cache the group lookup and states count; it's ugly, but it speeds things up a lot
+				var group = groups[groupIndex];
+				var stateCount = group.States.Count;
+
+				for (int stateIndex = 0; stateIndex < stateCount; stateIndex++)
+				{
+					// HashSet will return false if the string is already in the set
+					if (!_names.Add(group.States[stateIndex].Name))
+					{
+						throw new InvalidOperationException("VisualState Names must be unique");
+					}
+				}
 			}
 		}
 
@@ -153,7 +178,13 @@ namespace Xamarin.Forms
 
 		public void Add(VisualStateGroup item)
 		{
+			if (item == null)
+			{
+				throw new ArgumentNullException(nameof(item));
+			}
+
 			_internalList.Add(item);
+
 			item.StatesChanged += ValidateAndNotify;
 		}
 
@@ -179,6 +210,11 @@ namespace Xamarin.Forms
 
 		public bool Remove(VisualStateGroup item)
 		{
+			if (item == null)
+			{
+				throw new ArgumentNullException(nameof(item));
+			}
+
 			item.StatesChanged -= ValidateAndNotify;
 			return _internalList.Remove(item);
 		}
@@ -194,6 +230,11 @@ namespace Xamarin.Forms
 
 		public void Insert(int index, VisualStateGroup item)
 		{
+			if (item == null)
+			{
+				throw new ArgumentNullException(nameof(item));
+			}
+
 			item.StatesChanged += ValidateAndNotify;
 			_internalList.Insert(index, item);
 		}
