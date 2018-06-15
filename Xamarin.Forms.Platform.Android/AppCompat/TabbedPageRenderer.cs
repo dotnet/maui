@@ -306,6 +306,23 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateSwipePaging();
 		}
 
+		void SetNavigationRendererPadding(int paddingTop, int paddingBottom)
+		{
+			for (var i = 0; i < PageController.InternalChildren.Count; i++)
+			{
+				var child = PageController.InternalChildren[i] as VisualElement;
+				if (child == null)
+					continue;
+				IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
+				var navigationRenderer = renderer as NavigationPageRenderer;
+				if (navigationRenderer != null)
+				{
+					navigationRenderer.ContainerTopPadding = paddingTop;
+					navigationRenderer.ContainerBottomPadding = paddingBottom;
+				}
+			}
+		}
+
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			FormsViewPager pager = _viewPager;
@@ -327,7 +344,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 				if (width > 0 && height > 0)
 				{
-					PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height - _bottomNavigationView.Height));
+					PageController.ContainerArea = new Rectangle(0, 0, context.FromPixels(width), context.FromPixels(height - _bottomNavigationView.MeasuredHeight));
+
+					SetNavigationRendererPadding(0, _bottomNavigationView.MeasuredHeight);
 
 					pager.Layout(0, 0, width, b);
 					// We need to measure again to ensure that the tabs show up
@@ -359,16 +378,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				{
 					PageController.ContainerArea = new Rectangle(0, context.FromPixels(tabsHeight), context.FromPixels(width), context.FromPixels(height - tabsHeight));
 
-					for (var i = 0; i < PageController.InternalChildren.Count; i++)
-					{
-						var child = PageController.InternalChildren[i] as VisualElement;
-						if (child == null)
-							continue;
-						IVisualElementRenderer renderer = Android.Platform.GetRenderer(child);
-						var navigationRenderer = renderer as NavigationPageRenderer;
-						if (navigationRenderer != null)
-							navigationRenderer.ContainerPadding = tabsHeight;
-					}
+					SetNavigationRendererPadding(tabsHeight, 0);
 
 					pager.Layout(0, 0, width, b);
 					// We need to measure again to ensure that the tabs show up

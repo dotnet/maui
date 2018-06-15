@@ -341,6 +341,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla36479.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3008.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3019.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2993.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModalActivityIndicatorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla37625.cs" />
