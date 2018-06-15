@@ -1103,7 +1103,14 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (_isDragging && scrollView.ContentOffset.Y < 0)
 				{
+					// If the refresh spinner is currently displayed and pull-to-refresh is not enabled,
+					// calling UpdateShowHideRefresh will remove the spinner and cause the ScrollView to shift;
+					// this will fire off this Scrolled override again and we'll be in an infinite loop (which iOS
+					// will promptly kill, and the app will close)
+					// So we temporarily flip _isDragging to false in order to prevent the loop.
+					_isDragging = false;
 					_uiTableViewController.UpdateShowHideRefresh(true);
+					_isDragging = true;
 				}
 
 				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && Device.Info.CurrentOrientation.IsPortrait())

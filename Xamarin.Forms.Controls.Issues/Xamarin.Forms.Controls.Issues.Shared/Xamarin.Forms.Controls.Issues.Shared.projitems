@@ -240,6 +240,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffect.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectLabel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue1799.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1931.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2767.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2499.cs" />
