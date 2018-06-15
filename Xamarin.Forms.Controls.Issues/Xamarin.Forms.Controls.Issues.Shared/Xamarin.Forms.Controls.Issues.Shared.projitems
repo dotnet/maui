@@ -239,6 +239,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla59580.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1878.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ISampleNativeControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\UITestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ViewHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1396.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1415.cs" />
@@ -319,6 +320,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla32462.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla36681.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla36479.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3008.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3019.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModalActivityIndicatorTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla37625.cs" />

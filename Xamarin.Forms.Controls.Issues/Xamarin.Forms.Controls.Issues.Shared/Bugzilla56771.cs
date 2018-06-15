@@ -10,12 +10,16 @@ using System;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 56771, "Multi-item add in INotifyCollectionChanged causes a NSInternalInconsistencyException in bindings on iOS", PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.ListView)]
+#endif
 	public class Bugzilla56771 : TestContentPage
 	{
 		const string Success = "Success";
