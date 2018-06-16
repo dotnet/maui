@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <param name="measureDelegate">Optional delegate which provides measurements for the evas object.</param>
 		public static View ToView(this EvasObject obj, MeasureDelegate measureDelegate = null)
 		{
-			return new EvasObjectWrapper(obj, measureDelegate);
+			return new NativeViewWrapper(obj, measureDelegate);
 		}
 	}
 }

@@ -3,11 +3,11 @@ using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public delegate ESize? MeasureDelegate(EvasObjectWrapperRenderer renderer, int availableWidth, int availableHeight);
+	public delegate ESize? MeasureDelegate(NativeViewWrapperRenderer renderer, int availableWidth, int availableHeight);
 
-	public class EvasObjectWrapper : View
+	public class NativeViewWrapper : View
 	{
-		public EvasObjectWrapper(EvasObject obj, MeasureDelegate measureDelegate = null)
+		public NativeViewWrapper(EvasObject obj, MeasureDelegate measureDelegate = null)
 		{
 			EvasObject = obj;
 			MeasureDelegate = measureDelegate;

@@ -1,12 +1,15 @@
+using ElmSharp;
 using ESize = ElmSharp.Size;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class EvasObjectWrapperRenderer : VisualElementRenderer<EvasObjectWrapper>
+	public class NativeViewWrapperRenderer : ViewRenderer<NativeViewWrapper, EvasObject>
 	{
-		protected override void OnElementChanged(ElementChangedEventArgs<EvasObjectWrapper> e)
+		protected override void OnElementChanged(ElementChangedEventArgs<NativeViewWrapper> e)
 		{
-			SetNativeView(Element.EvasObject);
+			if (Control == null)
+				SetNativeControl(Element.EvasObject);
+
 			base.OnElementChanged(e);
 		}
 
