@@ -356,11 +356,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			AssertDoesNotExist (assembly);
 			AssertExists (mainPageXamlG, nonEmpty: true);
 			AssertExists (fooCssG, nonEmpty: true);
-			AssertExists (xamlCStamp);
+			AssertDoesNotExist (xamlCStamp); //XamlC should be skipped
 
 			var expectedXamlG = new FileInfo (mainPageXamlG).LastWriteTimeUtc;
 			var expectedCssG = new FileInfo (fooCssG).LastWriteTimeUtc;
-			var expectedXamlC = new FileInfo (xamlCStamp).LastWriteTimeUtc;
 
 			//Build again, a full build
 			Build (projectFile);
@@ -371,10 +370,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 			var actualXamlG = new FileInfo (mainPageXamlG).LastWriteTimeUtc;
 			var actualCssG = new FileInfo (fooCssG).LastWriteTimeUtc;
-			var actualXamlC = new FileInfo (xamlCStamp).LastWriteTimeUtc;
 			Assert.AreEqual (expectedXamlG, actualXamlG, $"Timestamps should match for {mainPageXamlG}.");
 			Assert.AreEqual (expectedCssG, actualCssG, $"Timestamps should match for {fooCssG}.");
-			Assert.AreNotEqual (expectedXamlC, actualXamlC, $"Timestamps should *not* match for {xamlCStamp}.");
 		}
 
 		//I believe the designer might invoke this target manually

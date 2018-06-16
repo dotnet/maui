@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var items = Element.Items;
 			Control.Placeholder = Element.Title;
 			var oldText = Control.Text;
-			Control.Text = selectedIndex == -1 || items == null ? "" : items[selectedIndex];
+			Control.Text = selectedIndex == -1 || items == null || selectedIndex >= items.Count ? "" : items[selectedIndex];
 			UpdatePickerNativeSize(oldText);
 			_picker.ReloadAllComponents();
 			if (items == null || items.Count == 0)

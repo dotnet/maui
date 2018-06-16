@@ -84,14 +84,16 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void ReloadData()
 		{
-			if (Element?.ItemsSource == null)
-			{
-				return;
-			}
+			if (Element?.ItemsSource == null && _context != null)
+				_context.Source = null;
 
 			var allSourceItems = new ObservableCollection<object>();
-			foreach (var item in Element.ItemsSource)
-				allSourceItems.Add(item);
+
+			if (Element?.ItemsSource != null)
+			{
+				foreach (var item in Element.ItemsSource)
+					allSourceItems.Add(item);
+			}
 
 			// WinRT throws an exception if you set ItemsSource directly to a CVS, so bind it.
 			List.DataContext = _context = new CollectionViewSource
@@ -109,11 +111,24 @@ namespace Xamarin.Forms.Platform.UWP
 					if (e.NewStartingIndex < 0)
 						goto case NotifyCollectionChangedAction.Reset;
 
-					for (int i = e.NewItems.Count - 1; i >= 0; i--)
-						SourceItems.Insert(e.NewStartingIndex, e.NewItems[i]);
+					// if a NewStartingIndex that's too high is passed in just add the items.
+					// I realize this is enforcing bad behavior but prior to this synchronization
+					// code being added it wouldn't cause the app to crash whereas now it does
+					// so this code accounts for that in order to ensure smooth sailing for the user
+					if (e.NewStartingIndex >= SourceItems.Count)
+					{
+						for (int i = 0; i < e.NewItems.Count; i++)
+							SourceItems.Add((e.NewItems[i] as BindableObject).BindingContext);
+					}
+					else
+					{
+						for (int i = e.NewItems.Count - 1; i >= 0; i--)
+							SourceItems.Insert(e.NewStartingIndex, (e.NewItems[i] as BindableObject).BindingContext);
+					}
+
 					break;
 				case NotifyCollectionChangedAction.Remove:
-					foreach (var item in e.OldItems)
+					for (int i = e.OldItems.Count - 1; i >= 0; i--)
 						SourceItems.RemoveAt(e.OldStartingIndex);
 					break;
 				case NotifyCollectionChangedAction.Move:
@@ -134,6 +149,7 @@ namespace Xamarin.Forms.Platform.UWP
 				case NotifyCollectionChangedAction.Replace:
 				case NotifyCollectionChangedAction.Reset:
 				default:
+					ClearSizeEstimate();
 					ReloadData();
 					break;
 			}
@@ -169,12 +185,7 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				ClearSizeEstimate();
 			}
-			else if (e.PropertyName == ListView.ItemsSourceProperty.PropertyName)
-			{
-				ClearSizeEstimate();
-				ReloadData();
-			}
-			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
+			else if (e.PropertyName == Specifics.SelectionModeProperty.PropertyName)
 			{
 				UpdateSelectionMode();
 			}
@@ -284,14 +295,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateGrouping()
 		{
-			if (Element?.ItemsSource == null)
-			{
-				return;
-			}
-
 			bool grouping = Element.IsGroupingEnabled;
 
-			((CollectionViewSource)List.DataContext).IsSourceGrouped = grouping;
+			if (_context != null)
+				_context.IsSourceGrouped = grouping;
 
 			var templatedItems = TemplatedItemsView.TemplatedItems;
 			if (grouping && templatedItems.ShortNames != null)

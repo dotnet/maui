@@ -150,7 +150,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			Control.Hint = Element.Title;
 
-			if (Element.SelectedIndex == -1 || Element.Items == null)
+			if (Element.SelectedIndex == -1 || Element.Items == null || Element.SelectedIndex >= Element.Items.Count)
 				Control.Text = null;
 			else
 				Control.Text = Element.Items[Element.SelectedIndex];

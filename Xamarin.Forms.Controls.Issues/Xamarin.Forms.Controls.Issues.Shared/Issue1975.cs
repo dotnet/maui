@@ -9,6 +9,7 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -16,6 +17,9 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1975, "[iOS] ListView throws NRE when grouping enabled and data changed",
 		PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.ListView)]
+#endif
 	public class Issue1975 : TestNavigationPage
 	{
 		protected override void Init()
@@ -37,7 +41,7 @@ namespace Xamarin.Forms.Controls.Issues
 			lv.SetBinding(ListView.ItemsSourceProperty, new Binding("Items"));
 			lv.IsGroupingEnabled = true;
 			lv.GroupDisplayBinding = new Binding("Description");
-			lv.GroupShortNameBinding= new Binding("ShortName");
+			lv.GroupShortNameBinding = new Binding("ShortName");
 
 			lv.ItemTemplate = new DataTemplate(() =>
 			{
@@ -49,16 +53,16 @@ namespace Xamarin.Forms.Controls.Issues
 			var layout = new StackLayout();
 			layout.Children.Add(button);
 			layout.Children.Add(lv);
-			
+
 			return new ContentPage { Content = layout, BindingContext = DataSample.Instance };
 		}
 
 		ContentPage ModifyDataPage()
 		{
-			var contentPage = new ContentPage { Content = new Label { Text = Success, Margin = 100} };
+			var contentPage = new ContentPage { Content = new Label { Text = Success, Margin = 100 } };
 
-			contentPage.Appearing += (sender, args) => 
-				DataSample.Instance.Items.Add(new Item("C"){new SubItem("Cherry"), new SubItem("Cranberry")});
+			contentPage.Appearing += (sender, args) =>
+				DataSample.Instance.Items.Add(new Item("C") { new SubItem("Cherry"), new SubItem("Cranberry") });
 
 			return contentPage;
 		}
@@ -137,7 +141,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public void UpdatingSourceOfDisposedListViewDoesNotCrash ()
+		public void UpdatingSourceOfDisposedListViewDoesNotCrash()
 		{
 			RunningApp.Tap(Go);
 			RunningApp.WaitForElement(Success);

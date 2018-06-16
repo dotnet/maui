@@ -117,6 +117,30 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/2169
+		public void BoundsUpdatedIfConstraintsChangedWhileNotParented()
+		{
+			var relativeLayout = new RelativeLayout {
+				Platform = new UnitPlatform(),
+				IsPlatformEnabled = true
+			};
+
+			var child = new View {
+				IsPlatformEnabled = true
+			};
+
+			relativeLayout.Children.Add(child, Constraint.Constant(30), Constraint.Constant(20));
+			relativeLayout.Layout(new Rectangle(0, 0, 100, 100));
+			Assert.That(child.Bounds, Is.EqualTo(new Rectangle(30,20,100,20)));
+
+			relativeLayout.Children.Remove(child);
+			relativeLayout.Children.Add(child, Constraint.Constant(50), Constraint.Constant(40));
+			Assert.That(child.Bounds, Is.EqualTo(new Rectangle(50, 40, 100, 20)));
+
+
+		}
+
+		[Test]
 		public void SimpleExpressionLayout ()
 		{
 			var relativeLayout = new RelativeLayout {

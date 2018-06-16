@@ -12,6 +12,7 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls
@@ -318,6 +319,9 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Adding Multiple Items to a ListView", PlatformAffected.All)]
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.ListView)]
+#endif
 	public class AddingMultipleItemsListView : TestContentPage
 	{
 		protected override void Init()

@@ -162,7 +162,7 @@ namespace Xamarin.Forms
 		protected override void OnAdded(View view)
 		{
 			BoundsConstraint boundsConstraint = GetBoundsConstraint(view);
-			if (boundsConstraint == null)
+			if (boundsConstraint == null || !boundsConstraint.CreatedFromExpression)
 			{
 				// user probably added the view through the strict Add method.
 				CreateBoundsFromConstraints(view, GetXConstraint(view), GetYConstraint(view), GetWidthConstraint(view), GetHeightConstraint(view));
@@ -330,7 +330,7 @@ namespace Xamarin.Forms
 			{
 				if (bounds == null)
 					throw new ArgumentNullException(nameof(bounds));
-				SetBoundsConstraint(view, BoundsConstraint.FromExpression(bounds));
+				SetBoundsConstraint(view, BoundsConstraint.FromExpression(bounds, fromExpression: true));
 
 				base.Add(view);
 			}
@@ -348,7 +348,7 @@ namespace Xamarin.Forms
 				parents.AddRange(ExpressionSearch.Default.FindObjects<View>(width));
 				parents.AddRange(ExpressionSearch.Default.FindObjects<View>(height));
 
-				BoundsConstraint bounds = BoundsConstraint.FromExpression(() => new Rectangle(xCompiled(), yCompiled(), widthCompiled(), heightCompiled()), parents.Distinct().ToArray());
+				BoundsConstraint bounds = BoundsConstraint.FromExpression(() => new Rectangle(xCompiled(), yCompiled(), widthCompiled(), heightCompiled()), fromExpression: true, parents: parents.Distinct().ToArray());
 
 				SetBoundsConstraint(view, bounds);
 

@@ -135,23 +135,23 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked(A));
 			RunningApp.Tap(q => q.Marked(A));
 
-			Assert.AreEqual(A, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].Text);
-			Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].Text);
+			Assert.AreEqual(A, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+			Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
 			RunningApp.Tap(q => q.Marked(B));
 
-			Assert.AreEqual(B, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].Text);
-			Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].Text);
+			Assert.AreEqual(B, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+			Assert.AreEqual(Group_1, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
 			RunningApp.Tap(q => q.Marked(C));
 
-			Assert.AreEqual(C, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].Text);
-			Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].Text);
+			Assert.AreEqual(C, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+			Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 
 			RunningApp.Tap(q => q.Marked(D));
 
-			Assert.AreEqual(D, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].Text);
-			Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].Text);
+			Assert.AreEqual(D, RunningApp.WaitForElement(q => q.Marked(lblItem))[0].ReadText());
+			Assert.AreEqual(Group_2, RunningApp.WaitForElement(q => q.Marked(lblGroup))[0].ReadText());
 		}
 #endif
 	}

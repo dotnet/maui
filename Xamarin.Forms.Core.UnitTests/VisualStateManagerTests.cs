@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
@@ -155,6 +157,21 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void StateNamesMustBeUniqueWithinGroupListWhenAddingGroup()
+		{
+			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
+
+			// Create and add a second VisualStateGroup
+			var secondGroup = new VisualStateGroup { Name = "Foo" };
+
+			// Create a VisualState with the same name as one in another group in the list
+			var duplicate = new VisualState { Name = NormalStateName };
+			secondGroup.States.Add(duplicate);
+
+			Assert.Throws<InvalidOperationException>(() => vsgs.Add(secondGroup));
+		}
+
+		[Test]
 		public void GroupNamesMustBeUniqueWithinGroupList()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -261,6 +278,93 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(label1.Margin.Bottom, Is.EqualTo(targetBottomMargin));
 			Assert.That(label2.Margin.Bottom, Is.EqualTo(targetBottomMargin));
+		}
+
+		[Test]
+		public void CanRemoveAStateAndAddANewStateWithTheSameName()
+		{
+			var stateGroups = new VisualStateGroupList();
+			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
+			var normalState = new VisualState { Name = NormalStateName };
+			var invalidState = new VisualState { Name = InvalidStateName };
+
+			stateGroups.Add(visualStateGroup);
+			visualStateGroup.States.Add(normalState);
+			visualStateGroup.States.Add(invalidState);
+
+			var name = visualStateGroup.States[0].Name;
+
+			visualStateGroup.States.Remove(visualStateGroup.States[0]);
+
+			visualStateGroup.States.Add(new VisualState { Name = name });
+		}
+
+		[Test]
+		public void CanRemoveAGroupAndAddANewGroupWithTheSameName()
+		{
+			var stateGroups = new VisualStateGroupList();
+			var visualStateGroup = new VisualStateGroup { Name = CommonStatesName };
+			var secondVisualStateGroup = new VisualStateGroup { Name = "Whatevs" };
+			var normalState = new VisualState { Name = NormalStateName };
+			var invalidState = new VisualState { Name = InvalidStateName };
+
+			stateGroups.Add(visualStateGroup);
+			visualStateGroup.States.Add(normalState);
+			visualStateGroup.States.Add(invalidState);
+			
+			stateGroups.Add(secondVisualStateGroup);
+
+			var name = stateGroups[0].Name;
+
+			stateGroups.Remove(stateGroups[0]);
+
+			stateGroups.Add(new VisualStateGroup { Name = name });
+		}
+
+		[Test]
+		[Explicit("This test was created to check performance characteristics; leaving it in because it may be useful again.")]
+		[TestCase(1, 10)]
+		[TestCase(1, 10000)]
+		[TestCase(10, 100)]
+		[TestCase(10, 10000)]
+		public void ValidatePerformance(int groups, int states)
+		{
+			IList<VisualStateGroup> vsgs = new VisualStateGroupList();
+
+			var groupList = new List<VisualStateGroup>();
+
+			for (int n = 0; n < groups; n++)
+			{
+				groupList.Add(new VisualStateGroup { Name = n.ToString() });
+			}
+
+			var watch = new Stopwatch();
+
+			watch.Start();
+
+			foreach (var group in groupList)
+			{
+				vsgs.Add(group);
+			}
+			
+			watch.Stop();
+
+			double iterations = states;
+			var random = new Random();
+
+			for (int n = 0; n < iterations; n++)
+			{
+				var state = new VisualState { Name = n.ToString() };
+				var group = groupList[random.Next(0, groups - 1)];
+				watch.Start();
+				group.States.Add(state);
+				watch.Stop();
+			}
+
+			var average = watch.ElapsedMilliseconds / iterations;
+
+			Debug.WriteLine($">>>>> VisualStateManagerTests ValidatePerformance: {watch.ElapsedMilliseconds}ms over {iterations} iterations; average of {average}ms");
+
 		}
 	}
 }

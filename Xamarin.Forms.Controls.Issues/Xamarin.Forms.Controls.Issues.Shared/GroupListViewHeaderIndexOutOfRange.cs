@@ -8,12 +8,16 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 5955, "Group ListView Crashes when ItemSource is Cleared", PlatformAffected.iOS)]
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
 	public class GroupListViewHeaderIndexOutOfRange : TestContentPage
 	{
 		const string ButtonId = "button";

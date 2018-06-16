@@ -46,6 +46,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		MasterDetailPage _masterDetailPage;
 		bool _toolbarVisible;
 		bool _isAttachedToWindow;
+		bool _didInitialPushPages;
+
 
 		// The following is based on https://android.googlesource.com/platform/frameworks/support.git/+/4a7e12af4ec095c3a53bb8481d8d92f63157c3b7/v4/java/android/support/v4/app/FragmentManager.java#677
 		// Must be overriden in a custom renderer to match durations in XML animation resource files
@@ -66,7 +68,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Device.Info.PropertyChanged += DeviceInfoPropertyChanged;
 		}
 
-		internal int ContainerPadding { get; set; }
+		internal int ContainerTopPadding { get; set; }
+		internal int ContainerBottomPadding { get; set; }
 
 		Page Current
 		{
@@ -331,7 +334,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			bar.Measure(MeasureSpecFactory.MakeMeasureSpec(r - l, MeasureSpecMode.Exactly), MeasureSpecFactory.MakeMeasureSpec(barHeight, MeasureSpecMode.Exactly));
 
 			var barOffset = ToolbarVisible ? barHeight : 0;
-			int containerHeight = b - t - ContainerPadding - barOffset;
+			int containerHeight = b - t - ContainerTopPadding - barOffset - ContainerBottomPadding;
 
 			PageController.ContainerArea = new Rectangle(0, 0, Context.FromPixels(r - l), Context.FromPixels(containerHeight));
 
@@ -357,12 +360,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (childHasNavBar)
 				{
 					bar.Layout(0, 0, r - l, barHeight);
-					child.Layout(0, barHeight + ContainerPadding, r, b);
+					child.Layout(0, barHeight + ContainerTopPadding, r, b - ContainerBottomPadding);
 				}
 				else
 				{
 					bar.Layout(0, -1000, r, barHeight - 1000);
-					child.Layout(0, ContainerPadding, r, b);
+					child.Layout(0, ContainerTopPadding, r, b - ContainerBottomPadding);
 				}
 				toolbarLayoutCompleted = true;
 			}
@@ -412,7 +415,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (actionBarHeight <= 0)
 				return Device.Info.CurrentOrientation.IsPortrait() ? (int)Context.ToPixels(56) : (int)Context.ToPixels(48);
-			
+
 			if (((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentStatus) || ((Activity)Context).Window.Attributes.Flags.HasFlag(WindowManagerFlags.TranslucentNavigation))
 			{
 				if (_toolbar.PaddingTop == 0)
@@ -435,7 +438,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			valueAnim.Update += (s, a) => icon.Progress = (float)a.Animation.AnimatedValue;
 			valueAnim.Start();
 		}
-		
+
 		int GetStatusBarHeight()
 		{
 			if (_statusbarHeight > 0)
@@ -491,6 +494,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void InsertPageBefore(Page page, Page before)
 		{
+			if (!_isAttachedToWindow)
+				PushCurrentPages();
+
 			UpdateToolbar();
 
 			int index = PageController.InternalChildren.IndexOf(before);
@@ -606,6 +612,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void RemovePage(Page page)
 		{
+			if (!_isAttachedToWindow)
+				PushCurrentPages();
+
 			Fragment fragment = GetPageFragment(page);
 
 			if (fragment == null)
@@ -642,11 +651,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			_toolbar = null;
 
 			SetupToolbar();
-			
+
 			// if the old toolbar had padding from transluscentflags, set it to the new toolbar
 			if (oldToolbar.PaddingTop != 0)
 				_toolbar.SetPadding(0, oldToolbar.PaddingTop, 0, 0);
-			
+
 			RegisterToolbar();
 			UpdateToolbar();
 			UpdateMenu();
@@ -918,15 +927,19 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				return false;
 			});
 		}
-
+		
 		void PushCurrentPages()
 		{
+			if (_didInitialPushPages)
+				return;
+
 			var navController = (INavigationPageController)Element;
 
 			foreach (Page page in navController.Pages)
 			{
 				PushViewAsync(page, false);
 			}
+			_didInitialPushPages = true;
 		}
 
 		bool IsAttachedToRoot()
