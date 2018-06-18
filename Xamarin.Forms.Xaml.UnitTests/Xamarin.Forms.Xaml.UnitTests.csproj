@@ -105,6 +105,9 @@
     <Compile Include="AutomationProperties.xaml.cs">
       <DependentUpon>AutomationProperties.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BindablePropertiesAccessModifiers.xaml.cs">
+      <DependentUpon>BindablePropertiesAccessModifiers.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FontConverterTests.cs" />
     <Compile Include="Issues\Bz43450.xaml.cs">
       <DependentUpon>Bz43450.xaml</DependentUpon>
@@ -1173,6 +1176,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VisualStateManagerTests.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BindablePropertiesAccessModifiers.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

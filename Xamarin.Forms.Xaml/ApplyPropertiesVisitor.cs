@@ -272,7 +272,10 @@ namespace Xamarin.Forms.Xaml
 #if NETSTANDARD1_0
 			var bindableFieldInfo = elementType.GetFields().FirstOrDefault(fi => fi.Name == localName + "Property");
 #else
-			var bindableFieldInfo = elementType.GetFields(BindingFlags.Static | BindingFlags.Public|BindingFlags.FlattenHierarchy).FirstOrDefault(fi => fi.Name == localName + "Property");
+			// F# does not support public fields, so allow internal (Assembly) as well as public
+			const BindingFlags supportedFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+			var bindableFieldInfo = elementType.GetFields(supportedFlags)
+												.FirstOrDefault(fi => (fi.IsAssembly || fi.IsPublic) && fi.Name == localName + "Property");
 #endif
 			Exception exception = null;
 			if (exception == null && bindableFieldInfo == null) {

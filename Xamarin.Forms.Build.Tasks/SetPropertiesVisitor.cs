@@ -823,7 +823,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var name = $"{localName}Property";
 			FieldReference bpRef = bpOwnerType.GetField(fd => fd.Name == name &&
 														fd.IsStatic &&
-														fd.IsPublic, out declaringTypeReference);
+														(fd.IsPublic || fd.IsAssembly), out declaringTypeReference);
 			if (bpRef != null) {
 				bpRef = module.ImportReference(bpRef.ResolveGenericParameters(declaringTypeReference));
 				bpRef.FieldType = module.ImportReference(bpRef.FieldType);
