@@ -532,7 +532,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
 
-			if (!groupReset)
+			// We can't do this check on grouped lists because the index doesn't match the number of rows in a section.
+			// Likewise, we can't do this check on lists using RecycleElement because the number of rows in a section will remain constant because they are reused.
+			if (!groupReset && Element.CachingStrategy == ListViewCachingStrategy.RetainElement)
 			{
 				var lastIndex = Control.NumberOfRowsInSection(section);
 				if (e.NewStartingIndex > lastIndex || e.OldStartingIndex > lastIndex)
@@ -752,9 +754,10 @@ namespace Xamarin.Forms.Platform.iOS
 				else // ListViewCachingStrategy.RetainElement
 					return GetCellForPath(indexPath);
 
+				if (itemTypeOrDataTemplate == null)
+					itemTypeOrDataTemplate = typeof(TextCell);
 
-				Cell protoCell;
-				if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out protoCell))
+				if (!_prototypicalCellByTypeOrDataTemplate.TryGetValue(itemTypeOrDataTemplate, out Cell protoCell))
 				{
 					// cache prototypical cell by item type; Items of the same Type share
 					// the same DataTemplate (this is enforced by RecycleElementAndDataTemplate)
@@ -988,7 +991,7 @@ namespace Xamarin.Forms.Platform.iOS
 				var renderer = (CellRenderer)Internals.Registrar.Registered.GetHandlerForObject<IRegisterable>(cell);
 				view = new HeaderWrapperView { Cell = cell };
 				view.AddSubview(renderer.GetCell(cell, null, tableView));
-        
+
 				return view;
 			}
 
@@ -1115,8 +1118,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_isDragging && scrollView.ContentOffset.Y < -10f && _uiTableViewController._usingLargeTitles && Device.Info.CurrentOrientation.IsPortrait())
 				{
-					_uiTableViewController.ForceRefreshing();				
-				}					
+					_uiTableViewController.ForceRefreshing();
+				}
 			}
 
 			public override string[] SectionIndexTitles(UITableView tableView)
@@ -1350,7 +1353,7 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (RefreshControl == null)
 					return;
-				
+
 				_refresh.EndRefreshing();
 
 				UpdateContentOffset(-1);
