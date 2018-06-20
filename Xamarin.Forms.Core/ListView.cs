@@ -75,9 +75,9 @@ namespace Xamarin.Forms
 		public ListView([Parameter("CachingStrategy")] ListViewCachingStrategy cachingStrategy) : this()
 		{
 			// null => UnitTest "platform"
-			if (Device.RuntimePlatform == null || 
-				Device.RuntimePlatform == Device.Android || 
-				Device.RuntimePlatform == Device.iOS || 
+			if (Device.RuntimePlatform == null ||
+				Device.RuntimePlatform == Device.Android ||
+				Device.RuntimePlatform == Device.iOS ||
 				Device.RuntimePlatform == Device.macOS)
 				CachingStrategy = cachingStrategy;
 		}
@@ -326,7 +326,9 @@ namespace Xamarin.Forms
 			if (item != null)
 				text = item.ToString();
 
-			return new TextCell { Text = text };
+			TextCell textCell = new TextCell();
+			textCell.SetBinding(TextCell.TextProperty, ".");
+			return textCell;
 		}
 
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
