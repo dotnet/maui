@@ -42,11 +42,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 		TaskCompletionSource<CommandBar> _commandBarTcs;
 		Windows.UI.Xaml.Controls.ContentPresenter _presenter;
-	    
-
-	    public PageControl()
+	    		
+		public PageControl()
 		{
-
+			DefaultStyleKey = typeof(PageControl);
 		}
 
 		public string BackButtonTitle
