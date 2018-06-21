@@ -856,12 +856,12 @@ namespace Xamarin.Forms.Build.Tasks
 
 			var value = ((ValueNode)valueNode).Value;
 
-			yield return Instruction.Create(OpCodes.Ldloc, parent);
+			yield return Create(Ldloc, parent);
 			if (context.Root is VariableDefinition)
-				yield return Instruction.Create(OpCodes.Ldloc, context.Root as VariableDefinition);
+				yield return Create(Ldloc, context.Root as VariableDefinition);
 			else if (context.Root is FieldDefinition) {
-				yield return Instruction.Create(OpCodes.Ldarg_0);
-				yield return Instruction.Create(OpCodes.Ldfld, context.Root as FieldDefinition);
+				yield return Create(Ldarg_0);
+				yield return Create(Ldfld, context.Root as FieldDefinition);
 			} else 
 				throw new InvalidProgramException();
 			var declaringType = context.Body.Method.DeclaringType;
@@ -870,19 +870,33 @@ namespace Xamarin.Forms.Build.Tasks
 			var handler = declaringType.AllMethods().FirstOrDefault(md => md.Name == value as string);
 			if (handler == null) 
 				throw new XamlParseException($"EventHandler \"{value}\" not found in type \"{context.Body.Method.DeclaringType.FullName}\"", iXmlLineInfo);
+
+			//check if the handler signature matches the Invoke signature;
+			var invoke = module.ImportReference(eventinfo.EventType.ResolveCached().GetMethods().First(md => md.Name == "Invoke"));
+			invoke = invoke.ResolveGenericParameters(eventinfo.EventType, module);
+			if (!handler.ReturnType.InheritsFromOrImplements(invoke.ReturnType))
+				throw new XamlParseException($"Signature (return type) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
+			if (invoke.Parameters.Count != handler.Parameters.Count)
+				throw new XamlParseException($"Signature (number of arguments) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
+			if (!invoke.ContainsGenericParameter)
+				for (var i = 0; i < invoke.Parameters.Count;i++)
+					if (!handler.Parameters[i].ParameterType.InheritsFromOrImplements(invoke.Parameters[i].ParameterType))
+						throw new XamlParseException($"Signature (parameter {i}) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
+
 			if (handler.IsVirtual) {
-				yield return Instruction.Create(OpCodes.Ldarg_0);
-				yield return Instruction.Create(OpCodes.Ldvirtftn, handler);
+				yield return Create(Ldarg_0);
+				yield return Create(Ldvirtftn, handler);
 			} else
-				yield return Instruction.Create(OpCodes.Ldftn, handler);
+				yield return Create(Ldftn, handler);
 
 			//FIXME: eventually get the right ctor instead fo the First() one, just in case another one could exists (not even sure it's possible).
 			var ctor = module.ImportReference(eventinfo.EventType.ResolveCached().GetConstructors().First());
 			ctor = ctor.ResolveGenericParameters(eventinfo.EventType, module);
-			yield return Instruction.Create(OpCodes.Newobj, module.ImportReference(ctor));
+			yield return Create(Newobj, module.ImportReference(ctor));
+			//Check if the handler has the same signature as the ctor (it should)
 			var adder = module.ImportReference(eventinfo.AddMethod);
 			adder = adder.ResolveGenericParameters(eventDeclaringTypeRef, module);
-			yield return Instruction.Create(OpCodes.Callvirt, module.ImportReference(adder));
+			yield return Create(Callvirt, module.ImportReference(adder));
 		}
 
 		static bool CanSetDynamicResource(FieldReference bpRef, INode valueNode, ILContext context)

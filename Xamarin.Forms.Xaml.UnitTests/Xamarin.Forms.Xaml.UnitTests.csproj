@@ -625,6 +625,9 @@
       <DependentUpon>Gh2574.xaml</DependentUpon>
     </Compile>
     <Compile Include="XFCorePostProcessorCodeInjected.cs" />
+    <Compile Include="Issues\Gh3082.xaml.cs">
+      <DependentUpon>Gh3082.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
@@ -1128,6 +1131,10 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Issues\Gh2574.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Gh3082.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
