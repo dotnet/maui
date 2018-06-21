@@ -56,8 +56,25 @@ namespace Xamarin.Essentials
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             (int)Build.VERSION.SdkInt >= (int)versionCode;
 
+        static bool PlatformIsMainThread
+        {
+            get
+            {
+                if (HasApiLevel(BuildVersionCodes.M))
+                    return Looper.MainLooper.IsCurrentThread;
+
+                return Looper.MyLooper() == Looper.MainLooper;
+            }
+        }
+
         static void PlatformBeginInvokeOnMainThread(Action action)
         {
+            if (IsMainThread)
+            {
+                action();
+                return;
+            }
+
             if (handler?.Looper != Looper.MainLooper)
                 handler = new Handler(Looper.MainLooper);
 

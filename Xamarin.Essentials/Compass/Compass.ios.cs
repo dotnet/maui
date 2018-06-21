@@ -10,6 +10,8 @@ namespace Xamarin.Essentials
         internal const double NormalFilter = 1;
         internal const double UiFilter = 2;
 
+        public static bool ShouldDisplayHeadingCalibration { get; set; } = false;
+
         internal static bool IsSupported =>
             CLLocationManager.HeadingAvailable;
 
@@ -18,6 +20,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStart(SensorSpeed sensorSpeed)
         {
             locationManager = new CLLocationManager();
+            locationManager.ShouldDisplayHeadingCalibration += LocationManagerShouldDisplayHeadingCalibration;
             switch (sensorSpeed)
             {
                 case SensorSpeed.Fastest:
@@ -42,6 +45,8 @@ namespace Xamarin.Essentials
             locationManager.StartUpdatingHeading();
         }
 
+        static bool LocationManagerShouldDisplayHeadingCalibration(CLLocationManager manager) => ShouldDisplayHeadingCalibration;
+
         static void LocationManagerUpdatedHeading(object sender, CLHeadingUpdatedEventArgs e)
         {
             var data = new CompassData(e.NewHeading.MagneticHeading);
@@ -53,6 +58,7 @@ namespace Xamarin.Essentials
             if (locationManager == null)
                 return;
 
+            locationManager.ShouldDisplayHeadingCalibration -= LocationManagerShouldDisplayHeadingCalibration;
             locationManager.UpdatedHeading -= LocationManagerUpdatedHeading;
             locationManager.StopUpdatingHeading();
             locationManager.Dispose();

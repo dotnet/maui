@@ -23,12 +23,21 @@ namespace Xamarin.Essentials
             result?.ToLocations();
 
         internal static Location ToLocation(this Geoposition location) =>
+            new Location
+            {
+                Latitude = location.Coordinate.Point.Position.Latitude,
+                Longitude = location.Coordinate.Point.Position.Longitude,
+                TimestampUtc = location.Coordinate.Timestamp,
+                Accuracy = location.Coordinate.Accuracy
+            };
+
+        internal static Location ToLocation(this Geocoordinate coordinate) =>
              new Location
              {
-                 Latitude = location.Coordinate.Point.Position.Latitude,
-                 Longitude = location.Coordinate.Point.Position.Longitude,
-                 TimestampUtc = location.Coordinate.Timestamp,
-                 Accuracy = location.Coordinate.Accuracy
+                 Latitude = coordinate.Point.Position.Latitude,
+                 Longitude = coordinate.Point.Position.Longitude,
+                 TimestampUtc = coordinate.Timestamp,
+                 Accuracy = coordinate.Accuracy
              };
     }
 }

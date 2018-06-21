@@ -61,10 +61,6 @@ namespace Xamarin.Essentials
         TaskCompletionSource<bool> tcsInitialize;
         TaskCompletionSource<bool> tcsUtterances;
 
-        public TextToSpeechImplementation()
-        {
-        }
-
         Task<bool> Initialize()
         {
             if (tcsInitialize != null && tts != null)
@@ -88,11 +84,16 @@ namespace Xamarin.Essentials
             return tcsInitialize.Task;
         }
 
-        public new void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            tts?.Stop();
-            tts?.Shutdown();
-            tts = null;
+            if (disposing)
+            {
+                tts?.Stop();
+                tts?.Shutdown();
+                tts = null;
+            }
+
+            base.Dispose(disposing);
         }
 
         int numExpectedUtterances = 0;
@@ -138,10 +139,9 @@ namespace Xamarin.Essentials
             }
 
             if (settings?.Pitch.HasValue ?? false)
-            {
-                var pitch = settings.Pitch.Value;
-                tts.SetPitch(pitch);
-            }
+                tts.SetPitch(settings.Pitch.Value);
+            else
+                tts.SetPitch(TextToSpeech.PitchDefault);
 
             var parts = text.SplitSpeak(max);
 
@@ -150,11 +150,8 @@ namespace Xamarin.Essentials
 
             var guid = Guid.NewGuid().ToString();
 
-            for (var i = 0; i < parts.Count; i++)
+            for (var i = 0; i < parts.Count && !cancelToken.IsCancellationRequested; i++)
             {
-                if (cancelToken.IsCancellationRequested)
-                    break;
-
                 // We require the utterance id to be set if we want the completed listener to fire
                 var map = new Dictionary<string, string>
                 {
@@ -164,10 +161,9 @@ namespace Xamarin.Essentials
                 if (settings != null && settings.Volume.HasValue)
                     map.Add(AndroidTextToSpeech.Engine.KeyParamVolume, settings.Volume.Value.ToString());
 
-#pragma warning disable CS0618
-
                 // We use an obsolete overload here so it works on older API levels at runtime
                 // Flush on first entry and add (to not flush our own previous) subsequent entries
+#pragma warning disable CS0618
                 tts.Speak(parts[i], i == 0 ? QueueMode.Flush : QueueMode.Add, map);
 #pragma warning restore CS0618
             }
@@ -178,13 +174,9 @@ namespace Xamarin.Essentials
         public void OnInit(OperationResult status)
         {
             if (status.Equals(OperationResult.Success))
-            {
                 tcsInitialize.TrySetResult(true);
-            }
             else
-            {
                 tcsInitialize.TrySetException(new ArgumentException("Failed to initialize Text to Speech engine."));
-            }
         }
 
         public async Task<IEnumerable<Locale>> GetLocalesAsync()
@@ -203,25 +195,28 @@ namespace Xamarin.Essentials
                 }
             }
 
-            return JavaLocale.GetAvailableLocales().
-                Where(l =>
-                {
-                    try
-                    {
-                        var r = tts.IsLanguageAvailable(l);
-                        return r == LanguageAvailableResult.Available
-                            || r == LanguageAvailableResult.CountryAvailable
-                            || r == LanguageAvailableResult.CountryVarAvailable;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Error checking language; " + l + " " + ex);
-                    }
-                    return false;
-                }).
-                Select(l => new Locale(l.Language, l.Country, l.DisplayName, string.Empty))
+            return JavaLocale.GetAvailableLocales()
+                .Where(IsLocaleAvailable)
+                .Select(l => new Locale(l.Language, l.Country, l.DisplayName, string.Empty))
                 .GroupBy(c => c.ToString())
                 .Select(g => g.First());
+        }
+
+        private bool IsLocaleAvailable(JavaLocale l)
+        {
+            try
+            {
+                var r = tts.IsLanguageAvailable(l);
+                return
+                    r == LanguageAvailableResult.Available ||
+                    r == LanguageAvailableResult.CountryAvailable ||
+                    r == LanguageAvailableResult.CountryVarAvailable;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error checking language; " + l + " " + ex);
+            }
+            return false;
         }
 
         public void OnUtteranceCompleted(string utteranceId)

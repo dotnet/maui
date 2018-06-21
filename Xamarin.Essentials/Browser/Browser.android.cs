@@ -21,8 +21,10 @@ namespace Xamarin.Essentials
             {
                 case BrowserLaunchType.SystemPreferred:
                     var tabsBuilder = new CustomTabsIntent.Builder();
-                    var tabsIntent = tabsBuilder.Build();
                     tabsBuilder.SetShowTitle(true);
+                    var tabsIntent = tabsBuilder.Build();
+                    tabsIntent.Intent.SetFlags(ActivityFlags.ClearTop);
+                    tabsIntent.Intent.SetFlags(ActivityFlags.NewTask);
                     tabsIntent.LaunchUrl(Platform.AppContext, nativeUri);
                     break;
                 case BrowserLaunchType.External:

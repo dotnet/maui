@@ -207,9 +207,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
+      <Member Id="P:Xamarin.Essentials.Locale.Id" />
       <Member Id="P:Xamarin.Essentials.Locale.Language" />
       <Member Id="P:Xamarin.Essentials.Locale.Name" />
-      <Member Id="P:Xamarin.Essentials.Locale.Id" />
     </Type>
     <Type Name="Xamarin.Essentials.Location" Id="T:Xamarin.Essentials.Location">
       <Member Id="M:Xamarin.Essentials.Location.#ctor" />
@@ -251,6 +251,19 @@
     <Type Name="Xamarin.Essentials.NotImplementedInReferenceAssemblyException" Id="T:Xamarin.Essentials.NotImplementedInReferenceAssemblyException">
       <Member Id="M:Xamarin.Essentials.NotImplementedInReferenceAssemblyException.#ctor" />
     </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensor" Id="T:Xamarin.Essentials.OrientationSensor">
+      <Member Id="E:Xamarin.Essentials.OrientationSensor.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.OrientationSensor.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.OrientationSensor.Stop" />
+      <Member Id="P:Xamarin.Essentials.OrientationSensor.IsMonitoring" />
+    </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensorChangedEventArgs" Id="T:Xamarin.Essentials.OrientationSensorChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
+    </Type>
+    <Type Name="Xamarin.Essentials.OrientationSensorChangedEventHandler" Id="T:Xamarin.Essentials.OrientationSensorChangedEventHandler" />
+    <Type Name="Xamarin.Essentials.OrientationSensorData" Id="T:Xamarin.Essentials.OrientationSensorData">
+      <Member Id="P:Xamarin.Essentials.OrientationSensorData.Orientation" />
+    </Type>
     <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">
       <Member Id="M:Xamarin.Essentials.PermissionException.#ctor(System.String)" />
     </Type>
@@ -274,6 +287,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
       <Member Id="M:Xamarin.Essentials.Platform.BeginInvokeOnMainThread(System.Action)" />
+      <Member Id="P:Xamarin.Essentials.Platform.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
@@ -282,6 +296,8 @@
       <Member Id="M:Xamarin.Essentials.Preferences.ContainsKey(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.DateTime,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Double,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Get(System.String,System.Int32)" />
@@ -296,6 +312,8 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Remove(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Boolean,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime)" />
+      <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.DateTime,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Double,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Int32)" />

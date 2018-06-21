@@ -1,4 +1,5 @@
-﻿using Xamarin.Essentials;
+﻿using System;
+using Xamarin.Essentials;
 using Xunit;
 
 namespace DeviceTests
@@ -6,6 +7,18 @@ namespace DeviceTests
     public class Preferences_Tests
     {
         const string sharedNameTestData = "Shared";
+
+        static DateTime testDateTime = new DateTime(2018, 05, 07);
+
+        [Theory]
+        [InlineData("datetime1", null)]
+        [InlineData("datetime1", sharedNameTestData)]
+        public void Set_Get_DateTime(string key, string sharedName)
+        {
+            Preferences.Set(key, testDateTime, sharedName);
+
+            Assert.Equal(testDateTime, Preferences.Get(key, DateTime.MinValue, sharedName));
+        }
 
         [Theory]
         [InlineData("string1", "TEST", null)]
@@ -129,6 +142,23 @@ namespace DeviceTests
             Preferences.Remove("NotContainsKey1", sharedName);
 
             Assert.False(Preferences.ContainsKey("NotContainsKey1", sharedName));
+        }
+
+        [Theory]
+        [InlineData(null, DateTimeKind.Utc)]
+        [InlineData(sharedNameTestData, DateTimeKind.Utc)]
+        [InlineData(null, DateTimeKind.Local)]
+        [InlineData(sharedNameTestData, DateTimeKind.Local)]
+        public void DateTimePreservesKind(string sharedName, DateTimeKind kind)
+        {
+            var date = new DateTime(2018, 05, 07, 8, 30, 0, kind);
+
+            Preferences.Set("datetime_utc", date, sharedName);
+
+            var get = Preferences.Get("datetime_utc", DateTime.MinValue, sharedName);
+
+            Assert.Equal(date, get);
+            Assert.Equal(kind, get.Kind);
         }
     }
 }

@@ -20,10 +20,7 @@ namespace Xamarin.Essentials
 
             var location = await geolocator.GetGeopositionAsync().AsTask();
 
-            if (location?.Coordinate == null)
-                return null;
-
-            return location.ToLocation();
+            return location?.Coordinate?.ToLocation();
         }
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
@@ -39,16 +36,7 @@ namespace Xamarin.Essentials
 
             var location = await geolocator.GetGeopositionAsync().AsTask(cancellationToken);
 
-            if (location?.Coordinate == null)
-                return null;
-
-            return new Location
-            {
-                Latitude = location.Coordinate.Point.Position.Latitude,
-                Longitude = location.Coordinate.Point.Position.Longitude,
-                TimestampUtc = location.Coordinate.Timestamp,
-                Accuracy = location.Coordinate.Accuracy
-            };
+            return location?.Coordinate?.ToLocation();
         }
     }
 }

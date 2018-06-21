@@ -1,14 +1,35 @@
 ﻿using System.Threading.Tasks;
+using Foundation;
 using MessageUI;
+using UIKit;
 
 namespace Xamarin.Essentials
 {
     public static partial class Email
     {
         internal static bool IsComposeSupported
-            => MFMailComposeViewController.CanSendMail;
+        {
+            get
+            {
+                var can = MFMailComposeViewController.CanSendMail;
+                if (!can)
+                {
+                    var url = NSUrl.FromString("mailto:");
+                    NSRunLoop.Main.InvokeOnMainThread(() => can = UIApplication.SharedApplication.CanOpenUrl(url));
+                }
+                return can;
+            }
+        }
 
         static Task PlatformComposeAsync(EmailMessage message)
+        {
+            if (MFMailComposeViewController.CanSendMail)
+                return ComposeWithMailCompose(message);
+            else
+                return ComposeWithUrl(message);
+        }
+
+        static Task ComposeWithMailCompose(EmailMessage message)
         {
             // do this first so we can throw as early as possible
             var parentController = Platform.GetCurrentViewController();
@@ -35,6 +56,19 @@ namespace Xamarin.Essentials
             };
             parentController.PresentViewController(controller, true, null);
 
+            return tcs.Task;
+        }
+
+        static Task ComposeWithUrl(EmailMessage message)
+        {
+            var url = GetMailToUri(message);
+
+            var tcs = new TaskCompletionSource<bool>();
+            NSRunLoop.Main.InvokeOnMainThread(() =>
+            {
+                var nsurl = NSUrl.FromString(url);
+                UIApplication.SharedApplication.OpenUrl(nsurl, new UIApplicationOpenUrlOptions(), r => tcs.TrySetResult(r));
+            });
             return tcs.Task;
         }
     }

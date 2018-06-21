@@ -22,10 +22,13 @@ namespace Xamarin.Essentials
             using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
                 encStr = prefs.GetString(Utils.Md5Hash(key), null);
 
-            var encData = Convert.FromBase64String(encStr);
-
-            var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
-            var decryptedData = ks.Decrypt(encData);
+            string decryptedData = null;
+            if (!string.IsNullOrEmpty(encStr))
+            {
+                var encData = Convert.FromBase64String(encStr);
+                var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
+                decryptedData = ks.Decrypt(encData);
+            }
 
             return Task.FromResult(decryptedData);
         }
