@@ -13,10 +13,12 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
                     platformRender.Toplevel as Window,
                     DialogFlags.DestroyWithParent,
                     MessageType.Other,
-                    ButtonsType.Ok,
+                    GetAlertButtons(arguments),
                     arguments.Message);
 
             SetDialogTitle(arguments.Title, messageDialog);
+            SetButtonText(arguments.Accept, ButtonsType.Ok, messageDialog);
+            SetButtonText(arguments.Cancel, ButtonsType.Cancel, messageDialog);
 
             ResponseType result = (ResponseType)messageDialog.Run();
 
@@ -42,7 +44,7 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
                null);
 
             SetDialogTitle(arguments.Title, messageDialog);
-            SetCancelButton(arguments.Cancel, messageDialog);
+            SetButtonText(arguments.Cancel, ButtonsType.Cancel, messageDialog);
             SetDestructionButton(arguments.Destruction, messageDialog);
             AddExtraButtons(arguments, messageDialog);
 
@@ -65,27 +67,39 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
             messageDialog.Title = title ?? string.Empty;
         }
 
-        private static void SetCancelButton(string cancel, MessageDialog messageDialog)
+        private static void SetButtonText(string text, ButtonsType type, MessageDialog messageDialog)
         {
+            string gtkLabel = string.Empty;
+
+            switch (type)
+            {
+                case ButtonsType.Ok:
+                    gtkLabel = "gtk-ok";
+                    break;
+                case ButtonsType.Cancel:
+                    gtkLabel = "gtk-cancel";
+                    break;
+            }
+
             var buttonsBox = messageDialog.GetDescendants()
                 .OfType<HButtonBox>()
                 .FirstOrDefault();
 
             if (buttonsBox == null) return;
 
-            var cancelButton = buttonsBox.GetDescendants()
+            var targetButton = buttonsBox.GetDescendants()
                 .OfType<Gtk.Button>()
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.Label == gtkLabel);
 
-            if (cancelButton == null) return;
+            if (targetButton == null) return;
 
-            if (string.IsNullOrEmpty(cancel))
+            if (string.IsNullOrEmpty(text))
             {
-                cancelButton.Hide();
+                targetButton.Hide();
             }
             else
             {
-                cancelButton.Label = cancel;
+                targetButton.Label = text;
             }
         }
 
@@ -127,6 +141,29 @@ namespace Xamarin.Forms.Platform.GTK.Helpers
                     vbox.PackStart(button, false, false, 0);
                 }
             }
+        }
+
+        private static ButtonsType GetAlertButtons(AlertArguments arguments)
+        {
+            bool hasAccept = !string.IsNullOrEmpty(arguments.Accept);
+            bool hasCancel = !string.IsNullOrEmpty(arguments.Cancel);
+
+            ButtonsType type = ButtonsType.None;
+
+            if (hasAccept && hasCancel)
+            {
+                type = ButtonsType.OkCancel;
+            }
+            else if (hasAccept && !hasCancel)
+            {
+                type = ButtonsType.Ok;
+            }
+            else if (!hasAccept && hasCancel)
+            {
+                type = ButtonsType.Cancel;
+            }
+
+            return type;
         }
     }
 }
