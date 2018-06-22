@@ -530,6 +530,11 @@ namespace Xamarin.Forms.Platform.iOS
 			if (exArgs != null)
 				_dataSource.Counts[section] = exArgs.Count;
 
+			// This means the UITableView hasn't rendered any cells yet
+			// so there's no need to synchronize the rows on the UITableView
+			if (Control.IndexPathsForVisibleRows == null && e.Action != NotifyCollectionChangedAction.Reset)
+				return;
+
 			var groupReset = resetWhenGrouped && Element.IsGroupingEnabled;
 
 			// We can't do this check on grouped lists because the index doesn't match the number of rows in a section.
