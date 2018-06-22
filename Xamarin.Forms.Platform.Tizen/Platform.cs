@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.ComponentModel;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.TizenSpecific;
 using ElmSharp;
 using EProgressBar = ElmSharp.ProgressBar;
 using EButton = ElmSharp.Button;
 using EColor = ElmSharp.Color;
-using System.ComponentModel;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
@@ -439,10 +440,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (!PageIsChildOfPlatform(sender))
 				return;
 
-			Native.Dialog alert = new Native.Dialog(Forms.NativeParent);
+			Native.Dialog alert = Native.Dialog.CreateDialog(Forms.NativeParent, (arguments.Accept != null));
+
 			alert.Title = arguments.Title;
 			var message = arguments.Message.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace(Environment.NewLine, "<br>");
-			alert.Text = message;
+			alert.Message = message;
 
 			EButton cancel = new EButton(alert) { Text = arguments.Cancel };
 			alert.NegativeButton = cancel;
@@ -480,7 +482,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (!PageIsChildOfPlatform(sender))
 				return;
 
-			Native.Dialog alert = new Native.Dialog(Forms.NativeParent);
+			Native.Dialog alert = Native.Dialog.CreateDialog(Forms.NativeParent);
 
 			alert.Title = arguments.Title;
 			Box box = new Box(alert);
@@ -490,6 +492,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				Native.Button destruction = new Native.Button(alert)
 				{
 					Text = arguments.Destruction,
+					Style = ButtonStyle.Text,
 					TextColor = EColor.Red,
 					AlignmentX = -1
 				};
@@ -507,6 +510,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				Native.Button button = new Native.Button(alert)
 				{
 					Text = buttonName,
+					Style = ButtonStyle.Text,
 					AlignmentX = -1
 				};
 				button.Clicked += (s, evt) =>

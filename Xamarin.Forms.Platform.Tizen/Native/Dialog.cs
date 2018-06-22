@@ -4,6 +4,17 @@ using EButton = ElmSharp.Button;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
+
+	/// <summary>
+	/// Enumerates the three valid positions of a dialog button.
+	/// </summary>
+	public enum ButtonPosition
+	{
+		Positive,
+		Neutral,
+		Negative
+	}
+
 	/// <summary>
 	/// Base class for Dialogs.
 	/// A dialog is a small window that prompts the user to make a decision or enter additional information.
@@ -15,6 +26,22 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		EButton _negativeButton;
 		EvasObject _content;
 		string _title;
+		string _message;
+
+		/// <summary>
+		///  Creates a dialog window.
+		/// </summary>
+		public static Dialog CreateDialog(EvasObject parent, bool hasAcceptButton = false)
+		{
+			if (Device.Idiom == TargetIdiom.Watch)
+			{
+				return new Watch.WatchDialog(Forms.NativeParent, hasAcceptButton);
+			}
+			else
+			{
+				return new Dialog(Forms.NativeParent);
+			}
+		}
 
 		/// <summary>
 		/// Creates a dialog window that uses the default dialog theme.
@@ -30,16 +57,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		public event EventHandler Shown;
 
 		/// <summary>
-		/// Enumerates the three valid positions of a dialog button.
-		/// </summary>
-		enum ButtonPosition
-		{
-			Positive,
-			Neutral,
-			Negative
-		}
-
-		/// <summary>
 		/// Gets or sets the title of the dialog
 		/// </summary>
 		public string Title
@@ -52,7 +69,27 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_title != value)
 				{
+					_title = value;
 					ApplyTitle(value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the message to display in the dialog
+		/// </summary>
+		public string Message
+		{
+			get
+			{
+				return _message;
+			}
+			set
+			{
+				if (_message != value)
+				{
+					_message = value;
+					ApplyMessage(value);
 				}
 			}
 		}
@@ -70,6 +107,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_content != value)
 				{
+					_content = value;
 					ApplyContent(value);
 				}
 			}
@@ -88,6 +126,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_positiveButton != value)
 				{
+					_positiveButton = value;
 					ApplyButton(ButtonPosition.Positive, value);
 				}
 			}
@@ -106,6 +145,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_neutralButton != value)
 				{
+					_neutralButton = value;
 					ApplyButton(ButtonPosition.Neutral, value);
 				}
 			}
@@ -124,6 +164,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				if (_negativeButton != value)
 				{
+					_negativeButton = value;
 					ApplyButton(ButtonPosition.Negative, value);
 				}
 			}
@@ -172,6 +213,61 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		}
 
 		/// <summary>
+		/// Changes the dialog title.
+		/// </summary>
+		/// <param name="title">New dialog title.</param>
+		protected virtual void ApplyTitle(string title)
+		{
+			SetPartText("title,text", title);
+		}
+
+		/// <summary>
+		/// Puts the button in one of the three available slots.
+		/// </summary>
+		/// <param name="position">The slot to be occupied by the button expressed as a <see cref="ButtonPosition"/></param>
+		/// <param name="button">The new button.</param>
+		protected virtual void ApplyButton(ButtonPosition position, EButton button)
+		{
+			if (button != null)
+			{
+				button.Style = "popup";
+			}
+
+			string part;
+			switch (position)
+			{
+				case ButtonPosition.Positive:
+					part = "button3";
+					break;
+
+				case ButtonPosition.Neutral:
+					part = "button2";
+					break;
+
+				case ButtonPosition.Negative:
+				default:
+					part = "button1";
+					break;
+			}
+
+			SetPartContent(part, button, true);
+		}
+
+		/// <summary>
+		/// Updates the content of the dialog.
+		/// </summary>
+		/// <param name="content">New dialog content.</param>
+		protected virtual void ApplyContent(EvasObject content)
+		{
+			SetPartContent("default", content, true);
+		}
+
+		protected virtual void ApplyMessage(string message)
+		{
+			base.Text = message;
+		}
+
+		/// <summary>
 		/// Handles the initialization process.
 		/// </summary>
 		/// <remarks>Creates handlers for vital events</remarks>
@@ -190,59 +286,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			{
 				OnShown();
 			};
-		}
-
-		/// <summary>
-		/// Changes the dialog title.
-		/// </summary>
-		/// <param name="title">New dialog title.</param>
-		void ApplyTitle(string title)
-		{
-			_title = title;
-
-			SetPartText("title,text", _title);
-		}
-
-		/// <summary>
-		/// Puts the button in one of the three available slots.
-		/// </summary>
-		/// <param name="position">The slot to be occupied by the button expressed as a <see cref="ButtonPosition"/></param>
-		/// <param name="button">The new button.</param>
-		void ApplyButton(ButtonPosition position, EButton button)
-		{
-			if (button != null)
-			{
-				button.Style = "popup";
-			}
-
-			switch (position)
-			{
-				case ButtonPosition.Positive:
-					_positiveButton = button;
-					SetPartContent("button3", _positiveButton, true);
-					break;
-
-				case ButtonPosition.Neutral:
-					_neutralButton = button;
-					SetPartContent("button2", _neutralButton, true);
-					break;
-
-				case ButtonPosition.Negative:
-					_negativeButton = button;
-					SetPartContent("button1", _negativeButton, true);
-					break;
-			}
-		}
-
-		/// <summary>
-		/// Updates the content of the dialog.
-		/// </summary>
-		/// <param name="content">New dialog content.</param>
-		void ApplyContent(EvasObject content)
-		{
-			_content = content;
-
-			SetPartContent("default", _content, true);
 		}
 	}
 }
