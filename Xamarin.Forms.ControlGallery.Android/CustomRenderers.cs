@@ -25,6 +25,7 @@ using Xamarin.Forms.Controls.Issues;
 
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Effects.AttachedStateEffectLabel), typeof(AttachedStateEffectLabelRenderer))]
+[assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.LegacyComponents.NonAppCompatSwitch), typeof(NonAppCompatSwitchRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeAndroidListViewRenderer))]
@@ -47,6 +48,13 @@ using Xamarin.Forms.Controls.Issues;
 #endif
 namespace Xamarin.Forms.ControlGallery.Android
 {
+	public class NonAppCompatSwitchRenderer : Xamarin.Forms.Platform.Android.SwitchRenderer
+	{
+		public NonAppCompatSwitchRenderer(Context context) : base(context)
+		{
+		}
+	}
+
 	public class AttachedStateEffectLabelRenderer : LabelRenderer
 	{
 		public AttachedStateEffectLabelRenderer(Context context) : base(context)
@@ -55,7 +63,7 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 		protected override void Dispose(bool disposing)
 		{
-			foreach(var effect in Element.Effects.OfType<Controls.Effects.AttachedStateEffect>())
+			foreach (var effect in Element.Effects.OfType<Controls.Effects.AttachedStateEffect>())
 			{
 				effect.Detached(Element);
 			}
