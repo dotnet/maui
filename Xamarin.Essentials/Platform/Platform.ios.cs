@@ -8,20 +8,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
-        static bool PlatformIsMainThread =>
-            NSThread.Current.IsMainThread;
-
-        static void PlatformBeginInvokeOnMainThread(Action action)
-        {
-            if (IsMainThread)
-            {
-                action();
-                return;
-            }
-
-            NSRunLoop.Main.BeginInvokeOnMainThread(action.Invoke);
-        }
-
         internal static bool HasOSVersion(int major, int minor) =>
             UIDevice.CurrentDevice.CheckSystemVersion(major, minor);
 

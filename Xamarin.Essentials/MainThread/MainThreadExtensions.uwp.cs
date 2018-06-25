@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace Xamarin.Essentials
 {
-    internal static partial class PlatformExtensions
+    internal static partial class MainThreadExtensions
     {
         internal static void WatchForError(this IAsyncAction self) =>
             self.AsTask().WatchForError();

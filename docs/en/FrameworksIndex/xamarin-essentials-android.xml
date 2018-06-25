@@ -241,6 +241,10 @@
     <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
+    <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
+      <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
+      <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
+    </Type>
     <Type Name="Xamarin.Essentials.NetworkAccess" Id="T:Xamarin.Essentials.NetworkAccess">
       <Member Id="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />
       <Member Id="F:Xamarin.Essentials.NetworkAccess.Internet" />
@@ -286,11 +290,9 @@
       <Member Id="P:Xamarin.Essentials.Placemark.Thoroughfare" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
-      <Member Id="M:Xamarin.Essentials.Platform.BeginInvokeOnMainThread(System.Action)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
-      <Member Id="P:Xamarin.Essentials.Platform.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />

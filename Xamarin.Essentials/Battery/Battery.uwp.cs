@@ -9,7 +9,7 @@
             DefaultBattery.ReportUpdated -= ReportUpdated;
 
         static void ReportUpdated(object sender, object e)
-            => Platform.BeginInvokeOnMainThread(OnBatteryChanged);
+            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
 
         static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;

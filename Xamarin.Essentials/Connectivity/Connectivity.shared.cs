@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
             if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.Profiles))
             {
                 SetCurrent();
-                Platform.BeginInvokeOnMainThread(() => ConnectivityChanagedInternal?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => ConnectivityChanagedInternal?.Invoke(e));
             }
         }
     }

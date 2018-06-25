@@ -2,7 +2,7 @@
 
 namespace Xamarin.Essentials
 {
-    public static partial class Platform
+    public static partial class MainThread
     {
         static void PlatformBeginInvokeOnMainThread(Action action) =>
             throw new NotImplementedInReferenceAssemblyException();

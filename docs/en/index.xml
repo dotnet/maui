@@ -109,6 +109,7 @@
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerChangedEventHandler" Kind="Delegate" />
       <Type Name="MagnetometerData" Kind="Structure" />
+      <Type Name="MainThread" Kind="Class" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
