@@ -54,9 +54,7 @@ namespace Xamarin.Essentials
             return new SecRecord(SecKind.GenericPassword)
             {
                 Account = key,
-                Service = service,
-                Label = key,
-                Accessible = accessible
+                Service = service
             };
         }
 
