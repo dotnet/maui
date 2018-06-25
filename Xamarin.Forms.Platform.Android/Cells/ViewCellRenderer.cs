@@ -90,7 +90,7 @@ namespace Xamarin.Forms.Platform.Android
 						return _longPressGestureDetector;
 					}
 
-					_longPressGestureDetector = new GestureDetector(new LongPressGestureListener(TriggerLongClick));
+					_longPressGestureDetector = new GestureDetector(Context, new LongPressGestureListener(TriggerLongClick));
 					return _longPressGestureDetector;
 				}
 			}
