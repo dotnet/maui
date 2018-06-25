@@ -38,6 +38,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
 [assembly: StyleProperty("background-image", typeof(Page), nameof(Page.BackgroundImageProperty))]
 [assembly: StyleProperty("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty))]
+[assembly: StyleProperty("border-radius", typeof(ICornerElement), nameof(CornerElement.CornerRadiusProperty))]
 [assembly: StyleProperty("border-width", typeof(Button), nameof(Button.BorderWidthProperty))]
 [assembly: StyleProperty("color", typeof(ITextElement), nameof(TextElement.TextColorProperty), Inherited = true)]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
