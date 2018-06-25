@@ -95,6 +95,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			_onForceUpdateSizeRequested = (sender, e) => 
 			{
+				if (nativeCell.Handle == IntPtr.Zero)
+					return;
 				// RenderHeight may not be changed, but that's okay, since we
 				// don't actually use the height argument in the OnMeasure override.
 				nativeCell.Measure(nativeCell.Width, (int)cell.RenderHeight);
