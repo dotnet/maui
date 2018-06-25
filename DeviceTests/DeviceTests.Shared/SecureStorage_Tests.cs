@@ -34,5 +34,18 @@ namespace DeviceTests
 
             Assert.Equal(data, c);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Non_Existent_Key_Returns_Null(bool emulatePreApi23)
+        {
+#if __ANDROID__
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#endif
+            var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
+
+            Assert.Null(v);
+        }
     }
 }

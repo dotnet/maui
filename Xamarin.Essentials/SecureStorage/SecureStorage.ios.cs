@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
             if (resultCode == SecStatusCode.Success)
                 return NSString.FromData(match.ValueData, NSStringEncoding.UTF8);
             else
-                return string.Empty;
+                return null;
         }
 
         internal void SetValueForKey(string value, string key, string service)
