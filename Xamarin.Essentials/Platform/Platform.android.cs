@@ -78,6 +78,9 @@ namespace Xamarin.Essentials
 
         internal static LocationManager LocationManager =>
             AppContext.GetSystemService(Context.LocationService) as LocationManager;
+
+        internal static PowerManager PowerManager =>
+            AppContext.GetSystemService(Context.PowerService) as PowerManager;
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks

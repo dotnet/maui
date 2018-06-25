@@ -91,6 +91,9 @@
       <Type Name="Email" Kind="Class" />
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
       <Type Name="EmailMessage" Kind="Class" />
+      <Type Name="EnergySaverStatus" Kind="Enumeration" />
+      <Type Name="EnergySaverStatusChanagedEventArgs" Kind="Class" />
+      <Type Name="EnergySaverStatusChanagedEventHandler" Kind="Delegate" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
@@ -120,6 +123,7 @@
       <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
+      <Type Name="Power" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ScreenLock" Kind="Class" />
       <Type Name="ScreenMetrics" Kind="Structure" />

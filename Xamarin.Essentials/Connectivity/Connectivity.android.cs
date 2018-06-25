@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Net;
 using Android.OS;
+using Debug = System.Diagnostics.Debug;
 
 namespace Xamarin.Essentials
 {
@@ -30,7 +31,7 @@ namespace Xamarin.Essentials
             }
             catch (Java.Lang.IllegalArgumentException)
             {
-                Console.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
+                Debug.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
             }
             conectivityReceiver.Dispose();
             conectivityReceiver = null;
@@ -104,7 +105,7 @@ namespace Xamarin.Essentials
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Unable to get connected state - do you have ACCESS_NETWORK_STATE permission? - error: {0}", e);
+                    Debug.WriteLine("Unable to get connected state - do you have ACCESS_NETWORK_STATE permission? - error: {0}", e);
                     return NetworkAccess.Unknown;
                 }
             }

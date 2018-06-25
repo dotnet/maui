@@ -153,6 +153,15 @@
       <Member Id="P:Xamarin.Essentials.EmailMessage.Subject" />
       <Member Id="P:Xamarin.Essentials.EmailMessage.To" />
     </Type>
+    <Type Name="Xamarin.Essentials.EnergySaverStatus" Id="T:Xamarin.Essentials.EnergySaverStatus">
+      <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Off" />
+      <Member Id="F:Xamarin.Essentials.EnergySaverStatus.On" />
+      <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.EnergySaverStatusChanagedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs">
+      <Member Id="P:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs.EnergySaverStatus" />
+    </Type>
+    <Type Name="Xamarin.Essentials.EnergySaverStatusChanagedEventHandler" Id="T:Xamarin.Essentials.EnergySaverStatusChanagedEventHandler" />
     <Type Name="Xamarin.Essentials.FeatureNotSupportedException" Id="T:Xamarin.Essentials.FeatureNotSupportedException">
       <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor" />
       <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor(System.String)" />
@@ -289,6 +298,10 @@
       <Member Id="P:Xamarin.Essentials.Placemark.SubLocality" />
       <Member Id="P:Xamarin.Essentials.Placemark.SubThoroughfare" />
       <Member Id="P:Xamarin.Essentials.Placemark.Thoroughfare" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
+      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
+      <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
