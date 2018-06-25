@@ -26,20 +26,20 @@ Please read our [Getting Started with Xamarin.Essentials guide](https://docs.mic
 Browse our [full documentation for Xamarin.Essentials](https://docs.microsoft.com/xamarin/essentials) including feature guides on how to use each feature.
 
 ## Supported Platforms
-Xamarin.Essentials is focused on the following platforms for our first release:
+Xamarin.Essentials is focused on the following platforms:
  - iOS (10+)
  - Android (4.4+)
  - UWP (Fall Creators Update+)
 
-## Current Features:
-The following cross-platform APIs are planned for our first release:
+## Current APIs:
+The following cross-platform APIs are available in Xamarin.Essentials:
  - [x] [Accelerometer](https://docs.microsoft.com/xamarin/essentials/accelerometer)
  - [X] [App Information](https://docs.microsoft.com/xamarin/essentials/app-information)
  - [x] [Battery](https://docs.microsoft.com/xamarin/essentials/battery)
  - [x] [Clipboard](https://docs.microsoft.com/xamarin/essentials/clipboard)
  - [x] [Compass](https://docs.microsoft.com/xamarin/essentials/compass)
  - [x] [Connectivity](https://docs.microsoft.com/xamarin/essentials/connectivity)
- - [x] [Data Transfer](https://docs.microsoft.com/xamarin/essentials/data-transfer)
+ - [x] [Data Transfer (Share)](https://docs.microsoft.com/xamarin/essentials/data-transfer)
  - [x] [Device Display Information](https://docs.microsoft.com/en-us/xamarin/essentials/device-display)
  - [x] [Device Information](https://docs.microsoft.com/xamarin/essentials/device-information)
  - [x] [Email](https://docs.microsoft.com/xamarin/essentials/email)
@@ -50,6 +50,7 @@ The following cross-platform APIs are planned for our first release:
  - [x] [Gyroscope](https://docs.microsoft.com/xamarin/essentials/gyroscope)
  - [x] [Magnetometer](https://docs.microsoft.com/xamarin/essentials/magnetometer)
  - [x] [Open Browser](https://docs.microsoft.com/xamarin/essentials/open-browser)
+ - [x] [Orientation Sensor](https://docs.microsoft.com/en-us/xamarin/essentials/orientation-sensor)
  - [x] [Phone Dialer](https://docs.microsoft.com/xamarin/essentials/phone-dialer)
  - [x] [Preferences](https://docs.microsoft.com/xamarin/essentials/preferences)
  - [x] [Screen Lock](https://docs.microsoft.com/xamarin/essentials/screen-lock)
@@ -71,15 +72,6 @@ If using Visual Studio for Mac the project can be built at the command line with
 
 ## FAQ
 Here are some frequently asked questions about Xamarin.Essentials, but be sure to read our full [FAQ on our Wiki](https://github.com/xamarin/Essentials/wiki#feature-faq).
-
-### Where are the interfaces?
-Some developers prefer an interface based programming model for dependency injection and testing of code. Xamarin.Essentials does not offer any interfaces and delivers straight API access via direct classes and static properties/methods. There are many reasons that Xamarin.Essentials is architected this way that include performance, simplicity, and ease of use. We also consider Xamarin.Essentials a core API of the platform just like System classes, HttpClient, and our platform bindings. 
-
-Additionally, we found most developers create their own interfaces even when using a library that have interfaces. They do this so they have control over the APIs they actually use, which may be a very small percentage of the overall APIs in the library. Creating your own `IXamarinEssentials` and exposing only the methods and properties you would like to use gives you more flexibility as Xamarin.Essentials grows and adds additional APIs. Using this type of architecture will enable you to both have dependency injection and work with unit testing.
-
-
-### Does Xamarin.Essentials replace plugins?
-Plugins offer a wide variety of cross-platform APIs for developers to use in their applications. Plugins will still continue to grow and flourish as they can offer a wider range of APIs and handle unique scenarios that Xamarin.Essentials may not offer including additional platform support or add features unique to a single platform.
 
 ## License
 Please see the [License](LICENSE).
