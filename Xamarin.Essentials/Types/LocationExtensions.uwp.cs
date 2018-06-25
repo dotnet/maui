@@ -13,6 +13,7 @@ namespace Xamarin.Essentials
             {
                 Latitude = mapLocation.Point.Position.Latitude,
                 Longitude = mapLocation.Point.Position.Longitude,
+                Altitude = mapLocation.Point.Position.Altitude,
                 TimestampUtc = DateTimeOffset.UtcNow
             };
 
@@ -28,6 +29,7 @@ namespace Xamarin.Essentials
                 Latitude = location.Coordinate.Point.Position.Latitude,
                 Longitude = location.Coordinate.Point.Position.Longitude,
                 TimestampUtc = location.Coordinate.Timestamp,
+                Altitude = location.Coordinate.Point.Position.Altitude,
                 Accuracy = location.Coordinate.Accuracy
             };
 
@@ -37,6 +39,7 @@ namespace Xamarin.Essentials
                  Latitude = coordinate.Point.Position.Latitude,
                  Longitude = coordinate.Point.Position.Longitude,
                  TimestampUtc = coordinate.Timestamp,
+                 Altitude = coordinate.Point.Position.Altitude,
                  Accuracy = coordinate.Accuracy
              };
     }

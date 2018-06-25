@@ -231,6 +231,7 @@
       <Member Id="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
+      <Member Id="P:Xamarin.Essentials.Location.Altitude" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
       <Member Id="P:Xamarin.Essentials.Location.Longitude" />
       <Member Id="P:Xamarin.Essentials.Location.TimestampUtc" />
