@@ -5,17 +5,20 @@ namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
-        static string GetPackageName() => Package.Current.Id.Name;
+        static string PlatformGetPackageName() => Package.Current.Id.Name;
 
-        static string GetName() => Package.Current.DisplayName;
+        static string PlatformGetName() => Package.Current.DisplayName;
 
-        static string GetVersionString()
+        static string PlatformGetVersionString()
         {
             var version = Package.Current.Id.Version;
             return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         }
 
-        static string GetBuild()
-            => Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
+        static string PlatformGetBuild() =>
+            Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
+
+        static void PlatformOpenSettings() =>
+            Windows.System.Launcher.LaunchUriAsync(new System.Uri("ms-settings:appsfeatures-app")).WatchForError();
     }
 }

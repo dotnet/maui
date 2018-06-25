@@ -14,6 +14,7 @@
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
+      <Member Id="M:Xamarin.Essentials.AppInfo.OpenSettings" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
       <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />

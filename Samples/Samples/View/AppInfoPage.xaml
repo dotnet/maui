@@ -20,6 +20,8 @@
                 <Label Text="Version Info:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding AppVersion, StringFormat='Version: {0}'}" />
                 <Label Text="{Binding AppBuild, StringFormat='Build: {0}'}" />
+
+                <Button Text="Open Settings" Command="{Binding OpenSettingsCommand}"/>
             </StackLayout>
         </ScrollView>
     </StackLayout>

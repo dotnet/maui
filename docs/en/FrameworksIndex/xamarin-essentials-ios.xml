@@ -14,6 +14,7 @@
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
+      <Member Id="M:Xamarin.Essentials.AppInfo.OpenSettings" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
       <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />
@@ -299,11 +300,11 @@
       <Member Id="P:Xamarin.Essentials.Placemark.SubThoroughfare" />
       <Member Id="P:Xamarin.Essentials.Placemark.Thoroughfare" />
     </Type>
+    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
       <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
       <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
     </Type>
-    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
       <Member Id="M:Xamarin.Essentials.Preferences.Clear(System.String)" />
