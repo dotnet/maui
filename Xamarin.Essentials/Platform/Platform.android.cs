@@ -29,8 +29,11 @@ namespace Xamarin.Essentials
             application.RegisterActivityLifecycleCallbacks(lifecycleListener);
         }
 
-        public static void Init(Activity activity, Bundle bundle) =>
-           Init(activity.Application);
+        public static void Init(Activity activity, Bundle bundle)
+        {
+            Init(activity.Application);
+            lifecycleListener.Activity = activity;
+        }
 
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -110,26 +113,24 @@ namespace Xamarin.Essentials
         internal Context Context =>
             Activity ?? Application.Context;
 
-        internal Activity Activity =>
-            currentActivity.TryGetTarget(out var a) ? a : null;
-
-        void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState)
+        internal Activity Activity
         {
+           get => currentActivity.TryGetTarget(out var a) ? a : null;
+           set => currentActivity.SetTarget(value);
         }
+
+        void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState) =>
+            Activity = activity;
 
         void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
         {
         }
 
-        void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity)
-        {
-            currentActivity.SetTarget(null);
-        }
+        void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity) =>
+            Activity = activity;
 
-        void Application.IActivityLifecycleCallbacks.OnActivityResumed(Activity activity)
-        {
-            currentActivity.SetTarget(activity);
-        }
+        void Application.IActivityLifecycleCallbacks.OnActivityResumed(Activity activity) =>
+            Activity = activity;
 
         void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState)
         {
