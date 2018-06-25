@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
+using Xamarin.Forms.Internals;
+using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -26,6 +29,27 @@ namespace Xamarin.Forms.Platform.UWP
 		public static void SetBinding(this FrameworkElement self, DependencyProperty property, string path, Windows.UI.Xaml.Data.IValueConverter converter)
 		{
 			self.SetBinding(property, new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath(path), Converter = converter });
+		}
+
+		public static async Task<WImageSource> ToWindowsImageSource(this ImageSource source)
+		{
+			IImageSourceHandler handler;
+			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
+			{
+				try
+				{
+					return await handler.LoadImageAsync(source);
+				}
+				catch (OperationCanceledException)
+				{
+					return null;
+				}
+
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		internal static InputScopeNameValue GetKeyboardButtonType(this ReturnType returnType)

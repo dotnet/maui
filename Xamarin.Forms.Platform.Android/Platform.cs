@@ -17,6 +17,7 @@ using Android.Widget;
 using Xamarin.Forms.Platform.Android.AppCompat;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
 using Xamarin.Forms.Internals;
+using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -296,6 +297,23 @@ namespace Xamarin.Forms.Platform.Android
 		void INavigation.RemovePage(Page page)
 		{
 			throw new InvalidOperationException("RemovePage is not supported globally on Android, please use a NavigationPage.");
+		}
+
+		public static void ClearRenderer(AView renderedView)
+		{
+			var element = (renderedView as IVisualElementRenderer)?.Element;
+			var view = element as View;
+			if (view != null)
+			{
+				var renderer = GetRenderer(view);
+				if (renderer == renderedView)
+					element.ClearValue(RendererProperty);
+				renderer?.Dispose();
+				renderer = null;
+			}
+			var layout = view as IVisualElementRenderer;
+			layout?.Dispose();
+			layout = null;
 		}
 
 		[Obsolete("CreateRenderer(VisualElement) is obsolete as of version 2.5. Please use CreateRendererWithContext(VisualElement, Context) instead.")]

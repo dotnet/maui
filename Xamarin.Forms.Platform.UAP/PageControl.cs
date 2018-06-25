@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿﻿using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
+using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -24,12 +25,19 @@ namespace Xamarin.Forms.Platform.UWP
 		public static readonly DependencyProperty ContentMarginProperty = DependencyProperty.Register("ContentMargin", typeof(Windows.UI.Xaml.Thickness), typeof(PageControl),
 			new PropertyMetadata(default(Windows.UI.Xaml.Thickness)));
 
+		public static readonly DependencyProperty TitleIconProperty = DependencyProperty.Register(nameof(TitleIcon), typeof(WImageSource), typeof(PageControl), new PropertyMetadata(default(WImageSource)));
+
+		public static readonly DependencyProperty TitleViewProperty = DependencyProperty.Register(nameof(TitleView), typeof(View), typeof(PageControl), new PropertyMetadata(default(View), OnTitleViewPropertyChanged));
+
+		public static readonly DependencyProperty TitleViewVisibilityProperty = DependencyProperty.Register(nameof(TitleViewVisibility), typeof(Visibility), typeof(PageControl), new PropertyMetadata(Visibility.Collapsed));
+
 		public static readonly DependencyProperty TitleInsetProperty = DependencyProperty.Register("TitleInset", typeof(double), typeof(PageControl), new PropertyMetadata(default(double)));
 
 		public static readonly DependencyProperty TitleBrushProperty = DependencyProperty.Register("TitleBrush", typeof(Brush), typeof(PageControl), new PropertyMetadata(null));
 
 		AppBarButton _backButton;
 		CommandBar _commandBar;
+		FrameworkElement _titleViewPresenter;
 
         ToolbarPlacement _toolbarPlacement;
 	    readonly ToolbarPlacementHelper _toolbarPlacementHelper = new ToolbarPlacementHelper();
@@ -38,6 +46,18 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get { return _toolbarPlacementHelper.ShouldShowToolBar; }
 			set { _toolbarPlacementHelper.ShouldShowToolBar = value; }
+		}
+
+		public WImageSource TitleIcon
+		{
+			get { return (WImageSource)GetValue(TitleIconProperty); }
+			set { SetValue(TitleIconProperty, value); }
+		}
+
+		public View TitleView
+		{
+			get { return (View)GetValue(TitleViewProperty); }
+			set { SetValue(TitleViewProperty, value); }
 		}
 
 		TaskCompletionSource<CommandBar> _commandBarTcs;
@@ -105,6 +125,12 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(TitleVisibilityProperty, value); }
 		}
 
+		public Visibility TitleViewVisibility
+		{
+			get { return (Visibility)GetValue(TitleViewVisibilityProperty); }
+			set { SetValue(TitleViewVisibilityProperty, value); }
+		}
+
 		public Brush TitleBrush
 		{
 			get { return (Brush)GetValue(TitleBrushProperty); }
@@ -139,6 +165,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_presenter = GetTemplateChild("presenter") as Windows.UI.Xaml.Controls.ContentPresenter;
 
+			_titleViewPresenter = GetTemplateChild("TitleViewPresenter") as FrameworkElement;
+
 			_commandBar = GetTemplateChild("CommandBar") as CommandBar;
 
 
@@ -165,6 +193,19 @@ namespace Xamarin.Forms.Platform.UWP
 			((PageControl)dependencyObject).UpdateBackButton();
 		}
 
+		static void OnTitleViewPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+		{
+			((PageControl)dependencyObject).UpdateTitleViewPresenter();
+		}
+
+		void OnTitleViewPresenterLoaded(object sender, RoutedEventArgs e)
+		{
+			if (TitleView == null || _titleViewPresenter == null || _commandBar == null)
+				return;
+
+			_titleViewPresenter.Width = _commandBar.ActualWidth;
+		}
+
 		void UpdateBackButton()
 		{
 			if (_backButton == null)
@@ -177,5 +218,23 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_backButton.Opacity = ShowBackButton ? 1 : 0;
 		}
-    }
+
+		void UpdateTitleViewPresenter()
+		{
+			if (TitleView == null)
+			{
+				TitleViewVisibility = Visibility.Collapsed;
+
+				if (_titleViewPresenter != null)
+					_titleViewPresenter.Loaded -= OnTitleViewPresenterLoaded;
+			}
+			else
+			{
+				TitleViewVisibility = Visibility.Visible;
+
+				if (_titleViewPresenter != null)
+					_titleViewPresenter.Loaded += OnTitleViewPresenterLoaded;
+			}
+		}
+	}
 }

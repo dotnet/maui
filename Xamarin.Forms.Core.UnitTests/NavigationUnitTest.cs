@@ -339,6 +339,49 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TitleViewSetProperty()
+		{
+			var root = new ContentPage();
+			var nav = new NavigationPage(root);
+
+			View target = new View();
+
+			NavigationPage.SetTitleView(root, target);
+
+			var result = NavigationPage.GetTitleView(root);
+
+			Assert.AreSame(result, target);
+		}
+
+		[Test]
+		public void TitleViewSetsParentWhenAdded()
+		{
+			var root = new ContentPage();
+			var nav = new NavigationPage(root);
+
+			View target = new View();
+
+			NavigationPage.SetTitleView(root, target);
+
+			Assert.AreSame(root, target.Parent);
+		}
+
+		[Test]
+		public void TitleViewClearsParentWhenRemoved()
+		{
+			var root = new ContentPage();
+			var nav = new NavigationPage(root);
+
+			View target = new View();
+
+			NavigationPage.SetTitleView(root, target);
+
+			NavigationPage.SetTitleView(root, null);
+
+			Assert.IsNull(target.Parent);
+		}
+
+		[Test]
 		public async Task NavigationChangedEventArgs ()
 		{
 			var rootPage = new ContentPage { Title = "Root" };

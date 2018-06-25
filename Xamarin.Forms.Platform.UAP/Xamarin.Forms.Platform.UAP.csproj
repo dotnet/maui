@@ -56,7 +56,9 @@
     <Compile Include="FormsComboBox.cs" />
     <Compile Include="InterceptVisualStateManager.cs" />
     <Compile Include="HorizontalTextAlignmentConverter.cs" />
+    <Compile Include="ITitleIconProvider.cs" />
     <Compile Include="ITitleProvider.cs" />
+    <Compile Include="ITitleViewProvider.cs" />
     <Compile Include="IToolbarProvider.cs" />
     <Compile Include="NativeBindingExtensions.cs" />
     <Compile Include="NativeEventWrapper.cs" />

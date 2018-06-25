@@ -43,6 +43,9 @@
     <Compile Update="GalleryPages\VisualStateManagerGalleries\OnPlatformExample.xaml.cs">
       <DependentUpon>OnPlatformExample.xaml</DependentUpon>
     </Compile>
+    <EmbeddedResource Update="GalleryPages\TitleView.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Update="GalleryPages\VisualStateManagerGalleries\ButtonDisabledStatesGallery.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

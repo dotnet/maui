@@ -104,6 +104,7 @@
     <Compile Include="AttachedStateEffectRenderer.cs" />
     <Compile Include="BrokenImageSourceHandler.cs" />
     <Compile Include="BrokenNativeControl.cs" />
+    <Compile Include="SearchbarEffect.cs" />
     <Compile Include="CustomRenderer40251.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />

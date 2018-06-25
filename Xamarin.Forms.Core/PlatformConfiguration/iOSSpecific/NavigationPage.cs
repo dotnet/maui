@@ -72,6 +72,7 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 		}
 		#endregion
 
+		#region PrefersLargeTitles
 		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
 
 		public static bool GetPrefersLargeTitles(BindableObject element)
@@ -94,5 +95,31 @@ namespace Xamarin.Forms.PlatformConfiguration.iOSSpecific
 		{
 			return GetPrefersLargeTitles(config.Element);
 		}
+		#endregion
+
+		#region HideNavigationBarSeparator
+		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), false);
+
+		public static bool GetHideNavigationBarSeparator(BindableObject element)
+		{
+			return (bool)element.GetValue(HideNavigationBarSeparatorProperty);
+		}
+
+		public static void SetHideNavigationBarSeparator(BindableObject element, bool value)
+		{
+			element.SetValue(HideNavigationBarSeparatorProperty, value);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetHideNavigationBarSeparator(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetHideNavigationBarSeparator(config.Element, value);
+			return config;
+		}
+
+		public static bool HideNavigationBarSeparator(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetHideNavigationBarSeparator(config.Element);
+		}
+		#endregion
 	}
 }

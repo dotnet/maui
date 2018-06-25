@@ -11,12 +11,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Xamarin.Forms.Internals;
+using static Xamarin.Forms.PlatformConfiguration.WindowsSpecific.Page;
+using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 
 using Windows.UI.Core;
 namespace Xamarin.Forms.Platform.UWP
 {
-	public partial class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
+	public partial class NavigationPageRenderer : IVisualElementRenderer, ITitleProvider, ITitleIconProvider, ITitleViewProvider, IToolbarProvider
 	{
 		PageControl _container;
 		Page _currentPage;
@@ -27,6 +29,7 @@ namespace Xamarin.Forms.Platform.UWP
 		MasterDetailPage _parentMasterDetailPage;
 		TabbedPage _parentTabbedPage;
 		bool _showTitle = true;
+		WImageSource _titleIcon;
 		VisualElementTracker<Page, PageControl> _tracker;
 		EntranceThemeTransition _transition;
 
@@ -88,7 +91,25 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			get { return _currentPage?.Title; }
 
-			set { }
+			set { /*Not implemented but required by interface*/ }
+		}
+
+		public WImageSource TitleIcon
+		{
+			get => _titleIcon;
+			set => _titleIcon = value;
+		}
+
+		public View TitleView
+		{
+			get
+			{
+				if (_currentPage == null)
+					return null;
+
+				return NavigationPage.GetTitleView(_currentPage) as View;
+			}
+			set { /*Not implemented but required by interface*/ }
 		}
 
 		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
@@ -175,6 +196,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitleColor();
 				UpdateNavigationBarBackground();
 				UpdateToolbarPlacement();
+				UpdateTitleIcon();
+				UpdateTitleView();
 
 				// Enforce consistency rules on toolbar (show toolbar if top-level page is Navigation Page)
 				_container.ShouldShowToolbar = _parentMasterDetailPage == null && _parentTabbedPage == null;
@@ -283,12 +306,20 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateShowTitle();
 
 			UpdateTitleOnParents();
+
+			UpdateTitleIcon();
+
+			UpdateTitleView();
 		}
 
 		void MultiPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == "CurrentPage" || e.PropertyName == "Detail")
+			{
 				UpdateTitleOnParents();
+				UpdateTitleIcon();
+				UpdateTitleView();
+			}
 		}
 
 		async void OnBackClicked(object sender, RoutedEventArgs e)
@@ -311,6 +342,10 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitleVisible();
 			else if (e.PropertyName == Page.TitleProperty.PropertyName)
 				UpdateTitleOnParents();
+			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
+				UpdateTitleIcon();
+			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
+				UpdateTitleView();
 		}
 
 		void OnElementAppearing(object sender, EventArgs e)
@@ -327,9 +362,12 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateNavigationBarBackground();
 			else if (e.PropertyName == Page.PaddingProperty.PropertyName)
 				UpdatePadding();
-
-			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
+			else if (e.PropertyName == ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
+			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
+				UpdateTitleIcon();
+			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
+				UpdateTitleView();
 		}
 
 		void OnLoaded(object sender, RoutedEventArgs args)
@@ -424,6 +462,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			UpdateTitleVisible();
 			UpdateTitleOnParents();
+			UpdateTitleIcon();
+			UpdateTitleView();
 
 			if (isAnimated && _transition == null)
 			{
@@ -483,6 +523,35 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateTitleColor()
 		{
 			(this as ITitleProvider).BarForegroundBrush = GetBarForegroundBrush();
+		}
+
+		async void UpdateTitleIcon()
+		{
+			if (_currentPage == null)
+				return;
+
+			ImageSource source = NavigationPage.GetTitleIcon(_currentPage);
+
+			_titleIcon = await source.ToWindowsImageSource();
+
+			_container.TitleIcon = _titleIcon;
+
+			if (_parentMasterDetailPage != null && Platform.GetRenderer(_parentMasterDetailPage) is ITitleIconProvider parent)
+				parent.TitleIcon = _titleIcon;
+
+			_container.UpdateLayout();
+			UpdateContainerArea();
+		}
+
+		void UpdateTitleView()
+		{
+			if (_currentPage == null)
+				return;
+
+			_container.TitleView = TitleView;
+
+			if (_parentMasterDetailPage != null && Platform.GetRenderer(_parentMasterDetailPage) is ITitleViewProvider parent)
+				parent.TitleView = TitleView;
 		}
 	}
 }
