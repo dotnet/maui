@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public void LoadUrl(string url)
 		{
 			var uri = new Uri(url);
-			var safeHostUri = new Uri($"{uri.Scheme}://{uri.IdnHost}", UriKind.Absolute);
+			var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
 			LoadRequest(new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)));
 		}
