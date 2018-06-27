@@ -248,7 +248,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 current = parent;
             }
 
-            return hasParentNavigation && NavigationPage.GetHasNavigationBar(parent);
-        }
-    }
+			var hasAncestorNavigationPage = hasParentNavigation && NavigationPage.GetHasNavigationBar(current);
+
+			return hasAncestorNavigationPage;
+		}
+	}
 }
