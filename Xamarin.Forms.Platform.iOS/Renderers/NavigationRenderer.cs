@@ -1341,7 +1341,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_icon != null)
 					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
-				if (_child.Element != null)
+				if (_child?.Element != null)
 					Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height));
 			}
 

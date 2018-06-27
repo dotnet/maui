@@ -11,7 +11,7 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
-	public class Issue1583 : TestContentPage
+	public class Issue1583_1 : TestContentPage
 	{
 		WebView _webview;
 		Label _label;
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 #if UITEST
 		[Test]
-		public async Task Issue1583Test ()
+		public async Task Issue1583_1_WebviewTest ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);
 			await Task.Delay(TimeSpan.FromSeconds(3));
