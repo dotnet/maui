@@ -19,7 +19,7 @@ namespace DeviceTests
             // Try the new platform specific api
             await SecureStorage.SetAsync(key, data, Security.SecAccessible.AfterFirstUnlock);
 
-            var b = await SecureStorage.GetAsync(key, Security.SecAccessible.AfterFirstUnlock);
+            var b = await SecureStorage.GetAsync(key);
 
             Assert.Equal(data, b);
 #endif
@@ -46,6 +46,44 @@ namespace DeviceTests
             var v = await SecureStorage.GetAsync("THIS_KEY_SHOULD_NOT_EXIST");
 
             Assert.Null(v);
+        }
+
+        [Theory]
+        [InlineData("KEY_TO_REMOVE1", true)]
+        [InlineData("KEY_TO_REMOVE2", false)]
+        public async Task Remove_Key(string key, bool emulatePreApi23)
+        {
+#if __ANDROID__
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#endif
+            await SecureStorage.SetAsync(key, "Irrelevant Data");
+
+            SecureStorage.Remove(key);
+
+            var v = await SecureStorage.GetAsync(key);
+
+            Assert.Null(v);
+        }
+
+        [Theory]
+        [InlineData(true, new[] { "KEYS_TO_REMOVEA1", "KEYS_TO_REMOVEA2" })]
+        [InlineData(false, new[] { "KEYS_TO_REMOVEB1", "KEYS_TO_REMOVEB2" })]
+        public async Task Remove_All_Keys(bool emulatePreApi23, string[] keys)
+        {
+#if __ANDROID__
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+#endif
+
+            // Set a couple keys
+            foreach (var key in keys)
+                await SecureStorage.SetAsync(key, "Irrelevant Data");
+
+            // Remove them all
+            SecureStorage.RemoveAll();
+
+            // Make sure they are all removed
+            foreach (var key in keys)
+                Assert.Null(await SecureStorage.GetAsync(key));
         }
     }
 }

@@ -372,7 +372,8 @@
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String,Security.SecAccessible)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
+      <Member Id="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.SetAsync(System.String,System.String,Security.SecAccessible)" />
       <Member Id="P:Xamarin.Essentials.SecureStorage.DefaultAccessible" />
