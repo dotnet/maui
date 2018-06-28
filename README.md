@@ -22,7 +22,7 @@ Maps                 | `Xamarin.Forms.Maps`    | [![NuGet](https://img.shields.i
 Pages  | `Xamarin.Forms.Pages`  | [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Pages.svg?style=flat-square&label=nuget)](https://www.nuget.org/packages/Xamarin.Forms.Pages/) | [![MyGet](https://img.shields.io/myget/xamarinforms-ci/vpre/Xamarin.Forms.Pages.svg?style=flat-square&label=myget)](https://myget.org/feed/xamarin.forms-ci/package/nuget/Xamarin.Forms.Pages)
 
 If you want to use the latest dev build then you should read [this blog post]( https://blog.xamarin.com/try-the-latest-in-xamarin-forms-with-nightly-builds) :
-- Add the nightly feed to your nuget sources or add a NuGet.Config to your app with the following content:
+- Add the nightly feed to your nuget sources or add a NuGet.Config to your app (placing it in the same directory where your solution file is) with the following content:
 
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
