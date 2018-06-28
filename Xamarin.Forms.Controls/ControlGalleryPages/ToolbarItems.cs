@@ -48,7 +48,9 @@ namespace Xamarin.Forms.Controls
 			tb5.Text = "tb5";
 			tb5.Icon = "bank.png";
 			tb5.Order = ToolbarItemOrder.Secondary;
-			tb5.Command = command;
+			tb5.Command = new Command(async () => {
+				await Navigation.PushAsync(new ToolbarItems());
+			});
 			tb5.AutomationId = "toolbaritem_secondary5";
 
 			ToolbarItems.Add(tb1);

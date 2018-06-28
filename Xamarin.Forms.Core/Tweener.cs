@@ -66,13 +66,28 @@ namespace Xamarin.Forms
 			Pause();
 
 			_lastMilliseconds = 0;
+
+			if (!Ticker.Default.SystemEnabled)
+			{
+				FinishImmediately();
+				return;
+			}
+
 			_timer = Ticker.Default.Insert(step =>
 			{
-				long ms = step + _lastMilliseconds;
+				if (step == long.MaxValue)
+				{
+					// We're being forced to finish
+					Value = 1.0;
+				}
+				else
+				{
+					long ms = step + _lastMilliseconds;
 
-				Value = Math.Min(1.0f, ms / (double)Length);
+					Value = Math.Min(1.0f, ms / (double)Length);
 
-				_lastMilliseconds = ms;
+					_lastMilliseconds = ms;
+				}
 
 				ValueUpdated?.Invoke(this, EventArgs.Empty);
 
@@ -92,6 +107,15 @@ namespace Xamarin.Forms
 				}
 				return true;
 			});
+		}
+
+		void FinishImmediately()
+		{
+			Value = 1.0f;
+			ValueUpdated?.Invoke(this, EventArgs.Empty);
+			Finished?.Invoke(this, EventArgs.Empty);
+			Value = 0.0f;
+			_timer = 0;
 		}
 
 		public void Stop()
