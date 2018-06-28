@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 		AndroidApplicationLifecycleState _previousState;
 
 		bool _renderersAdded;
+		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
 		protected virtual bool AllowFragmentRestore => false;
@@ -178,6 +179,12 @@ namespace Xamarin.Forms.Platform.Android
 				// Allow for the status bar color to be changed
 				Window.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
 			}
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				// Listen for the device going into power save mode so we can handle animations being disabled	
+				_powerSaveModeBroadcastReceiver = new PowerSaveModeBroadcastReceiver();
+			}
 		}
 
 		protected override void OnDestroy()
@@ -208,6 +215,12 @@ namespace Xamarin.Forms.Platform.Android
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnPause;
 
+			if (Forms.IsLollipopOrNewer)
+			{
+				// Don't listen for power save mode changes while we're paused
+				UnregisterReceiver(_powerSaveModeBroadcastReceiver);
+			}
+
 			OnStateChanged();
 		}
 
@@ -236,6 +249,14 @@ namespace Xamarin.Forms.Platform.Android
 
 			_previousState = _currentState;
 			_currentState = AndroidApplicationLifecycleState.OnResume;
+
+			if (Forms.IsLollipopOrNewer)
+			{
+				// Start listening for power save mode changes
+				RegisterReceiver(_powerSaveModeBroadcastReceiver, new IntentFilter(
+					PowerManager.ActionPowerSaveModeChanged
+				));
+			}
 
 			OnStateChanged();
 		}

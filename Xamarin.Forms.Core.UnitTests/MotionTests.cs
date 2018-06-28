@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
 
@@ -8,13 +9,46 @@ namespace Xamarin.Forms.Core.UnitTests
 	internal class BlockingTicker : Ticker
 	{
 		bool _enabled;
-
+		
 		protected override void EnableTimer ()
 		{
 			_enabled = true;
 
 			while (_enabled) {
 				SendSignals (16);
+			}
+		}
+
+		protected override void DisableTimer ()
+		{
+			_enabled = false;
+		}
+	}
+
+	internal class AsyncTicker : Ticker
+	{
+		bool _systemEnabled = true;
+		public override bool SystemEnabled => _systemEnabled;
+
+		bool _enabled;
+
+		public void SetEnabled(bool enabled)
+		{
+			_systemEnabled = enabled;
+
+			_enabled = enabled;
+
+			OnSystemEnabledChanged();
+		}
+
+		protected override async void EnableTimer ()
+		{
+			_enabled = true;
+
+			while (_enabled)
+			{
+				SendSignals(16);
+				await Task.Delay(16);
 			}
 		}
 
@@ -114,6 +148,94 @@ namespace Xamarin.Forms.Core.UnitTests
 				finished: () => finished = true);
 
 			Assert.True (finished);
+		}
+	}
+
+	[TestFixture]
+	public class TickerSystemEnabledTests
+	{
+		[TestFixtureSetUp]
+		public void Init ()
+		{
+			Device.PlatformServices = new MockPlatformServices ();
+			Ticker.Default = new AsyncTicker(); 
+		}
+
+		[TestFixtureTearDown]
+		public void End ()
+		{
+			Device.PlatformServices = null;
+			Ticker.Default = null;
+		}
+
+		static async Task DisableTicker()
+		{
+			await Task.Delay(32);
+			((AsyncTicker)Ticker.Default).SetEnabled(false);
+		}
+
+		async Task SwapFadeViews(View view1, View view2)
+		{
+			await view1.FadeTo(0, 1000);
+			await view2.FadeTo(1, 1000);
+		}
+
+		[Test, Timeout(3000)]
+		public async Task DisablingTickerFinishesAnimationInProgress()
+		{
+			var view = new View { Opacity = 1 };
+
+			await Task.WhenAll(view.FadeTo(0, 2000), DisableTicker());
+			
+			Assert.That (view.Opacity, Is.EqualTo(0));
+		}
+
+		[Test, Timeout(3000)]
+		public async Task DisablingTickerFinishesAllAnimationsInChain()
+		{
+			var view1 = new View { Opacity = 1 };
+			var view2 = new View { Opacity = 0 };
+
+			await Task.WhenAll(SwapFadeViews(view1, view2), DisableTicker());
+
+			Assert.That(view1.Opacity, Is.EqualTo(0));
+			
+		}
+
+		static Task<bool> RepeatFade(View view)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+			var fadeIn = new Animation(d => { view.Opacity = d; }, 0, 1);
+			var i = 0;
+			
+			fadeIn.Commit(view, "fadeIn", length: 2000, repeat: () => ++i < 2, finished: (d, b) =>
+			{
+				tcs.SetResult(b);
+			});
+
+			return tcs.Task;
+		}
+
+		[Test, Timeout(3000)]
+		public async Task DisablingTickerPreventsAnimationFromRepeating()
+		{
+			var view = new View { Opacity = 0 };
+			
+			await Task.WhenAll(RepeatFade(view), DisableTicker());
+
+			Assert.That(view.Opacity, Is.EqualTo(1));
+		}
+
+		[Test] 
+		public async Task NewAnimationsFinishImmediatelyWhenTickerDisabled()
+		{
+			var view = new View { Opacity = 1 };
+
+			await DisableTicker();
+
+			await view.RotateYTo(200);
+
+			Assert.That(view.RotationY, Is.EqualTo(200));
 		}
 	}
 }

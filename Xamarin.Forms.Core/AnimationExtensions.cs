@@ -249,7 +249,9 @@ namespace Xamarin.Forms
 				info.Callback(tweener.Value);
 
 				var repeat = false;
-				if (info.Repeat != null)
+
+				// If the Ticker has been disabled (e.g., by power save mode), then don't repeat the animation
+				if (info.Repeat != null && Ticker.Default.SystemEnabled)
 					repeat = info.Repeat();
 
 				if (!repeat)
