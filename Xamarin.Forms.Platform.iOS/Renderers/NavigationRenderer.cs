@@ -790,7 +790,7 @@ namespace Xamarin.Forms.Platform.iOS
 				{
 					var frame = new RectangleF(x, y, itemW, itemH);
 					if (frame == item.CustomView.Frame)
-						return;
+						continue;
 					item.CustomView.Frame = frame;
 					x += itemW + padding;
 				}
