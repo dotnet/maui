@@ -36,6 +36,7 @@
 		public const string Gestures = "Gestures";
 		public const string Navigation = "Navigation";
 		public const string Effects = "Effects";
+		public const string Animation = "Animation";
 
 		public const string ManualReview = "ManualReview";
 		public const string Performance = "Performance";
