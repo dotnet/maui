@@ -48,13 +48,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBackButton()
 		{
-			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
-			_container.ShowBackButton = showBackButton;
-
-			if (_navManager != null)
+			if (_navManager == null)
 			{
-				_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
+				return;
 			}
+
+			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
+			_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
 		}
 
 		async void UpdateTitleOnParents()
