@@ -1,11 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<SignAssembly>false</SignAssembly>
+		<_DisableStrongNamer>True</_DisableStrongNamer>
+		<DelaySign>false</DelaySign>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
+	<PropertyGroup>
+	    <_DisableStrongNamer Condition=" '$(_DisableStrongNamer)' != 'True' ">False</_DisableStrongNamer>
+	    <AssemblyName>Xamarin.Forms.Build.Tasks</AssemblyName>
+	    <TargetFramework>netstandard2.0</TargetFramework>
+	    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	    <SignAssembly Condition=" '$(_DisableStrongNamer)' != 'True' ">True</SignAssembly>
+	    <DisableStrongNamer Condition=" '$(_DisableStrongNamer)' == 'True' ">True</DisableStrongNamer>
+	    <DelaySign>true</DelaySign>
+	    <AssemblyOriginatorKeyFile>..\xamarin.forms.snk</AssemblyOriginatorKeyFile>
+	    <StrongNamerKeyFile>..\xamarin.forms.snk</StrongNamerKeyFile>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
@@ -14,6 +25,8 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="15.3.409" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.3.409" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.3.409" />
+    <PackageReference Include="StrongNamer" Version="0.0.7" />
+    <PackageReference Include="GitInfo" Version="2.0.11" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,11 +39,31 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
   </ItemGroup>
-  <Target Name="_CopyToNuspecDir" AfterTargets="Build">
+
+	<PropertyGroup Condition="'$(SnExe)' == '' And '$(OS)' != 'Windows_NT'">
+		<SnExe>sn</SnExe>
+	</PropertyGroup>
+	
+	<Target Name="_SetSnExe" Condition="'$(SnExe)' == '' And '$(OS)' == 'Windows_NT'">
+		<GetFrameworkSdkPath>
+			<Output TaskParameter="Path" PropertyName="WindowsSdkPath" />
+		</GetFrameworkSdkPath>
+		<Exec Command="WHERE /r &quot;$(WindowsSdkPath.TrimEnd('\\'))&quot; sn" ConsoleToMSBuild="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="SnExe" />
+		</Exec>
+		<PropertyGroup>
+		    <SnExe>$([System.Text.RegularExpressions.Regex]::Replace('$(SnExe)', ';.*', ''))</SnExe>
+	  </PropertyGroup>
+	</Target>
+	
+  <Target Name="_StrongName" AfterTargets="Build" DependsOnTargets="_SetSnExe">
+  	<Exec Command='"$(SnExe)" -R $(TargetPath) ..\xamarin.forms.snk' Condition=" '$(SignAssembly)' == 'true' " />
+  </Target>
+
+  <Target Name="_CopyToNuspecDir" AfterTargets="_StrongName;Build">
     <ItemGroup>
       <_CopyItems Include="$(TargetDir)*.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="..\.nuspec\" ContinueOnError="true" Retries="0" />
   </Target>
-
 </Project>
