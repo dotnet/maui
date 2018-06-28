@@ -29,30 +29,56 @@ namespace Xamarin.Forms.Controls
 		public App()
 		{
 			_testCloudService = DependencyService.Get<ITestCloudService>();
-			
+
 			SetMainPage(CreateDefaultMainPage());
 
-			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
-			//SetMainPage(new Bugzilla44596SplashPage(() =>
-			//{
-			//	var newTabbedPage = new TabbedPage();
-			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
-			//	MainPage = new MasterDetailPage
-			//	{
-			//		Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
-			//		Detail = newTabbedPage
-			//	};
-			//}));
+			//TestBugzilla44596();
 
-			//// Uncomment to verify that there is no crash when switching MainPage from MDP inside NavPage
-			//SetMainPage(new Bugzilla45702());
+			//TestBugzilla45702();
+		}
+
+		protected override void OnStart()
+		{
+			//TestIssue2393();
+		}
+
+		void TestBugzilla44596()
+		{
+			// verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
+			SetMainPage(new Bugzilla44596SplashPage(() =>
+			{
+				var newTabbedPage = new TabbedPage();
+				newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
+				MainPage = new MasterDetailPage
+				{
+					Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
+					Detail = newTabbedPage
+				};
+			}));
+		}
+
+		void TestBugzilla45702()
+		{
+			// verify that there is no crash when switching MainPage from MDP inside NavPage
+			SetMainPage(new Bugzilla45702());
+		}
+
+		void TestIssue2393()
+		{
+			MainPage = new NavigationPage();
+
+			// Hand off to website for sign in process
+			var view = new WebView { Source = new Uri("http://google.com") };
+			view.Navigated += (s, e) => MainPage.DisplayAlert("Navigated", $"If this popup appears multiple times, this test has failed", "ok"); ;
+
+			MainPage.Navigation.PushAsync(new ContentPage { Content = view, Title = "Issue 2393" });
 		}
 
 		public Page CreateDefaultMainPage()
 		{
 			var layout = new StackLayout { BackgroundColor = Color.Red };
-			layout.Children.Add(new Label { Text ="This is master Page" });
-			var master = new ContentPage { Title = "Master", Content = layout,  BackgroundColor = Color.SkyBlue };
+			layout.Children.Add(new Label { Text = "This is master Page" });
+			var master = new ContentPage { Title = "Master", Content = layout, BackgroundColor = Color.SkyBlue };
 			master.On<iOS>().SetUseSafeArea(true);
 			return new MasterDetailPage
 			{
@@ -155,7 +181,7 @@ namespace Xamarin.Forms.Controls
 				// Set up a delegate to handle the navigation to the test page
 				EventHandler toTestPage = null;
 
-				toTestPage = delegate(object sender, EventArgs e) 
+				toTestPage = delegate (object sender, EventArgs e)
 				{
 					Current.MainPage.Navigation.PushModalAsync(TestCases.GetTestCases());
 					TestCases.TestCaseScreen.PageToAction[test]();
@@ -169,7 +195,7 @@ namespace Xamarin.Forms.Controls
 
 				return true;
 			}
-			catch (Exception ex) 
+			catch (Exception ex)
 			{
 				Log.Warning("UITests", $"Error attempting to navigate directly to {test}: {ex}");
 
@@ -177,7 +203,7 @@ namespace Xamarin.Forms.Controls
 
 			return false;
 		}
-		
+
 		public void Reset()
 		{
 			SetMainPage(CreateDefaultMainPage());
