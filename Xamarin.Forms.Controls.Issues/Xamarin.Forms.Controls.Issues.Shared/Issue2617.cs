@@ -25,6 +25,7 @@ namespace Xamarin.Forms.Controls.Issues
 		public ListView listView { get; private set; }
 		public ListView listViewIsGrouped { get; private set; }
 
+		[Preserve(AllMembers = true)]
 		class MyHeaderViewCell : ViewCell
 		{
 			public MyHeaderViewCell()
@@ -36,6 +37,7 @@ namespace Xamarin.Forms.Controls.Issues
 			}
 		}
 
+		[Preserve(AllMembers = true)]
 		class GroupedItem : List<string>
 		{
 			public GroupedItem()

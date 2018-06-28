@@ -21,6 +21,8 @@ namespace Xamarin.Forms.Controls.Issues
 	public class Issue3053 : TestContentPage
 	{
 		const string _instructions = "Click me once. Item 2 should remain on bottom";
+
+		[Preserve(AllMembers = true)]
 		public class Item
 		{
 			public string Name { get; set; }
@@ -63,6 +65,7 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			};
 		}
+
 #if UITEST
 		[Test]
 		public void MovingItemInObservableCollectionBreaksListView()
@@ -72,6 +75,5 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("Item 2");
 		}
 #endif
-
 	}
 }
