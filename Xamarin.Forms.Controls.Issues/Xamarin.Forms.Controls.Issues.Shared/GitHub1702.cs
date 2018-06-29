@@ -81,7 +81,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Text = "Reset padding",
 				Command = new Command(() =>
 				{
-					buttons.ForEach(b => b.Padding = new Thickness(0, 0, 0, 0));
+					buttons.ForEach(b => b.ClearValue(Button.PaddingProperty));
 				})
 			}, 0, 1);
 			actionGrid.AddChild(new Button()

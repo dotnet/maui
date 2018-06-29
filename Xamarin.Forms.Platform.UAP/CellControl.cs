@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Platform.UWP
 			_propertyChangedHandler = OnCellPropertyChanged;
 		}
 
-		public Cell Cell		
+		public Cell Cell
 		{
 			get { return (Cell)GetValue(CellProperty); }
 			set { SetValue(CellProperty, value); }
@@ -222,16 +222,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (template != null)
 				{
-					if (lv.IsGroupingEnabled)
-					{
-						cell = isGroupHeader 
-							? RealizeGroupedHeaderTemplate(lv.TemplatedItems, template, newContext) 
-							: RealizeGroupedItemTemplate(lv.TemplatedItems, template, newContext);
-					}
-					else
-					{
-						cell = RealizeItemTemplate(lv.TemplatedItems, template, newContext);
-					}
+					cell = template.CreateContent() as Cell;
 				}
 				else
 				{
@@ -335,44 +326,6 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 
 			this.UpdateFlowDirection(newCell.Parent as VisualElement);
-		}
-
-		static Cell RealizeGroupedHeaderTemplate(TemplatedItemsList<ItemsView<Cell>, Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var index = templatedItems.GetGlobalIndexOfGroup(context);
-			if (index > -1)
-			{
-				return templatedItems[index];
-			}
-
-			return template.CreateContent() as Cell;
-		}
-
-		static Cell RealizeGroupedItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var indices = templatedItems.GetGroupAndIndexOfItem(context);
-
-			if (indices.Item1 > -1 && indices.Item2 > -1)
-			{
-				var group = templatedItems.GetGroup(indices.Item1);
-				return group[indices.Item2];
-			}
-
-			return template.CreateContent() as Cell;
-		}
-
-		static Cell RealizeItemTemplate(ITemplatedItemsList<Cell> templatedItems, 
-			ElementTemplate template, object context)
-		{
-			var index = templatedItems.GetGlobalIndexOfItem(context);
-			if (index > -1)
-			{
-				return templatedItems[index];
-			}
-
-			return template.CreateContent() as Cell;
 		}
 	}
 }

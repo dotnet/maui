@@ -149,18 +149,27 @@ namespace Xamarin.Forms
 
 		static void AbortAnimation(AnimatableKey key)
 		{
-			if (!s_animations.ContainsKey(key))
+			// If multiple animations on the same view with the same name (IOW, the same AnimatableKey) are invoked
+			// asynchronously (e.g., from the `[Animate]To` methods in `ViewExtensions`), it's possible to get into 
+			// a situation where after invoking the `Finished` handler below `s_animations` will have a new `Info`
+			// object in it with the same AnimatableKey. We need to continue cancelling animations until that is no
+			// longer the case; thus, the `while` loop.
+
+			// If we don't cancel all of the animations popping in with this key, `AnimateInternal` will overwrite one
+			// of them with the new `Info` object, and the overwritten animation will never complete; any `await` for
+			// it will never return.
+
+			while (s_animations.ContainsKey(key))
 			{
-				return;
+				Info info = s_animations[key];
+
+				s_animations.Remove(key);
+
+				info.Tweener.ValueUpdated -= HandleTweenerUpdated;
+				info.Tweener.Finished -= HandleTweenerFinished;
+				info.Tweener.Stop();
+				info.Finished?.Invoke(1.0f, true);
 			}
-
-			Info info = s_animations[key];
-			info.Tweener.ValueUpdated -= HandleTweenerUpdated;
-			info.Tweener.Finished -= HandleTweenerFinished;
-			info.Tweener.Stop();
-			info.Finished?.Invoke(1.0f, true);
-
-			s_animations.Remove(key);
 		}
 
 		static void AbortKinetic(AnimatableKey key)
@@ -198,7 +207,7 @@ namespace Xamarin.Forms
 			info.Finished = final;
 			info.Repeat = repeat;
 			info.Owner = new WeakReference<IAnimatable>(self);
-
+			
 			s_animations[key] = info;
 
 			info.Callback(0.0f);
@@ -249,7 +258,9 @@ namespace Xamarin.Forms
 				info.Callback(tweener.Value);
 
 				var repeat = false;
-				if (info.Repeat != null)
+
+				// If the Ticker has been disabled (e.g., by power save mode), then don't repeat the animation
+				if (info.Repeat != null && Ticker.Default.SystemEnabled)
 					repeat = info.Repeat();
 
 				if (!repeat)

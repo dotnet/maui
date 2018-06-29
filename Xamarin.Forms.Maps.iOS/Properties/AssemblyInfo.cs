@@ -24,3 +24,5 @@ using Xamarin.Forms.Maps.iOS;
 [assembly: Guid("4a5d02cd-7350-46b6-bbd5-204b727c67c9")]
 [assembly: ExportRenderer(typeof(Map), typeof(MapRenderer))]
 [assembly: Preserve]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]

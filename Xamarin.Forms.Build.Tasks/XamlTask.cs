@@ -28,21 +28,18 @@ namespace Xamarin.Forms.Build.Tasks
 		public bool DebugSymbols { get; set; }
 		public string DebugType { get; set; }
 
-		TaskLoggingHelper _log;
+		protected TaskLoggingHelper LoggingHelper { get; }
 
 		internal XamlTask()
 		{
-			_log = new TaskLoggingHelper(this);
+			LoggingHelper = new TaskLoggingHelper(this);
 		}
 
 		public IBuildEngine BuildEngine { get; set; }
 		public ITaskHost HostObject { get; set; }
 
-		protected Logger Logger { get; set; }
-
 		public bool Execute()
 		{
-			Logger = new Logger(_log);
 			IList<Exception> _;
 			return Execute(out _);
 		}

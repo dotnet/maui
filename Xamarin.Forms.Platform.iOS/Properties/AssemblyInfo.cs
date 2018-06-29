@@ -68,3 +68,5 @@ using UIKit;
 [assembly: Xamarin.Forms.Dependency(typeof(ResourcesProvider))]
 [assembly: ResolutionGroupName("Xamarin")]
 [assembly: Preserve]
+[assembly: AssemblyVersion("2.0.0.0")]
+[assembly: AssemblyFileVersion("2.0.0.0")]

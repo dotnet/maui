@@ -892,8 +892,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		class SecondaryToolbar : UIToolbar
 		{
-			nfloat _toolbarWidth;
-
 			readonly List<UIView> _lines = new List<UIView>();
 
 			public SecondaryToolbar()
@@ -921,11 +919,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 			void LayoutToolbarItems(nfloat toolbarWidth, nfloat toolbarHeight, nfloat padding)
 			{
-				if (_toolbarWidth == toolbarWidth)
-					return;
-
-				_toolbarWidth = toolbarWidth;
-
 				var x = padding;
 				var y = 0;
 				var itemH = toolbarHeight;
@@ -934,6 +927,8 @@ namespace Xamarin.Forms.Platform.iOS
 				foreach (var item in Items)
 				{
 					var frame = new RectangleF(x, y, itemW, itemH);
+					if (frame == item.CustomView.Frame)
+						continue;
 					item.CustomView.Frame = frame;
 					x += itemW + padding;
 				}
@@ -1341,7 +1336,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_icon != null)
 					_icon.Frame = new RectangleF(0, 0, IconWidth, Math.Min(toolbarHeight, IconHeight));
 
-				if (_child.Element != null)
+				if (_child?.Element != null)
 					Layout.LayoutChildIntoBoundingRegion(_child.Element, new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height));
 			}
 

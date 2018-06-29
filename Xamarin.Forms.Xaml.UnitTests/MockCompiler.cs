@@ -30,7 +30,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				OptimizeIL = true,
 				DebugSymbols = false,
 				ReadOnly = true,
-				Type = type.FullName
+				Type = type.FullName,
+				BuildEngine = new DummyBuildEngine()
 			};
 
 			IList<Exception> exceptions;

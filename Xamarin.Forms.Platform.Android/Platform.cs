@@ -1156,7 +1156,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		internal class DefaultRenderer : VisualElementRenderer<View>
 		{
-			bool _notReallyHandled;
+			public bool NotReallyHandled { get; private set; }
 			IOnTouchListener _touchListener;
 
 			[Obsolete("This constructor is obsolete as of version 2.5. Please use DefaultRenderer(Context) instead.")]
@@ -1173,7 +1173,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			internal void NotifyFakeHandling()
 			{
-				_notReallyHandled = true;
+				NotReallyHandled = true;
 			}
 
 			public override bool OnTouchEvent(MotionEvent e)
@@ -1216,11 +1216,11 @@ namespace Xamarin.Forms.Platform.Android
 				// it then knows to ignore that result and return false/unhandled. This allows the event to propagate up the tree.
 				#endregion
 
-				_notReallyHandled = false;
+				NotReallyHandled = false;
 
 				var result = base.DispatchTouchEvent(e);
 
-				if (result && _notReallyHandled)
+				if (result && NotReallyHandled)
 				{
 					// If the child control returned true from its touch event handler but signalled that it was a fake "true", then we
 					// don't consider the event truly "handled" yet. 

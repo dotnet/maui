@@ -486,6 +486,23 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					tab.SetText(page.Title);
 				}
 			}
+			else if (e.PropertyName == Page.IconProperty.PropertyName)
+			{
+				var page = (Page)sender;
+				var index = Element.Children.IndexOf(page);
+				FileImageSource icon = page.Icon;
+
+				if (IsBottomTabPlacement)
+				{
+					var menuItem = _bottomNavigationView.Menu.GetItem(index);
+					menuItem.SetIcon(GetIconDrawable(icon));
+				}
+				else
+				{
+					TabLayout.Tab tab = _tabLayout.GetTabAt(index);
+					SetTabIcon(tab, icon);
+				}
+			}
 		}
 
 		void ScrollToCurrentPage()
@@ -601,7 +618,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					continue;
 
 				var menuItem = bottomNavigationView.Menu.GetItem(i);
-				menuItem.SetIcon(ResourceManager.IdFromTitle(icon, ResourceManager.DrawableClass));
+				menuItem.SetIcon(GetIconDrawable(icon));
 			}
 		}
 
@@ -627,9 +644,12 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
+		Drawable GetIconDrawable(FileImageSource icon) =>
+			Context.GetDrawable(icon);
+
 		protected virtual void SetTabIcon(TabLayout.Tab tab, FileImageSource icon)
 		{
-			tab.SetIcon(Context.GetDrawable(icon));
+			tab.SetIcon(GetIconDrawable(icon));
 			this.SetIconColorFilter(tab);
 		}
 
