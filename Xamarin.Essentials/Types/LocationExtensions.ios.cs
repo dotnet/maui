@@ -25,7 +25,7 @@ namespace Xamarin.Essentials
             {
                 Latitude = location.Coordinate.Latitude,
                 Longitude = location.Coordinate.Longitude,
-                Altitude = location.Altitude,
+                Altitude = location.VerticalAccuracy < 0 ? (double?)null : location.Altitude,
                 Accuracy = location.HorizontalAccuracy,
                 TimestampUtc = location.Timestamp.ToDateTime()
             };
