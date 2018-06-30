@@ -93,9 +93,14 @@ echo foo > Stubs\Xamarin.Forms.Platform.iOS\bin\iPhone\debug\Xamarin.Forms.Platf
 echo foo > Xamarin.Forms.Platform.MacOS\bin\debug\Xamarin.forms.Platform.macOS.dll
 echo foo > Xamarin.Forms.Platform.MacOS\bin\debug\Xamarin.forms.Platform.dll
 
+mkdir Stubs\Xamarin.Forms.Platform.Tizen\bin\debug\tizen40
+echo foo > Stubs\Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\Xamarin.Forms.Platform.dll
+
+mkdir Xamarin.Forms.Platform.Tizen\bin\debug\tizen40
 echo foo > Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\Xamarin.forms.Platform.tizen.dll
 echo foo > Xamarin.Forms.Platform.Tizen\bin\debug\tizen40\Xamarin.forms.Platform.dll
 
+mkdir Xamarin.Forms.Platform.UAP\bin\debug\
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\Xamarin.Forms.Platform.UAP.dll
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\Xamarin.Forms.Platform.UAP.pri
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\Xamarin.Forms.Platform.UAP.xr.xml
@@ -110,7 +115,7 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\debug\MasterDetailControlStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\PageControlStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\TabbedPageStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\FormsEmbeddedPageWrapper.xbf
-
+            
 if "%1" == "droid" (
    %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.android.nuget.sln
@@ -119,9 +124,13 @@ if "%1" == "ios" (
    %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
 )
-if "%1" == "build" (
+if "%1" == "uap" (
+   %NUGET_EXE% restore .xamarin.forms.uap.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln
+)
+if "%1" == "all" (
    %NUGET_EXE% restore .xamarin.forms.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.nuget.sln
 )
 
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0
