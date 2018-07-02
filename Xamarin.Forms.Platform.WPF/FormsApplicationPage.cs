@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Windows;
-using WpfLightToolkit.Controls;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class FormsApplicationPage : LightWindow
+	public class FormsApplicationPage : FormsWindow
 	{
 		protected Application Application { get; private set; }
 		protected Platform Platform { get; private set; }

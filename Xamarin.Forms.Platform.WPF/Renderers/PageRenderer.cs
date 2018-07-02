@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using WpfLightToolkit.Controls;
+﻿using System.ComponentModel;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class PageRenderer : VisualPageRenderer<Page, LightContentPage>
+	public class PageRenderer : VisualPageRenderer<Page, FormsContentPage>
 	{
 		VisualElement _currentView;
 
@@ -23,7 +13,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new LightContentPage());
+					SetNativeControl(new FormsContentPage());
 				}
 
 				// Update control property 

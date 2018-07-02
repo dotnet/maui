@@ -3,7 +3,7 @@
 					xmlns:system="clr-namespace:System;assembly=mscorlib"
 					xmlns:wpf="clr-namespace:Xamarin.Forms.Platform.WPF">
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceDictionary Source="/WPFLightToolkit;component/Assets/Default.xaml" />
+		<ResourceDictionary Source="/Xamarin.Forms.Platform.WPF;component/Assets/Default.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 
 	<!-- Default Global Color -->

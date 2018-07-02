@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using WpfLightToolkit.Controls;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class TabbedPageRenderer : VisualMultiPageRenderer<TabbedPage, Page, LightTabbedPage>
+	public class TabbedPageRenderer : VisualMultiPageRenderer<TabbedPage, Page, FormsTabbedPage>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<TabbedPage> e)
 		{
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new LightTabbedPage() { ContentLoader = new FormsContentLoader() });
+					SetNativeControl(new FormsTabbedPage() { ContentLoader = new FormsContentLoader() });
 				}
 
 				UpdateBarBackgroundColor();
@@ -39,12 +39,12 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void UpdateBarBackgroundColor()
 		{
-			Control.UpdateDependencyColor(LightTabbedPage.BarBackgroundColorProperty, Element.BarBackgroundColor);
+			Control.UpdateDependencyColor(FormsTabbedPage.BarBackgroundColorProperty, Element.BarBackgroundColor);
 		}
 
 		void UpdateBarTextColor()
 		{
-			Control.UpdateDependencyColor(LightTabbedPage.BarTextColorProperty, Element.BarTextColor);
+			Control.UpdateDependencyColor(FormsTabbedPage.BarTextColorProperty, Element.BarTextColor);
 		}
 	}
 }

@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WpfLightToolkit.Controls;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
 	public class VisualMultiPageRenderer<TElement, TContainer, TNativeElement> : VisualPageRenderer<TElement, TNativeElement>
 		where TElement : MultiPage<TContainer>
-		where TNativeElement : LightMultiPage
+		where TNativeElement : FormsMultiPage
 		where TContainer : Page
 	{
 

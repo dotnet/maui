@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WpfLightToolkit.Controls;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class MasterDetailPageRenderer : VisualPageRenderer<MasterDetailPage, LightMasterDetailPage>
+	public class MasterDetailPageRenderer : VisualPageRenderer<MasterDetailPage, FormsMasterDetailPage>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<MasterDetailPage> e)
 		{
@@ -16,10 +12,9 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new LightMasterDetailPage() { ContentLoader = new FormsContentLoader() });
+					SetNativeControl(new FormsMasterDetailPage() { ContentLoader = new FormsContentLoader() });
 
-					DependencyPropertyDescriptor.FromProperty(LightMasterDetailPage.IsPresentedProperty, typeof(LightMasterDetailPage))
-						.AddValueChanged(Control, OnIsPresentedChanged);
+					DependencyPropertyDescriptor.FromProperty(FormsMasterDetailPage.IsPresentedProperty, typeof(FormsMasterDetailPage)).AddValueChanged(Control, OnIsPresentedChanged);
 				}
 			}
 
@@ -77,7 +72,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control != null)
 				{
-					DependencyPropertyDescriptor.FromProperty(LightMasterDetailPage.IsPresentedProperty, typeof(LightMasterDetailPage))
+					DependencyPropertyDescriptor.FromProperty(FormsMasterDetailPage.IsPresentedProperty, typeof(FormsMasterDetailPage))
 						.RemoveValueChanged(Control, OnIsPresentedChanged);
 				}
 			}

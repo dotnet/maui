@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using WpfLightToolkit.Controls;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.WPF
 		{
 			string content = options.Message ?? options.Title ?? string.Empty;
 
-			LightContentDialog dialog = new LightContentDialog();
+			FormsContentDialog dialog = new FormsContentDialog();
 
 			if (options.Message == null || options.Title == null)
 				dialog.Content = content;
@@ -72,7 +72,7 @@ namespace Xamarin.Forms.Platform.WPF
 				ItemsSource = options.Buttons
 			};
 			
-			var dialog = new LightContentDialog
+			var dialog = new FormsContentDialog
 			{
 				Content = list,
 			};

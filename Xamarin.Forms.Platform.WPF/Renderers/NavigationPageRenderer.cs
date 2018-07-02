@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WpfLightToolkit.Controls;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class FormsLightNavigationPage : LightNavigationPage
+	public class FormsLightNavigationPage : FormsNavigationPage
 	{
 		NavigationPage NavigationPage;
 
@@ -111,12 +107,12 @@ namespace Xamarin.Forms.Platform.WPF
 		
 		void UpdateBarBackgroundColor()
 		{
-			Control.UpdateDependencyColor(LightNavigationPage.TitleBarBackgroundColorProperty, Element.BarBackgroundColor);
+			Control.UpdateDependencyColor(FormsNavigationPage.TitleBarBackgroundColorProperty, Element.BarBackgroundColor);
 		}
 
 		void UpdateBarTextColor()
 		{
-			Control.UpdateDependencyColor(LightNavigationPage.TitleBarTextColorProperty, Element.BarTextColor);
+			Control.UpdateDependencyColor(FormsNavigationPage.TitleBarTextColorProperty, Element.BarTextColor);
 		}
 
 		bool _isDisposed;

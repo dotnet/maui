@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WpfLightToolkit.Controls;
+﻿using System.ComponentModel;
+using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class CarouselPageRenderer : VisualMultiPageRenderer<CarouselPage, ContentPage, LightCarouselPage>
+	public class CarouselPageRenderer : VisualMultiPageRenderer<CarouselPage, ContentPage, FormsCarouselPage>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<CarouselPage> e)
 		{
@@ -16,7 +11,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				if (Control == null) // construct and SetNativeControl and suscribe control event
 				{
-					SetNativeControl(new LightCarouselPage() { ContentLoader = new FormsContentLoader() });
+					SetNativeControl(new FormsCarouselPage() { ContentLoader = new FormsContentLoader() });
 				}
 			}
 			

@@ -57,9 +57,6 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
-    <Reference Include="WpfLightToolkit, Version=1.0.0.27, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\WpfLightToolkit.1.0.1\lib\net45\WpfLightToolkit.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Platform.UAP\TextBlockExtensions.cs">
@@ -67,24 +64,48 @@
     </Compile>
     <Compile Include="Animatable.cs" />
     <Compile Include="CellControl.cs" />
+    <Compile Include="Controls\FormsAppBar.cs" />
+    <Compile Include="Controls\FormsAppBarButton.cs" />
+    <Compile Include="Controls\FormsBitmapIcon.cs" />
+    <Compile Include="Controls\FormsCarouselPage.cs" />
+    <Compile Include="Controls\FormsContentControl.cs" />
+    <Compile Include="Controls\FormsContentDialog.cs" />
+    <Compile Include="Controls\FormsContentPage.cs" />
+    <Compile Include="Controls\FormsElementIcon.cs" />
+    <Compile Include="Controls\FormsMasterDetailPage.cs" />
+    <Compile Include="Controls\FormsMultiPage.cs" />
+    <Compile Include="Controls\FormsPage.cs" />
+    <Compile Include="Controls\FormsNavigationPage.cs" />
+    <Compile Include="Controls\FormsPathIcon.cs" />
+    <Compile Include="Controls\FormsSymbolIcon.cs" />
+    <Compile Include="Controls\FormsTabbedPage.cs" />
+    <Compile Include="Controls\FormsTransitioningContentControl.cs" />
+    <Compile Include="Controls\FormsWindowButtonCommands.cs" />
+    <Compile Include="Controls\FormWindow.cs" />
+    <Compile Include="Controls\VisualStates.cs" />
     <Compile Include="Converters\CaseConverter.cs" />
     <Compile Include="Converters\CollapseWhenEmptyConverter.cs" />
     <Compile Include="Converters\ColorConverter.cs" />
     <Compile Include="Converters\HeightConverter.cs" />
     <Compile Include="Converters\ImageConverter.cs" />
+    <Compile Include="Converters\SymbolToValueConverter.cs" />
+    <Compile Include="Converters\ToUpperConverter.cs" />
     <Compile Include="Converters\ViewToRendererConverter.cs" />
     <Compile Include="CustomContextMenu.cs" />
     <Compile Include="Deserializer.cs" />
     <Compile Include="ElementChangedEventArgs.cs" />
+    <Compile Include="Enums\Symbol.cs" />
     <Compile Include="ExportRendererAttribute.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\DeviceExtensions.cs" />
     <Compile Include="Extensions\FontExtensions.cs" />
     <Compile Include="Extensions\FormattedStringExtensions.cs" />
+    <Compile Include="Extensions\FrameworkElementAttached.cs" />
     <Compile Include="Extensions\FrameworkElementExtensions.cs" />
     <Compile Include="Extensions\ImageExtensions.cs" />
     <Compile Include="Extensions\KeyboardExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PageExtensions.cs" />
     <Compile Include="Extensions\VisualElementExtensions.cs" />
     <Compile Include="Forms.cs" />
@@ -93,9 +114,30 @@
     <Compile Include="FormsPanel.cs" />
     <Compile Include="FormsTextBox.cs" />
     <Compile Include="FormsTimePicker.cs" />
+    <Compile Include="Helpers\TreeHelper.cs" />
     <Compile Include="Helpers\UiHelper.cs" />
     <Compile Include="ICellRenderer.cs" />
+    <Compile Include="Interfaces\IContentLoader.cs" />
+    <Compile Include="Interfaces\IFormsNavigation.cs" />
     <Compile Include="IVisualElementRenderer.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\ComGuids.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\Debug.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\DoubleUtil.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\DpiHelper.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\ErrorCodes.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\MessageWindow.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\NativeMethods.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\NtDll.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\ShellProvider.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\StreamHelper.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\Utilities.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\Utilities.Windows.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\Utilities.Wpf.cs" />
+    <Compile Include="Microsoft.Windows.Shell\Standard\Verify.cs" />
+    <Compile Include="Microsoft.Windows.Shell\SystemCommands.cs" />
+    <Compile Include="Microsoft.Windows.Shell\SystemParameters2.cs" />
+    <Compile Include="Microsoft.Windows.Shell\WindowChrome.cs" />
+    <Compile Include="Microsoft.Windows.Shell\WindowChromeWorker.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -170,6 +212,82 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Assets\Button.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Assets\Converters.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Assets\Default.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsAppBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsAppBarButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsBitmapIcon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsCarouselPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsContentDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsContentPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsMasterDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsNavigationPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsPathIcon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsSymbolIcon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsTabbedPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsTransitioningContentControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\FormsWindowButtonCommands.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="WPFResources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
