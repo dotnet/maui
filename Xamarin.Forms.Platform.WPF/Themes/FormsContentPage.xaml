@@ -3,7 +3,7 @@
                     xmlns:controls="clr-namespace:Xamarin.Forms.Platform.WPF.Controls">
 
     <Style TargetType="controls:FormsContentPage">
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Background" Value="White"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
