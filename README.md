@@ -66,9 +66,25 @@ Please read through our [Contribution Guide](CONTRIBUTING.md). We are not accept
 ## Building Xamarin.Essentials
 Xamarin.Essentials is built with the new SDK style projects with multi-targeting enabled. This means that all code for iOS, Android, and UWP exist inside of the Xamarin.Essentials project. 
 
-If building on Visual Studio 2017 simply open the solution and build the project. 
+If building on Visual Studio 2017 you will need the following SDKs and workloads installed:
+
+### Workloads need:
+- Xamarin
+- .NET Core
+- UWP
+
+### You will need the following SDKs
+- Android 8.1 SDK Installed
+- UWP 10.0.16299 SDK Installed
 
 If using Visual Studio for Mac the project can be built at the command line with MSBuild. To change the project type that you are working with simply edit Xamarin.Essentials.csproj and modify the TargetFrameworks for only the project type you want to use.
+
+To build through the command line, navigate to where Xamarin.Essentials.csproj exists then run:
+
+```csharp
+dotnet restore
+msbuild Xamarin.Essentials.csproj
+```
 
 ## FAQ
 Here are some frequently asked questions about Xamarin.Essentials, but be sure to read our full [FAQ on our Wiki](https://github.com/xamarin/Essentials/wiki#feature-faq).
