@@ -151,5 +151,28 @@
 			return config;
 		}
 
+		public static readonly BindableProperty ModalPresentationStyleProperty =
+			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
+		
+		public static UIModalPresentationStyle ModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetModalPresentationStyle(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config, UIModalPresentationStyle value)
+		{
+			SetModalPresentationStyle(config.Element, value);
+			return config;
+		}
+
+		public static UIModalPresentationStyle GetModalPresentationStyle(BindableObject element)
+		{
+			return (UIModalPresentationStyle)element.GetValue(ModalPresentationStyleProperty);
+		}
+
+		static void SetModalPresentationStyle(BindableObject element, UIModalPresentationStyle value)
+		{
+			element.SetValue(ModalPresentationStyleProperty, value);
+		}
 	}
 }
