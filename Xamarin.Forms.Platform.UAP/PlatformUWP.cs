@@ -104,9 +104,11 @@ namespace Xamarin.Forms.Platform.UWP
 			if (options.Accept != null)
 				alertDialog.PrimaryButtonText = options.Accept;
 
-			while (s_currentAlert != null)
+			var currentAlert = s_currentAlert;
+			while (currentAlert != null)
 			{
-				await s_currentAlert;
+				await currentAlert;
+				currentAlert = s_currentAlert;
 			}
 
 			s_currentAlert = ShowAlert(alertDialog);
