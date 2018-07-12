@@ -27,7 +27,7 @@ namespace DeviceTests
             Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
             Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(MagnetometerChangedEventArgs e)
+            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -51,7 +51,7 @@ namespace DeviceTests
             Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
             Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(MagnetometerChangedEventArgs e)
+            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -76,7 +76,7 @@ namespace DeviceTests
             Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
             Magnetometer.Start(sensorSpeed);
 
-            void Magnetometer_ReadingChanged(MagnetometerChangedEventArgs e)
+            void Magnetometer_ReadingChanged(object sender, MagnetometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }

@@ -27,7 +27,7 @@ namespace DeviceTests
             Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
             Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(GyroscopeChangedEventArgs e)
+            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -51,7 +51,7 @@ namespace DeviceTests
             Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
             Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(GyroscopeChangedEventArgs e)
+            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -76,7 +76,7 @@ namespace DeviceTests
             Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
             Gyroscope.Start(sensorSpeed);
 
-            void Gyroscope_ReadingChanged(GyroscopeChangedEventArgs e)
+            void Gyroscope_ReadingChanged(object sender, GyroscopeChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }

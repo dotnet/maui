@@ -26,7 +26,7 @@ namespace DeviceTests
             var tcs = new TaskCompletionSource<CompassData>();
 
             Compass.ReadingChanged += Compass_ReadingChanged;
-            void Compass_ReadingChanged(CompassChangedEventArgs e)
+            void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -50,7 +50,7 @@ namespace DeviceTests
 
             var tcs = new TaskCompletionSource<CompassData>();
             Compass.ReadingChanged += Compass_ReadingChanged;
-            void Compass_ReadingChanged(CompassChangedEventArgs e)
+            void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -74,7 +74,7 @@ namespace DeviceTests
 
             var tcs = new TaskCompletionSource<CompassData>();
             Compass.ReadingChanged += Compass_ReadingChanged;
-            void Compass_ReadingChanged(CompassChangedEventArgs e)
+            void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
