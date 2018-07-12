@@ -36,7 +36,7 @@ namespace Samples.ViewModel
             base.OnDisappearing();
         }
 
-        void OnConnectivityChanged(ConnectivityChangedEventArgs e)
+        void OnConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
         {
             OnPropertyChanged(nameof(Profiles));
             OnPropertyChanged(nameof(NetworkAccess));

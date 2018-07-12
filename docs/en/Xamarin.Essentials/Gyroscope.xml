@@ -38,8 +38,8 @@
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.GyroscopeChangedEventHandler ReadingChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.GyroscopeChangedEventHandler ReadingChanged" />
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.GyroscopeChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.GyroscopeChangedEventArgs&gt; ReadingChanged" />
       <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Gyroscope.ReadingChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
@@ -47,7 +47,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.GyroscopeChangedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.GyroscopeChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event triggered when reading of sensor changes.</summary>

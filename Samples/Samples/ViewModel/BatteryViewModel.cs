@@ -32,12 +32,12 @@ namespace Samples.ViewModel
             base.OnDisappearing();
         }
 
-        void OnEnergySaverStatusChanaged(EnergySaverStatusChanagedEventArgs e)
+        void OnEnergySaverStatusChanaged(object sender, EnergySaverStatusChanagedEventArgs e)
         {
             OnPropertyChanged(nameof(EnergySaverStatus));
         }
 
-        void OnBatteryChanged(BatteryChangedEventArgs e)
+        void OnBatteryChanged(object sender, BatteryChangedEventArgs e)
         {
             OnPropertyChanged(nameof(Level));
             OnPropertyChanged(nameof(State));

@@ -22,8 +22,8 @@
   </Docs>
   <Members>
     <Member MemberName="BatteryChanged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.BatteryChangedEventHandler BatteryChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.BatteryChangedEventHandler BatteryChanged" />
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged" />
       <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
@@ -31,7 +31,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.BatteryChangedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event trigger when battery properties have changed.</summary>

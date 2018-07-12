@@ -18,8 +18,8 @@
   </Docs>
   <Members>
     <Member MemberName="ConnectivityChanged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.ConnectivityChangedEventHandler ConnectivityChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.ConnectivityChangedEventHandler ConnectivityChanged" />
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged" />
       <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
@@ -27,7 +27,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ConnectivityChangedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.ConnectivityChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>

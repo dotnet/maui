@@ -4,11 +4,11 @@ namespace Xamarin.Essentials
 {
     public static partial class DeviceDisplay
     {
-        static event ScreenMetricsChanagedEventHandler ScreenMetricsChanagedInternal;
+        static event EventHandler<ScreenMetricsChanagedEventArgs> ScreenMetricsChanagedInternal;
 
         public static ScreenMetrics ScreenMetrics => GetScreenMetrics();
 
-        public static event ScreenMetricsChanagedEventHandler ScreenMetricsChanaged
+        public static event EventHandler<ScreenMetricsChanagedEventArgs> ScreenMetricsChanaged
         {
             add
             {
@@ -35,10 +35,8 @@ namespace Xamarin.Essentials
             => OnScreenMetricsChanaged(new ScreenMetricsChanagedEventArgs(metrics));
 
         static void OnScreenMetricsChanaged(ScreenMetricsChanagedEventArgs e)
-            => ScreenMetricsChanagedInternal?.Invoke(e);
+            => ScreenMetricsChanagedInternal?.Invoke(null, e);
     }
-
-    public delegate void ScreenMetricsChanagedEventHandler(ScreenMetricsChanagedEventArgs e);
 
     public class ScreenMetricsChanagedEventArgs : EventArgs
     {

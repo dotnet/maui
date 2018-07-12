@@ -4,11 +4,11 @@ namespace Xamarin.Essentials
 {
     public static partial class Power
     {
-        static event EnergySaverStatusChanagedEventHandler EnergySaverStatusChanagedInternal;
+        static event EventHandler<EnergySaverStatusChanagedEventArgs> EnergySaverStatusChanagedInternal;
 
         public static EnergySaverStatus EnergySaverStatus => PlatformEnergySaverStatus;
 
-        public static event EnergySaverStatusChanagedEventHandler EnergySaverStatusChanaged
+        public static event EventHandler<EnergySaverStatusChanagedEventArgs> EnergySaverStatusChanaged
         {
             add
             {
@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
             => OnPowerChanged(new EnergySaverStatusChanagedEventArgs(saverStatus));
 
         static void OnPowerChanged(EnergySaverStatusChanagedEventArgs e)
-            => EnergySaverStatusChanagedInternal?.Invoke(e);
+            => EnergySaverStatusChanagedInternal?.Invoke(null, e);
     }
 
     public enum EnergySaverStatus
@@ -47,8 +47,6 @@ namespace Xamarin.Essentials
         On,
         Off
     }
-
-    public delegate void EnergySaverStatusChanagedEventHandler(EnergySaverStatusChanagedEventArgs e);
 
     public class EnergySaverStatusChanagedEventArgs : EventArgs
     {
