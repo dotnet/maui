@@ -42,7 +42,7 @@
 
 	<Target Name="_ValidateNETFrameworkVersion"
 			BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-			Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.7' ">
+			Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.7' AND '$(XFDisableFrameworkVersionValidation)' != 'True'">
 		<Error
 			Text="XF requires .NETFramework >= v4.7. You have '$(TargetFrameworkVersion)'"
 			Code="XF004"

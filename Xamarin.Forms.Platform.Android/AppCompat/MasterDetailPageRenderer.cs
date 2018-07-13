@@ -6,10 +6,12 @@ using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Support.V4.App;
 using AView = Android.Views.View;
+using Android.OS;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments
+	public class MasterDetailPageRenderer : DrawerLayout, IVisualElementRenderer, DrawerLayout.IDrawerListener, IManageFragments, ILifeCycleState
 	{
 		#region Statics
 
@@ -189,6 +191,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		AView IVisualElementRenderer.View => this;
 
+		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing && !_disposed)
@@ -367,8 +371,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateDetail()
 		{
-			Context.HideKeyboard(this);
-			_detailLayout.ChildView = Element.Detail;
+			if (_detailLayout.ChildView == null)
+				Update();
+			else
+				new Handler(Looper.MainLooper).Post(() => Update());
+
+			void Update()
+			{
+				Context.HideKeyboard(this);
+				_detailLayout.ChildView = Element.Detail;
+			}
 		}
 
 		void UpdateFlowDirection()
@@ -386,16 +398,26 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		void UpdateMaster()
 		{
-			Android.MasterDetailContainer masterContainer = _masterLayout;
-			if (masterContainer == null)
-				return;
 
-			if (masterContainer.ChildView != null)
-				masterContainer.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
+			if (_masterLayout.ChildView == null)
+				new Handler(Looper.MainLooper).Post(() => Update());
+			else
+				Update();
 
-			masterContainer.ChildView = Element.Master;
-			if (Element.Master != null)
-				Element.Master.PropertyChanged += HandleMasterPropertyChanged;
+			void Update()
+			{
+				Android.MasterDetailContainer masterContainer = _masterLayout;
+				if (masterContainer == null)
+					return;
+
+				if (masterContainer.ChildView != null)
+					masterContainer.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
+
+				masterContainer.ChildView = Element.Master;
+				if (Element.Master != null)
+					Element.Master.PropertyChanged += HandleMasterPropertyChanged;
+			}
+
 		}
 
 		void UpdateSplitViewLayout()
