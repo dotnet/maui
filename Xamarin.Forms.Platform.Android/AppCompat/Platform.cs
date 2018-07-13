@@ -18,6 +18,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool _disposed;
 		bool _navAnimationInProgress;
 		NavigationModel _navModel = new NavigationModel();
+		Page _pendingRootChange = null;
 
 		public Platform(Context context)
 		{
@@ -232,14 +233,41 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		internal void SetPage(Page newRoot)
 		{
+			if (Page != null)
+			{
+				foreach (var rootPage in _navModel.Roots)
+				{
+					if ((Android.Platform.GetRenderer(rootPage) is ILifeCycleState nr))
+						nr.MarkedForDispose = true;
+				}
+
+				_pendingRootChange = newRoot;
+				// Queue up disposal of the previous renderers after the current layout updates have finished
+				new Handler(Looper.MainLooper).Post(() =>
+				{
+					if (_pendingRootChange == newRoot)
+					{
+						_pendingRootChange = null;
+						SetPageInternal(newRoot);
+					}
+				});
+			}
+			else
+			{
+				SetPageInternal(newRoot);
+			}
+		}
+
+		void SetPageInternal(Page newRoot)
+		{
 			var layout = false;
-			List<IVisualElementRenderer> toDispose = null;
 
 			if (Page != null)
 			{
 				_renderer.RemoveAllViews();
 
-				toDispose = _navModel.Roots.Select(Android.Platform.GetRenderer).ToList();
+				foreach (IVisualElementRenderer rootRenderer in _navModel.Roots.Select(Android.Platform.GetRenderer))
+					rootRenderer.Dispose();
 
 				_navModel = new NavigationModel();
 
@@ -256,20 +284,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			AddChild(Page, layout);
 
 			Application.Current.NavigationProxy.Inner = this;
-
-			if (toDispose?.Count > 0)
-			{
-				// Queue up disposal of the previous renderers after the current layout updates have finished
-				new Handler(Looper.MainLooper).Post(() =>
-				{	
-					foreach (IVisualElementRenderer rootRenderer in toDispose)
-					{
-						rootRenderer.Dispose();
-					}
-				});
-			}
 		}
-
 		void AddChild(Page page, bool layout = false)
 		{
 			if (Android.Platform.GetRenderer(page) != null)

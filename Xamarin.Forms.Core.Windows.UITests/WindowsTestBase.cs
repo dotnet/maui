@@ -24,13 +24,12 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				DesiredCapabilities appCapabilities = new DesiredCapabilities();
 				appCapabilities.SetCapability("app", "0d4424f6-1e29-4476-ac00-ba22c3789cb6_ph1m9x8skttmg!App");
-				appCapabilities.SetCapability("deviceName", "WindowsPC");
 				Session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
 				Assert.IsNotNull(Session);
 				Session.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(1));
 				Reset();
 			}
-			
+
 			return new WinDriverApp(Session);
 		}
 

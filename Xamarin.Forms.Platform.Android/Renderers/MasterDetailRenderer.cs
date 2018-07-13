@@ -7,6 +7,7 @@ using Android.Support.V4.Widget;
 using Android.Views;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Drawables.ColorDrawable;
+using Android.OS;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -326,8 +327,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateDetail()
 		{
-			Context.HideKeyboard(this);
-			_detailLayout.ChildView = _page.Detail;
+			if (_detailLayout.ChildView == null)
+				Update();
+			else
+				// Queue up disposal of the previous renderers after the current layout updates have finished
+				new Handler(Looper.MainLooper).Post(() => Update());
+
+			void Update()
+			{
+				Context.HideKeyboard(this);
+				_detailLayout.ChildView = _page.Detail;
+			}
 		}
 
 		void UpdateIsPresented()
@@ -340,18 +350,27 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateMaster()
 		{
-			if (_masterLayout != null && _masterLayout.ChildView != null)
-				_masterLayout.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
-			_masterLayout.ChildView = _page.Master;
-			if (_page.Master != null)
-				_page.Master.PropertyChanged += HandleMasterPropertyChanged;
+			if (_masterLayout?.ChildView == null)
+				Update();
+			else
+				// Queue up disposal of the previous renderers after the current layout updates have finished
+				new Handler(Looper.MainLooper).Post(() => Update());
+
+			void Update()
+			{
+				if (_masterLayout != null && _masterLayout.ChildView != null)
+					_masterLayout.ChildView.PropertyChanged -= HandleMasterPropertyChanged;
+				_masterLayout.ChildView = _page.Master;
+				if (_page.Master != null)
+					_page.Master.PropertyChanged += HandleMasterPropertyChanged;
+			}
 		}
 
 		void UpdateSplitViewLayout()
 		{
 			if (Device.Idiom == TargetIdiom.Tablet)
 			{
-				bool isShowingSplit = MasterDetailPageController.ShouldShowSplitMode 
+				bool isShowingSplit = MasterDetailPageController.ShouldShowSplitMode
 					|| (MasterDetailPageController.ShouldShowSplitMode && _page.MasterBehavior != MasterBehavior.Default && _page.IsPresented);
 				SetLockMode(isShowingSplit ? LockModeLockedOpen : LockModeUnlocked);
 				unchecked
