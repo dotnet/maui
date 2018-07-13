@@ -27,7 +27,7 @@ using static Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener
+	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener, ILifeCycleState
 	{
 		readonly List<Fragment> _fragmentStack = new List<Fragment>();
 
@@ -52,6 +52,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		// The following is based on https://android.googlesource.com/platform/frameworks/support.git/+/4a7e12af4ec095c3a53bb8481d8d92f63157c3b7/v4/java/android/support/v4/app/FragmentManager.java#677
 		// Must be overriden in a custom renderer to match durations in XML animation resource files
 		protected virtual int TransitionDuration { get; set; } = 220;
+		bool ILifeCycleState.MarkedForDispose { get; set; } = false;
 
 		public NavigationPageRenderer(Context context) : base(context)
 		{
@@ -207,11 +208,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 					if (!fm.IsDestroyed)
 					{
-						FragmentTransaction trans = fm.BeginTransaction();
+						FragmentTransaction trans = fm.BeginTransactionEx();
 						foreach (Fragment fragment in _fragmentStack)
-							trans.Remove(fragment);
-						trans.CommitAllowingStateLoss();
-						fm.ExecutePendingTransactions();
+							trans.RemoveEx(fragment);
+						trans.CommitAllowingStateLossEx();
+						fm.ExecutePendingTransactionsEx();
 					}
 				}
 			}
@@ -228,10 +229,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			// If the Appearing handler changed the application's main page for some reason,
 			// this page may no longer be part of the hierarchy; if so, we need to skip
 			// updating the toolbar and pushing the pages to avoid crashing the app
-			if (!IsAttachedToRoot())
-			{
+			if (!Element.IsAttachedToRoot())
 				return;
-			}
 
 			RegisterToolbar();
 
@@ -297,7 +296,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				navController.InsertPageBeforeRequested += OnInsertPageBeforeRequested;
 				navController.RemovePageRequested += OnRemovePageRequested;
 
-				if (_isAttachedToWindow && IsAttachedToRoot())
+				if (_isAttachedToWindow && Element.IsAttachedToRoot())
 				{
 					PushCurrentPages();
 				}
@@ -388,9 +387,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		protected virtual void SetupPageTransition(FragmentTransaction transaction, bool isPush)
 		{
 			if (isPush)
-				transaction.SetTransition((int)FragmentTransit.FragmentOpen);
+				transaction.SetTransitionEx((int)FragmentTransit.FragmentOpen);
 			else
-				transaction.SetTransition((int)FragmentTransit.FragmentClose);
+				transaction.SetTransitionEx((int)FragmentTransit.FragmentClose);
 		}
 
 		internal int GetNavBarHeight()
@@ -628,9 +627,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 #endif
 
 			// Go ahead and take care of the fragment bookkeeping for the page being removed
-			FragmentTransaction transaction = FragmentManager.BeginTransaction();
-			transaction.Remove(fragment);
-			transaction.CommitAllowingStateLoss();
+			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
+			transaction.RemoveEx(fragment);
+			transaction.CommitAllowingStateLossEx();
 
 			// And remove the fragment from our own stack
 			_fragmentStack.Remove(fragment);
@@ -684,6 +683,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		Task<bool> SwitchContentAsync(Page page, bool animated, bool removed = false, bool popToRoot = false)
 		{
+			if (!Element.IsAttachedToRoot())
+				return Task.FromResult(false);
+
 			var tcs = new TaskCompletionSource<bool>();
 			Fragment fragment = GetFragment(page, removed, popToRoot);
 
@@ -696,7 +698,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			Current = page;
 
 			((Platform)Element.Platform).NavAnimationInProgress = true;
-			FragmentTransaction transaction = FragmentManager.BeginTransaction();
+			FragmentTransaction transaction = FragmentManager.BeginTransactionEx();
 
 			if (animated)
 				SetupPageTransition(transaction, !removed);
@@ -705,7 +707,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 			if (_fragmentStack.Count == 0)
 			{
-				transaction.Add(Id, fragment);
+				transaction.AddEx(Id, fragment);
 				_fragmentStack.Add(fragment);
 			}
 			else
@@ -718,32 +720,32 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					{
 						Fragment currentToRemove = _fragmentStack.Last();
 						_fragmentStack.RemoveAt(_fragmentStack.Count - 1);
-						transaction.Hide(currentToRemove);
+						transaction.HideEx(currentToRemove);
 						fragmentsToRemove.Add(currentToRemove);
 						popPage = popToRoot;
 					}
 
 					Fragment toShow = _fragmentStack.Last();
 					// Execute pending transactions so that we can be sure the fragment list is accurate.
-					FragmentManager.ExecutePendingTransactions();
+					FragmentManager.ExecutePendingTransactionsEx();
 					if (FragmentManager.Fragments.Contains(toShow))
-						transaction.Show(toShow);
+						transaction.ShowEx(toShow);
 					else
-						transaction.Add(Id, toShow);
+						transaction.AddEx(Id, toShow);
 				}
 				else
 				{
 					// push
 					Fragment currentToHide = _fragmentStack.Last();
-					transaction.Hide(currentToHide);
-					transaction.Add(Id, fragment);
+					transaction.HideEx(currentToHide);
+					transaction.AddEx(Id, fragment);
 					_fragmentStack.Add(fragment);
 				}
 			}
 
 			// We don't currently support fragment restoration, so we don't need to worry about
 			// whether the commit loses state
-			transaction.CommitAllowingStateLoss();
+			transaction.CommitAllowingStateLossEx();
 
 			// The fragment transitions don't really SUPPORT telling you when they end
 			// There are some hacks you can do, but they actually are worse than just doing this:
@@ -917,17 +919,17 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (shouldUpdateToolbar)
 					UpdateToolbar();
 
-				FragmentTransaction fragmentTransaction = fragmentManager.BeginTransaction();
+				FragmentTransaction fragmentTransaction = fragmentManager.BeginTransactionEx();
 
 				foreach (Fragment frag in fragmentsToRemove)
-					fragmentTransaction.Remove(frag);
+					fragmentTransaction.RemoveEx(frag);
 
-				fragmentTransaction.CommitAllowingStateLoss();
+				fragmentTransaction.CommitAllowingStateLossEx();
 
 				return false;
 			});
 		}
-		
+
 		void PushCurrentPages()
 		{
 			if (_didInitialPushPages)
@@ -940,18 +942,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				PushViewAsync(page, false);
 			}
 			_didInitialPushPages = true;
-		}
-
-		bool IsAttachedToRoot()
-		{
-			var root = (Page)Element;
-
-			while (!Application.IsApplicationOrNull(root.RealParent))
-			{
-				root = (Page)root.RealParent;
-			}
-
-			return root.RealParent != null;
 		}
 
 		class ClickListener : Object, IOnClickListener
