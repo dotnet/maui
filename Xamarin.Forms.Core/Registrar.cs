@@ -53,17 +53,17 @@ namespace Xamarin.Forms.Internals
 			return (TRegistrable)DependencyResolver.ResolveOrCreate(handlerType, args);
 		}
 
-		public TOut GetHandler<TOut>(Type type) where TOut : TRegistrable
+		public TOut GetHandler<TOut>(Type type) where TOut : class, TRegistrable
 		{
-			return (TOut)GetHandler(type);
+			return GetHandler(type) as TOut;
 		}
 
-		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : TRegistrable
+		public TOut GetHandler<TOut>(Type type, params object[] args) where TOut : class, TRegistrable
 		{
-			return (TOut)GetHandler(type, args);
+			return GetHandler(type, args) as TOut;
 		}
 
-		public TOut GetHandlerForObject<TOut>(object obj) where TOut : TRegistrable
+		public TOut GetHandlerForObject<TOut>(object obj) where TOut : class, TRegistrable
 		{
 			if (obj == null)
 				throw new ArgumentNullException(nameof(obj));
@@ -71,10 +71,10 @@ namespace Xamarin.Forms.Internals
 			var reflectableType = obj as IReflectableType;
 			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
 
-			return (TOut)GetHandler(type);
+			return GetHandler(type) as TOut;
 		}
 
-		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : TRegistrable
+		public TOut GetHandlerForObject<TOut>(object obj, params object[] args) where TOut : class, TRegistrable
 		{
 			if (obj == null)
 				throw new ArgumentNullException(nameof(obj));
@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Internals
 			var reflectableType = obj as IReflectableType;
 			var type = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : obj.GetType();
 
-			return (TOut)GetHandler(type, args);
+			return GetHandler(type, args) as TOut;
 		}
 
 		public Type GetHandlerType(Type viewType)

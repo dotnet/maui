@@ -3,11 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics;
+using Android.Widget;
+using Android.Net;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public sealed class FileImageSourceHandler : IImageSourceHandler
+	public sealed class FileImageSourceHandler : IImageSourceHandler, IImageViewHandler
 	{
 		// This is set to true when run under designer context
 		internal static bool DecodeSynchronously {
@@ -30,6 +32,29 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			return bitmap;
+		}
+
+		public Task LoadImageAsync(ImageSource imagesource, ImageView imageView, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			string file = ((FileImageSource)imagesource).File;
+			if (File.Exists(file))
+			{
+				var uri = Uri.Parse(file);
+				if (uri != null)
+					imageView.SetImageURI(uri);
+				else
+					Log.Warning(nameof(FileImageSourceHandler), "Could not find image or image file was invalid: {0}", imagesource);
+			}
+			else
+			{
+				var drawable = ResourceManager.GetDrawable(imageView.Context, file);
+				if (drawable != null)
+					imageView.SetImageDrawable(drawable);
+				else
+					Log.Warning(nameof(FileImageSourceHandler), "Could not find image or image file was invalid: {0}", imagesource);
+			}
+
+			return Task.FromResult(true);
 		}
 	}
 }
