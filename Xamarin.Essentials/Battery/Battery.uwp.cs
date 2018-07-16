@@ -67,7 +67,7 @@
                     case BatteryState.Full:
                     case BatteryState.Charging:
                     case BatteryState.NotPresent:
-                        return BatteryPowerSource.Ac;
+                        return BatteryPowerSource.AC;
                     case BatteryState.Unknown:
                         return BatteryPowerSource.Unknown;
                     default:

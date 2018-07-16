@@ -81,7 +81,7 @@ namespace Xamarin.Essentials
     {
         Unknown,
         Battery,
-        Ac,
+        AC,
         Usb,
         Wireless
     }
