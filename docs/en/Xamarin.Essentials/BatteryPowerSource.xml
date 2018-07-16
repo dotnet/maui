@@ -16,10 +16,10 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="Ac">
-      <MemberSignature Language="C#" Value="Ac" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource Ac = int32(2)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.Ac" />
+    <Member MemberName="AC">
+      <MemberSignature Language="C#" Value="AC" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BatteryPowerSource AC = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BatteryPowerSource.AC" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

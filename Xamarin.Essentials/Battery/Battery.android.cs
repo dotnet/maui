@@ -93,7 +93,7 @@ namespace Xamarin.Essentials
                         return BatteryPowerSource.Usb;
 
                     if (chargePlug == (int)BatteryPlugged.Ac)
-                        return BatteryPowerSource.Ac;
+                        return BatteryPowerSource.AC;
 
                     if (chargePlug == (int)BatteryPlugged.Wireless)
                         return BatteryPowerSource.Wireless;

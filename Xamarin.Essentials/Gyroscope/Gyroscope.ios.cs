@@ -9,7 +9,7 @@ namespace Xamarin.Essentials
         // https://stackoverflow.com/questions/10044158/android-sensors
         internal const double FastestInterval = .02;
         internal const double GameInterval = .04;
-        internal const double UiInterval = .08;
+        internal const double UIInterval = .08;
         internal const double NormalInterval = .225;
 
         internal static bool IsSupported =>
@@ -29,8 +29,8 @@ namespace Xamarin.Essentials
                 case SensorSpeed.Normal:
                     manager.GyroUpdateInterval = NormalInterval;
                     break;
-                case SensorSpeed.Ui:
-                    manager.GyroUpdateInterval = UiInterval;
+                case SensorSpeed.UI:
+                    manager.GyroUpdateInterval = UIInterval;
                     break;
             }
 

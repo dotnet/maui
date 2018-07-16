@@ -85,7 +85,7 @@ namespace Xamarin.Essentials
                     {
                         case UIDeviceBatteryState.Full:
                         case UIDeviceBatteryState.Charging:
-                            return BatteryPowerSource.Ac;
+                            return BatteryPowerSource.AC;
                         case UIDeviceBatteryState.Unplugged:
                             return BatteryPowerSource.Battery;
                         default:
