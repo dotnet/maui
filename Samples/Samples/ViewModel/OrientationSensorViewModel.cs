@@ -100,7 +100,7 @@ namespace Samples.ViewModel
         void OnStop()
         {
             IsActive = false;
-            Accelerometer.Stop();
+            OrientationSensor.Stop();
         }
 
         void OnReadingChanged(OrientationSensorChangedEventArgs e)

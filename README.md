@@ -13,6 +13,8 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 | Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials)](https://jenkins.mono-project.com/view/Components/job/Components-Essentials/)        |
 | VSTS         | Build        | Windows  | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                                   |
 | Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Essentials-DeviceTests-Mac) |
+| App Center   | Sample App   | Android  | [![Build status](https://build.appcenter.ms/v0.1/apps/7a1f46ca-ba2f-477e-aacc-ff013c7d5f7a/branches/master/badge)](https://appcenter.ms) |
+| App Center   | Sample App   | iOS      | [![Build status](https://build.appcenter.ms/v0.1/apps/43b39e9e-2b2b-482f-8afa-e9906334c85e/branches/master/badge)](https://appcenter.ms) |
 
 ## Installation
 Xamarin.Essentials is available via:
@@ -31,34 +33,35 @@ Xamarin.Essentials is focused on the following platforms:
  - Android (4.4+)
  - UWP (Fall Creators Update+)
 
-## Current APIs:
+## API Documentation:
 The following cross-platform APIs are available in Xamarin.Essentials:
- - [x] [Accelerometer](https://docs.microsoft.com/xamarin/essentials/accelerometer)
- - [X] [App Information](https://docs.microsoft.com/xamarin/essentials/app-information)
- - [x] [Battery](https://docs.microsoft.com/xamarin/essentials/battery)
- - [x] [Clipboard](https://docs.microsoft.com/xamarin/essentials/clipboard)
- - [x] [Compass](https://docs.microsoft.com/xamarin/essentials/compass)
- - [x] [Connectivity](https://docs.microsoft.com/xamarin/essentials/connectivity)
- - [x] [Data Transfer (Share)](https://docs.microsoft.com/xamarin/essentials/data-transfer)
- - [x] [Device Display Information](https://docs.microsoft.com/en-us/xamarin/essentials/device-display)
- - [x] [Device Information](https://docs.microsoft.com/xamarin/essentials/device-information)
- - [x] [Email](https://docs.microsoft.com/xamarin/essentials/email)
- - [x] [File System Helpers](https://docs.microsoft.com/xamarin/essentials/file-system-helpers)
- - [x] [Flashlight](https://docs.microsoft.com/xamarin/essentials/flashlight)
- - [x] [Geocoding](https://docs.microsoft.com/xamarin/essentials/geocoding)
- - [x] [Geolocation](https://docs.microsoft.com/xamarin/essentials/geolocation)
- - [x] [Gyroscope](https://docs.microsoft.com/xamarin/essentials/gyroscope)
- - [x] [Magnetometer](https://docs.microsoft.com/xamarin/essentials/magnetometer)
- - [x] [Open Browser](https://docs.microsoft.com/xamarin/essentials/open-browser)
- - [x] [Orientation Sensor](https://docs.microsoft.com/en-us/xamarin/essentials/orientation-sensor)
- - [x] [Phone Dialer](https://docs.microsoft.com/xamarin/essentials/phone-dialer)
- - [x] [Preferences](https://docs.microsoft.com/xamarin/essentials/preferences)
- - [x] [Screen Lock](https://docs.microsoft.com/xamarin/essentials/screen-lock)
- - [x] [Secure Storage](https://docs.microsoft.com/xamarin/essentials/secure-storage)
- - [x] [SMS](https://docs.microsoft.com/xamarin/essentials/sms)
- - [x] [Text-to-Speech](https://docs.microsoft.com/xamarin/essentials/text-to-speech)
- - [x] [Version Tracking](https://docs.microsoft.com/xamarin/essentials/version-tracking)
- - [x] [Vibrate](https://docs.microsoft.com/xamarin/essentials/vibrate)
+ - [Accelerometer](https://docs.microsoft.com/xamarin/essentials/accelerometer)
+ - [App Information](https://docs.microsoft.com/xamarin/essentials/app-information)
+ - [Battery](https://docs.microsoft.com/xamarin/essentials/battery)
+ - [Clipboard](https://docs.microsoft.com/xamarin/essentials/clipboard)
+ - [Compass](https://docs.microsoft.com/xamarin/essentials/compass)
+ - [Connectivity](https://docs.microsoft.com/xamarin/essentials/connectivity)
+ - [Data Transfer (Share)](https://docs.microsoft.com/xamarin/essentials/data-transfer)
+ - [Device Display Information](https://docs.microsoft.com/en-us/xamarin/essentials/device-display)
+ - [Device Information](https://docs.microsoft.com/xamarin/essentials/device-information)
+ - [Email](https://docs.microsoft.com/xamarin/essentials/email)
+ - [File System Helpers](https://docs.microsoft.com/xamarin/essentials/file-system-helpers)
+ - [Flashlight](https://docs.microsoft.com/xamarin/essentials/flashlight)
+ - [Geocoding](https://docs.microsoft.com/xamarin/essentials/geocoding)
+ - [Geolocation](https://docs.microsoft.com/xamarin/essentials/geolocation)
+ - [Gyroscope](https://docs.microsoft.com/xamarin/essentials/gyroscope)
+ - [Magnetometer](https://docs.microsoft.com/xamarin/essentials/magnetometer)
+ - [Open Browser](https://docs.microsoft.com/xamarin/essentials/open-browser)
+ - [Orientation Sensor](https://docs.microsoft.com/en-us/xamarin/essentials/orientation-sensor)
+ - [Power](https://docs.microsoft.com/en-us/xamarin/essentials/power)
+ - [Phone Dialer](https://docs.microsoft.com/xamarin/essentials/phone-dialer)
+ - [Preferences](https://docs.microsoft.com/xamarin/essentials/preferences)
+ - [Screen Lock](https://docs.microsoft.com/xamarin/essentials/screen-lock)
+ - [Secure Storage](https://docs.microsoft.com/xamarin/essentials/secure-storage)
+ - [SMS](https://docs.microsoft.com/xamarin/essentials/sms)
+ - [Text-to-Speech](https://docs.microsoft.com/xamarin/essentials/text-to-speech)
+ - [Version Tracking](https://docs.microsoft.com/xamarin/essentials/version-tracking)
+ - [Vibrate](https://docs.microsoft.com/xamarin/essentials/vibrate)
  
 ## Contributing
 Please read through our [Contribution Guide](CONTRIBUTING.md). We are not accepting new PRs for full features, however any issue that is marked as `up for grabs` are open for community contributions. We encourage creating new issues for bugs found during usage that the team will triage. Additionally, we are open for code refactoring suggestions in PRs.
