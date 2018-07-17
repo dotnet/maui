@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Configurations>Debug;Release;Samples</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
@@ -9,6 +10,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Samples'">
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
