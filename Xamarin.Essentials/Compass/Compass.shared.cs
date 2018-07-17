@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 namespace Xamarin.Essentials
 {
@@ -10,6 +9,8 @@ namespace Xamarin.Essentials
         public static event CompassChangedEventHandler ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
+
+        public static bool ApplyLowPassFilter { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {

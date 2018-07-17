@@ -67,6 +67,7 @@
       <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />
       <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
       <Member Id="M:Xamarin.Essentials.Compass.Stop" />
+      <Member Id="P:Xamarin.Essentials.Compass.ApplyLowPassFilter" />
       <Member Id="P:Xamarin.Essentials.Compass.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.CompassChangedEventArgs" Id="T:Xamarin.Essentials.CompassChangedEventArgs">
