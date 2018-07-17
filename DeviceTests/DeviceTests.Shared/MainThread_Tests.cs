@@ -4,14 +4,14 @@ using Xunit;
 
 namespace DeviceTests
 {
-    public class Platform_Tests
+    public class MainThread_Tests
     {
         [Fact]
         public Task IsOnMainThread()
         {
             return Utils.OnMainThread(() =>
             {
-                Assert.True(Platform.IsMainThread);
+                Assert.True(MainThread.IsMainThread);
             });
         }
 
@@ -20,7 +20,7 @@ namespace DeviceTests
         {
             return Task.Run(() =>
             {
-                Assert.False(Platform.IsMainThread);
+                Assert.False(MainThread.IsMainThread);
             });
         }
     }

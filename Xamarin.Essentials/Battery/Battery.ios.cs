@@ -25,7 +25,7 @@ namespace Xamarin.Essentials
         }
 
         static void BatteryChangedNotification(object sender, NSNotificationEventArgs args)
-            => Platform.BeginInvokeOnMainThread(OnBatteryChanged);
+            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
 
         static double PlatformChargeLevel
         {

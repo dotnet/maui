@@ -21,6 +21,9 @@
 
                 <Button Text="Load" Command="{Binding LoadCommand}" IsEnabled="{Binding IsNotBusy}" />
                 <Button Text="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}" />
+                <Button Text="Remove" Command="{Binding RemoveCommand}" IsEnabled="{Binding IsNotBusy}" />
+
+                <Button Text="Remove All" Command="{Binding RemoveAllCommand}" IsEnabled="{Binding IsNotBusy}" Margin="0,10,0,0" />
             </StackLayout>
         </ScrollView>
     </StackLayout>

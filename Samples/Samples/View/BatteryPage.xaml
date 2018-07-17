@@ -17,6 +17,7 @@
                 <Label Text="{Binding Level, StringFormat='Charge Level: {0:P1}'}" />
                 <Label Text="{Binding State, StringFormat='State: {0}'}" />
                 <Label Text="{Binding PowerSource, StringFormat='Power Source: {0}'}" />
+                <Label Text="{Binding EnergySaverStatus, StringFormat='Energy Saver: {0}'}" />
             </StackLayout>
         </ScrollView>
     </StackLayout>

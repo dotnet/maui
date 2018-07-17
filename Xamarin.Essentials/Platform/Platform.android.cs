@@ -14,7 +14,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Platform
     {
-        static Handler handler;
         static ActivityLifecycleContextListener lifecycleListener;
 
         internal static Context AppContext =>
@@ -29,8 +28,11 @@ namespace Xamarin.Essentials
             application.RegisterActivityLifecycleCallbacks(lifecycleListener);
         }
 
-        public static void Init(Activity activity, Bundle bundle) =>
-           Init(activity.Application);
+        public static void Init(Activity activity, Bundle bundle)
+        {
+            Init(activity.Application);
+            lifecycleListener.Activity = activity;
+        }
 
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -56,31 +58,6 @@ namespace Xamarin.Essentials
         internal static bool HasApiLevel(BuildVersionCodes versionCode) =>
             (int)Build.VERSION.SdkInt >= (int)versionCode;
 
-        static bool PlatformIsMainThread
-        {
-            get
-            {
-                if (HasApiLevel(BuildVersionCodes.M))
-                    return Looper.MainLooper.IsCurrentThread;
-
-                return Looper.MyLooper() == Looper.MainLooper;
-            }
-        }
-
-        static void PlatformBeginInvokeOnMainThread(Action action)
-        {
-            if (IsMainThread)
-            {
-                action();
-                return;
-            }
-
-            if (handler?.Looper != Looper.MainLooper)
-                handler = new Handler(Looper.MainLooper);
-
-            handler.Post(action);
-        }
-
         internal static CameraManager CameraManager =>
             AppContext.GetSystemService(Context.CameraService) as CameraManager;
 
@@ -101,6 +78,9 @@ namespace Xamarin.Essentials
 
         internal static LocationManager LocationManager =>
             AppContext.GetSystemService(Context.LocationService) as LocationManager;
+
+        internal static PowerManager PowerManager =>
+            AppContext.GetSystemService(Context.PowerService) as PowerManager;
     }
 
     class ActivityLifecycleContextListener : Java.Lang.Object, Application.IActivityLifecycleCallbacks
@@ -110,26 +90,24 @@ namespace Xamarin.Essentials
         internal Context Context =>
             Activity ?? Application.Context;
 
-        internal Activity Activity =>
-            currentActivity.TryGetTarget(out var a) ? a : null;
-
-        void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState)
+        internal Activity Activity
         {
+           get => currentActivity.TryGetTarget(out var a) ? a : null;
+           set => currentActivity.SetTarget(value);
         }
+
+        void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState) =>
+            Activity = activity;
 
         void Application.IActivityLifecycleCallbacks.OnActivityDestroyed(Activity activity)
         {
         }
 
-        void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity)
-        {
-            currentActivity.SetTarget(null);
-        }
+        void Application.IActivityLifecycleCallbacks.OnActivityPaused(Activity activity) =>
+            Activity = activity;
 
-        void Application.IActivityLifecycleCallbacks.OnActivityResumed(Activity activity)
-        {
-            currentActivity.SetTarget(activity);
-        }
+        void Application.IActivityLifecycleCallbacks.OnActivityResumed(Activity activity) =>
+            Activity = activity;
 
         void Application.IActivityLifecycleCallbacks.OnActivitySaveInstanceState(Activity activity, Bundle outState)
         {

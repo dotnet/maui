@@ -103,7 +103,7 @@ namespace Samples.ViewModel
             {
                 case SensorSpeed.Fastest:
                 case SensorSpeed.Game:
-                    Platform.BeginInvokeOnMainThread(() =>
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
                         X = data.Acceleration.X;
                         Y = data.Acceleration.Y;

@@ -2,12 +2,14 @@
 {
     public static partial class AppInfo
     {
-        static string GetPackageName() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetPackageName() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetName() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetName() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetVersionString() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetVersionString() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetBuild() => throw new NotImplementedInReferenceAssemblyException();
+        static string PlatformGetBuild() => throw new NotImplementedInReferenceAssemblyException();
+
+        static void PlatformOpenSettings() => throw new NotImplementedInReferenceAssemblyException();
     }
 }

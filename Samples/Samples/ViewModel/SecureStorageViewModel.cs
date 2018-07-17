@@ -14,6 +14,8 @@ namespace Samples.ViewModel
         {
             LoadCommand = new Command(OnLoad);
             SaveCommand = new Command(OnSave);
+            RemoveCommand = new Command(OnRemove);
+            RemoveAllCommand = new Command(OnRemoveAll);
         }
 
         public string Key
@@ -31,6 +33,10 @@ namespace Samples.ViewModel
         public ICommand LoadCommand { get; }
 
         public ICommand SaveCommand { get; }
+
+        public ICommand RemoveCommand { get; }
+
+        public ICommand RemoveAllCommand { get; }
 
         async void OnLoad()
         {
@@ -59,6 +65,40 @@ namespace Samples.ViewModel
             try
             {
                 await SecureStorage.SetAsync(Key, SecuredValue);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync(ex.Message);
+            }
+            IsBusy = false;
+        }
+
+        async void OnRemove()
+        {
+            if (IsBusy)
+                return;
+            IsBusy = true;
+
+            try
+            {
+                SecureStorage.Remove(Key);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync(ex.Message);
+            }
+            IsBusy = false;
+        }
+
+        async void OnRemoveAll()
+        {
+            if (IsBusy)
+                return;
+            IsBusy = true;
+
+            try
+            {
+                SecureStorage.RemoveAll();
             }
             catch (Exception ex)
             {

@@ -108,7 +108,7 @@ namespace Samples.ViewModel
             {
                 case SensorSpeed.Fastest:
                 case SensorSpeed.Game:
-                    Platform.BeginInvokeOnMainThread(() => { Compass1 = e.Reading.HeadingMagneticNorth; });
+                    MainThread.BeginInvokeOnMainThread(() => { Compass1 = e.Reading.HeadingMagneticNorth; });
                     break;
                 default:
                     Compass1 = e.Reading.HeadingMagneticNorth;
@@ -147,7 +147,7 @@ namespace Samples.ViewModel
             {
                 case SensorSpeed.Fastest:
                 case SensorSpeed.Game:
-                    Platform.BeginInvokeOnMainThread(() => { Compass2 = data.HeadingMagneticNorth; });
+                    MainThread.BeginInvokeOnMainThread(() => { Compass2 = data.HeadingMagneticNorth; });
                     break;
                 default:
                     Compass2 = data.HeadingMagneticNorth;

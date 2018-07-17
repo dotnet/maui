@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Represents information about the application.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="BuildString">
@@ -49,6 +51,26 @@
         <summary>Gets the application name.</summary>
         <value>The application name.</value>
         <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="OpenSettings">
+      <MemberSignature Language="C#" Value="public static void OpenSettings ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OpenSettings() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppInfo.OpenSettings" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Open the settings menu or page for the application.</summary>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="PackageName">

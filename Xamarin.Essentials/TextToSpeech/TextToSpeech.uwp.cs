@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -60,7 +61,7 @@ namespace Xamarin.Essentials
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Unable to playback stream: " + ex);
+                Debug.WriteLine("Unable to playback stream: " + ex);
                 tcsUtterance.TrySetException(ex);
             }
         }

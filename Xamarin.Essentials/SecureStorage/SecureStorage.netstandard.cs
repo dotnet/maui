@@ -9,5 +9,11 @@ namespace Xamarin.Essentials
 
         static Task PlatformSetAsync(string key, string data) =>
             throw new NotImplementedInReferenceAssemblyException();
+
+        static bool PlatformRemove(string key) =>
+            throw new NotImplementedInReferenceAssemblyException();
+
+        static void PlatformRemoveAll() =>
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }

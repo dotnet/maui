@@ -1,20 +1,21 @@
 ﻿using System.Globalization;
+using Android.Content;
 using Android.Content.PM;
 
 namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
-        static string GetPackageName() => Platform.AppContext.PackageName;
+        static string PlatformGetPackageName() => Platform.AppContext.PackageName;
 
-        static string GetName()
+        static string PlatformGetName()
         {
             var applicationInfo = Platform.AppContext.ApplicationInfo;
             var packageManager = Platform.AppContext.PackageManager;
             return applicationInfo.LoadLabel(packageManager);
         }
 
-        static string GetVersionString()
+        static string PlatformGetVersionString()
         {
             var pm = Platform.AppContext.PackageManager;
             var packageName = Platform.AppContext.PackageName;
@@ -24,7 +25,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static string GetBuild()
+        static string PlatformGetBuild()
         {
             var pm = Platform.AppContext.PackageManager;
             var packageName = Platform.AppContext.PackageName;
@@ -32,6 +33,22 @@ namespace Xamarin.Essentials
             {
                 return info.VersionCode.ToString(CultureInfo.InvariantCulture);
             }
+        }
+
+        static void PlatformOpenSettings()
+        {
+            var context = Platform.CurrentActivity ?? Platform.AppContext;
+            if (context == null)
+                return;
+
+            var settingsIntent = new Intent();
+            settingsIntent.SetAction(global::Android.Provider.Settings.ActionApplicationDetailsSettings);
+            settingsIntent.AddCategory(Intent.CategoryDefault);
+            settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PlatformGetPackageName()));
+            settingsIntent.AddFlags(ActivityFlags.NewTask);
+            settingsIntent.AddFlags(ActivityFlags.NoHistory);
+            settingsIntent.AddFlags(ActivityFlags.ExcludeFromRecents);
+            context.StartActivity(settingsIntent);
         }
     }
 }
