@@ -88,7 +88,7 @@
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
-      <Type Name="EnergySaverStatusChanagedEventArgs" Kind="Class" />
+      <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
@@ -119,7 +119,7 @@
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ScreenLock" Kind="Class" />
       <Type Name="ScreenMetrics" Kind="Structure" />
-      <Type Name="ScreenMetricsChanagedEventArgs" Kind="Class" />
+      <Type Name="ScreenMetricsChangedEventArgs" Kind="Class" />
       <Type Name="ScreenOrientation" Kind="Enumeration" />
       <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />

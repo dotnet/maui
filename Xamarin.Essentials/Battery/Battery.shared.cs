@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Battery
     {
-        static event EventHandler<BatteryChangedEventArgs> BatteryChanagedInternal;
+        static event EventHandler<BatteryChangedEventArgs> BatteryChangedInternal;
 
         // a cache so that events aren't fired unnecessarily
         // this is mainly an issue on Android, but we can stiil do this everywhere
@@ -22,11 +22,11 @@ namespace Xamarin.Essentials
         {
             add
             {
-                var wasRunning = BatteryChanagedInternal != null;
+                var wasRunning = BatteryChangedInternal != null;
 
-                BatteryChanagedInternal += value;
+                BatteryChangedInternal += value;
 
-                if (!wasRunning && BatteryChanagedInternal != null)
+                if (!wasRunning && BatteryChangedInternal != null)
                 {
                     SetCurrent();
                     StartBatteryListeners();
@@ -35,11 +35,11 @@ namespace Xamarin.Essentials
 
             remove
             {
-                var wasRunning = BatteryChanagedInternal != null;
+                var wasRunning = BatteryChangedInternal != null;
 
-                BatteryChanagedInternal -= value;
+                BatteryChangedInternal -= value;
 
-                if (wasRunning && BatteryChanagedInternal == null)
+                if (wasRunning && BatteryChangedInternal == null)
                     StopBatteryListeners();
             }
         }
@@ -62,7 +62,7 @@ namespace Xamarin.Essentials
             if (currentLevel != e.ChargeLevel || currentSource != e.PowerSource || currentState != e.State)
             {
                 SetCurrent();
-                BatteryChanagedInternal?.Invoke(null, e);
+                BatteryChangedInternal?.Invoke(null, e);
             }
         }
     }

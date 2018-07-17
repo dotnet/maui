@@ -4,43 +4,43 @@ namespace Xamarin.Essentials
 {
     public static partial class DeviceDisplay
     {
-        static event EventHandler<ScreenMetricsChanagedEventArgs> ScreenMetricsChanagedInternal;
+        static event EventHandler<ScreenMetricsChangedEventArgs> ScreenMetricsChangedInternal;
 
         public static ScreenMetrics ScreenMetrics => GetScreenMetrics();
 
-        public static event EventHandler<ScreenMetricsChanagedEventArgs> ScreenMetricsChanaged
+        public static event EventHandler<ScreenMetricsChangedEventArgs> ScreenMetricsChanged
         {
             add
             {
-                var wasRunning = ScreenMetricsChanagedInternal != null;
+                var wasRunning = ScreenMetricsChangedInternal != null;
 
-                ScreenMetricsChanagedInternal += value;
+                ScreenMetricsChangedInternal += value;
 
-                if (!wasRunning && ScreenMetricsChanagedInternal != null)
+                if (!wasRunning && ScreenMetricsChangedInternal != null)
                     StartScreenMetricsListeners();
             }
 
             remove
             {
-                var wasRunning = ScreenMetricsChanagedInternal != null;
+                var wasRunning = ScreenMetricsChangedInternal != null;
 
-                ScreenMetricsChanagedInternal -= value;
+                ScreenMetricsChangedInternal -= value;
 
-                if (wasRunning && ScreenMetricsChanagedInternal == null)
+                if (wasRunning && ScreenMetricsChangedInternal == null)
                     StopScreenMetricsListeners();
             }
         }
 
-        static void OnScreenMetricsChanaged(ScreenMetrics metrics)
-            => OnScreenMetricsChanaged(new ScreenMetricsChanagedEventArgs(metrics));
+        static void OnScreenMetricsChanged(ScreenMetrics metrics)
+            => OnScreenMetricsChanged(new ScreenMetricsChangedEventArgs(metrics));
 
-        static void OnScreenMetricsChanaged(ScreenMetricsChanagedEventArgs e)
-            => ScreenMetricsChanagedInternal?.Invoke(null, e);
+        static void OnScreenMetricsChanged(ScreenMetricsChangedEventArgs e)
+            => ScreenMetricsChangedInternal?.Invoke(null, e);
     }
 
-    public class ScreenMetricsChanagedEventArgs : EventArgs
+    public class ScreenMetricsChangedEventArgs : EventArgs
     {
-        public ScreenMetricsChanagedEventArgs(ScreenMetrics metrics)
+        public ScreenMetricsChangedEventArgs(ScreenMetrics metrics)
         {
             Metrics = metrics;
         }

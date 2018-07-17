@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
-        static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanagedInternal;
+        static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
         // a cache so that events aren't fired unnecessarily
         // this is mainly an issue on Android, but we can stiil do this everywhere
@@ -21,11 +21,11 @@ namespace Xamarin.Essentials
         {
             add
             {
-                var wasRunning = ConnectivityChanagedInternal != null;
+                var wasRunning = ConnectivityChangedInternal != null;
 
-                ConnectivityChanagedInternal += value;
+                ConnectivityChangedInternal += value;
 
-                if (!wasRunning && ConnectivityChanagedInternal != null)
+                if (!wasRunning && ConnectivityChangedInternal != null)
                 {
                     SetCurrent();
                     StartListeners();
@@ -34,11 +34,11 @@ namespace Xamarin.Essentials
 
             remove
             {
-                var wasRunning = ConnectivityChanagedInternal != null;
+                var wasRunning = ConnectivityChangedInternal != null;
 
-                ConnectivityChanagedInternal -= value;
+                ConnectivityChangedInternal -= value;
 
-                if (wasRunning && ConnectivityChanagedInternal == null)
+                if (wasRunning && ConnectivityChangedInternal == null)
                     StopListeners();
             }
         }
@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
             if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.Profiles))
             {
                 SetCurrent();
-                MainThread.BeginInvokeOnMainThread(() => ConnectivityChanagedInternal?.Invoke(null, e));
+                MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
             }
         }
     }

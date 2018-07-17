@@ -97,7 +97,7 @@
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
-      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanaged" />
+      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
       <Member Id="P:Xamarin.Essentials.DeviceDisplay.ScreenMetrics" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceInfo" Id="T:Xamarin.Essentials.DeviceInfo">
@@ -155,8 +155,8 @@
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.On" />
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
     </Type>
-    <Type Name="Xamarin.Essentials.EnergySaverStatusChanagedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs">
-      <Member Id="P:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs.EnergySaverStatus" />
+    <Type Name="Xamarin.Essentials.EnergySaverStatusChangedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.FeatureNotSupportedException" Id="T:Xamarin.Essentials.FeatureNotSupportedException">
       <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor" />
@@ -295,7 +295,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
-      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
+      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
@@ -346,9 +346,9 @@
       <Member Id="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
       <Member Id="P:Xamarin.Essentials.ScreenMetrics.Width" />
     </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetricsChanagedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChanagedEventArgs">
-      <Member Id="M:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.Metrics" />
+    <Type Name="Xamarin.Essentials.ScreenMetricsChangedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.ScreenMetricsChangedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetricsChangedEventArgs.Metrics" />
     </Type>
     <Type Name="Xamarin.Essentials.ScreenOrientation" Id="T:Xamarin.Essentials.ScreenOrientation">
       <Member Id="F:Xamarin.Essentials.ScreenOrientation.Landscape" />
