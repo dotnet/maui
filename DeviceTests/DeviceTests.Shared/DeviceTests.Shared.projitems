@@ -24,7 +24,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geolocation_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MainThread_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Permissions_Tests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Platform_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PhoneDialer_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ScreenLock_Tests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Preferences_Tests.cs" />

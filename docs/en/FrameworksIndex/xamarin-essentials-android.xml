@@ -304,7 +304,6 @@
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
-      <Member Id="P:Xamarin.Essentials.Platform.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
       <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
