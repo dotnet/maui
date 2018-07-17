@@ -4,14 +4,16 @@ namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
-        public static string PackageName => GetPackageName();
+        public static string PackageName => PlatformGetPackageName();
 
-        public static string Name => GetName();
+        public static string Name => PlatformGetName();
 
-        public static string VersionString => GetVersionString();
+        public static string VersionString => PlatformGetVersionString();
 
         public static Version Version => Utils.ParseVersion(VersionString);
 
-        public static string BuildString => GetBuild();
+        public static string BuildString => PlatformGetBuild();
+
+        public static void OpenSettings() => PlatformOpenSettings();
     }
 }

@@ -71,30 +71,44 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="GetAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;string&gt; GetAsync (string key, Security.SecAccessible accessible);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;string&gt; GetAsync(string key, valuetype Security.SecAccessible accessible) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String,Security.SecAccessible)" />
+    <Member MemberName="Remove">
+      <MemberSignature Language="C#" Value="public static bool Remove (string key);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig bool Remove(string key) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Threading.Tasks.Task&lt;System.String&gt;</ReturnType>
+        <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="key" Type="System.String" />
-        <Parameter Name="accessible" Type="Security.SecAccessible" />
       </Parameters>
       <Docs>
-        <param name="key">Storage Key.</param>
-        <param name="accessible">SecAccessible for iOS to use</param>
-        <summary>Gets the decrypted value for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>iOS: Default SecAccessible to use for all Get/Set calls to KeyChain. Default value is AfterFirstUnlock.</remarks>
+        <param name="key">The key to remove.</param>
+        <summary>Removes the encrypted key/value pair for the given key.</summary>
+        <returns>Returns true if the key value pair was removed.</returns>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="RemoveAll">
+      <MemberSignature Language="C#" Value="public static void RemoveAll ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void RemoveAll() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SecureStorage.RemoveAll" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Removes all of the stored encrypted key/value pairs.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -145,7 +159,7 @@
       <Docs>
         <param name="key">Storage Key.</param>
         <param name="value">The value to be encrypted.</param>
-        <param name="accessible">To be added.</param>
+        <param name="accessible">The KeyChain accessibility to create the encrypted record with.</param>
         <summary>Stores the value which is encrypted, for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
         <returns>
           <para></para>

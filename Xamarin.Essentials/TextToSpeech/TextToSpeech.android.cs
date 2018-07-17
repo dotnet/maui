@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Android.OS;
 using Android.Speech.Tts;
 using AndroidTextToSpeech = Android.Speech.Tts.TextToSpeech;
+using Debug = System.Diagnostics.Debug;
 using JavaLocale = Java.Util.Locale;
 
 namespace Xamarin.Essentials
@@ -191,7 +192,7 @@ namespace Xamarin.Essentials
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Something went horribly wrong, defaulting to old implementation to get languages: " + ex);
+                    Debug.WriteLine("Unable to query language on new API, attempting older api: " + ex);
                 }
             }
 
@@ -214,7 +215,7 @@ namespace Xamarin.Essentials
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error checking language; " + l + " " + ex);
+                Debug.WriteLine("Error checking language; " + l + " " + ex);
             }
             return false;
         }

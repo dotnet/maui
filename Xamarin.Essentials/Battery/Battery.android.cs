@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.OS;
+using Debug = System.Diagnostics.Debug;
 
 namespace Xamarin.Essentials
 {
@@ -24,7 +25,7 @@ namespace Xamarin.Essentials
             }
             catch (Java.Lang.IllegalArgumentException)
             {
-                Console.WriteLine("Battery receiver already unregistered. Disposing of it.");
+                Debug.WriteLine("Battery receiver already unregistered. Disposing of it.");
             }
             batteryReceiver.Dispose();
             batteryReceiver = null;

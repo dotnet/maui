@@ -13,6 +13,7 @@ namespace Xamarin.Essentials
             {
                 Latitude = placemark.Location.Coordinate.Latitude,
                 Longitude = placemark.Location.Coordinate.Longitude,
+                Altitude = placemark.Location.Altitude,
                 TimestampUtc = DateTimeOffset.UtcNow
             };
 
@@ -24,6 +25,7 @@ namespace Xamarin.Essentials
             {
                 Latitude = location.Coordinate.Latitude,
                 Longitude = location.Coordinate.Longitude,
+                Altitude = location.Altitude,
                 Accuracy = location.HorizontalAccuracy,
                 TimestampUtc = location.Timestamp.ToDateTime()
             };

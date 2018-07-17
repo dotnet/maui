@@ -41,6 +41,26 @@ namespace Xamarin.Essentials
             settings.Values[key] = encBytes;
         }
 
+        static bool PlatformRemove(string key)
+        {
+            var settings = GetSettings(Alias);
+
+            if (settings.Values.ContainsKey(key))
+            {
+                settings.Values.Remove(key);
+                return true;
+            }
+
+            return false;
+        }
+
+        static void PlatformRemoveAll()
+        {
+            var settings = GetSettings(Alias);
+
+            settings.Values.Clear();
+        }
+
         static ApplicationDataContainer GetSettings(string name)
         {
             var localSettings = ApplicationData.Current.LocalSettings;

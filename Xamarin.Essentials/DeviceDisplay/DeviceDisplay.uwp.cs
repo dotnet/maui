@@ -1,7 +1,4 @@
 ﻿using Windows.Graphics.Display;
-using Windows.Security.ExchangeActiveSyncProvisioning;
-using Windows.System.Profile;
-using Windows.UI.ViewManagement;
 
 namespace Xamarin.Essentials
 {
@@ -31,7 +28,7 @@ namespace Xamarin.Essentials
 
         static void StartScreenMetricsListeners()
         {
-            Xamarin.Essentials.Platform.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
                 var di = DisplayInformation.GetForCurrentView();
 
@@ -42,7 +39,7 @@ namespace Xamarin.Essentials
 
         static void StopScreenMetricsListeners()
         {
-            Xamarin.Essentials.Platform.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
                 var di = DisplayInformation.GetForCurrentView();
 

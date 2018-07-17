@@ -64,7 +64,7 @@ namespace Xamarin.Essentials
                 return;
 
             if (useSyncContext)
-                Platform.BeginInvokeOnMainThread(() => handler?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(e));
             else
                 handler?.Invoke(e);
         }

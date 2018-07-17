@@ -25,5 +25,11 @@ namespace Xamarin.Essentials
 
             return PlatformSetAsync(key, value);
         }
+
+        public static bool Remove(string key)
+            => PlatformRemove(key);
+
+        public static void RemoveAll()
+            => PlatformRemoveAll();
     }
 }

@@ -1,0 +1,62 @@
+<Type Name="MainThread" FullName="Xamarin.Essentials.MainThread">
+  <TypeSignature Language="C#" Value="public static class MainThread" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit MainThread extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.MainThread" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Main Thread helpers.</summary>
+    <remarks>Main Thread helpers.</remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="BeginInvokeOnMainThread">
+      <MemberSignature Language="C#" Value="public static void BeginInvokeOnMainThread (Action action);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void BeginInvokeOnMainThread(class System.Action action) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="action" Type="System.Action" />
+      </Parameters>
+      <Docs>
+        <param name="action">Action to execute.</param>
+        <summary>Invokes an action on the main thread of the application.</summary>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="IsMainThread">
+      <MemberSignature Language="C#" Value="public static bool IsMainThread { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool IsMainThread" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.MainThread.IsMainThread" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets if it is the current main UI thread.</summary>
+        <value>If main thread.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

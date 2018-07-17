@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Runtime;
 
 using AndroidLocation = Android.Locations.Location;
+using LocationPower = Android.Locations.Power;
 
 namespace Xamarin.Essentials
 {
@@ -117,31 +118,31 @@ namespace Xamarin.Essentials
                 case GeolocationAccuracy.Lowest:
                     criteria.Accuracy = Accuracy.NoRequirement;
                     criteria.HorizontalAccuracy = Accuracy.NoRequirement;
-                    criteria.PowerRequirement = Power.NoRequirement;
+                    criteria.PowerRequirement = LocationPower.NoRequirement;
                     accuracyDistance = 500;
                     break;
                 case GeolocationAccuracy.Low:
                     criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Low;
-                    criteria.PowerRequirement = Power.Low;
+                    criteria.PowerRequirement = LocationPower.Low;
                     accuracyDistance = 500;
                     break;
                 case GeolocationAccuracy.Medium:
                     criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Medium;
-                    criteria.PowerRequirement = Power.Medium;
+                    criteria.PowerRequirement = LocationPower.Medium;
                     accuracyDistance = 250;
                     break;
                 case GeolocationAccuracy.High:
                     criteria.Accuracy = Accuracy.Fine;
                     criteria.HorizontalAccuracy = Accuracy.High;
-                    criteria.PowerRequirement = Power.High;
+                    criteria.PowerRequirement = LocationPower.High;
                     accuracyDistance = 100;
                     break;
                 case GeolocationAccuracy.Best:
                     criteria.Accuracy = Accuracy.Fine;
                     criteria.HorizontalAccuracy = Accuracy.High;
-                    criteria.PowerRequirement = Power.High;
+                    criteria.PowerRequirement = LocationPower.High;
                     accuracyDistance = 50;
                     break;
             }
