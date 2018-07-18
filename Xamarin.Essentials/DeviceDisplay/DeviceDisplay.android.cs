@@ -29,7 +29,7 @@ namespace Xamarin.Essentials
 
         static void StartScreenMetricsListeners()
         {
-            orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanaged);
+            orientationListener = new Listener(Platform.AppContext, OnScreenMetricsChanged);
             orientationListener.Enable();
         }
 
@@ -40,10 +40,10 @@ namespace Xamarin.Essentials
             orientationListener = null;
         }
 
-        static void OnScreenMetricsChanaged()
+        static void OnScreenMetricsChanged()
         {
             var metrics = GetScreenMetrics();
-            OnScreenMetricsChanaged(metrics);
+            OnScreenMetricsChanged(metrics);
         }
 
         static ScreenRotation CalculateRotation()

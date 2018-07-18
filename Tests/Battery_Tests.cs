@@ -21,7 +21,7 @@ namespace Tests
         public void Battery_Changed_Event_On_NetStandard() =>
             Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.BatteryChanged += Battery_BatteryChanged);
 
-        void Battery_BatteryChanged(BatteryChangedEventArgs e)
+        void Battery_BatteryChanged(object sender, BatteryChangedEventArgs e)
         {
         }
     }

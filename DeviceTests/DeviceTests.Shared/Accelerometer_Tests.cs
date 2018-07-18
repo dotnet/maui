@@ -27,7 +27,7 @@ namespace DeviceTests
             Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
             Accelerometer.Start(sensorSpeed);
 
-            void Accelerometer_ReadingChanged(AccelerometerChangedEventArgs e)
+            void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -51,7 +51,7 @@ namespace DeviceTests
             Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
             Accelerometer.Start(sensorSpeed);
 
-            void Accelerometer_ReadingChanged(AccelerometerChangedEventArgs e)
+            void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }
@@ -76,7 +76,7 @@ namespace DeviceTests
             Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
             Accelerometer.Start(sensorSpeed);
 
-            void Accelerometer_ReadingChanged(AccelerometerChangedEventArgs e)
+            void Accelerometer_ReadingChanged(object sender, AccelerometerChangedEventArgs e)
             {
                 tcs.TrySetResult(e.Reading);
             }

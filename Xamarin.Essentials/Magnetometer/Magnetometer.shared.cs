@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
     {
         static bool useSyncContext;
 
-        public static event MagnetometerChangedEventHandler ReadingChanged;
+        public static event EventHandler<MagnetometerChangedEventArgs> ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
 
@@ -64,13 +64,11 @@ namespace Xamarin.Essentials
                 return;
 
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
             else
-                handler?.Invoke(e);
+                handler?.Invoke(null, e);
         }
     }
-
-    public delegate void MagnetometerChangedEventHandler(MagnetometerChangedEventArgs e);
 
     public class MagnetometerChangedEventArgs : EventArgs
     {

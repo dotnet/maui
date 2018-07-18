@@ -77,7 +77,7 @@ namespace Samples.ViewModel
             base.OnDisappearing();
         }
 
-        void OnReadingChanged(GyroscopeChangedEventArgs e)
+        void OnReadingChanged(object sender, GyroscopeChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed)

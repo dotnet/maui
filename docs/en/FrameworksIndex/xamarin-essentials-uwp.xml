@@ -9,7 +9,6 @@
     <Type Name="Xamarin.Essentials.AccelerometerChangedEventArgs" Id="T:Xamarin.Essentials.AccelerometerChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.AccelerometerChangedEventArgs.Reading" />
     </Type>
-    <Type Name="Xamarin.Essentials.AccelerometerChangedEventHandler" Id="T:Xamarin.Essentials.AccelerometerChangedEventHandler" />
     <Type Name="Xamarin.Essentials.AccelerometerData" Id="T:Xamarin.Essentials.AccelerometerData">
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
@@ -32,7 +31,6 @@
       <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.PowerSource" />
       <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.State" />
     </Type>
-    <Type Name="Xamarin.Essentials.BatteryChangedEventHandler" Id="T:Xamarin.Essentials.BatteryChangedEventHandler" />
     <Type Name="Xamarin.Essentials.BatteryPowerSource" Id="T:Xamarin.Essentials.BatteryPowerSource">
       <Member Id="F:Xamarin.Essentials.BatteryPowerSource.AC" />
       <Member Id="F:Xamarin.Essentials.BatteryPowerSource.Battery" />
@@ -73,7 +71,6 @@
     <Type Name="Xamarin.Essentials.CompassChangedEventArgs" Id="T:Xamarin.Essentials.CompassChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.CompassChangedEventArgs.Reading" />
     </Type>
-    <Type Name="Xamarin.Essentials.CompassChangedEventHandler" Id="T:Xamarin.Essentials.CompassChangedEventHandler" />
     <Type Name="Xamarin.Essentials.CompassData" Id="T:Xamarin.Essentials.CompassData">
       <Member Id="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
     </Type>
@@ -94,14 +91,13 @@
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
     </Type>
-    <Type Name="Xamarin.Essentials.ConnectivityChangedEventHandler" Id="T:Xamarin.Essentials.ConnectivityChangedEventHandler" />
     <Type Name="Xamarin.Essentials.DataTransfer" Id="T:Xamarin.Essentials.DataTransfer">
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
-      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanaged" />
+      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
       <Member Id="P:Xamarin.Essentials.DeviceDisplay.ScreenMetrics" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceInfo" Id="T:Xamarin.Essentials.DeviceInfo">
@@ -159,10 +155,9 @@
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.On" />
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
     </Type>
-    <Type Name="Xamarin.Essentials.EnergySaverStatusChanagedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs">
-      <Member Id="P:Xamarin.Essentials.EnergySaverStatusChanagedEventArgs.EnergySaverStatus" />
+    <Type Name="Xamarin.Essentials.EnergySaverStatusChangedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
     </Type>
-    <Type Name="Xamarin.Essentials.EnergySaverStatusChanagedEventHandler" Id="T:Xamarin.Essentials.EnergySaverStatusChanagedEventHandler" />
     <Type Name="Xamarin.Essentials.FeatureNotSupportedException" Id="T:Xamarin.Essentials.FeatureNotSupportedException">
       <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor" />
       <Member Id="M:Xamarin.Essentials.FeatureNotSupportedException.#ctor(System.String)" />
@@ -212,7 +207,6 @@
     <Type Name="Xamarin.Essentials.GyroscopeChangedEventArgs" Id="T:Xamarin.Essentials.GyroscopeChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.GyroscopeChangedEventArgs.Reading" />
     </Type>
-    <Type Name="Xamarin.Essentials.GyroscopeChangedEventHandler" Id="T:Xamarin.Essentials.GyroscopeChangedEventHandler" />
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
@@ -249,7 +243,6 @@
     <Type Name="Xamarin.Essentials.MagnetometerChangedEventArgs" Id="T:Xamarin.Essentials.MagnetometerChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.MagnetometerChangedEventArgs.Reading" />
     </Type>
-    <Type Name="Xamarin.Essentials.MagnetometerChangedEventHandler" Id="T:Xamarin.Essentials.MagnetometerChangedEventHandler" />
     <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
@@ -276,7 +269,6 @@
     <Type Name="Xamarin.Essentials.OrientationSensorChangedEventArgs" Id="T:Xamarin.Essentials.OrientationSensorChangedEventArgs">
       <Member Id="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
     </Type>
-    <Type Name="Xamarin.Essentials.OrientationSensorChangedEventHandler" Id="T:Xamarin.Essentials.OrientationSensorChangedEventHandler" />
     <Type Name="Xamarin.Essentials.OrientationSensorData" Id="T:Xamarin.Essentials.OrientationSensorData">
       <Member Id="P:Xamarin.Essentials.OrientationSensorData.Orientation" />
     </Type>
@@ -303,7 +295,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
-      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
+      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
@@ -354,11 +346,10 @@
       <Member Id="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
       <Member Id="P:Xamarin.Essentials.ScreenMetrics.Width" />
     </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetricsChanagedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChanagedEventArgs">
-      <Member Id="M:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetricsChanagedEventArgs.Metrics" />
+    <Type Name="Xamarin.Essentials.ScreenMetricsChangedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.ScreenMetricsChangedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
+      <Member Id="P:Xamarin.Essentials.ScreenMetricsChangedEventArgs.Metrics" />
     </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetricsChanagedEventHandler" Id="T:Xamarin.Essentials.ScreenMetricsChanagedEventHandler" />
     <Type Name="Xamarin.Essentials.ScreenOrientation" Id="T:Xamarin.Essentials.ScreenOrientation">
       <Member Id="F:Xamarin.Essentials.ScreenOrientation.Landscape" />
       <Member Id="F:Xamarin.Essentials.ScreenOrientation.Portrait" />

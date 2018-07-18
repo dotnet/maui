@@ -113,7 +113,7 @@ namespace Samples.ViewModel
             }
         }
 
-        void OnCompass1ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass1ReadingChanged(object sender, CompassChangedEventArgs e)
         {
             switch ((SensorSpeed)Speed1)
             {
@@ -151,7 +151,7 @@ namespace Samples.ViewModel
             }
         }
 
-        void OnCompass2ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass2ReadingChanged(object sender, CompassChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed2)

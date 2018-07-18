@@ -7,7 +7,7 @@ namespace Xamarin.Essentials
     {
         static bool useSyncContext;
 
-        public static event OrientationSensorChangedEventHandler ReadingChanged;
+        public static event EventHandler<OrientationSensorChangedEventArgs> ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
 
@@ -64,13 +64,11 @@ namespace Xamarin.Essentials
                 return;
 
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
             else
-                handler?.Invoke(e);
+                handler?.Invoke(null, e);
         }
     }
-
-    public delegate void OrientationSensorChangedEventHandler(OrientationSensorChangedEventArgs e);
 
     public class OrientationSensorChangedEventArgs : EventArgs
     {
