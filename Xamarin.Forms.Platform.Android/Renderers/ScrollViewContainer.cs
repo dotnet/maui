@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android
@@ -50,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnChildLayoutChanged(object sender, EventArgs e)
 		{
-			if (IsInLayout)
+			if ((int)Build.VERSION.SdkInt >= 18 && IsInLayout)
 			{
 				return;
 			}
