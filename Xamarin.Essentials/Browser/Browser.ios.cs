@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
 
-            var nativeUrl = new NSUrl(uri.OriginalString);
+            var nativeUrl = new NSUrl(uri.AbsoluteUri);
 
             switch (launchType)
             {
