@@ -25,6 +25,9 @@ namespace Xamarin.Forms.Platform.UWP
 				run.ApplyFont(span.Font);
 #pragma warning restore 618
 
+			if (span.IsSet(Span.TextDecorationsProperty))
+				run.TextDecorations = (Windows.UI.Text.TextDecorations)span.TextDecorations;
+
 			return run;
 		}
 	}
@@ -132,6 +135,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_isInitiallyDefault = Element.IsDefault();
 
 				UpdateText(Control);
+				UpdateTextDecorations(Control);
 				UpdateColor(Control);
 				UpdateAlign(Control);
 				UpdateFont(Control);
@@ -150,6 +154,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateAlign(Control);
 			else if (e.PropertyName == Label.FontProperty.PropertyName)
 				UpdateFont(Control);
+			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+				UpdateTextDecorations(Control);
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
 				UpdateLineBreakMode(Control);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -159,6 +165,39 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
 				UpdateLineHeight(Control);
 			base.OnElementPropertyChanged(sender, e);
+		}
+
+		void UpdateTextDecorations(TextBlock textBlock)
+		{
+			if (!Element.IsSet(Label.TextDecorationsProperty))
+				return;
+
+			var elementTextDecorations = Element.TextDecorations;
+
+			if ((elementTextDecorations & TextDecorations.Underline) == 0)
+				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Underline;
+			else
+				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Underline;
+
+			if ((elementTextDecorations & TextDecorations.Strikethrough) == 0)
+				textBlock.TextDecorations &= ~Windows.UI.Text.TextDecorations.Strikethrough;
+			else
+				textBlock.TextDecorations |= Windows.UI.Text.TextDecorations.Strikethrough;
+
+			//TextDecorations are not updated in the UI until the text changes
+			if (textBlock.Inlines != null && textBlock.Inlines.Count > 0)
+			{
+				for (var i = 0; i < textBlock.Inlines.Count; i++)
+				{
+					var run = (Run)textBlock.Inlines[i];
+					run.Text = run.Text;
+				}
+			}
+			else
+			{
+				textBlock.Text = textBlock.Text; 
+			}
+
 		}
 
 		void UpdateAlign(TextBlock textBlock)

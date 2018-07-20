@@ -29,7 +29,17 @@ namespace Xamarin.Forms.Platform.WPF
 #pragma warning disable 618
 				run.ApplyFont(span.Font);
 #pragma warning restore 618
+			if (!span.IsSet(Span.TextDecorationsProperty))
+				return run;
 
+			var textDecorations = span.TextDecorations;
+
+			if ((textDecorations & TextDecorations.Underline) != 0)
+				run.TextDecorations.Add(System.Windows.TextDecorations.Underline);
+
+			if ((textDecorations & TextDecorations.Strikethrough) != 0)
+				run.TextDecorations.Add(System.Windows.TextDecorations.Strikethrough);
+		
 			return run;
 		}
 	}

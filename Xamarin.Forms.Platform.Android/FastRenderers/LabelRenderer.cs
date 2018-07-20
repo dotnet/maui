@@ -280,6 +280,24 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
+		void UpdateTextDecorations()
+		{
+			if (!Element.IsSet(Label.TextDecorationsProperty))
+				return;
+
+			var textDecorations = Element.TextDecorations;
+
+			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+				PaintFlags &= ~PaintFlags.StrikeThruText;
+			else
+				PaintFlags |= PaintFlags.StrikeThruText;
+
+			if ((textDecorations & TextDecorations.Underline) == 0)
+				PaintFlags &= ~PaintFlags.UnderlineText;
+			else
+				PaintFlags |= PaintFlags.UnderlineText;
+		}
+
 		void UpdateGravity()
 		{
 			Label label = Element;

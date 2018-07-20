@@ -11,7 +11,7 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
 	[RenderWith(typeof(_LabelRenderer))]
-	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>
+	public class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement
 	{
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
@@ -35,6 +35,8 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
+
+		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
 		public static readonly BindableProperty FormattedTextProperty = BindableProperty.Create(nameof(FormattedText), typeof(FormattedString), typeof(Label), default(FormattedString),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -153,6 +155,12 @@ namespace Xamarin.Forms
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
+		}
+
+		public TextDecorations TextDecorations
+		{
+			get { return (TextDecorations)GetValue(TextDecorationsProperty); }
+			set { SetValue(TextDecorationsProperty, value); }
 		}
 
 		public string FontFamily

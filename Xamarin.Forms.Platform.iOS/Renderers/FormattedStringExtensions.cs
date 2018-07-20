@@ -76,20 +76,13 @@ namespace Xamarin.Forms.Platform.MacOS
 				targetFont = ((IFontElement)owner).ToUIFont();
 			else
 				targetFont = span.ToUIFont();
-
-			var fgcolor = span.TextColor;
-			if (fgcolor.IsDefault)
-				fgcolor = defaultForegroundColor;
-			if (fgcolor.IsDefault)
-				fgcolor = Color.Black; // as defined by apple docs
-
-			return new NSAttributedString(text, targetFont, fgcolor.ToUIColor(), span.BackgroundColor.ToUIColor(), null, style);
 #else
 			NSFont targetFont;
 			if (span.IsDefault())
 				targetFont = ((IFontElement)owner).ToNSFont();
 			else
 				targetFont = span.ToNSFont();
+#endif
 
 			var fgcolor = span.TextColor;
 			if (fgcolor.IsDefault)
@@ -97,9 +90,32 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (fgcolor.IsDefault)
 				fgcolor = Color.Black; // as defined by apple docs
 
-			return new NSAttributedString(text, targetFont, fgcolor.ToNSColor(), span.BackgroundColor.ToNSColor(),
-										  null, null, null, NSUnderlineStyle.None, NSUnderlineStyle.None, style);
+#if __MOBILE__
+			UIColor spanFgColor;
+			UIColor spanBgColor;
+			spanFgColor = fgcolor.ToUIColor();
+			spanBgColor = span.BackgroundColor.ToUIColor();
+#else
+			NSColor spanFgColor;
+			NSColor spanBgColor;
+			spanFgColor = fgcolor.ToNSColor();
+			spanBgColor = span.BackgroundColor.ToNSColor();
 #endif
+
+			bool hasUnderline = false;
+			bool hasStrikethrough = false;
+			if (span.IsSet(Span.TextDecorationsProperty))
+			{
+				var textDecorations = span.TextDecorations;
+				hasUnderline = (textDecorations & TextDecorations.Underline) != 0;
+				hasStrikethrough = (textDecorations & TextDecorations.Strikethrough) != 0;
+			}
+
+			var attrString = new NSAttributedString(text, targetFont, spanFgColor, spanBgColor,
+				underlineStyle: hasUnderline ? NSUnderlineStyle.Single : NSUnderlineStyle.None,
+				strikethroughStyle: hasStrikethrough ? NSUnderlineStyle.Single : NSUnderlineStyle.None, paragraphStyle: style);
+
+			return attrString;
 		}
 
 		internal static NSAttributedString ToAttributed(this FormattedString formattedString, Element owner,

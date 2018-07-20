@@ -4,7 +4,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
-	public sealed class Span : GestureElement, IFontElement, ITextElement, ILineHeightElement
+	public sealed class Span : GestureElement, IFontElement, ITextElement, ILineHeightElement, IDecorableTextElement
 	{
 		internal readonly MergedStyle _mergedStyle;
 
@@ -15,6 +15,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create(nameof(Style), typeof(Style), typeof(Span), default(Style),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Span)bindable)._mergedStyle.Style = (Style)newvalue, defaultBindingMode: BindingMode.OneTime);
+
+		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
 		public Style Style
 		{
@@ -93,6 +95,12 @@ namespace Xamarin.Forms
 		{
 			get { return (double)GetValue(FontElement.FontSizeProperty); }
 			set { SetValue(FontElement.FontSizeProperty, value); }
+		}
+
+		public TextDecorations TextDecorations
+		{
+			get { return (TextDecorations)GetValue(TextDecorationsProperty); }
+			set { SetValue(TextDecorationsProperty, value); }
 		}
 
 		public double LineHeight {

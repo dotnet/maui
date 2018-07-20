@@ -27,6 +27,14 @@ namespace Xamarin.Forms.Controls
 #pragma warning restore 618
 
 #pragma warning disable 618
+			var namedSizeMediumUnderlineContainer = new ViewContainer<Label>(Test.Label.TextDecorationUnderline, new Label { Text = "Medium Underlined Font", Font = Font.SystemFontOfSize(NamedSize.Medium), TextDecorations = TextDecorations.Underline });
+#pragma warning restore 618
+
+#pragma warning disable 618
+			var namedSizeMediumStrikeContainer = new ViewContainer<Label>(Test.Label.TextDecorationStrike, new Label { Text = "Medium StrikeThrough Font", Font = Font.SystemFontOfSize(NamedSize.Medium), TextDecorations = TextDecorations.Strikethrough });
+#pragma warning restore 618
+
+#pragma warning disable 618
 			var namedSizeLargeContainer = new ViewContainer<Label> (Test.Label.FontNamedSizeLarge, new Label { Text = "Large Font", Font = Font.SystemFontOfSize (NamedSize.Large) });
 #pragma warning restore 618
 
@@ -151,6 +159,8 @@ namespace Xamarin.Forms.Controls
 
 			Add (namedSizeMediumBoldContainer);
 			Add (namedSizeMediumItalicContainer);
+			Add (namedSizeMediumUnderlineContainer);
+			Add (namedSizeMediumStrikeContainer);
 			Add (namedSizeLargeContainer);
 			Add (namedSizeMediumContainer);
 			Add (namedSizeMicroContainer);

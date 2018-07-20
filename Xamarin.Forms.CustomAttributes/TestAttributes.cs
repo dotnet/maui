@@ -582,6 +582,8 @@ namespace Xamarin.Forms.CustomAttributes
 			FormattedText,
 			FontAttibutesBold,
 			FontAttributesItalic,
+			TextDecorationUnderline,
+			TextDecorationStrike,
 			FontNamedSizeMicro,
 			FontNamedSizeSmall,
 			FontNamedSizeMedium,

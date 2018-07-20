@@ -29,6 +29,14 @@ namespace Xamarin.Forms.Controls
 			var italicfont = new Label { Text = "Custom Italic Font" };
 			var boldfont = new Label { Text = "Custom Bold Font" };
 			var bolditalicfont = new Label { Text = "Custom Bold Italic Font" };
+			var toggleUnderline = new Label { Text = "Tap to toggle Underline", TextDecorations = TextDecorations.Underline };
+			toggleUnderline.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(()=> { toggleUnderline.TextDecorations ^= TextDecorations.Underline; }) });
+			var toggleStrike = new Label { Text = "Tap to toggle StrikeThrough", TextDecorations = TextDecorations.Strikethrough };
+			toggleStrike.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => { toggleStrike.TextDecorations ^= TextDecorations.Strikethrough; }) });
+			var toggleBoth = new Label { Text = "Tap to toggle both", TextDecorations = TextDecorations.Strikethrough | TextDecorations.Underline };
+			toggleBoth.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => { toggleBoth.TextDecorations ^= TextDecorations.Strikethrough;
+																										toggleBoth.TextDecorations ^= TextDecorations.Underline;
+																								}) });
 			var huge = new Label {
 				Text = "This is the label that never ends, yes it go on and on my friend. " +
 				"Some people started catting it not knowing what it was, and they'll continue catting it forever just because...",
@@ -39,10 +47,13 @@ namespace Xamarin.Forms.Controls
 #pragma warning disable 618
 						new Span {Text="FormattedStrings ", TextColor=Color.Blue, BackgroundColor = Color.Yellow, Font = Font.BoldSystemFontOfSize (NamedSize.Large)},
 #pragma warning restore 618
-						new Span {Text="are ", TextColor=Color.Red, BackgroundColor = Color.Gray},
-						new Span {Text="not pretty!", TextColor = Color.Green,},
 					}
 				} };
+			var underlineSpan = new Span { Text = "are ", TextColor = Color.Red, BackgroundColor = Color.Gray, TextDecorations = TextDecorations.Underline };
+			var strikeSpan = new Span { Text = "not pretty!", TextColor = Color.Green, TextDecorations = TextDecorations.Strikethrough };
+			formatted.FormattedText.Spans.Add(underlineSpan);
+			formatted.FormattedText.Spans.Add(strikeSpan);
+
 			var missingfont = new Label { Text = "Missing font: use default" };
 
 #pragma warning disable 618
@@ -148,6 +159,9 @@ namespace Xamarin.Forms.Controls
 						bold,
 						italic,
 						bolditalic,
+						toggleUnderline,
+						toggleStrike,
+						toggleBoth,
 						customFont,
 						italicfont,
 						boldfont,

@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
+using Foundation;
 
 #if __MOBILE__
 using UIKit;
@@ -129,6 +130,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateLineBreakMode();
 				UpdateAlignment();
 				UpdateText();
+				UpdateTextDecorations();
 				UpdateTextColor();
 				UpdateFont();
 			}
@@ -150,6 +152,8 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateFont();
 			else if (e.PropertyName == Label.TextProperty.PropertyName)
 				UpdateText();
+			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
+				UpdateTextDecorations();
 			else if (e.PropertyName == Label.FormattedTextProperty.PropertyName)
 				UpdateText();
 			else if (e.PropertyName == Label.LineBreakModeProperty.PropertyName)
@@ -158,6 +162,41 @@ namespace Xamarin.Forms.Platform.MacOS
 				UpdateAlignment();
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
 				UpdateText();
+		}
+
+		void UpdateTextDecorations()
+		{
+			if (!Element.IsSet(Label.TextDecorationsProperty))
+				return;
+
+			var textDecorations = Element.TextDecorations;
+#if __MOBILE__
+			var newAttributedText = new NSMutableAttributedString(Control.AttributedText);
+			var strikeThroughStyleKey = UIStringAttributeKey.StrikethroughStyle;
+			var underlineStyleKey = UIStringAttributeKey.UnderlineStyle;
+
+#else
+			var newAttributedText = new NSMutableAttributedString(Control.AttributedStringValue);
+			var strikeThroughStyleKey = NSStringAttributeKey.StrikethroughStyle;
+			var underlineStyleKey = NSStringAttributeKey.UnderlineStyle;
+#endif
+			var range = new NSRange(0, newAttributedText.Length);
+
+			if ((textDecorations & TextDecorations.Strikethrough) == 0)
+				newAttributedText.RemoveAttribute(strikeThroughStyleKey, range);
+			else
+				newAttributedText.AddAttribute(strikeThroughStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
+
+			if ((textDecorations & TextDecorations.Underline) == 0)
+				newAttributedText.RemoveAttribute(underlineStyleKey, range);
+			else
+				newAttributedText.AddAttribute(underlineStyleKey, NSNumber.FromInt32((int)NSUnderlineStyle.Single), range);
+
+#if __MOBILE__
+			Control.AttributedText = newAttributedText;
+#else
+			Control.AttributedStringValue = newAttributedText;
+#endif
 		}
 
 #if __MOBILE__
