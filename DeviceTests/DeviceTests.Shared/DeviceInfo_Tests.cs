@@ -26,6 +26,31 @@ namespace DeviceTests
         }
 
         [Fact]
+        public void DeviceModel_Is_Correct()
+        {
+#if WINDOWS_UWP
+            // Nothing right now.
+#elif __IOS__
+            if (DeviceInfo.DeviceType == DeviceType.Virtual)
+            {
+                Assert.Equal("x86_64", DeviceInfo.Model);
+            }
+#elif __ANDROID__
+
+            if (DeviceInfo.DeviceType == DeviceType.Virtual)
+            {
+                var isEmulator = DeviceInfo.Model.Contains("google_sdk") ||
+                    DeviceInfo.Model.Contains("Emulator") ||
+                    DeviceInfo.Model.Contains("Android SDK built for x86");
+
+                Assert.True(isEmulator);
+            }
+#else
+            throw new PlatformNotSupportedException();
+#endif
+        }
+
+        [Fact]
         public void AppPackageName_Is_Correct()
         {
 #if WINDOWS_UWP
