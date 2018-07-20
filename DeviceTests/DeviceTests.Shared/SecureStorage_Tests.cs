@@ -85,5 +85,30 @@ namespace DeviceTests
             foreach (var key in keys)
                 Assert.Null(await SecureStorage.GetAsync(key));
         }
+
+#if __ANDROID__
+        [Fact]
+        public async Task Asymmetric_to_Symmetric_API_Upgrade()
+        {
+            var key = "asym_to_sym_upgrade";
+            var expected = "this is the value";
+
+            SecureStorage.RemoveAll();
+
+            // Emulate pre api 23
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = true;
+
+            await SecureStorage.SetAsync(key, expected);
+
+            // Simulate Upgrading to API23+
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = false;
+
+            var v = await SecureStorage.GetAsync(key);
+
+            SecureStorage.RemoveAll();
+
+            Assert.Equal(expected, v);
+        }
+#endif
     }
 }
