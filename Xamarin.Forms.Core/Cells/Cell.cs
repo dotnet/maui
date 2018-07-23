@@ -36,6 +36,8 @@ namespace Xamarin.Forms
 			}
 		}
 
+		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
+
 		IFlowDirectionController FlowController => this;
 
 		public IList<MenuItem> ContextActions
