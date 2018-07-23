@@ -116,22 +116,20 @@ namespace Xamarin.Forms.Core.UITests
 			var existsPrimary = App.Query(c => c.Button())[4];
 			Assert.True(existsPrimary != null, "Toolbar Item 1 no name, not found");
 #else
-			var existsPrimary = App.Query(c => c.Marked(btn1Id)).Length;
-			Assert.True(existsPrimary > 0, "Toolbar Item 1 no name, not found");
+			App.WaitForElement(btn1Id, "Toolbar Item 1 no name, not found");
 #endif
-			var existsPrimary2 = App.Query(c => c.Marked("tb2")).Length;
-			Assert.True(existsPrimary2 > 0, "Toolbar Item 2, not found");
+			App.WaitForElement("tb2", "Toolbar Item 2, not found");
+			
 			ShouldShowMenu();
 
 #if __MACOS__
 			var existsSecondary = App.Query(c => c.Button())[7];
 			Assert.True(existsSecondary != null, "Toolbar Item 3 no name, not found");
 #else
-			var existsSecondary = App.Query(c => c.Marked("tb3")).Length;
-			Assert.True(existsSecondary > 0, "Toolbar Item 1 no name, not found");
+
+			App.WaitForElement("tb3", "Toolbar Item 3 no name, not found");
 #endif
-			var existsSecondary2 = App.Query(c => c.Marked(btn4Id)).Length;
-			Assert.True(existsSecondary2 > 0, "Toolbar Item 4, not found");
+			App.WaitForElement(btn4Id, "Toolbar Item 4, not found");
 		}
 
 		[Test]
