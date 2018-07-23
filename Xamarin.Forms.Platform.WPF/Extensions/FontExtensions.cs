@@ -15,29 +15,7 @@ namespace Xamarin.Forms.Platform.WPF
 	{
 		public static void ApplyFont(this Control self, Font font)
 		{
-			if (font.UseNamedSize)
-			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"] - 3;
-						break;
-					case NamedSize.Small:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
-						break;
-					case NamedSize.Medium:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeMedium"];
-						// use medium instead of normal as this is the default for non-labels
-						break;
-					case NamedSize.Large:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
-						break;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-			else
-				self.FontSize = font.FontSize;
+			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
 			if (!string.IsNullOrEmpty(font.FontFamily))
 				self.FontFamily = new FontFamily(font.FontFamily);
@@ -57,29 +35,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public static void ApplyFont(this TextBlock self, Font font)
 		{
-			if (font.UseNamedSize)
-			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"] - 3;
-						break;
-					case NamedSize.Small:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
-						break;
-					case NamedSize.Medium:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeNormal"];
-						// use normal instead of  medium as this is the default
-						break;
-					case NamedSize.Large:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
-						break;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-			else
-				self.FontSize = font.FontSize;
+			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
 			if (!string.IsNullOrEmpty(font.FontFamily))
 				self.FontFamily = new FontFamily(font.FontFamily);
@@ -101,29 +57,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		public static void ApplyFont(this TextElement self, Font font)
 		{
-			if (font.UseNamedSize)
-			{
-				switch (font.NamedSize)
-				{
-					case NamedSize.Micro:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"] - 3;
-						break;
-					case NamedSize.Small:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
-						break;
-					case NamedSize.Medium:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeNormal"];
-						// use normal instead of  medium as this is the default
-						break;
-					case NamedSize.Large:
-						self.FontSize = (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
-						break;
-					default:
-						throw new ArgumentOutOfRangeException();
-				}
-			}
-			else
-				self.FontSize = font.FontSize;
+			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
 			if (!string.IsNullOrEmpty(font.FontFamily))
 				self.FontFamily = new FontFamily(font.FontFamily);
@@ -159,6 +93,26 @@ namespace Xamarin.Forms.Platform.WPF
 				self.FontWeight = FontWeights.Bold;
 			else
 				self.FontWeight = FontWeights.Normal;
+		}
+
+		internal static double GetFontSize(this NamedSize size)
+		{
+			switch (size)
+			{
+				case NamedSize.Default:
+					return (double)System.Windows.Application.Current.Resources["ControlContentThemeFontSize"];
+				case NamedSize.Micro:
+					return (double)System.Windows.Application.Current.Resources["FontSizeSmall"] - 3;
+				case NamedSize.Small:
+					return (double)System.Windows.Application.Current.Resources["FontSizeSmall"];
+				case NamedSize.Medium:
+					return (double)System.Windows.Application.Current.Resources["FontSizeNormal"];
+					// use normal instead of medium as this is the default
+				case NamedSize.Large:
+					return (double)System.Windows.Application.Current.Resources["FontSizeLarge"];
+				default:
+					throw new ArgumentOutOfRangeException("size");
+			}
 		}
 
 		internal static bool IsDefault(this IFontElement self)
