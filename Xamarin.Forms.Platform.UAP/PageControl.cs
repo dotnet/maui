@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.UWP
 	    		
 		public PageControl()
 		{
-			DefaultStyleKey = typeof(PageControl);
+			Style = Windows.UI.Xaml.Application.Current.Resources["DefaultPageControlStyle"] as Windows.UI.Xaml.Style;
 		}
 
 		public string BackButtonTitle
