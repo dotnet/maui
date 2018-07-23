@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Connectivity
     {
-        static event ConnectivityChangedEventHandler ConnectivityChanagedInternal;
+        static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChangedInternal;
 
         // a cache so that events aren't fired unnecessarily
         // this is mainly an issue on Android, but we can stiil do this everywhere
@@ -17,15 +17,15 @@ namespace Xamarin.Essentials
 
         public static IEnumerable<ConnectionProfile> Profiles => PlatformProfiles;
 
-        public static event ConnectivityChangedEventHandler ConnectivityChanged
+        public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
         {
             add
             {
-                var wasRunning = ConnectivityChanagedInternal != null;
+                var wasRunning = ConnectivityChangedInternal != null;
 
-                ConnectivityChanagedInternal += value;
+                ConnectivityChangedInternal += value;
 
-                if (!wasRunning && ConnectivityChanagedInternal != null)
+                if (!wasRunning && ConnectivityChangedInternal != null)
                 {
                     SetCurrent();
                     StartListeners();
@@ -34,11 +34,11 @@ namespace Xamarin.Essentials
 
             remove
             {
-                var wasRunning = ConnectivityChanagedInternal != null;
+                var wasRunning = ConnectivityChangedInternal != null;
 
-                ConnectivityChanagedInternal -= value;
+                ConnectivityChangedInternal -= value;
 
-                if (wasRunning && ConnectivityChanagedInternal == null)
+                if (wasRunning && ConnectivityChangedInternal == null)
                     StopListeners();
             }
         }
@@ -60,12 +60,10 @@ namespace Xamarin.Essentials
             if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.Profiles))
             {
                 SetCurrent();
-                MainThread.BeginInvokeOnMainThread(() => ConnectivityChanagedInternal?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
             }
         }
     }
-
-    public delegate void ConnectivityChangedEventHandler(ConnectivityChangedEventArgs e);
 
     public class ConnectivityChangedEventArgs : EventArgs
     {

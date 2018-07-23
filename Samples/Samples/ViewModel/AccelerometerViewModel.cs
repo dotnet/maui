@@ -96,7 +96,7 @@ namespace Samples.ViewModel
             Accelerometer.Stop();
         }
 
-        void OnReadingChanged(AccelerometerChangedEventArgs e)
+        void OnReadingChanged(object sender, AccelerometerChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed)

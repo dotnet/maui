@@ -4,29 +4,29 @@ namespace Xamarin.Essentials
 {
     public static partial class Power
     {
-        static event EnergySaverStatusChanagedEventHandler EnergySaverStatusChanagedInternal;
+        static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChangedInternal;
 
         public static EnergySaverStatus EnergySaverStatus => PlatformEnergySaverStatus;
 
-        public static event EnergySaverStatusChanagedEventHandler EnergySaverStatusChanaged
+        public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
         {
             add
             {
-                var wasRunning = EnergySaverStatusChanagedInternal != null;
+                var wasRunning = EnergySaverStatusChangedInternal != null;
 
-                EnergySaverStatusChanagedInternal += value;
+                EnergySaverStatusChangedInternal += value;
 
-                if (!wasRunning && EnergySaverStatusChanagedInternal != null)
+                if (!wasRunning && EnergySaverStatusChangedInternal != null)
                     StartPowerListeners();
             }
 
             remove
             {
-                var wasRunning = EnergySaverStatusChanagedInternal != null;
+                var wasRunning = EnergySaverStatusChangedInternal != null;
 
-                EnergySaverStatusChanagedInternal -= value;
+                EnergySaverStatusChangedInternal -= value;
 
-                if (wasRunning && EnergySaverStatusChanagedInternal == null)
+                if (wasRunning && EnergySaverStatusChangedInternal == null)
                     StopPowerListeners();
             }
         }
@@ -35,10 +35,10 @@ namespace Xamarin.Essentials
             => OnPowerChanged(EnergySaverStatus);
 
         static void OnPowerChanged(EnergySaverStatus saverStatus)
-            => OnPowerChanged(new EnergySaverStatusChanagedEventArgs(saverStatus));
+            => OnPowerChanged(new EnergySaverStatusChangedEventArgs(saverStatus));
 
-        static void OnPowerChanged(EnergySaverStatusChanagedEventArgs e)
-            => EnergySaverStatusChanagedInternal?.Invoke(e);
+        static void OnPowerChanged(EnergySaverStatusChangedEventArgs e)
+            => EnergySaverStatusChangedInternal?.Invoke(null, e);
     }
 
     public enum EnergySaverStatus
@@ -48,11 +48,9 @@ namespace Xamarin.Essentials
         Off
     }
 
-    public delegate void EnergySaverStatusChanagedEventHandler(EnergySaverStatusChanagedEventArgs e);
-
-    public class EnergySaverStatusChanagedEventArgs : EventArgs
+    public class EnergySaverStatusChangedEventArgs : EventArgs
     {
-        internal EnergySaverStatusChanagedEventArgs(EnergySaverStatus saverStatus)
+        internal EnergySaverStatusChangedEventArgs(EnergySaverStatus saverStatus)
         {
             EnergySaverStatus = saverStatus;
         }

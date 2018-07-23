@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Battery
     {
-        static event BatteryChangedEventHandler BatteryChanagedInternal;
+        static event EventHandler<BatteryChangedEventArgs> BatteryChangedInternal;
 
         // a cache so that events aren't fired unnecessarily
         // this is mainly an issue on Android, but we can stiil do this everywhere
@@ -18,15 +18,15 @@ namespace Xamarin.Essentials
 
         public static BatteryPowerSource PowerSource => PlatformPowerSource;
 
-        public static event BatteryChangedEventHandler BatteryChanged
+        public static event EventHandler<BatteryChangedEventArgs> BatteryChanged
         {
             add
             {
-                var wasRunning = BatteryChanagedInternal != null;
+                var wasRunning = BatteryChangedInternal != null;
 
-                BatteryChanagedInternal += value;
+                BatteryChangedInternal += value;
 
-                if (!wasRunning && BatteryChanagedInternal != null)
+                if (!wasRunning && BatteryChangedInternal != null)
                 {
                     SetCurrent();
                     StartBatteryListeners();
@@ -35,11 +35,11 @@ namespace Xamarin.Essentials
 
             remove
             {
-                var wasRunning = BatteryChanagedInternal != null;
+                var wasRunning = BatteryChangedInternal != null;
 
-                BatteryChanagedInternal -= value;
+                BatteryChangedInternal -= value;
 
-                if (wasRunning && BatteryChanagedInternal == null)
+                if (wasRunning && BatteryChangedInternal == null)
                     StopBatteryListeners();
             }
         }
@@ -62,7 +62,7 @@ namespace Xamarin.Essentials
             if (currentLevel != e.ChargeLevel || currentSource != e.PowerSource || currentState != e.State)
             {
                 SetCurrent();
-                BatteryChanagedInternal?.Invoke(e);
+                BatteryChangedInternal?.Invoke(null, e);
             }
         }
     }
@@ -81,12 +81,10 @@ namespace Xamarin.Essentials
     {
         Unknown,
         Battery,
-        Ac,
+        AC,
         Usb,
         Wireless
     }
-
-    public delegate void BatteryChangedEventHandler(BatteryChangedEventArgs e);
 
     public class BatteryChangedEventArgs : EventArgs
     {

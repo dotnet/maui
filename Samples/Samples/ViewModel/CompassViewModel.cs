@@ -10,6 +10,7 @@ namespace Samples.ViewModel
     {
         bool compass1IsActive;
         bool compass2IsActive;
+        bool compassApplyLowPassFilter;
         double compass1;
         double compass2;
         int speed1 = 2;
@@ -41,6 +42,16 @@ namespace Samples.ViewModel
         {
             get => compass2IsActive;
             set => SetProperty(ref compass2IsActive, value);
+        }
+
+        public bool CompassApplyLowPassFilter
+        {
+            get => compassApplyLowPassFilter;
+            set
+            {
+                SetProperty(ref compassApplyLowPassFilter, value);
+                Compass.ApplyLowPassFilter = value;
+            }
         }
 
         public double Compass1
@@ -102,7 +113,7 @@ namespace Samples.ViewModel
             }
         }
 
-        void OnCompass1ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass1ReadingChanged(object sender, CompassChangedEventArgs e)
         {
             switch ((SensorSpeed)Speed1)
             {
@@ -140,7 +151,7 @@ namespace Samples.ViewModel
             }
         }
 
-        void OnCompass2ReadingChanged(CompassChangedEventArgs e)
+        void OnCompass2ReadingChanged(object sender, CompassChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed2)

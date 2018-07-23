@@ -67,10 +67,10 @@
         <summary>Default rate suitable for screen orientation changes.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Ui">
-      <MemberSignature Language="C#" Value="Ui" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Ui = int32(2)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Ui" />
+    <Member MemberName="UI">
+      <MemberSignature Language="C#" Value="UI" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed UI = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.UI" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

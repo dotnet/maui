@@ -1,7 +1,7 @@
 ﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:views="clr-namespace:Samples.View"
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             xmlns:views="clr-namespace:Samples.View"
              x:Class="Samples.View.AllSensorsPage"
              Title="All Sensors">
 
@@ -12,7 +12,7 @@
             <StackLayout Padding="12,0,12,12" Spacing="6">
 
                 <Label Text="Accelerometer" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Grid>
+                <Grid x:Name="GridAccelerometer">
                     <Grid.BindingContext>
                         <viewmodels:AccelerometerViewModel />
                     </Grid.BindingContext>
@@ -46,7 +46,7 @@
                 </Grid>
 
                 <Label Text="Compass" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Grid>
+                <Grid x:Name="GridCompass">
                     <Grid.BindingContext>
                         <viewmodels:CompassViewModel />
                     </Grid.BindingContext>
@@ -75,7 +75,7 @@
                 </Grid>
 
                 <Label Text="Gyroscope" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Grid>
+                <Grid x:Name="GridGyro">
                     <Grid.BindingContext>
                         <viewmodels:GyroscopeViewModel />
                     </Grid.BindingContext>
@@ -109,7 +109,7 @@
                 </Grid>
 
                 <Label Text="Magnetometer" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Grid>
+                <Grid x:Name="GridMagnetometer">
                     <Grid.BindingContext>
                         <viewmodels:MagnetometerViewModel />
                     </Grid.BindingContext>
@@ -143,7 +143,7 @@
                 </Grid>
                 
                 <Label Text="Orientation Sensor" FontAttributes="Bold" Margin="0,6,0,0" />
-                <Grid>
+                <Grid x:Name="GridOrientation">
                     <Grid.BindingContext>
                         <viewmodels:OrientationSensorViewModel />
                     </Grid.BindingContext>
