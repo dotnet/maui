@@ -11,6 +11,12 @@
     <StackLayout>
         <Label Text="Monitor compass for changes." FontAttributes="Bold" Margin="12" />
 
+        <Switch IsToggled="{Binding CompassApplyLowPassFilter}" >
+            <Switch.IsVisible>
+                <OnPlatform x:TypeArguments="x:Boolean" Android="True" Default="False"/>
+            </Switch.IsVisible>
+        </Switch>
+
         <ScrollView>
             <Grid Padding="12,0,12,12">
                 <Grid.RowDefinitions>

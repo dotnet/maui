@@ -62,12 +62,10 @@
     <Namespace Name="Xamarin.Essentials">
       <Type Name="Accelerometer" Kind="Class" />
       <Type Name="AccelerometerChangedEventArgs" Kind="Class" />
-      <Type Name="AccelerometerChangedEventHandler" Kind="Delegate" />
       <Type Name="AccelerometerData" Kind="Structure" />
       <Type Name="AppInfo" Kind="Class" />
       <Type Name="Battery" Kind="Class" />
       <Type Name="BatteryChangedEventArgs" Kind="Class" />
-      <Type Name="BatteryChangedEventHandler" Kind="Delegate" />
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
@@ -75,12 +73,10 @@
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="Compass" Kind="Class" />
       <Type Name="CompassChangedEventArgs" Kind="Class" />
-      <Type Name="CompassChangedEventHandler" Kind="Delegate" />
       <Type Name="CompassData" Kind="Structure" />
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
-      <Type Name="ConnectivityChangedEventHandler" Kind="Delegate" />
       <Type Name="DataTransfer" Kind="Class" />
       <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
@@ -92,8 +88,7 @@
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
-      <Type Name="EnergySaverStatusChanagedEventArgs" Kind="Class" />
-      <Type Name="EnergySaverStatusChanagedEventHandler" Kind="Delegate" />
+      <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
@@ -103,21 +98,18 @@
       <Type Name="GeolocationRequest" Kind="Class" />
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
-      <Type Name="GyroscopeChangedEventHandler" Kind="Delegate" />
       <Type Name="GyroscopeData" Kind="Structure" />
       <Type Name="Locale" Kind="Structure" />
       <Type Name="Location" Kind="Class" />
       <Type Name="LocationExtensions" Kind="Class" />
       <Type Name="Magnetometer" Kind="Class" />
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
-      <Type Name="MagnetometerChangedEventHandler" Kind="Delegate" />
       <Type Name="MagnetometerData" Kind="Structure" />
       <Type Name="MainThread" Kind="Class" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
       <Type Name="OrientationSensorChangedEventArgs" Kind="Class" />
-      <Type Name="OrientationSensorChangedEventHandler" Kind="Delegate" />
       <Type Name="OrientationSensorData" Kind="Structure" />
       <Type Name="PermissionException" Kind="Class" />
       <Type Name="PhoneDialer" Kind="Class" />
@@ -127,8 +119,7 @@
       <Type Name="Preferences" Kind="Class" />
       <Type Name="ScreenLock" Kind="Class" />
       <Type Name="ScreenMetrics" Kind="Structure" />
-      <Type Name="ScreenMetricsChanagedEventArgs" Kind="Class" />
-      <Type Name="ScreenMetricsChanagedEventHandler" Kind="Delegate" />
+      <Type Name="ScreenMetricsChangedEventArgs" Kind="Class" />
       <Type Name="ScreenOrientation" Kind="Enumeration" />
       <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />

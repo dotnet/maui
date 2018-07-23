@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 namespace Xamarin.Essentials
 {
@@ -7,9 +6,11 @@ namespace Xamarin.Essentials
     {
         static bool useSyncContext;
 
-        public static event CompassChangedEventHandler ReadingChanged;
+        public static event EventHandler<CompassChangedEventArgs> ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
+
+        public static bool ApplyLowPassFilter { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {
@@ -20,7 +21,7 @@ namespace Xamarin.Essentials
                 return;
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.Ui;
+            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
 
             try
             {
@@ -64,13 +65,11 @@ namespace Xamarin.Essentials
                 return;
 
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(e));
+                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
             else
-                handler?.Invoke(e);
+                handler?.Invoke(null, e);
         }
     }
-
-    public delegate void CompassChangedEventHandler(CompassChangedEventArgs e);
 
     public class CompassChangedEventArgs : EventArgs
     {

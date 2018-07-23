@@ -37,17 +37,17 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="ScreenMetricsChanaged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.ScreenMetricsChanagedEventHandler ScreenMetricsChanaged" />
-      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanaged" />
+    <Member MemberName="ScreenMetricsChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.ScreenMetricsChangedEventArgs&gt; ScreenMetricsChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.ScreenMetricsChangedEventArgs&gt; ScreenMetricsChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ScreenMetricsChanagedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.ScreenMetricsChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event that is triggered when the screen matrics change.</summary>

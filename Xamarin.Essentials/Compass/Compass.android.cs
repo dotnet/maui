@@ -28,7 +28,7 @@ namespace Xamarin.Essentials
                 case SensorSpeed.Game:
                     delay = SensorDelay.Game;
                     break;
-                case SensorSpeed.Ui:
+                case SensorSpeed.UI:
                     delay = SensorDelay.Ui;
                     break;
             }
@@ -54,6 +54,7 @@ namespace Xamarin.Essentials
 
     class SensorListener : Java.Lang.Object, ISensorEventListener, IDisposable
     {
+        LowPassFilter filter = new LowPassFilter();
         float[] lastAccelerometer = new float[3];
         float[] lastMagnetometer = new float[3];
         bool lastAccelerometerSet;
@@ -92,6 +93,11 @@ namespace Xamarin.Essentials
                 SensorManager.GetRotationMatrix(r, null, lastAccelerometer, lastMagnetometer);
                 SensorManager.GetOrientation(r, orientation);
                 var azimuthInRadians = orientation[0];
+                if (Compass.ApplyLowPassFilter)
+                {
+                    filter.Add(azimuthInRadians);
+                    azimuthInRadians = filter.Average();
+                }
                 var azimuthInDegress = (Java.Lang.Math.ToDegrees(azimuthInRadians) + 360.0) % 360.0;
 
                 var data = new CompassData(azimuthInDegress);

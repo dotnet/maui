@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
         internal const double FastestFilter = .01;
         internal const double GameFilter = .5;
         internal const double NormalFilter = 1;
-        internal const double UiFilter = 2;
+        internal const double UIFilter = 2;
 
         public static bool ShouldDisplayHeadingCalibration { get; set; } = false;
 
@@ -35,8 +35,8 @@ namespace Xamarin.Essentials
                     locationManager.HeadingFilter = NormalFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccuracyBest;
                     break;
-                case SensorSpeed.Ui:
-                    locationManager.HeadingFilter = UiFilter;
+                case SensorSpeed.UI:
+                    locationManager.HeadingFilter = UIFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccuracyBest;
                     break;
             }

@@ -18,9 +18,8 @@ namespace Xamarin.Essentials
         {
             var context = Platform.AppContext;
 
-            string encStr;
-            using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
-                encStr = prefs.GetString(Utils.Md5Hash(key), null);
+            string defaultEncStr = null;
+            var encStr = Preferences.Get(Utils.Md5Hash(key), defaultEncStr, Alias);
 
             string decryptedData = null;
             if (!string.IsNullOrEmpty(encStr))
@@ -40,13 +39,8 @@ namespace Xamarin.Essentials
             var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
             var encryptedData = ks.Encrypt(data);
 
-            using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
-            using (var prefsEditor = prefs.Edit())
-            {
-                var encStr = Convert.ToBase64String(encryptedData);
-                prefsEditor.PutString(Utils.Md5Hash(key), encStr);
-                prefsEditor.Commit();
-            }
+            var encStr = Convert.ToBase64String(encryptedData);
+            Preferences.Set(Utils.Md5Hash(key), encStr, Alias);
 
             return Task.CompletedTask;
         }
@@ -56,36 +50,13 @@ namespace Xamarin.Essentials
             var context = Platform.AppContext;
 
             key = Utils.Md5Hash(key);
-
-            using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
-            {
-                if (prefs.Contains(key))
-                {
-                    using (var prefsEditor = prefs.Edit())
-                    {
-                        prefsEditor.Remove(key);
-                        prefsEditor.Commit();
-                        return true;
-                    }
-                }
-            }
+            Preferences.Remove(key, Alias);
 
             return false;
         }
 
-        static void PlatformRemoveAll()
-        {
-            var context = Platform.AppContext;
-
-            using (var prefs = context.GetSharedPreferences(Alias, FileCreationMode.Private))
-            using (var prefsEditor = prefs.Edit())
-            {
-                foreach (var key in prefs.All.Keys)
-                    prefsEditor.Remove(key);
-
-                prefsEditor.Commit();
-            }
-        }
+        static void PlatformRemoveAll() =>
+            Preferences.Clear(Alias);
 
         internal static bool AlwaysUseAsymmetricKeyStorage { get; set; } = false;
     }
@@ -114,10 +85,18 @@ namespace Xamarin.Essentials
         KeyStore keyStore;
         bool alwaysUseAsymmetricKey;
 
+        bool useSymmetric = false;
+        string useSymmetricPreferenceKey = "essentials_use_symmetric";
+
         ISecretKey GetKey()
         {
+            // check to see if we need to get our key from past-versions or newer versions.
+            // we want to use symmetric if we are >= 23 or we didn't set it previously.
+
+            useSymmetric = Preferences.Get(useSymmetricPreferenceKey, Platform.HasApiLevel(BuildVersionCodes.M), SecureStorage.Alias);
+
             // If >= API 23 we can use the KeyStore's symmetric key
-            if (Platform.HasApiLevel(BuildVersionCodes.M) && !alwaysUseAsymmetricKey)
+            if (useSymmetric && !alwaysUseAsymmetricKey)
                 return GetSymmetricKey();
 
             // NOTE: KeyStore in < API 23 can only store asymmetric keys
@@ -131,40 +110,35 @@ namespace Xamarin.Essentials
             // Get the asymmetric key pair
             var keyPair = GetAsymmetricKeyPair();
 
-            using (var prefs = appContext.GetSharedPreferences(alias, FileCreationMode.Private))
+            var existingKeyStr = Preferences.Get(prefsMasterKey, null, alias);
+
+            if (!string.IsNullOrEmpty(existingKeyStr))
             {
-                var existingKeyStr = prefs.GetString(prefsMasterKey, null);
+                var wrappedKey = Convert.FromBase64String(existingKeyStr);
 
-                if (!string.IsNullOrEmpty(existingKeyStr))
-                {
-                    var wrappedKey = Convert.FromBase64String(existingKeyStr);
+                var unwrappedKey = UnwrapKey(wrappedKey, keyPair.Private);
+                var kp = unwrappedKey.JavaCast<ISecretKey>();
 
-                    var unwrappedKey = UnwrapKey(wrappedKey, keyPair.Private);
-                    var kp = unwrappedKey.JavaCast<ISecretKey>();
+                return kp;
+            }
+            else
+            {
+                var keyGenerator = KeyGenerator.GetInstance(aesAlgorithm);
+                var defSymmetricKey = keyGenerator.GenerateKey();
 
-                    return kp;
-                }
-                else
-                {
-                    var keyGenerator = KeyGenerator.GetInstance(aesAlgorithm);
-                    var defSymmetricKey = keyGenerator.GenerateKey();
+                var wrappedKey = WrapKey(defSymmetricKey, keyPair.Public);
 
-                    var wrappedKey = WrapKey(defSymmetricKey, keyPair.Public);
+                Preferences.Set(prefsMasterKey, Convert.ToBase64String(wrappedKey), alias);
 
-                    using (var prefsEditor = prefs.Edit())
-                    {
-                        prefsEditor.PutString(prefsMasterKey, Convert.ToBase64String(wrappedKey));
-                        prefsEditor.Commit();
-                    }
-
-                    return defSymmetricKey;
-                }
+                return defSymmetricKey;
             }
         }
 
         // API 23+ Only
         ISecretKey GetSymmetricKey()
         {
+            Preferences.Set(useSymmetricPreferenceKey, true, SecureStorage.Alias);
+
             var existingKey = keyStore.GetKey(alias, null);
 
             if (existingKey != null)
@@ -186,6 +160,9 @@ namespace Xamarin.Essentials
 
         KeyPair GetAsymmetricKeyPair()
         {
+            // set that we generated keys on pre-m device.
+            Preferences.Set(useSymmetricPreferenceKey, false, SecureStorage.Alias);
+
             var asymmetricAlias = $"{alias}.asymmetric";
 
             var privateKey = keyStore.GetKey(asymmetricAlias, null)?.JavaCast<IPrivateKey>();

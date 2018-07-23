@@ -17,6 +17,26 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="ApplyLowPassFilter">
+      <MemberSignature Language="C#" Value="public static bool ApplyLowPassFilter { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property bool ApplyLowPassFilter" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.ApplyLowPassFilter" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Applies a moving average filter on the Android implementation. Unused on other platforms</summary>
+        <value>If a low pass filter is applied</value>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="IsMonitoring">
       <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
@@ -38,8 +58,8 @@
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.CompassChangedEventHandler ReadingChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.CompassChangedEventHandler ReadingChanged" />
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.CompassChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.CompassChangedEventArgs&gt; ReadingChanged" />
       <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Compass.ReadingChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
@@ -47,7 +67,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.CompassChangedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.CompassChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event triggered when compass reading changes.</summary>

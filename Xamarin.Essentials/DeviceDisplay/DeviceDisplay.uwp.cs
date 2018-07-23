@@ -51,7 +51,7 @@ namespace Xamarin.Essentials
         static void OnDisplayInformationChanged(DisplayInformation di, object args)
         {
             var metrics = GetScreenMetrics(di);
-            OnScreenMetricsChanaged(metrics);
+            OnScreenMetricsChanged(metrics);
         }
 
         static ScreenOrientation CalculateOrientation(DisplayInformation di)

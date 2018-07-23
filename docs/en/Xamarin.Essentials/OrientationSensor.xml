@@ -38,8 +38,8 @@
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.OrientationSensorChangedEventHandler ReadingChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.OrientationSensorChangedEventHandler ReadingChanged" />
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.OrientationSensorChangedEventArgs&gt; ReadingChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.OrientationSensorChangedEventArgs&gt; ReadingChanged" />
       <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.OrientationSensor.ReadingChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
@@ -47,7 +47,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.OrientationSensorChangedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.OrientationSensorChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>

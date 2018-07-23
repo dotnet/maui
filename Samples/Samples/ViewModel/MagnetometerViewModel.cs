@@ -77,7 +77,7 @@ namespace Samples.ViewModel
             base.OnDisappearing();
         }
 
-        void OnReadingChanged(MagnetometerChangedEventArgs e)
+        void OnReadingChanged(object sender, MagnetometerChangedEventArgs e)
         {
             var data = e.Reading;
             switch ((SensorSpeed)Speed)

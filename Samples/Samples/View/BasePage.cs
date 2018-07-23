@@ -15,22 +15,32 @@ namespace Samples.View
         {
             base.OnAppearing();
 
-            if (BindingContext is BaseViewModel vm)
+            SetupBinding(BindingContext);
+        }
+
+        protected override void OnDisappearing()
+        {
+            TearDownBinding(BindingContext);
+
+            base.OnDisappearing();
+        }
+
+        protected void SetupBinding(object bindingContext)
+        {
+            if (bindingContext is BaseViewModel vm)
             {
                 vm.DoDisplayAlert += OnDisplayAlert;
                 vm.OnAppearing();
             }
         }
 
-        protected override void OnDisappearing()
+        protected void TearDownBinding(object bindingContext)
         {
-            if (BindingContext is BaseViewModel vm)
+            if (bindingContext is BaseViewModel vm)
             {
                 vm.OnDisappearing();
                 vm.DoDisplayAlert -= OnDisplayAlert;
             }
-
-            base.OnDisappearing();
         }
 
         Task OnDisplayAlert(string message)

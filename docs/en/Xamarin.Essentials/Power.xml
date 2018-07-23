@@ -33,26 +33,26 @@
         <summary>Gets the current energy saver status of the device.</summary>
         <value>The current status of energy saver mode.</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="EnergySaverStatusChanaged">
-      <MemberSignature Language="C#" Value="public static event Xamarin.Essentials.EnergySaverStatusChanagedEventHandler EnergySaverStatusChanaged;" />
-      <MemberSignature Language="ILAsm" Value=".event class Xamarin.Essentials.EnergySaverStatusChanagedEventHandler EnergySaverStatusChanaged" />
-      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Power.EnergySaverStatusChanaged" />
+    <Member MemberName="EnergySaverStatusChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>Xamarin.Essentials.EnergySaverStatusChanagedEventHandler</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event that is triggered when energy saver status changes.</summary>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

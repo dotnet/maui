@@ -10,8 +10,10 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Status of energy saver on the device.</summary>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="Off">
@@ -28,7 +30,7 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Energy save is off</summary>
       </Docs>
     </Member>
     <Member MemberName="On">
@@ -45,7 +47,7 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Energy saver is on</summary>
       </Docs>
     </Member>
     <Member MemberName="Unknown">
@@ -62,7 +64,7 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
+        <summary>Status of energy saver is unknown.</summary>
       </Docs>
     </Member>
   </Members>

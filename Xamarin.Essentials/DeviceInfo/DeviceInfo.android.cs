@@ -30,7 +30,7 @@ namespace Xamarin.Essentials
         {
             var currentIdiom = Idioms.Unsupported;
 
-            // first try UiModeManager
+            // first try UIModeManager
             using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext))
             {
                 var uiMode = uiModeManager?.CurrentModeType ?? UiMode.TypeUndefined;

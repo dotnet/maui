@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System;
+using System.Diagnostics;
 using ObjCRuntime;
 using UIKit;
 
@@ -6,7 +7,18 @@ namespace Xamarin.Essentials
 {
     public static partial class DeviceInfo
     {
-        static string GetModel() => UIDevice.CurrentDevice.Model;
+        static string GetModel()
+        {
+            try
+            {
+                return Essentials.Platform.GetSystemLibraryProperty("hw.machine");
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Unable to query hardware model, returning current device model.");
+            }
+            return UIDevice.CurrentDevice.Model;
+        }
 
         static string GetManufacturer() => "Apple";
 
