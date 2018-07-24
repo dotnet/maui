@@ -103,7 +103,7 @@ namespace Xamarin.Essentials
 
             var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true).ToArray();
 
-            ActivityCompat.RequestPermissions(Platform.CurrentActivity, androidPermissions, requestCode);
+            ActivityCompat.RequestPermissions(Platform.GetCurrentActivity(true), androidPermissions, requestCode);
 
             return await tcs.Task;
         }
