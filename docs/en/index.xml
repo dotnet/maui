@@ -99,6 +99,7 @@
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
       <Type Name="GyroscopeData" Kind="Structure" />
+      <Type Name="Launcher" Kind="Class" />
       <Type Name="Locale" Kind="Structure" />
       <Type Name="Location" Kind="Class" />
       <Type Name="LocationExtensions" Kind="Class" />

@@ -1,0 +1,31 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             x:Class="Samples.View.LauncherPage"
+             Title="Launcher">
+    <views:BasePage.BindingContext>
+        <viewmodels:LauncherViewModel />
+    </views:BasePage.BindingContext>
+    <StackLayout>
+        <Label Text="Check if Uri is launchable and launch it." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <Grid Padding="12,0,12,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Entry Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding LaunchUri}" />
+                <Button Grid.Row="1" Grid.ColumnSpan="2"  Text="Check Launch" Command="{Binding CanLaunchCommand}"/>
+                <Button Grid.Row="2" Grid.Column="0" Text="Launch Browser" Command="{Binding LaunchBrowserCommand}"/>
+                <Button Grid.Row="2" Grid.Column="1" Text="Launch Mail" Command="{Binding LaunchMailCommand}"/>
+            </Grid>
+        </ScrollView>
+    </StackLayout>
+</views:BasePage>

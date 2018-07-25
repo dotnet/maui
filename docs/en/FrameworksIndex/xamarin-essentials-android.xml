@@ -210,6 +210,12 @@
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
+    <Type Name="Xamarin.Essentials.Launcher" Id="T:Xamarin.Essentials.Launcher">
+      <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.CanOpenAsync(System.Uri)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Launcher.OpenAsync(System.Uri)" />
+    </Type>
     <Type Name="Xamarin.Essentials.Locale" Id="T:Xamarin.Essentials.Locale">
       <Member Id="P:Xamarin.Essentials.Locale.Country" />
       <Member Id="P:Xamarin.Essentials.Locale.Id" />

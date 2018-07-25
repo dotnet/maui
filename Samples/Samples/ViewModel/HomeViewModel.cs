@@ -110,6 +110,12 @@ namespace Samples.ViewModel
                     new[] { "geolocation", "position", "address", "mapping" }),
                 new SampleItem(
                     "📏",
+                    "Launcher",
+                    typeof(LauncherPage),
+                    "Launch other apps via Uri",
+                    new[] { "launcher", "app", "run" }),
+                new SampleItem(
+                    "📏",
                     "Gyroscope",
                     typeof(GyroscopePage),
                     "Retrieve rotation around the device's three primary axes.",

@@ -9,9 +9,6 @@ namespace Xamarin.Essentials
     {
         static Task PlatformOpenAsync(Uri uri, BrowserLaunchType launchType)
         {
-            if (uri == null)
-                throw new ArgumentNullException(nameof(uri));
-
             var nativeUrl = new NSUrl(uri.AbsoluteUri);
 
             switch (launchType)
