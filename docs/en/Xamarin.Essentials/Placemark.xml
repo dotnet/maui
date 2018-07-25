@@ -267,7 +267,7 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the streen name.</summary>
+        <summary>Gets or sets the street name.</summary>
         <value>The street name.</value>
         <remarks>
           <para></para>

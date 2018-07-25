@@ -177,7 +177,9 @@ namespace Xamarin.Essentials
 
             var end = DateTime.UtcNow.AddYears(20);
             var startDate = new Java.Util.Date();
+#pragma warning disable CS0618 // Type or member is obsolete
             var endDate = new Java.Util.Date(end.Year, end.Month, end.Day);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618
             var builder = new KeyPairGeneratorSpec.Builder(Platform.AppContext)

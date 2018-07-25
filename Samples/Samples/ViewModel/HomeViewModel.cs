@@ -127,6 +127,12 @@ namespace Samples.ViewModel
                     "Detect device's orientation relative to Earth's magnetic field.",
                     new[] { "compass", "magnetometer", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "📍",
+                    "Launch Maps",
+                    typeof(MapsPage),
+                    "Easily launch maps with coordinates.",
+                    new[] { "geocoding", "geolocation", "position", "address", "mapping", "maps", "route", "navigation" }),
+                new SampleItem(
                     "📏",
                     "Orientation Sensor",
                     typeof(OrientationSensorPage),

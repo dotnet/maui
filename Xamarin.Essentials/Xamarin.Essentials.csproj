@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\nugetreadme.txt" PackagePath="readme.txt" Pack="true" />
-    <PackageReference Include="mdoc" Version="5.7.1" PrivateAssets="All" />
+    <PackageReference Include="mdoc" Version="5.7.2" PrivateAssets="All" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.41" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <Compile Include="**\*.shared.cs" />
