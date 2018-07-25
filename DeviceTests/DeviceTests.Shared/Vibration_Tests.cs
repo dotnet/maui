@@ -6,7 +6,7 @@ namespace DeviceTests
 {
     public class Vibration_Tests
     {
-        [Theory]
+        [Fact]
         public void Vibrate()
         {
 #if __ANDROID__
@@ -24,7 +24,7 @@ namespace DeviceTests
             Vibration.Vibrate();
         }
 
-        [Theory]
+        [Fact]
         public void Vibrate_Cancel()
         {
 #if __ANDROID__

@@ -36,16 +36,16 @@
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Tests")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsTests")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.Android")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsAndroid")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.UWP")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsUWP")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.EssentialsDeviceTestsiOS")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsiOS")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>

@@ -9,7 +9,7 @@ var IOS_SIM_NAME = EnvironmentVariable("IOS_SIM_NAME") ?? "iPhone X";
 var IOS_SIM_RUNTIME = EnvironmentVariable("IOS_SIM_RUNTIME") ?? "iOS 11.4";
 var IOS_PROJ = "./DeviceTests.iOS/DeviceTests.iOS.csproj";
 var IOS_BUNDLE_ID = "com.xamarin.essentials.devicetests";
-var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/Xamarin.EssentialsDeviceTestsiOS.app";
+var IOS_IPA_PATH = "./DeviceTests.iOS/bin/iPhoneSimulator/Release/XamarinEssentialsDeviceTestsiOS.app";
 var IOS_TEST_RESULTS_PATH = "./xunit-ios.xml";
 
 var ANDROID_PROJ = "./DeviceTests.Android/DeviceTests.Android.csproj";
