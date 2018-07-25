@@ -48,13 +48,13 @@
     </Type>
     <Type Name="Xamarin.Essentials.Browser" Id="T:Xamarin.Essentials.Browser">
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.String,Xamarin.Essentials.BrowserLaunchType)" />
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.String,Xamarin.Essentials.BrowserLaunchMode)" />
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri)" />
-      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchType)" />
+      <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchMode)" />
     </Type>
-    <Type Name="Xamarin.Essentials.BrowserLaunchType" Id="T:Xamarin.Essentials.BrowserLaunchType">
-      <Member Id="F:Xamarin.Essentials.BrowserLaunchType.External" />
-      <Member Id="F:Xamarin.Essentials.BrowserLaunchType.SystemPreferred" />
+    <Type Name="Xamarin.Essentials.BrowserLaunchMode" Id="T:Xamarin.Essentials.BrowserLaunchMode">
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.External" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />

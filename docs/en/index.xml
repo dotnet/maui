@@ -69,7 +69,7 @@
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
-      <Type Name="BrowserLaunchType" Kind="Enumeration" />
+      <Type Name="BrowserLaunchMode" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="Compass" Kind="Class" />
       <Type Name="CompassChangedEventArgs" Kind="Class" />

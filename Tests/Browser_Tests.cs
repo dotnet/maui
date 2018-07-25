@@ -13,7 +13,7 @@ namespace Tests
 
         [Fact]
         public async Task Open_Uri_String_Launch_NetStandard() =>
-             await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Browser.OpenAsync("http://xamarin.com", BrowserLaunchType.SystemPreferred));
+             await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Browser.OpenAsync("http://xamarin.com", BrowserLaunchMode.SystemPreferred));
 
         [Fact]
         public async Task Open_Uri_NetStandard() =>
@@ -21,7 +21,7 @@ namespace Tests
 
         [Fact]
         public async Task Open_Uri_Launch_NetStandard() =>
-            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Browser.OpenAsync(new Uri("http://xamarin.com"), BrowserLaunchType.SystemPreferred));
+            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Browser.OpenAsync(new Uri("http://xamarin.com"), BrowserLaunchMode.SystemPreferred));
 
         [Theory]
         [InlineData("https://xamarin.com", "https://xamarin.com")]
