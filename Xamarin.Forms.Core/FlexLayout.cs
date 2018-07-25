@@ -388,6 +388,9 @@ namespace Xamarin.Forms
 
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
+			if (_root == null)
+				return;
+			
 			Layout(x, y, width, height);
 			foreach (var child in Children) {
 				var frame = GetFlexItem(child).GetFrame();
