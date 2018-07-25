@@ -39,7 +39,7 @@
       <FileWrites Include="$(MDocOutputPath)" />
     </ItemGroup>
     <Exec Condition=" '$(_ShouldGenerateDocs)' == 'true' "
-          Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc --out=&quot;$(MDocOutputPath)&quot; &quot;$(MDocDocumentationDirectory)&quot;" />
+          Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; export-msxdoc --debug --out=&quot;$(MDocOutputPath)&quot; &quot;$(MDocDocumentationDirectory)&quot;" />
   </Target>
 
   <!--

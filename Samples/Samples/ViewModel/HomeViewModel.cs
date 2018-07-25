@@ -110,6 +110,12 @@ namespace Samples.ViewModel
                     new[] { "geolocation", "position", "address", "mapping" }),
                 new SampleItem(
                     "📏",
+                    "Launcher",
+                    typeof(LauncherPage),
+                    "Launch other apps via Uri",
+                    new[] { "launcher", "app", "run" }),
+                new SampleItem(
+                    "📏",
                     "Gyroscope",
                     typeof(GyroscopePage),
                     "Retrieve rotation around the device's three primary axes.",
@@ -120,6 +126,12 @@ namespace Samples.ViewModel
                     typeof(MagnetometerPage),
                     "Detect device's orientation relative to Earth's magnetic field.",
                     new[] { "compass", "magnetometer", "sensors", "hardware", "device" }),
+                new SampleItem(
+                    "📍",
+                    "Launch Maps",
+                    typeof(MapsPage),
+                    "Easily launch maps with coordinates.",
+                    new[] { "geocoding", "geolocation", "position", "address", "mapping", "maps", "route", "navigation" }),
                 new SampleItem(
                     "📏",
                     "Orientation Sensor",

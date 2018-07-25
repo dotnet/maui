@@ -10,16 +10,13 @@ namespace Xamarin.Essentials
 {
     public static partial class Browser
     {
-        static Task PlatformOpenAsync(Uri uri, BrowserLaunchType launchType)
+        static Task PlatformOpenAsync(Uri uri, BrowserLaunchMode launchMode)
         {
-            if (uri == null)
-                throw new ArgumentNullException(nameof(uri));
-
             var nativeUri = AndroidUri.Parse(uri.AbsoluteUri);
 
-            switch (launchType)
+            switch (launchMode)
             {
-                case BrowserLaunchType.SystemPreferred:
+                case BrowserLaunchMode.SystemPreferred:
                     var tabsBuilder = new CustomTabsIntent.Builder();
                     tabsBuilder.SetShowTitle(true);
                     var tabsIntent = tabsBuilder.Build();
@@ -27,7 +24,7 @@ namespace Xamarin.Essentials
                     tabsIntent.Intent.SetFlags(ActivityFlags.NewTask);
                     tabsIntent.LaunchUrl(Platform.AppContext, nativeUri);
                     break;
-                case BrowserLaunchType.External:
+                case BrowserLaunchMode.External:
                     var intent = new Intent(Intent.ActionView, nativeUri);
                     intent.SetFlags(ActivityFlags.ClearTop);
                     intent.SetFlags(ActivityFlags.NewTask);

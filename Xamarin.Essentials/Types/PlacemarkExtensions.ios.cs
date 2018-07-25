@@ -4,7 +4,7 @@ using CoreLocation;
 
 namespace Xamarin.Essentials
 {
-    internal static partial class PlacemarkExtensions
+    public static partial class PlacemarkExtensions
     {
         internal static IEnumerable<Placemark> ToPlacemarks(this IEnumerable<CLPlacemark> addresses)
         {

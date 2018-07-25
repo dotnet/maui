@@ -67,6 +67,7 @@ namespace DeviceTests.UWP
         protected override void OnInitializeRunner()
         {
             AddTestAssembly(typeof(App).GetTypeInfo().Assembly);
+            AddTestAssembly(typeof(Accelerometer_Tests).GetTypeInfo().Assembly);
         }
     }
 }

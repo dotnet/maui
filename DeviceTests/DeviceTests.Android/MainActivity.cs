@@ -38,6 +38,7 @@ namespace DeviceTests.Droid
 
             // tests can be inside the main assembly
             AddTestAssembly(Assembly.GetExecutingAssembly());
+            AddTestAssembly(typeof(Battery_Tests).Assembly);
             AddExecutionAssembly(typeof(Battery_Tests).Assembly);
 
             // or in any reference assemblies

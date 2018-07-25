@@ -11,7 +11,7 @@ namespace Samples.ViewModel
     {
         string browserStatus;
         string uri = "http://xamarin.com";
-        int browserType = (int)BrowserLaunchType.SystemPreferred;
+        int browserType = (int)BrowserLaunchMode.SystemPreferred;
 
         public BrowserViewModel()
         {
@@ -32,7 +32,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref uri, value);
         }
 
-        public List<string> BrowserLaunchTypes { get; } =
+        public List<string> BrowserLaunchModes { get; } =
             new List<string>
             {
                 $"Use Default Browser App",
@@ -53,7 +53,7 @@ namespace Samples.ViewModel
             IsBusy = true;
             try
             {
-                await Browser.OpenAsync(uri, (BrowserLaunchType)BrowserType);
+                await Browser.OpenAsync(uri, (BrowserLaunchMode)BrowserType);
             }
             catch (Exception e)
             {

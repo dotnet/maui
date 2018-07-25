@@ -10,7 +10,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>DeviceTests.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Xamarin.EssentialsDeviceTestsiOS</AssemblyName>
+    <AssemblyName>XamarinEssentialsDeviceTestsiOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -110,8 +110,8 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.1.0.583944" />
-    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
+    <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.devices" Version="2.3.3" />
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
@@ -120,6 +120,10 @@
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
       <Name>Xamarin.Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DeviceTests.Shared\DeviceTests.Shared.csproj">
+      <Project>{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}</Project>
+      <Name>DeviceTests.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -155,5 +159,4 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
-  <Import Project="..\DeviceTests.Shared\DeviceTests.Shared.projitems" Label="Shared" />
 </Project>

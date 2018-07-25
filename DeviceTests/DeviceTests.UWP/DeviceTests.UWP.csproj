@@ -8,7 +8,7 @@
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DeviceTests.UWP</RootNamespace>
-    <AssemblyName>DeviceTests.UWP</AssemblyName>
+    <AssemblyName>XamarinEssentialsDeviceTestsUWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
@@ -127,9 +127,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="UnitTests.HeadlessRunner" Version="2.0.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.1.0.583944" />
+    <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.5" />
-    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.devices" Version="2.3.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
@@ -142,6 +142,10 @@
     <ProjectReference Include="..\..\Xamarin.Essentials\Xamarin.Essentials.csproj">
       <Project>{63a4f6a1-48bf-4d32-aed7-82f605edb042}</Project>
       <Name>Xamarin.Essentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DeviceTests.Shared\DeviceTests.Shared.csproj">
+      <Project>{be0de9a3-d92c-47c5-9ec4-dfb546bbdf77}</Project>
+      <Name>DeviceTests.Shared</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -204,7 +208,6 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\DeviceTests.Shared\DeviceTests.Shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

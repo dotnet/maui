@@ -36,16 +36,16 @@
           <AttributeName>System.Runtime.CompilerServices.CompilationRelaxations(8)</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Tests")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsTests")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.Android")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsAndroid")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("DeviceTests.UWP")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsUWP")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("Xamarin.EssentialsDeviceTestsiOS")</AttributeName>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsiOS")</AttributeName>
         </Attribute>
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
@@ -69,7 +69,7 @@
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
-      <Type Name="BrowserLaunchType" Kind="Enumeration" />
+      <Type Name="BrowserLaunchMode" Kind="Enumeration" />
       <Type Name="Clipboard" Kind="Class" />
       <Type Name="Compass" Kind="Class" />
       <Type Name="CompassChangedEventArgs" Kind="Class" />
@@ -99,6 +99,7 @@
       <Type Name="Gyroscope" Kind="Class" />
       <Type Name="GyroscopeChangedEventArgs" Kind="Class" />
       <Type Name="GyroscopeData" Kind="Structure" />
+      <Type Name="Launcher" Kind="Class" />
       <Type Name="Locale" Kind="Structure" />
       <Type Name="Location" Kind="Class" />
       <Type Name="LocationExtensions" Kind="Class" />
@@ -106,6 +107,9 @@
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerData" Kind="Structure" />
       <Type Name="MainThread" Kind="Class" />
+      <Type Name="MapDirectionsMode" Kind="Enumeration" />
+      <Type Name="Maps" Kind="Class" />
+      <Type Name="MapsLaunchOptions" Kind="Class" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
@@ -114,6 +118,7 @@
       <Type Name="PermissionException" Kind="Class" />
       <Type Name="PhoneDialer" Kind="Class" />
       <Type Name="Placemark" Kind="Class" />
+      <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
       <Type Name="Power" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
@@ -133,33 +138,4 @@
       <Type Name="Vibration" Kind="Class" />
     </Namespace>
   </Types>
-  <Title>Untitled</Title>
-  <ExtensionMethods>
-    <ExtensionMethod>
-      <Targets>
-        <Target Type="T:Xamarin.Essentials.Location" />
-      </Targets>
-      <Member MemberName="CalculateDistance">
-        <MemberSignature Language="C#" Value="public static double CalculateDistance (this Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
-        <MemberType>ExtensionMethod</MemberType>
-        <ReturnValue>
-          <ReturnType>System.Double</ReturnType>
-        </ReturnValue>
-        <Parameters>
-          <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" RefType="this" />
-          <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
-          <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
-        </Parameters>
-        <Docs>
-          <param name="locationStart">Start location to calculate from.</param>
-          <param name="locationEnd">End location to calculate from.</param>
-          <param name="units">Units to use during calculation.</param>
-          <summary>Extension to calculate distance from location to another location.</summary>
-        </Docs>
-        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
-      </Member>
-    </ExtensionMethod>
-  </ExtensionMethods>
 </Overview>

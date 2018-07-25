@@ -22,7 +22,7 @@
 
                 <Label Text="Browser Launch Type:" />
                 <Picker HorizontalOptions="FillAndExpand"
-                        ItemsSource="{Binding BrowserLaunchTypes}"
+                        ItemsSource="{Binding BrowserLaunchModes}"
                         SelectedIndex="{Binding BrowserType, Mode=TwoWay}" />
 
                 <Label Text="{Binding BrowserStatus}" />

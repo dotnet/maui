@@ -18,8 +18,9 @@ If you are upgrading from an earlier version there are a few changes to the API 
 * SensorSpeed.Ui is now SensorSpeed.UI
 * BatteryPowerSource.Ac is now BatteryPowerSource.AC
 * Change to generic EventHandlers for Accelerometer, Battery, Compass, Connectivity, Display Metrics, Magnetometer, OrientationSensor, Gyroscope, and Power.
+* BrowserLaunchType is now BrowserLaunchMode
 
-You may have registered an event hander for one of these:
+You may have registered an event handler for one of these:
 
 Gyroscope.ReadingChanged += OnReadingChanged;
 
@@ -29,7 +30,7 @@ void OnReadingChanged(GyroscopeChangedEventArgs e)
 {
 }
 
-Instead of using a custom EventHander we now use EventHandler<T> which always pass in an object as the first parameter:
+Instead of using a custom EventHandler we now use EventHandler<T> which always pass in an object as the first parameter:
 
 void OnReadingChanged(object sender, GyroscopeChangedEventArgs e)
 {
