@@ -332,8 +332,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				UpdateToolbar();
 			else if (e.PropertyName == NavigationPage.BarTextColorProperty.PropertyName)
 				UpdateToolbar();
-			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName)
-				UpdateToolbar();
 			else if (e.PropertyName == BarHeightProperty.PropertyName)
 				UpdateToolbar();
 		}
