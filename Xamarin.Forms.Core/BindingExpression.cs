@@ -515,8 +515,7 @@ namespace Xamarin.Forms
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				PropertyChangedEventHandler handler;
-				if (_listener.TryGetTarget(out handler) && handler != null)
+				if (_listener.TryGetTarget(out var handler) && handler != null)
 					handler(sender, e);
 				else
 					Unsubscribe();

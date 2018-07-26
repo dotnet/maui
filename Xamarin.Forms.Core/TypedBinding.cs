@@ -249,7 +249,7 @@ namespace Xamarin.Forms.Internals
 			public BindingExpression.WeakPropertyChangedProxy Listener { get; }
 			WeakReference<INotifyPropertyChanged> _weakPart = new WeakReference<INotifyPropertyChanged>(null);
 			readonly BindingBase _binding;
-
+			PropertyChangedEventHandler handler;
 			public INotifyPropertyChanged Part {
 				get {
 					INotifyPropertyChanged target;
@@ -259,7 +259,7 @@ namespace Xamarin.Forms.Internals
 				} 
 				set {
 					_weakPart.SetTarget(value);
-					Listener.SubscribeTo(value, OnPropertyChanged);
+					Listener.SubscribeTo(value, handler);
 				}
 			}
 
@@ -269,6 +269,8 @@ namespace Xamarin.Forms.Internals
 				PropertyName = propertyName;
 				_binding = binding;
 				Listener = new BindingExpression.WeakPropertyChangedProxy();
+				//avoid GC collection, keep a ref to the OnPropertyChanged handler
+				handler = new PropertyChangedEventHandler(OnPropertyChanged);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -78,6 +78,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				Assert.That(layout.label7.Text, Is.EqualTo("42"));
 
 				//testing INPC
+				GC.Collect();
 				vm.Text = "Text2";
 				Assert.AreEqual("Text2", layout.label0.Text);
 
