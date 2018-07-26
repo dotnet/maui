@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
@@ -21,7 +22,8 @@ using Windows.UI.Xaml.Input;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider
+	public class TabbedPageRenderer : IVisualElementRenderer, ITitleProvider, IToolbarProvider, 
+		IToolBarForegroundBinder
 	{
 		const string TabBarHeaderStackPanelName = "TabbedPageHeaderStackPanel";
 		const string TabBarHeaderImageName = "TabbedPageHeaderImage";
@@ -240,7 +242,8 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateAccessKeys();
 		}
 
-		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e) {
+		void OnPagesChanged(object sender, NotifyCollectionChangedEventArgs e) 
+		{
 			e.Apply(Element.Children, Control.Items);
 			switch (e.Action)
 			{
@@ -249,20 +252,33 @@ namespace Xamarin.Forms.Platform.UWP
 				case NotifyCollectionChangedAction.Replace:
 					if (e.NewItems != null)
 						for (int i = 0; i< e.NewItems.Count; i++)
-							(e.NewItems[i] as Page).PropertyChanged += OnChildPagePropertyChanged;
+							((Page)e.NewItems[i]).PropertyChanged += OnChildPagePropertyChanged;
 					if (e.OldItems != null)
 						for (int i = 0; i < e.OldItems.Count; i++)
-							(e.OldItems[i] as Page).PropertyChanged -= OnChildPagePropertyChanged;
+							((Page)e.OldItems[i]).PropertyChanged -= OnChildPagePropertyChanged;
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					foreach (var p in Element.Children)
-						p.PropertyChanged += OnChildPagePropertyChanged;
-					break;
-				default:
+					foreach (var page in Element.Children)
+						page.PropertyChanged += OnChildPagePropertyChanged;
 					break;
 			}
-			// Potential performance issue, UpdateLayout () is called for every page change
+			
 			Control.UpdateLayout();
+			EnsureBarColors(e.Action);
+		}
+
+		void EnsureBarColors(NotifyCollectionChangedAction action)
+		{
+			switch (action)
+			{
+				case NotifyCollectionChangedAction.Add:
+				case NotifyCollectionChangedAction.Replace:
+				case NotifyCollectionChangedAction.Reset:
+					// Need to make sure any new items have the correct fore/background colors
+					ApplyBarBackgroundColor(true);
+					ApplyBarTextColor(true);
+					break;
+			}
 		}
 
 		void OnChildPagePropertyChanged(object sender, PropertyChangedEventArgs e) {
@@ -323,11 +339,17 @@ namespace Xamarin.Forms.Platform.UWP
 			if (barBackgroundColor == _barBackgroundColor) return;
 			_barBackgroundColor = barBackgroundColor;
 
+			ApplyBarBackgroundColor();
+		}
+
+		void ApplyBarBackgroundColor(bool force = false)
+		{
 			var controlToolbarBackground = Control.ToolbarBackground;
-			if (controlToolbarBackground == null && barBackgroundColor.IsDefault) return;
+			if (controlToolbarBackground == null && _barBackgroundColor.IsDefault) return;
 
 			var brush = GetBarBackgroundBrush();
-			if (brush == controlToolbarBackground) return;
+			if (brush == controlToolbarBackground && !force) 
+				return;
 
 			TitleProvider.BarBackgroundBrush = brush;
 
@@ -345,11 +367,16 @@ namespace Xamarin.Forms.Platform.UWP
 			if (barTextColor == _barTextColor) return;
 			_barTextColor = barTextColor;
 
+			ApplyBarTextColor();
+		}
+
+		void ApplyBarTextColor(bool force = false)
+		{
 			var controlToolbarForeground = Control.ToolbarForeground;
-			if (controlToolbarForeground == null && barTextColor.IsDefault) return;
+			if (controlToolbarForeground == null && _barTextColor.IsDefault) return;
 
 			var brush = GetBarForegroundBrush();
-			if (brush == controlToolbarForeground)
+			if (brush == controlToolbarForeground && !force)
 				return;
 
 			TitleProvider.BarForegroundBrush = brush;
@@ -488,6 +515,23 @@ namespace Xamarin.Forms.Platform.UWP
 				}
 				AccessKeyHelper.UpdateAccessKey(control, page);
 			}
+		}
+
+		public void BindForegroundColor(AppBar appBar)
+		{
+			SetAppBarForegroundBinding(appBar);
+		}
+
+		public void BindForegroundColor(AppBarButton button)
+		{
+			SetAppBarForegroundBinding(button);
+		}
+
+		void SetAppBarForegroundBinding(FrameworkElement element)
+		{
+			element.SetBinding(Windows.UI.Xaml.Controls.Control.ForegroundProperty,
+				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("ToolbarForeground"), 
+					Source = Control, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
 		}
 	}
 }
