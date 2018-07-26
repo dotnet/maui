@@ -81,9 +81,7 @@
     <Compile Include="IToolBarForegroundBinder.cs" />
     <Compile Include="NativeBindingService.cs" />
     <Compile Include="NativeValueConverterService.cs" />
-    <Compile Include="NavigationPageRendererUWP.cs" />
     <Compile Include="PageExtensions.cs" />
-    <Compile Include="PlatformUWP.cs" />
     <Compile Include="SearchBarRenderer.cs" />
     <Compile Include="TextAlignmentToHorizontalAlignmentConverter.cs" />
     <Compile Include="StepperControl.cs" />
