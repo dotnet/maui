@@ -1345,9 +1345,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_child == null)
 					return;
 
-				if (_child.Element.Platform is Platform platform)
-					platform.DisposeModelAndChildrenRenderers(_child.Element);
-
+				_child.Element?.DisposeModalAndChildRenderers();
 				_child.NativeView.RemoveFromSuperview();
 				_child.Dispose();
 				_child = null;

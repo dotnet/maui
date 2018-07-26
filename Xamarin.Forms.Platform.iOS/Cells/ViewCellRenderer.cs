@@ -136,10 +136,7 @@ namespace Xamarin.Forms.Platform.iOS
 					IVisualElementRenderer renderer;
 					if (_rendererRef != null && _rendererRef.TryGetTarget(out renderer) && renderer.Element != null)
 					{
-						var platform = renderer.Element.Platform as Platform;
-						if (platform != null)
-							platform.DisposeModelAndChildrenRenderers(renderer.Element);
-
+						renderer.Element.DisposeModalAndChildRenderers();
 						_rendererRef = null;
 					}
 
@@ -191,8 +188,8 @@ namespace Xamarin.Forms.Platform.iOS
 					{
 						//when cells are getting reused the element could be already set to another cell
 						//so we should dispose based on the renderer and not the renderer.Element
-						var platform = renderer.Element.Platform as Platform;
-						platform.DisposeRendererAndChildren(renderer);
+						renderer.DisposeRendererAndChildren();
+
 						renderer = GetNewRenderer();
 					}
 				}

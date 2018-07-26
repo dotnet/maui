@@ -110,6 +110,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
     <Compile Include="CADisplayLinkTicker.cs" />
+    <Compile Include="DisposeHelpers.cs" />
     <Compile Include="EffectUtilities.cs" />
     <Compile Include="ExportCellAttribute.cs" />
     <Compile Include="ExportImageSourceHandlerAttribute.cs" />

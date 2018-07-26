@@ -159,14 +159,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_headerRenderer != null)
 				{
-					var platform = _headerRenderer.Element?.Platform as Platform;
-					platform?.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
+					_headerRenderer.Element?.DisposeModalAndChildRenderers();
 					_headerRenderer = null;
 				}
 				if (_footerRenderer != null)
 				{
-					var platform = _footerRenderer.Element?.Platform as Platform;
-					platform?.DisposeModelAndChildrenRenderers(_footerRenderer.Element);
+					_footerRenderer.Element?.DisposeModalAndChildRenderers();
 					_footerRenderer = null;
 				}
 
@@ -439,9 +437,8 @@ namespace Xamarin.Forms.Platform.iOS
 						return;
 					}
 					Control.TableFooterView = null;
-					var platform = _footerRenderer.Element.Platform as Platform;
-					if (platform != null)
-						platform.DisposeModelAndChildrenRenderers(_footerRenderer.Element);
+					
+					_footerRenderer.Element?.DisposeModalAndChildRenderers();
 					_footerRenderer.Dispose();
 					_footerRenderer = null;
 				}
@@ -461,9 +458,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TableFooterView = null;
 				_footerRenderer.Element.MeasureInvalidated -= OnFooterMeasureInvalidated;
 
-				var platform = _footerRenderer.Element.Platform as Platform;
-				if (platform != null)
-					platform.DisposeModelAndChildrenRenderers(_footerRenderer.Element);
+				_footerRenderer.Element?.DisposeModalAndChildRenderers();
 				_footerRenderer.Dispose();
 				_footerRenderer = null;
 			}
@@ -487,9 +482,9 @@ namespace Xamarin.Forms.Platform.iOS
 						return;
 					}
 					Control.TableHeaderView = null;
-					var platform = _headerRenderer.Element.Platform as Platform;
-					if (platform != null)
-						platform.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
+
+					_headerRenderer.Element?.DisposeModalAndChildRenderers();
+					_headerRenderer.Dispose();
 					_headerRenderer = null;
 				}
 
@@ -509,9 +504,7 @@ namespace Xamarin.Forms.Platform.iOS
 				Control.TableHeaderView = null;
 				_headerRenderer.Element.MeasureInvalidated -= OnHeaderMeasureInvalidated;
 
-				var platform = _headerRenderer.Element.Platform as Platform;
-				if (platform != null)
-					platform.DisposeModelAndChildrenRenderers(_headerRenderer.Element);
+				_headerRenderer.Element?.DisposeModalAndChildRenderers();
 				_headerRenderer.Dispose();
 				_headerRenderer = null;
 			}
