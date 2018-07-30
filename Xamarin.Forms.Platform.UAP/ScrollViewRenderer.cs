@@ -11,6 +11,7 @@ namespace Xamarin.Forms.Platform.UWP
 	public class ScrollViewRenderer : ViewRenderer<ScrollView, ScrollViewer>
 	{
 		VisualElement _currentView;
+		bool _checkedForRtlScroll = false;
 
 		public ScrollViewRenderer()
 		{
@@ -40,12 +41,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void Dispose(bool disposing)
 		{
-			if (Control != null)
-				Control.ViewChanged -= OnViewChanged;
-
-			if (Element != null)
-				Element.ScrollToRequested -= OnScrollToRequested;
-
+			CleanUp(Element, Control);
 			base.Dispose(disposing);
 		}
 
@@ -63,14 +59,25 @@ namespace Xamarin.Forms.Platform.UWP
 			return result;
 		}
 
+		void CleanUp(ScrollView scrollView, ScrollViewer scrollViewer)
+		{
+			if (scrollView != null)
+				scrollView.ScrollToRequested -= OnScrollToRequested;
+
+			if (scrollViewer != null)
+			{
+				scrollViewer.ViewChanged -= OnViewChanged;
+				if (scrollViewer.Content is FrameworkElement element)
+				{
+					element.LayoutUpdated -= SetInitialRtlPosition;
+				}
+			}
+		}
+
 		protected override void OnElementChanged(ElementChangedEventArgs<ScrollView> e)
 		{
 			base.OnElementChanged(e);
-
-			if (e.OldElement != null)
-			{
-				e.OldElement.ScrollToRequested -= OnScrollToRequested;
-			}
+			CleanUp(e.OldElement, Control);
 
 			if (e.NewElement != null)
 			{
@@ -89,7 +96,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				UpdateOrientation();
 
-				LoadContent();
+				UpdateContent();
 			}
 		}
 
@@ -98,7 +105,7 @@ namespace Xamarin.Forms.Platform.UWP
 			base.OnElementPropertyChanged(sender, e);
 
 			if (e.PropertyName == "Content")
-				LoadContent();
+				UpdateContent();
 			else if (e.PropertyName == Layout.PaddingProperty.PropertyName)
 				UpdateMargins();
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
@@ -109,28 +116,31 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateHorizontalScrollBarVisibility();
 		}
 
-		void LoadContent()
+		void UpdateContent()
 		{
 			if (_currentView != null)
-			{
 				_currentView.Cleanup();
-			}
+
+			if (Control?.Content is FrameworkElement frameworkElement)
+				frameworkElement.LayoutUpdated -= SetInitialRtlPosition;
 
 			_currentView = Element.Content;
 
 			IVisualElementRenderer renderer = null;
 			if (_currentView != null)
-			{
 				renderer = _currentView.GetOrCreateRenderer();
-			}
 
 			Control.Content = renderer != null ? renderer.ContainerElement : null;
 
 			UpdateMargins();
+			if(renderer.ContainerElement != null)
+				renderer.ContainerElement.LayoutUpdated += SetInitialRtlPosition;
 		}
 
 		async void OnScrollToRequested(object sender, ScrollToRequestedEventArgs e)
 		{
+			ClearRtlScrollCheck();
+
 			// Adding items into the view while scrolling to the end can cause it to fail, as
 			// the items have not actually been laid out and return incorrect scroll position
 			// values. The ScrollViewRenderer for Android does something similar by waiting up
@@ -165,9 +175,39 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			Element.SendScrollFinished();
 		}
+				
+		void SetInitialRtlPosition(object sender, object e)
+		{
+			if (Control == null) return;
+
+			if (Control.ActualWidth <= 0 || _checkedForRtlScroll || Control.Content == null)
+				return;
+
+			if (Element is IVisualElementController controller && controller.EffectiveFlowDirection.IsLeftToRight())
+			{
+				ClearRtlScrollCheck();
+				return;
+			}
+
+			var element = (Control.Content as FrameworkElement);
+			if (element.ActualWidth == Control.ActualWidth)
+				return;
+
+			ClearRtlScrollCheck();
+			Control.ChangeView(element.ActualWidth, 0, null, true);
+		}
+
+		void ClearRtlScrollCheck()
+		{
+			_checkedForRtlScroll = true;
+			var element = (Control.Content as FrameworkElement);
+			if (element != null)
+				element.LayoutUpdated -= SetInitialRtlPosition;
+		}
 
 		void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
+			ClearRtlScrollCheck();
 			Element.SetScrolledPosition(Control.HorizontalOffset, Control.VerticalOffset);
 
 			if (!e.IsIntermediate)
