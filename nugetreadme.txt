@@ -11,7 +11,7 @@ For Android projects there is a small amount of setup needed to handle permissio
 http://aka.ms/essentials-getstarted
 
 
-## Changes for 0.9.0-preview
+## Changes for 0.9.1-preview
 
 If you are upgrading from an earlier version there are a few changes to the API that may affect your code:
 
