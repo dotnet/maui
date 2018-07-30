@@ -402,13 +402,18 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_pageBusyDialog = new Native.Dialog(Forms.NativeParent)
 				{
-					Orientation = PopupOrientation.Top,
+					Orientation = PopupOrientation.Center,
+					BackgroundColor = EColor.Transparent
 				};
 
-				if (Device.Idiom == TargetIdiom.Watch)
+				if (Device.Idiom == TargetIdiom.Phone)
+				{
+					_pageBusyDialog.SetPartColor("bg_title", EColor.Transparent);
+					_pageBusyDialog.SetPartColor("bg_content", EColor.Transparent);
+				}
+				else if (Device.Idiom == TargetIdiom.Watch)
 				{
 					_pageBusyDialog.Style = "circle";
-					_pageBusyDialog.BackgroundColor = EColor.Transparent;
 				}
 
 				var activity = new EProgressBar(_pageBusyDialog)
