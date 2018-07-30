@@ -895,6 +895,8 @@ namespace Xamarin.Forms
 				unFocus(this, new FocusEventArgs(this, false));
 		}
 
+		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
+
 		void IFlowDirectionController.NotifyFlowDirectionChanged()
 		{
 			SetFlowDirectionFromParent(this);

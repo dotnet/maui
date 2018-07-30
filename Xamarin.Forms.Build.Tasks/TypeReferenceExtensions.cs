@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return properties.Single();
 			if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
 				return null;
-			return typeDef.BaseType.GetProperty(predicate, out declaringTypeRef);
+			return typeDef.BaseType.ResolveGenericParameters(typeRef).GetProperty(predicate, out declaringTypeRef);
 		}
 
 		public static EventDefinition GetEvent(this TypeReference typeRef, Func<EventDefinition, bool> predicate,
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 			if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
 				return null;
-			return typeDef.BaseType.GetEvent(predicate, out declaringTypeRef);
+			return typeDef.BaseType.ResolveGenericParameters(typeRef).GetEvent(predicate, out declaringTypeRef);
 		}
 
 		//this resolves generic eventargs (https://bugzilla.xamarin.com/show_bug.cgi?id=57574)
@@ -120,8 +120,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return bp.Single();
 			if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
 				return null;
-			var basetype = typeDef.BaseType.ResolveGenericParameters(typeRef);
-			return basetype.GetField(predicate, out declaringTypeRef);
+			return typeDef.BaseType.ResolveGenericParameters(typeRef).GetField(predicate, out declaringTypeRef);
 		}
 
 		public static bool ImplementsInterface(this TypeReference typeRef, TypeReference @interface)

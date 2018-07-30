@@ -28,6 +28,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (view == null || controller == null || (int)Build.VERSION.SdkInt < 17)
 				return;
 
+			// if android:targetSdkVersion < 17 setting these has no effect
 			if (controller.EffectiveFlowDirection.IsRightToLeft())
 				view.LayoutDirection = ALayoutDirection.Rtl;
 			else if (controller.EffectiveFlowDirection.IsLeftToRight())

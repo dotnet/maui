@@ -799,7 +799,6 @@ namespace Xamarin.Forms.Build.Tasks
 			var localName = propertyName.LocalName;
 			bool attached;
 			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out attached, context, lineInfo);
-			TypeReference _;
 
 			//If it's a BP, GetValue ()
 			if (CanGetValue(parent, bpRef, attached, lineInfo, context, out _))
@@ -1181,8 +1180,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static IEnumerable<Instruction> Get(VariableDefinition parent, string localName, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
 		{
 			var module = context.Body.Method.Module;
-			TypeReference declaringTypeReference;
-			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out declaringTypeReference);
+			var property = parent.VariableType.GetProperty(pd => pd.Name == localName, out var declaringTypeReference);
 			var propertyGetter = property.GetMethod;
 
 			module.ImportReference(parent.VariableType.ResolveCached());

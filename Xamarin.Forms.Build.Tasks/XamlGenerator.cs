@@ -333,7 +333,7 @@ namespace Xamarin.Forms.Build.Tasks
 				return "Xamarin.Forms";
 			if (namespaceuri == XamlParser.X2009Uri)
 				return "System";
-			if (namespaceuri != XamlParser.X2006Uri && !namespaceuri.Contains("clr-namespace"))
+			if (namespaceuri != XamlParser.X2006Uri && !namespaceuri.StartsWith("clr-namespace", StringComparison.InvariantCulture) && !namespaceuri.StartsWith("using", StringComparison.InvariantCulture))
 				throw new Exception($"Can't load types from xmlns {namespaceuri}");
 			return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 		}

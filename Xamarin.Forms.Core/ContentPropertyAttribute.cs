@@ -11,7 +11,7 @@ using System;
 
 namespace Xamarin.Forms
 {
-	[AttributeUsage(AttributeTargets.Class)]
+	[AttributeUsage(AttributeTargets.Class, Inherited = true)]
 	public sealed class ContentPropertyAttribute : Attribute
 	{
 		internal static string[] ContentPropertyTypes = { "Xamarin.Forms.ContentPropertyAttribute", "System.Windows.Markup.ContentPropertyAttribute" };
@@ -21,6 +21,6 @@ namespace Xamarin.Forms
 			Name = name;
 		}
 
-		public string Name { get; private set; }
+		public string Name { get; }
 	}
 }

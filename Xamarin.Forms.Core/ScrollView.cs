@@ -8,7 +8,7 @@ namespace Xamarin.Forms
 {
 	[ContentProperty("Content")]
 	[RenderWith(typeof(_ScrollViewRenderer))]
-	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>
+	public class ScrollView : Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController
 	{
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create("Orientation", typeof(ScrollOrientation), typeof(ScrollView), ScrollOrientation.Vertical);
 
@@ -149,9 +149,7 @@ namespace Xamarin.Forms
 			ScrollX = x;
 			ScrollY = y;
 
-			EventHandler<ScrolledEventArgs> handler = Scrolled;
-			if (handler != null)
-				handler(this, new ScrolledEventArgs(x, y));
+			Scrolled?.Invoke(this, new ScrolledEventArgs(x, y));
 		}
 
 		public event EventHandler<ScrolledEventArgs> Scrolled;
@@ -184,6 +182,8 @@ namespace Xamarin.Forms
 			return _scrollCompletionSource.Task;
 		}
 
+		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
+		
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (_content != null)
