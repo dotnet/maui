@@ -4,8 +4,8 @@ namespace Xamarin.Essentials
 {
     public static partial class Preferences
     {
-        internal static string PrivatePreferencesSharedName =>
-            $"{AppInfo.PackageName}.xamarinessentials";
+        internal static string GetPrivatePreferencesSharedName(string feature) =>
+            $"{AppInfo.PackageName}.xamarinessentials.{feature}";
 
         // overloads
 

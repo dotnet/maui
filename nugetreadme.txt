@@ -15,6 +15,7 @@ http://aka.ms/essentials-getstarted
 
 If you are upgrading from an earlier version there are a few changes to the API that may affect your code:
 
+* Android: VersionTracking has been reset
 * SensorSpeed.Ui is now SensorSpeed.UI
 * BatteryPowerSource.Ac is now BatteryPowerSource.AC
 * Change to generic EventHandlers for Accelerometer, Battery, Compass, Connectivity, Display Metrics, Magnetometer, OrientationSensor, Gyroscope, and Power.
