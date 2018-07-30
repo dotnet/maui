@@ -49,6 +49,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             sensor.ReadingChanged -= CompassReportedInterval;
+            sensor.ReportInterval = 0;
         }
     }
 }
