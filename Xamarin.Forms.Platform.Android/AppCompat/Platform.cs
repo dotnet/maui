@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					return;
 				_navAnimationInProgress = value;
 				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
+					MessagingCenter.Send(this, Android.Platform.CloseContextActionsSignalName);
 			}
 		}
 
@@ -424,8 +424,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			return canvas._renderer;
 		}
-
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 
 		#endregion
 	}
