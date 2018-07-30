@@ -11,7 +11,7 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Gyrpscope data of the rotation around the device's three primary axis.</summary>
+    <summary>Gyroscope data of the rotation around the device's three primary axis.</summary>
     <remarks>
       <para></para>
     </remarks>
