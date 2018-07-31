@@ -635,8 +635,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnControlSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if (Element.SelectedItem != List.SelectedItem && !_itemWasClicked)
-				((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+			if (Element.SelectedItem != List.SelectedItem)
+			{
+				if (_itemWasClicked)
+					List.SelectedItem = Element.SelectedItem;
+				else
+					((IElementController)Element).SetValueFromRenderer(ListView.SelectedItemProperty, List.SelectedItem);
+			}
 
 			_itemWasClicked = false;
 		}
