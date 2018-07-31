@@ -4,7 +4,7 @@ using Xamarin.Forms.Internals;
 namespace Xamarin.Forms
 {
 	[ContentProperty("Text")]
-	public sealed class Span : GestureElement, IFontElement, ITextElement, ILineHeightElement
+	public sealed class Span : GestureElement, IFontElement, IStyleElement, ITextElement, ILineHeightElement
 	{
 		internal readonly MergedStyle _mergedStyle;
 
