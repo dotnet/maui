@@ -183,7 +183,7 @@ namespace Xamarin.Forms.Internals
 		}
 
 		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
-		internal static Dictionary<string, StyleSheets.StylePropertyAttribute> StyleProperties { get; } = new Dictionary<string, StyleSheets.StylePropertyAttribute>();
+		internal static Dictionary<string, IList<StyleSheets.StylePropertyAttribute>> StyleProperties { get; } = new Dictionary<string, IList<StyleSheets.StylePropertyAttribute>>();
 
 		public static IEnumerable<Assembly> ExtraAssemblies { get; set; }
 
@@ -248,7 +248,10 @@ namespace Xamarin.Forms.Internals
 				for (var i = 0; i < stylePropertiesLength; i++)
 				{
 					var attribute = (StyleSheets.StylePropertyAttribute)styleAttributes[i];
-					StyleProperties[attribute.CssPropertyName] = attribute;
+					if (StyleProperties.TryGetValue(attribute.CssPropertyName, out var attrList))
+						attrList.Add(attribute);
+					else
+						StyleProperties[attribute.CssPropertyName] = new List<StyleSheets.StylePropertyAttribute> { attribute };
 				}
 			}
 
