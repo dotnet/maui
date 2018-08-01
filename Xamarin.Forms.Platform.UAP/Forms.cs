@@ -61,7 +61,6 @@ namespace Xamarin.Forms
 			IsInitialized = true;
 			s_state = launchActivatedEventArgs.PreviousExecutionState;
 
-			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 			Platform.UWP.Platform.SubscribeAlertsAndActionSheets();
 		}
 
@@ -90,23 +89,6 @@ namespace Xamarin.Forms
 			return new Windows.UI.Xaml.ResourceDictionary {
 				Source = new Uri("ms-appx:///Xamarin.Forms.Platform.UAP/Resources.xbf")
 			};
-		}
-
-		static void OnBackRequested(object sender, BackRequestedEventArgs e)
-		{
-			Application app = Application.Current;
-			if (app == null)
-				return;
-
-			Page page = app.MainPage;
-			if (page == null)
-				return;
-
-			var platform = page.Platform as Platform.UWP.Platform;
-			if (platform == null)
-				return;
-
-			e.Handled = platform.BackButtonPressed();
 		}
 	}
 }

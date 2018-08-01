@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation.Metadata;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -45,6 +46,16 @@ namespace Xamarin.Forms.Platform.UWP
 			return renderer;
 		}
 
+		internal static Platform Current
+		{
+			get
+			{
+				var frame = Window.Current?.Content as Windows.UI.Xaml.Controls.Frame;
+				var wbp = frame?.Content as WindowsBasePage;
+				return wbp?.Platform;
+			}
+		}
+
 		internal Platform(Windows.UI.Xaml.Controls.Page page)
 		{
 			if (page == null)
@@ -72,6 +83,8 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateBounds();
 
 			InitializeStatusBar();
+
+			SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
 		}
 
 		internal void SetPage(Page newRoot)
@@ -564,6 +577,17 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				return _commandBar;
 			}
+		}
+
+		void OnBackRequested(object sender, BackRequestedEventArgs e)
+		{
+			Application app = Application.Current;
+
+			Page page = app?.MainPage;
+			if (page == null)
+				return;
+
+			e.Handled = BackButtonPressed();
 		}
 	}
 }
