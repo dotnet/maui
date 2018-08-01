@@ -292,6 +292,30 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual((int)Button.CornerRadiusProperty.DefaultValue, button.CornerRadius);
 		}
 
+		[Test]
+		public void ButtonCornerRadiusSetToFive()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+
+			button.CornerRadius = 25;
+			Assert.AreEqual(25, button.CornerRadius);
+
+			button.CornerRadius = 5;
+			Assert.AreEqual(5, button.CornerRadius);
+		}
+
+		[Test]
+		public void ButtonBorderRadiusSetMinusOne()
+		{
+			var button = new Button { Platform = new UnitPlatform() };
+
+			button.BorderRadius = 25;
+			Assert.AreEqual(25, button.BorderRadius);
+
+			button.BorderRadius = -1;
+			Assert.AreEqual(-1, button.BorderRadius);
+		}
+
 		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
 		{
 			var bcl = (Button.ButtonContentLayout)layout2;
