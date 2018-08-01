@@ -71,6 +71,17 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Control.BackgroundColor = color == Color.Default ? NSColor.Clear : color.ToNSColor();
 
+			if (color == Color.Transparent)
+			{
+				Control.DrawsBackground = false;
+				Control.Bezeled = false;
+			}
+			else
+			{
+				Control.DrawsBackground = true;
+				Control.Bezeled = true;
+			}
+
 			base.SetBackgroundColor(color);
 		}
 
@@ -92,14 +103,14 @@ namespace Xamarin.Forms.Platform.MacOS
 		void HandleChanged(object sender, EventArgs e)
 		{
 			UpdateMaxLength();
-			
+
 			ElementController.SetValueFromRenderer(Editor.TextProperty, Control.StringValue);
 		}
 
 		void OnEditingEnded(object sender, EventArgs eventArgs)
 		{
 			Element.SetValue(VisualElement.IsFocusedPropertyKey, false);
-            ElementController.SendCompleted();
+			ElementController.SendCompleted();
 		}
 
 		void OnEditingBegan(object sender, EventArgs eventArgs)
