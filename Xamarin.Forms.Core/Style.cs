@@ -157,7 +157,7 @@ namespace Xamarin.Forms
 
 		static void OnBasedOnResourceChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			Style style = (bindable as VisualElement).Style;
+			Style style = (bindable as IStyleElement).Style;
 			if (style == null)
 				return;
 			style.UnApplyCore(bindable, (Style)oldValue);
