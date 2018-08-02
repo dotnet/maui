@@ -42,6 +42,43 @@
 			return config;
 		}
 
+		public static readonly BindableProperty IsSmoothScrollEnabledProperty =
+			BindableProperty.Create("IsSmoothScrollEnabled", typeof(bool),
+			typeof(TabbedPage), true);
+
+		public static bool GetIsSmoothScrollEnabled(BindableObject element)
+		{
+			return (bool)element.GetValue(IsSmoothScrollEnabledProperty);
+		}
+
+		public static void SetIsSmoothScrollEnabled(BindableObject element, bool value)
+		{
+			element.SetValue(IsSmoothScrollEnabledProperty, value);
+		}
+
+		public static bool IsSmoothScrollEnabled(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			return GetIsSmoothScrollEnabled(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> SetIsSmoothScrollEnabled(this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetIsSmoothScrollEnabled(config.Element, value);
+			return config;
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> EnableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			SetIsSmoothScrollEnabled(config.Element, true);
+			return config;
+		}
+
+		public static IPlatformElementConfiguration<Android, FormsElement> DisableSmoothScroll(this IPlatformElementConfiguration<Android, FormsElement> config)
+		{
+			SetIsSmoothScrollEnabled(config.Element, false);
+			return config;
+		}
+
 		public static readonly BindableProperty OffscreenPageLimitProperty =
 			BindableProperty.Create("OffscreenPageLimit", typeof(int),
 			typeof(TabbedPage), 3, validateValue: (binding, value) => (int)value >= 0);

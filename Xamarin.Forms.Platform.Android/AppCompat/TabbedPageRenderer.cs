@@ -36,7 +36,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		TabLayout _tabLayout;
 		BottomNavigationView _bottomNavigationView;
 		AWidget.RelativeLayout _relativeLayout;
-		bool _useAnimations = true;
 		FormsViewPager _viewPager;
 		Page _previousPage;
 		int[] _checkedStateSet = null;
@@ -60,19 +59,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		bool IsBottomTabPlacement => (Element != null) ? Element.OnThisPlatform().GetToolbarPlacement() == ToolbarPlacement.Bottom : false;
 		public Color BarItemColor => (Element != null) ? Element.OnThisPlatform().GetBarItemColor() : Color.Default;
 		public Color BarSelectedItemColor => (Element != null) ? Element.OnThisPlatform().GetBarSelectedItemColor() : Color.Default;
-
-		internal bool UseAnimations
-		{
-			get { return _useAnimations; }
-			set
-			{
-				FormsViewPager pager = _viewPager;
-
-				_useAnimations = value;
-				if (pager != null)
-					pager.EnableGesture = value;
-			}
-		}
 
 		IPageController PageController => Element as IPageController;
 
@@ -446,7 +432,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			return new FormsViewPager(context)
 			{
 				OverScrollMode = OverScrollMode.Never,
-				EnableGesture = UseAnimations,
+				EnableGesture = tabbedPage.OnThisPlatform().IsSwipePagingEnabled(),
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent),
 				Adapter = new FormsFragmentPagerAdapter<Page>(tabbedPage, FragmentManager) { CountOverride = tabbedPage.Children.Count }
 			};
@@ -508,7 +494,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void ScrollToCurrentPage()
 		{
 			((Platform)Element.Platform).NavAnimationInProgress = true;
-			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), UseAnimations);
+			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), Element.OnThisPlatform().IsSmoothScrollEnabled());
 			((Platform)Element.Platform).NavAnimationInProgress = false;
 		}
 

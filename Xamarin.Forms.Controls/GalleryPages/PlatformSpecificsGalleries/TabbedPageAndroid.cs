@@ -36,6 +36,11 @@ namespace Xamarin.Forms.Controls.GalleryPages.PlatformSpecificsGalleries
 						Text = "Click to Toggle Swipe Paging",
 						Command = new Command(() => On<Android>().SetIsSwipePagingEnabled(!On<Android>().IsSwipePagingEnabled()))
 					},
+					new Button
+					{
+						Text = "Click to Toggle Smooth Scroll",
+						Command = new Command(() => On<Android>().SetIsSmoothScrollEnabled(!On<Android>().IsSmoothScrollEnabled()))
+					},
 					offscreenPageLimit
 				}
 			};
