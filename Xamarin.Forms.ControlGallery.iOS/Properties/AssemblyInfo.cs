@@ -41,3 +41,4 @@ using Xamarin.Forms.Controls;
 
 // Deliberately broken image source and handler so we can test handling of image loading errors
 [assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
+[assembly: ExportRenderer(typeof(WkWebView), typeof(Xamarin.Forms.Platform.iOS.WkWebViewRenderer))]
