@@ -2222,7 +2222,19 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
-		public void TargetNullValue()
+		//https://github.com/xamarin/Xamarin.Forms/issues/3467
+		public void TargetNullValueIgnoredWhenBindingIsResolved()
+		{
+			var bindable = new MockBindable();
+			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
+			bindable.SetBinding(property, new Binding("Text") { TargetNullValue = "fallback" });
+			Assert.That(bindable.GetValue(property), Is.EqualTo("default"));
+			bindable.BindingContext = new MockViewModel { Text="Foo"};
+			Assert.That(bindable.GetValue(property), Is.EqualTo("Foo"));
+		}
+
+		[Test]
+		public void TargetNullValueFallback()
 		{
 			var bindable = new MockBindable();
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable), "default");
