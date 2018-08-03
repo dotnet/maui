@@ -525,9 +525,10 @@ namespace Xamarin.Forms.Platform.UWP
 			double rotation = view.Rotation;
 			double translationX = view.TranslationX;
 			double translationY = view.TranslationY;
-			double scale = view.Scale;
+			double scaleX = view.Scale * view.ScaleX;
+			double scaleY = view.Scale * view.ScaleY;
 
-			if (rotationX % 360 == 0 && rotationY % 360 == 0 && rotation % 360 == 0 && translationX == 0 && translationY == 0 && scale == 1)
+			if (rotationX % 360 == 0 && rotationY % 360 == 0 && rotation % 360 == 0 && translationX == 0 && translationY == 0 && scaleX == 1 && scaleY == 1)
 			{
 				frameworkElement.Projection = null;
 			}
@@ -544,8 +545,8 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						CenterOfRotationX = anchorX,
 						CenterOfRotationY = anchorY,
-						GlobalOffsetX = scale == 0 ? 0 : translationX / scale,
-						GlobalOffsetY = scale == 0 ? 0 : translationY / scale,
+						GlobalOffsetX = scaleX == 0 ? 0 : translationX / scaleX,
+						GlobalOffsetY = scaleY == 0 ? 0 : translationY / scaleY,
 						RotationX = -rotationX,
 						RotationY = -rotationY,
 						RotationZ = -rotation
@@ -558,8 +559,10 @@ namespace Xamarin.Forms.Platform.UWP
 						CenterX = anchorX,
 						CenterY = anchorY,
 						Rotation = rotation,
-						TranslateX = scale == 0 ? 0 : translationX / scale,
-						TranslateY = scale == 0 ? 0 : translationY / scale
+						ScaleX = scaleX,
+						ScaleY = scaleY,
+						TranslateX = scaleX == 0 ? 0 : translationX / scaleX,
+						TranslateY = scaleY == 0 ? 0 : translationY / scaleY
 					};
 				}
 			}
