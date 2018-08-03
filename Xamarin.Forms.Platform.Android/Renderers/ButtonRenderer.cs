@@ -187,7 +187,7 @@ namespace Xamarin.Forms.Platform.Android
 				Control.SetCompoundDrawablesWithIntrinsicBounds(null, image, null, null);
 
 				// Keep track of the image height so we can use it in OnLayout
-				_imageHeight = image.IntrinsicHeight;
+				_imageHeight = image?.IntrinsicHeight ?? -1;
 
 				image?.Dispose();
 				return;
