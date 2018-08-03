@@ -110,8 +110,8 @@ namespace Xamarin.Forms.Platform.Android
 			AddView(_masterLayout);
 
 			var activity = Context as Activity;
-			activity.ActionBar.SetDisplayShowHomeEnabled(true);
-			activity.ActionBar.SetHomeButtonEnabled(true);
+			activity?.ActionBar?.SetDisplayShowHomeEnabled(true);
+			activity?.ActionBar?.SetHomeButtonEnabled(true);
 
 			UpdateBackgroundColor(_page);
 			UpdateBackgroundImage(_page);
