@@ -107,7 +107,7 @@ namespace Xamarin.Forms
 
 		internal virtual object GetSourceValue(object value, Type targetPropertyType)
 		{
-			if (TargetNullValue != null)
+			if (value == null && TargetNullValue != null)
 				return TargetNullValue;
 
 			if (StringFormat != null)

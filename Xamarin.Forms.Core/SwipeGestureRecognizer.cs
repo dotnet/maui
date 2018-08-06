@@ -55,22 +55,22 @@ namespace Xamarin.Forms
 			var detected = false;
 			var threshold = Threshold;
 
-			if (direction.HasFlag(SwipeDirection.Left))
+			if (direction.IsLeft())
 			{
 				detected |= _totalX < -threshold;
 			}
 
-			if (direction.HasFlag(SwipeDirection.Right))
+			if (direction.IsRight())
 			{
 				detected |= _totalX > threshold;
 			}
 
-			if (direction.HasFlag(SwipeDirection.Down))
+			if (direction.IsDown())
 			{
 				detected |= _totalY > threshold;
 			}
 
-			if (direction.HasFlag(SwipeDirection.Up))
+			if (direction.IsUp())
 			{
 				detected |= _totalY < -threshold;
 			}
@@ -90,6 +90,26 @@ namespace Xamarin.Forms
 				cmd.Execute(CommandParameter);
 
 			Swiped?.Invoke(sender, new SwipedEventArgs(CommandParameter, direction));
+		}
+	}
+
+	static class SwipeDirectionExtensions
+	{
+		public static bool IsLeft(this SwipeDirection self)
+		{
+			return (self & SwipeDirection.Left) == SwipeDirection.Left;
+		}
+		public static bool IsRight(this SwipeDirection self)
+		{
+			return (self & SwipeDirection.Right) == SwipeDirection.Right;
+		}
+		public static bool IsUp(this SwipeDirection self)
+		{
+			return (self & SwipeDirection.Up) == SwipeDirection.Up;
+		}
+		public static bool IsDown(this SwipeDirection self)
+		{
+			return (self & SwipeDirection.Down) == SwipeDirection.Down;
 		}
 	}
 }
