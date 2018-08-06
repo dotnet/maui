@@ -111,7 +111,7 @@ namespace Xamarin.Forms
 			if (_nextCallToForceUpdateSizeQueued)
 				return;
 
-			if ((Parent as ListView)?.HasUnevenRows == true)
+			if ((Parent as ListView)?.HasUnevenRows == true || (Parent as TableView)?.HasUnevenRows == true)
 			{
 				_nextCallToForceUpdateSizeQueued = true;
 				OnForceUpdateSizeRequested();
