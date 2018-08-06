@@ -46,6 +46,9 @@ namespace Xamarin.Forms.Controls
 
 			//// Uncomment to verify that there is no crash when switching MainPage from MDP inside NavPage
 			//SetMainPage(new Bugzilla45702());
+
+			//// Uncomment to verify that there is no crash when rapidly switching pages that contain lots of buttons
+			//SetMainPage(new Issues.Issue2004());
 		}
 
 		public Page CreateDefaultMainPage()
