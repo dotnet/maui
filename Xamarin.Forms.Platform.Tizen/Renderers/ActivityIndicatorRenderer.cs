@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateIsRunning()
 		{
-			if (Element.IsRunning)
+			if (Element.IsRunning && Element.IsEnabled)
 			{
 				Control.PlayPulse();
 			}
