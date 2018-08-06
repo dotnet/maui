@@ -11,6 +11,8 @@ namespace Xamarin.Forms.Platform.MacOS
 		{
 			public EventHandler<BoolEventArgs> FocusChanged;
 
+			public EventHandler Completed;
+
 			bool _windowEventsSet;
 
 			bool _disposed;
@@ -40,8 +42,16 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				if (CurrentEditor != Window.FirstResponder)
 					FocusChanged?.Invoke(this, new BoolEventArgs(false));
-				
+
 				base.DidEndEditing(notification);
+			}
+
+			public override void KeyUp(NSEvent theEvent)
+			{
+				base.KeyUp(theEvent);
+
+				if (theEvent.KeyCode == (ushort)NSKey.Return)
+					Completed?.Invoke(this, EventArgs.Empty);
 			}
 
 			protected override void Dispose(bool disposing)
@@ -92,6 +102,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				{
 					textField = new FormsNSTextField();
 					(textField as FormsNSTextField).FocusChanged += TextFieldFocusChanged;
+					(textField as FormsNSTextField).Completed += OnCompleted;
 				}
 
 				SetNativeControl(textField);
@@ -167,7 +178,10 @@ namespace Xamarin.Forms.Platform.MacOS
 					Control.EditingEnded -= OnEditingEnded;
 					var formsNSTextField = (Control as FormsNSTextField);
 					if (formsNSTextField != null)
+					{
 						formsNSTextField.FocusChanged -= TextFieldFocusChanged;
+						formsNSTextField.Completed -= OnCompleted;
+					}
 				}
 			}
 
@@ -193,6 +207,10 @@ namespace Xamarin.Forms.Platform.MacOS
 		void OnEditingEnded(object sender, EventArgs e)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
+		}
+
+		void OnCompleted(object sender, EventArgs e)
+		{
 			EntryController?.SendCompleted();
 		}
 
