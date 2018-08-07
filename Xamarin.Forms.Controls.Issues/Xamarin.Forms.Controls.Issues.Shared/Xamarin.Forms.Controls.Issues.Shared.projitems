@@ -9,6 +9,7 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Issue2004.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3333.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2338.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla60045.xaml.cs">

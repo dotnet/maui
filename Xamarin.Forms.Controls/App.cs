@@ -72,6 +72,23 @@ namespace Xamarin.Forms.Controls
 			view.Navigated += (s, e) => MainPage.DisplayAlert("Navigated", $"If this popup appears multiple times, this test has failed", "ok"); ;
 
 			MainPage.Navigation.PushAsync(new ContentPage { Content = view, Title = "Issue 2393" });
+			//// Uncomment to verify that there is no gray screen displayed between the blue splash and red MasterDetailPage.
+			//SetMainPage(new Bugzilla44596SplashPage(() =>
+			//{
+			//	var newTabbedPage = new TabbedPage();
+			//	newTabbedPage.Children.Add(new ContentPage { BackgroundColor = Color.Red, Content = new Label { Text = "yay" } });
+			//	MainPage = new MasterDetailPage
+			//	{
+			//		Master = new ContentPage { Title = "Master", BackgroundColor = Color.Red },
+			//		Detail = newTabbedPage
+			//	};
+			//}));
+
+			//// Uncomment to verify that there is no crash when switching MainPage from MDP inside NavPage
+			//SetMainPage(new Bugzilla45702());
+
+			//// Uncomment to verify that there is no crash when rapidly switching pages that contain lots of buttons
+			//SetMainPage(new Issues.Issue2004());
 		}
 
 		public Page CreateDefaultMainPage()
