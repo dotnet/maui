@@ -38,6 +38,7 @@ namespace Xamarin.Forms.Platform.Android
 		AndroidApplicationLifecycleState _previousState;
 
 		bool _renderersAdded;
+		bool _activityCreated;
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		// Override this if you want to handle the default Android behavior of restoring fragments on an application restart
@@ -85,6 +86,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected void LoadApplication(Application application)
 		{
+			if(!_activityCreated)
+			{
+			    throw new InvalidOperationException("Activity OnCreate was not called prior to loading the application. Did you forget a base.OnCreate call?");
+			}
+			
 			if (!_renderersAdded)
 			{
 				RegisterHandlerForDefaultRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer), typeof(NavigationRenderer));
@@ -142,6 +148,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
+			_activityCreated = true;
 			if (!AllowFragmentRestore)
 			{
 				// Remove the automatically persisted fragment structure; we don't need them
