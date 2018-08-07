@@ -49,7 +49,9 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			RunningApp.Screenshot("Start G1601");
 			RunningApp.WaitForElement(q => q.Marked("CRASH!"));
+			RunningApp.Screenshot("I see the button");
 			RunningApp.Tap (q => q.Marked ("CRASH!"));
+			RunningApp.Screenshot("Didn't crash!");
 		}
 #endif
 	}

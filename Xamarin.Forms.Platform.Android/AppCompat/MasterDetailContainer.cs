@@ -116,18 +116,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				transaction.CommitAllowingStateLossEx();
 
 				_currentFragment = fragment;
-
-				new Handler(Looper.MainLooper).PostAtFrontOfQueue(() =>
-				{
-					if (_pageContainer == null)
-					{
-						// The view we're hosting in the fragment was never created (possibly we're already 
-						// navigating to another page?) so there's nothing to commit
-						return;
-					}
-
-					FragmentManager.ExecutePendingTransactionsEx();
-				});
 			}
 		}
 
