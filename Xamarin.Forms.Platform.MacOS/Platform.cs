@@ -134,11 +134,15 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		internal static void DisposeModelAndChildrenRenderers(Element view)
 		{
-			IVisualElementRenderer renderer;
 			foreach (VisualElement child in view.Descendants())
-				DisposeModelAndChildrenRenderers(child);
+				DisposeRenderer(child);
 
-			renderer = GetRenderer((VisualElement)view);
+			DisposeRenderer(view);
+		}
+
+		static void DisposeRenderer(Element view)
+		{
+			IVisualElementRenderer renderer = GetRenderer((VisualElement)view);
 			if (renderer?.ViewController?.ParentViewController != null)
 				renderer?.ViewController?.RemoveFromParentViewController();
 
