@@ -9,11 +9,11 @@
 
     <DataTemplate x:Key="TitleDefaultTemplate" >
         <TextBlock DataContext="{Binding}" 
-                   Text="{Binding Converter={StaticResource ToUpperConverter}}" 
+                   Text="{Binding}"
                    FontFamily="Segoe UI"
                    FontSize="26"
                    TextOptions.TextFormattingMode="Ideal"
-                   TextTrimming="CharacterEllipsis"
+                   TextWrapping="WrapWithOverflow"
                    Foreground="Black"/>
     </DataTemplate>
 
