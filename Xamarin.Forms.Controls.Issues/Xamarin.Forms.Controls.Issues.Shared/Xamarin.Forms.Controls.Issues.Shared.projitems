@@ -363,6 +363,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3008.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3019.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2993.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3507.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LegacyComponents\NonAppCompatSwitch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModalActivityIndicatorTest.cs" />

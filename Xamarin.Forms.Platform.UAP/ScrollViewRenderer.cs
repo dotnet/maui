@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.Content = renderer != null ? renderer.ContainerElement : null;
 
 			UpdateMargins();
-			if(renderer.ContainerElement != null)
+			if (renderer?.ContainerElement != null)
 				renderer.ContainerElement.LayoutUpdated += SetInitialRtlPosition;
 		}
 
@@ -175,7 +175,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			Element.SendScrollFinished();
 		}
-				
+
 		void SetInitialRtlPosition(object sender, object e)
 		{
 			if (Control == null) return;
@@ -200,8 +200,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void ClearRtlScrollCheck()
 		{
 			_checkedForRtlScroll = true;
-			var element = (Control.Content as FrameworkElement);
-			if (element != null)
+			if (Control.Content is FrameworkElement element)
 				element.LayoutUpdated -= SetInitialRtlPosition;
 		}
 
