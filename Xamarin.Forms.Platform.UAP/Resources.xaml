@@ -147,19 +147,6 @@
 	<SolidColorBrush x:Key="TabButtonPointerOverBackgroundBrush" Color="#44888888" />
 	<SolidColorBrush x:Key="TabButtonBackgroundBrush" Color="#29888888" />
 
-	<Style x:Key="TitleToolbar" TargetType="uwp:FormsCommandBar">
-		<Setter Property="ContentTemplate">
-			<Setter.Value>
-				<DataTemplate>
-					<Grid Background="{Binding ToolbarBackground}">
-						<TextBlock Text="{Binding}" Margin="10,0,0,0" VerticalAlignment="Center" Style="{ThemeResource TitleTextBlockStyle}" Foreground="{Binding ToolbarForeground}" />
-					</Grid>
-				</DataTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-
-
 	<Style x:Key="FormsListViewItem" TargetType="ListViewItem">
 		<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
 		<Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />

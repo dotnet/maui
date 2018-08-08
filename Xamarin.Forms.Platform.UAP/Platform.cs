@@ -14,9 +14,8 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public abstract class Platform : IPlatform, INavigation, IToolbarProvider
+	public abstract class Platform : IPlatform, INavigation
 	{
-		IToolbarProvider _toolbarProvider;
 		static Task<bool> s_currentAlert;
 
 		internal static StatusBar MobileStatusBar => ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar") ? StatusBar.GetForCurrentView() : null;
@@ -309,14 +308,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			UpdateToolbarTracker();
 
-			UpdateToolbarTitle(newPage);
-
 			await UpdateToolbarItems();
-		}
-
-		Task<CommandBar> IToolbarProvider.GetCommandBarAsync()
-		{
-			return GetCommandBarAsync();
 		}
 
 		async void OnToolbarItemsChanged(object sender, EventArgs e)
@@ -379,38 +371,30 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 		}
 
-		void UpdateToolbarTitle(Page page)
-		{
-			if (_toolbarProvider == null)
-				return;
-
-			((ToolbarProvider)_toolbarProvider).CommandBar.Content = page.Title;
-		}
-
 		internal async Task UpdateToolbarItems()
 		{
-			CommandBar commandBar = await GetCommandBarAsync();
-			if (commandBar != null)
+			var toolbarProvider = GetToolbarProvider();
+			
+			if (toolbarProvider == null)
 			{
-				commandBar.PrimaryCommands.Clear();
-				commandBar.SecondaryCommands.Clear();
-
-				if (_page.BottomAppBar != null || _page.TopAppBar != null)
-				{
-					_page.BottomAppBar = null;
-					_page.TopAppBar = null;
-					_page.InvalidateMeasure();
-				}
+				return;
 			}
 
-			var toolBarProvider = GetToolbarProvider() as IToolBarForegroundBinder;
+			CommandBar commandBar = await toolbarProvider.GetCommandBarAsync();
+
+			if (commandBar == null)
+			{
+				return;
+			}
+
+			commandBar.PrimaryCommands.Clear();
+			commandBar.SecondaryCommands.Clear();
+
+			var toolBarForegroundBinder = GetToolbarProvider() as IToolBarForegroundBinder;
 
 			foreach (ToolbarItem item in _toolbarTracker.ToolbarItems.OrderBy(ti => ti.Priority))
 			{
-				if (commandBar == null)
-					commandBar = CreateCommandBar();
-
-				toolBarProvider?.BindForegroundColor(commandBar);
+				toolBarForegroundBinder?.BindForegroundColor(commandBar);
 
 				var button = new AppBarButton();
 				button.SetBinding(AppBarButton.LabelProperty, "Text");
@@ -421,7 +405,7 @@ namespace Xamarin.Forms.Platform.UWP
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)
 				{
-					toolBarProvider?.BindForegroundColor(button);
+					toolBarForegroundBinder?.BindForegroundColor(button);
 					commandBar.PrimaryCommands.Add(button);
 				}
 				else
@@ -429,37 +413,6 @@ namespace Xamarin.Forms.Platform.UWP
 					commandBar.SecondaryCommands.Add(button);
 				}
 			}
-
-			if (commandBar?.PrimaryCommands.Count + commandBar?.SecondaryCommands.Count == 0)
-				ClearCommandBar();
-		}
-
-		void ClearCommandBar()
-		{
-			if (_toolbarProvider != null)
-			{
-				_toolbarProvider = null;
-				if (Device.Idiom == TargetIdiom.Phone)
-					_page.BottomAppBar = null;
-				else
-					_page.TopAppBar = null;
-			}
-		}
-
-		CommandBar CreateCommandBar()
-		{
-			var bar = new FormsCommandBar();
-			if (Device.Idiom != TargetIdiom.Phone)
-				bar.Style = (Windows.UI.Xaml.Style)Windows.UI.Xaml.Application.Current.Resources["TitleToolbar"];
-
-			_toolbarProvider = new ToolbarProvider(bar);
-
-			if (Device.Idiom == TargetIdiom.Phone)
-				_page.BottomAppBar = bar;
-			else
-				_page.TopAppBar = bar;
-
-			return bar;
 		}
 
 		internal IToolbarProvider GetToolbarProvider()
@@ -477,21 +430,7 @@ namespace Xamarin.Forms.Platform.UWP
 				element = pageContainer?.CurrentPage;
 			}
 
-			if (provider != null && _toolbarProvider == null)
-				ClearCommandBar();
-
 			return provider;
-		}
-
-		async Task<CommandBar> GetCommandBarAsync()
-		{
-			IToolbarProvider provider = GetToolbarProvider();
-			if (provider == null)
-			{
-				return null;
-			}
-
-			return await provider.GetCommandBarAsync();
 		}
 
 		internal static void SubscribeAlertsAndActionSheets()
@@ -562,31 +501,12 @@ namespace Xamarin.Forms.Platform.UWP
 			return result == ContentDialogResult.Primary;
 		}
 
-		class ToolbarProvider : IToolbarProvider
-		{
-			readonly Task<CommandBar> _commandBar;
-
-			public ToolbarProvider(CommandBar commandBar)
-			{
-				_commandBar = Task.FromResult(commandBar);
-			}
-
-			public CommandBar CommandBar => _commandBar.Result;
-
-			public Task<CommandBar> GetCommandBarAsync()
-			{
-				return _commandBar;
-			}
-		}
-
 		void OnBackRequested(object sender, BackRequestedEventArgs e)
 		{
 			Application app = Application.Current;
-
 			Page page = app?.MainPage;
 			if (page == null)
 				return;
-
 			e.Handled = BackButtonPressed();
 		}
 	}
