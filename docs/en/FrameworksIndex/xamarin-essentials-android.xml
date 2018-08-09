@@ -22,13 +22,12 @@
     </Type>
     <Type Name="Xamarin.Essentials.Barometer" Id="T:Xamarin.Essentials.Barometer">
       <Member Id="E:Xamarin.Essentials.Barometer.ReadingChanged" />
-      <Member Id="M:Xamarin.Essentials.Barometer.Start" />
+      <Member Id="M:Xamarin.Essentials.Barometer.Start(Xamarin.Essentials.SensorSpeed)" />
       <Member Id="M:Xamarin.Essentials.Barometer.Stop" />
       <Member Id="P:Xamarin.Essentials.Barometer.IsMonitoring" />
-      <Member Id="P:Xamarin.Essentials.Barometer.IsSupported" />
     </Type>
     <Type Name="Xamarin.Essentials.BarometerChangedEventArgs" Id="T:Xamarin.Essentials.BarometerChangedEventArgs">
-      <Member Id="P:Xamarin.Essentials.BarometerChangedEventArgs.BarometerData" />
+      <Member Id="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.BarometerData" Id="T:Xamarin.Essentials.BarometerData">
       <Member Id="P:Xamarin.Essentials.BarometerData.Pressure" />
