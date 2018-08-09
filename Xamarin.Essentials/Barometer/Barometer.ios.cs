@@ -5,7 +5,8 @@ namespace Xamarin.Essentials
 {
     public static partial class Barometer
     {
-        static bool PlatformIsSupported => CMAltimeter.IsRelativeAltitudeAvailable;
+        static bool PlatformIsSupported =>
+            CMAltimeter.IsRelativeAltitudeAvailable;
 
         static CMAltimeter altitudeManager;
 
@@ -13,10 +14,11 @@ namespace Xamarin.Essentials
         {
             altitudeManager = new CMAltimeter();
             altitudeManager.StartRelativeAltitudeUpdates(Platform.GetCurrentQueue(), LocationManagerUpdatedHeading);
-        }
 
-        static void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error)
-            => OnChanged(new BarometerData(e.Pressure.DoubleValue / 10d)); // Convert to HectoPascal from KiloPascal
+            // Heading updates Convert to HectoPascal from KiloPascal
+            void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error) =>
+                OnChanged(new BarometerData(e.Pressure.DoubleValue / 10d));
+        }
 
         static void PlatformStop()
         {

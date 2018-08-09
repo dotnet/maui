@@ -23,9 +23,9 @@ namespace DeviceTests
             Barometer.ReadingChanged += Barometer_ReadingChanged;
             void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
             {
-                tcs.TrySetResult(e.BarometerData);
+                tcs.TrySetResult(e.Reading);
             }
-            Barometer.Start();
+            Barometer.Start(SensorSpeed.UI);
 
             var d = await tcs.Task;
 
@@ -46,9 +46,9 @@ namespace DeviceTests
             Barometer.ReadingChanged += Barometer_ReadingChanged;
             void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
             {
-                tcs.TrySetResult(e.BarometerData);
+                tcs.TrySetResult(e.Reading);
             }
-            Barometer.Start();
+            Barometer.Start(SensorSpeed.UI);
 
             var d = await tcs.Task;
             Assert.True(Barometer.IsMonitoring);
@@ -69,9 +69,9 @@ namespace DeviceTests
             Barometer.ReadingChanged += Barometer_ReadingChanged;
             void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
             {
-                tcs.TrySetResult(e.BarometerData);
+                tcs.TrySetResult(e.Reading);
             }
-            Barometer.Start();
+            Barometer.Start(SensorSpeed.UI);
 
             var d = await tcs.Task;
 

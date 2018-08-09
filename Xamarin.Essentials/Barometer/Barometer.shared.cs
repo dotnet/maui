@@ -4,11 +4,14 @@ namespace Xamarin.Essentials
 {
     public static partial class Barometer
     {
+        static bool useSyncContext;
+
         public static event EventHandler<BarometerChangedEventArgs> ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
 
-        public static bool IsSupported => PlatformIsSupported;
+        public static bool IsSupported =>
+            PlatformIsSupported;
 
         public static void Start(SensorSpeed sensorSpeed)
         {
@@ -19,6 +22,8 @@ namespace Xamarin.Essentials
                 return;
 
             IsMonitoring = true;
+            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+
             try
             {
                 PlatformStart(sensorSpeed);
@@ -51,26 +56,31 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(BarometerData reading)
-                => OnChanged(new BarometerChangedEventArgs(reading));
+        internal static void OnChanged(BarometerData reading) =>
+            OnChanged(new BarometerChangedEventArgs(reading));
 
         static void OnChanged(BarometerChangedEventArgs e)
-            => ReadingChanged?.Invoke(null, e);
-    }
-
-    public struct BarometerData
-    {
-        internal BarometerData(double hPAPressure) =>
-            Pressure = hPAPressure;
-
-        public double Pressure { get; }
+        {
+            if (useSyncContext)
+                MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
+            else
+                ReadingChanged?.Invoke(null, e);
+        }
     }
 
     public class BarometerChangedEventArgs : EventArgs
     {
-        internal BarometerChangedEventArgs(BarometerData pressureData)
-            => BarometerData = pressureData;
+        internal BarometerChangedEventArgs(BarometerData reading) =>
+            Reading = reading;
 
-        public BarometerData BarometerData { get; } // In Hectopascals (hPA)
+        public BarometerData Reading { get; }
+    }
+
+    public struct BarometerData
+    {
+        internal BarometerData(double pressure) =>
+            Pressure = pressure;
+
+        public double Pressure { get; }
     }
 }

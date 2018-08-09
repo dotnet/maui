@@ -23,13 +23,13 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Grid.Row="0" Grid.ColumnSpan="2"
-                       Text="{Binding BaromterValue, StringFormat='Barometer pressure (hPA): {0:N}'}" />
+                       Text="{Binding Pressure, StringFormat='Barometer pressure (hPA): {0:N}'}" />
 
-                <Button Grid.Row="1" Grid.Column="0" Text="Start" Command="{Binding StartBarometerComand}"
-                        IsEnabled="{Binding BarometerIsActive, Converter={StaticResource NegativeConverter}}" />
+                <Button Grid.Row="1" Grid.Column="0" Text="Start" Command="{Binding StartComand}"
+                        IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}" />
 
-                <Button Grid.Row="1"  Grid.Column="1" Text="Stop" Command="{Binding StopBarometerCommand}"
-                        IsEnabled="{Binding BarometerIsActive}" />
+                <Button Grid.Row="1"  Grid.Column="1" Text="Stop" Command="{Binding StopCommand}"
+                        IsEnabled="{Binding IsActive}" />
             </Grid>
         </ScrollView>
     </StackLayout>

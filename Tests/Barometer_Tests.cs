@@ -12,7 +12,7 @@ namespace Tests
 
         [Fact]
         public void Monitor_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start());
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start(SensorSpeed.UI));
 
         [Fact]
         public void Monitor_Off_NetStandard() =>
