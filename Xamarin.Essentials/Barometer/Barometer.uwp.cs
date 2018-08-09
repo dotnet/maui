@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
 
         static WinBarometer DefaultBarometer => WinBarometer.GetDefault();
 
-        static bool PlatformIsSupported =>
+        internal static bool IsSupported =>
             DefaultBarometer != null;
 
         static void PlatformStart(SensorSpeed sensorSpeed)

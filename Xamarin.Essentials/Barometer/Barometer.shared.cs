@@ -10,9 +10,6 @@ namespace Xamarin.Essentials
 
         public static bool IsMonitoring { get; private set; }
 
-        public static bool IsSupported =>
-            PlatformIsSupported;
-
         public static void Start(SensorSpeed sensorSpeed)
         {
             if (!IsSupported)

@@ -13,14 +13,14 @@
   <Docs>
     <summary>The current pressure information from the change event.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
     <Member MemberName="BarometerData">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData BarometerData { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData BarometerData" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerChangedEventArgs.BarometerData" />
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData Reading { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData Reading" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -32,7 +32,9 @@
       <Docs>
         <summary>Gets the current barometer pressure data</summary>
         <value>Pressure in hPA</value>
-        <remarks><para /></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>

@@ -5,7 +5,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Barometer
     {
-        static bool PlatformIsSupported =>
+        internal static bool IsSupported =>
             CMAltimeter.IsRelativeAltitudeAvailable;
 
         static CMAltimeter altitudeManager;

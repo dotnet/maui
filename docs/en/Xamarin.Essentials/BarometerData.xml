@@ -35,7 +35,7 @@
         <summary>Pressure in hPA</summary>
         <value>The pressure</value>
         <remarks>
-          <para />
+          <para></para>
         </remarks>
       </Docs>
     </Member>

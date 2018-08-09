@@ -6,7 +6,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Barometer
     {
-        static bool PlatformIsSupported =>
+        internal static bool IsSupported =>
                DefaultBarometer != null;
 
         static Sensor DefaultBarometer => Platform.SensorManager?.GetDefaultSensor(SensorType.Pressure);

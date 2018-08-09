@@ -37,24 +37,6 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="IsSupported">
-      <MemberSignature Language="C#" Value="public static bool IsSupported { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property bool IsSupported" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Barometer.IsSupported" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets if the barometer is supported.</summary>
-        <value>If barometer is supported.</value>
-        <remarks><para></para></remarks>
-      </Docs>
-    </Member>
     <Member MemberName="ReadingChanged">
       <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BarometerChangedEventArgs&gt; ReadingChanged;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BarometerChangedEventArgs&gt; ReadingChanged" />
@@ -75,9 +57,9 @@
       </Docs>
     </Member>
     <Member MemberName="Start">
-      <MemberSignature Language="C#" Value="public static void Start ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Barometer.Start" />
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed)" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Barometer.Start(Xamarin.Essentials.SensorSpeed)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -86,7 +68,9 @@
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
-      <Parameters />
+       <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+      </Parameters>
       <Docs>
         <summary>Start monitoring for changes to the barometer.</summary>
         <remarks>Will throw FeatureNotSupportedException if not supported on device.</remarks>
