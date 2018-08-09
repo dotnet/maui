@@ -29,7 +29,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			Application.SetCurrentApplication(application);
 			_application = application;
-			_storyboardMainMenuCount = (int)NSApplication.SharedApplication.MainMenu.Count;
+
+			if(NSApplication.SharedApplication.MainMenu != null)
+				_storyboardMainMenuCount = (int)NSApplication.SharedApplication.MainMenu.Count;
 
 			application.PropertyChanged += ApplicationOnPropertyChanged;
 		}
