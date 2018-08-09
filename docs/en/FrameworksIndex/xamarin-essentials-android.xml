@@ -20,6 +20,19 @@
       <Member Id="P:Xamarin.Essentials.AppInfo.Version" />
       <Member Id="P:Xamarin.Essentials.AppInfo.VersionString" />
     </Type>
+    <Type Name="Xamarin.Essentials.Barometer" Id="T:Xamarin.Essentials.Barometer">
+      <Member Id="E:Xamarin.Essentials.Barometer.ReadingChanged" />
+      <Member Id="M:Xamarin.Essentials.Barometer.Start" />
+      <Member Id="M:Xamarin.Essentials.Barometer.Stop" />
+      <Member Id="P:Xamarin.Essentials.Barometer.IsMonitoring" />
+      <Member Id="P:Xamarin.Essentials.Barometer.IsSupported" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BarometerChangedEventArgs" Id="T:Xamarin.Essentials.BarometerChangedEventArgs">
+      <Member Id="P:Xamarin.Essentials.BarometerChangedEventArgs.BarometerData" />
+    </Type>
+    <Type Name="Xamarin.Essentials.BarometerData" Id="T:Xamarin.Essentials.BarometerData">
+      <Member Id="P:Xamarin.Essentials.BarometerData.Pressure" />
+    </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
       <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
       <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
@@ -265,6 +278,7 @@
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
     </Type>
     <Type Name="Xamarin.Essentials.Maps" Id="T:Xamarin.Essentials.Maps">
+      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />

@@ -1,0 +1,43 @@
+<Type Name="BarometerData" FullName="Xamarin.Essentials.BarometerData">
+  <TypeSignature Language="C#" Value="public struct BarometerData" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit BarometerData extends System.ValueType" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BarometerData" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>
+      <para>Contains the pressure measured by the user's device.</para>
+    </summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Pressure">
+      <MemberSignature Language="C#" Value="public double Pressure { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 Pressure" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerData.Pressure" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Pressure in hPA</summary>
+        <value>The pressure</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

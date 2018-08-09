@@ -28,14 +28,20 @@ namespace Samples.ViewModel
                     "📏",
                     "All Sensors",
                     typeof(AllSensorsPage),
-                    "Have a look at the accelerometer, compass, gyroscope, magnetometer, and orientation sensors.",
-                    new[] { "accelerometer", "compass", "gyroscope", "magnetometer", "orientation", "sensors", "hardware", "device" }),
+                    "Have a look at the accelerometer, barometer, compass, gyroscope, magnetometer, and orientation sensors.",
+                    new[] { "accelerometer", "barometer", "compass", "gyroscope", "magnetometer", "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
                     "📦",
                     "App Info",
                     typeof(AppInfoPage),
                     "Find out about the app with ease.",
                     new[] { "app", "info" }),
+                new SampleItem(
+                    "📏",
+                    "Barometer",
+                    typeof(BarometerPage),
+                    "Easily detect pressure level, via the device barometer.",
+                    new[] { "barometer", "hardware", "device", "sensor" }),
                 new SampleItem(
                     "🔋",
                     "Battery",

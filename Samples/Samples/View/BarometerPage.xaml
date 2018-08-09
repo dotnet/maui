@@ -1,0 +1,37 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             x:Class="Samples.View.BarometerPage"
+             Title="Barometer">
+    <views:BasePage.BindingContext>
+        <viewmodels:BarometerViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Monitor barometer for changes." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <Grid Padding="12,0,12,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.ColumnSpan="2"
+                       Text="{Binding BaromterValue, StringFormat='Barometer pressure (hPA): {0:N}'}" />
+
+                <Button Grid.Row="1" Grid.Column="0" Text="Start" Command="{Binding StartBarometerComand}"
+                        IsEnabled="{Binding BarometerIsActive, Converter={StaticResource NegativeConverter}}" />
+
+                <Button Grid.Row="1"  Grid.Column="1" Text="Stop" Command="{Binding StopBarometerCommand}"
+                        IsEnabled="{Binding BarometerIsActive}" />
+            </Grid>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

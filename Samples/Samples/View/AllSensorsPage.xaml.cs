@@ -20,6 +20,7 @@ namespace Samples.View
             SetupBinding(GridGyro.BindingContext);
             SetupBinding(GridMagnetometer.BindingContext);
             SetupBinding(GridOrientation.BindingContext);
+            SetupBinding(GridBarometer.BindingContext);
         }
 
         protected override void OnDisappearing()
@@ -29,7 +30,7 @@ namespace Samples.View
             TearDownBinding(GridGyro.BindingContext);
             TearDownBinding(GridMagnetometer.BindingContext);
             TearDownBinding(GridOrientation.BindingContext);
-
+            TearDownBinding(GridBarometer.BindingContext);
             base.OnDisappearing();
         }
     }

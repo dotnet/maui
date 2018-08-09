@@ -74,5 +74,16 @@
             // TODO: most UWP devices don't have a camera lamp (mobile devices do, we we don't care about those)
             false;
 #endif
+
+        public static bool HasBarometer =>
+#if __ANDROID__
+      true;
+#elif __IOS__
+            // iphone 6 and never have a barometer. looking in how to test this.
+            Xamarin.Essentials.DeviceInfo.DeviceType == Xamarin.Essentials.DeviceType.Physical;
+#elif WINDOWS_UWP
+            // TODO: most UWP devices don't have a barometer (mobile devices do, we we don't care about those)
+            false;
+#endif
     }
 }

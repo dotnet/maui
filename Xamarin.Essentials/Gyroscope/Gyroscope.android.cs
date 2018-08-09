@@ -1,5 +1,6 @@
 ﻿using Android.Hardware;
 using Android.Runtime;
+using Xamarin.Essentials.Types;
 
 namespace Xamarin.Essentials
 {
