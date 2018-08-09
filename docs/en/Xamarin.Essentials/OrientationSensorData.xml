@@ -1,6 +1,6 @@
 <Type Name="OrientationSensorData" FullName="Xamarin.Essentials.OrientationSensorData">
-  <TypeSignature Language="C#" Value="public struct OrientationSensorData" />
-  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit OrientationSensorData extends System.ValueType" />
+  <TypeSignature Language="C#" Value="public struct OrientationSensorData : IEquatable&lt;Xamarin.Essentials.OrientationSensorData&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit OrientationSensorData extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.OrientationSensorData&gt;" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.OrientationSensorData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -9,7 +9,16 @@
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.OrientationSensorData&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Sensor data for orientation.</summary>
     <remarks>
@@ -17,6 +26,31 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.OrientationSensorData other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.OrientationSensorData other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.Equals(Xamarin.Essentials.OrientationSensorData)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.OrientationSensorData" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Orientation">
       <MemberSignature Language="C#" Value="public System.Numerics.Quaternion Orientation { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Quaternion Orientation" />

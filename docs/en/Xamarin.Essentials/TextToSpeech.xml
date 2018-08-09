@@ -17,7 +17,7 @@
   <Members>
     <Member MemberName="GetLocalesAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task&lt;System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.Locale&gt;&gt; GetLocalesAsync ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.Locale&gt;&gt; GetLocalesAsync() cil managed" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task`1&lt;class System.Collections.Generic.IEnumerable`1&lt;class Xamarin.Essentials.Locale&gt;&gt; GetLocalesAsync() cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.GetLocalesAsync" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>

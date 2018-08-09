@@ -1,6 +1,6 @@
 <Type Name="MagnetometerData" FullName="Xamarin.Essentials.MagnetometerData">
-  <TypeSignature Language="C#" Value="public struct MagnetometerData" />
-  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit MagnetometerData extends System.ValueType" />
+  <TypeSignature Language="C#" Value="public struct MagnetometerData : IEquatable&lt;Xamarin.Essentials.MagnetometerData&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit MagnetometerData extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.MagnetometerData&gt;" />
   <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.MagnetometerData" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -9,7 +9,16 @@
   <Base>
     <BaseTypeName>System.ValueType</BaseTypeName>
   </Base>
-  <Interfaces />
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.MagnetometerData&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
   <Docs>
     <summary>Data for magnetometer changes.</summary>
     <remarks>
@@ -17,6 +26,31 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.MagnetometerData other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.MagnetometerData other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.MagnetometerData.Equals(Xamarin.Essentials.MagnetometerData)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.MagnetometerData" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="MagneticField">
       <MemberSignature Language="C#" Value="public System.Numerics.Vector3 MagneticField { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Numerics.Vector3 MagneticField" />

@@ -10,6 +10,7 @@
       <Member Id="P:Xamarin.Essentials.AccelerometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.AccelerometerData" Id="T:Xamarin.Essentials.AccelerometerData">
+      <Member Id="M:Xamarin.Essentials.AccelerometerData.Equals(Xamarin.Essentials.AccelerometerData)" />
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
@@ -72,6 +73,7 @@
       <Member Id="P:Xamarin.Essentials.CompassChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.CompassData" Id="T:Xamarin.Essentials.CompassData">
+      <Member Id="M:Xamarin.Essentials.CompassData.Equals(Xamarin.Essentials.CompassData)" />
       <Member Id="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectionProfile" Id="T:Xamarin.Essentials.ConnectionProfile">
@@ -208,6 +210,7 @@
       <Member Id="P:Xamarin.Essentials.GyroscopeChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
+      <Member Id="M:Xamarin.Essentials.GyroscopeData.Equals(Xamarin.Essentials.GyroscopeData)" />
       <Member Id="P:Xamarin.Essentials.GyroscopeData.AngularVelocity" />
     </Type>
     <Type Name="Xamarin.Essentials.Launcher" Id="T:Xamarin.Essentials.Launcher">
@@ -252,6 +255,7 @@
       <Member Id="P:Xamarin.Essentials.MagnetometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
+      <Member Id="M:Xamarin.Essentials.MagnetometerData.Equals(Xamarin.Essentials.MagnetometerData)" />
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
@@ -265,6 +269,7 @@
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
     </Type>
     <Type Name="Xamarin.Essentials.Maps" Id="T:Xamarin.Essentials.Maps">
+      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
@@ -296,6 +301,7 @@
       <Member Id="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.OrientationSensorData" Id="T:Xamarin.Essentials.OrientationSensorData">
+      <Member Id="M:Xamarin.Essentials.OrientationSensorData.Equals(Xamarin.Essentials.OrientationSensorData)" />
       <Member Id="P:Xamarin.Essentials.OrientationSensorData.Orientation" />
     </Type>
     <Type Name="Xamarin.Essentials.PermissionException" Id="T:Xamarin.Essentials.PermissionException">

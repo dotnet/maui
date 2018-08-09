@@ -32,7 +32,7 @@
     </Member>
     <Member MemberName="Locale">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.Locale Locale { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.Locale Locale" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Locale Locale" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeakSettings.Locale" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
