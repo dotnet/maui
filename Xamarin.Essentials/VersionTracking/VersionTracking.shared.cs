@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
         const string versionsKey = "VersionTracking.Versions";
         const string buildsKey = "VersionTracking.Builds";
 
-        static readonly string sharedName = Preferences.PrivatePreferencesSharedName;
+        static readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
 
         static Dictionary<string, List<string>> versionTrail;
 

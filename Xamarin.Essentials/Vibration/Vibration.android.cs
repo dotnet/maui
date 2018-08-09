@@ -19,14 +19,13 @@ namespace Xamarin.Essentials
             if (Platform.HasApiLevel(BuildVersionCodes.O))
             {
                 Platform.Vibrator.Vibrate(VibrationEffect.CreateOneShot(time, VibrationEffect.DefaultAmplitude));
+                return;
             }
 #endif
-            else
-            {
+
 #pragma warning disable CS0618 // Type or member is obsolete
-                Platform.Vibrator.Vibrate(time);
+            Platform.Vibrator.Vibrate(time);
 #pragma warning restore CS0618 // Type or member is obsolete
-            }
         }
 
         static void PlatformCancel()

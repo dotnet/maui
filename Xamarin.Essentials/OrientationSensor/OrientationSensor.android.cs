@@ -13,22 +13,7 @@ namespace Xamarin.Essentials
 
         internal static void PlatformStart(SensorSpeed sensorSpeed)
         {
-            var delay = SensorDelay.Normal;
-            switch (sensorSpeed)
-            {
-                case SensorSpeed.Normal:
-                    delay = SensorDelay.Normal;
-                    break;
-                case SensorSpeed.Fastest:
-                    delay = SensorDelay.Fastest;
-                    break;
-                case SensorSpeed.Game:
-                    delay = SensorDelay.Game;
-                    break;
-                case SensorSpeed.UI:
-                    delay = SensorDelay.Ui;
-                    break;
-            }
+            var delay = sensorSpeed.ToPlatform();
 
             listener = new OrientationSensorListener();
             orientationSensor = Platform.SensorManager.GetDefaultSensor(SensorType.RotationVector);

@@ -5,11 +5,6 @@ namespace Xamarin.Essentials
 {
     public static partial class OrientationSensor
     {
-        // Magic numbers from https://docs.microsoft.com/en-us/uwp/api/windows.devices.sensors.compass.reportinterval#Windows_Devices_Sensors_Compass_ReportInterval
-        internal const uint FastestInterval = 8;
-        internal const uint GameInterval = 22;
-        internal const uint NormalInterval = 33;
-
         // keep around a reference so we can stop this same instance
         static WindowsOrientationSensor sensor;
 
@@ -23,16 +18,7 @@ namespace Xamarin.Essentials
         {
             sensor = DefaultSensor;
 
-            var interval = NormalInterval;
-            switch (sensorSpeed)
-            {
-                case SensorSpeed.Fastest:
-                    interval = FastestInterval;
-                    break;
-                case SensorSpeed.Game:
-                    interval = GameInterval;
-                    break;
-            }
+            var interval = sensorSpeed.ToPlatform();
 
             sensor.ReportInterval = sensor.MinimumReportInterval >= interval ? sensor.MinimumReportInterval : interval;
 
@@ -49,6 +35,7 @@ namespace Xamarin.Essentials
         internal static void PlatformStop()
         {
             sensor.ReadingChanged -= DataUpdated;
+            sensor.ReportInterval = 0;
         }
     }
 }
