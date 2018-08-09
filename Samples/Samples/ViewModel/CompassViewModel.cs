@@ -102,9 +102,8 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass2();
 
-                Compass.ReadingChanged += OnCompass1ReadingChanged;
-
                 Compass.Start((SensorSpeed)Speed1);
+                Compass.ReadingChanged += OnCompass1ReadingChanged;
                 Compass1IsActive = true;
             }
             catch (Exception ex)
@@ -141,8 +140,8 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass1();
 
-                Compass.ReadingChanged += OnCompass2ReadingChanged;
                 Compass.Start((SensorSpeed)Speed2);
+                Compass.ReadingChanged += OnCompass2ReadingChanged;
                 Compass2IsActive = true;
             }
             catch (Exception ex)

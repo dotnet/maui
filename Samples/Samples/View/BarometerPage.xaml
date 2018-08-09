@@ -16,6 +16,8 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -25,10 +27,19 @@
                 <Label Grid.Row="0" Grid.ColumnSpan="2"
                        Text="{Binding Pressure, StringFormat='Barometer pressure (hPA): {0:N}'}" />
 
-                <Button Grid.Row="1" Grid.Column="0" Text="Start" Command="{Binding StartComand}"
+                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="Speed:" />
+
+                <Picker Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="FillAndExpand"
+                    ItemsSource="{Binding Speeds}" 
+                    SelectedIndex="{Binding Speed, Mode=TwoWay}"
+                    IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}"
+                    Margin="0,0,0,10"/>
+
+
+                <Button Grid.Row="3" Grid.Column="0" Text="Start" Command="{Binding StartCommand}"
                         IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}" />
 
-                <Button Grid.Row="1"  Grid.Column="1" Text="Stop" Command="{Binding StopCommand}"
+                <Button Grid.Row="3"  Grid.Column="1" Text="Stop" Command="{Binding StopCommand}"
                         IsEnabled="{Binding IsActive}" />
             </Grid>
         </ScrollView>

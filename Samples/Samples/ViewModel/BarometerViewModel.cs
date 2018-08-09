@@ -15,7 +15,7 @@ namespace Samples.ViewModel
         public BarometerViewModel()
         {
             StartCommand = new Command(OnStartBarometer);
-            StopCommand = new Command(OnStopBarometer);
+            StopCommand = new Command(OnStop);
         }
 
         public ICommand StartCommand { get; }
@@ -49,9 +49,16 @@ namespace Samples.ViewModel
             set => SetProperty(ref speed, value);
         }
 
+        public override void OnAppearing()
+        {
+            Barometer.ReadingChanged += OnBarometerReadingChanged;
+            base.OnAppearing();
+        }
+
         public override void OnDisappearing()
         {
-            OnStopBarometer();
+            OnStop();
+            Barometer.ReadingChanged -= OnBarometerReadingChanged;
 
             base.OnDisappearing();
         }
@@ -60,8 +67,6 @@ namespace Samples.ViewModel
         {
             try
             {
-                Barometer.ReadingChanged += OnBarometerReadingChanged;
-
                 Barometer.Start((SensorSpeed)Speed);
                 IsActive = true;
             }
@@ -76,7 +81,7 @@ namespace Samples.ViewModel
             Pressure = e.Reading.Pressure;
         }
 
-        void OnStopBarometer()
+        void OnStop()
         {
             IsActive = false;
             Barometer.Stop();
