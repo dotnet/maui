@@ -77,7 +77,7 @@ namespace Xamarin.Essentials
         public MagnetometerData Reading { get; }
     }
 
-    public struct MagnetometerData
+    public readonly struct MagnetometerData : IEquatable<MagnetometerData>
     {
         internal MagnetometerData(double x, double y, double z)
             : this((float)x, (float)y, (float)z)
@@ -88,5 +88,7 @@ namespace Xamarin.Essentials
             MagneticField = new Vector3(x, y, z);
 
         public Vector3 MagneticField { get; }
+
+        public bool Equals(MagnetometerData other) => MagneticField.Equals(other.MagneticField);
     }
 }

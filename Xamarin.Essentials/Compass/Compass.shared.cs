@@ -78,11 +78,13 @@ namespace Xamarin.Essentials
         public CompassData Reading { get; }
     }
 
-    public struct CompassData
+    public readonly struct CompassData : IEquatable<CompassData>
     {
         internal CompassData(double headingMagneticNorth) =>
             HeadingMagneticNorth = headingMagneticNorth;
 
         public double HeadingMagneticNorth { get; }
+
+        public bool Equals(CompassData other) => HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
     }
 }

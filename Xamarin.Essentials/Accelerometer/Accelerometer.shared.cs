@@ -77,7 +77,7 @@ namespace Xamarin.Essentials
         public AccelerometerData Reading { get; }
     }
 
-    public struct AccelerometerData
+    public readonly struct AccelerometerData : IEquatable<AccelerometerData>
     {
         internal AccelerometerData(double x, double y, double z)
             : this((float)x, (float)y, (float)z)
@@ -88,5 +88,7 @@ namespace Xamarin.Essentials
             Acceleration = new Vector3(x, y, z);
 
         public Vector3 Acceleration { get; }
+
+        public bool Equals(AccelerometerData other) => Acceleration.Equals(other.Acceleration);
     }
 }

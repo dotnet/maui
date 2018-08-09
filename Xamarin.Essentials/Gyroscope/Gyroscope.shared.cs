@@ -77,7 +77,7 @@ namespace Xamarin.Essentials
         public GyroscopeData Reading { get; }
     }
 
-    public struct GyroscopeData
+    public readonly struct GyroscopeData : IEquatable<GyroscopeData>
     {
         internal GyroscopeData(double x, double y, double z)
             : this((float)x, (float)y, (float)z)
@@ -88,5 +88,7 @@ namespace Xamarin.Essentials
             AngularVelocity = new Vector3(x, y, z);
 
         public Vector3 AngularVelocity { get; }
+
+        public bool Equals(GyroscopeData other) => AngularVelocity.Equals(other.AngularVelocity);
     }
 }
