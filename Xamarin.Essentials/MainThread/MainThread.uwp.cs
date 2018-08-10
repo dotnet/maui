@@ -15,11 +15,7 @@ namespace Xamarin.Essentials
 
             if (dispatcher == null)
                 throw new InvalidOperationException("Unable to find main thread.");
-
-            if (!dispatcher.HasThreadAccess)
-                dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
-            else
-                action();
+            dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => action()).WatchForError();
         }
     }
 }
