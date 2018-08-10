@@ -45,10 +45,10 @@
         <Parameter Name="other" Type="Xamarin.Essentials.OrientationSensorData" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">Other OrientationSensorData to compare with.</param>
+        <summary>Compares the underlying Quaternion instances.</summary>
+        <returns>True if they match, otherwise false.</returns>
+        <remarks><para /></remarks>
       </Docs>
     </Member>
     <Member MemberName="Orientation">

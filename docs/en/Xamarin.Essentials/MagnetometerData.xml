@@ -45,10 +45,10 @@
         <Parameter Name="other" Type="Xamarin.Essentials.MagnetometerData" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">Other MagnetometerData to compare with:</param>
+        <summary>Compares the underlying Vector3 instances.<summary>
+        <returns>True if they match, otherwise false.</returns>
+        <remarks><para /></remarks>
       </Docs>
     </Member>
     <Member MemberName="MagneticField">

@@ -63,10 +63,10 @@
         <Parameter Name="other" Type="Xamarin.Essentials.AccelerometerData" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">Other AccelerometerData to compare with.</param>
+        <summary>Compares the underlying Vector3 instances.</summary>
+        <returns>True if they are equal, otherwise false.</returns>
+        <remarks><para /></remarks>
       </Docs>
     </Member>
   </Members>

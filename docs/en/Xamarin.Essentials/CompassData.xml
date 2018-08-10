@@ -47,9 +47,9 @@
         <Parameter Name="other" Type="Xamarin.Essentials.CompassData" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
+        <param name="other">Other AccelerometerData to compare with.</param>
         <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <returns>True if they are equal, otherwise false.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

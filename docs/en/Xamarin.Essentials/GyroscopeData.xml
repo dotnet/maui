@@ -63,10 +63,10 @@
         <Parameter Name="other" Type="Xamarin.Essentials.GyroscopeData" />
       </Parameters>
       <Docs>
-        <param name="other">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="other">Other GyroscopeData to compare with.</param>
+        <summary>Compares the underlying Vector3 instances.</summary>
+        <returns>True if they match, otherwise false.</returns>
+        <remarks><para /><remarks>
       </Docs>
     </Member>
   </Members>
