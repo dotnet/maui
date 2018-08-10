@@ -66,7 +66,7 @@
         <param name="other">Other GyroscopeData to compare with.</param>
         <summary>Compares the underlying Vector3 instances.</summary>
         <returns>True if they match, otherwise false.</returns>
-        <remarks><para /><remarks>
+        <remarks><para /></remarks>
       </Docs>
     </Member>
   </Members>

@@ -45,8 +45,8 @@
         <Parameter Name="other" Type="Xamarin.Essentials.MagnetometerData" />
       </Parameters>
       <Docs>
-        <param name="other">Other MagnetometerData to compare with:</param>
-        <summary>Compares the underlying Vector3 instances.<summary>
+        <param name="other">Other MagnetometerData to compare with.</param>
+        <summary>Compares the underlying Vector3 instances.</summary>
         <returns>True if they match, otherwise false.</returns>
         <remarks><para /></remarks>
       </Docs>
