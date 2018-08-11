@@ -20,12 +20,6 @@ namespace Xamarin.Essentials
 
         static void PlatformBeginInvokeOnMainThread(Action action)
         {
-            if (IsMainThread)
-            {
-                action();
-                return;
-            }
-
             if (handler?.Looper != Looper.MainLooper)
                 handler = new Handler(Looper.MainLooper);
 
