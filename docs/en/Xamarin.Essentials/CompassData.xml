@@ -50,7 +50,6 @@
         <remarks>
           <para />
         </remarks>
-        
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -73,9 +72,11 @@
       </Parameters>
       <Docs>
         <param name="other">Other AccelerometerData to compare with.</param>
-        <summary>To be added.</summary>
+        <summary>Compares the underlying doubles.</summary>
         <returns>True if they are equal, otherwise false.</returns>
-        <remarks>To be added.</remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
