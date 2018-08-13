@@ -89,6 +89,23 @@ namespace Xamarin.Essentials
 
         public Vector3 MagneticField { get; }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (!(obj is MagnetometerData compassData))
+                return false;
+            return Equals(compassData);
+        }
+
         public bool Equals(MagnetometerData other) => MagneticField.Equals(other.MagneticField);
+
+        public static bool operator ==(MagnetometerData left, MagnetometerData right) =>
+            Equals(left, right);
+
+        public static bool operator !=(MagnetometerData left, MagnetometerData right) =>
+           !Equals(left, right);
+
+        public override int GetHashCode() => MagneticField.GetHashCode();
     }
 }

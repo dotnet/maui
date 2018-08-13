@@ -46,5 +46,23 @@ namespace Tests
             var copy = new GyroscopeData(0, 0, 1);
             Assert.False(data.Equals(copy));
         }
+
+        [Fact]
+        public void GyroscopeData_Equals_Operator_AreSame()
+        {
+            var data = new GyroscopeData(0, 0, 0);
+            var copy = new GyroscopeData(0, 0, 0);
+            Assert.True(data == copy);
+            Assert.False(data != copy);
+        }
+
+        [Fact]
+        public void GyroscopeData_Equals_Operator_AreDifferent()
+        {
+            var data = new GyroscopeData(0, 0, 0);
+            var copy = new GyroscopeData(0, 0, 1);
+            Assert.False(data == copy);
+            Assert.True(data != copy);
+        }
     }
 }

@@ -89,6 +89,23 @@ namespace Xamarin.Essentials
 
         public Vector3 Acceleration { get; }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (!(obj is AccelerometerData compassData))
+                return false;
+            return Equals(compassData);
+        }
+
         public bool Equals(AccelerometerData other) => Acceleration.Equals(other.Acceleration);
+
+        public static bool operator ==(AccelerometerData left, AccelerometerData right) =>
+            Equals(left, right);
+
+        public static bool operator !=(AccelerometerData left, AccelerometerData right) =>
+           !Equals(left, right);
+
+        public override int GetHashCode() => Acceleration.GetHashCode();
     }
 }

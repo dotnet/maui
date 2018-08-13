@@ -51,5 +51,23 @@ namespace Tests
             var copy = new CompassData(1);
             Assert.False(data.Equals(copy));
         }
+
+        [Fact]
+        public void CompassData_Equals_Operator_AreSameValues()
+        {
+            var data = new CompassData(0);
+            var copy = new CompassData(0);
+            Assert.True(data == copy);
+            Assert.False(data != copy);
+        }
+
+        [Fact]
+        public void CompassData_Equals_Operator_AreDifferent()
+        {
+            var data = new CompassData(0);
+            var copy = new CompassData(1);
+            Assert.False(data == copy);
+            Assert.True(data != copy);
+        }
     }
 }

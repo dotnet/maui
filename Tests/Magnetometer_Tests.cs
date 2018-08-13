@@ -46,5 +46,23 @@ namespace Tests
             var copy = new MagnetometerData(0, 0, 1);
             Assert.False(data.Equals(copy));
         }
+
+        [Fact]
+        public void MagnetometerData_Equals_Operator_AreSameValues()
+        {
+            var data = new MagnetometerData(0, 0, 0);
+            var copy = new MagnetometerData(0, 0, 0);
+            Assert.True(data == copy);
+            Assert.False(data != copy);
+        }
+
+        [Fact]
+        public void MagnetometerData_Equals_Operator_AreDifferent()
+        {
+            var data = new MagnetometerData(0, 0, 0);
+            var copy = new MagnetometerData(0, 0, 1);
+            Assert.False(data == copy);
+            Assert.True(data != copy);
+        }
     }
 }
