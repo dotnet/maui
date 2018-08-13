@@ -97,7 +97,7 @@
         <Parameter Name="uri" Type="System.Uri" />
       </Parameters>
       <Docs>
- <param name="uri">uri scheme</param>
+        <param name="uri">uri scheme</param>
         <summary>Launches the app specified by the uri scheme</summary>
         <returns></returns>
         <remarks>May throw System.UriFormatException if uri is malformed. Verify if the uri scheme is supported before calling this method</remarks>
