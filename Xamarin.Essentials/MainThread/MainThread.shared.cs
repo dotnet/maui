@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             {
                 action();
 #if NETSTANDARD1_0
-                return Task.FromResult(null);
+                return Task.FromResult(true);
 #else
                 return Task.CompletedTask;
 #endif
