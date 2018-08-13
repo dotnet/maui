@@ -27,6 +27,30 @@
   </Docs>
   <Members>
     <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.Equals(System.Object)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">Object to compare</param>
+        <summary>If equal to another object</summary>
+        <returns>If equal</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
       <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.OrientationSensorData other);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.OrientationSensorData other) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.Equals(Xamarin.Essentials.OrientationSensorData)" />
@@ -49,6 +73,79 @@
         <summary>Compares the underlying Quaternion instances.</summary>
         <returns>True if they match, otherwise false.</returns>
         <remarks><para /></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.GetHashCode" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Get the hash code for object.</summary>
+        <returns>The hash code</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool operator == (Xamarin.Essentials.OrientationSensorData left, Xamarin.Essentials.OrientationSensorData right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Essentials.OrientationSensorData left, valuetype Xamarin.Essentials.OrientationSensorData right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.op_Equality(Xamarin.Essentials.OrientationSensorData,Xamarin.Essentials.OrientationSensorData)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.OrientationSensorData" />
+        <Parameter Name="right" Type="Xamarin.Essentials.OrientationSensorData" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to compare</param>
+        <param name="right">Right to compare</param>
+        <summary>Equality operator for equals</summary>
+        <returns>If equal</returns>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool operator != (Xamarin.Essentials.OrientationSensorData left, Xamarin.Essentials.OrientationSensorData right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Essentials.OrientationSensorData left, valuetype Xamarin.Essentials.OrientationSensorData right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorData.op_Inequality(Xamarin.Essentials.OrientationSensorData,Xamarin.Essentials.OrientationSensorData)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.OrientationSensorData" />
+        <Parameter Name="right" Type="Xamarin.Essentials.OrientationSensorData" />
+      </Parameters>
+      <Docs>
+        <param name="left">Left to check</param>
+        <param name="right">Right to check</param>
+        <summary>Inequality check</summary>
+        <returns>If not equal</returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Orientation">
