@@ -228,6 +228,8 @@
       <Member Id="M:Xamarin.Essentials.Location.#ctor(System.Double,System.Double,System.DateTimeOffset)" />
       <Member Id="M:Xamarin.Essentials.Location.#ctor(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
@@ -238,6 +240,7 @@
       <Member Id="P:Xamarin.Essentials.Location.TimestampUtc" />
     </Type>
     <Type Name="Xamarin.Essentials.LocationExtensions" Id="T:Xamarin.Essentials.LocationExtensions">
+      <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
@@ -265,6 +268,7 @@
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
     </Type>
     <Type Name="Xamarin.Essentials.Maps" Id="T:Xamarin.Essentials.Maps">
+      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
       <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
