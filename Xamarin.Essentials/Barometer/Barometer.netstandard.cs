@@ -2,7 +2,8 @@
 {
     public static partial class Barometer
     {
-        internal static bool IsSupported => false;
+        internal static bool IsSupported =>
+            throw new NotImplementedInReferenceAssemblyException();
 
         internal static void PlatformStart(SensorSpeed sensorSpeed) =>
             throw new NotImplementedInReferenceAssemblyException();

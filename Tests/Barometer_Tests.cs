@@ -21,5 +21,27 @@ namespace Tests
         [Fact]
         public void IsMonitoring_Default_On_NetStandard() =>
             Assert.False(Barometer.IsMonitoring);
+
+        [Fact]
+        public void BarometerData_Comparison_Equal()
+        {
+            var device1 = new BarometerData(0);
+            var device2 = new BarometerData(0);
+
+            Assert.True(device1.Equals(device2));
+            Assert.True(device1 == device2);
+            Assert.False(device1 != device2);
+        }
+
+        [Fact]
+        public void DeviceDisplay_Comparison_NotEqual()
+        {
+            var device1 = new BarometerData(0);
+            var device2 = new BarometerData(1);
+
+            Assert.False(device1.Equals(device2));
+            Assert.False(device1 == device2);
+            Assert.True(device1 != device2);
+        }
     }
 }

@@ -73,11 +73,34 @@ namespace Xamarin.Essentials
         public BarometerData Reading { get; }
     }
 
-    public readonly struct BarometerData
+    public readonly struct BarometerData : IEquatable<BarometerData>
     {
         internal BarometerData(double pressure) =>
             Pressure = pressure;
 
         public double Pressure { get; }
+
+        public static bool operator ==(BarometerData left, BarometerData right) =>
+            Equals(left, right);
+
+        public static bool operator !=(BarometerData left, BarometerData right) =>
+            !Equals(left, right);
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            if (!(obj is BarometerData barometerData))
+                return false;
+
+            return Equals(barometerData);
+        }
+
+        public bool Equals(BarometerData other) =>
+            Pressure.Equals(other.Pressure);
+
+        public override int GetHashCode() =>
+            Pressure.GetHashCode();
     }
 }

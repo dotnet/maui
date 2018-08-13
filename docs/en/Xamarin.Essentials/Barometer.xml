@@ -57,7 +57,7 @@
       </Docs>
     </Member>
     <Member MemberName="Start">
-      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed)" />
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Barometer.Start(Xamarin.Essentials.SensorSpeed)" />
       <MemberType>Method</MemberType>
@@ -68,10 +68,11 @@
       <ReturnValue>
         <ReturnType>System.Void</ReturnType>
       </ReturnValue>
-       <Parameters>
+      <Parameters>
         <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
       </Parameters>
       <Docs>
+        <param name="sensorSpeed">The speed to listen for changes.</param>
         <summary>Start monitoring for changes to the barometer.</summary>
         <remarks>Will throw FeatureNotSupportedException if not supported on device.</remarks>
       </Docs>

@@ -30,6 +30,11 @@
       <Member Id="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.BarometerData" Id="T:Xamarin.Essentials.BarometerData">
+      <Member Id="M:Xamarin.Essentials.BarometerData.Equals(System.Object)" />
+      <Member Id="M:Xamarin.Essentials.BarometerData.Equals(Xamarin.Essentials.BarometerData)" />
+      <Member Id="M:Xamarin.Essentials.BarometerData.GetHashCode" />
+      <Member Id="M:Xamarin.Essentials.BarometerData.op_Equality(Xamarin.Essentials.BarometerData,Xamarin.Essentials.BarometerData)" />
+      <Member Id="M:Xamarin.Essentials.BarometerData.op_Inequality(Xamarin.Essentials.BarometerData,Xamarin.Essentials.BarometerData)" />
       <Member Id="P:Xamarin.Essentials.BarometerData.Pressure" />
     </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
