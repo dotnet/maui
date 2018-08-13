@@ -167,6 +167,66 @@
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double longitudeStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 longitudeStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="latitudeStart" Type="System.Double" />
+        <Parameter Name="longitudeStart" Type="System.Double" />
+        <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="latitudeStart">Start latitude to calculate from.</param>
+        <param name="longitudeStart">Start longitude to calculate from.</param>
+        <param name="locationEnd">End location to calculate from.</param>
+        <param name="units">Unit to return.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance calculated.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
+        <Parameter Name="longitudeEnd" Type="System.Double" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="locationStart">Start location to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
+        <param name="longitudeEnd">End longitude to calculate from.</param>
+        <param name="units">Unit to use.</param>
+        <summary>Calculate distance between two locations.</summary>
+        <returns>Distance calculated.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="CalculateDistance">
       <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double latitudeEnd, double longitudeStart, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 latitudeEnd, float64 longitudeStart, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
