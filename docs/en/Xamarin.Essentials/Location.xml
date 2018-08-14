@@ -138,6 +138,26 @@
         <remarks>Returns 0 or no value if not available.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Course">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Course { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Course" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Course" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Degrees relative to true north.</summary>
+        <value>0..360 in degrees relative to true north. null if unavailable.</value>
+        <remarks>
+          <para />
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="CalculateDistance">
       <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
@@ -343,6 +363,26 @@
         <param name="miles">Miles to be converted.</param>
         <summary>Converts miles to kilometers.</summary>
         <returns>Value of miles converted to kilometers.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Speed">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Speed { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Speed" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Speed" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Speed in meters per second.</summary>
+        <value>Speed measured by the device..</value>
         <remarks>
           <para></para>
         </remarks>

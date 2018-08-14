@@ -25,9 +25,11 @@ namespace Xamarin.Essentials
             {
                 Latitude = location.Latitude,
                 Longitude = location.Longitude,
-                Altitude = location.HasAltitude ? location.Altitude : (double?)null,
+                Altitude = location.HasAltitude ? location.Altitude : default(double?),
                 TimestampUtc = location.GetTimestamp().ToUniversalTime(),
-                Accuracy = location.HasAccuracy ? location.Accuracy : (float?)null
+                Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
+                Course = location.HasBearing ? location.Bearing : default(double?),
+                Speed = location.HasSpeed ? location.Speed : default(double?)
             };
 
         static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
