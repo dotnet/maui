@@ -45,6 +45,36 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="CalculateDistance">
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (this Xamarin.Essentials.Location locationStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Double</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" RefType="this" />
+        <Parameter Name="latitudeEnd" Type="System.Double" />
+        <Parameter Name="longitudeEnd" Type="System.Double" />
+        <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+      </Parameters>
+      <Docs>
+        <param name="locationStart">Start location to calculate from.</param>
+        <param name="latitudeEnd">End latitude to calculate from.</param>
+        <param name="longitudeEnd">End longitude to calculate from.</param>
+        <param name="units">Units to use.</param>
+        <summary>Extension to calculate distance from location to another location.</summary>
+        <returns>Distance calculated.</returns>
+        <remarks>
+          <para></para>
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OpenMapsAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location) cil managed" />
@@ -61,9 +91,9 @@
         <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
       </Parameters>
       <Docs>
-        <param name="location">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
+        <param name="location">Location to open to.</param>
+        <summary>Open maps to this location.</summary>
+        <returns>Task to wait.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -84,11 +114,13 @@
         <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
       </Parameters>
       <Docs>
-        <param name="location">To be added.</param>
-        <param name="options">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="location">Location to open to.</param>
+        <param name="options">Options to use.</param>
+        <summary>Open maps to this location.</summary>
+        <returns>Task to wait.</returns>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
   </Members>
