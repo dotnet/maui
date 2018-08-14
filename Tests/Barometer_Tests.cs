@@ -36,7 +36,7 @@ namespace Tests
         }
 
         [Fact]
-        public void DeviceDisplay_Comparison_NotEqual()
+        public void BarometerData_Comparison_NotEqual()
         {
             var device1 = new BarometerData(0);
             var device2 = new BarometerData(1);
