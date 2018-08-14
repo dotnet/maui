@@ -31,6 +31,8 @@ namespace Tests
             Assert.True(device1.Equals(device2));
             Assert.True(device1 == device2);
             Assert.False(device1 != device2);
+            Assert.Equal(device1, device2);
+            Assert.Equal(device1.GetHashCode(), device2.GetHashCode());
         }
 
         [Fact]
@@ -42,6 +44,8 @@ namespace Tests
             Assert.False(device1.Equals(device2));
             Assert.False(device1 == device2);
             Assert.True(device1 != device2);
+            Assert.NotEqual(device1, device2);
+            Assert.NotEqual(device1.GetHashCode(), device2.GetHashCode());
         }
     }
 }
