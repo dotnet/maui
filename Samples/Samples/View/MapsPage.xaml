@@ -36,6 +36,8 @@
             <Entry Text="{Binding AdminArea}"/>
             <Label Text="Country Name"/>
             <Entry Text="{Binding Country}"/>
+            <Label Text="Zip Code"/>
+            <Entry Text="{Binding ZipCode}" Keyboard="Numeric"/>
 
             <Button Text="Open address" Command="{Binding LaunchPlacemarkCommand}"/>
         </StackLayout>

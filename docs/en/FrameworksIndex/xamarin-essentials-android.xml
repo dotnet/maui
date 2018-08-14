@@ -262,6 +262,8 @@
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.MapDirectionsMode" Id="T:Xamarin.Essentials.MapDirectionsMode">
+      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.None" />
+      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Bicycling" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Default" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Transit" />
