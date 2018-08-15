@@ -250,8 +250,10 @@
       <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Altitude" />
+      <Member Id="P:Xamarin.Essentials.Location.Course" />
       <Member Id="P:Xamarin.Essentials.Location.Latitude" />
       <Member Id="P:Xamarin.Essentials.Location.Longitude" />
+      <Member Id="P:Xamarin.Essentials.Location.Speed" />
       <Member Id="P:Xamarin.Essentials.Location.TimestampUtc" />
     </Type>
     <Type Name="Xamarin.Essentials.LocationExtensions" Id="T:Xamarin.Essentials.LocationExtensions">
@@ -282,6 +284,8 @@
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
     <Type Name="Xamarin.Essentials.MapDirectionsMode" Id="T:Xamarin.Essentials.MapDirectionsMode">
+      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.None" />
+      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Bicycling" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Default" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
       <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Transit" />

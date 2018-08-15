@@ -2,9 +2,11 @@
 {
     public enum MapDirectionsMode
     {
+        None,
+        Bicycling,
         Default,
         Driving,
         Transit,
-        Walking
+        Walking,
     }
 }

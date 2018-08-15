@@ -10,19 +10,51 @@ namespace Xamarin.Essentials
         internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapsLaunchOptions options)
         {
             var uri = string.Empty;
-            uri = $"geo:{latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}?q={latitude.ToString(CultureInfo.InvariantCulture)},{longitude.ToString(CultureInfo.InvariantCulture)}";
-            if (!string.IsNullOrWhiteSpace(options.Name))
-                uri += $"({options.Name})";
+            var lat = latitude.ToString(CultureInfo.InvariantCulture);
+            var lng = longitude.ToString(CultureInfo.InvariantCulture);
+
+            if (options.MapDirectionsMode == MapDirectionsMode.None)
+            {
+                uri = $"geo:{lat},{lng}?q={lat},{lng}";
+
+                if (!string.IsNullOrWhiteSpace(options.Name))
+                    uri += $"({AndroidUri.Encode(options.Name)})";
+            }
+            else
+            {
+                uri = $"google.navigation:q={lat},{lng}{GetMode(options.MapDirectionsMode)}";
+            }
+
             StartIntent(uri);
             return Task.CompletedTask;
+        }
+
+        internal static string GetMode(MapDirectionsMode mode)
+        {
+            switch (mode)
+            {
+                case MapDirectionsMode.Bicycling: return "&mode=b";
+                case MapDirectionsMode.Driving: return "&mode=d";
+                case MapDirectionsMode.Walking: return "&mode=w";
+            }
+            return string.Empty;
         }
 
         internal static Task PlatformOpenMapsAsync(Placemark placemark, MapsLaunchOptions options)
         {
             placemark = placemark.Escape();
-            var uri = $"geo:0,0?q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.CountryName}";
-            if (!string.IsNullOrWhiteSpace(options.Name))
-                uri += $"({options.Name})";
+            var uri = string.Empty;
+            if (options.MapDirectionsMode == MapDirectionsMode.None)
+            {
+                uri = $"geo:0,0?q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}";
+                if (!string.IsNullOrWhiteSpace(options.Name))
+                    uri += $"({AndroidUri.Encode(options.Name)})";
+            }
+            else
+            {
+                uri = $"google.navigation:q={placemark.Thoroughfare} {placemark.Locality} {placemark.AdminArea} {placemark.PostalCode} {placemark.CountryName}{GetMode(options.MapDirectionsMode)}";
+            }
+
             StartIntent(uri);
             return Task.CompletedTask;
         }

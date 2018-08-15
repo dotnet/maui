@@ -70,8 +70,8 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid81')) ">
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="27.0.2" />
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="27.0.2" />
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="27.0.2.1" />
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="27.0.2.1" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('MonoAndroid80')) ">
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="26.1.0.1" />
