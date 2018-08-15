@@ -55,25 +55,22 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(CompassData reading)
-            => OnChanged(new CompassChangedEventArgs(reading));
+        internal static void OnChanged(CompassData reading) =>
+            OnChanged(new CompassChangedEventArgs(reading));
 
         internal static void OnChanged(CompassChangedEventArgs e)
         {
-            var handler = ReadingChanged;
-            if (handler == null)
-                return;
-
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
+                MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
             else
-                handler?.Invoke(null, e);
+                ReadingChanged?.Invoke(null, e);
         }
     }
 
     public class CompassChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) => Reading = reading;
+        internal CompassChangedEventArgs(CompassData reading) =>
+            Reading = reading;
 
         public CompassData Reading { get; }
     }

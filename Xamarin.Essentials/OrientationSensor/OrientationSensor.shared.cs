@@ -54,25 +54,22 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(OrientationSensorData reading)
-            => OnChanged(new OrientationSensorChangedEventArgs(reading));
+        internal static void OnChanged(OrientationSensorData reading) =>
+            OnChanged(new OrientationSensorChangedEventArgs(reading));
 
         internal static void OnChanged(OrientationSensorChangedEventArgs e)
         {
-            var handler = ReadingChanged;
-            if (handler == null)
-                return;
-
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
+                MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
             else
-                handler?.Invoke(null, e);
+                ReadingChanged?.Invoke(null, e);
         }
     }
 
     public class OrientationSensorChangedEventArgs : EventArgs
     {
-        internal OrientationSensorChangedEventArgs(OrientationSensorData reading) => Reading = reading;
+        internal OrientationSensorChangedEventArgs(OrientationSensorData reading) =>
+            Reading = reading;
 
         public OrientationSensorData Reading { get; }
     }
@@ -84,10 +81,8 @@ namespace Xamarin.Essentials
         {
         }
 
-        internal OrientationSensorData(float x, float y, float z, float w)
-        {
+        internal OrientationSensorData(float x, float y, float z, float w) =>
             Orientation = new Quaternion(x, y, z, w);
-        }
 
         public Quaternion Orientation { get; }
     }

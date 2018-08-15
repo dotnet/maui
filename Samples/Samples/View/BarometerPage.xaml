@@ -1,0 +1,48 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             x:Class="Samples.View.BarometerPage"
+             Title="Barometer">
+    <views:BasePage.BindingContext>
+        <viewmodels:BarometerViewModel />
+    </views:BasePage.BindingContext>
+
+    <StackLayout>
+        <Label Text="Monitor barometer for changes." FontAttributes="Bold" Margin="12" />
+
+        <ScrollView>
+            <Grid Padding="12,0,12,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.ColumnSpan="2"
+                       Text="{Binding Pressure, StringFormat='Barometer pressure (hPA): {0:N}'}" />
+
+                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="Speed:" />
+
+                <Picker Grid.Row="2" Grid.ColumnSpan="2" HorizontalOptions="FillAndExpand"
+                    ItemsSource="{Binding Speeds}" 
+                    SelectedIndex="{Binding Speed, Mode=TwoWay}"
+                    IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}"
+                    Margin="0,0,0,10"/>
+
+
+                <Button Grid.Row="3" Grid.Column="0" Text="Start" Command="{Binding StartCommand}"
+                        IsEnabled="{Binding IsActive, Converter={StaticResource NegativeConverter}}" />
+
+                <Button Grid.Row="3"  Grid.Column="1" Text="Stop" Command="{Binding StopCommand}"
+                        IsEnabled="{Binding IsActive}" />
+            </Grid>
+        </ScrollView>
+    </StackLayout>
+
+</views:BasePage>

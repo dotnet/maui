@@ -14,6 +14,7 @@ namespace DeviceTests
         internal static class Hardware
         {
             public const string Accelerometer = "HardwareAccelerometer";
+            public const string Barometer = "HardwareBarometer";
             public const string Compass = "HardwareCompass";
             public const string Gyroscope = "HardwareGyroscope";
             public const string Magnetometer = "HardwareMagnetometer";
