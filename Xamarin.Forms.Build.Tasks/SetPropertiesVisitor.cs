@@ -137,7 +137,7 @@ namespace Xamarin.Forms.Build.Tasks
 				var parentVar = Context.Variables[(IElementNode)parentNode];
 				string contentProperty;
 
-				if (CanAddToResourceDictionary(parentVar.VariableType, node, node, Context)) {
+				if (CanAddToResourceDictionary(parentVar, parentVar.VariableType, node, node, Context)) {
 					Context.IL.Emit(Ldloc, parentVar);
 					Context.IL.Append(AddToResourceDictionary(node, node, Context));
 				}
@@ -186,7 +186,7 @@ namespace Xamarin.Forms.Build.Tasks
 				TypeReference propertyType;
 				Context.IL.Append(GetPropertyValue(parent, parentList.XmlName, Context, node, out propertyType));
 
-				if (CanAddToResourceDictionary(propertyType, node, node, Context)) {
+				if (CanAddToResourceDictionary(parent, propertyType, node, node, Context)) {
 					Context.IL.Append(AddToResourceDictionary(node, node, Context));
 					return;
 				} 
@@ -1220,15 +1220,23 @@ namespace Xamarin.Forms.Build.Tasks
 			return true;
 		}
 
-		static bool CanAddToResourceDictionary(TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
+		static Dictionary<VariableDefinition, IList<string>> resourceNamesInUse = new Dictionary<VariableDefinition, IList<string>>();
+		static bool CanAddToResourceDictionary(VariableDefinition parent, TypeReference collectionType, IElementNode node, IXmlLineInfo lineInfo, ILContext context)
 		{
 			if (   collectionType.FullName != "Xamarin.Forms.ResourceDictionary"
 				&& collectionType.ResolveCached().BaseType?.FullName != "Xamarin.Forms.ResourceDictionary")
 				return false;
 
 
-			if (node.Properties.ContainsKey(XmlName.xKey))
+			if (node.Properties.ContainsKey(XmlName.xKey)) {
+				var key = (node.Properties[XmlName.xKey] as ValueNode).Value as string;
+				if (!resourceNamesInUse.TryGetValue(parent, out var names))
+					resourceNamesInUse[parent] = (names = new List<string>());
+				if (names.Contains(key))
+					throw new XamlParseException($"A resource with the key '{key}' is already present in the ResourceDictionary.", lineInfo);
+				names.Add(key);
 				return true;
+			}
 
 			//is there a RD.Add() overrides that accepts this ?
 			var nodeTypeRef = context.Variables[node].VariableType;
@@ -1251,7 +1259,7 @@ namespace Xamarin.Forms.Build.Tasks
 			foreach (var instruction in GetPropertyValue(parent, propertyName, context, iXmlLineInfo, out propertyType))
 				yield return instruction;
 
-			if (CanAddToResourceDictionary(propertyType, elementNode, iXmlLineInfo, context)) {
+			if (CanAddToResourceDictionary(parent, propertyType, elementNode, iXmlLineInfo, context)) {
 				foreach (var instruction in AddToResourceDictionary(elementNode, iXmlLineInfo, context))
 					yield return instruction;
 				yield break;

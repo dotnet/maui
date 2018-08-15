@@ -47,11 +47,8 @@ namespace Xamarin.Forms.Platform.iOS
 		InnerDelegate _innerDelegate;
 		nfloat _masterWidth = 0;
 		EventedViewController _masterController;
-
 		MasterDetailPage _masterDetailPage;
-
 		bool _masterVisible;
-
 		VisualElementTracker _tracker;
 
 		Page PageController => Element as Page;
@@ -186,7 +183,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_masterWidth = (nfloat)Math.Max(_masterWidth, masterBounds.Width);
 
 			if (!masterBounds.IsEmpty)
-				MasterDetailPage.MasterBounds = new Rectangle(_masterWidth, 0, _masterWidth, masterBounds.Height);
+				MasterDetailPage.MasterBounds = new Rectangle(0, 0, _masterWidth, masterBounds.Height);
 
 			if (!detailsBounds.IsEmpty)
 				MasterDetailPage.DetailBounds = new Rectangle(0, 0, detailsBounds.Width, detailsBounds.Height);

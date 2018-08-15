@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Controls
 		{
 			FlowDirection = direction;
 			Master = new FlowDirectionGalleryCP(direction) { Title = "Master", BackgroundColor = Color.Red };
-			Detail = new FlowDirectionGalleryCP(direction) { Title = "Detail" };
+			Detail = new NavigationPage(new FlowDirectionGalleryCP(direction) { Title = "Detail" });
 			IsPresented = true;
 		}
 	}
