@@ -10,14 +10,16 @@
     <BaseTypeName>System.Enum</BaseTypeName>
   </Base>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
+    <summary>Directions mode for navigation.</summary>
+    <remarks>
+      <para>Default is none.</para>
+    </remarks>
   </Docs>
   <Members>
-    <Member MemberName="Default">
-      <MemberSignature Language="C#" Value="Default" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Default = int32(0)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Default" />
+    <Member MemberName="None">
+      <MemberSignature Language="C#" Value="None" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode None = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.None" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -28,13 +30,13 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>The default MapDirectionsMode on your platform.</summary>
+        <summary>No directions mode for map.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Driving">
-      <MemberSignature Language="C#" Value="Driving" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Driving = int32(1)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Default = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Default" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -45,13 +47,13 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>Car route mode.</summary>
+        <summary>The default directions mode on the platform.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Transit">
-      <MemberSignature Language="C#" Value="Transit" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Transit = int32(2)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Transit" />
+    <Member MemberName="Bicycling">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Default = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Bicycling" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -62,13 +64,13 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>Transit route mode.</summary>
+        <summary>Bicycle route mode.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Walking">
-      <MemberSignature Language="C#" Value="Walking" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Walking = int32(3)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
+    <Member MemberName="Driving">
+      <MemberSignature Language="C#" Value="Driving" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Driving = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -78,6 +80,40 @@
         <ReturnType>Xamarin.Essentials.MapDirectionsMode</ReturnType>
       </ReturnValue>
       <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Car route mode.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Transit">
+      <MemberSignature Language="C#" Value="Transit" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Transit = int32(4)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Transit" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.MapDirectionsMode</ReturnType>
+      </ReturnValue>
+      <MemberValue>4</MemberValue>
+      <Docs>
+        <summary>Transit route mode.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Walking">
+      <MemberSignature Language="C#" Value="Walking" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.MapDirectionsMode Walking = int32(5)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.MapDirectionsMode</ReturnType>
+      </ReturnValue>
+      <MemberValue>5</MemberValue>
       <Docs>
         <summary>Walking route mode.</summary>
       </Docs>

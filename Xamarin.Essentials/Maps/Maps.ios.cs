@@ -27,7 +27,8 @@ namespace Xamarin.Essentials
                 Country = placemark.CountryName,
                 State = placemark.AdminArea,
                 Street = placemark.Thoroughfare,
-                City = placemark.Locality
+                City = placemark.Locality,
+                Zip = placemark.PostalCode
             };
 
             var coder = new CLGeocoder();
@@ -57,25 +58,31 @@ namespace Xamarin.Essentials
                 Name = options.Name ?? string.Empty
             };
 
-            var mode = MKDirectionsMode.Default;
-
-            switch (options.MapDirectionsMode)
+            MKLaunchOptions launchOptions = null;
+            if (options.MapDirectionsMode != MapDirectionsMode.None)
             {
-                case MapDirectionsMode.Driving:
-                    mode = MKDirectionsMode.Driving;
-                    break;
-                case MapDirectionsMode.Transit:
-                    mode = MKDirectionsMode.Transit;
-                    break;
-                case MapDirectionsMode.Walking:
-                    mode = MKDirectionsMode.Walking;
-                    break;
+                var mode = MKDirectionsMode.Default;
+
+                switch (options.MapDirectionsMode)
+                {
+                    case MapDirectionsMode.Driving:
+                        mode = MKDirectionsMode.Driving;
+                        break;
+                    case MapDirectionsMode.Transit:
+                        mode = MKDirectionsMode.Transit;
+                        break;
+                    case MapDirectionsMode.Walking:
+                        mode = MKDirectionsMode.Walking;
+                        break;
+                    case MapDirectionsMode.Default:
+                        mode = MKDirectionsMode.Default;
+                        break;
+                }
+                launchOptions = new MKLaunchOptions
+                {
+                    DirectionsMode = mode
+                };
             }
-
-            var launchOptions = new MKLaunchOptions
-            {
-                DirectionsMode = mode
-            };
 
             var mapItems = new[] { mapItem };
             MKMapItem.OpenMaps(mapItems, launchOptions);

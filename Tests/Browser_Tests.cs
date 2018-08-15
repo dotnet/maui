@@ -25,6 +25,8 @@ namespace Tests
 
         [Theory]
         [InlineData("https://xamarin.com", "https://xamarin.com")]
+        [InlineData("https://xamarin.com/test.html", "https://xamarin.com/test.html")]
+        [InlineData("https://xamarin.com:56/test.html", "https://xamarin.com:56/test.html")]
         [InlineData("http://xamarin.com", "http://xamarin.com")]
         [InlineData("https://xamariñ.com", "https://xn--xamari-1wa.com")]
         [InlineData("http://xamariñ.com", "http://xn--xamari-1wa.com")]
