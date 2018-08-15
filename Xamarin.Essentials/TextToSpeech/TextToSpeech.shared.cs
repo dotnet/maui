@@ -63,7 +63,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    public partial struct Locale
+    public class Locale
     {
         public string Language { get; }
 

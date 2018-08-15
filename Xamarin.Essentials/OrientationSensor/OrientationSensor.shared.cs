@@ -74,7 +74,7 @@ namespace Xamarin.Essentials
         public OrientationSensorData Reading { get; }
     }
 
-    public struct OrientationSensorData
+    public readonly struct OrientationSensorData : IEquatable<OrientationSensorData>
     {
         internal OrientationSensorData(double x, double y, double z, double w)
             : this((float)x, (float)y, (float)z, (float)w)
@@ -85,5 +85,24 @@ namespace Xamarin.Essentials
             Orientation = new Quaternion(x, y, z, w);
 
         public Quaternion Orientation { get; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if (!(obj is OrientationSensorData compassData))
+                return false;
+            return Equals(compassData);
+        }
+
+        public bool Equals(OrientationSensorData other) => Orientation.Equals(other.Orientation);
+
+        public static bool operator ==(OrientationSensorData left, OrientationSensorData right) =>
+         Equals(left, right);
+
+        public static bool operator !=(OrientationSensorData left, OrientationSensorData right) =>
+           !Equals(left, right);
+
+        public override int GetHashCode() => Orientation.GetHashCode();
     }
 }
