@@ -2,20 +2,18 @@
 
 namespace Xamarin.Essentials
 {
-    public static partial class Compass
+    public static partial class Barometer
     {
         static bool useSyncContext;
 
-        public static event EventHandler<CompassChangedEventArgs> ReadingChanged;
+        public static event EventHandler<BarometerChangedEventArgs> ReadingChanged;
 
         public static bool IsMonitoring { get; private set; }
-
-        public static bool ApplyLowPassFilter { get; set; }
 
         public static void Start(SensorSpeed sensorSpeed)
         {
             if (!IsSupported)
-                throw new FeatureNotSupportedException();
+               throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
                 return;
@@ -55,10 +53,10 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(CompassData reading) =>
-            OnChanged(new CompassChangedEventArgs(reading));
+        internal static void OnChanged(BarometerData reading) =>
+            OnChanged(new BarometerChangedEventArgs(reading));
 
-        internal static void OnChanged(CompassChangedEventArgs e)
+        static void OnChanged(BarometerChangedEventArgs e)
         {
             if (useSyncContext)
                 MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
@@ -67,38 +65,42 @@ namespace Xamarin.Essentials
         }
     }
 
-    public class CompassChangedEventArgs : EventArgs
+    public class BarometerChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) =>
+        internal BarometerChangedEventArgs(BarometerData reading) =>
             Reading = reading;
 
-        public CompassData Reading { get; }
+        public BarometerData Reading { get; }
     }
 
-    public readonly struct CompassData : IEquatable<CompassData>
+    public readonly struct BarometerData : IEquatable<BarometerData>
     {
-        internal CompassData(double headingMagneticNorth) =>
-            HeadingMagneticNorth = headingMagneticNorth;
+        internal BarometerData(double pressure) =>
+            Pressure = pressure;
 
-        public double HeadingMagneticNorth { get; }
+        public double Pressure { get; }
+
+        public static bool operator ==(BarometerData left, BarometerData right) =>
+            Equals(left, right);
+
+        public static bool operator !=(BarometerData left, BarometerData right) =>
+            !Equals(left, right);
 
         public override bool Equals(object obj)
         {
             if (obj == null)
                 return false;
-            if (!(obj is CompassData compassData))
+
+            if (!(obj is BarometerData barometerData))
                 return false;
-            return Equals(compassData);
+
+            return Equals(barometerData);
         }
 
-        public bool Equals(CompassData other) => HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
+        public bool Equals(BarometerData other) =>
+            Pressure.Equals(other.Pressure);
 
-        public static bool operator ==(CompassData left, CompassData right) =>
-            Equals(left, right);
-
-        public static bool operator !=(CompassData left, CompassData right) =>
-           !Equals(left, right);
-
-        public override int GetHashCode() => HeadingMagneticNorth.GetHashCode();
+        public override int GetHashCode() =>
+            Pressure.GetHashCode();
     }
 }

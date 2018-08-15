@@ -54,19 +54,15 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(AccelerometerData reading)
-            => OnChanged(new AccelerometerChangedEventArgs(reading));
+        internal static void OnChanged(AccelerometerData reading) =>
+            OnChanged(new AccelerometerChangedEventArgs(reading));
 
         internal static void OnChanged(AccelerometerChangedEventArgs e)
         {
-            var handler = ReadingChanged;
-            if (handler == null)
-                return;
-
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
+                MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
             else
-                handler?.Invoke(null, e);
+                ReadingChanged?.Invoke(null, e);
         }
     }
 

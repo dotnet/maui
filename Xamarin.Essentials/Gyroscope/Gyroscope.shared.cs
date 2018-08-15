@@ -54,25 +54,22 @@ namespace Xamarin.Essentials
             }
         }
 
-        internal static void OnChanged(GyroscopeData reading)
-            => OnChanged(new GyroscopeChangedEventArgs(reading));
+        internal static void OnChanged(GyroscopeData reading) =>
+            OnChanged(new GyroscopeChangedEventArgs(reading));
 
         internal static void OnChanged(GyroscopeChangedEventArgs e)
         {
-            var handler = ReadingChanged;
-            if (handler == null)
-                return;
-
             if (useSyncContext)
-                MainThread.BeginInvokeOnMainThread(() => handler?.Invoke(null, e));
+                MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
             else
-                handler?.Invoke(null, e);
+                ReadingChanged?.Invoke(null, e);
         }
     }
 
     public class GyroscopeChangedEventArgs : EventArgs
     {
-        internal GyroscopeChangedEventArgs(GyroscopeData reading) => Reading = reading;
+        internal GyroscopeChangedEventArgs(GyroscopeData reading) =>
+            Reading = reading;
 
         public GyroscopeData Reading { get; }
     }
