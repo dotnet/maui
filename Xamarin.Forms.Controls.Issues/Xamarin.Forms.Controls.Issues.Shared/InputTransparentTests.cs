@@ -186,7 +186,9 @@ namespace Xamarin.Forms.Controls.Issues
 				LineBreakMode = LineBreakMode.WordWrap,
 				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 			}));
-			col1.Children.Add(MenuButton(nameof(SearchBar), () => new SearchBar()));
+
+			// We don't use 'SearchBar' here because on Android it sometimes finds the wrong control
+			col1.Children.Add(MenuButton("TestSearchBar", () => new SearchBar()));
 
 			col2.Children.Add(MenuButton(nameof(DatePicker), () => new DatePicker()));
 			col2.Children.Add(MenuButton(nameof(TimePicker), () => new TimePicker()));
