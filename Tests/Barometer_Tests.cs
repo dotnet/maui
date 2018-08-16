@@ -7,45 +7,48 @@ namespace Tests
     public class Barometer_Tests
     {
         [Fact]
-        public void IsSupported_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.IsSupported);
+        public void Barometer_Start() =>
+             Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Stop());
 
         [Fact]
-        public void Monitor_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start(SensorSpeed.UI));
+        public void Barometer_Stop() =>
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start(SensorSpeed.Normal));
 
         [Fact]
-        public void Monitor_Off_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Stop());
-
-        [Fact]
-        public void IsMonitoring_Default_On_NetStandard() =>
+        public void Barometer_IsMonitoring() =>
             Assert.False(Barometer.IsMonitoring);
 
         [Fact]
-        public void BarometerData_Comparison_Equal()
+        public void Barometer_IsSupported() =>
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.IsSupported);
+
+        [Theory]
+        [InlineData(0.0, 0.0, true)]
+        [InlineData(0.0, 1.0, false)]
+        public void BarometerData_Comparison(
+            double pressure1,
+            double pressure2,
+            bool equals)
         {
-            var device1 = new BarometerData(0);
-            var device2 = new BarometerData(0);
+            var data1 = new BarometerData(pressure1);
+            var data2 = new BarometerData(pressure2);
 
-            Assert.True(device1.Equals(device2));
-            Assert.True(device1 == device2);
-            Assert.False(device1 != device2);
-            Assert.Equal(device1, device2);
-            Assert.Equal(device1.GetHashCode(), device2.GetHashCode());
-        }
-
-        [Fact]
-        public void BarometerData_Comparison_NotEqual()
-        {
-            var device1 = new BarometerData(0);
-            var device2 = new BarometerData(1);
-
-            Assert.False(device1.Equals(device2));
-            Assert.False(device1 == device2);
-            Assert.True(device1 != device2);
-            Assert.NotEqual(device1, device2);
-            Assert.NotEqual(device1.GetHashCode(), device2.GetHashCode());
+            if (equals)
+            {
+                Assert.True(data1.Equals(data2));
+                Assert.True(data1 == data2);
+                Assert.False(data1 != data2);
+                Assert.Equal(data1, data2);
+                Assert.Equal(data1.GetHashCode(), data2.GetHashCode());
+            }
+            else
+            {
+                Assert.False(data1.Equals(data2));
+                Assert.False(data1 == data2);
+                Assert.True(data1 != data2);
+                Assert.NotEqual(data1, data2);
+                Assert.NotEqual(data1.GetHashCode(), data2.GetHashCode());
+            }
         }
     }
 }

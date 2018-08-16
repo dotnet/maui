@@ -6,68 +6,49 @@ namespace Tests
 {
     public class Compass_Tests
     {
-        public Compass_Tests()
-        {
-            Compass.Stop();
-        }
+        [Fact]
+        public void Compass_Start() =>
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.Stop());
 
         [Fact]
-        public void IsSupported_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.IsSupported);
-
-        [Fact]
-        public void Monitor_Null_Handler_On_NetStandard() =>
-            Assert.Throws<ArgumentNullException>(() => Compass.Start(SensorSpeed.Normal));
-
-        [Fact]
-        public void Monitor_On_NetStandard() =>
+        public void Compass_Stop() =>
             Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.Start(SensorSpeed.Normal));
 
         [Fact]
-        public void IsMonitoring_Default_On_NetStandard() =>
+        public void Compass_IsMonitoring() =>
             Assert.False(Compass.IsMonitoring);
 
         [Fact]
-        public void CompassData_Equals_AreSameCopy()
-        {
-            var data = new CompassData(0);
-            var copy = data;
-            var res = data.Equals(copy);
-            Assert.True(res);
-        }
+        public void Compass_IsSupported() =>
+                  Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.IsSupported);
 
-        [Fact]
-        public void CompassData_Equals_AreSameValues()
+        [Theory]
+        [InlineData(0.0, 0.0, true)]
+        [InlineData(0.0, 1.0, false)]
+        public void CompassData_Comparison(
+             double heading1,
+             double heading2,
+             bool equals)
         {
-            var data = new CompassData(0);
-            var copy = new CompassData(0);
-            Assert.True(data.Equals(copy));
-        }
+            var data1 = new CompassData(heading1);
+            var data2 = new CompassData(heading2);
 
-        [Fact]
-        public void CompassData_Equals_AreDifferent()
-        {
-            var data = new CompassData(0);
-            var copy = new CompassData(1);
-            Assert.False(data.Equals(copy));
-        }
-
-        [Fact]
-        public void CompassData_Equals_Operator_AreSameValues()
-        {
-            var data = new CompassData(0);
-            var copy = new CompassData(0);
-            Assert.True(data == copy);
-            Assert.False(data != copy);
-        }
-
-        [Fact]
-        public void CompassData_Equals_Operator_AreDifferent()
-        {
-            var data = new CompassData(0);
-            var copy = new CompassData(1);
-            Assert.False(data == copy);
-            Assert.True(data != copy);
+            if (equals)
+            {
+                Assert.True(data1.Equals(data2));
+                Assert.True(data1 == data2);
+                Assert.False(data1 != data2);
+                Assert.Equal(data1, data2);
+                Assert.Equal(data1.GetHashCode(), data2.GetHashCode());
+            }
+            else
+            {
+                Assert.False(data1.Equals(data2));
+                Assert.False(data1 == data2);
+                Assert.True(data1 != data2);
+                Assert.NotEqual(data1, data2);
+                Assert.NotEqual(data1.GetHashCode(), data2.GetHashCode());
+            }
         }
     }
 }

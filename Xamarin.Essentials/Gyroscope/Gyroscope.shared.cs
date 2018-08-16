@@ -86,16 +86,11 @@ namespace Xamarin.Essentials
 
         public Vector3 AngularVelocity { get; }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-            if (!(obj is GyroscopeData compassData))
-                return false;
-            return Equals(compassData);
-        }
+        public override bool Equals(object obj) =>
+            (obj is GyroscopeData data) && Equals(data);
 
-        public bool Equals(GyroscopeData other) => AngularVelocity.Equals(other.AngularVelocity);
+        public bool Equals(GyroscopeData other) =>
+            AngularVelocity.Equals(other.AngularVelocity);
 
         public static bool operator ==(GyroscopeData left, GyroscopeData right) =>
           Equals(left, right);
@@ -103,6 +98,7 @@ namespace Xamarin.Essentials
         public static bool operator !=(GyroscopeData left, GyroscopeData right) =>
            !Equals(left, right);
 
-        public override int GetHashCode() => AngularVelocity.GetHashCode();
+        public override int GetHashCode() =>
+            AngularVelocity.GetHashCode();
     }
 }

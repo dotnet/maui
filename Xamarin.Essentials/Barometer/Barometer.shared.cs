@@ -86,16 +86,8 @@ namespace Xamarin.Essentials
         public static bool operator !=(BarometerData left, BarometerData right) =>
             !Equals(left, right);
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-
-            if (!(obj is BarometerData barometerData))
-                return false;
-
-            return Equals(barometerData);
-        }
+        public override bool Equals(object obj) =>
+            (obj is BarometerData data) && Equals(data);
 
         public bool Equals(BarometerData other) =>
             Pressure.Equals(other.Pressure);

@@ -82,16 +82,11 @@ namespace Xamarin.Essentials
 
         public double HeadingMagneticNorth { get; }
 
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-            if (!(obj is CompassData compassData))
-                return false;
-            return Equals(compassData);
-        }
+        public override bool Equals(object obj) =>
+            (obj is CompassData data) && Equals(data);
 
-        public bool Equals(CompassData other) => HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
+        public bool Equals(CompassData other) =>
+            HeadingMagneticNorth.Equals(other.HeadingMagneticNorth);
 
         public static bool operator ==(CompassData left, CompassData right) =>
             Equals(left, right);
@@ -99,6 +94,7 @@ namespace Xamarin.Essentials
         public static bool operator !=(CompassData left, CompassData right) =>
            !Equals(left, right);
 
-        public override int GetHashCode() => HeadingMagneticNorth.GetHashCode();
+        public override int GetHashCode() =>
+            HeadingMagneticNorth.GetHashCode();
     }
 }
