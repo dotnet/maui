@@ -17,14 +17,12 @@ namespace Xamarin.Essentials
         {
             var displayMetrics = Platform.AppContext.Resources?.DisplayMetrics;
 
-            return new ScreenMetrics
-            {
-                Orientation = CalculateOrientation(),
-                Rotation = CalculateRotation(),
-                Width = displayMetrics?.WidthPixels ?? 0,
-                Height = displayMetrics?.HeightPixels ?? 0,
-                Density = displayMetrics?.Density ?? 0
-            };
+            return new ScreenMetrics(
+                width: displayMetrics?.WidthPixels ?? 0,
+                height: displayMetrics?.HeightPixels ?? 0,
+                density: displayMetrics?.Density ?? 0,
+                orientation: CalculateOrientation(),
+                rotation: CalculateRotation());
         }
 
         static void StartScreenMetricsListeners()

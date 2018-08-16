@@ -13,14 +13,12 @@ namespace Xamarin.Essentials
             var bounds = UIScreen.MainScreen.Bounds;
             var scale = UIScreen.MainScreen.Scale;
 
-            return new ScreenMetrics
-            {
-                Width = bounds.Width * scale,
-                Height = bounds.Height * scale,
-                Density = scale,
-                Orientation = CalculateOrientation(),
-                Rotation = CalculateRotation()
-            };
+            return new ScreenMetrics(
+                width: bounds.Width * scale,
+                height: bounds.Height * scale,
+                density: scale,
+                orientation: CalculateOrientation(),
+                rotation: CalculateRotation());
         }
 
         static void StartScreenMetricsListeners()

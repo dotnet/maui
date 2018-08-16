@@ -16,14 +16,12 @@ namespace Xamarin.Essentials
             var w = di.ScreenWidthInRawPixels;
             var h = di.ScreenHeightInRawPixels;
 
-            return new ScreenMetrics
-            {
-                Width = perpendicular ? h : w,
-                Height = perpendicular ? w : h,
-                Density = di.LogicalDpi / 96.0,
-                Orientation = CalculateOrientation(di),
-                Rotation = rotation
-            };
+            return new ScreenMetrics(
+                width: perpendicular ? h : w,
+                height: perpendicular ? w : h,
+                density: di.LogicalDpi / 96.0,
+                orientation: CalculateOrientation(di),
+                rotation: rotation);
         }
 
         static void StartScreenMetricsListeners()
