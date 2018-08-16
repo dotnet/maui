@@ -157,6 +157,67 @@ namespace Xamarin.Forms.Controls
 				}
 			);
 
+			var maxlinesContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label {
+					Text = longText,
+					MaxLines = 2
+				}
+			);
+
+			var maxlinesCharWrapContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.CharacterWrap
+				}
+			);
+
+			var maxlinesHeadTruncContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.HeadTruncation
+				}
+			);
+
+			var maxlinesMiddleTruncContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.MiddleTruncation
+				}
+			);
+
+			var maxlinesNoWrapContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.NoWrap
+				}
+			);
+
+			var maxlinesTailTruncContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.TailTruncation
+				}
+			);
+
+			var maxlinesWordWrapContainer = new ViewContainer<Label>(Test.Label.MaxLines,
+				new Label
+				{
+					Text = longText,
+					MaxLines = 2,
+					LineBreakMode = LineBreakMode.WordWrap
+				}
+			);
+
 			Add (namedSizeMediumBoldContainer);
 			Add (namedSizeMediumItalicContainer);
 			Add (namedSizeMediumUnderlineContainer);
@@ -184,6 +245,13 @@ namespace Xamarin.Forms.Controls
 			Add (styleSubtitleContainer);
 			Add (styleBodyContainer);
 			Add (styleCaptionContainer);
+			Add (maxlinesContainer);
+			Add (maxlinesCharWrapContainer);
+			Add (maxlinesHeadTruncContainer);
+			Add (maxlinesMiddleTruncContainer);
+			Add (maxlinesNoWrapContainer);
+			Add (maxlinesTailTruncContainer);
+			Add (maxlinesWordWrapContainer);
 		}
 	}
 }

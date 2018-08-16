@@ -140,6 +140,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateAlign(Control);
 				UpdateFont(Control);
 				UpdateLineBreakMode(Control);
+				UpdateMaxLines(Control);
 				UpdateDetectReadingOrderFromContent(Control);
 			}
 		}
@@ -164,6 +165,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateDetectReadingOrderFromContent(Control);
 			else if (e.PropertyName == Label.LineHeightProperty.PropertyName)
 				UpdateLineHeight(Control);
+			else if (e.PropertyName == Label.MaxLinesProperty.PropertyName)
+				UpdateMaxLines(Control);
 			base.OnElementPropertyChanged(sender, e);
 		}
 
@@ -349,6 +352,18 @@ namespace Xamarin.Forms.Platform.UWP
 			if (Element.LineHeight >= 0)
 			{
 				textBlock.LineHeight = Element.LineHeight * textBlock.FontSize;
+			}
+		}
+
+		void UpdateMaxLines(TextBlock textBlock)
+		{
+			if (Element.MaxLines >= 0)
+			{
+				textBlock.MaxLines = Element.MaxLines;
+			}
+			else
+			{
+				textBlock.MaxLines = 0;
 			}
 		}
 	}
