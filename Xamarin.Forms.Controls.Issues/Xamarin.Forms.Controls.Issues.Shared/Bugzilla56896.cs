@@ -214,6 +214,8 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla56896Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Instructions));
+			RunningApp.WaitForElement(q => q.Marked(ConstructorCountId));
+			RunningApp.WaitForElement(q => q.Marked(TimeId));
 			var count = int.Parse(RunningApp.Query(q => q.Marked(ConstructorCountId))[0].Text);
 			Assert.IsTrue(count < 100); // Failing test makes ~15000 constructor calls
 			var time = int.Parse(RunningApp.Query(q => q.Marked(TimeId))[0].Text);
