@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			foreach (Page page in pageController.InternalChildren)
 			{
-				_naviItemMap[page] = _naviFrame.Push(Platform.GetRenderer(page).NativeView, SpanTitle(page.Title));
+				_naviItemMap[page] = _naviFrame.Push(CreateNavItem(page), SpanTitle(page.Title));
 				page.PropertyChanged += NavigationBarPropertyChangedHandler;
 
 				UpdateHasNavigationBar(page);
@@ -177,6 +177,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateHasNavigationBar(Page page)
 		{
 			NaviItem item = GetNaviItemForPage(page);
+			if (NavigationPage.GetTitleView(page) != null)
+			{
+				item.TitleBarVisible = false;
+				Native.TitleViewPage tvPage = item.Content as Native.TitleViewPage;
+				if (tvPage != null)
+				{
+					tvPage.HasNavigationBar = (bool)page.GetValue(NavigationPage.HasNavigationBarProperty);
+				}
+				return;
+			}
 			//According to TV UX Guideline, item style should be set to "tabbar" in case of TabbedPage only for TV profile.
 			if (Device.Idiom == TargetIdiom.TV)
 			{
@@ -434,7 +444,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (nre.Animated || _naviFrame.NavigationStack.Count == 0)
 			{
-				_naviItemMap[nre.Page] = _naviFrame.Push(Platform.GetOrCreateRenderer(nre.Page).NativeView, SpanTitle(nre.Page.Title));
+				_naviItemMap[nre.Page] = _naviFrame.Push(CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 				_currentTaskSource = new TaskCompletionSource<bool>();
 				nre.Task = _currentTaskSource.Task;
 
@@ -444,7 +454,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			else
 			{
-				_naviItemMap[nre.Page] = _naviFrame.InsertAfter(_naviFrame.NavigationStack.Last(), Platform.GetOrCreateRenderer(nre.Page).NativeView, SpanTitle(nre.Page.Title));
+				_naviItemMap[nre.Page] = _naviFrame.InsertAfter(_naviFrame.NavigationStack.Last(), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 			}
 			UpdateHasNavigationBar(nre.Page);
 		}
@@ -463,8 +473,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (nre.Page == null)
 				throw new ArgumentNullException("page");
 
-			EvasObject page = Platform.GetOrCreateRenderer(nre.Page).NativeView;
-			_naviItemMap[nre.Page] = _naviFrame.InsertBefore(GetNaviItemForPage(nre.BeforePage), page, SpanTitle(nre.Page.Title));
+			_naviItemMap[nre.Page] = _naviFrame.InsertBefore(GetNaviItemForPage(nre.BeforePage), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 			UpdateHasNavigationBar(nre.Page);
 		}
 
@@ -481,6 +490,24 @@ namespace Xamarin.Forms.Platform.Tizen
 				_currentTaskSource = null;
 				tmp.SetResult(true);
 			}
+		}
+
+		EvasObject CreateNavItem(Page page)
+		{
+			View titleView = NavigationPage.GetTitleView(page) as View;
+			EvasObject nativeView = null;
+			if (titleView != null)
+			{
+				titleView.Parent = this.Element;
+				nativeView = new Native.TitleViewPage(Forms.NativeParent, page, titleView);
+				nativeView.Show();
+			}
+			else
+			{
+				nativeView = Platform.GetOrCreateRenderer(page).NativeView;
+
+			}
+			return nativeView;
 		}
 	}
 }
