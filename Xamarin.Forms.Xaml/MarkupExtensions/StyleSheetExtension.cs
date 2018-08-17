@@ -35,7 +35,9 @@ namespace Xamarin.Forms.Xaml
 				var rootTargetPath = XamlResourceIdAttribute.GetPathForType(rootObjectType);
 				var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(Source, rootTargetPath);
 				var resString = DependencyService.Get<IResourcesLoader>().GetResource(resourcePath, rootObjectType.GetTypeInfo().Assembly, lineInfo);
-				return StyleSheet.FromString(resString);
+				var styleSheet = StyleSheet.FromString(resString);
+				styleSheet.Source = new Uri(resourcePath, UriKind.Relative);
+				return styleSheet;
 			}
 
 			if (!string.IsNullOrEmpty(Style)) {

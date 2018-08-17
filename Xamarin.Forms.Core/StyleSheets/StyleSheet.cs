@@ -15,6 +15,8 @@ namespace Xamarin.Forms.StyleSheets
 		{
 		}
 
+		public Uri Source { get; internal set; }
+
 		internal IDictionary<Selector, Style> Styles { get; set; } = new Dictionary<Selector, Style>();
 
 		public static StyleSheet FromAssemblyResource(Assembly assembly, string resourceId, IXmlLineInfo lineInfo = null)
