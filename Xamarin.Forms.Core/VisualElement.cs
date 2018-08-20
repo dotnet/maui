@@ -932,13 +932,14 @@ namespace Xamarin.Forms
 		{
 			public override object ConvertFromInvariantString(string value)
 			{
-				if (value != null)
+				value = value?.Trim();
+				if (!string.IsNullOrEmpty(value))
 				{
-					if (value.Equals("true", StringComparison.OrdinalIgnoreCase))
+					if (value.Equals(Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
 						return true;
 					if (value.Equals("visible", StringComparison.OrdinalIgnoreCase))
 						return true;
-					if (value.Equals("false", StringComparison.OrdinalIgnoreCase))
+					if (value.Equals(Boolean.FalseString, StringComparison.OrdinalIgnoreCase))
 						return false;
 					if (value.Equals("hidden", StringComparison.OrdinalIgnoreCase))
 						return false;
