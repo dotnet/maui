@@ -59,7 +59,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				var span = element.FormattedText.Spans[i];
 				
 				var location = currentLocation;
-				var length = span.Text.Length;
+				var length = span.Text?.Length ?? 0;
 
 				if (length == 0)
 					continue;
