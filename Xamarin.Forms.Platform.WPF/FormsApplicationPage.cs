@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void ApplicationOnPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
-			if (args.PropertyName == "MainPage")
+			if (args.PropertyName == "MainPage" && IsLoaded)
 				SetMainPage();
 		}
 
