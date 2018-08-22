@@ -137,6 +137,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateFont(Control);
 				UpdateLineBreakMode(Control);
 				UpdateDetectReadingOrderFromContent(Control);
+				UpdateLineHeight(Control);
 			}
 		}
 
