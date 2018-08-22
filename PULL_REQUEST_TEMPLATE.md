@@ -34,8 +34,9 @@ Changed:
 - UWP
 
 ### Behavioral/Visual Changes ###
-
 <!-- Describe any changes that may change how a user's app behaves or appears when upgrading to this version of the codebase. -->
+
+None
 
 ### Before/After Screenshots ### 
 <!-- If possible, take a screenshot of your test case before these changes were made and another screenshot after the changes were made to show possible visual changes. -->
