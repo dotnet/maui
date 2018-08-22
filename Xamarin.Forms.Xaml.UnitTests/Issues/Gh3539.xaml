@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Xamarin.Forms.Xaml.UnitTests.Gh3539"
+			 xmlns:local="using:Xamarin.Forms.Xaml.UnitTests">
+	<StackLayout x:DataType="local:Gh3539ViewModel">
+        <StackLayout.BindingContext>
+            <local:Gh3539ViewModel Color="Sienna" />
+        </StackLayout.BindingContext>
+        <BoxView Color="{Binding Color}"
+                 VerticalOptions="FillAndExpand" />
+        <StackLayout Margin="10, 0">
+            <Label Text="{Binding Name}" />
+            <Slider Value="{Binding Hue}" />
+            <Label Text="{Binding Hue, StringFormat='Hue = {0:F2}'}" />
+            <Slider Value="{Binding Saturation}" />
+            <Label Text="{Binding Saturation, StringFormat='Saturation = {0:F2}'}" />
+            <Slider Value="{Binding Luminosity}" />
+            <Label Text="{Binding Luminosity, StringFormat='Luminosity = {0:F2}'}" />
+        </StackLayout>
+    </StackLayout> 
+</ContentPage>
