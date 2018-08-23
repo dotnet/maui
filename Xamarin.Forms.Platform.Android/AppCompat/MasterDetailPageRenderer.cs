@@ -1,3 +1,4 @@
+
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -247,7 +248,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		protected override void OnDetachedFromWindow()
 		{
 			base.OnDetachedFromWindow();
-			PageController.SendDisappearing();
+			PageController?.SendDisappearing();
 		}
 
 		protected virtual void OnElementChanged(VisualElement oldElement, VisualElement newElement)
