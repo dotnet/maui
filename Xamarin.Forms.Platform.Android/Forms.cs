@@ -282,7 +282,7 @@ namespace Xamarin.Forms
 				{
 					_scalingFactor = display.Density;
 					_pixelScreenSize = new Size(display.WidthPixels, display.HeightPixels);
-					ScaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Width / _scalingFactor);
+					ScaledScreenSize = new Size(_pixelScreenSize.Width / _scalingFactor, _pixelScreenSize.Height / _scalingFactor);
 				}
 
 				CheckOrientationChanged(formsActivity.Resources.Configuration.Orientation);
