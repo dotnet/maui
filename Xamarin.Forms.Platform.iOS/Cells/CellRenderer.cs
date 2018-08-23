@@ -24,8 +24,28 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBackground(tvc, item);
 
+			SetAccessibility (tvc, item);
+
 			Performance.Stop(reference);
 			return tvc;
+		}
+
+		public virtual void SetAccessibility (UITableViewCell tableViewCell, Cell cell)
+		{
+			if (cell.IsSet (AutomationProperties.IsInAccessibleTreeProperty))
+				tableViewCell.IsAccessibilityElement = cell.GetValue (AutomationProperties.IsInAccessibleTreeProperty).Equals (true);
+			else
+				tableViewCell.IsAccessibilityElement = false;
+
+			if (cell.IsSet (AutomationProperties.NameProperty))
+				tableViewCell.AccessibilityLabel = cell.GetValue (AutomationProperties.NameProperty).ToString ();
+			else
+				tableViewCell.AccessibilityLabel = null;
+
+			if (cell.IsSet (AutomationProperties.HelpTextProperty))
+				tableViewCell.AccessibilityHint = cell.GetValue (AutomationProperties.HelpTextProperty).ToString ();
+			else
+				tableViewCell.AccessibilityHint = null;
 		}
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)

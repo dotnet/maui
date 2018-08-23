@@ -33,6 +33,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			UpdateBackground(tvc, item);
 
+			SetAccessibility(tvc, item);
+
 			return tvc;
 		}
 
