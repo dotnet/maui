@@ -598,7 +598,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateBackButton()
 		{
-			if (_navManager == null)
+			if (_navManager == null || _currentPage == null)
 			{
 				return;
 			}

@@ -408,85 +408,87 @@ namespace Xamarin.Forms.Platform.UWP
 			Control.SelectedItem = page;
 		}
 
-		void UpdateBarIcons() {
-			if (Control == null)
+		void UpdateBarIcons()
+		{
+			if (Control == null || Element == null)
 				return;
 
-			if (Element.IsSet(Specifics.HeaderIconsEnabledProperty))
+			if (!Element.IsSet(Specifics.HeaderIconsEnabledProperty))
+				return;
+
+			bool headerIconsEnabled = Element.OnThisPlatform().GetHeaderIconsEnabled();
+			bool invalidateMeasure = false;
+
+			// Get all stack panels affected by update.
+			var stackPanels = Control.GetDescendantsByName<WStackPanel>(TabBarHeaderStackPanelName);
+			foreach (var stackPanel in stackPanels)
 			{
-				bool headerIconsEnabled = Element.OnThisPlatform().GetHeaderIconsEnabled();
-				bool invalidateMeasure = false;
-
-				// Get all stack panels affected by update.
-				var stackPanels = Control.GetDescendantsByName<WStackPanel>(TabBarHeaderStackPanelName);
-				foreach (var stackPanel in stackPanels)
+				int stackPanelChildCount = stackPanel.Children.Count;
+				for (int i = 0; i < stackPanelChildCount; i++)
 				{
-					int stackPanelChildCount = stackPanel.Children.Count;
-					for (int i = 0; i < stackPanelChildCount; i++)
+					var stackPanelItem = stackPanel.Children[i];
+					if (stackPanelItem is WImage tabBarImage)
 					{
-						var stackPanelItem = stackPanel.Children[i];
-						if (stackPanelItem is WImage tabBarImage)
+						// Update icon image.
+						if (tabBarImage.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderImageName)
 						{
-							// Update icon image.
-							if (tabBarImage.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderImageName)
+							if (headerIconsEnabled)
 							{
-								if (headerIconsEnabled)
+								if (Element.IsSet(Specifics.HeaderIconsSizeProperty))
 								{
-									if (Element.IsSet(Specifics.HeaderIconsSizeProperty))
-									{
-										Size iconSize = Element.OnThisPlatform().GetHeaderIconsSize();
-										tabBarImage.Height = iconSize.Height;
-										tabBarImage.Width = iconSize.Width;
-									}
-									tabBarImage.HorizontalAlignment = WHorizontalAlignment.Center;
-									tabBarImage.Visibility = WVisibility.Visible;
+									Size iconSize = Element.OnThisPlatform().GetHeaderIconsSize();
+									tabBarImage.Height = iconSize.Height;
+									tabBarImage.Width = iconSize.Width;
 								}
-								else
-								{
-									tabBarImage.Visibility = WVisibility.Collapsed;
-								}
-
-								invalidateMeasure = true;
+								tabBarImage.HorizontalAlignment = WHorizontalAlignment.Center;
+								tabBarImage.Visibility = WVisibility.Visible;
 							}
-						}
-						else if (stackPanelItem is WTextBlock tabBarTextblock)
-						{
-							// Update text block.
-							if (tabBarTextblock.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderTextBlockName)
+							else
 							{
-								if (headerIconsEnabled)
-								{
-									// Remember old values so we can restore them if icons are collapsed.
-									// NOTE, since all Textblock instances in this stack panel comes from the same
-									// style, we just keep one copy of the value (since they should be identical).
-									if (tabBarTextblock.TextAlignment != WTextAlignment.Center)
-									{
-										_oldBarTextBlockTextAlignment = tabBarTextblock.TextAlignment;
-										tabBarTextblock.TextAlignment = WTextAlignment.Center;
-									}
+								tabBarImage.Visibility = WVisibility.Collapsed;
+							}
 
-									if (tabBarTextblock.HorizontalAlignment != WHorizontalAlignment.Center)
-									{
-										_oldBarTextBlockHorinzontalAlignment = tabBarTextblock.HorizontalAlignment;
-										tabBarTextblock.HorizontalAlignment = WHorizontalAlignment.Center;
-									}
-								}
-								else
+							invalidateMeasure = true;
+						}
+					}
+					else if (stackPanelItem is WTextBlock tabBarTextblock)
+					{
+						// Update text block.
+						if (tabBarTextblock.GetValue(FrameworkElement.NameProperty).ToString() == TabBarHeaderTextBlockName)
+						{
+							if (headerIconsEnabled)
+							{
+								// Remember old values so we can restore them if icons are collapsed.
+								// NOTE, since all Textblock instances in this stack panel comes from the same
+								// style, we just keep one copy of the value (since they should be identical).
+								if (tabBarTextblock.TextAlignment != WTextAlignment.Center)
 								{
-									// Restore old values.
-									tabBarTextblock.TextAlignment = _oldBarTextBlockTextAlignment;
-									tabBarTextblock.HorizontalAlignment = _oldBarTextBlockHorinzontalAlignment;
+									_oldBarTextBlockTextAlignment = tabBarTextblock.TextAlignment;
+									tabBarTextblock.TextAlignment = WTextAlignment.Center;
 								}
+
+								if (tabBarTextblock.HorizontalAlignment != WHorizontalAlignment.Center)
+								{
+									_oldBarTextBlockHorinzontalAlignment = tabBarTextblock.HorizontalAlignment;
+									tabBarTextblock.HorizontalAlignment = WHorizontalAlignment.Center;
+								}
+							}
+							else
+							{
+								// Restore old values.
+								tabBarTextblock.TextAlignment = _oldBarTextBlockTextAlignment;
+								tabBarTextblock.HorizontalAlignment = _oldBarTextBlockHorinzontalAlignment;
 							}
 						}
 					}
 				}
-
-				// If items have been made visible or collapsed in panel, invalidate current control measures.
-				if (invalidateMeasure)
-					Control.InvalidateMeasure();
 			}
+
+			// If items have been made visible or collapsed in panel, invalidate current control measures.
+			if (invalidateMeasure)
+				Control.InvalidateMeasure();
 		}
+
 		void UpdateToolbarPlacement()
 		{
 			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();

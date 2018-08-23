@@ -12,7 +12,7 @@ namespace Xamarin.Forms.Platform.UWP
 			Unloaded += FormsPresenter_Unloaded;
 			SizeChanged += (s, e) =>
 			{
-				if (ActualWidth > 0 && ActualHeight > 0)
+				if (ActualWidth > 0 && ActualHeight > 0 && DataContext != null)
 				{
 					var page = (Page)DataContext;
 					((Page)page.RealParent).ContainerArea = new Rectangle(0, 0, ActualWidth, ActualHeight);
@@ -21,15 +21,9 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		void FormsPresenter_Loaded(object sender, RoutedEventArgs e)
-		{
-			var page = (Page)DataContext;
-			page.SendAppearing();
-		}
+			=> (DataContext as Page)?.SendAppearing();
 
 		void FormsPresenter_Unloaded(object sender, RoutedEventArgs e)
-		{
-			var page = (Page)DataContext;
-			page.SendDisappearing();
-		}
+			=> (DataContext as Page)?.SendDisappearing();
 	}
 }
