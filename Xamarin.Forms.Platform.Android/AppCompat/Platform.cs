@@ -267,7 +267,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				_renderer.RemoveAllViews();
 
 				foreach (IVisualElementRenderer rootRenderer in _navModel.Roots.Select(Android.Platform.GetRenderer))
-					rootRenderer.Dispose();
+				{
+					rootRenderer?.Dispose();
+				}
 
 				_navModel = new NavigationModel();
 
