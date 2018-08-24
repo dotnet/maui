@@ -43,6 +43,9 @@ None
 
 Not applicable
 
+### Testing Procedure ###
+<!-- Please list the steps that should be taken to properly test these changes on each relevant platform. If you were unable to test these changes yourself on any or all platforms, please let us know. Also, if you are able to attach a video of your test run, you will be our personal hero. -->
+
 ### PR Checklist ###
 
 - [ ] Has automated tests <!-- (if tests are omitted or manual, state reason in description) -->
