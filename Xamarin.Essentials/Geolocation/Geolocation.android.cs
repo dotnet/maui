@@ -15,6 +15,7 @@ namespace Xamarin.Essentials
     public static partial class Geolocation
     {
         const long twoMinutes = 120000;
+        static readonly string[] ignoredProviders = new string[] { LocationManager.PassiveProvider, "local_database" };
 
         static async Task<Location> PlatformLastKnownLocationAsync()
         {
@@ -39,6 +40,12 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.LocationWhenInUse);
 
             var locationManager = Platform.LocationManager;
+
+            var enabledProviders = locationManager.GetProviders(true);
+            var hasProviders = enabledProviders.Any(p => !ignoredProviders.Contains(p));
+
+            if (!hasProviders)
+                throw new FeatureNotEnabledException("Location services are not enabled on device.");
 
             // get the best possible provider for the requested accuracy
             var providerInfo = GetBestProvider(locationManager, request.DesiredAccuracy);

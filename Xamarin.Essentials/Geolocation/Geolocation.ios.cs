@@ -9,11 +9,11 @@ namespace Xamarin.Essentials
 {
     public static partial class Geolocation
     {
-        internal static bool IsSupported
-            => CLLocationManager.LocationServicesEnabled;
-
         static async Task<Location> PlatformLastKnownLocationAsync()
         {
+            if (!CLLocationManager.LocationServicesEnabled)
+                throw new FeatureNotEnabledException("Location services are not enabled on device.");
+
             await Permissions.RequireAsync(PermissionType.LocationWhenInUse);
 
             var manager = new CLLocationManager();
@@ -24,6 +24,9 @@ namespace Xamarin.Essentials
 
         static async Task<Location> PlatformLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
         {
+            if (!CLLocationManager.LocationServicesEnabled)
+                throw new FeatureNotEnabledException("Location services are not enabled on device.");
+
             await Permissions.RequireAsync(PermissionType.LocationWhenInUse);
 
             // the location manager requires an active run loop

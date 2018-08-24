@@ -34,4 +34,21 @@ namespace Xamarin.Essentials
         {
         }
     }
+
+    public class FeatureNotEnabledException : InvalidOperationException
+    {
+        public FeatureNotEnabledException()
+        {
+        }
+
+        public FeatureNotEnabledException(string message)
+            : base(message)
+        {
+        }
+
+        public FeatureNotEnabledException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+    }
 }

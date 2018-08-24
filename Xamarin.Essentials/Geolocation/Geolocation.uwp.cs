@@ -32,11 +32,23 @@ namespace Xamarin.Essentials
                 DesiredAccuracyInMeters = request.PlatformDesiredAccuracy
             };
 
+            CheckStatus(geolocator.LocationStatus);
+
             cancellationToken = Utils.TimeoutToken(cancellationToken, request.Timeout);
 
             var location = await geolocator.GetGeopositionAsync().AsTask(cancellationToken);
 
             return location?.Coordinate?.ToLocation();
+
+            void CheckStatus(PositionStatus status)
+            {
+                switch (status)
+                {
+                    case PositionStatus.Disabled:
+                    case PositionStatus.NotAvailable:
+                        throw new FeatureNotEnabledException("Location services are not enabled on device.");
+                }
+            }
         }
     }
 }
