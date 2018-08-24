@@ -12,7 +12,9 @@ namespace Samples.ViewModel
 
         public string Name => DeviceInfo.Name;
 
-        public string Version => DeviceInfo.VersionString;
+        public string VersionString => DeviceInfo.VersionString;
+
+        public string Version => DeviceInfo.Version.ToString();
 
         public string Platform => DeviceInfo.Platform;
 

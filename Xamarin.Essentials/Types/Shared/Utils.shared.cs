@@ -14,6 +14,9 @@ namespace Xamarin.Essentials
             if (Version.TryParse(version, out var number))
                 return number;
 
+            if (int.TryParse(version, out var major))
+                return new Version(major, 0);
+
             return new Version(0, 0);
         }
 

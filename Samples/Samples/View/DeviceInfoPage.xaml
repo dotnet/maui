@@ -17,6 +17,7 @@
                 <Label Text="{Binding Model, StringFormat='Model: {0}'}" />
                 <Label Text="{Binding Manufacturer, StringFormat='Manufacturer: {0}'}" />
                 <Label Text="{Binding Name, StringFormat='Device Name: {0}'}" />
+                <Label Text="{Binding VersionString, StringFormat='Version: {0}'}" />
                 <Label Text="{Binding Version, StringFormat='Version: {0}'}" />
                 <Label Text="{Binding Platform, StringFormat='Platform: {0}'}" />
                 <Label Text="{Binding Idiom, StringFormat='Idiom: {0}'}" />
