@@ -154,24 +154,7 @@ namespace Xamarin.Forms
 
 		protected override void OnBindingContextChanged()
 		{
-			var gotBindingContext = false;
-			object bc = null;
-
-			for (var i = 0; i < GestureRecognizers.Count; i++)
-			{
-				var bo = GestureRecognizers[i] as BindableObject;
-				if (bo == null)
-					continue;
-
-				if (!gotBindingContext)
-				{
-					bc = BindingContext;
-					gotBindingContext = true;
-				}
-
-				SetInheritedBindingContext(bo, bc);
-			}
-
+			this.PropagateBindingContext(GestureRecognizers);
 			base.OnBindingContextChanged();
 		}
 
