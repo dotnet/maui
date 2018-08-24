@@ -37,5 +37,14 @@ namespace DeviceTests
 
             Assert.Equal(expectedStatus, status);
         }
+
+        [Fact]
+        public async Task Request_NotMainThread()
+        {
+            await Task.Run(async () =>
+            {
+                await Assert.ThrowsAsync<PermissionException>(() => Permissions.RequestAsync(PermissionType.LocationWhenInUse));
+            });
+        }
     }
 }
