@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using MessageUI;
 
 namespace Xamarin.Essentials
@@ -17,8 +18,8 @@ namespace Xamarin.Essentials
             var messageController = new MFMessageComposeViewController();
             if (!string.IsNullOrWhiteSpace(message?.Body))
                 messageController.Body = message.Body;
-            if (!string.IsNullOrWhiteSpace(message?.Recipient))
-                messageController.Recipients = new[] { message.Recipient };
+
+            messageController.Recipients = message?.Recipients?.ToArray() ?? new string[] { };
 
             // show the controller
             var tcs = new TaskCompletionSource<bool>();

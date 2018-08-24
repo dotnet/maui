@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
@@ -12,6 +15,12 @@ namespace Xamarin.Essentials
             if (!IsComposeSupported)
                 throw new FeatureNotSupportedException();
 
+            if (message == null)
+                message = new SmsMessage();
+
+            if (message?.Recipients == null)
+                message.Recipients = new List<string>();
+
             return PlatformComposeAsync(message);
         }
     }
@@ -22,14 +31,14 @@ namespace Xamarin.Essentials
         {
         }
 
-        public SmsMessage(string body, string recipient)
+        public SmsMessage(string body, IEnumerable<string> recipients)
         {
             Body = body;
-            Recipient = recipient;
+            Recipients = recipients?.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         }
 
         public string Body { get; set; }
 
-        public string Recipient { get; set; }
+        public List<string> Recipients { get; set; }
     }
 }

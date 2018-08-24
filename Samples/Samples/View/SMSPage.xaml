@@ -13,7 +13,7 @@
 
         <ScrollView>
             <StackLayout Padding="12,0,12,12" Spacing="6">
-                <Label Text="Recipent (optional):" />
+                <Label Text="Recipents (optional, separate multiple with ',' or '*'):" />
                 <Entry Text="{Binding Recipient}" Keyboard="Telephone" />
                 <Label Text="Message Text (optional):" />
                 <Entry Text="{Binding MessageText}" />

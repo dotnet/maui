@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Android.Content;
 using Android.OS;
 using Android.Provider;
@@ -9,12 +11,14 @@ namespace Xamarin.Essentials
 {
     public static partial class Sms
     {
+        static readonly string smsRecipientSeparator = ";";
+
         internal static bool IsComposeSupported
-            => Platform.IsIntentSupported(CreateIntent("0000000000"));
+            => Platform.IsIntentSupported(CreateIntent(null, new List<string> { "0000000000" }));
 
         static Task PlatformComposeAsync(SmsMessage message)
         {
-            var intent = CreateIntent(message)
+            var intent = CreateIntent(message?.Body, message?.Recipients)
                 .SetFlags(ActivityFlags.ClearTop)
                 .SetFlags(ActivityFlags.NewTask);
 
@@ -23,17 +27,13 @@ namespace Xamarin.Essentials
             return Task.FromResult(true);
         }
 
-        static Intent CreateIntent(SmsMessage message)
-            => CreateIntent(message?.Recipient, message?.Body);
-
-        static Intent CreateIntent(string recipient, string body = null)
+        static Intent CreateIntent(string body, List<string> recipients)
         {
             Intent intent = null;
 
             body = body ?? string.Empty;
-            recipient = recipient ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(recipient) && Platform.HasApiLevel(BuildVersionCodes.Kitkat))
+            if (Platform.HasApiLevel(BuildVersionCodes.Kitkat) && recipients.All(x => string.IsNullOrWhiteSpace(x)))
             {
                 var packageName = Telephony.Sms.GetDefaultSmsPackage(Platform.AppContext);
                 if (!string.IsNullOrWhiteSpace(packageName))
@@ -53,9 +53,9 @@ namespace Xamarin.Essentials
             if (!string.IsNullOrWhiteSpace(body))
                 intent.PutExtra("sms_body", body);
 
-            intent.PutExtra("address", recipient);
+            var recipienturi = string.Join(smsRecipientSeparator, recipients.Select(r => AndroidUri.Encode(r)));
 
-            var uri = AndroidUri.Parse("smsto:" + AndroidUri.Encode(recipient));
+            var uri = AndroidUri.Parse($"smsto:{recipienturi}");
             intent.SetData(uri);
 
             return intent;

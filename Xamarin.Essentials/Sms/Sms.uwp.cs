@@ -15,8 +15,9 @@ namespace Xamarin.Essentials
             var chat = new ChatMessage();
             if (!string.IsNullOrWhiteSpace(message?.Body))
                 chat.Body = message.Body;
-            if (!string.IsNullOrWhiteSpace(message?.Recipient))
-                chat.Recipients.Add(message.Recipient);
+
+            foreach (var recipient in message?.Recipients)
+                chat.Recipients.Add(recipient);
 
             return ChatMessageManager.ShowComposeSmsMessageAsync(chat).AsTask();
         }

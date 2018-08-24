@@ -21,33 +21,33 @@
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>Creates a new instance of SmsMessage.</summary>
-        <remarks></remarks>
+        <param name="body">Content of the message</param>
+        <param name="recipients">Recipients to receive the message.</param>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SmsMessage (string body, string recipient);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string body, string recipient) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.String)" />
+      <MemberSignature Language="C#" Value="public SmsMessage (string body, System.Collections.Generic.IEnumerable&lt;string&gt; recipients);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(string body, class System.Collections.Generic.IEnumerable`1&lt;string&gt; recipients) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SmsMessage.#ctor(System.String,System.Collections.Generic.IEnumerable{System.String})" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
         <Parameter Name="body" Type="System.String" />
-        <Parameter Name="recipient" Type="System.String" />
+        <Parameter Name="recipients" Type="System.Collections.Generic.IEnumerable&lt;System.String&gt;" />
       </Parameters>
       <Docs>
-        <param name="body">The body of the message.</param>
-        <param name="recipient">The recipient of the message.</param>
-        <summary>Creates a new instance of SmsMessage with the specified body and recipient.</summary>
-        <remarks></remarks>
+        <param name="body">Content of the message</param>
+        <param name="recipients">Recipients to receive the message.</param>
+        <summary>Creates a new instance of SmsMessage</summary>
+        <remarks><para /></remarks>
       </Docs>
     </Member>
     <Member MemberName="Body">
@@ -63,25 +63,25 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the body of the message.</summary>
+        <summary>Gets the body of the message.</summary>
         <value></value>
         <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Recipient">
-      <MemberSignature Language="C#" Value="public string Recipient { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string Recipient" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SmsMessage.Recipient" />
+    <Member MemberName="Recipients">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.List&lt;string&gt; Recipients { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.List`1&lt;string&gt; Recipients" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SmsMessage.Recipients" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.String</ReturnType>
+        <ReturnType>System.Collections.Generic.List&lt;System.String&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the recipient of the message.</summary>
+        <summary>Gets the recipient of the message.</summary>
         <value></value>
         <remarks></remarks>
       </Docs>
