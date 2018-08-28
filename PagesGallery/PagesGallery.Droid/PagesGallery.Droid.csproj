@@ -26,13 +26,6 @@
     </NuGetPackageImportStamp>
     <XFDisableTargetsValidation>True</XFDisableTargetsValidation>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
-    <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

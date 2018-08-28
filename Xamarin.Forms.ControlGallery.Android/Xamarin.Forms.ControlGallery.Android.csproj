@@ -29,13 +29,6 @@
     <AndroidTlsProvider>
     </AndroidTlsProvider>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
-    <AndroidUseLatestPlatformSdk>false</AndroidUseLatestPlatformSdk>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
-    <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <AndroidKeyStore>True</AndroidKeyStore>
