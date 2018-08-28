@@ -273,8 +273,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				for (int i = 0; i < _renderer.ChildCount; i++)
 					viewsToRemove.Add(_renderer.GetChildAt(i));
 
-				foreach (var root in _navModel.Roots)
-					renderersToDispose.Add(Android.Platform.GetRenderer(root));
+				foreach (IVisualElementRenderer rootRenderer in _navModel.Roots.Select(Android.Platform.GetRenderer))
+				{
+					rootRenderer?.Dispose();
+				}
 
 				_navModel = new NavigationModel();
 

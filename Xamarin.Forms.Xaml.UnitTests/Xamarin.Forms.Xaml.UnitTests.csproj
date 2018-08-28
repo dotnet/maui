@@ -637,6 +637,9 @@
     <Compile Include="Issues\Gh3512.xaml.cs">
       <DependentUpon>Gh3512.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Issues\Gh3539.xaml.cs">
+      <DependentUpon>Gh3280.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
@@ -1158,6 +1161,10 @@
     <EmbeddedResource Include="Issues\Gh3512.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Issues\Gh3539.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

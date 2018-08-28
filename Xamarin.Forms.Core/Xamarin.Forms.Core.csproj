@@ -21,7 +21,7 @@
 	</ItemGroup>
 	<Import Project="..\Xamarin.Flex\Xamarin.Flex.projitems" Label="Shared" Condition="Exists('..\Xamarin.Flex\Xamarin.Flex.projitems')" />
 	<UsingTask TaskName="XFCorePostProcessor.Tasks.FixXFCoreAssembly" AssemblyFile="..\XFCorePostProcessor.Tasks\bin\Debug\netstandard2.0\XFCorePostProcessor.Tasks.dll" />
-	<Target AfterTargets="AfterCompile" Name="ShameHat">
+	<Target Condition="$(DesignTimeBuild) != true AND $(BuildingProject) == true" AfterTargets="AfterCompile" Name="ShameHat">
 		<FixXFCoreAssembly Assembly="$(IntermediateOutputPath)$(TargetFileName)" ReferencePath="@(ReferencePath)" />
 	</Target>
 </Project>

@@ -540,7 +540,7 @@ namespace Xamarin.Forms.Build.Tasks
 		static IEnumerable<Instruction> CompiledBindingGetSetter(TypeReference tSourceRef, TypeReference tPropertyRef, IList<Tuple<PropertyDefinition, string>> properties, ElementNode node, ILContext context)
 		{
 			if (properties == null || properties.Count == 0) {
-				yield return Instruction.Create(OpCodes.Ldnull);
+				yield return Create(Ldnull);
 				yield break;
 			}
 
@@ -573,7 +573,7 @@ namespace Xamarin.Forms.Build.Tasks
 			var lastProperty = properties.LastOrDefault();
 			var setterRef = lastProperty?.Item1.SetMethod;
 			if (setterRef == null) {
-				yield return Instruction.Create(OpCodes.Ldnull); //throw or not ?
+				yield return Create(Ldnull); //throw or not ?
 				yield break;
 			}
 
@@ -586,12 +586,12 @@ namespace Xamarin.Forms.Build.Tasks
 				var indexerArg = properties[i].Item2;
 				if (indexerArg != null) {
 					if (property.GetMethod.Parameters [0].ParameterType == module.TypeSystem.String)
-						il.Emit(OpCodes.Ldstr, indexerArg);
+						il.Emit(Ldstr, indexerArg);
 					else if (property.GetMethod.Parameters [0].ParameterType == module.TypeSystem.Int32) {
 						int index;
 						if (!int.TryParse(indexerArg, out index))
 							throw new XamlParseException($"Binding: {indexerArg} could not be parsed as an index for a {property.Name}", node as IXmlLineInfo);
-						il.Emit(OpCodes.Ldc_I4, index);
+						il.Emit(Ldc_I4, index);
 					}
 				}
 				if (property.GetMethod.IsVirtual)
@@ -603,25 +603,23 @@ namespace Xamarin.Forms.Build.Tasks
 			var indexer = properties.Last().Item2;
 			if (indexer != null) {
 				if (lastProperty.Item1.GetMethod.Parameters [0].ParameterType == module.TypeSystem.String)
-					il.Emit(OpCodes.Ldstr, indexer);
+					il.Emit(Ldstr, indexer);
 				else if (lastProperty.Item1.GetMethod.Parameters [0].ParameterType == module.TypeSystem.Int32) {
 					int index;
 					if (!int.TryParse(indexer, out index))
 						throw new XamlParseException($"Binding: {indexer} could not be parsed as an index for a {lastProperty.Item1.Name}", node as IXmlLineInfo);
-					il.Emit(OpCodes.Ldc_I4, index);
+					il.Emit(Ldc_I4, index);
 				}
 			}
-			if (tPropertyRef.IsValueType)
-				il.Emit(Ldarga_S, (byte)1);
-			else
-				il.Emit(Ldarg_1);
+
+			il.Emit(Ldarg_1);
 
 			if (setterRef.IsVirtual)
 				il.Emit(Callvirt, module.ImportReference(setterRef));
 			else
 				il.Emit(Call, module.ImportReference(setterRef));
 
-			il.Emit(OpCodes.Ret);
+			il.Emit(Ret);
 
 			context.Body.Method.DeclaringType.Methods.Add(setter);
 

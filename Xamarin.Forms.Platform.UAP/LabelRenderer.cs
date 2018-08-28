@@ -142,6 +142,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateLineBreakMode(Control);
 				UpdateMaxLines(Control);
 				UpdateDetectReadingOrderFromContent(Control);
+				UpdateLineHeight(Control);
 			}
 		}
 

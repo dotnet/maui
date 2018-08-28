@@ -118,19 +118,27 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\debug\FormsEmbeddedPageWrapper.xbf
             
 if "%1" == "droid" (
    %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
 )
 if "%1" == "ios" (
    %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
 )
+if "%1" == "droidios" (
+   %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
+   %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.ios.nuget.sln
+)
 if "%1" == "uap" (
    %NUGET_EXE% restore .xamarin.forms.uap.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln
 )
 if "%1" == "all" (
    %NUGET_EXE% restore .xamarin.forms.sln
-   msbuild /v:m /p:platform="any cpu" .xamarin.forms.nuget.sln
+   msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln
 )
 
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0

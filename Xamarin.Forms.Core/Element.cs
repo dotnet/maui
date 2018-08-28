@@ -319,21 +319,10 @@ namespace Xamarin.Forms
 
 		protected override void OnBindingContextChanged()
 		{
-			var gotBindingContext = false;
-			object bc = null;
-
-			for (var index = 0; index < LogicalChildrenInternal.Count; index++)
+			this.PropagateBindingContext(LogicalChildrenInternal, (child, bc) =>
 			{
-				Element child = LogicalChildrenInternal[index];
-
-				if (!gotBindingContext)
-				{
-					bc = BindingContext;
-					gotBindingContext = true;
-				}
-
-				SetChildInheritedBindingContext(child, bc);
-			}
+				SetChildInheritedBindingContext((Element)child, bc);
+			});
 
 			if (_bindableResources != null)
 				foreach (BindableObject item in _bindableResources)

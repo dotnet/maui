@@ -103,9 +103,16 @@ namespace Xamarin.Forms
 			set { SetValue(TextDecorationsProperty, value); }
 		}
 
-		public double LineHeight {
+		public double LineHeight
+		{
 			get { return (double)GetValue(LineHeightElement.LineHeightProperty); }
 			set { SetValue(LineHeightElement.LineHeightProperty, value); }
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			this.PropagateBindingContext(GestureRecognizers);
+			base.OnBindingContextChanged();
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
