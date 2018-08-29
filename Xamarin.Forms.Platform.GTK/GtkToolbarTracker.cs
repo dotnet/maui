@@ -145,6 +145,7 @@ namespace Xamarin.Forms.Platform.GTK
         {
             if (e.PropertyName.Equals(NavigationPage.BarTextColorProperty.PropertyName) ||
                 e.PropertyName.Equals(NavigationPage.BarBackgroundColorProperty.PropertyName) ||
+                e.PropertyName.Equals(NavigationPage.HasNavigationBarProperty.PropertyName) ||
                 e.PropertyName.Equals(Page.TitleProperty.PropertyName) ||
                 e.PropertyName.Equals(Page.IconProperty.PropertyName))
                 UpdateToolBar();

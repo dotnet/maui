@@ -199,6 +199,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
                 UpdateBackButtonIcon();
             else if (e.PropertyName == NavigationPage.CurrentPageProperty.PropertyName)
                 UpdateCurrentPage();
+            else if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+                UpdateToolBar();
         }
 
         private void Init()
