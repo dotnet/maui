@@ -77,10 +77,27 @@ namespace Xamarin.Forms.Platform.Android
 
 				var useDefaultShadow = _button.OnThisPlatform().UseDefaultShadow();
 
-				float shadowRadius = useDefaultShadow ? 2 : _nativeButton.ShadowRadius;
-				float shadowDx = useDefaultShadow ? 0 : _nativeButton.ShadowDx;
-				float shadowDy = useDefaultShadow ? 4 : _nativeButton.ShadowDy;
-				AColor shadowColor = useDefaultShadow ? _backgroundDrawable.PressedBackgroundColor.ToAndroid() : _nativeButton.ShadowColor;
+				// Use no shadow by default for API < 16
+				float shadowRadius = 0;
+				float shadowDy = 0;
+				float shadowDx = 0;
+				AColor shadowColor = Color.Transparent.ToAndroid();
+				// Add Android's default material shadow if we want it
+				if (useDefaultShadow)
+				{
+					shadowRadius = 2;
+					shadowDy = 4;
+					shadowDx = 0;
+					shadowColor = _backgroundDrawable.PressedBackgroundColor.ToAndroid();
+				}
+				// Otherwise get values from the control (but only for supported APIs)
+				else if ((int)Build.VERSION.SdkInt >= 16)
+				{
+					shadowRadius = _nativeButton.ShadowRadius;
+					shadowDy = _nativeButton.ShadowDy;
+					shadowDx = _nativeButton.ShadowDx;
+					shadowColor = _nativeButton.ShadowColor;
+				}
 
 				_backgroundDrawable.SetPadding(paddingTop, paddingLeft)
 								   .SetShadow(shadowDy, shadowDx, shadowColor, shadowRadius);

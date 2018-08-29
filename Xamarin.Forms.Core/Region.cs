@@ -1,15 +1,26 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms
 {
 	public struct Region
 	{
-
 		// While Regions are currently rectangular, they could in the future be transformed into any shape.
 		// As such the internals of how it keeps shapes is hidden, so that future internal changes can occur to support shapes
 		// such as circles if required, without affecting anything else.
 
-		IList<Rectangle> Regions { get; set; }
+		IReadOnlyList<Rectangle> Regions { get; }
+		readonly Thickness _inflation;
+
+		Region(IList<Rectangle> positions) : this()
+		{
+			Regions = new ReadOnlyCollection<Rectangle>(positions);
+		}
+
+		Region(IList<Rectangle> positions, Thickness inflation) : this(positions)
+		{
+			_inflation = inflation;
+		}
 
 		public static Region FromLines(double[] lineHeights, double maxWidth, double startX, double endX, double startY)
 		{
@@ -34,7 +45,7 @@ namespace Xamarin.Forms
 				else // SingleLine
 					positions.Add(new Rectangle(startX, lineHeightTotal, endX - startX, lineHeights[i]));
 
-			return new Region() { Regions = positions };
+			return new Region(positions);
 		}
 
 		public bool Contains(Point pt)
@@ -54,8 +65,6 @@ namespace Xamarin.Forms
 			return false;
 		}
 
-		Thickness _inflation;
-
 		public Region Deflate()
 		{
 			if (_inflation == null)
@@ -74,6 +83,7 @@ namespace Xamarin.Forms
 			if (Regions == null)
 				return this;
 
+			Rectangle[] rectangles = new Rectangle[Regions.Count];
 			for (int i = 0; i < Regions.Count; i++)
 			{
 				var region = Regions[i];
@@ -87,15 +97,15 @@ namespace Xamarin.Forms
 				if (i == Regions.Count - 1) // This is the last line
 					region.Height += bottom + top;
 
-				Regions[i] = region;
+				rectangles[i] = region;
 			}
 
-			_inflation = new Thickness(_inflation == null ? left : left + _inflation.Left,
+			var inflation = new Thickness(_inflation == null ? left : left + _inflation.Left,
 									   _inflation == null ? top : top + _inflation.Top,
 									   _inflation == null ? right : right + _inflation.Right,
 									   _inflation == null ? bottom : bottom + _inflation.Bottom);
 
-			return this;
+			return new Region(rectangles, inflation);
 		}
 	}
 }

@@ -8,7 +8,7 @@
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
-  <ItemGroup>    
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Issue3524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2004.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3333.cs" />
@@ -492,6 +492,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue2838.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3342.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3415.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3049.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
@@ -782,6 +783,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1650.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub3216.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1776.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3525.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

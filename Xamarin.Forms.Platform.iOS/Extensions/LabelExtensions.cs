@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (finalSize.Width <= 0 || finalSize.Height <= 0)
 				return;
-			
+
 #if __MOBILE__
 			var inline = control.AttributedText;
 #else
@@ -57,7 +57,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
 			{
 				var span = element.FormattedText.Spans[i];
-				
+
 				var location = currentLocation;
 				var length = span.Text?.Length ?? 0;
 
@@ -74,7 +74,8 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				var yaxis = startRect.Top;
 				var lineHeights = new List<double>();
-				while (yaxis < endRect.Bottom)
+
+				while ((endRect.Bottom - yaxis) > 0.001)
 				{
 					double lineHeight;
 					if (yaxis == startRect.Top) // First Line
