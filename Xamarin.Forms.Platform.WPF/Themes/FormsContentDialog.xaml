@@ -52,7 +52,7 @@
                                                        FontFamily="Segoe UI"
                                                        FontSize="16"
                                                        TextOptions.TextFormattingMode="Ideal"
-                                                       TextTrimming="CharacterEllipsis" 
+                                                       TextWrapping="Wrap"
                                                        Foreground="Black"/>
                                     </DataTemplate>
                                 </ContentPresenter.Resources>
