@@ -15,22 +15,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			const string value = "Foo";
 
 			bool signaled = false;
-			entry.TextChanged += (sender, args) => {
+			entry.TextChanged += (sender, args) =>
+			{
 				signaled = true;
-				Assert.AreEqual (value, args.NewTextValue);
+				Assert.AreEqual(value, args.NewTextValue);
 			};
 
-			entry.SetValue (Entry.TextProperty, value);
+			entry.SetValue(Entry.TextProperty, value);
 
-			Assert.IsTrue (signaled, "ValueChanged did not fire");
+			Assert.IsTrue(signaled, "ValueChanged did not fire");
 		}
 
-		[TestCase (null, "foo")]
-		[TestCase ("foo", "bar")]
-		[TestCase ("foo", null)]
-		public void ValueChangedArgs (string initial, string final)
+		[TestCase(null, "foo")]
+		[TestCase("foo", "bar")]
+		[TestCase("foo", null)]
+		public void ValueChangedArgs(string initial, string final)
 		{
-			var entry = new Entry {
+			var entry = new Entry
+			{
 				Text = initial
 			};
 
@@ -39,7 +41,8 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Entry entryFromSender = null;
 
-			entry.TextChanged += (s, e) => {
+			entry.TextChanged += (s, e) =>
+			{
 				entryFromSender = (Entry)s;
 				oldValue = e.OldTextValue;
 				newValue = e.NewTextValue;
@@ -47,9 +50,64 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			entry.Text = final;
 
-			Assert.AreEqual (entry, entryFromSender);
-			Assert.AreEqual (initial, oldValue);
-			Assert.AreEqual (final, newValue);
+			Assert.AreEqual(entry, entryFromSender);
+			Assert.AreEqual(initial, oldValue);
+			Assert.AreEqual(final, newValue);
+		}
+
+
+		[TestCase(1)]
+		[TestCase(0)]
+		[TestCase(9999)]
+		public void CursorPositionValid(int val)
+		{
+			var entry = new Entry
+			{
+				CursorPosition = val
+			};
+
+			var target = entry.CursorPosition;
+
+			Assert.AreEqual(target, val);
+		}
+
+		[Test]
+		public void CursorPositionInvalid()
+		{
+			Assert.Throws<System.ArgumentException>(() =>
+			{
+				var entry = new Entry
+				{
+					CursorPosition = -1
+				};
+			});
+		}
+
+		[TestCase(1)]
+		[TestCase(0)]
+		[TestCase(9999)]
+		public void SelectionLengthValid(int val)
+		{
+			var entry = new Entry
+			{
+				SelectionLength = val
+			};
+
+			var target = entry.SelectionLength;
+
+			Assert.AreEqual(target, val);
+		}
+
+		[Test]
+		public void SelectionLengthInvalid()
+		{
+			Assert.Throws<System.ArgumentException>(() =>
+			{
+				var entry = new Entry
+				{
+					SelectionLength = -1
+				};
+			});
 		}
 
 		[TestCase(true)]
@@ -63,8 +121,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			bool result = false;
 
-			var bindingContext = new
-			{
+			var bindingContext = new {
 				Command = new Command(() => { result = true; }, () => true)
 			};
 
@@ -86,10 +143,11 @@ namespace Xamarin.Forms.Core.UnitTests
 			};
 
 			bool result = false;
-		
+
 			entry.SetBinding(Entry.ReturnCommandProperty, "Command");
 			entry.BindingContext = null;
-			entry.Completed += (s, e) => {
+			entry.Completed += (s, e) =>
+			{
 				result = true;
 			};
 			entry.SendCompleted();

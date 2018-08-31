@@ -42,8 +42,9 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (formattedString == null)
 				return null;
 			var attributed = new NSMutableAttributedString();
-			foreach (var span in formattedString.Spans)
+			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
+				Span span = formattedString.Spans[i];
 				if (span.Text == null)
 					continue;
 
@@ -125,8 +126,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				return null;
 			var attributed = new NSMutableAttributedString();
 
-			foreach (var span in formattedString.Spans)
+			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
+				Span span = formattedString.Spans[i];
 				var attributedString = span.ToAttributed(owner, defaultForegroundColor, lineHeight);
 				if (attributedString == null)
 					continue;
