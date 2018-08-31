@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_NavigationPageRenderer))]
-	public class NavigationPage : Page, IPageContainer<Page>, INavigationPageController, IElementConfiguration<NavigationPage> 
+	public class NavigationPage : Page, IPageContainer<Page>, IBarElement, INavigationPageController, IElementConfiguration<NavigationPage> 
 	{
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
@@ -21,9 +21,9 @@ namespace Xamarin.Forms
 		[Obsolete("TintProperty is obsolete as of version 1.2.0. Please use BarBackgroundColorProperty and BarTextColorProperty to change NavigationPage bar color properties.")] 
 		public static readonly BindableProperty TintProperty = BindableProperty.Create("Tint", typeof(Color), typeof(NavigationPage), Color.Default);
 
-		public static readonly BindableProperty BarBackgroundColorProperty = BindableProperty.Create("BarBackgroundColor", typeof(Color), typeof(NavigationPage), Color.Default);
+		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
-		public static readonly BindableProperty BarTextColorProperty = BindableProperty.Create("BarTextColor", typeof(Color), typeof(NavigationPage), Color.Default);
+		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
 		public static readonly BindableProperty TitleIconProperty = BindableProperty.CreateAttached("TitleIcon", typeof(FileImageSource), typeof(NavigationPage), default(FileImageSource));
 
@@ -47,16 +47,14 @@ namespace Xamarin.Forms
 			PushPage(root);
 		}
 
-		public Color BarBackgroundColor
-		{
-			get { return (Color)GetValue(BarBackgroundColorProperty); }
-			set { SetValue(BarBackgroundColorProperty, value); }
+		public Color BarBackgroundColor {
+			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
+			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
-		public Color BarTextColor
-		{
-			get { return (Color)GetValue(BarTextColorProperty); }
-			set { SetValue(BarTextColorProperty, value); }
+		public Color BarTextColor {
+			get => (Color)GetValue(BarElement.BarTextColorProperty);
+			set => SetValue(BarElement.BarTextColorProperty, value);
 		}
 
 		[Obsolete("Tint is obsolete as of version 1.2.0. Please use BarBackgroundColor and BarTextColor to change NavigationPage bar color properties.")]

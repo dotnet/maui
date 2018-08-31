@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Internals;
@@ -53,6 +53,65 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty ScaleXProperty = BindableProperty.Create(nameof(ScaleX), typeof(double), typeof(VisualElement), 1d);
 
 		public static readonly BindableProperty ScaleYProperty = BindableProperty.Create(nameof(ScaleY), typeof(double), typeof(VisualElement), 1d);
+
+		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
+
+		static void OnTransformChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if ((string)newValue == "none") {
+				bindable.ClearValue(TranslationXProperty);
+				bindable.ClearValue(TranslationYProperty);
+				bindable.ClearValue(RotationProperty);
+				bindable.ClearValue(RotationXProperty);
+				bindable.ClearValue(RotationYProperty);
+				bindable.ClearValue(ScaleProperty);
+				bindable.ClearValue(ScaleXProperty);
+				bindable.ClearValue(ScaleYProperty);
+				return;
+			}
+				var transforms = ((string)newValue).Split(' ');
+			foreach (var transform in transforms) {
+				if (string.IsNullOrEmpty(transform) || transform.IndexOf('(') < 0 || transform.IndexOf(')') < 0)
+					throw new FormatException("Format for transform is 'none | transform(value) [transform(value) ]*'");
+				var transformName = transform.Substring(0, transform.IndexOf('('));
+				var value = transform.Substring(transform.IndexOf('(') + 1, transform.IndexOf(')') - transform.IndexOf('(') - 1);
+				double translationX, translationY, scaleX, scaleY, rotateX, rotateY, rotate;
+				if (transformName.StartsWith("translateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationX))
+					bindable.SetValue(TranslationXProperty, translationX);
+				else if (transformName.StartsWith("translateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out translationY))
+					bindable.SetValue(TranslationYProperty, translationY);
+				else if (transformName.StartsWith("translate", StringComparison.OrdinalIgnoreCase)) {
+					var translate = value.Split(',');
+					if (double.TryParse(translate[0], out translationX) && double.TryParse(translate[1], out translationY)) {
+						bindable.SetValue(TranslationXProperty, translationX);
+						bindable.SetValue(TranslationYProperty, translationY);
+					}
+				}
+				else if (transformName.StartsWith("scaleX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleX))
+					bindable.SetValue(ScaleXProperty, scaleX);
+				else if (transformName.StartsWith("scaleY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out scaleY))
+					bindable.SetValue(ScaleYProperty, scaleY);
+				else if (transformName.StartsWith("scale", StringComparison.OrdinalIgnoreCase)) {
+					var scale = value.Split(',');
+					if (double.TryParse(scale[0], out scaleX) && double.TryParse(scale[1], out scaleY)) {
+						bindable.SetValue(ScaleXProperty, scaleX);
+						bindable.SetValue(ScaleYProperty, scaleY);
+					}
+				}
+				else if (transformName.StartsWith("rotateX", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateX))
+					bindable.SetValue(RotationXProperty, rotateX);
+				else if (transformName.StartsWith("rotateY", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotateY))
+					bindable.SetValue(RotationYProperty, rotateY);
+				else if (transformName.StartsWith("rotate", StringComparison.OrdinalIgnoreCase) && double.TryParse(value, out rotate))
+					bindable.SetValue(RotationProperty, rotate);
+				else
+					throw new FormatException("Invalid transform name");
+			}
+		}
+
+		internal static readonly BindableProperty TransformOriginProperty =
+			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
+									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));

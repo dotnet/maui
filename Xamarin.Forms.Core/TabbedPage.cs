@@ -4,24 +4,22 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_TabbedPageRenderer))]
-	public class TabbedPage : MultiPage<Page>, IElementConfiguration<TabbedPage>
+	public class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>
 	{
-		public static readonly BindableProperty BarBackgroundColorProperty = BindableProperty.Create(nameof(BarBackgroundColor), typeof(Color), typeof(TabbedPage), Color.Default);
+		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
-		public static readonly BindableProperty BarTextColorProperty = BindableProperty.Create(nameof(BarTextColor), typeof(Color), typeof(TabbedPage), Color.Default);
+		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
-		public Color BarBackgroundColor
-		{
-			get => (Color)GetValue(BarBackgroundColorProperty);
-			set => SetValue(BarBackgroundColorProperty, value);
+		public Color BarBackgroundColor {
+			get => (Color)GetValue(BarElement.BarBackgroundColorProperty);
+			set => SetValue(BarElement.BarBackgroundColorProperty, value);
 		}
 
-		public Color BarTextColor
-		{
-			get => (Color)GetValue(BarTextColorProperty);
-			set => SetValue(BarTextColorProperty, value);
+		public Color BarTextColor {
+			get => (Color)GetValue(BarElement.BarTextColorProperty);
+			set => SetValue(BarElement.BarTextColorProperty, value);
 		}
 
 		protected override Page CreateDefault(object item)

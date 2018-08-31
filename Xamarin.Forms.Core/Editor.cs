@@ -6,7 +6,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_EditorRenderer))]
-	public class Editor : InputView, IEditorController, IFontElement, ITextElement, IElementConfiguration<Editor>
+	public class Editor : InputView, IEditorController, IFontElement, IPlaceholderElement, ITextElement, IElementConfiguration<Editor>
 	{
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Editor), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue)
 			=> OnTextChanged((Editor)bindable, (string)oldValue, (string)newValue));
@@ -19,16 +19,14 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(Editor), default(string));
+		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
 
-		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(Editor), Color.Default);
+		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
 
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
 			=> ((Editor)bindable)?.InvalidateMeasure());
 
-
 		readonly Lazy<PlatformConfigurationRegistry<Editor>> _platformConfigurationRegistry;
-
 
 		public EditorAutoSizeOption AutoSize
 		{
@@ -48,16 +46,14 @@ namespace Xamarin.Forms
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		public string Placeholder
-		{
-			get { return (string)GetValue(PlaceholderProperty); }
-			set { SetValue(PlaceholderProperty, value); }
+		public string Placeholder {
+			get => (string)GetValue(PlaceholderElement.PlaceholderProperty);
+			set => SetValue(PlaceholderElement.PlaceholderProperty, value);
 		}
 
-		public Color PlaceholderColor
-		{
-			get { return (Color)GetValue(PlaceholderColorProperty); }
-			set { SetValue(PlaceholderColorProperty, value); }
+		public Color PlaceholderColor {
+			get => (Color)GetValue(PlaceholderElement.PlaceholderColorProperty);
+			set => SetValue(PlaceholderElement.PlaceholderColorProperty, value);
 		}
 
 		public FontAttributes FontAttributes

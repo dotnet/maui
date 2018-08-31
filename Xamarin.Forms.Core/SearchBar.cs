@@ -7,7 +7,7 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_SearchBarRenderer))]
-	public class SearchBar : View, IFontElement, ITextElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
+	public class SearchBar : View, IFontElement, IPlaceholderElement, ITextElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
 	{
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
@@ -24,7 +24,9 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create("CancelButtonColor", typeof(Color), typeof(SearchBar), default(Color));
 
-		public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create("Placeholder", typeof(string), typeof(SearchBar), null);
+		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
+
+		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
 
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
@@ -35,8 +37,6 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
-
-		public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create("PlaceholderColor", typeof(Color), typeof(SearchBar), Color.Default);
 
 		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
 
@@ -52,16 +52,14 @@ namespace Xamarin.Forms
 			set { SetValue(TextAlignmentElement.HorizontalTextAlignmentProperty, value); }
 		}
 
-		public string Placeholder
-		{
-			get { return (string)GetValue(PlaceholderProperty); }
-			set { SetValue(PlaceholderProperty, value); }
+		public string Placeholder {
+			get => (string)GetValue(PlaceholderElement.PlaceholderProperty);
+			set => SetValue(PlaceholderElement.PlaceholderProperty, value);
 		}
 
-		public Color PlaceholderColor
-		{
-			get { return (Color)GetValue(PlaceholderColorProperty); }
-			set { SetValue(PlaceholderColorProperty, value); }
+		public Color PlaceholderColor {
+			get => (Color)GetValue(PlaceholderElement.PlaceholderColorProperty);
+			set => SetValue(PlaceholderElement.PlaceholderColorProperty, value);
 		}
 
 		public ICommand SearchCommand

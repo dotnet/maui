@@ -21,9 +21,15 @@ namespace Xamarin.Forms
 
 				if (value.Equals("left", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Start;
+				if (value.Equals("top", StringComparison.OrdinalIgnoreCase))
+					return TextAlignment.Start;
 				if (value.Equals("right", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.End;
+				if (value.Equals("bottom", StringComparison.OrdinalIgnoreCase))
+					return TextAlignment.End;
 				if (value.Equals("center", StringComparison.OrdinalIgnoreCase))
+					return TextAlignment.Center;
+				if (value.Equals("middle", StringComparison.OrdinalIgnoreCase))
 					return TextAlignment.Center;
 			}
 			throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", value, typeof(TextAlignment)));
