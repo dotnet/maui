@@ -1,4 +1,5 @@
 ﻿using Pango;
+using System.Security;
 using System.Text;
 using Xamarin.Forms.Platform.GTK.Helpers;
 
@@ -63,8 +64,8 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 
             builder.Append(">"); // Complete opening span tag
 
-            // Text
-            builder.Append(span.Text);
+			// Text
+			builder.Append(SecurityElement.Escape(span.Text));
             builder.Append("</span>");
 
             return builder.ToString();
