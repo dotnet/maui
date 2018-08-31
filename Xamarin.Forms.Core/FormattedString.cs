@@ -11,6 +11,7 @@ namespace Xamarin.Forms
 	public class FormattedString : Element
 	{
 		readonly SpanCollection _spans = new SpanCollection();
+		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged;
 
 		public FormattedString()
 		{
@@ -69,6 +70,7 @@ namespace Xamarin.Forms
 			}
 
 			OnPropertyChanged(nameof(Spans));
+			SpansCollectionChanged?.Invoke(sender, e);
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)

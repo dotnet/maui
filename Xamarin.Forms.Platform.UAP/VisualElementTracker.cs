@@ -95,6 +95,7 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						var oldRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
 						oldRecognizers.CollectionChanged -= _collectionChangedHandler;
+						((view as IGestureController)?.CompositeGestureRecognizers as ObservableCollection<IGestureRecognizer>).CollectionChanged -= _collectionChangedHandler;
 					}
 				}
 
@@ -110,6 +111,7 @@ namespace Xamarin.Forms.Platform.UWP
 					{
 						var newRecognizers = (ObservableCollection<IGestureRecognizer>)view.GestureRecognizers;
 						newRecognizers.CollectionChanged += _collectionChangedHandler;
+						((view as IGestureController)?.CompositeGestureRecognizers as ObservableCollection<IGestureRecognizer>).CollectionChanged += _collectionChangedHandler;
 					}
 				}
 
@@ -592,7 +594,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
 			IList<TapGestureRecognizer> childGestures = children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
-			
+
 			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any()
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
@@ -608,7 +610,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).Any()
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2).Any() == true)
-			{ 
+			{
 				_container.DoubleTapped += OnDoubleTap;
 			}
 			else

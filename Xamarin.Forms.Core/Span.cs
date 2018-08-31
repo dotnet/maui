@@ -132,12 +132,16 @@ namespace Xamarin.Forms
 
 		internal override void ValidateGesture(IGestureRecognizer gesture)
 		{
-			if (gesture == null)
-				return;
-			if (gesture is PanGestureRecognizer)
-				throw new InvalidOperationException($"{nameof(PanGestureRecognizer)} is not supported on a {nameof(Span)}");
-			if (gesture is PinchGestureRecognizer)
-				throw new InvalidOperationException($"{nameof(PinchGestureRecognizer)} is not supported on a {nameof(Span)}");
+			switch (gesture)
+			{
+				case ClickGestureRecognizer click:
+				case TapGestureRecognizer tap:
+				case null:
+					break;
+				default:
+					throw new InvalidOperationException($"{gesture.GetType().Name} is not supported on a {nameof(Span)}");
+
+			}
 		}
 
 		void ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue)

@@ -17,8 +17,9 @@ namespace Xamarin.Forms.Platform.Android
 				return null;
 
 			var builder = new StringBuilder();
-			foreach (Span span in formattedString.Spans)
+			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
+				Span span = formattedString.Spans[i];
 				var text = span.Text;
 				if (text == null)
 					continue;
@@ -29,8 +30,9 @@ namespace Xamarin.Forms.Platform.Android
 			var spannable = new SpannableString(builder.ToString());
 
 			var c = 0;
-			foreach (Span span in formattedString.Spans)
+			for (int i = 0; i < formattedString.Spans.Count; i++)
 			{
+				Span span = formattedString.Spans[i];
 				var text = span.Text;
 				if (text == null)
 					continue;
