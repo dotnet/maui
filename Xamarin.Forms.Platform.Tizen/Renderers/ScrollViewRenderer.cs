@@ -130,8 +130,8 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateContentSize()
 		{
-			_scrollCanvas.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width);
-			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height);
+			_scrollCanvas.MinimumWidth = Forms.ConvertToScaledPixel(Element.ContentSize.Width + Element.Padding.HorizontalThickness);
+			_scrollCanvas.MinimumHeight = Forms.ConvertToScaledPixel(Element.ContentSize.Height + Element.Padding.VerticalThickness);
 
 			// elm-scroller updates the CurrentRegion after render
 			Device.BeginInvokeOnMainThread(() =>
