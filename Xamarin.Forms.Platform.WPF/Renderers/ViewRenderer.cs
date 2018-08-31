@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using WControl = System.Windows.Controls.Control;
@@ -23,6 +24,7 @@ namespace Xamarin.Forms.Platform.WPF
 			new List<EventHandler<VisualElementChangedEventArgs>>();
 
 		VisualElementTracker _tracker;
+		bool _disposed;
 
 		IElementController ElementController => Element as IElementController;
 
@@ -161,18 +163,27 @@ namespace Xamarin.Forms.Platform.WPF
 
 			Element.IsNativeStateConsistent = false;
 
-			Control.Loaded += (sender, e) =>
-			{
-				Element.IsNativeStateConsistent = true;
-				Appearing();
-			};
-			Control.Unloaded += (sender, e) => { Disappearing(); };
+			Control.Loaded += Control_Loaded;
+			Control.Unloaded += Control_Unloaded;
 
 			Control.GotFocus += OnGotFocus;
 			Control.LostFocus += OnLostFocus;
 
 			UpdateBackground();
 			UpdateAlignment();
+		}
+		
+		private void Control_Loaded(object sender, RoutedEventArgs e)
+		{
+			Control.Loaded -= Control_Loaded;
+			Element.IsNativeStateConsistent = true;
+			Appearing();
+		}
+
+		private void Control_Unloaded(object sender, RoutedEventArgs e)
+		{
+			Control.Unloaded -= Control_Unloaded;
+			Disappearing();
 		}
 
 		protected virtual void Appearing()
@@ -260,8 +271,6 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 		}
 
-		bool _disposed;
-
 		public void Dispose()
 		{
 			Dispose(true);
@@ -276,7 +285,6 @@ namespace Xamarin.Forms.Platform.WPF
 
 			if (Control != null)
 			{
-				//Console.WriteLine("Dispose : " + this.Control.GetType());
 				Control.GotFocus -= OnGotFocus;
 				Control.LostFocus -= OnLostFocus;
 			}
