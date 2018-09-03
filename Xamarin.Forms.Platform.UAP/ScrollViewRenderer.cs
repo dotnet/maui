@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.PropertyName == "Content")
 				UpdateContent();
 			else if (e.PropertyName == Layout.PaddingProperty.PropertyName)
-				UpdateMargins();
+				UpdateContentMargins();
 			else if (e.PropertyName == ScrollView.OrientationProperty.PropertyName)
 				UpdateOrientation();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
@@ -116,13 +116,25 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateHorizontalScrollBarVisibility();
 		}
 
+		protected void OnContentElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == View.MarginProperty.PropertyName)
+				UpdateContentMargins();
+		}
+
 		void UpdateContent()
 		{
 			if (_currentView != null)
 				_currentView.Cleanup();
 
-			if (Control?.Content is FrameworkElement frameworkElement)
-				frameworkElement.LayoutUpdated -= SetInitialRtlPosition;
+			if (Control?.Content is FrameworkElement oldElement)
+			{
+				oldElement.LayoutUpdated -= SetInitialRtlPosition;
+
+				if (oldElement is IVisualElementRenderer oldRenderer
+					&& oldRenderer.Element is View oldContentView)
+					oldContentView.PropertyChanged -= OnContentElementPropertyChanged;
+			}
 
 			_currentView = Element.Content;
 
@@ -132,7 +144,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			Control.Content = renderer != null ? renderer.ContainerElement : null;
 
-			UpdateMargins();
+			UpdateContentMargins();
+			if (renderer?.Element != null)
+				renderer.Element.PropertyChanged += OnContentElementPropertyChanged;
+
 			if (renderer?.ContainerElement != null)
 				renderer.ContainerElement.LayoutUpdated += SetInitialRtlPosition;
 		}
@@ -213,30 +228,39 @@ namespace Xamarin.Forms.Platform.UWP
 				Element.SendScrollFinished();
 		}
 
-		Windows.UI.Xaml.Thickness AddMargin(Windows.UI.Xaml.Thickness original, double left, double top, double right, double bottom)
+		Windows.UI.Xaml.Thickness AddMargin(Thickness original, double left, double top, double right, double bottom)
 		{
 			return new Windows.UI.Xaml.Thickness(original.Left + left, original.Top + top, original.Right + right, original.Bottom + bottom);
 		}
 
-		void UpdateMargins()
+		// UAP ScrollView forces Content origin to be the same as the ScrollView origin.
+		// This prevents Forms layout from emulating Padding and Margin by offsetting the origin. 
+		// So we must actually set the UAP Margin property instead of emulating it with an origin offset. 
+		// Not only that, but in UAP Padding and Margin are aliases with
+		// the former living on the parent and the latter on the child. 
+		// So that's why the UAP Margin is set to the sum of the Forms Padding and Forms Margin.
+		void UpdateContentMargins()
 		{
-			var element = Control.Content as FrameworkElement;
-			if (element == null)
+			if (!(Control.Content is FrameworkElement element
+				&& element is IVisualElementRenderer renderer
+				&& renderer.Element is View contentView))
 				return;
 
+			var margin = contentView.Margin;
+			var padding = Element.Padding;
 			switch (Element.Orientation)
 			{
 				case ScrollOrientation.Horizontal:
 					// need to add left/right margins
-					element.Margin = AddMargin(element.Margin, Element.Padding.Left, 0, Element.Padding.Right, 0);
+					element.Margin = AddMargin(margin, padding.Left, 0, padding.Right, 0);
 					break;
 				case ScrollOrientation.Vertical:
 					// need to add top/bottom margins
-					element.Margin = AddMargin(element.Margin, 0, Element.Padding.Top, 0, Element.Padding.Bottom);
+					element.Margin = AddMargin(margin, 0, padding.Top, 0, padding.Bottom);
 					break;
 				case ScrollOrientation.Both:
 					// need to add all margins
-					element.Margin = AddMargin(element.Margin, Element.Padding.Left, Element.Padding.Top, Element.Padding.Right, Element.Padding.Bottom);
+					element.Margin = AddMargin(margin, padding.Left, padding.Top, padding.Right, padding.Bottom);
 					break;
 			}
 		}

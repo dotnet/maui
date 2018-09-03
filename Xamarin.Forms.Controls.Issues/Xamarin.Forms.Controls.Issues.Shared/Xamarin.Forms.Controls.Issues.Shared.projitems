@@ -9,7 +9,7 @@
     <Import_RootNamespace>Xamarin.Forms.Controls.Issues</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-	<Compile Include="$(MSBuildThisFileDirectory)Issue2894.cs" />
+	  <Compile Include="$(MSBuildThisFileDirectory)Issue2894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3524.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2004.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3333.cs" />
@@ -373,6 +373,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue2993.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3507.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3367.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3398.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LegacyComponents\NonAppCompatSwitch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ModalActivityIndicatorTest.cs" />
@@ -785,6 +786,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1650.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub3216.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1776.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3413.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3525.cs" />
   </ItemGroup>
   <ItemGroup>
