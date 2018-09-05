@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.iOS
 			else
 			{
 				uiSwitch = tvc.AccessoryView as UISwitch;
-				tvc.Cell.PropertyChanged -= OnCellPropertyChanged;
+				tvc.PropertyChanged -= HandlePropertyChanged;
 			}
 
 			SetRealCell(item, tvc);
@@ -33,7 +33,7 @@ namespace Xamarin.Forms.Platform.iOS
 			var boolCell = (SwitchCell)item;
 
 			tvc.Cell = item;
-			tvc.Cell.PropertyChanged += OnCellPropertyChanged;
+			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
 			tvc.TextLabel.Text = boolCell.Text;
 
@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 			return tvc;
 		}
 
-		void OnCellPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var boolCell = (SwitchCell)sender;
 			var realCell = (CellTableViewCell)GetRealCell(boolCell);

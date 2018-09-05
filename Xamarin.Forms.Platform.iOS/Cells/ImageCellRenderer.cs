@@ -20,12 +20,12 @@ namespace Xamarin.Forms.Platform.iOS
 			return result;
 		}
 
-		protected override void HandlePropertyChanged(object sender, PropertyChangedEventArgs args)
+		protected override void HandleCellPropertyChanged(object sender, PropertyChangedEventArgs args)
 		{
-			var tvc = (CellTableViewCell)sender;
-			var imageCell = (ImageCell)tvc.Cell;
+			var imageCell = (ImageCell)sender;
+			var tvc = (CellTableViewCell)GetRealCell(imageCell);
 
-			base.HandlePropertyChanged(sender, args);
+			base.HandleCellPropertyChanged(sender, args);
 
 			if (args.PropertyName == ImageCell.ImageSourceProperty.PropertyName)
 				SetImage(imageCell, tvc);
