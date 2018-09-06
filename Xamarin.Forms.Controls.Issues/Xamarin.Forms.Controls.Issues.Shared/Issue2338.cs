@@ -73,14 +73,11 @@ namespace Xamarin.Forms.Controls.Issues
 			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage_ContentPage));
 			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage_NavigationPage));
 
-#if !__WINDOWS__ && !__IOS__
+#if !__IOS__
 			await TestForSuccess(RunningApp, typeof(Issue2338_Ctor));
 #endif
 			await TestForSuccess(RunningApp, typeof(Issue2338_Ctor_MultipleChanges));
-
-#if !__WINDOWS__
 			await TestForSuccess(RunningApp, typeof(Issue2338_TabbedPage));
-#endif
 
 #if !__IOS__
 			await TestForSuccess(RunningApp, typeof(Issue2338_MasterDetailsPage));
