@@ -90,8 +90,6 @@ namespace Xamarin.Forms.Controls.Issues
 		public void Bugzilla26171Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("lblValue"));
-			var value = RunningApp.Query (q => q.Marked ("lblValue")) [0].Text;
-			RunningApp.Screenshot ("I see the Label");
 		}
 #endif
 	}

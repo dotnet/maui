@@ -216,7 +216,7 @@ namespace Xamarin.Forms.Controls.Issues
 			// Reset back to being empty and make sure everything sets back to original size
 			RunningApp.Tap(q => q.Marked(btnChangeFont));
 			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(1000);
+			await Task.Delay(2000);
 
 			foreach (var editor in editors)
 			{
@@ -230,6 +230,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.Tap(q => q.Marked(btnChangeSizeOption));
 			RunningApp.Tap(q => q.Marked(btnChangeFont));
 			RunningApp.Tap(q => q.Marked(btnChangeText));
+			await Task.Delay(2000);
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
