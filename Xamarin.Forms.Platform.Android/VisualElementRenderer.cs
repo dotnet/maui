@@ -262,7 +262,11 @@ namespace Xamarin.Forms.Platform.Android
 		protected virtual void OnElementChanged(ElementChangedEventArgs<TElement> e)
 		{
 			var args = new VisualElementChangedEventArgs(e.OldElement, e.NewElement);
-			foreach (EventHandler<VisualElementChangedEventArgs> handler in _elementChangedHandlers)
+
+			// The list of event handlers can be changed inside the handlers. (ex.: are used CompressedLayout)
+			// To avoid an exception, a copy of the handlers is called.
+			var handlers = _elementChangedHandlers.ToArray();
+			foreach (var handler in handlers)
 				handler(this, args);
 
 			ElementChanged?.Invoke(this, e);

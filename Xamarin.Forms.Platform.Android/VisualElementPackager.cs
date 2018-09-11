@@ -37,8 +37,11 @@ namespace Xamarin.Forms.Platform.Android
 			_childReorderedHandler = OnChildrenReordered;
 
 			_renderer = renderer;
-			_renderer.ElementChanged += (sender, args) => SetElement(args.OldElement, args.NewElement);
+			_renderer.ElementChanged += OnElementChanged;
 		}
+
+		void OnElementChanged(object sender, VisualElementChangedEventArgs e)
+			=> SetElement(e.OldElement, e.NewElement);
 
 		public void Dispose()
 		{
@@ -70,6 +73,7 @@ namespace Xamarin.Forms.Platform.Android
 					_childPackagers = null;
 				}
 
+				_renderer.ElementChanged -= OnElementChanged;
 				if (_renderer.Element != null)
 				{
 					_renderer.Element.ChildAdded -= _childAddedHandler;
@@ -258,7 +262,7 @@ namespace Xamarin.Forms.Platform.Android
 				for (var i = 0; i < newChildren.Count; i++)
 				{
 					IVisualElementRenderer oldRenderer = null;
-					if (oldChildren != null && sameChildrenTypes)
+					if (oldChildren != null && sameChildrenTypes && _childViews != null)
 						oldRenderer = _childViews[i];
 
 					AddChild((VisualElement)newChildren[i], oldRenderer, pool, sameChildrenTypes);

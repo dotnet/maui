@@ -550,6 +550,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Issue1664.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1680.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3624.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1682.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1685.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1698.cs" />

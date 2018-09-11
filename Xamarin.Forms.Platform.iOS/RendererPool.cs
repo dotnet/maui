@@ -52,14 +52,16 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var sameChildrenTypes = true;
 
-			var oldChildren = ((IElementController)_oldElement).LogicalChildren;
+			var oldChildren = _oldElement.LogicalChildren;
+			var oldNativeChildren = _parent.NativeView.Subviews;
 			var newChildren = ((IElementController)newElement).LogicalChildren;
 
-			if (oldChildren.Count == newChildren.Count)
+			if (oldChildren.Count == newChildren.Count && oldNativeChildren.Length >= oldChildren.Count)
 			{
 				for (var i = 0; i < oldChildren.Count; i++)
 				{
-					if (oldChildren[i].GetType() != newChildren[i].GetType())
+					var oldChildType = (oldNativeChildren[i] as IVisualElementRenderer)?.Element.GetType();
+					if (oldChildType != newChildren[i].GetType())
 					{
 						sameChildrenTypes = false;
 						break;
