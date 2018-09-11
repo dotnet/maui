@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
-		protected bool _is24HourFormat;
+		 
 
 		bool Is24HourView
 		{
@@ -110,7 +110,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected virtual TimePickerDialog CreateTimePickerDialog(int hours, int minutes)
 		{
-			var dialog = new TimePickerDialog(Context, this, hours, minutes, _is24HourFormat);
+			var dialog = new TimePickerDialog(Context, this, hours, minutes, Is24HourView);
 
 			if (Forms.IsLollipopOrNewer)
 				dialog.CancelEvent += OnCancelButtonClicked;

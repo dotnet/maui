@@ -32,6 +32,7 @@ namespace Xamarin.Forms.Core.UITests
 			App.ScrollForElement($"* marked:'{testName}'",
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 #endif
+			App.WaitForElement(q => q.Marked(testName));
 			App.Tap(q => q.Marked(testName));
 		}
 
@@ -135,6 +136,8 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			SelectTest("ImageCell Url List");
 
+			App.WaitForElement(q => q.Marked("ImageUrlCellListView"));
+
 			var scollBounds = App.Query(q => q.Marked("ImageUrlCellListView")).First().Rect;
 			App.ScrollForElement("* marked:'Detail 100'", new Drag(scollBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 			App.WaitForElement(q => q.Marked("Detail 100"), "Timeout : Detail 100");
@@ -217,6 +220,8 @@ namespace Xamarin.Forms.Core.UITests
 			App.ScrollForElement($"* marked:'{target}'",
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 
+			App.WaitForElement(q => q.Marked(target));
+
 			var numberOfSwitches = App.Query(q => q.Raw(PlatformViews.Switch)).Length;
 			Assert.IsTrue(numberOfSwitches > 2);
 #endif
@@ -243,6 +248,8 @@ namespace Xamarin.Forms.Core.UITests
 #else
 			App.ScrollForElement($"* marked:'{target}'",
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
+
+			App.WaitForElement(q => q.Marked(target));
 
 			var numberOfSwitches = App.Query(q => q.Raw(PlatformViews.Switch)).Length;
 			Assert.IsTrue(numberOfSwitches > 2);
@@ -319,6 +326,8 @@ namespace Xamarin.Forms.Core.UITests
 			App.ScrollForElement($"* marked:'{target}'",
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 #endif
+
+			App.WaitForElement(q => q.Marked(target));
 
 			App.Screenshot("Before clicking Entry");
 

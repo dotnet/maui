@@ -11,7 +11,9 @@ namespace Xamarin.Forms.Core.UITests
 	internal class ToolbarItemTests : BaseTestFixture
 	{
 		string btn1Id = "tb1";
+		string btn2Id = "tb2";
 		string btn4Id = "tb4";
+		string btn3Id = "tb3";
 #if __ANDROID__
 		static bool isSecondaryMenuOpen = false;
 #endif
@@ -20,6 +22,7 @@ namespace Xamarin.Forms.Core.UITests
 #if __ANDROID__
 			isSecondaryMenuOpen = true;
 			//show secondary menu
+			App.WaitForElement(c => c.Class("OverflowMenuButton"));
 			App.Tap(c => c.Class("OverflowMenuButton"));
 #endif
 		}
@@ -60,7 +63,7 @@ namespace Xamarin.Forms.Core.UITests
 			App.Tap(c => c.Marked(btn1Id));
 #endif
 			var textLabel = App.Query((arg) => arg.Marked("label_id"))[0];
-			Assert.False(textLabel.Text == "tb1");
+			Assert.False(textLabel.Text == btn1Id);
 			Assert.True(textLabel.Text == "Hello ContentPage");
 		}
 
@@ -77,14 +80,14 @@ namespace Xamarin.Forms.Core.UITests
 #if __MACOS__
 			App.Tap(c => c.Button().Index(6));
 #else
-			App.Tap(c => c.Marked("tb3"));
+			App.Tap(c => c.Marked(btn3Id));
 #endif
 			App.Tap(c => c.Marked(btn4Id));
 			App.WaitForElement(c => c.Text("button 4 new text"));
 #if __MACOS__
 			App.Tap(c => c.Button().Index(6));
 #else
-			App.Tap(c => c.Marked("tb3"));
+			App.Tap(c => c.Marked(btn3Id));
 #endif
 #endif
 		}
@@ -101,7 +104,7 @@ namespace Xamarin.Forms.Core.UITests
 #else
 			var btn1 = App.Query(c => c.Marked(btn1Id))[0];
 			ShouldShowMenu();
-			//var btn2 = App.Query (c => c.Marked (btn4Id)) [0];		
+			//var btn2 = App.Query (c => c.Marked (btn4Id)) [0];
 			//TODO: how to check Enable for the textview
 			//Assert.False (btn2.Enabled, "Toolbar Item  should be disable");
 #endif
@@ -116,20 +119,19 @@ namespace Xamarin.Forms.Core.UITests
 			var existsPrimary = App.Query(c => c.Button())[4];
 			Assert.True(existsPrimary != null, "Toolbar Item 1 no name, not found");
 #else
-			App.WaitForElement(btn1Id, "Toolbar Item 1 no name, not found");
+			App.WaitForElement(c => c.Marked(btn1Id));
 #endif
-			App.WaitForElement("tb2", "Toolbar Item 2, not found");
-			
+
+			App.WaitForElement(c => c.Marked(btn2Id));
 			ShouldShowMenu();
 
 #if __MACOS__
 			var existsSecondary = App.Query(c => c.Button())[7];
 			Assert.True(existsSecondary != null, "Toolbar Item 3 no name, not found");
 #else
-
-			App.WaitForElement("tb3", "Toolbar Item 3 no name, not found");
+			App.WaitForElement(c => c.Marked(btn3Id));
 #endif
-			App.WaitForElement(btn4Id, "Toolbar Item 4, not found");
+			App.WaitForElement(c => c.Marked(btn4Id));
 		}
 
 		[Test]
@@ -142,7 +144,7 @@ namespace Xamarin.Forms.Core.UITests
 			var btn1 = App.Query(c => c.Marked(btn1Id))[0];
 #endif
 			ShouldShowMenu();
-			var btn2 = App.Query(c => c.Marked("tb4"))[0];
+			var btn2 = App.Query(c => c.Marked(btn4Id))[0];
 #if __IOS__
 			Assert.True(btn1.Rect.CenterY < btn2.Rect.CenterY);
 #elif __MACOS__
