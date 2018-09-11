@@ -39,6 +39,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
+			data.CollectionChanged += (_, e) =>
+			{
+				var log = $"<{DateTime.Now.ToLongTimeString()}> {e.Action} action fired.";
+				System.Diagnostics.Debug.WriteLine(log);
+			};
 			var label = new Label { Text = "Click the Add 2 button." };
 			var button = new Button
 			{

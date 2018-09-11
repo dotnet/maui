@@ -11,6 +11,7 @@ using Xamarin.Forms.Platform.UWP;
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Bugzilla42602.TextBoxView), typeof(Xamarin.Forms.ControlGallery.WindowsUniversal.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
+[assembly: ExportRenderer(typeof(Issue3273.SortableListView), typeof(SortableListViewRenderer))]
 namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 {
 	public class EntryRendererKeyboardFlags : EntryRenderer
@@ -33,6 +34,24 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			Control.TestKeyboardFlags(((Issue1683.EditorKeyboardFlags)Element).FlagsToSet);
 
 
+		}
+	}
+
+	public class SortableListViewRenderer : ListViewRenderer
+	{
+		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
+		{
+			base.OnElementChanged(e);
+
+			if (e.NewElement != null)
+			{
+				var control = Control as Windows.UI.Xaml.Controls.ListView;
+
+				control.AllowDrop = true;
+				control.CanDragItems = true;
+				control.CanReorderItems = true;
+				control.ReorderMode = ListViewReorderMode.Enabled;
+			}
 		}
 	}
 
