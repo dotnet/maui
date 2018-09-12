@@ -120,7 +120,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateLabelColor()
 		{
-			_view.SetLabelTextColor(((EntryCell)Cell).LabelColor, global::Android.Resource.Color.PrimaryTextDark);
+			_view.SetLabelTextColor(((EntryCell)Cell).LabelColor, global::Android.Resource.Attribute.TextColor);
 		}
 
 		void UpdateFlowDirection()
