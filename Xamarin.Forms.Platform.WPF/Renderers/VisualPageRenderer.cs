@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Xamarin.Forms.Platform.WPF.Controls;
-using Xamarin.Forms.Platform.WPF.Enums;
+using Xamarin.Forms.Platform.WPF.Converters;
 using Xamarin.Forms.Platform.WPF.Extensions;
 
 namespace Xamarin.Forms.Platform.WPF
@@ -52,7 +50,6 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateBackButtonTitle();
 			else if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
 				UpdateNavigationBarVisible();
-
 		}
 
 		void UpdateTitle()
@@ -100,32 +97,22 @@ namespace Xamarin.Forms.Platform.WPF
 
 			foreach (var item in Element.ToolbarItems)
 			{
-				FormsAppBarButton appBar = new FormsAppBarButton()
+				var appBar = new FormsAppBarButton() { DataContext = item };
+
+				var iconBinding = new System.Windows.Data.Binding(nameof(item.Icon))
 				{
-					Label = item.Text,
-					Tag = item
+					Converter = new IconConveter()
 				};
 
+				appBar.SetBinding(FormsAppBarButton.IconProperty, iconBinding);
+				appBar.SetBinding(FormsAppBarButton.LabelProperty, nameof(item.Text));
 				appBar.SetValue(FrameworkElementAttached.PriorityProperty, item.Priority);
 
-				if(item.Icon != null)
-				{
-					Symbol symbol;
-					Geometry geometry;
-
-					if (Enum.TryParse(item.Icon.File, true, out symbol))
-						appBar.Icon = new FormsSymbolIcon() { Symbol = symbol };
-					else if (TryParseGeometry(item.Icon.File, out geometry))
-						appBar.Icon = new FormsPathIcon() { Data = geometry };
-					else if (Path.GetExtension(item.Icon.File) != null)
-						appBar.Icon = new FormsBitmapIcon() { UriSource = new Uri(item.Icon.File, UriKind.RelativeOrAbsolute) };
-				}
-				
 				appBar.Click += (sender, e) =>
 				{
-					if (appBar.Tag != null && appBar.Tag is ToolbarItem)
+					if (appBar.DataContext is ToolbarItem toolbarItem)
 					{
-						(appBar.Tag as ToolbarItem).Activate();
+						toolbarItem.Activate();
 					}
 				};
 
@@ -153,20 +140,6 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateToolbar();
 		}
 		
-		private bool TryParseGeometry(string value, out Geometry geometry)
-		{
-			geometry = null;
-			try
-			{
-				geometry = Geometry.Parse(value);
-				return true;
-			}
-			catch(Exception)
-			{
-				return false;
-			}
-		}
-
 		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)

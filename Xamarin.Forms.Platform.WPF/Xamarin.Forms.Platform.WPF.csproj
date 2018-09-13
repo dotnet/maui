@@ -87,6 +87,7 @@
     <Compile Include="Converters\CollapseWhenEmptyConverter.cs" />
     <Compile Include="Converters\ColorConverter.cs" />
     <Compile Include="Converters\HeightConverter.cs" />
+    <Compile Include="Converters\IconConveter.cs" />
     <Compile Include="Converters\ImageConverter.cs" />
     <Compile Include="Converters\SymbolToValueConverter.cs" />
     <Compile Include="Converters\ToUpperConverter.cs" />
