@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.iOS
 		UIButton _moreButton;
 		UIScrollView _scroller;
 		UITableView _tableView;
+		bool _isDiposed;
 
 		static ContextActionsCell()
 		{
@@ -113,6 +114,14 @@ namespace Xamarin.Forms.Platform.iOS
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			return ContentCell.SizeThatFits(size);
+		}
+		public override void RemoveFromSuperview()
+		{
+			base.RemoveFromSuperview();
+			//Some cells are removed  when using ScrollTo but Disposed is not called causing leaks
+			//ListviewRenderer disposes it's subviews but there's a chance these were removed already
+			//but the dispose logic wasn't called.
+			Dispose(true);
 		}
 
 		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
@@ -261,8 +270,10 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
+			if (disposing && !_isDiposed)
 			{
+				_isDiposed = true;
+
 				if (_scroller != null)
 				{
 					_scroller.Dispose();
