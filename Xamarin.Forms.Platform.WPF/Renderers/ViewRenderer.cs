@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.WPF
 			new List<EventHandler<VisualElementChangedEventArgs>>();
 
 		VisualElementTracker _tracker;
+		WControl _wcontrol => Control as WControl;
 		bool _disposed;
 
 		IElementController ElementController => Element as IElementController;
@@ -137,6 +138,10 @@ namespace Xamarin.Forms.Platform.WPF
 				UpdateBackground();
 			else if (e.PropertyName == View.HorizontalOptionsProperty.PropertyName || e.PropertyName == View.VerticalOptionsProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
+				UpdateTabStop();
+			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
+				UpdateTabIndex();
 		}
 
 		protected virtual void OnGotFocus(object sender, RoutedEventArgs args)
@@ -198,11 +203,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		protected virtual void UpdateBackground()
 		{
-			var control = Control as WControl;
-			if (control == null)
-				return;
-
-			control.UpdateDependencyColor(WControl.BackgroundProperty, Element.BackgroundColor);
+			_wcontrol?.UpdateDependencyColor(WControl.BackgroundProperty, Element.BackgroundColor);
 		}
 
 		protected virtual void UpdateHeight()
@@ -224,19 +225,20 @@ namespace Xamarin.Forms.Platform.WPF
 		protected virtual void UpdateNativeWidget()
 		{
 			UpdateEnabled();
+			UpdateTabStop();
+			UpdateTabIndex();
 		}
 
 		internal virtual void OnModelFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
 		{
-			var control = Control as WControl;
-			if (control == null)
+			if (_wcontrol == null)
 				return;
 
 			if (args.Focus)
-				args.Result = control.Focus();
+				args.Result = _wcontrol.Focus();
 			else
 			{
-				UnfocusControl(control);
+				UnfocusControl(_wcontrol);
 				args.Result = true;
 			}
 		}
@@ -254,11 +256,28 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateNativeWidget();
 		}
 
+		protected void UpdateTabStop()
+		{
+			if (_wcontrol == null)
+				return;
+			_wcontrol.IsTabStop = Element.IsTabStop;
+
+			// update TabStop of children for complex controls (like as DatePicker, TimePicker, SearchBar and Stepper)
+			var children = FrameworkElementExtensions.GetChildren<WControl>(_wcontrol);
+			foreach (var child in children)
+				child.IsTabStop = _wcontrol.IsTabStop;
+		}
+
+		protected void UpdateTabIndex()
+		{
+			if (_wcontrol != null)
+				_wcontrol.TabIndex = Element.TabIndex;
+		}
+
 		protected virtual void UpdateEnabled()
 		{
-			WControl wcontrol = Control as WControl;
-			if (wcontrol != null)
-				wcontrol.IsEnabled = Element.IsEnabled;
+			if (_wcontrol != null)
+				_wcontrol.IsEnabled = Element.IsEnabled;
 		}
 
 		void UpdateAlignment()

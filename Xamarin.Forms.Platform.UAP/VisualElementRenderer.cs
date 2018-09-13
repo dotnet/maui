@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Platform.UWP
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
 		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
+		Control _control => Control as Control;
 
 		Canvas _backgroundLayer;
 
@@ -296,6 +297,24 @@ namespace Xamarin.Forms.Platform.UWP
 				changed(this, e);
 		}
 
+		protected void UpdateTabStop()
+		{
+			if (_control == null)
+				return;
+			_control.IsTabStop = Element.IsTabStop;
+
+			// update TabStop of children for complex controls (like as DatePicker, TimePicker, SearchBar and Stepper)
+			var children = FrameworkElementExtensions.GetChildren<Control>(_control);
+			foreach (var child in children)
+				child.IsTabStop = _control.IsTabStop;
+		}
+
+		protected void UpdateTabIndex()
+		{
+			if (_control != null)
+				_control.TabIndex = Element.TabIndex;
+		}
+
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
@@ -318,6 +337,10 @@ namespace Xamarin.Forms.Platform.UWP
 					e.PropertyName == Specifics.AccessKeyHorizontalOffsetProperty.PropertyName ||
 					e.PropertyName == Specifics.AccessKeyVerticalOffsetProperty.PropertyName)
 				UpdateAccessKey();
+			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
+				UpdateTabStop();
+			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
+				UpdateTabIndex();
 		}
 
 		protected virtual void OnRegisterEffect(PlatformEffect effect)
@@ -442,7 +465,6 @@ namespace Xamarin.Forms.Platform.UWP
 		protected virtual void UpdateBackgroundColor()
 		{
 			Color backgroundColor = Element.BackgroundColor;
-			var control = Control as Control;
 
 			var backgroundLayer = (Panel)this;
 			if (_backgroundLayer != null)
@@ -451,15 +473,15 @@ namespace Xamarin.Forms.Platform.UWP
 				Background = null; // Make the container effectively hit test invisible
 			}
 
-			if (control != null)
+			if (_control != null)
 			{
 				if (!backgroundColor.IsDefault)
 				{
-					control.Background = backgroundColor.ToBrush();
+					_control.Background = backgroundColor.ToBrush();
 				}
 				else
 				{
-					control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
+					_control.ClearValue(Windows.UI.Xaml.Controls.Control.BackgroundProperty);
 				}
 			}
 			else
@@ -488,6 +510,8 @@ namespace Xamarin.Forms.Platform.UWP
 			UpdateEnabled();
 			UpdateInputTransparent();
 			UpdateAccessKey();
+			UpdateTabStop();
+			UpdateTabIndex();
 			SetAutomationPropertiesHelpText();
 			SetAutomationPropertiesName();
 			SetAutomationPropertiesAccessibilityView();
@@ -496,15 +520,14 @@ namespace Xamarin.Forms.Platform.UWP
 
 		internal virtual void OnElementFocusChangeRequested(object sender, VisualElement.FocusRequestArgs args)
 		{
-			var control = Control as Control;
-			if (control == null)
+			if (_control == null)
 				return;
 
 			if (args.Focus)
-				args.Result = control.Focus(FocusState.Programmatic);
+				args.Result = _control.Focus(FocusState.Programmatic);
 			else
 			{
-				UnfocusControl(control);
+				UnfocusControl(_control);
 				args.Result = true;
 			}
 		}
@@ -524,7 +547,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_containingPage == null)
 			{
 				// Work our way up the tree to find the containing Page
-				DependencyObject parent = Control as Control;
+				DependencyObject parent = _control;
 				while (parent != null && !(parent is Windows.UI.Xaml.Controls.Page))
 				{
 					parent = VisualTreeHelper.GetParent(parent);
@@ -569,9 +592,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void UpdateEnabled()
 		{
-			var control = Control as Control;
-			if (control != null)
-				control.IsEnabled = Element.IsEnabled;
+			if (_control != null)
+				_control.IsEnabled = Element.IsEnabled;
 			else
 				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
 		}

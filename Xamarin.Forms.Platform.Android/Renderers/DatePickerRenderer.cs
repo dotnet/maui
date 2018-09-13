@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Android.Content.Res;
+using Android.Text;
 using Android.Util;
+using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using AView = Android.Views.View;
@@ -16,6 +19,10 @@ namespace Xamarin.Forms.Platform.Android
 		DatePickerDialog _dialog;
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
+
+		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
+			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
+		});
 
 		public DatePickerRenderer(Context context) : base(context)
 		{
@@ -55,7 +62,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override EditText CreateNativeControl()
 		{
-			return new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
+			return new EditText(Context) { Focusable = true, Clickable = true, Tag = this };
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
@@ -67,6 +74,8 @@ namespace Xamarin.Forms.Platform.Android
 				var textField = CreateNativeControl();
 
 				textField.SetOnClickListener(TextFieldClickHandler.Instance);
+				textField.InputType = InputTypes.Null;
+				textField.KeyPress += TextFieldKeyPress;
 				SetNativeControl(textField);
 
 				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
@@ -79,6 +88,24 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateMinimumDate();
 			UpdateMaximumDate();
 			UpdateTextColor();
+		}
+
+		void TextFieldKeyPress(object sender, KeyEventArgs e)
+		{
+			if (availableKeys.Contains(e.KeyCode))
+			{
+				e.Handled = false;
+				return;
+			}
+			e.Handled = true;
+			OnTextFieldClicked();
+		}
+
+		internal override void OnNativeFocusChanged(bool hasFocus)
+		{
+			base.OnNativeFocusChanged(hasFocus);
+			if (hasFocus)
+				OnTextFieldClicked();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -107,7 +134,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_dialog.Hide();
 				((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-				Control.ClearFocus();
 
 				if (Forms.IsLollipopOrNewer)
 					_dialog.CancelEvent -= OnCancelButtonClicked;
@@ -123,7 +149,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				view.Date = e.Date;
 				((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-				Control.ClearFocus();
 			}, year, month, day);
 
 			return dialog;

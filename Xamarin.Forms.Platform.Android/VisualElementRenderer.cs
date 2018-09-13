@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Android.Content;
-using Android.Support.V4.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using Xamarin.Forms.Platform.Android.FastRenderers;
+using Android.Runtime;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -135,6 +134,40 @@ namespace Xamarin.Forms.Platform.Android
 			Performance.Stop(reference);
 		}
 
+		protected int TabIndex { get; set; } = 0;
+
+		protected bool TabStop { get; set; } = true;
+
+		protected void UpdateTabStop() => TabStop = Element.IsTabStop;
+
+		protected void UpdateTabIndex() => TabIndex = Element.TabIndex;
+
+		public override AView FocusSearch(AView focused, [GeneratedEnum] FocusSearchDirection direction)
+		{
+			VisualElement element = Element as VisualElement;
+			int maxAttempts = 0;
+			var tabIndexes = element?.GetTabIndexesOnParentPage(out maxAttempts);
+			if (tabIndexes == null)
+				return null;
+
+			int tabIndex = element.TabIndex;
+			AView control = null;
+			int attempt = 0;
+			bool forwardDirection = !(
+				(direction & FocusSearchDirection.Backward) != 0 ||
+				(direction & FocusSearchDirection.Left) != 0 ||
+				(direction & FocusSearchDirection.Up) != 0);
+
+			do
+			{
+				element = element.FindNextElement(forwardDirection, tabIndexes, ref tabIndex);
+				var renderer = element.GetRenderer();
+				control = (renderer as ITabStop)?.TabStop;
+			} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
+
+			return control;
+		}
+
 		public ViewGroup ViewGroup => this;
 		AView IVisualElementRenderer.View => this;
 
@@ -195,6 +228,8 @@ namespace Xamarin.Forms.Platform.Android
 			SetFocusable();
 			UpdateInputTransparent();
 			UpdateInputTransparentInherited();
+			UpdateTabStop();
+			UpdateTabIndex();
 
 			Performance.Stop(reference);
 		}
@@ -288,6 +323,10 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateInputTransparent();
 			else if (e.PropertyName == Xamarin.Forms.Layout.CascadeInputTransparentProperty.PropertyName)
 				UpdateInputTransparentInherited();
+			else if (e.PropertyName == VisualElement.IsTabStopProperty.PropertyName)
+				UpdateTabStop();
+			else if (e.PropertyName == VisualElement.TabIndexProperty.PropertyName)
+				UpdateTabIndex();
 
 			ElementPropertyChanged?.Invoke(this, e);
 		}

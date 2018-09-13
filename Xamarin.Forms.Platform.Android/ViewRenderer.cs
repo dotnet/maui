@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.Android
 		}
 	}
 
-	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
+	public abstract class ViewRenderer<TView, TNativeView> : VisualElementRenderer<TView>, IViewRenderer, ITabStop, AView.IOnFocusChangeListener where TView : View where TNativeView : AView
 	{
 		protected ViewRenderer(Context context) : base(context)
 		{
@@ -55,6 +55,8 @@ namespace Xamarin.Forms.Platform.Android
 		internal bool HandleKeyboardOnFocus;
 
 		public TNativeView Control { get; private set; }
+
+		AView ITabStop.TabStop => Control;
 
 		void IViewRenderer.MeasureExactly()
 		{

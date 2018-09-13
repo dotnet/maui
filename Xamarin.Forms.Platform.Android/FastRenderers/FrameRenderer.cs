@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	public class FrameRenderer : CardView, IVisualElementRenderer, IEffectControlProvider, IViewRenderer
+	public class FrameRenderer : CardView, IVisualElementRenderer, IEffectControlProvider, IViewRenderer, ITabStop
 	{
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -44,6 +44,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		}
 
 		protected CardView Control => this;
+
+		AView ITabStop.TabStop => this;
 
 		protected Frame Element
 		{

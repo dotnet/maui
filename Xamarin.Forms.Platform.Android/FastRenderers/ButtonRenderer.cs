@@ -14,7 +14,7 @@ using static System.String;
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	internal sealed class ButtonRenderer : AppCompatButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
-		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer
+		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer, ITabStop
 	{
 		float _defaultFontSize;
 		int? _defaultLabelFor;
@@ -55,6 +55,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
 		Button Button { get; set; }
+
+		AView ITabStop.TabStop => this;
 
 		public void OnClick(AView v)
 		{

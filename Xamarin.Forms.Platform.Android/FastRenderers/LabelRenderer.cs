@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
-	internal sealed class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer
+	internal sealed class LabelRenderer : FormsTextView, IVisualElementRenderer, IViewRenderer, ITabStop
 	{
 		int? _defaultLabelFor;
 		bool _disposed;
@@ -52,6 +52,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		VisualElementTracker IVisualElementRenderer.Tracker => _visualElementTracker;
 
 		AView IVisualElementRenderer.View => this;
+
+		AView ITabStop.TabStop => this;
 
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 

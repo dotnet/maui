@@ -7,7 +7,7 @@ using AView = Android.Views.View;
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	// TODO hartez 2017/03/03 14:11:17 It's weird that this class is called VisualElementRenderer but it doesn't implement that interface. The name should probably be different.
-	internal sealed class VisualElementRenderer : IDisposable, IEffectControlProvider
+	internal sealed class VisualElementRenderer : IDisposable, IEffectControlProvider, ITabStop
 	{
 		bool _disposed;
 		
@@ -30,6 +30,8 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		VisualElement Element => _renderer?.Element;
 
 		AView Control => _renderer?.View;
+
+		AView ITabStop.TabStop => Control;
 
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{

@@ -10,6 +10,8 @@ using System.Linq;
 using Android.Content;
 using Object = Java.Lang.Object;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Collections.Generic;
+using Android.Views;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -18,6 +20,10 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		AlertDialog _dialog;
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
+
+		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
+			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
+		});
 
 		public PickerRenderer(Context context) : base(context)
 		{
@@ -58,10 +64,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				if (Control == null)
 				{
 					EditText textField = CreateNativeControl();
-					textField.Focusable = false;
+					textField.Focusable = true;
 					textField.Clickable = true;
 					textField.Tag = this;
 					textField.InputType = InputTypes.Null;
+					textField.KeyPress += TextFieldKeyPress;
 					textField.SetOnClickListener(PickerListener.Instance);
 
 					var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
@@ -75,6 +82,24 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		void TextFieldKeyPress(object sender, KeyEventArgs e)
+		{
+			if (availableKeys.Contains(e.KeyCode))
+			{
+				e.Handled = false;
+				return;
+			}
+			e.Handled = true;
+			OnClick();
+		}
+
+		internal override void OnNativeFocusChanged(bool hasFocus)
+		{
+			base.OnNativeFocusChanged(hasFocus);
+			if (hasFocus)
+				OnClick();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -13,6 +13,8 @@ using Object = Java.Lang.Object;
 using Orientation = Android.Widget.Orientation;
 using Android.Content;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using System.Collections.Generic;
+using Android.Text;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -21,6 +23,10 @@ namespace Xamarin.Forms.Platform.Android
 		AlertDialog _dialog;
 		bool _isDisposed;
 		TextColorSwitcher _textColorSwitcher;
+
+		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
+			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
+		});
 
 		public PickerRenderer(Context context) : base(context)
 		{
@@ -48,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override EditText CreateNativeControl()
 		{
-			return new EditText(Context) { Focusable = false, Clickable = true, Tag = this };
+			return new EditText(Context) { Focusable = true, Clickable = true, Tag = this };
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Picker> e)
@@ -63,6 +69,8 @@ namespace Xamarin.Forms.Platform.Android
 				{
 					var textField = CreateNativeControl();
 					textField.SetOnClickListener(PickerListener.Instance);
+					textField.InputType = InputTypes.Null;
+					textField.KeyPress += TextFieldKeyPress;
 
 					var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 					_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
@@ -76,6 +84,24 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			base.OnElementChanged(e);
+		}
+
+		void TextFieldKeyPress(object sender, KeyEventArgs e)
+		{
+			if (availableKeys.Contains(e.KeyCode))
+			{
+				e.Handled = false;
+				return;
+			}
+			e.Handled = true;
+			OnClick();
+		}
+
+		internal override void OnNativeFocusChanged(bool hasFocus)
+		{
+			base.OnNativeFocusChanged(hasFocus);
+			if (hasFocus)
+				OnClick();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -102,7 +128,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_dialog.Hide();
 				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-				Control.ClearFocus();
 				_dialog = null;
 			}
 		}
@@ -133,9 +158,6 @@ namespace Xamarin.Forms.Platform.Android
 			builder.SetNegativeButton(global::Android.Resource.String.Cancel, (s, a) =>
 			{
 				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-				// It is possible for the Content of the Page to be changed when Focus is changed.
-				// In this case, we'll lose our Control.
-				Control?.ClearFocus();
 				_dialog = null;
 			});
 			builder.SetPositiveButton(global::Android.Resource.String.Ok, (s, a) =>
@@ -148,9 +170,6 @@ namespace Xamarin.Forms.Platform.Android
 					if (model.Items.Count > 0 && Element.SelectedIndex >= 0)
 						Control.Text = model.Items[Element.SelectedIndex];
 					ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
-					// It is also possible for the Content of the Page to be changed when Focus is changed.
-					// In this case, we'll lose our Control.
-					Control?.ClearFocus();
 				}
 				_dialog = null;
 			});

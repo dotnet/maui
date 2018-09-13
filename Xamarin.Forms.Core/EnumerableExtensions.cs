@@ -59,6 +59,20 @@ namespace Xamarin.Forms.Internals
 			}
 		}
 
+		public static IDictionary<TKey, List<TSource>> GroupToDictionary<TSource, TKey>(this IEnumerable<TSource> enumeration, Func<TSource, TKey> func)
+		{
+			var result = new Dictionary<TKey, List<TSource>>();
+			foreach (TSource item in enumeration)
+			{
+				var group = func(item);
+				if (!result.ContainsKey(group))
+					result.Add(group, new List<TSource> { item });
+				else
+					result[group].Add(item);
+			}
+			return result;
+		}
+
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
 		{
 			if (enumerable == null)
