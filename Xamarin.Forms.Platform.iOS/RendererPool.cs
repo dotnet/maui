@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			{
 				for (var i = 0; i < oldChildren.Count; i++)
 				{
-					var oldChildType = (oldNativeChildren[i] as IVisualElementRenderer)?.Element.GetType();
+					var oldChildType = (oldNativeChildren[i] as IVisualElementRenderer)?.Element?.GetType();
 					if (oldChildType != newChildren[i].GetType())
 					{
 						sameChildrenTypes = false;

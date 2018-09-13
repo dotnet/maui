@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue2499Test()
 		{
+			RunningApp.WaitForElement("picker");
 			RunningApp.Tap("picker");
 			AppResult[] items = RunningApp.Query("cat");
 			Assert.AreNotEqual(items.Length, 0);
@@ -47,7 +48,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked(cancelButtonText));
 			RunningApp.Tap(q => q.Marked(cancelButtonText));
 			System.Threading.Tasks.Task.Delay(1000).Wait();
- #endif
+#endif
 			items = RunningApp.Query("cat");
 			Assert.AreEqual(items.Length, 0);
 		}
