@@ -250,7 +250,7 @@ namespace Xamarin.Forms.Maps.Android
 		void PinOnPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			Pin pin = (Pin)sender;
-			Marker marker = _markers.FirstOrDefault(m => m.Id == (string)pin.Id);
+			Marker marker = GetMarkerForPin(pin);
 
 			if (marker == null)
 			{
@@ -269,6 +269,11 @@ namespace Xamarin.Forms.Maps.Android
 			{
 				marker.Position = new LatLng(pin.Position.Latitude, pin.Position.Longitude);
 			}
+		}
+
+		protected Marker GetMarkerForPin(Pin pin)
+		{
+			return _markers?.Find(m => m.Id == (string)pin.Id);
 		}
 
 		void MapOnMarkerClick(object sender, GoogleMap.InfoWindowClickEventArgs eventArgs)
@@ -373,7 +378,7 @@ namespace Xamarin.Forms.Maps.Android
 			foreach (Pin p in pins)
 			{
 				p.PropertyChanged -= PinOnPropertyChanged;
-				var marker = _markers.FirstOrDefault(m => m.Id == (string)p.Id);
+				var marker = GetMarkerForPin(p);
 
 				if (marker == null)
 				{
