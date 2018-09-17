@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<controls:TestContentPage
+	xmlns:controls="clr-namespace:Xamarin.Forms.Controls"
+	xmlns="http://xamarin.com/schemas/2014/forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Xamarin.Forms.Controls.Issues"
+	x:Class="Xamarin.Forms.Controls.Issues.Issue1588">
+
+	<StackLayout VerticalOptions="FillAndExpand" >
+
+		<ScrollView>
+			<StackLayout>
+				<Label Text="General information" FontSize="40" TextColor="#212121" FontFamily="Times New Roman"/>
+				<local:Divider Thickness="1" Color="#BDBDBD" Margin="0, 20, 0, 0" Orientation="Horizontal"/>
+				<StackLayout Padding="20">
+					<StackLayout WidthRequest="300">
+						<Label Text="NAME" FontAttributes="Bold" TextColor="#212121" Margin="0,0,0,20" />
+
+						<local:LabledEntry LabelText="In english" LabelTextColor="#757575" />
+					</StackLayout>
+
+					<StackLayout WidthRequest="300">
+						<Label Text="CONTACT INFORMATION" FontAttributes="Bold" TextColor="#212121" Margin="0,0,0,20"/>
+						<local:LabledEntry LabelText="Mobile" LabelTextColor="#757575" />
+						<local:LabledEntry LabelText="Telephone" LabelTextColor="#757575" />
+						<local:LabledEntry LabelText="Email" LabelTextColor="#757575" />
+						<local:LabledEntry LabelText="Website" LabelTextColor="#757575" />
+					</StackLayout>
+
+					<StackLayout WidthRequest="300">
+						<Label Text="TAX INFORMATION" FontAttributes="Bold" TextColor="#212121" Margin="0,0,0,20"/>
+						<local:LabledEntry LabelText="Tax card" LabelTextColor="#757575" />
+						<local:LabledEntry LabelText="Tax file no." LabelTextColor="#757575" />
+						<local:LabledEntry LabelText="Commercial Registration" LabelTextColor="#757575" />
+					</StackLayout>
+				</StackLayout>
+
+
+			</StackLayout>
+
+		</ScrollView>
+		<StackLayout Orientation="Horizontal" VerticalOptions="End" >
+			<Button Text="Save"  TextColor="White"/>
+		</StackLayout>
+	</StackLayout>
+</controls:TestContentPage>

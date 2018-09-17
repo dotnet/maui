@@ -85,6 +85,12 @@ namespace Xamarin.Forms.Platform.WPF
 
 			var constraint = new System.Windows.Size(widthConstraint, heightConstraint);
 
+			if (Element.HeightRequest == -1)
+				Control.Height = double.NaN;
+
+			if (Element.WidthRequest == -1)
+				Control.Width = double.NaN;
+
 			Control.Measure(constraint);
 
 			return new SizeRequest(new Size(Math.Ceiling(Control.DesiredSize.Width), Math.Ceiling(Control.DesiredSize.Height)));
