@@ -48,7 +48,7 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
 
-				using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(PropertyStoreFile, FileMode.OpenOrCreate, isoStore))
+				using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream(PropertyStoreFile, FileMode.Create, isoStore))
 				{
 					var serializer = new DataContractSerializer(typeof(IDictionary<string, object>));
 					serializer.WriteObject(stream, properties);
