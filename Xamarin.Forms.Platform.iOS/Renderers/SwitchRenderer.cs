@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.ValueChanged += OnControlValueChanged;
 				}
 
-				_defaultOnColor = Control.OnTintColor;
+				_defaultOnColor = UISwitch.Appearance.OnTintColor;
 				Control.On = Element.IsToggled;
 				e.NewElement.Toggled += OnElementToggled;
 				UpdateOnColor();
