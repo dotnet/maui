@@ -58,8 +58,8 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="Xamarin.UITest">
-      <HintPath>..\packages\Xamarin.UITest.2.2.5.1806-dev\lib\net45\Xamarin.UITest.dll</HintPath>
+    <Reference Include="Xamarin.UITest, Version=2.2.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xamarin.UITest.2.2.6\lib\net45\Xamarin.UITest.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -99,7 +99,7 @@
   <Import Project="..\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
   <Import Project="..\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="AfterBuild">  
-     <Delete Files="bin/$(Configuration)/System.Net.Http.dll" /> 
-  </Target> 
+  <Target Name="AfterBuild">
+    <Delete Files="bin/$(Configuration)/System.Net.Http.dll" />
+  </Target>
 </Project>
