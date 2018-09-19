@@ -27,9 +27,6 @@ namespace Xamarin.Essentials
 
         static Task<string> PlatformGetAsync(string key)
         {
-            if (string.IsNullOrWhiteSpace(key))
-                throw new ArgumentNullException(nameof(key));
-
             var kc = new KeyChain(DefaultAccessible);
             var value = kc.ValueForKey(key, Alias);
 
