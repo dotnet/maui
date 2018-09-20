@@ -2,39 +2,39 @@
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
-    public class PageRenderer : AbstractPageRenderer<Controls.Page, Page>
-    {
-        private PageElementPackager _packager;
+	public class PageRenderer : AbstractPageRenderer<Controls.Page, Page>
+	{
+		private PageElementPackager _packager;
 
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
 
-            if (_packager != null)
-            {
-                _packager.Dispose();
-                _packager = null;
-            }
-        }
+			if (_packager != null)
+			{
+				_packager.Dispose();
+				_packager = null;
+			}
+		}
 
-        protected override void OnShown()
-        {
-            base.OnShown();
+		protected override void OnShown()
+		{
+			base.OnShown();
 
-            if (_packager == null)
-            {
-                _packager = new PageElementPackager(this);
-            }
+			if (_packager == null)
+			{
+				_packager = new PageElementPackager(this);
+			}
 
-            _packager.Load();
-        }
+			_packager.Load();
+		}
 
-        protected override void OnSizeAllocated(Gdk.Rectangle allocation)
-        {
-            if (!Sensitive)
-                return;
+		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
+		{
+			if (!Sensitive)
+				return;
 
-            base.OnSizeAllocated(allocation);
-        }
-    }
+			base.OnSizeAllocated(allocation);
+		}
+	}
 }

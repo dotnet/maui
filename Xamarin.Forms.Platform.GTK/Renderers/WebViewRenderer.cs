@@ -5,243 +5,243 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
 {
-    public class WebViewRenderer : ViewRenderer<WebView, Controls.WebView>, IWebViewDelegate, IEffectControlProvider
-    {
-        private bool _disposed;
-        private bool _ignoreSourceChanges;
-        private WebNavigationEvent _lastBackForwardEvent;
-        private WebNavigationEvent _lastEvent;
+	public class WebViewRenderer : ViewRenderer<WebView, Controls.WebView>, IWebViewDelegate, IEffectControlProvider
+	{
+		private bool _disposed;
+		private bool _ignoreSourceChanges;
+		private WebNavigationEvent _lastBackForwardEvent;
+		private WebNavigationEvent _lastEvent;
 
-        IWebViewController WebViewController => Element;
+		IWebViewController WebViewController => Element;
 
-        void IEffectControlProvider.RegisterEffect(Effect effect)
-        {
-            var platformEffect = effect as PlatformEffect;
-            if (platformEffect != null)
-                platformEffect.SetContainer(Container);
-        }
+		void IEffectControlProvider.RegisterEffect(Effect effect)
+		{
+			var platformEffect = effect as PlatformEffect;
+			if (platformEffect != null)
+				platformEffect.SetContainer(Container);
+		}
 
-        void IWebViewDelegate.LoadHtml(string html, string baseUrl)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(html))
-                {
-                    var urlWebViewSource = Element.Source as HtmlWebViewSource;
+		void IWebViewDelegate.LoadHtml(string html, string baseUrl)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(html))
+				{
+					var urlWebViewSource = Element.Source as HtmlWebViewSource;
 
-                    if (urlWebViewSource != null)
-                    {
-                        html = urlWebViewSource.Html;
-                    }
-                }
+					if (urlWebViewSource != null)
+					{
+						html = urlWebViewSource.Html;
+					}
+				}
 
-                if (Control != null)
-                {
-                    Control.LoadHTML(html, baseUrl ?? string.Empty);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning("WebView load string", $"WebView load string failed: {ex}");
-            }
-        }
+				if (Control != null)
+				{
+					Control.LoadHTML(html, baseUrl ?? string.Empty);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("WebView load string", $"WebView load string failed: {ex}");
+			}
+		}
 
-        void IWebViewDelegate.LoadUrl(string url)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(url))
-                {
-                    var urlWebViewSource = Element.Source as UrlWebViewSource;
+		void IWebViewDelegate.LoadUrl(string url)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(url))
+				{
+					var urlWebViewSource = Element.Source as UrlWebViewSource;
 
-                    if (urlWebViewSource != null)
-                    {
-                        url = urlWebViewSource.Url;
-                    }
-                }
+					if (urlWebViewSource != null)
+					{
+						url = urlWebViewSource.Url;
+					}
+				}
 
-                if (Control != null)
-                {
-                    Control.Navigate(url);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warning("WebView load url", $"WebView load url failed: {ex}");
-            }
-        }
+				if (Control != null)
+				{
+					Control.Navigate(url);
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Warning("WebView load url", $"WebView load url failed: {ex}");
+			}
+		}
 
-        protected override void OnElementChanged(ElementChangedEventArgs<WebView> e)
-        {
-            base.OnElementChanged(e);
+		protected override void OnElementChanged(ElementChangedEventArgs<WebView> e)
+		{
+			base.OnElementChanged(e);
 
-            if (e.NewElement != null)
-            {
-                if (Control == null)
-                {
-                    try
-                    {
-                        // On Linux and MacOS use C#/CLI bindings to WebKit/Gtk+: https://github.com/mono/webkit-sharp
-                        // On Windows, use the WebBrowser class from System.Windows.Forms.
-                        Control = new Controls.WebView();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning("WebView loading", $"WebView load failed: {ex}");
-                    }
+			if (e.NewElement != null)
+			{
+				if (Control == null)
+				{
+					try
+					{
+						// On Linux and MacOS use C#/CLI bindings to WebKit/Gtk+: https://github.com/mono/webkit-sharp
+						// On Windows, use the WebBrowser class from System.Windows.Forms.
+						Control = new Controls.WebView();
+					}
+					catch (Exception ex)
+					{
+						Log.Warning("WebView loading", $"WebView load failed: {ex}");
+					}
 
-                    SetNativeControl(Control);
+					SetNativeControl(Control);
 
-                    if (Control != null)
-                    {
-                        Control.LoadStarted += OnLoadStarted;
-                        Control.LoadFinished += OnLoadFinished;
-                    }
+					if (Control != null)
+					{
+						Control.LoadStarted += OnLoadStarted;
+						Control.LoadFinished += OnLoadFinished;
+					}
 
-                    WebViewController.EvalRequested += OnEvalRequested;
-                    WebViewController.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
-                    WebViewController.GoBackRequested += OnGoBackRequested;
-                    WebViewController.GoForwardRequested += OnGoForwardRequested;
-                }
-            }
+					WebViewController.EvalRequested += OnEvalRequested;
+					WebViewController.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
+					WebViewController.GoBackRequested += OnGoBackRequested;
+					WebViewController.GoForwardRequested += OnGoForwardRequested;
+				}
+			}
 
-            Load();
+			Load();
 
-            EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
-        }
+			EffectUtilities.RegisterEffectControlProvider(this, e.OldElement, e.NewElement);
+		}
 
-        protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            base.OnElementPropertyChanged(sender, e);
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			base.OnElementPropertyChanged(sender, e);
 
-            if (e.PropertyName == WebView.SourceProperty.PropertyName)
-                Load();
-        }
+			if (e.PropertyName == WebView.SourceProperty.PropertyName)
+				Load();
+		}
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                _disposed = true;
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && !_disposed)
+			{
+				_disposed = true;
 
-                if (Control != null)
-                {
-                    Control.LoadStarted -= OnLoadStarted;
-                    Control.LoadFinished -= OnLoadFinished;
-                }
+				if (Control != null)
+				{
+					Control.LoadStarted -= OnLoadStarted;
+					Control.LoadFinished -= OnLoadFinished;
+				}
 
-                WebViewController.EvalRequested -= OnEvalRequested;
-                WebViewController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
-                WebViewController.GoBackRequested -= OnGoBackRequested;
-                WebViewController.GoForwardRequested -= OnGoForwardRequested;
-            }
+				WebViewController.EvalRequested -= OnEvalRequested;
+				WebViewController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
+				WebViewController.GoBackRequested -= OnGoBackRequested;
+				WebViewController.GoForwardRequested -= OnGoForwardRequested;
+			}
 
-            base.Dispose(disposing);
-        }
+			base.Dispose(disposing);
+		}
 
-        private void Load()
-        {
-            if (_ignoreSourceChanges)
-                return;
+		private void Load()
+		{
+			if (_ignoreSourceChanges)
+				return;
 
-            Element?.Source?.Load(this);
+			Element?.Source?.Load(this);
 
-            UpdateCanGoBackForward();
-        }
+			UpdateCanGoBackForward();
+		}
 
-        private void UpdateCanGoBackForward()
-        {
-            if (Element == null)
-                return;
+		private void UpdateCanGoBackForward()
+		{
+			if (Element == null)
+				return;
 
-            if (Control != null)
-            {
-                WebViewController.CanGoBack = Control.CanGoBack();
-                WebViewController.CanGoForward = Control.CanGoForward();
-            }
-        }
+			if (Control != null)
+			{
+				WebViewController.CanGoBack = Control.CanGoBack();
+				WebViewController.CanGoForward = Control.CanGoForward();
+			}
+		}
 
-        private void OnLoadStarted(object sender, EventArgs e)
-        {
-            var uri = Control.Uri;
+		private void OnLoadStarted(object sender, EventArgs e)
+		{
+			var uri = Control.Uri;
 
-            if (!string.IsNullOrEmpty(uri))
-            {
-                var args = new WebNavigatingEventArgs(_lastEvent, new UrlWebViewSource { Url = uri }, uri);
+			if (!string.IsNullOrEmpty(uri))
+			{
+				var args = new WebNavigatingEventArgs(_lastEvent, new UrlWebViewSource { Url = uri }, uri);
 
-                Element.SendNavigating(args);
+				Element.SendNavigating(args);
 
-                if (args.Cancel)
-                    _lastEvent = WebNavigationEvent.NewPage;
-            }
-        }
+				if (args.Cancel)
+					_lastEvent = WebNavigationEvent.NewPage;
+			}
+		}
 
-        private void OnLoadFinished(object o, EventArgs args)
-        {
-            if (Control == null)
-            {
-                return;
-            }
+		private void OnLoadFinished(object o, EventArgs args)
+		{
+			if (Control == null)
+			{
+				return;
+			}
 
-            _ignoreSourceChanges = true;
-            ElementController?.SetValueFromRenderer(WebView.SourceProperty,
-                new UrlWebViewSource { Url = Control.Uri });
-            _ignoreSourceChanges = false;
+			_ignoreSourceChanges = true;
+			ElementController?.SetValueFromRenderer(WebView.SourceProperty,
+				new UrlWebViewSource { Url = Control.Uri });
+			_ignoreSourceChanges = false;
 
-            _lastEvent = _lastBackForwardEvent;
-            WebViewController?.SendNavigated(new WebNavigatedEventArgs(
-                _lastEvent,
-                Element?.Source,
-                Control.Uri,
-                WebNavigationResult.Success));
+			_lastEvent = _lastBackForwardEvent;
+			WebViewController?.SendNavigated(new WebNavigatedEventArgs(
+				_lastEvent,
+				Element?.Source,
+				Control.Uri,
+				WebNavigationResult.Success));
 
-            UpdateCanGoBackForward();
-        }
+			UpdateCanGoBackForward();
+		}
 
-        private void OnEvalRequested(object sender, EvalRequested eventArg)
-        {
-            if (Control != null)
-            {
-                Control.ExecuteScript(eventArg?.Script);
-            }
-        }
+		private void OnEvalRequested(object sender, EvalRequested eventArg)
+		{
+			if (Control != null)
+			{
+				Control.ExecuteScript(eventArg?.Script);
+			}
+		}
 
-        Task<string> OnEvaluateJavaScriptRequested(string script)
-        {
-		       Control?.ExecuteScript(script);
-               return null;
-        }
+		Task<string> OnEvaluateJavaScriptRequested(string script)
+		{
+			   Control?.ExecuteScript(script);
+			   return null;
+		}
 
-        private void OnGoBackRequested(object sender, EventArgs eventArgs)
-        {
-            if (Control == null)
-            {
-                return;
-            }
+		private void OnGoBackRequested(object sender, EventArgs eventArgs)
+		{
+			if (Control == null)
+			{
+				return;
+			}
 
-            if (Control.CanGoBack())
-            {
-                _lastBackForwardEvent = WebNavigationEvent.Back;
-                Control.GoBack();
-            }
+			if (Control.CanGoBack())
+			{
+				_lastBackForwardEvent = WebNavigationEvent.Back;
+				Control.GoBack();
+			}
 
-            UpdateCanGoBackForward();
-        }
+			UpdateCanGoBackForward();
+		}
 
-        private void OnGoForwardRequested(object sender, EventArgs eventArgs)
-        {
-            if (Control == null)
-            {
-                return;
-            }
+		private void OnGoForwardRequested(object sender, EventArgs eventArgs)
+		{
+			if (Control == null)
+			{
+				return;
+			}
 
-            if (Control.CanGoForward())
-            {
-                _lastBackForwardEvent = WebNavigationEvent.Forward;
-                Control.GoForward();
-            }
+			if (Control.CanGoForward())
+			{
+				_lastBackForwardEvent = WebNavigationEvent.Forward;
+				Control.GoForward();
+			}
 
-            UpdateCanGoBackForward();
-        }
-    }
+			UpdateCanGoBackForward();
+		}
+	}
 }
