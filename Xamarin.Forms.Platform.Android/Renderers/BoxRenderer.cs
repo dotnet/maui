@@ -59,15 +59,20 @@ namespace Xamarin.Forms.Platform.Android
 			if (colorToSet == Color.Default)
 				colorToSet = Element.BackgroundColor;
 
-			if (_backgroundDrawable == null)
-				_backgroundDrawable = new GradientDrawable();
+			if (_backgroundDrawable != null) {
 
-			if (colorToSet != Color.Default)
-				_backgroundDrawable.SetColor(colorToSet.ToAndroid());
-			else
-				_backgroundDrawable.SetColor(colorToSet.ToAndroid(Color.Transparent));
+				if (colorToSet != Color.Default)
+					_backgroundDrawable.SetColor(colorToSet.ToAndroid());
+				else
+					_backgroundDrawable.SetColor(colorToSet.ToAndroid(Color.Transparent));
 
-			this.SetBackground(_backgroundDrawable);
+				this.SetBackground(_backgroundDrawable);
+			}
+			else {
+				if (colorToSet == Color.Default)
+					colorToSet = Element.BackgroundColor;
+				SetBackgroundColor(colorToSet.ToAndroid(Color.Transparent));
+			}
 		}
 
 		protected override void Dispose(bool disposing)
@@ -101,26 +106,32 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateCornerRadius()
 		{
 			var cornerRadius = Element.CornerRadius;
-
-			if (Background is GradientDrawable backgroundGradient)
-			{
-				var cornerRadii = new[]
-				{
-					(float)(cornerRadius.TopLeft),
-					(float)(cornerRadius.TopLeft),
-
-					(float)(cornerRadius.TopRight),
-					(float)(cornerRadius.TopRight),
-
-					(float)(cornerRadius.BottomRight),
-					(float)(cornerRadius.BottomRight),
-
-					(float)(cornerRadius.BottomLeft),
-					(float)(cornerRadius.BottomLeft)
-				};
-
-				backgroundGradient.SetCornerRadii(cornerRadii);
+			if (cornerRadius == new CornerRadius(0d)) {
+				_backgroundDrawable?.Dispose();
+				_backgroundDrawable = null;
 			}
+			else {
+				this.SetBackground(_backgroundDrawable = new GradientDrawable());
+				if (Background is GradientDrawable backgroundGradient) {
+					var cornerRadii = new[] {
+						(float)(cornerRadius.TopLeft),
+						(float)(cornerRadius.TopLeft),
+
+						(float)(cornerRadius.TopRight),
+						(float)(cornerRadius.TopRight),
+
+						(float)(cornerRadius.BottomRight),
+						(float)(cornerRadius.BottomRight),
+
+						(float)(cornerRadius.BottomLeft),
+						(float)(cornerRadius.BottomLeft)
+					};
+
+					backgroundGradient.SetCornerRadii(cornerRadii);
+				}
+			}
+
+			UpdateBackgroundColor();
 		}
 	}
 }
