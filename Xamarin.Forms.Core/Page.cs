@@ -43,6 +43,8 @@ namespace Xamarin.Forms
 
 		ReadOnlyCollection<Element> _logicalChildren;
 
+		View _titleView;
+
 		public Page()
 		{
 			var toolbarItems = new ObservableCollection<ToolbarItem>();
@@ -214,6 +216,9 @@ namespace Xamarin.Forms
 			{
 				SetInheritedBindingContext(toolbarItem, BindingContext);
 			}
+
+			if(_titleView != null)
+				SetInheritedBindingContext(_titleView, BindingContext);
 		}
 
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
@@ -420,6 +425,17 @@ namespace Xamarin.Forms
 		public IPlatformElementConfiguration<T, Page> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		internal void SetTitleView(View oldTitleView, View newTitleView)
+		{
+			if (oldTitleView != null)
+				oldTitleView.Parent = null;
+
+			if (newTitleView != null)
+				newTitleView.Parent = this;
+
+			_titleView = newTitleView;
 		}
 	}
 }

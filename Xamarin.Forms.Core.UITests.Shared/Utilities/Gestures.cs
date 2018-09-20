@@ -7,103 +7,85 @@ namespace Xamarin.Forms.Core.UITests
 {
 	internal static class Gestures
 	{
-		public static bool ScrollForElement (this IApp app, string query, Drag drag, int maxSteps = 25)
+		public static bool ScrollForElement(this IApp app, string query, Drag drag, int maxSteps = 25)
 		{
-			Func<AppQuery, AppQuery> elementQuery = q => q.Raw (query);
-
-			int count = 0;
+			Func<AppQuery, AppQuery> elementQuery = q => q.Raw(query);
 
 			int centerTolerance = 50;
+			var appResults = app.QueryNTimes(elementQuery, 10, null);
 
 			// Visible elements
-			if (app.Query (elementQuery).Length > 1) {
-				throw new UITestQueryMultipleResultsException (query);
-			}
+			if (appResults.Length > 1)
+				throw new UITestQueryMultipleResultsException(query);
 
-			// check to see if the element is visible already
-			if (app.Query (elementQuery).Length == 1) {
+			appResults = app.QueryNTimes(elementQuery, maxSteps, () => app.DragCoordinates(drag.XStart, drag.YStart, drag.XEnd, drag.YEnd));
+			if (appResults.Length > 0)
+			{
 				// centering an element whos CenterX is close to the bounding rectangle's center X can sometime register the swipe as a tap
-				float elementDistanceToDragCenter = Math.Abs (app.Query (elementQuery).First ().Rect.CenterY - drag.DragBounds.CenterY);
- 				if (elementDistanceToDragCenter > centerTolerance)
-					app.CenterElementInView (elementQuery, drag.DragBounds, drag.DragDirection);
-				return true;
-			}
-
-			// loop until element is seen
-			while (app.Query (elementQuery).Length == 0 && count < maxSteps) {
-				app.DragCoordinates (drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
-				count++;
-			}
-
-			if (count != maxSteps) {
-				// centering an element whos CenterX is close to the bounding rectangle's center X can sometime register the swipe as a tap
-				float elementDistanceToDragCenter = Math.Abs (app.Query (elementQuery).First ().Rect.CenterY - drag.DragBounds.CenterY);
+				float elementDistanceToDragCenter = Math.Abs(appResults.First().Rect.CenterY - drag.DragBounds.CenterY);
 				if (elementDistanceToDragCenter > centerTolerance)
-					app.CenterElementInView (elementQuery, drag.DragBounds, drag.DragDirection);
+					app.CenterElementInView(appResults.First().Rect, drag.DragBounds, drag.DragDirection);
 				return true;
 			}
 
-			count = 0;
 			drag.DragDirection = drag.OppositeDirection;
+			appResults = app.QueryNTimes(elementQuery, maxSteps, () => app.DragCoordinates(drag.XStart, drag.YStart, drag.XEnd, drag.YEnd));
 
-			while (app.Query (elementQuery).Length == 0 && count < maxSteps) {
-				app.DragCoordinates (drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
-				count++;
-			}
-
-			if (count != maxSteps) {
-				app.CenterElementInView (elementQuery, drag.DragBounds, drag.DragDirection);
+			if (appResults.Length > 0)
+			{
+				app.CenterElementInView(appResults.First().Rect, drag.DragBounds, drag.DragDirection);
 				return true;
 			}
 
 			return false;
 		}
-			
-		static void CenterElementInView (this IApp app, Func<AppQuery, AppQuery> element, AppRect containingView, Drag.Direction direction)
+
+		static void CenterElementInView(this IApp app, AppRect elementBounds, AppRect containingView, Drag.Direction direction)
 		{
 			// TODO Implement horizontal centering
 
-			if (direction == Drag.Direction.BottomToTop || direction == Drag.Direction.TopToBottom) {
-
-				var elementBounds = app.Query (element).First ().Rect;
-
+			if (direction == Drag.Direction.BottomToTop || direction == Drag.Direction.TopToBottom)
+			{
 				bool elementCenterBelowContainerCenter = elementBounds.CenterY > containingView.CenterY;
 				bool elementCenterAboveContainerCenter = elementBounds.CenterY < containingView.CenterY;
 
-				var displacementToCenter = Math.Abs (elementBounds.CenterY - containingView.CenterY) / 2;
+				var displacementToCenter = Math.Abs(elementBounds.CenterY - containingView.CenterY) / 2;
 
 				// avoid drag as touch
 				if (displacementToCenter < 50)
 					return;
 
-				if (elementCenterBelowContainerCenter) {
-			
-					var drag = new Drag (
+				if (elementCenterBelowContainerCenter)
+				{
+
+					var drag = new Drag(
 						containingView,
 						containingView.CenterX, containingView.CenterY + displacementToCenter,
 						containingView.CenterX, containingView.CenterY - displacementToCenter,
 						Drag.Direction.BottomToTop
 						);
 
-					app.DragCoordinates (drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
+					app.DragCoordinates(drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
 
-				} else if (elementCenterAboveContainerCenter) {
+				}
+				else if (elementCenterAboveContainerCenter)
+				{
 
-					var drag = new Drag (
+					var drag = new Drag(
 						containingView,
 						containingView.CenterX, containingView.CenterY - displacementToCenter,
 						containingView.CenterX, containingView.CenterY + displacementToCenter,
 						Drag.Direction.TopToBottom
 						);
 
-					app.DragCoordinates (drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
+					app.DragCoordinates(drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
 				}
-			} 
+			}
 		}
 
-		public static void Pan (this IApp app, Drag drag)
+		public static void Pan(this IApp app, Drag drag)
 		{
-			app.DragCoordinates (drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
+			app.DragCoordinates(drag.XStart, drag.YStart, drag.XEnd, drag.YEnd);
 		}
 
 		public static void ActivateContextMenu(this IApp app, string target)
