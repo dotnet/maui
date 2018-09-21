@@ -23,8 +23,10 @@ namespace Xamarin.Forms.Controls.Issues
 		public const string editorHeightGrowId = "editorHeightGrowId";
 		public const string editorWidthGrow1Id = "editorWidthGrow1Id";
 		public const string editorWidthGrow2Id = "editorWidthGrow2Id";
-		public const string btnChangeFont = "Change the Font";
-		public const string btnChangeText = "Change the Text";
+		public const string btnChangeFontToDefault = "Change the Font to Default";
+		public const string btnChangeFontToLarger = "Change the Font to Larger";
+		public const string btnChangeToHasText = "Change to Has Text";
+		public const string btnChangeToNoText = "Change to Has No Text";
 		public const string btnChangeSizeOption = "Change the Size Option";
 
 		protected override void Init()
@@ -98,13 +100,13 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Button buttonChangeFont = new Button()
 			{
-				Text = btnChangeFont
+				Text = btnChangeFontToLarger
 			};
 
 
 			Button buttonChangeText = new Button()
 			{
-				Text = btnChangeText
+				Text = btnChangeToHasText
 			};
 
 			Button buttonChangeSizeOption = new Button()
@@ -118,9 +120,15 @@ namespace Xamarin.Forms.Controls.Issues
 				editors.ForEach(e =>
 				{
 					if (e.FontSize == fontSizeInitial)
+					{
 						e.FontSize = 40;
+						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToDefault);
+					}
 					else
+					{
 						e.FontSize = fontSizeInitial;
+						Device.BeginInvokeOnMainThread(() => buttonChangeFont.Text = btnChangeFontToLarger);
+					}
 				});
 			};
 
@@ -129,9 +137,15 @@ namespace Xamarin.Forms.Controls.Issues
 				editors.ForEach(e =>
 				{
 					if (String.IsNullOrWhiteSpace(e.Text))
+					{
 						e.Text = String.Join(" ", Enumerable.Range(0, 100).Select(x => "f").ToArray());
+						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToNoText);
+					}
 					else
+					{
 						e.Text = String.Empty;
+						Device.BeginInvokeOnMainThread(() => buttonChangeText.Text = btnChangeToHasText);
+					}
 				});
 			};
 
@@ -193,7 +207,7 @@ namespace Xamarin.Forms.Controls.Issues
 		Dictionary<string, Size> results = null;
 
 		[Test]
-		public async Task Issue1733Test()
+		public void Issue1733Test()
 		{
 			string[] editors = new string[] { editorHeightShrinkWithPressureId, editorHeightGrowId, editorWidthGrow1Id, editorWidthGrow2Id };
 			RunningApp.WaitForElement(q => q.Marked(editorHeightShrinkWithPressureId));
@@ -205,18 +219,19 @@ namespace Xamarin.Forms.Controls.Issues
 				results.Add(editor, GetDimensions(editor));
 			}
 
-			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(1000);
+			RunningApp.Tap(btnChangeToHasText);
+			RunningApp.WaitForElement(btnChangeToNoText);
 			TestGrowth(false);
-			RunningApp.Tap(q => q.Marked(btnChangeFont));
-			await Task.Delay(1000);
+			RunningApp.Tap(btnChangeFontToLarger);
+			RunningApp.WaitForElement(btnChangeFontToDefault);
 			TestGrowth(true);
 
 
 			// Reset back to being empty and make sure everything sets back to original size
-			RunningApp.Tap(q => q.Marked(btnChangeFont));
-			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(2000);
+			RunningApp.Tap(btnChangeFontToDefault);
+			RunningApp.Tap(btnChangeToNoText);
+			RunningApp.WaitForElement(btnChangeToHasText);
+			RunningApp.WaitForElement(btnChangeFontToLarger);
 
 			foreach (var editor in editors)
 			{
@@ -227,10 +242,11 @@ namespace Xamarin.Forms.Controls.Issues
 
 
 			// this sets it back to not auto size and we click everything again to see if it grows
-			RunningApp.Tap(q => q.Marked(btnChangeSizeOption));
-			RunningApp.Tap(q => q.Marked(btnChangeFont));
-			RunningApp.Tap(q => q.Marked(btnChangeText));
-			await Task.Delay(2000);
+			RunningApp.Tap(btnChangeSizeOption);
+			RunningApp.Tap(btnChangeFontToLarger);
+			RunningApp.Tap(btnChangeToHasText);
+			RunningApp.WaitForElement(btnChangeFontToDefault);
+			RunningApp.WaitForElement(btnChangeToNoText);
 			foreach (var editor in editors)
 			{
 				var allTheSame = GetDimensions(editor);
@@ -269,6 +285,9 @@ namespace Xamarin.Forms.Controls.Issues
 
 		Size GetDimensions(string editorName)
 		{
+			RunningApp.WaitForElement($"{editorName}_height");
+			RunningApp.WaitForElement($"{editorName}_width");
+
 			var height = RunningApp.Query(x => x.Marked($"{editorName}_height")).FirstOrDefault()?.Text;
 			var width = RunningApp.Query(x => x.Marked($"{editorName}_width")).FirstOrDefault()?.Text;
 

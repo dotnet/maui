@@ -108,16 +108,14 @@ namespace Xamarin.Forms
 			if (oldValue == newValue)
 				return;
 
-			if (oldValue != null)
+			if(bindable is Page page)
+			{
+				page.SetTitleView((View)oldValue, (View)newValue);
+			}
+			else if (oldValue != null)
 			{
 				var oldElem = (View)oldValue;
 				oldElem.Parent = null;
-			}
-
-			if (newValue != null && bindable != null)
-			{
-				var newElem = (View)newValue;
-				newElem.Parent = (Page)bindable;
 			}
 		}
 

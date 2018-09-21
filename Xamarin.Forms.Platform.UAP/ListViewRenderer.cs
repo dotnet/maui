@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.UWP
 						GroupStyleSelector = (GroupStyleSelector)WApp.Current.Resources["ListViewGroupSelector"]
 					};
 
-					List.SelectionChanged += OnControlSelectionChanged;	
+					List.SelectionChanged += OnControlSelectionChanged;
 				}
 
 				ReloadData();
@@ -117,7 +117,7 @@ namespace Xamarin.Forms.Platform.UWP
 				Source = _collection,
 				IsSourceGrouped = Element.IsGroupingEnabled
 			};
-			
+
 			List.ItemsSource = _collectionViewSource.View;
 		}
 
@@ -152,22 +152,34 @@ namespace Xamarin.Forms.Platform.UWP
 							_collection.RemoveAt(e.OldStartingIndex);
 						break;
 					case NotifyCollectionChangedAction.Move:
-						for (var i = 0; i < e.OldItems.Count; i++)
 						{
-							var oldi = e.OldStartingIndex;
-							var newi = e.NewStartingIndex;
-
-							if (e.NewStartingIndex < e.OldStartingIndex)
+							var collection = (ObservableCollection<object>)_collection;
+							for (var i = 0; i < e.OldItems.Count; i++)
 							{
-								oldi += i;
-								newi += i;
-							}
+								var oldi = e.OldStartingIndex;
+								var newi = e.NewStartingIndex;
 
-							// we know that wrapped collection is an ObservableCollection<object>
-							((ObservableCollection<object>)_collection).Move(oldi, newi);
+								if (e.NewStartingIndex < e.OldStartingIndex)
+								{
+									oldi += i;
+									newi += i;
+								}
+
+								collection.Move(oldi, newi);
+							}
 						}
 						break;
 					case NotifyCollectionChangedAction.Replace:
+						{
+							var collection = (ObservableCollection<object>)_collection;
+							var newi = e.NewStartingIndex;
+							for (var i = 0; i < e.NewItems.Count; i++)
+							{
+								newi += i;
+								collection[newi] = (e.NewItems[i] as BindableObject).BindingContext;
+							}
+						}
+						break;
 					case NotifyCollectionChangedAction.Reset:
 					default:
 						ClearSizeEstimate();

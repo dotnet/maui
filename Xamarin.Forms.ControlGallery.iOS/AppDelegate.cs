@@ -154,6 +154,7 @@ namespace Xamarin.Forms.ControlGallery.iOS
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
+			UISwitch.Appearance.OnTintColor = UIColor.Red;
 			var versionPart = UIDevice.CurrentDevice.SystemVersion.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 			App.IOSVersion = int.Parse(versionPart[0]);
 

@@ -27,6 +27,9 @@ namespace Xamarin.Forms.Controls.Issues
 				default: return null;
 			}
 		}
+#if UITEST
+		protected override bool Isolate => true;
+#endif
 		protected override void Init()
 		{
 
