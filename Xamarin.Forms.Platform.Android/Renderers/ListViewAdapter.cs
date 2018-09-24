@@ -15,6 +15,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal class ListViewAdapter : CellAdapter
 	{
+		bool _disposed;
 		static readonly object DefaultItemTypeOrDataTemplate = new object();
 		const int DefaultGroupHeaderTemplateId = 0;
 		const int DefaultItemTemplateId = 1;
@@ -417,6 +418,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void Dispose(bool disposing)
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			_disposed = true;
+
 			if (disposing)
 			{
 				CloseContextActions();
