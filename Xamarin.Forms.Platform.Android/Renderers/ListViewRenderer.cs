@@ -75,6 +75,12 @@ namespace Xamarin.Forms.Platform.Android
 				_footerView?.Dispose();
 				_footerView = null;
 
+				// Unhook the adapter from the ListView before disposing of it
+				if (Control != null)
+				{
+					Control.Adapter = null;
+				}
+
 				if (_adapter != null)
 				{
 					_adapter.Dispose();
@@ -124,6 +130,12 @@ namespace Xamarin.Forms.Platform.Android
 
 				if (_adapter != null)
 				{
+					// Unhook the adapter from the ListView before disposing of it
+					if (Control != null)
+					{
+						Control.Adapter = null;
+					}
+
 					_adapter.Dispose();
 					_adapter = null;
 				}
