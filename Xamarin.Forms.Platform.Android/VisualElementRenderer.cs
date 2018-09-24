@@ -273,8 +273,6 @@ namespace Xamarin.Forms.Platform.Android
 					}
 				}
 
-				RemoveAllViews();
-
 				if (Element != null)
 				{
 					Element.PropertyChanged -= _propertyChangeHandler;
