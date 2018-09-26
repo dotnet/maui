@@ -145,6 +145,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnClick()
 		{
+			if (_dialog != null && _dialog.IsShowing)
+			{
+				return;
+			}
+
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
