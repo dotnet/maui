@@ -14,7 +14,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Github3856.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Issue3788.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2894.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3308.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3788.cs" />
