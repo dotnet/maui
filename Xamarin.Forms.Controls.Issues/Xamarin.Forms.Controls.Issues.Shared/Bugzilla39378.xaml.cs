@@ -27,6 +27,7 @@ namespace Xamarin.Forms.Controls.Issues
 			BindingContext = new ImageController();
 		}
 
+		[Preserve(AllMembers = true)]
 		class ImageController : ViewModelBase
 		{
 			
