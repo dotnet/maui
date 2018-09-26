@@ -61,6 +61,7 @@ namespace Xamarin.Forms
 	{
 		readonly Func<object, bool> _canExecute;
 		readonly Action<object> _execute;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
 		public Command(Action<object> execute)
 		{
@@ -100,7 +101,11 @@ namespace Xamarin.Forms
 			return true;
 		}
 
-		public event EventHandler CanExecuteChanged;
+		public event EventHandler CanExecuteChanged
+		{
+			add { _weakEventManager.AddEventHandler(nameof(CanExecuteChanged), value); }
+			remove { _weakEventManager.RemoveEventHandler(nameof(CanExecuteChanged), value); }
+		}
 
 		public void Execute(object parameter)
 		{
@@ -109,8 +114,7 @@ namespace Xamarin.Forms
 
 		public void ChangeCanExecute()
 		{
-			EventHandler changed = CanExecuteChanged;
-			changed?.Invoke(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(CanExecuteChanged));
 		}
 	}
 }

@@ -146,7 +146,7 @@ namespace Xamarin.Forms
 			{
 				Subscription current = subscriptions[n - 1];
 
-				if (current.Subscriber != handlerTarget
+				if (current.Subscriber?.Target != handlerTarget
 				    || current.Handler.Name != methodInfo.Name)
 				{
 					continue;
