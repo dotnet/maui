@@ -226,16 +226,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateMaxLines()
 		{
-			if (Element.MaxLines > 0)
-			{
-				Control.SetSingleLine(Element.MaxLines == 1);
-				Control.SetMaxLines(Element.MaxLines);
-			}
-			else
-			{
-				Control.SetSingleLine(false);
-				Control.SetMaxLines(1);
-			}
+			Control.SetSingleLine(Element.MaxLines == 1);
+			Control.SetMaxLines(Element.MaxLines > 0 ? Element.MaxLines : 1);
 		}
 
 		void UpdateText()

@@ -1,28 +1,23 @@
-﻿using System.Globalization;
-
-using NUnit.Framework;
-
+﻿using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
 	[TestFixture]
 	public class TextDecorationUnitTests : BaseTestFixture
 	{
-		[Test]
-		public void TestTextDecorationConverter()
+		[TestCase("strikethrough", TextDecorations.Strikethrough)]
+		[TestCase("underline", TextDecorations.Underline)]
+		[TestCase("line-through", TextDecorations.Strikethrough)]
+		[TestCase("none", TextDecorations.None)]
+		[TestCase("strikethrough underline", TextDecorations.Underline | TextDecorations.Strikethrough)]
+		[TestCase("underline strikethrough", TextDecorations.Underline | TextDecorations.Strikethrough)]
+		[TestCase("underline line-through", TextDecorations.Underline | TextDecorations.Strikethrough)]
+		[TestCase("line-through underline", TextDecorations.Underline | TextDecorations.Strikethrough)]
+
+		public void TestTextDecorationConverter(string input, TextDecorations expected)
 		{
 			var converter = new TextDecorationConverter();
-			TextDecorations both = TextDecorations.Strikethrough;
-			both |= TextDecorations.Underline;
-			Assert.True(converter.CanConvertFrom(typeof(string)));
-			Assert.AreEqual(TextDecorations.Strikethrough, converter.ConvertFromInvariantString("strikethrough"));
-			Assert.AreEqual(TextDecorations.Underline, converter.ConvertFromInvariantString("underline"));
-			Assert.AreEqual(TextDecorations.Strikethrough, converter.ConvertFromInvariantString("line-through"));
-			Assert.AreEqual(TextDecorations.None, converter.ConvertFromInvariantString("none"));
-			Assert.AreEqual(both, converter.ConvertFromInvariantString("strikethrough underline"));
-			Assert.AreEqual(both, converter.ConvertFromInvariantString("underline strikethrough"));
-			Assert.AreEqual(both, converter.ConvertFromInvariantString("underline line-through"));
-			Assert.AreEqual(both, converter.ConvertFromInvariantString("line-through underline"));
+			Assert.AreEqual(converter.ConvertFromInvariantString(input), expected);
 		}
 	}
 }
