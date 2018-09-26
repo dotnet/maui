@@ -170,6 +170,11 @@ namespace Xamarin.Forms.Platform.Android
 
 		void OnTextFieldClicked()
 		{
+			if (_dialog != null && _dialog.IsShowing)
+			{
+				return;
+			}
+
 			DatePicker view = Element;
 			((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
