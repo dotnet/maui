@@ -1,26 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+#if UITEST
+using Xamarin.Forms.Core.UITests;
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
+
+namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.ListView)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1851, "ObservableCollection in ListView gets Index out of range when removing item", PlatformAffected.Android)]
-	public class Issue1851 : ContentPage
+	public class Issue1851 : TestContentPage
 	{
-		public Issue1851 ()
+		protected override void Init()
 		{
-			var grouping = new Grouping<string, string>("number", new List<string> { "1", "2", "3", "4", "5", "6", "7", "8", "9" });
-			var groupings = new ObservableCollection<Grouping<string, string>>
+			var grouping = new Grouping1851<string, string>("number", new List<string> { "1", "2", "3", "4", "5", "6", "7", "8", "9" });
+			var groupings = new ObservableCollection<Grouping1851<string, string>>
 			{
-				new Grouping<string, string>("letters", new List<string> {"a", "b", "c", "d", "e", "f", "g", "h", "i"}),
-				new Grouping<string, string>("colours", new List<string> {"red", "green", "blue", "white", "orange", "purple", "grey", "mauve", "pink"}),
+				new Grouping1851<string, string>("letters", new List<string> {"a", "b", "c", "d", "e", "f", "g", "h", "i"}),
+				new Grouping1851<string, string>("colours", new List<string> {"red", "green", "blue", "white", "orange", "purple", "grey", "mauve", "pink"}),
 				grouping,
 			};
 
@@ -29,14 +34,14 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 				HasUnevenRows = true,
 				IsGroupingEnabled = true,
 				ItemsSource = groupings,
-				ItemTemplate = new DataTemplate(typeof(CellTemplate)),
+				ItemTemplate = new DataTemplate(typeof(CellTemplate1851)),
 				GroupDisplayBinding = new Binding("Key")
 			};
-			var groupbtn = new Button() { Text = "add/remove group" };
+			var groupbtn = new Button() { AutomationId = "btn", Text = "add/remove group" };
 			bool group = true;
 			groupbtn.Clicked += (sender, args) =>
 			{
-				listview.GroupShortNameBinding = new Binding ("Key");
+				listview.GroupShortNameBinding = new Binding("Key");
 				if (group)
 				{
 					group = false;
@@ -51,43 +56,57 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 				}
 			};
 
-			Content = new StackLayout
+			Content = new ScrollView
 			{
-				Children =
+				Content = new StackLayout
 				{
-					groupbtn,
-					listview,
+					Children =
+					{
+						groupbtn,
+						listview,
+					}
 				}
 			};
 		}
-	}
 
-	public class CellTemplate : ViewCell
-	{
-		protected override void OnBindingContextChanged()
+		[Preserve(AllMembers = true)]
+		class CellTemplate1851 : ViewCell
 		{
-			base.OnBindingContextChanged();
+			protected override void OnBindingContextChanged()
+			{
+				base.OnBindingContextChanged();
 
-			var text = BindingContext as string;
-			if (text == null)
-				return;
+				var text = BindingContext as string;
+				if (text == null)
+					return;
 
-			View = new Label { Text = text };
-		}
-	}
-
-	public class Grouping<TKey, TElement> : ObservableCollection<TElement>
-	{
-		public Grouping(TKey key, IEnumerable<TElement> items)
-		{
-			Key = key;
-			foreach (var item in items)
-				Items.Add(item);
+				View = new Label { Text = text };
+			}
 		}
 
-		public TKey Key { get; private set; }
+		[Preserve(AllMembers = true)]
+		class Grouping1851<TKey, TElement> : ObservableCollection<TElement>
+		{
+			public Grouping1851(TKey key, IEnumerable<TElement> items)
+			{
+				Key = key;
+				foreach (var item in items)
+					Items.Add(item);
+			}
 
+			public TKey Key { get; private set; }
+		}
 
+#if UITEST
+		[Test]
+		public void Issue1851Test() 
+		{
+			RunningApp.WaitForElement(q => q.Marked("btn"));
+			RunningApp.Tap("btn");
+			RunningApp.WaitForElement(q => q.Marked("btn"));
+			RunningApp.Tap("btn");
+			RunningApp.WaitForElement(q => q.Marked("btn"));
+		}
+#endif
 	}
 }
-	
