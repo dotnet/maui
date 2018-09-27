@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Specifics = Xamarin.Forms.PlatformConfiguration.WindowsSpecific.VisualElement;
+using Xamarin.Forms.Internals;
+using Windows.UI.Xaml.Input;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -18,6 +20,7 @@ namespace Xamarin.Forms.Platform.UWP
 		string _defaultAutomationPropertiesHelpText;
 		UIElement _defaultAutomationPropertiesLabeledBy;
 		bool _disposed;
+		FocusNavigationDirection focusDirection;
 		EventHandler<VisualElementChangedEventArgs> _elementChangedHandlers;
 		VisualElementTracker<TElement, TNativeElement> _tracker;
 		Windows.UI.Xaml.Controls.Page _containingPage; // Cache of containing page used for unfocusing
@@ -149,6 +152,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 			OnElementChanged(new ElementChangedEventArgs<TElement>(oldElement, Element));
 
+			if (_control != null && this is ITabStopOnDescendants)
+			{
+				_control.GotFocus += OnGotFocus;
+				_control.GettingFocus += OnGettingFocus;
+			}
+
 			var controller = (IElementController)oldElement;
 			if (controller != null && controller.EffectControlProvider == this)
 			{
@@ -160,7 +169,13 @@ namespace Xamarin.Forms.Platform.UWP
 				controller.EffectControlProvider = this;
 		}
 
-		
+		void OnGettingFocus(UIElement sender, GettingFocusEventArgs args) => focusDirection = args.Direction;
+
+		void OnGotFocus(object sender, RoutedEventArgs e)
+		{
+			if (e.OriginalSource == Control)
+				FocusManager.TryMoveFocus(focusDirection);
+		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;
 
@@ -242,6 +257,11 @@ namespace Xamarin.Forms.Platform.UWP
 			Packager?.Dispose();
 			Packager = null;
 
+			if (_control != null)
+			{
+				_control.GotFocus -= OnGotFocus;
+				_control.GettingFocus -= OnGettingFocus;
+			}
 			SetNativeControl(null);
 			SetElement(null);
 		}
@@ -303,10 +323,8 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			_control.IsTabStop = Element.IsTabStop;
 
-			// update TabStop of children for complex controls (like as DatePicker, TimePicker, SearchBar and Stepper)
-			var children = FrameworkElementExtensions.GetChildren<Control>(_control);
-			foreach (var child in children)
-				child.IsTabStop = _control.IsTabStop;
+			if (this is ITabStopOnDescendants)
+				_control?.GetChildren<Control>().ForEach(c => c.IsTabStop = Element.IsTabStop);
 		}
 
 		protected void UpdateTabIndex()
