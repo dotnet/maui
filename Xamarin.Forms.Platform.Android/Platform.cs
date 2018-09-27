@@ -716,24 +716,27 @@ namespace Xamarin.Forms.Platform.Android
 
 			NavAnimationInProgress = true;
 
+			SelectTab();
+
+			NavAnimationInProgress = false;
+		}
+
+		void SelectTab()
+		{
 			Page page = _currentTabbedPage.CurrentPage;
 			if (page == null)
 			{
 				ActionBar.SelectTab(null);
-				NavAnimationInProgress = false;
 				return;
 			}
 
 			int index = TabbedPage.GetIndex(page);
 			if (ActionBar.SelectedNavigationIndex == index || index >= ActionBar.NavigationItemCount)
 			{
-				NavAnimationInProgress = false;
 				return;
 			}
 
 			ActionBar.SelectTab(ActionBar.GetTabAt(index));
-
-			NavAnimationInProgress = false;
 		}
 
 		Drawable GetActionBarBackgroundDrawable()
@@ -842,6 +845,7 @@ namespace Xamarin.Forms.Platform.Android
 			_renderer.AddView(modalRenderer.View);
 
 			var source = new TaskCompletionSource<bool>();
+
 			NavAnimationInProgress = true;
 			if (animated)
 			{
@@ -853,22 +857,19 @@ namespace Xamarin.Forms.Platform.Android
 					OnEnd = a =>
 					{
 						source.TrySetResult(false);
-						NavAnimationInProgress = false;
 					},
 					OnCancel = a =>
 					{
 						source.TrySetResult(true);
-						NavAnimationInProgress = false;
 					}
 				});
 			}
 			else
 			{
-				NavAnimationInProgress = false;
 				source.TrySetResult(true);
 			}
 
-			return source.Task;
+			return source.Task.ContinueWith(task => NavAnimationInProgress = false);
 		}
 
 		void RegisterNavPageCurrent(Page page)

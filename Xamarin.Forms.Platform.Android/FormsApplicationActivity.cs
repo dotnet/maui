@@ -18,13 +18,14 @@ namespace Xamarin.Forms.Platform.Android
 		public delegate bool BackButtonPressedEventHandler(object sender, EventArgs e);
 
 		Application _application;
-		Platform _canvas;
 		AndroidApplicationLifecycleState _currentState;
 		LinearLayout _layout;
 
 		PowerSaveModeBroadcastReceiver _powerSaveModeBroadcastReceiver;
 
 		AndroidApplicationLifecycleState _previousState;
+
+		internal Platform Platform { get; private set; }
 
 		protected FormsApplicationActivity()
 		{
@@ -63,13 +64,13 @@ namespace Xamarin.Forms.Platform.Android
 		public override bool OnOptionsItemSelected(IMenuItem item)
 		{
 			if (item.ItemId == global::Android.Resource.Id.Home)
-				_canvas.SendHomeClicked();
+				Platform.SendHomeClicked();
 			return base.OnOptionsItemSelected(item);
 		}
 
 		public override bool OnPrepareOptionsMenu(IMenu menu)
 		{
-			_canvas.PrepareMenu(menu);
+			Platform.PrepareMenu(menu);
 			return base.OnPrepareOptionsMenu(menu);
 		}
 
@@ -143,8 +144,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			PopupManager.Unsubscribe(this);
 
-			if (_canvas != null)
-				((IDisposable)_canvas).Dispose();
+			if (Platform != null)
+				((IDisposable)Platform).Dispose();
 		}
 
 		protected override void OnPause()
@@ -240,19 +241,19 @@ namespace Xamarin.Forms.Platform.Android
 			if (!Forms.IsInitialized)
 				throw new InvalidOperationException("Call Forms.Init (Activity, Bundle) before this");
 
-			if (_canvas != null)
+			if (Platform != null)
 			{
-				_canvas.SetPage(page);
+				Platform.SetPage(page);
 				return;
 			}
 
 			PopupManager.ResetBusyCount(this);
 
-			_canvas = new Platform(this);
+			Platform = new Platform(this);
 			if (_application != null)
-				_application.Platform = _canvas;
-			_canvas.SetPage(page);
-			_layout.AddView(_canvas.GetViewGroup());
+				_application.Platform = Platform;
+			Platform.SetPage(page);
+			_layout.AddView(Platform.GetViewGroup());
 		}
 
 		void OnStateChanged()
