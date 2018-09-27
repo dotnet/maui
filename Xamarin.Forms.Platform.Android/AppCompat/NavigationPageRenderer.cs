@@ -18,6 +18,7 @@ using Android.Views;
 using Xamarin.Forms.Internals;
 using ActionBarDrawerToggle = Android.Support.V7.App.ActionBarDrawerToggle;
 using AView = Android.Views.View;
+using AColor = Android.Graphics.Color;
 using AToolbar = Android.Support.V7.Widget.Toolbar;
 using Fragment = Android.Support.V4.App.Fragment;
 using FragmentManager = Android.Support.V4.App.FragmentManager;
@@ -32,6 +33,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 {
 	public class NavigationPageRenderer : VisualElementRenderer<NavigationPage>, IManageFragments, IOnClickListener, ILifeCycleState
 	{
+		const int DefaultDisabledToolbarAlpha = 127;
+	
 		readonly List<Fragment> _fragmentStack = new List<Fragment>();
 
 		Drawable _backgroundDrawable;
@@ -885,8 +888,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				else
 				{
 					IMenuItem menuItem = menu.Add(item.Text);
-					UpdateMenuItemIcon(context, menuItem, item);
 					menuItem.SetEnabled(controller.IsEnabled);
+					UpdateMenuItemIcon(context, menuItem, item);
 					menuItem.SetShowAsAction(ShowAsAction.Always);
 					menuItem.SetOnMenuItemClickListener(new GenericMenuClickListener(controller.Activate));
 				}
@@ -901,6 +904,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				Drawable iconDrawable = context.GetFormsDrawable(icon);
 				if (iconDrawable != null)
 				{
+					if (!menuItem.IsEnabled)
+					{
+						iconDrawable.Mutate().SetAlpha(DefaultDisabledToolbarAlpha);
+					}
+
 					menuItem.SetIcon(iconDrawable);
 					iconDrawable.Dispose();
 				}
