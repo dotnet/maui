@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
         static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
 
         static string GetBundleValue(string key)
-           => NSBundle.MainBundle.ObjectForInfoDictionary(key).ToString();
+           => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
         static void PlatformOpenSettings() =>
             UIApplication.SharedApplication.OpenUrl(new NSUrl(UIApplication.OpenSettingsUrlString));
