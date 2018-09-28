@@ -36,6 +36,7 @@ namespace Xamarin.Forms.Platform.WPF
 		InputScope _cachedInputScope;
 		CancellationTokenSource _cts;
 		bool _internalChangeFlag;
+		int _cachedSelectionLength;
 
 		public FormsTextBox()
 		{
@@ -87,12 +88,12 @@ namespace Xamarin.Forms.Platform.WPF
 				return s_passwordInputScope;
 			}
 		}
-
+		
 		void DelayObfuscation()
 		{
 			int lengthDifference = base.Text.Length - Text.Length;
 
-			string updatedRealText = DetermineTextFromPassword(Text, base.Text);
+			string updatedRealText = DetermineTextFromPassword(Text, SelectionStart, base.Text);
 
 			if (Text == updatedRealText)
 			{
@@ -112,18 +113,20 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				// Either More than one character got added in this text change (e.g., a paste operation)
 				// Or characters were removed. Either way, we don't need to do the delayed obfuscation dance
-				newText = Obfuscate();
+				newText = Obfuscate(Text);
 			}
 			else
 			{
 				// Only one character was added; we need to leave it visible for a brief time period
 				// Obfuscate all but the last character for now
-				newText = Obfuscate(true);
+				newText = Obfuscate(Text, true);
 
 				// Leave the last character visible until a new character is added
 				// or sufficient time has passed
 				if (_cts == null)
+				{
 					_cts = new CancellationTokenSource();
+				}
 
 				Task.Run(async () =>
 				{
@@ -131,53 +134,44 @@ namespace Xamarin.Forms.Platform.WPF
 					_cts.Token.ThrowIfCancellationRequested();
 					await Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
 					{
-						base.Text = Obfuscate();
+						base.Text = Obfuscate(Text);
 						SelectionStart = base.Text.Length;
 					}));
 				}, _cts.Token);
 			}
 
 			if (base.Text == newText)
+			{
 				return;
+			}
 
 			base.Text = newText;
 			SelectionStart = base.Text.Length;
 		}
 
-		static string DetermineTextFromPassword(string realText, string passwordText)
+		static string DetermineTextFromPassword(string realText, int start, string passwordText)
 		{
-			int firstObfuscationChar = passwordText.IndexOf(ObfuscationCharacter);
+			var lengthDifference = passwordText.Length - realText.Length;
+			if (lengthDifference > 0)
+				realText = realText.Insert(start - lengthDifference, new string(ObfuscationCharacter, lengthDifference));
+			else if (lengthDifference < 0)
+				realText = realText.Remove(start, -lengthDifference);
 
-			if (firstObfuscationChar > 0)
-			{
-				// The user is typing faster than we can process, and the text is coming in at the beginning
-				// of the textbox instead of the end
-				passwordText = passwordText.Substring(firstObfuscationChar, passwordText.Length - firstObfuscationChar) + passwordText.Substring(0, firstObfuscationChar);
-			}
+			var sb = new System.Text.StringBuilder(passwordText.Length);
+			for (int i = 0; i < passwordText.Length; i++)
+				sb.Append(passwordText[i] == ObfuscationCharacter ? realText[i] : passwordText[i]);
 
-			if (realText.Length == passwordText.Length)
-				return realText;
-
-			if (passwordText.Length == 0)
-				return "";
-
-			if (passwordText.Length < realText.Length)
-				return realText.Substring(0, passwordText.Length);
-
-			int lengthDifference = passwordText.Length - realText.Length;
-
-			return realText + passwordText.Substring(passwordText.Length - lengthDifference, lengthDifference);
+			return sb.ToString();
 		}
 
-		string Obfuscate(bool leaveLastVisible = false)
+		string Obfuscate(string text, bool leaveLastVisible = false)
 		{
-			if (leaveLastVisible && Text.Length == 1)
-				return Text;
+			if (!leaveLastVisible)
+				return new string(ObfuscationCharacter, text.Length);
 
-			if (leaveLastVisible && Text.Length > 1)
-				return new string(ObfuscationCharacter, Text.Length - 1) + Text.Substring(Text.Length - 1, 1);
-
-			return new string(ObfuscationCharacter, Text.Length);
+			return text.Length == 1
+				? text
+				: new string(ObfuscationCharacter, text.Length - 1) + text.Substring(text.Length - 1, 1);
 		}
 
 		static void OnIsPasswordChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -189,24 +183,80 @@ namespace Xamarin.Forms.Platform.WPF
 
 		void OnSelectionChanged(object sender, RoutedEventArgs routedEventArgs)
 		{
-			if (!IsPassword)
-				return;
-
-			// Prevent the user from selecting any text in the password box by forcing all selection
-			// to zero-length at the end of the text
-			// This simulates the "do not allow clipboard copy" behavior the PasswordBox control has
-			if (SelectionLength > 0 || SelectionStart < Text.Length)
-			{
-				if (SelectionLength != 0)
-					SelectionLength = 0;
-				SelectionStart = Text.Length;
-			}
+			// Cache this value for later use as explained in OnKeyDown below
+			_cachedSelectionLength = SelectionLength;
 		}
 
+		// Because the implementation of a password entry is based around inheriting from TextBox (via FormsTextBox), there
+		// are some inaccuracies in the behavior. OnKeyDown is what needs to be used for a workaround in this case because 
+		// there's no easy way to disable specific keyboard shortcuts in a TextBox, so key presses are being intercepted and 
+		// handled accordingly.
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			if (IsPassword)
+			{
+				// The ctrlDown flag is used to track if the Ctrl key is pressed; if it's actively being used and the most recent
+				// key to trigger OnKeyDown, then treat it as handled.
+				var ctrlDown = (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl) && e.IsDown;
+					
+				// The shift, tab, and directional (Home/End/PgUp/PgDown included) keys can be used to select text and should otherwise
+				// be ignored.
+				if (
+					e.Key == Key.LeftShift ||
+					e.Key == Key.RightShift ||
+					e.Key == Key.Tab ||
+					e.Key == Key.Left ||
+					e.Key == Key.Right ||
+					e.Key == Key.Up ||
+					e.Key == Key.Down ||
+					e.Key == Key.Home ||
+					e.Key == Key.End ||
+					e.Key == Key.PageUp ||
+					e.Key == Key.PageDown)
+				{
+					base.OnKeyDown(e);
+					return;
+				}
+				// For anything else, continue on (calling base.OnKeyDown) and then if Ctrl is still being pressed, do nothing about it.
+				// The tricky part here is that the SelectionLength value needs to be cached because in an example where the user entered
+				// '123' into the field and selects all of it, the moment that any character key is pressed to replace the entire string,
+				// the SelectionLength is equal to zero, which is not what's desired. Entering a key will thus remove the selected number
+				// of characters from the Text value. OnKeyDown is fortunately called before OnSelectionChanged which enables this.
+				else
+				{
+					// If the C or X keys (copy/cut) are pressed while Ctrl is active, ignore handing them at all. Undo and Redo (Z/Y) should 
+					// be ignored as well as this emulates the regular behavior of a PasswordBox.
+					if ((e.Key == Key.C || e.Key == Key.X || e.Key == Key.Z || e.Key == Key.Y) && ctrlDown)
+					{
+						e.Handled = false;
+						return;
+					}
+
+					base.OnKeyDown(e);
+					if (_cachedSelectionLength > 0 && !ctrlDown)
+						Text = Text.Remove(SelectionStart, _cachedSelectionLength);
+				}
+			}
+			else
+				base.OnKeyDown(e);
+		}
+		
 		void OnTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs textChangedEventArgs)
 		{
 			if (IsPassword)
-				DelayObfuscation();
+			{
+				string updatedRealText = DetermineTextFromPassword(Text, SelectionStart, base.Text);
+				string updatedText = Obfuscate(updatedRealText);
+				var savedSelectionStart = SelectionStart;
+
+				if (Text != updatedRealText)
+					Text = updatedRealText;
+
+				if (base.Text != updatedText)
+					base.Text = updatedText;
+
+				SelectionStart = savedSelectionStart;
+			}
 			else if (base.Text != Text)
 			{
 				// Not in password mode, so we just need to make the "real" Text match
@@ -223,7 +273,7 @@ namespace Xamarin.Forms.Platform.WPF
 			if (_internalChangeFlag)
 				return;
 
-			base.Text = IsPassword ? Obfuscate() : Text;
+			base.Text = IsPassword ? Obfuscate(Text) : Text;
 			DisabledText = base.Text;
 
 			SelectionStart = base.Text.Length;
