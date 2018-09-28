@@ -33,6 +33,7 @@ namespace Xamarin.Forms.Platform.UWP
 					Control.Minimum = e.NewElement.Minimum;
 					Control.Maximum = e.NewElement.Maximum;
 					Control.Value = e.NewElement.Value;
+					Control.IsThumbToolTipEnabled = false;
 
 					slider.ValueChanged += OnNativeValueChanged;
 
@@ -56,7 +57,7 @@ namespace Xamarin.Forms.Platform.UWP
 					}
 				}
 
-				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 10, 1);
+				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 1000, 1);
 				Control.StepFrequency = stepping;
 				Control.SmallChange = stepping;
 				UpdateFlowDirection();
