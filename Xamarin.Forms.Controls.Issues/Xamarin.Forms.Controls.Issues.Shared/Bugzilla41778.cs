@@ -22,18 +22,39 @@ namespace Xamarin.Forms.Controls.Issues
 				BackgroundColor = Color.Blue
 			};
 
-			Detail = new DetailPageCS();
+			Detail = new DetailPage41778();
 		}
-	}
 
-	public class DetailPageCS : ContentPage
-	{
-		public DetailPageCS()
+		[Preserve(AllMembers = true)]
+		class DetailPage41778 : ContentPage
 		{
-			var scrollView = new ScrollView { Content = new Slider() };
-			scrollView.On<iOS>().SetShouldDelayContentTouches(false);
+			public DetailPage41778()
+			{
+				var stackLayout = new StackLayout
+				{
+					Spacing = 20,
+					Margin = 20,
+					BackgroundColor = Color.Beige,
+					Orientation = StackOrientation.Vertical,
+					HorizontalOptions = LayoutOptions.FillAndExpand,
+					VerticalOptions = LayoutOptions.CenterAndExpand
+				};
 
-			Content = scrollView;
+				var label = new Label
+				{
+					Text = "This test is originally intended to be run on an iPad. Slide the slider back and forth quickly. Make sure that the slider thumb is moving along with your gesture." 
+					+ " Verify that the master detail menu does not open.",
+					LineBreakMode = LineBreakMode.WordWrap,
+					MaxLines = 4
+				};
+				stackLayout.Children.Add(label);
+
+				var scrollView = new ScrollView { Content = new Slider() };
+				scrollView.On<iOS>().SetShouldDelayContentTouches(false);
+				stackLayout.Children.Add(scrollView);
+
+				Content = stackLayout;
+			}
 		}
 	}
 }
