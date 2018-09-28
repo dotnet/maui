@@ -48,7 +48,9 @@ namespace Xamarin.Forms.Platform.WPF
 				Text = null;
 			else
 			{
-				String text = Time.Value.ToString(String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat.ToLower());
+				var dateTime = new DateTime(Time.Value.Ticks);
+				
+				String text = dateTime.ToString(String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat.ToLower());
 				if (text.CompareTo(Text) != 0)
 					Text = text;
 			}
@@ -56,15 +58,15 @@ namespace Xamarin.Forms.Platform.WPF
 
 		private void SetTime()
 		{
-			TimeSpan timeSpan = TimeSpan.MinValue;
+			DateTime dateTime = DateTime.MinValue;
 			String timeFormat = String.IsNullOrWhiteSpace(TimeFormat) ? @"hh\:mm" : TimeFormat.ToLower();
 
-			if (TimeSpan.TryParseExact(Text, timeFormat, null, out timeSpan))
+			if (DateTime.TryParseExact(Text, timeFormat, null, System.Globalization.DateTimeStyles.None, out dateTime))
 			{
-				if ((Time == null) || (Time != null && Time.Value.CompareTo(timeSpan) != 0))
+				if ((Time == null) || (Time != null && Time.Value.CompareTo(dateTime.TimeOfDay) != 0))
 				{
-					if (timeSpan < TimeSpan.FromHours(24) && timeSpan > TimeSpan.Zero)
-						Time = timeSpan;
+					if (dateTime.TimeOfDay < TimeSpan.FromHours(24) && dateTime.TimeOfDay > TimeSpan.Zero)
+						Time = dateTime.TimeOfDay;
 					else
 						SetText();
 				}
