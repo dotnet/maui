@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -18,6 +19,7 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.UWP
@@ -124,14 +126,21 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public void StartTimer(TimeSpan interval, Func<bool> callback)
 		{
-			var timer = new DispatcherTimer { Interval = interval };
-			timer.Start();
-			timer.Tick += (sender, args) =>
+			var timerTick = 0L;
+			var stopWatch = new Stopwatch();
+			stopWatch.Start();
+			void renderingFrameEventHandler(object sender, object args)
 			{
+				var newTimerTick = stopWatch.ElapsedMilliseconds / (long)interval.TotalMilliseconds;
+				if (newTimerTick == timerTick)
+					return;
+				timerTick = newTimerTick;
 				bool result = callback();
-				if (!result)
-					timer.Stop();
-			};
+				if (result)
+					return;
+				CompositionTarget.Rendering -= renderingFrameEventHandler;
+			}
+			CompositionTarget.Rendering += renderingFrameEventHandler;
 		}
 
 		public void QuitApplication()
