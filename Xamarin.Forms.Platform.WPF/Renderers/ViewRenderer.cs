@@ -182,6 +182,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 			UpdateBackground();
 			UpdateAlignment();
+			UpdateWidth();
+			UpdateHeight();
 		}
 		
 		private void Control_Loaded(object sender, RoutedEventArgs e)
