@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.WPF
 			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
 			if (!string.IsNullOrEmpty(font.FontFamily))
-				self.FontFamily = new FontFamily(font.FontFamily);
+				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), font.FontFamily);
 			else
 				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilySemiBold"];
 
@@ -60,7 +60,7 @@ namespace Xamarin.Forms.Platform.WPF
 			self.FontSize = font.UseNamedSize ? GetFontSize(font.NamedSize) : font.FontSize;
 
 			if (!string.IsNullOrEmpty(font.FontFamily))
-				self.FontFamily = new FontFamily(font.FontFamily);
+				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), font.FontFamily);
 			else
 				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilyNormal"];
 
@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Platform.WPF
 			self.FontSize = element.FontSize;
 
 			if (!string.IsNullOrEmpty(element.FontFamily))
-				self.FontFamily = new FontFamily(element.FontFamily);
+				self.FontFamily = new FontFamily(new Uri("pack://application:,,,/"), element.FontFamily);
 			else
 				self.FontFamily = (FontFamily)System.Windows.Application.Current.Resources["FontFamilySemiBold"];
 

@@ -86,6 +86,70 @@ namespace Xamarin.Forms.Controls.Issues
 			stack.Children.Add(issueTestLabel2);
 			stack.Children.Add(issueTestLabel3Description);
 			stack.Children.Add(issueTestLabel3);
+
+			Label issueTestSpan1Description = new Label
+			{
+				Text = "Span with font"
+			};
+
+			Label issueTestSpan1 = new Label()
+			{
+				HorizontalTextAlignment = TextAlignment.Center,
+			};
+			
+			Span span = new Span()
+			{
+				TextColor = Color.Red,
+				FontSize = 40,
+				Text = "Hello, I'm in Pick Ax font"
+			};
+
+			switch (Device.RuntimePlatform)
+			{
+				case Device.WPF:
+					span.FontFamily = "/Assets/#Pick Ax";
+					break;
+				default:
+					break;
+			}
+
+			Span span1 = new Span()
+			{
+				TextColor = Color.Blue,
+				FontSize = 30,
+				Text = " - without font but blue"
+			};
+
+			issueTestSpan1.FormattedText = new FormattedString();
+			issueTestSpan1.FormattedText.Spans.Add(span);
+			issueTestSpan1.FormattedText.Spans.Add(span1);
+			stack.Children.Add(issueTestSpan1Description);
+			stack.Children.Add(issueTestSpan1);
+
+			Label issueTestButton1Description = new Label
+			{
+				Text = "Button with font"
+			};
+
+			Button issueTestButton1 = new Button
+			{
+				TextColor = Color.Red,
+				FontSize = 40,
+				Text = "Hello, I'm in Button - Pick Ax font"
+			};
+
+			switch (Device.RuntimePlatform)
+			{
+				case Device.WPF:
+					issueTestButton1.FontFamily = "/Assets/#Pick Ax";
+					break;
+				default:
+					break;
+			}
+			
+			stack.Children.Add(issueTestButton1Description);
+			stack.Children.Add(issueTestButton1);
+
 			Content = stack;
 		}
 	}
