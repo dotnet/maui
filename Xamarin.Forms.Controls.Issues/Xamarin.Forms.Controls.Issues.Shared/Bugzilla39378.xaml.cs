@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Xamarin.Forms;
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
-
 
 namespace Xamarin.Forms.Controls.Issues
 {
@@ -24,18 +16,17 @@ namespace Xamarin.Forms.Controls.Issues
 
 		protected override void Init()
 		{
-			BindingContext = new ImageController();
+			BindingContext = new ImageController39378();
 		}
 
 		[Preserve(AllMembers = true)]
-		class ImageController : ViewModelBase
+		class ImageController39378 : ViewModelBase
 		{
 			
-			public ImageController()
+			public ImageController39378()
 			{
-				HomeImage = "http://xamarin.com/content/images/pages/forms/example-app.png";
-				LocalBackgroundImage = "Default-568h@2x.png";
-				BackgroundColor = "#00FF00";
+				HomeImage = "https://raw.githubusercontent.com/xamarin/Xamarin.Forms/master/banner.png";
+				BackgroundColor = "#f5f5dc";
 			}
 
 			public string BackgroundColor
@@ -66,33 +57,8 @@ namespace Xamarin.Forms.Controls.Issues
 				}
 			}
 
-			public string LocalBackgroundImage
-			{
-				get
-				{ 
-					return _localBackgroundImage;
-				}
-
-				set
-				{
-					_localBackgroundImage = value;
-					OnPropertyChanged();
-				}
-			}
-
-
 			string _backgroundColor;
 			string _homeImage;
-			string _localBackgroundImage;
 		}
-
-#if UITEST
-		[Test]
-		public void ImageIsPresent()
-		{
-			RunningApp.WaitForElement(q => q.Marked("image1"));
-			Assert.Inconclusive("Please verify image is present");
-		}
-#endif
 	}
 }
