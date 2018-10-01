@@ -151,7 +151,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var flyout = FlyoutBase.GetAttachedFlyout(CellContent) as MenuFlyout;
+			var flyout = GetAttachedFlyout();
 			if (flyout != null)
 			{
 				flyout.Items.Clear();
@@ -177,9 +177,30 @@ namespace Xamarin.Forms.Platform.UWP
 				OpenContextMenu();
 		}
 
+		/// <summary>
+		/// To check the context, not just the text.
+		/// </summary>
+		MenuFlyout GetAttachedFlyout()
+		{
+			if (FlyoutBase.GetAttachedFlyout(CellContent) is MenuFlyout flyout)
+			{
+				var actions = Cell.ContextActions;
+				if (flyout.Items.Count != actions.Count)
+					return null;
+
+				for (int i = 0; i < flyout.Items.Count; i++)
+				{
+					if (flyout.Items[i].DataContext != actions[i])
+						return null;
+				}
+				return flyout;
+			}
+			return null;
+		}
+
 		void OpenContextMenu()
 		{
-			if (FlyoutBase.GetAttachedFlyout(CellContent) == null)
+			if (GetAttachedFlyout() == null)
 			{
 				var flyout = new MenuFlyout();
 				SetupMenuItems(flyout);
