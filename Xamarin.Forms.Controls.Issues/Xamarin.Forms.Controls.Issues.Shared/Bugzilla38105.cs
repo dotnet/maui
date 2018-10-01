@@ -1,22 +1,15 @@
-﻿using System;
-
-using Xamarin.Forms.CustomAttributes;
+﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-#endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
-	[Issue (IssueTracker.Bugzilla, 38105, "RemovePage does not cause back arrow to go away on Android",
-		NavigationBehavior.PushModalAsync)]
-	internal class Bugzilla38105 : TestMasterDetailPage
+	[Issue (IssueTracker.Bugzilla, 38105, "RemovePage does not cause back arrow to go away on Android", PlatformAffected.Android, navigationBehavior: NavigationBehavior.PushModalAsync)]
+	public class Bugzilla38105 : TestMasterDetailPage
 	{
 		protected override void Init ()
 		{
-			Detail = new NavigationPage (new ViewA ());
+			Detail = new NavigationPage (new ViewA38105 ());
 
 			var button = new Button () { Text = "Click me" };
 			button.Clicked += (o, e) => {
@@ -26,7 +19,7 @@ namespace Xamarin.Forms.Controls
 
 				navPage.PopToRootAsync (false);
 
-				navPage.Navigation.PushAsync (new ViewB ());
+				navPage.Navigation.PushAsync (new ViewB38105 ());
 
 				navPage.Navigation.RemovePage (rootPage);
 
@@ -39,21 +32,32 @@ namespace Xamarin.Forms.Controls
 			};
 		}
 
-		public class ViewA : ContentPage
+		[Preserve(AllMembers = true)]
+		class ViewA38105 : ContentPage
 		{
-			public ViewA ()
+			public ViewA38105 ()
 			{
 				Title = "View A";
+
+				Content = new Label
+				{
+					Text = "Verify that the page title is currently \"View A\". Open master detail menu and click the content button. " +
+					"Verify that the page title is now \"View B\" and that the hamburger icon is NOT replaced by the back arrow.",
+					HorizontalTextAlignment = TextAlignment.Center,
+					VerticalTextAlignment = TextAlignment.Center,
+					LineBreakMode = LineBreakMode.WordWrap,
+					MaxLines = 5
+				};
 			}
 		}
 
-		public class ViewB : ContentPage
+		[Preserve(AllMembers = true)]
+		class ViewB38105 : ContentPage
 		{
-			public ViewB ()
+			public ViewB38105 ()
 			{
 				Title = "View B";
 			}
 		}
 	}
 }
-
