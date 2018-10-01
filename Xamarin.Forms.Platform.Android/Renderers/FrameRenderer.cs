@@ -51,17 +51,20 @@ namespace Xamarin.Forms.Platform.Android
 			if (e.NewElement != null && e.OldElement == null)
 			{
 				UpdateBackground();
-				UpdateCornerRadius();
 				_motionEventHelper.UpdateElement(e.NewElement);
 			}
 		}
 
-		void UpdateBackground()
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			this.SetBackground(new FrameDrawable(Element, Context.ToPixels));
+			base.OnElementPropertyChanged(sender, e);
+			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == Frame.CornerRadiusProperty.PropertyName)
+			{
+				UpdateBackground();
+			}
 		}
 
-		void UpdateCornerRadius()
+		void UpdateBackground()
 		{
 			this.SetBackground(new FrameDrawable(Element, Context.ToPixels));
 		}
