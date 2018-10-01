@@ -511,6 +511,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3342.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3415.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3049.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewClipBoundsShouldUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
@@ -799,6 +800,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue2728.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1667.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3012.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3872.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1650.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub3216.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1776.cs" />

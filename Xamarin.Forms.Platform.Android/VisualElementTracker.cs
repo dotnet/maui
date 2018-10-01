@@ -104,6 +104,13 @@ namespace Xamarin.Forms.Platform.Android
 				Performance.Stop(reference, "MeasureAndLayout");
 			}
 
+			// If we're running sufficiently new Android, we have to make sure to update the ClipBounds to
+			// match the new size of the ViewGroup
+			if ((int)Build.VERSION.SdkInt >= 18)
+			{
+				UpdateClipToBounds();
+			}
+
 			Performance.Stop(reference);
 
 			//On Width or Height changes, the anchors needs to be updated

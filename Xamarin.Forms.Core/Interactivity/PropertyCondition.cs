@@ -33,7 +33,14 @@ namespace Xamarin.Forms
 				//convert the value
 				if (_property != null && s_valueConverter != null)
 				{
-					Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+					Func<MemberInfo> minforetriever = () =>
+					{
+						try {
+							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+						} catch (AmbiguousMatchException e) {
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+						}
+					};
 					Value = s_valueConverter.Convert(Value, Property.ReturnType, minforetriever, null);
 				}
 			}
@@ -52,7 +59,14 @@ namespace Xamarin.Forms
 				//convert the value
 				if (_property != null && s_valueConverter != null)
 				{
-					Func<MemberInfo> minforetriever = () => Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+					Func<MemberInfo> minforetriever = () =>
+					{
+						try {
+							return Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
+						} catch (AmbiguousMatchException e) {
+							throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", new XmlLineInfo(), innerException: e);
+						}
+					};
 					value = s_valueConverter.Convert(value, Property.ReturnType, minforetriever, null);
 				}
 				_triggerValue = value;
