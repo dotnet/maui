@@ -69,57 +69,61 @@ namespace Xamarin.Essentials
 
         internal string ValueForKey(string key, string service)
         {
-            var record = ExistingRecordForKey(key, service);
-            var match = SecKeyChain.QueryAsRecord(record, out var resultCode);
-
-            if (resultCode == SecStatusCode.Success)
-                return NSString.FromData(match.ValueData, NSStringEncoding.UTF8);
-            else
-                return null;
+            using (var record = ExistingRecordForKey(key, service))
+            using (var match = SecKeyChain.QueryAsRecord(record, out var resultCode))
+            {
+                if (resultCode == SecStatusCode.Success)
+                    return NSString.FromData(match.ValueData, NSStringEncoding.UTF8);
+                else
+                    return null;
+            }
         }
 
         internal void SetValueForKey(string value, string key, string service)
         {
-            var record = ExistingRecordForKey(key, service);
-            if (string.IsNullOrEmpty(value))
+            using (var record = ExistingRecordForKey(key, service))
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    if (!string.IsNullOrEmpty(ValueForKey(key, service)))
+                        RemoveRecord(record);
+
+                    return;
+                }
+
+                // if the key already exists, remove it
                 if (!string.IsNullOrEmpty(ValueForKey(key, service)))
                     RemoveRecord(record);
-
-                return;
             }
 
-            // if the key already exists, remove it
-            if (!string.IsNullOrEmpty(ValueForKey(key, service)))
-                RemoveRecord(record);
-
-            var result = SecKeyChain.Add(CreateRecordForNewKeyValue(key, value, service));
-            if (result != SecStatusCode.Success)
-                throw new Exception($"Error adding record: {result}");
+            using (var newRecord = CreateRecordForNewKeyValue(key, value, service))
+            {
+                var result = SecKeyChain.Add(newRecord);
+                if (result != SecStatusCode.Success)
+                    throw new Exception($"Error adding record: {result}");
+            }
         }
 
         internal bool Remove(string key, string service)
         {
-            var record = ExistingRecordForKey(key, service);
-            var match = SecKeyChain.QueryAsRecord(record, out var resultCode);
-
-            if (resultCode == SecStatusCode.Success)
+            using (var record = ExistingRecordForKey(key, service))
+            using (var match = SecKeyChain.QueryAsRecord(record, out var resultCode))
             {
-                RemoveRecord(record);
-                return true;
+                if (resultCode == SecStatusCode.Success)
+                {
+                    RemoveRecord(record);
+                    return true;
+                }
             }
-
             return false;
         }
 
         internal void RemoveAll(string service)
         {
-            var query = new SecRecord(SecKind.GenericPassword)
+            using (var query = new SecRecord(SecKind.GenericPassword) { Service = service })
             {
-                Service = service
-            };
-
-            SecKeyChain.Remove(query);
+                SecKeyChain.Remove(query);
+            }
         }
 
         SecRecord CreateRecordForNewKeyValue(string key, string value, string service)
