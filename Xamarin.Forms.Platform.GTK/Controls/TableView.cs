@@ -28,11 +28,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 			set
 			{
-				if (_source != value)
-				{
-					_source = value;
-					RefreshSource(_source);
-				}
+				_source = value;
+				RefreshSource(_source);
 			}
 		}
 
@@ -59,7 +56,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		private int GetUnevenRowCellHeight(Gtk.Container cell)
+		int GetUnevenRowCellHeight(Container cell)
 		{
 			int height = -1;
 
@@ -73,7 +70,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			return height;
 		}
 
-		private Cell GetXamarinFormsCell(Container cell)
+		Cell GetXamarinFormsCell(Container cell)
 		{
 			try
 			{
@@ -90,7 +87,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		private void BuildTableView()
+		void BuildTableView()
 		{
 			CanFocus = true;
 			ShadowType = ShadowType.None;
@@ -100,8 +97,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 			_root = new VBox(false, 0);
 
-			Viewport viewPort = new Viewport();
-			viewPort.ShadowType = ShadowType.None;
+			Viewport viewPort = new Viewport
+			{
+				ShadowType = ShadowType.None
+			};
+
 			viewPort.Add(_root);
 
 			Add(viewPort);
@@ -109,11 +109,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_cells = new List<Container>();
 		}
 
-		private void RefreshSource(TableRoot source)
+		void RefreshSource(TableRoot source)
 		{
+			// Clear
+			_cells.Clear();
+
+			foreach (var child in _root.AllChildren)
+			{
+				_root.RemoveFromContainer((Widget)child);
+			}
+
+			// Add Title
 			if (!string.IsNullOrEmpty(source.Title))
 			{
-				// Add Title
 				var titleSpan = new Span()
 				{
 					FontSize = 16,
@@ -129,9 +137,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			// Add Table Section
 			for (int i = 0; i < source.Count; i++)
 			{
-				var tableSection = source[i] as TableSection;
-
-				if (tableSection != null)
+				if (source[i] is TableSection tableSection)
 				{
 					var tableSectionSpan = new Span()
 					{
@@ -146,8 +152,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 					_root.PackStart(sectionTitle, false, false, 0);
 
 					// Table Section Separator
-					EventBox separator = new EventBox();
-					separator.HeightRequest = 1;
+					EventBox separator = new EventBox
+					{
+						HeightRequest = 1
+					};
+
 					separator.ModifyBg(StateType.Normal, Color.Black.ToGtkColor());
 					_root.PackStart(separator, false, false, 0);
 
@@ -166,9 +175,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 						{
 							nativeCell.ButtonPressEvent += (sender, args) =>
 							{
-								var gtkCell = sender as CellBase;
-
-								if (gtkCell != null && gtkCell.Cell != null)
+								if (sender is CellBase gtkCell && gtkCell.Cell != null)
 								{
 									var selectedCell = gtkCell.Cell;
 
@@ -184,6 +191,9 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 						_root.PackStart(cell, false, false, 0);
 					}
 				}
+
+				// Refresh
+				_root.ShowAll();
 			}
 		}
 	}

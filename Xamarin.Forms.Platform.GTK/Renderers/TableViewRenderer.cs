@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Renderers
@@ -34,6 +35,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
 		{
+			if (e.OldElement != null)
+			{
+				e.OldElement.ModelChanged -= OnModelChanged;
+			}
+
 			if (e.NewElement != null)
 			{
 				if (Control == null)
@@ -49,6 +55,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				UpdateRowHeight();
 				UpdateHasUnevenRows();
 				UpdateBackgroundView();
+
+				e.NewElement.ModelChanged += OnModelChanged;
+				OnModelChanged(e.NewElement, EventArgs.Empty);
 			}
 
 			base.OnElementChanged(e);
@@ -67,12 +76,12 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			}
 		}
 
-		private void SetSource()
+		void SetSource()
 		{
 			Control.Root = Element.Root;
 		}
 
-		private void UpdateRowHeight()
+		void UpdateRowHeight()
 		{
 			var hasUnevenRows = Element.HasUnevenRows;
 
@@ -86,7 +95,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Control.SetRowHeight(rowHeight > 0 ? rowHeight : DefaultRowHeight);
 		}
 
-		private void UpdateHasUnevenRows()
+		void UpdateHasUnevenRows()
 		{
 			var hasUnevenRows = Element.HasUnevenRows;
 
@@ -100,7 +109,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			}
 		}
 
-		private void UpdateBackgroundView()
+		void UpdateBackgroundView()
 		{
 			if (Element.BackgroundColor.IsDefault)
 			{
@@ -111,20 +120,23 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Control.SetBackgroundColor(backgroundColor);
 		}
 
-		private void OnItemTapped(object sender, Controls.ItemTappedEventArgs args)
+		void OnItemTapped(object sender, Controls.ItemTappedEventArgs args)
 		{
 			if (Element == null)
 				return;
 
-			var cell = args.Item as Cell;
-
-			if (cell != null)
+			if (args.Item is Cell cell)
 			{
 				if (cell.IsEnabled)
 				{
 					Element.Model.RowSelected(cell);
 				}
 			}
+		}
+
+		void OnModelChanged(object sender, EventArgs e)
+		{
+			SetSource();
 		}
 	}
 }
