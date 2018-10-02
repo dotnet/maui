@@ -1,4 +1,5 @@
-﻿using Android.Text;
+﻿using System;
+using Android.Text;
 using Android.Widget;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
@@ -7,41 +8,68 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal static class TextViewExtensions
 	{
-		public static void SetLineBreakMode(this TextView textView, LineBreakMode lineBreakMode)
+		public static void SetMaxLines(this TextView textView, Label label)
 		{
+			var maxLines = label.MaxLines;
+
+			if (maxLines == (int)Label.MaxLinesProperty.DefaultValue)
+			{
+				// MaxLines is not explicitly set, so just let it be whatever gets set by LineBreakMode
+				textView.SetLineBreakMode(label);
+				return;
+			}
+
+			textView.SetMaxLines(maxLines);
+		}
+
+		static void SetMaxLines(this TextView textView, Label label, int lines)
+		{
+			// If the Label's MaxLines has been explicitly set, we should not set it here
+			if (label.MaxLines != (int)Label.MaxLinesProperty.DefaultValue)
+			{
+				return;
+			}
+
+			textView.SetMaxLines(lines);
+		}
+
+		public static void SetLineBreakMode(this TextView textView, Label label)
+		{
+			var lineBreakMode = label.LineBreakMode;
+
+			int maxLines = Int32.MaxValue;
+			bool singleLine = false;
+
 			switch (lineBreakMode)
 			{
 				case LineBreakMode.NoWrap:
-					textView.SetMaxLines(1);
-					textView.SetSingleLine(true);
+					maxLines = 1;
 					textView.Ellipsize = null;
 					break;
 				case LineBreakMode.WordWrap:
 					textView.Ellipsize = null;
-					textView.SetMaxLines(100);
-					textView.SetSingleLine(false);
 					break;
 				case LineBreakMode.CharacterWrap:
 					textView.Ellipsize = null;
-					textView.SetMaxLines(100);
-					textView.SetSingleLine(false);
 					break;
 				case LineBreakMode.HeadTruncation:
-					textView.SetMaxLines(1);
-					textView.SetSingleLine(true);
+					maxLines = 1;
+					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
 					textView.Ellipsize = TextUtils.TruncateAt.Start;
 					break;
 				case LineBreakMode.TailTruncation:
-					textView.SetMaxLines(1);
-					textView.SetSingleLine(true);
+					maxLines = 1;
 					textView.Ellipsize = TextUtils.TruncateAt.End;
 					break;
 				case LineBreakMode.MiddleTruncation:
-					textView.SetMaxLines(1);
-					textView.SetSingleLine(true);
+					maxLines = 1;
+					singleLine = true; // Workaround for bug in older Android API versions (https://bugzilla.xamarin.com/show_bug.cgi?id=49069)
 					textView.Ellipsize = TextUtils.TruncateAt.Middle;
 					break;
 			}
+
+			textView.SetSingleLine(singleLine);
+			textView.SetMaxLines(label, maxLines);
 		}
 
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)

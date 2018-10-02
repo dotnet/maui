@@ -317,14 +317,13 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void UpdateLineBreakMode()
 		{
-			this.SetLineBreakMode(Element.LineBreakMode);
+			this.SetLineBreakMode(Element);
 			_lastSizeRequest = null;
 		}
 
 		void UpdateMaxLines()
 		{
-			SetSingleLine(Element.MaxLines == 1);
-			SetMaxLines(Element.MaxLines > 0 ? Element.MaxLines : 1);
+			this.SetMaxLines(Element);
 		}
 
 		void UpdateText()
