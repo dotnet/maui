@@ -1,6 +1,7 @@
 ﻿using Gdk;
 using Gtk;
 using System;
+using System.Linq;
 using Xamarin.Forms.Platform.GTK.Extensions;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
@@ -91,6 +92,22 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			{
 				Internals.Log.Warning("Page BackgroundImage", "Could not load background image: {0}", ex);
 			}
+		}
+
+		public void PushModal(Widget modal)
+		{
+			Children.Last().Hide();
+			Attach(modal, 0, 1, 0, 1);
+			modal.ShowAll();
+		}
+
+		public void PopModal(Widget modal)
+		{
+			if (Children.Length > 0)
+			{
+				Remove(modal);
+			}
+			Children.Last().Show();
 		}
 
 		public override void Dispose()
