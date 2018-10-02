@@ -655,7 +655,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		Drawable GetIconDrawable(FileImageSource icon) =>
+		protected virtual Drawable GetIconDrawable(FileImageSource icon) =>
 			Context.GetDrawable(icon);
 
 		protected virtual void SetTabIcon(TabLayout.Tab tab, FileImageSource icon)
