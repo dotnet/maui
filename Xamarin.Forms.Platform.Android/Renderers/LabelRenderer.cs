@@ -211,7 +211,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateLineBreakMode()
 		{
-			_view.SetLineBreakMode(Element.LineBreakMode);
+			_view.SetLineBreakMode(Element);
 			_lastSizeRequest = null;
 		}
 
@@ -226,8 +226,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateMaxLines()
 		{
-			Control.SetSingleLine(Element.MaxLines == 1);
-			Control.SetMaxLines(Element.MaxLines > 0 ? Element.MaxLines : 1);
+			Control.SetMaxLines(Element);	
 		}
 
 		void UpdateText()
