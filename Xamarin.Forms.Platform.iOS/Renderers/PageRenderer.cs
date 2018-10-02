@@ -18,6 +18,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		Page Page => Element as Page;
 
+		bool UsingSafeArea => (Forms.IsiOS11OrNewer) ? Page.On<PlatformConfiguration.iOS>().UsingSafeArea() : false;
+		Thickness SafeAreaInsets => Page.On<PlatformConfiguration.iOS>().SafeAreaInsets();
+
 		public PageRenderer()
 		{
 		}
@@ -70,13 +73,14 @@ namespace Xamarin.Forms.Platform.iOS
 			if (page != null && Forms.IsiOS11OrNewer)
 			{
 				var insets = NativeView.SafeAreaInsets;
-				if(page.Parent is TabbedPage)
+				if (page.Parent is TabbedPage)
 				{
 					insets.Bottom = 0;
 				}
 				page.On<PlatformConfiguration.iOS>().SetSafeAreaInsets(new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom));
-			
+
 			}
+
 			base.ViewSafeAreaInsetsDidChange();
 		}
 
@@ -195,6 +199,10 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateTitle();
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdateStatusBarPrefersHidden();
+			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.UseSafeAreaProperty.PropertyName)
+				UpdateUseSafeArea();
+			else if (Forms.IsiOS11OrNewer && e.PropertyName == PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsProperty.PropertyName)
+				UpdateUseSafeArea();
 		}
 
 		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
@@ -212,6 +220,22 @@ namespace Xamarin.Forms.Platform.iOS
 					default:
 						return UIKit.UIStatusBarAnimation.None;
 				}
+			}
+		}
+
+		void UpdateUseSafeArea()
+		{
+			if (!Forms.IsiOS11OrNewer) return;
+
+			if (!UsingSafeArea)
+			{
+				var safeAreaInsets = SafeAreaInsets;
+				if (safeAreaInsets == Page.Padding)
+					Page.Padding = default(Thickness);
+			}
+			else
+			{
+				Page.Padding = SafeAreaInsets;
 			}
 		}
 
