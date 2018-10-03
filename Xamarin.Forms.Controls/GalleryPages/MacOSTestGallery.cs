@@ -82,7 +82,7 @@ namespace Xamarin.Forms.Controls
 			var switchR = new Switch { BackgroundColor = Color.Fuchsia, IsToggled = true };
 			switchR.Toggled += (sender, e) =>
 			{
-				entry.Text = $"switchR is toogle {switchR.IsToggled}";
+				entry.Text = $"switchR is toggled {switchR.IsToggled}";
 			};
 			var layoutSwitch = new StackLayout { Orientation = StackOrientation.Horizontal, BackgroundColor = Color.Green };
 			layoutSwitch.Children.Add(labal);

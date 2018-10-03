@@ -87,7 +87,7 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement("ViewB");
 			RunningApp.Tap("ViewB");
 			RunningApp.WaitForElement("Master");
-			RunningApp.Screenshot("I see the master toogle");
+			RunningApp.Screenshot("I see the master toggle");
 		}
 		#endif
 	}

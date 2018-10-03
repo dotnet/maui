@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Controls.Issues
 			button = new Button { Text = "Add new data", AutomationId = "btnAdd" };
 			button.Clicked += Button_Clicked;
 
-			var button1 = new Button { Text = "Toogle Uneven rows", AutomationId = "btnToggle" };
+			var button1 = new Button { Text = "Toggle Uneven rows", AutomationId = "btnToggle" };
 			button1.Clicked += Button_Clicked1;
 
 

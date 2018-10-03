@@ -24,13 +24,13 @@ namespace Xamarin.Forms.Controls
 			btn3.Clicked += async (sender, e) => await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.Popover, null));
 
 			//we throw an exception here if you try to toggle it 
-			var btn4 = new Button { Text = "Split - (always show it as splitview , toogle master always visible, throws expception)" };
+			var btn4 = new Button { Text = "Split - (always show it as splitview , toggle master always visible, throws exception)" };
 			btn4.Clicked += async (sender, e) => await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.Split, null));
 
-			var btn5 = new Button { Text = "SplitOnPortrait Portrait - (always show it as splitview in Portrait, throws expception)" };
+			var btn5 = new Button { Text = "SplitOnPortrait Portrait - (always show it as splitview in Portrait, throws exception)" };
 			btn5.Clicked += async (sender, e) => await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.SplitOnPortrait, null));
 
-			var btn6 = new Button { Text = "SplitOnLandscape Landscape - (always show it as splitview in Landscape, throws expception))" };
+			var btn6 = new Button { Text = "SplitOnLandscape Landscape - (always show it as splitview in Landscape, throws exception))" };
 			btn6.Clicked += async (sender, e) => await Navigation.PushModalAsync (new Issue1461Page (MasterBehavior.SplitOnLandscape, null));
 
 			Content = new StackLayout { Padding= new Thickness(0,20,0,0) , Children = { btn, btn1, btn2, btn6, btn3, btn4, btn5 }, Spacing = 20 };
