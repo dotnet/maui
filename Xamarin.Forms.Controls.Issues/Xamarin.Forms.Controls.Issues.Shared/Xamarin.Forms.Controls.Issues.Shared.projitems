@@ -393,6 +393,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3398.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3558.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3541.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3840.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3913.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LegacyComponents\NonAppCompatSwitch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MapsModalCrash.cs" />
@@ -997,7 +998,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Issue1588.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
