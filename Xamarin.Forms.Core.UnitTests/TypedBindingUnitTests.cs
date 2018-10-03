@@ -1547,7 +1547,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Ignore]
 		public void SpeedTestSetBC()
 		{
-
 			var property = BindableProperty.Create("Foo", typeof(string), typeof(MockBindable));
 			var vm0 = new MockViewModel { Text = "Foo" };
 			var vm1 = new MockViewModel { Text = "Bar" };
@@ -1609,6 +1608,67 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual("Bar", bindable.GetValue(property));
 
 			Assert.Fail($"Setting BC for {it} Typedbindings\t\t\t: {swtb.ElapsedMilliseconds}ms.\nSetting BC for {it} Typedbindings (without INPC)\t: {swtbh.ElapsedMilliseconds}ms.\nSetting BC for {it} Bindings\t\t\t\t: {swb.ElapsedMilliseconds}ms.\nSetting  {it} values\t\t\t\t\t: {swsv.ElapsedMilliseconds}ms.");
+		}
+
+		class VM3650 : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			public int Count { get; set; }
+
+			string _title = "default";
+			public string Title
+			{
+				get {
+					Count++;
+					return _title;
+				}
+				set {
+					_title = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Title"));
+				}
+			}
+		}
+
+		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/3650
+		//https://github.com/xamarin/Xamarin.Forms/issues/3613
+		public void TypedBindingsShouldNotHang()
+		{
+			var typedBinding = new TypedBinding<VM3650, string>(
+				vm => vm.Title,
+				(vm, s) => vm.Title = s,
+				new Tuple<Func<VM3650, object>, string>[] {
+					new Tuple<Func<VM3650, object>, string>(vm=>vm, "Title")
+				});
+			var vm3650 = new VM3650();
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, typedBinding);
+			label.BindingContext = vm3650;
+
+			Assert.That(label.Text, Is.EqualTo("default"));
+			Assert.That(vm3650.Count, Is.EqualTo(1));
+
+			vm3650.Count = 0;
+			vm3650.Title = "foo";
+			Assert.That(label.Text, Is.EqualTo("foo"));
+			Assert.That(vm3650.Count, Is.EqualTo(1));
+
+			vm3650.Count = 0;
+			vm3650.Title = "bar";
+			Assert.That(label.Text, Is.EqualTo("bar"));
+			Assert.That(vm3650.Count, Is.EqualTo(1));
+
+			vm3650.Count = 0;
+			vm3650.Title = "baz";
+			Assert.That(label.Text, Is.EqualTo("baz"));
+			Assert.That(vm3650.Count, Is.EqualTo(1));
+
+			vm3650.Count = 0;
+			vm3650.Title = "qux";
+			Assert.That(label.Text, Is.EqualTo("qux"));
+			Assert.That(vm3650.Count, Is.EqualTo(1));
+
 		}
 	}
 }

@@ -63,10 +63,7 @@ namespace Xamarin.Forms.Internals
 
 		public TypedBinding(Func<TSource, TProperty> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string> [] handlers)
 		{
-			if (getter == null)
-				throw new ArgumentNullException(nameof(getter));
-
-			_getter = getter;
+			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
 			_setter = setter;
 
 			if (handlers == null)
@@ -258,6 +255,13 @@ namespace Xamarin.Forms.Internals
 					return null;
 				} 
 				set {
+					if (Listener != null && Listener.Source.TryGetTarget(out var source) && ReferenceEquals(value, source))
+						//Already subscribed
+						return;
+
+					//clear out previous subscription
+					Listener?.Unsubscribe();
+
 					_weakPart.SetTarget(value);
 					Listener.SubscribeTo(value, handler);
 				}
