@@ -21,9 +21,10 @@ namespace Xamarin.Forms.Platform.WPF
 			if (e.OldElement != null) // Clear old element event
 			{
 				e.OldElement.ItemSelected -= OnElementItemSelected;
+
 				var templatedItems = ((ITemplatedItemsView<Cell>)e.OldElement).TemplatedItems;
-				templatedItems.CollectionChanged -= TemplatedItems_GroupedCollectionChanged;
-				templatedItems.GroupedCollectionChanged -= TemplatedItems_GroupedCollectionChanged;
+				templatedItems.CollectionChanged -= OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 			}
 
 			if (e.NewElement != null)
@@ -46,24 +47,20 @@ namespace Xamarin.Forms.Platform.WPF
 					Control.TouchUp += OnNativeTouchUp;
 					Control.StylusUp += OnNativeStylusUp;
 				}
+				
+				// Suscribe element events
+				var templatedItems = TemplatedItemsView.TemplatedItems;
+				templatedItems.CollectionChanged += OnCollectionChanged;
+				templatedItems.GroupedCollectionChanged += OnGroupedCollectionChanged;
 
-				// Update control property 
+				// Update control properties
 				UpdateItemSource();
-
-				// Suscribe element event
-				TemplatedItemsView.TemplatedItems.CollectionChanged += TemplatedItems_GroupedCollectionChanged;
-				TemplatedItemsView.TemplatedItems.GroupedCollectionChanged += TemplatedItems_GroupedCollectionChanged;
 
 				if (Element.SelectedItem != null)
 					OnElementItemSelected(null, new SelectedItemChangedEventArgs(Element.SelectedItem));
 			}
 
 			base.OnElementChanged(e);
-		}
-
-		private void TemplatedItems_GroupedCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-			UpdateItemSource();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -74,6 +71,7 @@ namespace Xamarin.Forms.Platform.WPF
 		void UpdateItemSource()
 		{
 			List<object> items = new List<object>();
+
 			if (Element.IsGroupingEnabled)
 			{
 				int index = 0;
@@ -90,11 +88,17 @@ namespace Xamarin.Forms.Platform.WPF
 
 					index++;
 				}
+
 				Control.ItemsSource = items;
 			}
 			else
 			{
-				Control.ItemsSource = Element.TemplatedItems;
+				foreach (var item in TemplatedItemsView.TemplatedItems)
+				{
+					items.Add(item);
+				}
+
+				Control.ItemsSource = items;
 			}
 		}
 
@@ -129,8 +133,8 @@ namespace Xamarin.Forms.Platform.WPF
 
 				if (Element != null)
 				{
-					TemplatedItemsView.TemplatedItems.CollectionChanged -= TemplatedItems_GroupedCollectionChanged;
-					TemplatedItemsView.TemplatedItems.GroupedCollectionChanged -= TemplatedItems_GroupedCollectionChanged;
+					TemplatedItemsView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
+					TemplatedItemsView.TemplatedItems.GroupedCollectionChanged -= OnGroupedCollectionChanged;
 				}
 			}
 
@@ -166,6 +170,16 @@ namespace Xamarin.Forms.Platform.WPF
 			}
 
 			Control.SelectedIndex = index;
+		}
+
+		void OnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			UpdateItemSource();
+		}
+
+		void OnGroupedCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			UpdateItemSource();
 		}
 	}
 }
