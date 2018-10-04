@@ -5,6 +5,7 @@ using System.Threading;
 using CoreAnimation;
 using Xamarin.Forms.Internals;
 #if __MOBILE__
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 #else
@@ -32,14 +33,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		public VisualElementTracker(IVisualElementRenderer renderer)
 		{
-			if (renderer == null)
-				throw new ArgumentNullException("renderer");
+			Renderer = renderer ?? throw new ArgumentNullException("renderer");
 
 			_propertyChangedHandler = HandlePropertyChanged;
 			_sizeChangedEventHandler = HandleSizeChanged;
 			_batchCommittedHandler = HandleRedrawNeeded;
 
-			Renderer = renderer;
 			renderer.ElementChanged += OnRendererElementChanged;
 			SetElement(null, renderer.Element);
 		}
@@ -143,9 +142,9 @@ namespace Xamarin.Forms.Platform.MacOS
 #if !__MOBILE__
 			var viewParent = view.RealParent as VisualElement;
 			var parentBoundsChanged = _lastParentBounds != (viewParent == null ? Rectangle.Zero : viewParent.Bounds);
+#else
+			var thread = !boundsChanged && !caLayer.Frame.IsEmpty && Application.Current?.OnThisPlatform()?.GetHandleControlUpdatesOnMainThread() == false;
 #endif
-			var thread = !boundsChanged && !caLayer.Frame.IsEmpty;
-
 			var anchorX = (float)view.AnchorX;
 			var anchorY = (float)view.AnchorY;
 			var translationX = (float)view.TranslationX;
@@ -165,7 +164,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var updateTarget = Interlocked.Increment(ref _updateCount);
 
-			Action update = () =>
+			void update()
 			{
 				if (updateTarget != _updateCount)
 					return;
@@ -262,7 +261,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 				transform = transform.Rotate(rotation * (float)Math.PI / 180.0f, 0.0f, 0.0f, 1.0f);
 				caLayer.Transform = transform;
-			};
+			}
 
 #if __MOBILE__
 			if (thread)
