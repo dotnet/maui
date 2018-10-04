@@ -99,5 +99,8 @@ namespace Xamarin.Essentials
 
         public override int GetHashCode() =>
             Acceleration.GetHashCode();
+
+        public override string ToString() =>
+            $"X: {Acceleration.X}, Y: {Acceleration.Y}, Z: {Acceleration.Z}";
     }
 }

@@ -100,6 +100,9 @@ namespace Xamarin.Essentials
 
         public override int GetHashCode() =>
             (Height, Width, Density, Orientation, Rotation).GetHashCode();
+
+        public override string ToString() =>
+            $"Height: {Height}, Width: {Width}, Density: {Density}, Orientation: {Orientation}, Rotation: {Rotation}";
     }
 
     public enum ScreenOrientation

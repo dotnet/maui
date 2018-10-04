@@ -94,5 +94,7 @@ namespace Xamarin.Essentials
 
         public override int GetHashCode() =>
             Pressure.GetHashCode();
+
+        public override string ToString() => $"Pressure: {Pressure}";
     }
 }

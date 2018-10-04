@@ -53,5 +53,8 @@ namespace Xamarin.Essentials
         public TimeSpan Timeout { get; set; }
 
         public GeolocationAccuracy DesiredAccuracy { get; set; }
+
+        public override string ToString() =>
+            $"DesiredAccuracy: {DesiredAccuracy}, Timeout: {Timeout}";
     }
 }

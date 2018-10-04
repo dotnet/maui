@@ -96,5 +96,8 @@ namespace Xamarin.Essentials
 
         public override int GetHashCode() =>
             HeadingMagneticNorth.GetHashCode();
+
+        public override string ToString() =>
+            $"HeadingMagneticNorth: {HeadingMagneticNorth}";
     }
 }

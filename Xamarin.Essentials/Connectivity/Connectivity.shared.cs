@@ -76,5 +76,8 @@ namespace Xamarin.Essentials
         public NetworkAccess NetworkAccess { get; }
 
         public IEnumerable<ConnectionProfile> Profiles { get; }
+
+        public override string ToString() =>
+            $"NetworkAccess: {NetworkAccess}, Profiles: [{string.Join(", ", Profiles)}]";
     }
 }
