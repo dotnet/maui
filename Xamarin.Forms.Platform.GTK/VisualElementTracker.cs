@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Platform.GTK
 		private bool _isDisposed;
 		private TNativeElement _control;
 		private TElement _element;
-		private EventBox _container;
+		private GtkFormsContainer _container;
 		private bool _invalidateArrangeNeeded;
 
 		private readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Platform.GTK
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 		}
 
-		public EventBox Container
+		public GtkFormsContainer Container
 		{
 			get { return _container; }
 			set
@@ -178,8 +178,8 @@ namespace Xamarin.Forms.Platform.GTK
 		{
 			if (Element.Batched)
 			{
-				if (e.PropertyName == VisualElement.XProperty.PropertyName || 
-					e.PropertyName == VisualElement.YProperty.PropertyName || 
+				if (e.PropertyName == VisualElement.XProperty.PropertyName ||
+					e.PropertyName == VisualElement.YProperty.PropertyName ||
 					e.PropertyName == VisualElement.WidthProperty.PropertyName ||
 					e.PropertyName == VisualElement.HeightProperty.PropertyName)
 				{
@@ -188,7 +188,7 @@ namespace Xamarin.Forms.Platform.GTK
 				return;
 			}
 
-			if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName || 
+			if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName ||
 				e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
 			{
 				UpdateScaleAndRotation(Element, Container);
@@ -197,10 +197,10 @@ namespace Xamarin.Forms.Platform.GTK
 			{
 				UpdateScaleAndRotation(Element, Container);
 			}
-			else if (e.PropertyName == VisualElement.TranslationXProperty.PropertyName || 
+			else if (e.PropertyName == VisualElement.TranslationXProperty.PropertyName ||
 				e.PropertyName == VisualElement.TranslationYProperty.PropertyName ||
-					 e.PropertyName == VisualElement.RotationProperty.PropertyName || 
-					 e.PropertyName == VisualElement.RotationXProperty.PropertyName || 
+					 e.PropertyName == VisualElement.RotationProperty.PropertyName ||
+					 e.PropertyName == VisualElement.RotationXProperty.PropertyName ||
 					 e.PropertyName == VisualElement.RotationYProperty.PropertyName)
 			{
 				UpdateRotation(Element, Container);
@@ -274,7 +274,7 @@ namespace Xamarin.Forms.Platform.GTK
 		}
 
 		// TODO: Implement Scale
-		private static void UpdateScaleAndRotation(VisualElement view, EventBox eventBox)
+		private static void UpdateScaleAndRotation(VisualElement view, Gtk.Widget eventBox)
 		{
 			double anchorX = view.AnchorX;
 			double anchorY = view.AnchorY;
@@ -284,7 +284,7 @@ namespace Xamarin.Forms.Platform.GTK
 		}
 
 		// TODO: Implement Rotation
-		private static void UpdateRotation(VisualElement view, EventBox eventBox)
+		private static void UpdateRotation(VisualElement view, Gtk.Widget eventBox)
 		{
 			if (view == null)
 				return;
@@ -320,21 +320,21 @@ namespace Xamarin.Forms.Platform.GTK
 			}
 		}
 
-		private static void UpdateVisibility(VisualElement view, EventBox eventBox)
+		private static void UpdateVisibility(VisualElement view, Gtk.Widget eventBox)
 		{
 			eventBox.Visible = view.IsVisible;
 		}
 
 		// TODO: Implement Opacity
-		private static void UpdateOpacity(VisualElement view, EventBox eventBox)
+		private static void UpdateOpacity(VisualElement view, Gtk.Widget eventBox)
 		{
 
 		}
 
 		// TODO: Implement InputTransparent
-		private static void UpdateInputTransparent(VisualElement view, EventBox eventBox)
+		private static void UpdateInputTransparent(VisualElement view, Gtk.Widget eventBox)
 		{
-	
+
 		}
 
 		private void OnContainerButtonPressEvent(object o, ButtonPressEventArgs args)

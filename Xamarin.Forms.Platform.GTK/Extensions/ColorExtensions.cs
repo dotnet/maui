@@ -24,5 +24,6 @@
 		{
 			return color == Color.Transparent || color == Color.Default;
 		}
+
 	}
 }

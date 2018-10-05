@@ -138,7 +138,6 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			if (renderer != null)
 			{
 				var content = renderer.Container;
-				content.VisibleWindow = false;
 				_viewPort.Add(content);
 			}
 		}
@@ -217,7 +216,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 
 		PolicyType ScrollBarVisibilityToGtk(ScrollBarVisibility visibility)
 		{
-			switch(visibility)
+			switch (visibility)
 			{
 				case ScrollBarVisibility.Default:
 					return PolicyType.Automatic;

@@ -1,8 +1,6 @@
-﻿using Gtk;
-
-namespace Xamarin.Forms.Platform.GTK
+﻿namespace Xamarin.Forms.Platform.GTK
 {
-	internal class PlatformRenderer : EventBox
+	internal class PlatformRenderer : GtkFormsContainer
 	{
 		public PlatformRenderer(Platform platform)
 		{

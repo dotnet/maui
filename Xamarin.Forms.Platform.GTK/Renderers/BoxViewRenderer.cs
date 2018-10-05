@@ -47,11 +47,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			base.UpdateBackgroundColor();
 
-			var backgroundColor = Element.BackgroundColor == Color.Default ? Color.Transparent.ToGtkColor() : Element.BackgroundColor.ToGtkColor();
-
-			Control.UpdateBackgroundColor(backgroundColor);
-
-			Container.VisibleWindow = true;
+			Control.SetBackgroundColor(Element.BackgroundColor);
 		}
 
 		private void SetColor(Color color)
@@ -65,8 +61,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			}
 			else
 			{
-				var backgroundColor = color.ToGtkColor();
-				Control.UpdateColor(backgroundColor);
+				Control.UpdateColor(color);
 			}
 		}
 

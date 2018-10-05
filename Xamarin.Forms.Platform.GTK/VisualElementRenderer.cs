@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Xamarin.Forms.Platform.GTK.Extensions;
-using Container = Gtk.EventBox;
+using Container = Xamarin.Forms.Platform.GTK.GtkFormsContainer;
 using Control = Gtk.Widget;
 
 namespace Xamarin.Forms.Platform.GTK
@@ -237,16 +237,7 @@ namespace Xamarin.Forms.Platform.GTK
 			if (_disposed || Element == null || Control == null)
 				return;
 
-			Color backgroundColor = Element.BackgroundColor;
-
-			bool isDefault = backgroundColor.IsDefaultOrTransparent();
-
-			if (!isDefault)
-			{
-				Container.ModifyBg(StateType.Normal, backgroundColor.ToGtkColor());
-			}
-
-			Container.VisibleWindow = !isDefault;
+			Container.SetBackgroundColor(Element.BackgroundColor);
 		}
 
 		protected virtual void SetAccessibilityHint()

@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					// There is nothing similar in Gtk. 
 					// Custom control has been created that simulates the expected behavior.
 					Widget = new Controls.MasterDetailPage();
-					var eventBox = new EventBox();
+					var eventBox = new GtkFormsContainer();
 					eventBox.Add(Widget);
 
 					Control.Content = eventBox;

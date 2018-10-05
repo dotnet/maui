@@ -3,7 +3,7 @@ using Gtk;
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
-	public class NotebookWrapper : EventBox
+	public class NotebookWrapper : GtkFormsContainer
 	{
 		private Notebook _noteBook;
 		private Pixbuf _backgroundPixbuf;
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			for (int i = 0; i < _noteBook.NPages; i++)
 			{
 				var page = _noteBook.GetNthPage(i) as NotebookPageWrapper;
-			
+
 				if (page?.Widget == widget)
 				{
 					_noteBook.RemovePage(i);

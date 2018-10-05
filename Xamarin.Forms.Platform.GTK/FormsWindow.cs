@@ -10,17 +10,17 @@ namespace Xamarin.Forms.Platform.GTK
 		private Application _application;
 		private Gdk.Size _lastSize;
 
-		public FormsWindow ()
-			: base (WindowType.Toplevel)
+		public FormsWindow()
+			: base(WindowType.Toplevel)
 		{
-			SetDefaultSize (800, 600);
-			SetSizeRequest (400, 400);
+			SetDefaultSize(800, 600);
+			SetSizeRequest(400, 400);
 
 			MainThreadID = Thread.CurrentThread.ManagedThreadId;
 			MainWindow = this;
 
 			if (SynchronizationContext.Current == null)
-				SynchronizationContext.SetSynchronizationContext (new GtkSynchronizationContext ());
+				SynchronizationContext.SetSynchronizationContext(new GtkSynchronizationContext());
 
 			WindowStateEvent += OnWindowStateEvent;
 		}

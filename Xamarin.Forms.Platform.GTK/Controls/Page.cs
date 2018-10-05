@@ -9,11 +9,11 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 	public class Page : Table
 	{
 		private Gdk.Rectangle _lastAllocation = Gdk.Rectangle.Zero;
-		private EventBox _headerContainer;
-		private EventBox _contentContainerWrapper;
+		private GtkFormsContainer _headerContainer;
+		private GtkFormsContainer _contentContainerWrapper;
 		private Fixed _contentContainer;
 		private HBox _toolbar;
-		private EventBox _content;
+		private GtkFormsContainer _content;
 		private ImageControl _image;
 		private Gdk.Color _defaultBackgroundColor;
 
@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
-		public EventBox Content
+		public GtkFormsContainer Content
 		{
 			get
 			{
@@ -52,29 +52,14 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			BuildPage();
 		}
 
-		public void SetToolbarColor(Gdk.Color? backgroundColor)
+		public void SetToolbarColor(Color backgroundColor)
 		{
-			if (backgroundColor.HasValue)
-			{
-				_headerContainer.ModifyBg(StateType.Normal, backgroundColor.Value);
-			}
-			else
-			{
-				_headerContainer.ModifyBg(StateType.Normal, _defaultBackgroundColor);
-			}
+			_headerContainer.SetBackgroundColor(backgroundColor);
 		}
 
-		public void SetBackgroundColor(Gdk.Color? backgroundColor)
+		public void SetBackgroundColor(Color backgroundColor)
 		{
-			if (backgroundColor != null)
-			{
-				_contentContainerWrapper.VisibleWindow = true;
-				_contentContainerWrapper.ModifyBg(StateType.Normal, backgroundColor.Value);
-			}
-			else
-			{
-				_contentContainerWrapper.VisibleWindow = false;
-			}
+			_contentContainerWrapper.SetBackgroundColor(backgroundColor);
 		}
 
 		public void SetBackgroundImage(string backgroundImagePath)
@@ -113,7 +98,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		public override void Dispose()
 		{
 			base.Dispose();
-			
+
 			if (_contentContainerWrapper != null)
 			{
 				_contentContainerWrapper.SizeAllocated -= OnContentContainerWrapperSizeAllocated;
@@ -125,17 +110,17 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_defaultBackgroundColor = Style.Backgrounds[(int)StateType.Normal];
 
 			_toolbar = new HBox();
-			_content = new EventBox();
+			_content = new GtkFormsContainer();
 
 			var root = new VBox(false, 0);
 
-			_headerContainer = new EventBox();
+			_headerContainer = new GtkFormsContainer();
 			root.PackStart(_headerContainer, false, false, 0);
 
 			_image = new ImageControl();
 			_image.Aspect = ImageAspect.Fill;
 
-			_contentContainerWrapper = new EventBox();
+			_contentContainerWrapper = new GtkFormsContainer();
 			_contentContainerWrapper.SizeAllocated += OnContentContainerWrapperSizeAllocated;
 			_contentContainer = new Fixed();
 			_contentContainer.Add(_image);
@@ -156,7 +141,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			_toolbar.ShowAll();
 		}
 
-		private void RefreshContent(EventBox newContent)
+		private void RefreshContent(GtkFormsContainer newContent)
 		{
 			_contentContainer.RemoveFromContainer(_content);
 			_content = newContent;

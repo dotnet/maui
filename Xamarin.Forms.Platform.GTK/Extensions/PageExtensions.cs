@@ -16,7 +16,7 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 			return true;
 		}
 
-		public static Gtk.EventBox CreateContainer(this Page view)
+		public static GtkFormsContainer CreateContainer(this Page view)
 		{
 			if (!Forms.IsInitialized)
 				throw new InvalidOperationException("call Forms.Init() before this");

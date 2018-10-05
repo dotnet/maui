@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					Widget = new Carousel();
 					Widget.Animated = true;
 
-					var eventBox = new EventBox();
+					var eventBox = new GtkFormsContainer();
 					eventBox.Add(Widget);
 					Control.Content = eventBox;
 				}
@@ -134,7 +134,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 					}
 
 					var newPages = new List<object>();
-					foreach(var pc in _pages)
+					foreach (var pc in _pages)
 					{
 						newPages.Add(pc.Page);
 					}
