@@ -29,6 +29,12 @@
     <AndroidSupportedAbis />
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
     <AndroidLinkSkip>Xamarin.Forms.Platform.Android;Xamarin.Forms.Platform;Xamarin.Forms.Core;Xamarin.Forms.Xaml;Samples;FormsViewGroup;</AndroidLinkSkip>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
+    <EnableProguard>true</EnableProguard>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,8 +57,14 @@
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
-    <AndroidSupportedAbis />
+    <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
+    <EnableProguard>true</EnableProguard>
+    <AndroidLinkMode>Full</AndroidLinkMode>
+    <AndroidLinkSkip>Xamarin.Forms.Platform.Android;Xamarin.Forms.Platform;Xamarin.Forms.Core;Xamarin.Forms.Xaml;Samples;FormsViewGroup;</AndroidLinkSkip>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -116,6 +128,7 @@
     <AndroidResource Include="Resources\values\strings.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProguardConfiguration Include="proguard.cfg" />
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
