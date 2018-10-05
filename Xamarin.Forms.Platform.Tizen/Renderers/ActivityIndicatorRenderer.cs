@@ -46,5 +46,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
+		protected override void UpdateIsEnabled(bool initialize)
+		{
+			base.UpdateIsEnabled(initialize);
+			UpdateIsRunning();
+		}
+
 	};
 }
