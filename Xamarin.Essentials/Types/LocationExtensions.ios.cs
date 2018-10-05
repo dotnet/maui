@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
                 Latitude = placemark.Location.Coordinate.Latitude,
                 Longitude = placemark.Location.Coordinate.Longitude,
                 Altitude = placemark.Location.Altitude,
-                TimestampUtc = DateTimeOffset.UtcNow
+                Timestamp = DateTimeOffset.UtcNow
             };
 
         internal static IEnumerable<Location> ToLocations(this IEnumerable<CLPlacemark> placemarks) =>
@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
                 Longitude = location.Coordinate.Longitude,
                 Altitude = location.VerticalAccuracy < 0 ? default(double?) : location.Altitude,
                 Accuracy = location.HorizontalAccuracy,
-                TimestampUtc = location.Timestamp.ToDateTime(),
+                Timestamp = location.Timestamp.ToDateTime(),
                 Course = location.Course < 0 ? default(double?) : location.Course,
                 Speed = location.Speed < 0 ? default(double?) : location.Speed
             };

@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
                 Latitude = mapLocation.Point.Position.Latitude,
                 Longitude = mapLocation.Point.Position.Longitude,
                 Altitude = mapLocation.Point.Position.Altitude,
-                TimestampUtc = DateTimeOffset.UtcNow
+                Timestamp = DateTimeOffset.UtcNow
             };
 
         internal static IEnumerable<Location> ToLocations(this IEnumerable<MapLocation> mapLocations) =>
@@ -28,7 +28,7 @@ namespace Xamarin.Essentials
             {
                 Latitude = location.Coordinate.Point.Position.Latitude,
                 Longitude = location.Coordinate.Point.Position.Longitude,
-                TimestampUtc = location.Coordinate.Timestamp,
+                Timestamp = location.Coordinate.Timestamp,
                 Altitude = location.Coordinate.Point.Position.Altitude,
                 Accuracy = location.Coordinate.Accuracy,
                 Speed = (!location.Coordinate.Speed.HasValue || double.IsNaN(location.Coordinate.Speed.Value)) ? default : location.Coordinate.Speed,
@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
              {
                  Latitude = coordinate.Point.Position.Latitude,
                  Longitude = coordinate.Point.Position.Longitude,
-                 TimestampUtc = coordinate.Timestamp,
+                 Timestamp = coordinate.Timestamp,
                  Altitude = coordinate.Point.Position.Altitude,
                  Accuracy = coordinate.Accuracy,
                  Speed = (!coordinate.Speed.HasValue || double.IsNaN(coordinate.Speed.Value)) ? default : coordinate.Speed,

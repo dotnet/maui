@@ -388,10 +388,10 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="TimestampUtc">
-      <MemberSignature Language="C#" Value="public DateTimeOffset TimestampUtc { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTimeOffset TimestampUtc" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.TimestampUtc" />
+    <Member MemberName="Timestamp">
+      <MemberSignature Language="C#" Value="public DateTimeOffset Timestamp { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.DateTimeOffset Timestamp" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Timestamp" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

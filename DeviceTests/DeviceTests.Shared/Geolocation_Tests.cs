@@ -21,12 +21,12 @@ namespace DeviceTests
             Assert.NotEqual(0.0, location.Latitude);
             Assert.NotEqual(0.0, location.Longitude);
 
-            Assert.NotEqual(DateTimeOffset.MaxValue, location.TimestampUtc);
-            Assert.NotEqual(DateTimeOffset.MinValue, location.TimestampUtc);
+            Assert.NotEqual(DateTimeOffset.MaxValue, location.Timestamp);
+            Assert.NotEqual(DateTimeOffset.MinValue, location.Timestamp);
 
             // before right now, but after yesterday
-            Assert.True(location.TimestampUtc < DateTimeOffset.UtcNow);
-            Assert.True(location.TimestampUtc > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
+            Assert.True(location.Timestamp < DateTimeOffset.UtcNow);
+            Assert.True(location.Timestamp > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
         }
 
         [Fact]
@@ -41,12 +41,12 @@ namespace DeviceTests
             Assert.NotEqual(0.0, location.Latitude);
             Assert.NotEqual(0.0, location.Longitude);
 
-            Assert.NotEqual(DateTimeOffset.MaxValue, location.TimestampUtc);
-            Assert.NotEqual(DateTimeOffset.MinValue, location.TimestampUtc);
+            Assert.NotEqual(DateTimeOffset.MaxValue, location.Timestamp);
+            Assert.NotEqual(DateTimeOffset.MinValue, location.Timestamp);
 
             // before right now, but after yesterday
-            Assert.True(location.TimestampUtc < DateTimeOffset.UtcNow);
-            Assert.True(location.TimestampUtc > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
+            Assert.True(location.Timestamp < DateTimeOffset.UtcNow);
+            Assert.True(location.Timestamp > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
         }
 
         [Fact]
@@ -62,12 +62,12 @@ namespace DeviceTests
             Assert.NotEqual(0.0, location.Latitude);
             Assert.NotEqual(0.0, location.Longitude);
 
-            Assert.NotEqual(DateTimeOffset.MaxValue, location.TimestampUtc);
-            Assert.NotEqual(DateTimeOffset.MinValue, location.TimestampUtc);
+            Assert.NotEqual(DateTimeOffset.MaxValue, location.Timestamp);
+            Assert.NotEqual(DateTimeOffset.MinValue, location.Timestamp);
 
             // before right now, but after yesterday
-            Assert.True(location.TimestampUtc < DateTimeOffset.UtcNow);
-            Assert.True(location.TimestampUtc > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
+            Assert.True(location.Timestamp < DateTimeOffset.UtcNow);
+            Assert.True(location.Timestamp > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
         }
     }
 }
