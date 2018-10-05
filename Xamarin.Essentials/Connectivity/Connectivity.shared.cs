@@ -78,6 +78,7 @@ namespace Xamarin.Essentials
         public IEnumerable<ConnectionProfile> Profiles { get; }
 
         public override string ToString() =>
-            $"NetworkAccess: {NetworkAccess}, Profiles: [{string.Join(", ", Profiles)}]";
+            $"{nameof(NetworkAccess)}: {NetworkAccess}, " +
+            $"{nameof(Profiles)}: [{string.Join(", ", Profiles)}]";
     }
 }

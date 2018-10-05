@@ -98,6 +98,6 @@ namespace Xamarin.Essentials
             HeadingMagneticNorth.GetHashCode();
 
         public override string ToString() =>
-            $"HeadingMagneticNorth: {HeadingMagneticNorth}";
+            $"{nameof(HeadingMagneticNorth)}: {HeadingMagneticNorth}";
     }
 }

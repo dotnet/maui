@@ -55,6 +55,6 @@ namespace Xamarin.Essentials
         public GeolocationAccuracy DesiredAccuracy { get; set; }
 
         public override string ToString() =>
-            $"DesiredAccuracy: {DesiredAccuracy}, Timeout: {Timeout}";
+            $"{nameof(DesiredAccuracy)}: {DesiredAccuracy}, {nameof(Timeout)}: {Timeout}";
     }
 }

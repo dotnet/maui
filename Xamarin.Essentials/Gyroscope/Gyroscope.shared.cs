@@ -102,6 +102,8 @@ namespace Xamarin.Essentials
             AngularVelocity.GetHashCode();
 
         public override string ToString() =>
-            $"X: {AngularVelocity.X}, Y: {AngularVelocity.Y}, Z: {AngularVelocity.Z}";
+            $"{nameof(AngularVelocity.X)}: {AngularVelocity.X}, " +
+            $"{nameof(AngularVelocity.Y)}: {AngularVelocity.Y}, " +
+            $"{nameof(AngularVelocity.Z)}: {AngularVelocity.Z}";
     }
 }

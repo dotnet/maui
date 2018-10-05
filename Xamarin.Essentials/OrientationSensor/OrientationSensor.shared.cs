@@ -102,6 +102,9 @@ namespace Xamarin.Essentials
             Orientation.GetHashCode();
 
         public override string ToString() =>
-            $"X: {Orientation.X}, Y: {Orientation.Y}, Z: {Orientation.Z}, W: {Orientation.W}";
+            $"{nameof(Orientation.X)}: {Orientation.X}, " +
+            $"{nameof(Orientation.Y)}: {Orientation.Y}, " +
+            $"{nameof(Orientation.Z)}: {Orientation.Z}, " +
+            $"{nameof(Orientation.W)}: {Orientation.W}";
     }
 }

@@ -102,6 +102,8 @@ namespace Xamarin.Essentials
             MagneticField.GetHashCode();
 
         public override string ToString() =>
-            $"X: {MagneticField.X}, Y: {MagneticField.Y}, Z: {MagneticField.Z}";
+            $"{nameof(MagneticField.X)}: {MagneticField.X}, " +
+            $"{nameof(MagneticField.Y)}: {MagneticField.Y}, " +
+            $"{nameof(MagneticField.Z)}: {MagneticField.Z}";
     }
 }

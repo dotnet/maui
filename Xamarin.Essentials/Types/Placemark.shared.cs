@@ -51,5 +51,13 @@ namespace Xamarin.Essentials
         public string AdminArea { get; set; }
 
         public string SubAdminArea { get; set; }
+
+        public override string ToString() =>
+            $"{nameof(Location)}: {Location}, {nameof(CountryCode)}: {CountryCode}, " +
+            $"{nameof(CountryName)}: {CountryName}, {nameof(FeatureName)}: {FeatureName}, " +
+            $"{nameof(PostalCode)}: {PostalCode}, {nameof(SubLocality)}: {SubLocality}, " +
+            $"{nameof(Thoroughfare)}: {Thoroughfare}, {nameof(SubThoroughfare)}: {SubThoroughfare}, " +
+            $"{nameof(Locality)}: {Locality}, {nameof(AdminArea)}: {AdminArea}, " +
+            $"{nameof(SubAdminArea)}: {SubAdminArea}";
     }
 }

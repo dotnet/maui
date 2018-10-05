@@ -102,6 +102,8 @@ namespace Xamarin.Essentials
         public BatteryPowerSource PowerSource { get; }
 
         public override string ToString() =>
-            $"ChargeLevel: {ChargeLevel}, State: {State}, PowerSource: {PowerSource}";
+            $"{nameof(ChargeLevel)}: {ChargeLevel}, " +
+            $"{nameof(State)}: {State}, " +
+            $"{nameof(PowerSource)}: {PowerSource}";
     }
 }
