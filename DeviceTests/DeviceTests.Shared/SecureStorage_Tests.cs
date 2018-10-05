@@ -7,13 +7,13 @@ namespace DeviceTests
     public class SecureStorage_Tests
     {
         [Theory]
-        [InlineData("test.txt", "data", true)]
-        [InlineData("noextension", "data2", true)]
-        [InlineData("funny*&$%@!._/\\chars", "data3", true)]
-        [InlineData("test.txt2", "data2", false)]
-        [InlineData("noextension2", "data22", false)]
-        [InlineData("funny*&$%@!._/\\chars2", "data32", false)]
-        public async Task Saves_And_Loads(string key, string data, bool emulatePreApi23)
+        [InlineData("test.txt", "data", true, true)]
+        [InlineData("noextension", "data2", true, false)]
+        [InlineData("funny*&$%@!._/\\chars", "data3", true, false)]
+        [InlineData("test.txt2", "data2", false, true)]
+        [InlineData("noextension2", "data22", false, false)]
+        [InlineData("funny*&$%@!._/\\chars2", "data32", false, false)]
+        public async Task Saves_And_Loads(string key, string data, bool emulatePreApi23, bool emulateNonEnglishLocale)
         {
 #if __IOS__
             // Try the new platform specific api
@@ -26,6 +26,11 @@ namespace DeviceTests
 
 #if __ANDROID__
             SecureStorage.AlwaysUseAsymmetricKeyStorage = emulatePreApi23;
+
+            if (emulateNonEnglishLocale)
+            {
+                Platform.SetLocale(new Java.Util.Locale("ar"));
+            }
 #endif
 
             await SecureStorage.SetAsync(key, data);
