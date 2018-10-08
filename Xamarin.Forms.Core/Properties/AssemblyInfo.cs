@@ -59,6 +59,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("margin-top", typeof(View), nameof(View.MarginTopProperty))]
 [assembly: StyleProperty("margin-right", typeof(View), nameof(View.MarginRightProperty))]
 [assembly: StyleProperty("margin-bottom", typeof(View), nameof(View.MarginBottomProperty))]
+[assembly: StyleProperty("max-lines", typeof(Label), nameof(Label.MaxLinesProperty))]
 [assembly: StyleProperty("min-height", typeof(VisualElement), nameof(VisualElement.MinimumHeightRequestProperty))]
 [assembly: StyleProperty("min-width", typeof(VisualElement), nameof(VisualElement.MinimumWidthRequestProperty))]
 [assembly: StyleProperty("opacity", typeof(VisualElement), nameof(VisualElement.OpacityProperty))]
