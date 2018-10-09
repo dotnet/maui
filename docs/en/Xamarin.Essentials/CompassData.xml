@@ -137,7 +137,7 @@
         <Parameter Name="right" Type="Xamarin.Essentials.CompassData" />
       </Parameters>
       <Docs>
-       <param name="left">Left to compare</param>
+        <param name="left">Left to compare</param>
         <param name="right">Right to compare</param>
         <summary>Equality operator for equals</summary>
         <returns>If equal</returns>
@@ -170,6 +170,25 @@
         <remarks>
           <para />
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

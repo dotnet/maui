@@ -92,7 +92,7 @@
     <MakeDir Directories="$(TmpDir)" />
     <Copy SourceFiles="$(MDocDocumentationDirectory)\..\frameworks.xml" DestinationFolder="$(TmpDir)" />
     <Copy SourceFiles="$(BinConfigDir)netstandard2.0\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials" />
-    <Copy SourceFiles="$(BinConfigDir)monoandroid81\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
+    <Copy SourceFiles="$(BinConfigDir)monoandroid81\MonoAndroid81\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-android" />
     <Copy SourceFiles="$(BinConfigDir)xamarin.ios10\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-ios" />
     <Copy SourceFiles="$(BinConfigDir)uap10.0.16299\$(AssemblyName).dll" DestinationFolder="$(TmpDir)xamarin-essentials-uwp" />
     <Exec Command="$(_ManagedExeLauncher) &quot;$(MDocToolPath)&quot; update -lang=DocId --delete --frameworks=&quot;$(TmpDir)frameworks.xml&quot; --out=&quot;$(MDocDocumentationDirectory)&quot; $(MDocReferenceAssemblies)" />
@@ -110,6 +110,7 @@
   -->
   <Target Name="MDocVerifyDocs"
           DependsOnTargets="_MDocSetup">
+    <_FormatDocs DocsRoot="$(MDocDocumentationDirectory)" />
     <_VerifyAllDocsAreComplete DocsRoot="$(MDocDocumentationDirectory)" />
   </Target>
 
@@ -132,6 +133,32 @@
       <Code Type="Fragment" Language="cs"><![CDATA[
         foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
           var xdoc = XDocument.Load(file);
+
+          // special case for Android resources: don't process
+          if (xdoc.Root.Name == "Type") {
+            var nameAttr = xdoc.Root.Attribute("FullName");
+            if (nameAttr != null && (nameAttr.Value == "Xamarin.Essentials.Resource" || nameAttr.Value.StartsWith("Xamarin.Essentials.Resource+"))) {
+              File.Delete(file);
+              continue;
+            }
+          }
+          if (xdoc.Root.Name == "Overview") {
+            foreach (var type in xdoc.Root.Descendants("Type").ToArray()) {
+              var nameAttr = type.Attribute("Name");
+              if (nameAttr != null && (nameAttr.Value == "Resource" || nameAttr.Value.StartsWith("Resource+"))) {
+                type.Remove();
+              }
+            }
+          }
+          if (xdoc.Root.Name == "Framework") {
+            foreach (var type in xdoc.Root.Descendants("Type").ToArray()) {
+              var nameAttr = type.Attribute("Name");
+              if (nameAttr != null && (nameAttr.Value == "Xamarin.Essentials.Resource" || nameAttr.Value.StartsWith("Xamarin.Essentials.Resource/"))) {
+                type.Remove();
+              }
+            }
+          }
+
           var settings = new XmlWriterSettings {
               Encoding = new UTF8Encoding(),
               Indent = true,
@@ -162,17 +189,25 @@
     <Task>
       <Reference Include="System.Xml" />
       <Reference Include="System.Xml.Linq" />
+      <Using Namespace="System.IO" />
       <Using Namespace="System.Xml" />
       <Using Namespace="System.Xml.Linq" />
       <Code Type="Fragment" Language="cs"><![CDATA[
         foreach (var file in Directory.EnumerateFiles(DocsRoot, "*.xml", SearchOption.AllDirectories)) {
           var xdoc = XDocument.Load(file);
-          var incomplete = xdoc.Descendants("Member").Where(x => x.Descendants().Any(d => d.Value == "To be added."));
+          var incomplete = xdoc.Descendants("Docs").Where(x => x.Descendants().Any(d => d.Value == "To be added."));
           foreach (var node in incomplete) {
-            var typename = xdoc.Root.Attribute("FullName").Value;
-            var member = node.Attribute("MemberName").Value;
-            var memberType = node.Element("MemberType").Value.ToLower();
-            Log.LogWarning("Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
+            if (node.Parent.Name == "Type" && xdoc.Root.Name == "Type") {
+              var typename = xdoc.Root.Attribute("FullName").Value;
+              Log.LogWarning("Missing docs for {0}.", typename);
+            } else if (node.Parent.Name == "Member" && xdoc.Root.Name == "Type") {
+              var typename = xdoc.Root.Attribute("FullName").Value;
+              var member = node.Parent.Attribute("MemberName").Value;
+              var memberType = node.Parent.Element("MemberType").Value.ToLower();
+              Log.LogWarning("Missing docs for {2} '{0}.{1}'.", typename, member, memberType);
+            } else {
+              Log.LogWarning("Missing docs in {0}.", file);
+            }
           }
         }
       ]]></Code>

@@ -138,26 +138,6 @@
         <remarks>Returns 0 or no value if not available.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Course">
-      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Course { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Course" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Course" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Degrees relative to true north.</summary>
-        <value>0..360 in degrees relative to true north. null if unavailable.</value>
-        <remarks>
-          <para />
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="CalculateDistance">
       <MemberSignature Language="C#" Value="public static double CalculateDistance (Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
@@ -275,6 +255,26 @@
         <returns>Distance between two locations in the unit selected.</returns>
         <remarks>
           <para></para>
+        </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Course">
+      <MemberSignature Language="C#" Value="public Nullable&lt;double&gt; Course { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float64&gt; Course" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Location.Course" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Double&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Degrees relative to true north.</summary>
+        <value>0..360 in degrees relative to true north. null if unavailable.</value>
+        <remarks>
+          <para />
         </remarks>
       </Docs>
     </Member>
@@ -406,6 +406,25 @@
         <remarks>
           <para></para>
         </remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

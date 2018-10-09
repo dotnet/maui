@@ -26,8 +26,8 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <param name="body">Content of the message</param>
-        <param name="recipients">Recipients to receive the message.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -47,7 +47,9 @@
         <param name="body">Content of the message</param>
         <param name="recipients">Recipients to receive the message.</param>
         <summary>Creates a new instance of SmsMessage</summary>
-        <remarks><para /></remarks>
+        <remarks>
+          <para />
+        </remarks>
       </Docs>
     </Member>
     <Member MemberName="Body">

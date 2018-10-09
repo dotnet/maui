@@ -20,10 +20,7 @@
         <Attribute>
           <AttributeName>System.Reflection.AssemblyFileVersion("1.0.0.0")</AttributeName>
         </Attribute>
-        <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0")</AttributeName>
-        </Attribute>
-        <Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials">
           <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (netstandard2.0)")</AttributeName>
         </Attribute>
         <Attribute>
@@ -50,8 +47,38 @@
         <Attribute>
           <AttributeName>System.Runtime.CompilerServices.RuntimeCompatibility(WrapNonExceptionThrows=true)</AttributeName>
         </Attribute>
-        <Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials">
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName="")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+8db259fd337f910db5b9158f8ab6b5cdbb783499")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsShared")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>Android.LinkerSafe</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (MonoAndroid81)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-android">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("MonoAndroid,Version=v8.1", FrameworkDisplayName="Xamarin.Android v8.1 Support")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-ios">
+          <AttributeName>Foundation.LinkerSafe</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-ios">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (Xamarin.iOS10)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-ios">
+          <AttributeName>System.Runtime.Versioning.TargetFramework("Xamarin.iOS,Version=v1.0", FrameworkDisplayName="Xamarin.iOS")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-uwp">
+          <AttributeName>System.Reflection.AssemblyProduct("Xamarin.Essentials (uap10.0.16299)")</AttributeName>
+        </Attribute>
+        <Attribute FrameworkAlternate="xamarin-essentials-uwp">
+          <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -92,6 +119,7 @@
       <Type Name="EmailMessage" Kind="Class" />
       <Type Name="EnergySaverStatus" Kind="Enumeration" />
       <Type Name="EnergySaverStatusChangedEventArgs" Kind="Class" />
+      <Type Name="FeatureNotEnabledException" Kind="Class" />
       <Type Name="FeatureNotSupportedException" Kind="Class" />
       <Type Name="FileSystem" Kind="Class" />
       <Type Name="Flashlight" Kind="Class" />
@@ -141,4 +169,153 @@
       <Type Name="Vibration" Kind="Class" />
     </Namespace>
   </Types>
+  <Title>Untitled</Title>
+  <ExtensionMethods>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Location" />
+      </Targets>
+      <Member MemberName="CalculateDistance">
+        <MemberSignature Language="C#" Value="public static double CalculateDistance (this Xamarin.Essentials.Location locationStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Double</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" RefType="this" />
+          <Parameter Name="latitudeEnd" Type="System.Double" />
+          <Parameter Name="longitudeEnd" Type="System.Double" />
+          <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+        </Parameters>
+        <Docs>
+          <param name="locationStart">Start location to calculate from.</param>
+          <param name="latitudeEnd">End latitude to calculate from.</param>
+          <param name="longitudeEnd">End longitude to calculate from.</param>
+          <param name="units">Units to use.</param>
+          <summary>Extension to calculate distance from location to another location.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Location" />
+      </Targets>
+      <Member MemberName="CalculateDistance">
+        <MemberSignature Language="C#" Value="public static double CalculateDistance (this Xamarin.Essentials.Location locationStart, Xamarin.Essentials.Location locationEnd, Xamarin.Essentials.DistanceUnits units);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(class Xamarin.Essentials.Location locationStart, class Xamarin.Essentials.Location locationEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Double</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="locationStart" Type="Xamarin.Essentials.Location" RefType="this" />
+          <Parameter Name="locationEnd" Type="Xamarin.Essentials.Location" />
+          <Parameter Name="units" Type="Xamarin.Essentials.DistanceUnits" />
+        </Parameters>
+        <Docs>
+          <param name="locationStart">Start location to calculate from.</param>
+          <param name="locationEnd">End location to calculate from.</param>
+          <param name="units">Units to use during calculation.</param>
+          <summary>Extension to calculate distance from location to another location.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Location" />
+      </Targets>
+      <Member MemberName="OpenMapsAsync">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="location">Location to open to.</param>
+          <summary>Open maps to this location.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Location" />
+      </Targets>
+      <Member MemberName="OpenMapsAsync">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapsLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        </Parameters>
+        <Docs>
+          <param name="location">Location to open to.</param>
+          <param name="options">Options to use.</param>
+          <summary>Open maps to this location.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Placemark" />
+      </Targets>
+      <Member MemberName="OpenMapsAsync">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
+        </Parameters>
+        <Docs>
+          <param name="placemark">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
+      </Member>
+    </ExtensionMethod>
+    <ExtensionMethod>
+      <Targets>
+        <Target Type="T:Xamarin.Essentials.Placemark" />
+      </Targets>
+      <Member MemberName="OpenMapsAsync">
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapsLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberType>ExtensionMethod</MemberType>
+        <ReturnValue>
+          <ReturnType>System.Threading.Tasks.Task</ReturnType>
+        </ReturnValue>
+        <Parameters>
+          <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        </Parameters>
+        <Docs>
+          <param name="placemark">To be added.</param>
+          <param name="options">To be added.</param>
+          <summary>To be added.</summary>
+        </Docs>
+        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+      </Member>
+    </ExtensionMethod>
+  </ExtensionMethods>
 </Overview>

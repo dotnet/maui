@@ -228,6 +228,25 @@
         <remarks>This represents the degrees that the device has been rotated. For example, if this is a phone (which is designed for portrait) that has been rotated to landscape with the main buttoms to the right, then the device has been rotated to the left by 90 degrees.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ScreenMetrics.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Width">
       <MemberSignature Language="C#" Value="public double Width { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Width" />
