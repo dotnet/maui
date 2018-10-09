@@ -134,6 +134,11 @@
   <ItemGroup>
     <AndroidAsset Include="Assets\FileSystemTemplate.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\my_backup_rules.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\CodeStyles.targets" />
 </Project>

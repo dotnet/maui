@@ -26,7 +26,15 @@ namespace Xamarin.Essentials
             {
                 var encData = Convert.FromBase64String(encStr);
                 var ks = new AndroidKeyStore(context, Alias, AlwaysUseAsymmetricKeyStorage);
-                decryptedData = ks.Decrypt(encData);
+                try
+                {
+                    decryptedData = ks.Decrypt(encData);
+                }
+                catch (AEADBadTagException)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
+                    PlatformRemove(key);
+                }
             }
 
             return Task.FromResult(decryptedData);
