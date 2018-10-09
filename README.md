@@ -75,6 +75,15 @@ Make sure you have Nuget.exe 4.0 or above and the latest dotnet core sdk (2.0.3)
      nuget restore Xamarin.Forms.sln
      msbuild Xamarin.Forms.sln
  
+### UI Tests ###
+
+##### Run UWP UI Tests #####
+To run the UWP UI Tests:
+    
+1. Install and run the [Windows Application Driver](https://github.com/Microsoft/WinAppDriver#installing-and-running-windows-application-driver).
+2. Launch the `Xamarin.Forms.ControlGallery.WindowsUniversal` project to install the ControlGallery application onto your system.
+
+You should now be able to run any of the UWP UI Tests. 
 
 ## Coding Style ##
 We follow the style used by the [.NET Foundation](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md), with a few exceptions:
