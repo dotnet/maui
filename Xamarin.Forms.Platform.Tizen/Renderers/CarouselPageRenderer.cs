@@ -139,8 +139,12 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// <param name="ea">Additional arguments to the event handler</param>
 		void OnCurrentPageChanged(object sender, EventArgs ea)
 		{
+			// To update TabIndex order
+			CustomFocusManager.StartReorderTabIndex();
+
 			if (IsChangedByScroll())
 				return;
+
 			Element.UpdateFocusTreePolicy();
 
 			if (Element.CurrentPage != Element.Children[_pageIndex])

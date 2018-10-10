@@ -143,6 +143,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void UpdateIsPresented()
 		{
+			// To update TabIndex order
+			CustomFocusManager.StartReorderTabIndex();
+
 			_mdpage.IsPresented = Element.IsPresented;
 		}
 

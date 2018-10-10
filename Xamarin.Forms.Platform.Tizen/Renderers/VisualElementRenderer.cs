@@ -40,6 +40,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		HashSet<string> _batchedProperties = new HashSet<string>();
 
 		bool _movedCallbackEnabled = false;
+
+		Lazy<CustomFocusManager> _customFocusManager;
+
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
@@ -72,6 +75,14 @@ namespace Xamarin.Forms.Platform.Tizen
 			RegisterPropertyHandler(VisualElement.RotationYProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationXProperty, ApplyTransformation);
 			RegisterPropertyHandler(VisualElement.TranslationYProperty, ApplyTransformation);
+			RegisterPropertyHandler(VisualElement.TabIndexProperty, UpdateTabIndex);
+			RegisterPropertyHandler(VisualElement.IsTabStopProperty, UpdateIsTabStop);
+
+
+			_customFocusManager = new Lazy<CustomFocusManager>(() =>
+			{
+				return new CustomFocusManager(Element, NativeView as Widget);
+			});
 		}
 
 		~VisualElementRenderer()
@@ -300,6 +311,11 @@ namespace Xamarin.Forms.Platform.Tizen
 					NativeView.Deleted -= NativeViewDeleted;
 					NativeView.Unrealize();
 					_view = null;
+				}
+
+				if (_customFocusManager.IsValueCreated)
+				{
+					_customFocusManager.Value.Dispose();
 				}
 			}
 		}
@@ -839,34 +855,28 @@ namespace Xamarin.Forms.Platform.Tizen
 			var widget = NativeView as Widget;
 			if (widget != null)
 			{
-				EvasObject nativeControl;
 				switch (direction)
 				{
 					case XFocusDirection.Back:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusBackView(Element))?.NativeView;
+						_customFocusManager.Value.NextBackward = Specific.GetNextFocusBackView(Element);
 						break;
 					case XFocusDirection.Forward:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusForwardView(Element))?.NativeView;
+						_customFocusManager.Value.NextForward = Specific.GetNextFocusForwardView(Element);
 						break;
 					case XFocusDirection.Up:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusUpView(Element))?.NativeView;
+						_customFocusManager.Value.NextUp = Specific.GetNextFocusUpView(Element);
 						break;
 					case XFocusDirection.Down:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusDownView(Element))?.NativeView;
+						_customFocusManager.Value.NextDown = Specific.GetNextFocusDownView(Element);
 						break;
 					case XFocusDirection.Right:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusRightView(Element))?.NativeView;
+						_customFocusManager.Value.NextRight = Specific.GetNextFocusRightView(Element);
 						break;
 					case XFocusDirection.Left:
-						nativeControl = Platform.GetRenderer(Specific.GetNextFocusLeftView(Element))?.NativeView;
+						_customFocusManager.Value.NextLeft = Specific.GetNextFocusLeftView(Element);
 						break;
 					default:
-						nativeControl = null;
 						break;
-				}
-				if (nativeControl != null)
-				{
-					widget.SetNextFocusObject(nativeControl, ConvertToNativeFocusDirection(direction));
 				}
 			}
 			else
@@ -875,49 +885,49 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		void UpdateFocusUpView(bool initialize)
+		void UpdateFocusUpView()
 		{
-			if (!initialize && Specific.GetNextFocusUpView(Element) != null)
+			if (Specific.GetNextFocusUpView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Up);
 			}
 		}
 
-		void UpdateFocusDownView(bool initialize)
+		void UpdateFocusDownView()
 		{
-			if (!initialize && Specific.GetNextFocusDownView(Element) != null)
+			if (Specific.GetNextFocusDownView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Down);
 			}
 		}
 
-		void UpdateFocusLeftView(bool initialize)
+		void UpdateFocusLeftView()
 		{
-			if (!initialize && Specific.GetNextFocusLeftView(Element) != null)
+			if (Specific.GetNextFocusLeftView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Left);
 			}
 		}
 
-		void UpdateFocusRightView(bool initialize)
+		void UpdateFocusRightView()
 		{
-			if (!initialize && Specific.GetNextFocusRightView(Element) != null)
+			if (Specific.GetNextFocusRightView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Right);
 			}
 		}
 
-		void UpdateFocusBackView(bool initialize)
+		void UpdateFocusBackView()
 		{
-			if (!initialize && Specific.GetNextFocusBackView(Element) != null)
+			if (Specific.GetNextFocusBackView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Back);
 			}
 		}
 
-		void UpdateFocusForwardView(bool initialize)
+		void UpdateFocusForwardView()
 		{
-			if (!initialize && Specific.GetNextFocusForwardView(Element) != null)
+			if (Specific.GetNextFocusForwardView(Element) != null)
 			{
 				SetNextFocusViewInternal(XFocusDirection.Forward);
 			}
@@ -1025,6 +1035,33 @@ namespace Xamarin.Forms.Platform.Tizen
 				}
 			}
 		}
+
+		void UpdateTabIndex()
+		{
+			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
+			{
+				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
+				{
+					_customFocusManager.Value.TabIndex = Element.TabIndex;
+				}
+			}
+		}
+
+		void UpdateIsTabStop(bool init)
+		{
+			if (init && Element.IsTabStop)
+			{
+				return;
+			}
+			if (!Forms.Flags.Contains(Flags.DisableTabIndex))
+			{
+				if (Element is View && NativeView is Widget widget && widget.IsFocusAllowed)
+				{
+					_customFocusManager.Value.IsTabStop = Element.IsTabStop;
+				}
+			}
+		}
+
 		EFocusDirection ConvertToNativeFocusDirection(string direction)
 		{
 			if (direction == XFocusDirection.Back) return EFocusDirection.Previous;

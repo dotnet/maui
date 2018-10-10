@@ -376,6 +376,9 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		void OnCurrentPageChanged()
 		{
+			// To update TabIndex order
+			CustomFocusManager.StartReorderTabIndex();
+
 			if (_isUpdateByScroller || _isUpdateByToolbar || !_isInitialized)
 				return;
 
