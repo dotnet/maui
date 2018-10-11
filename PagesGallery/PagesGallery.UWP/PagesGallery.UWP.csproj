@@ -165,7 +165,13 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
     
-  <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('..\..\.nuspec\Xamarin.Forms.Build.Tasks.dll')" />
+  <PropertyGroup>
+		<__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
+		<__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">..\..\.nuspec\netstandard2.0\</__XFBuildTasksLocation>
+		<__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">..\..\.nuspec\net461\</__XFBuildTasksLocation>
+	</PropertyGroup>
+
+  <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
   
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

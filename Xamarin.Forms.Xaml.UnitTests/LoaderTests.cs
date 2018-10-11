@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 
 using Xamarin.Forms.Core.UnitTests;
+using Xamarin.Forms.Build.Tasks;
+using Mono.Cecil;
 
 namespace Xamarin.Forms.Xaml.UnitTests
 {
@@ -805,6 +807,18 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				</Label>";
 			var label = new Label ();
 			Assert.Throws (new XamlParseExceptionConstraint (4, 8), () => label.LoadFromXaml (xaml));
+		}
+
+		[Test]
+		public void BindingIsResolvedAsBindingExtension()
+		// https://github.com/xamarin/Xamarin.Forms/issues/3606#issuecomment-422377338
+		{
+			var bindingType = XamlParser.GetElementType(new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null), null, null, out var ex);
+			Assert.That(ex, Is.Null);
+			Assert.That(bindingType, Is.EqualTo(typeof(BindingExtension)));
+
+			var bindingTypeRef = new XmlType("http://xamarin.com/schemas/2014/forms", "Binding", null).GetTypeReference(ModuleDefinition.CreateModule("foo", ModuleKind.Dll), null);
+			Assert.That(bindingType.FullName, Is.EqualTo("Xamarin.Forms.Xaml.BindingExtension"));
 		}
 	}
 }

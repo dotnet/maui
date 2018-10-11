@@ -16,8 +16,8 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			//this could be extended to look for [XmlnsDefinition] in all assemblies
 			var assemblies = new [] {
-				typeof(View).Assembly,
 				typeof(XamlLoader).Assembly,
+				typeof(View).Assembly,
 			};
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -85,8 +85,8 @@ namespace Xamarin.Forms.Build.Tasks
 					});
 			}
 
-			lookupNames.Add(elementName);
 			lookupNames.Add(elementName + "Extension");
+			lookupNames.Add(elementName);
 
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
