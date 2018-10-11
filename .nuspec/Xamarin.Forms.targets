@@ -1,8 +1,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(MSBuildThisFileDirectory)Xamarin.Forms.Build.Tasks.dll" />
+	<PropertyGroup>
+		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)netstandard2.0\</_XFBuildTasksLocation>
+		<_XFBuildTasksLocation Condition="'$(_XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory)net461\</_XFBuildTasksLocation>
+	</PropertyGroup>
+	
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlGTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.CssGTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.XamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
 
 	<PropertyGroup>
 		<SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
@@ -27,26 +32,22 @@
 	</PropertyGroup>
 	
 	<Target Name="_ValidateXFTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform" Condition="'$(XFDisableTargetsValidation)' != 'True'">
-		<Error
+		<Error Code="XF001"
 			Text="Xamarin.Forms targets have been imported multiple times. Please check your project file and remove the duplicate import(s)."
-			Code="XF001"
 			Condition="'$(_XFTargetsImportedAgain)' == 'True'" />
 	</Target>
 
 	<Target Name="_ValidateMSBuild" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
-		<Error
+		<Error Code="XF003"
 			Text="Xamarin.Forms require msbuild. xbuild is no longer supported."
-			Code="XF003"
 			Condition="'$(IsXBuild)' == 'true'" />
 	</Target>
 
 	<Target Name="_ValidateNETFrameworkVersion"
 			BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
-			Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.7' AND '$(XFDisableFrameworkVersionValidation)' != 'True'">
-		<Error
-			Text="XF requires .NETFramework >= v4.7. You have '$(TargetFrameworkVersion)'"
-			Code="XF004"
-			 />
+			Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(TargetFrameworkVersion.Substring(1))' &lt; '4.6.1' AND '$(XFDisableFrameworkVersionValidation)' != 'True'">
+		<Error Code="XF004"
+			Text="XF requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
 	</Target>
 
 	<!-- XamlG -->
@@ -115,7 +116,7 @@
  		</ItemGroup>
 	</Target>
 
-	<Target Name="CssG" BeforeTargets="BeforeCompile"  DependsOnTargets="_FindCSSFiles" Inputs="@(_CSSInputs)" Outputs="@(_CSSOutputs)">
+	<Target Name="CssG" BeforeTargets="BeforeCompile" DependsOnTargets="_FindCSSFiles" Inputs="@(_CSSInputs)" Outputs="@(_CSSOutputs)">
 		<CssGTask
 			CSSFiles="@(_CSSInputs)"
 			OutputFiles="@(_CSSOutputs)"

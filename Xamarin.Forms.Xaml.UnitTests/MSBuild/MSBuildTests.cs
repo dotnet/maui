@@ -130,6 +130,8 @@ namespace Xamarin.Forms.Xaml.UnitTests
 				propertyGroup.Add (NewElement ("OutputPath").WithValue ("bin\\Debug"));
 				propertyGroup.Add (NewElement ("TargetFrameworkVersion").WithValue ("v4.7"));
 			}
+			propertyGroup.Add(NewElement("_XFBuildTasksLocation").WithValue($"{testDirectory}\\"));
+
 			project.Add (propertyGroup);
 
 			var itemGroup = NewElement ("ItemGroup");

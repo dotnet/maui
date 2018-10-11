@@ -1,12 +1,11 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.DebugXamlCTask" AssemblyFile="Xamarin.Forms.Build.Tasks.dll"/>
-
 	<PropertyGroup>
 		<XFKeepXamlResources>True</XFKeepXamlResources>
 	</PropertyGroup>
 
 	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.targets" />
-
+	<UsingTask TaskName="Xamarin.Forms.Build.Tasks.DebugXamlCTask" AssemblyFile="$(_XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll" />
+	
 	<PropertyGroup>
 		<CompileDependsOn>
 			$(CompileDependsOn);
@@ -15,7 +14,7 @@
 	</PropertyGroup>
 
 	<!-- duplicate legacy InitializeComponent, create a ctor with bool param -->
-	<Target Name="GenerateDebugCode">
+	<Target Name="GenerateDebugCode" AfterTargets="AfterCompile">
 		<DebugXamlCTask 
 			Assembly = "$(IntermediateOutputPath)$(TargetFileName)"
 			ReferencePath = "@(ReferencePath)"

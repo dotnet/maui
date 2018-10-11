@@ -20,7 +20,7 @@
 		<PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
 	</ItemGroup>
 	<Import Project="..\Xamarin.Flex\Xamarin.Flex.projitems" Label="Shared" Condition="Exists('..\Xamarin.Flex\Xamarin.Flex.projitems')" />
-	<UsingTask TaskName="XFCorePostProcessor.Tasks.FixXFCoreAssembly" AssemblyFile="..\XFCorePostProcessor.Tasks\bin\Debug\netstandard2.0\XFCorePostProcessor.Tasks.dll" />
+	<UsingTask TaskName="XFCorePostProcessor.Tasks.FixXFCoreAssembly" AssemblyFile="..\XFCorePostProcessor.Tasks\bin\Debug\net461\XFCorePostProcessor.Tasks.dll" />
 	<Target Condition="$(DesignTimeBuild) != true AND $(BuildingProject) == true" AfterTargets="AfterCompile" Name="ShameHat">
 		<FixXFCoreAssembly Assembly="$(IntermediateOutputPath)$(TargetFileName)" ReferencePath="@(ReferencePath)" />
 	</Target>
