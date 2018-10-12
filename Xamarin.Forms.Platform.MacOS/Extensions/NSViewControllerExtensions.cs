@@ -7,12 +7,12 @@ namespace Xamarin.Forms.Platform.MacOS
 	internal static class NSViewControllerExtensions
 	{
 		public static Task<T> HandleAsyncAnimation<T>(this NSViewController container, NSViewController fromViewController,
-			NSViewController toViewController, NSViewControllerTransitionOptions transitonOption,
+			NSViewController toViewController, NSViewControllerTransitionOptions transitionOption,
 			Action animationFinishedCallback, T result)
 		{
 			var tcs = new TaskCompletionSource<T>();
 
-			container.TransitionFromViewController(fromViewController, toViewController, transitonOption, () =>
+			container.TransitionFromViewController(fromViewController, toViewController, transitionOption, () =>
 			{
 				tcs.SetResult(result);
 				animationFinishedCallback?.Invoke();
