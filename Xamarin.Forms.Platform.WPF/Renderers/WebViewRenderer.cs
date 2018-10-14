@@ -25,6 +25,7 @@ namespace Xamarin.Forms.Platform.WPF
 				e.OldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				e.OldElement.GoBackRequested -= OnGoBackRequested;
 				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
+				e.OldElement.ReloadRequested -= OnReloadRequested;
 			}
 
 			if (e.NewElement != null)
@@ -44,6 +45,7 @@ namespace Xamarin.Forms.Platform.WPF
 				Element.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				Element.GoBackRequested += OnGoBackRequested;
 				Element.GoForwardRequested += OnGoForwardRequested;
+				Element.ReloadRequested += OnReloadRequested;
 			}
 
 			base.OnElementChanged(e);
@@ -123,6 +125,11 @@ namespace Xamarin.Forms.Platform.WPF
 			UpdateCanGoBackForward();
 		}
 
+		void OnReloadRequested(object sender, EventArgs eventArgs)
+		{
+			Control.Refresh();
+		}
+
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			Console.WriteLine("SendNavigated : " + source.Url);
@@ -198,6 +205,7 @@ namespace Xamarin.Forms.Platform.WPF
 					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested -= OnGoBackRequested;
 					Element.GoForwardRequested -= OnGoForwardRequested;
+					Element.ReloadRequested -= OnReloadRequested;
 				}
 			}
 

@@ -115,6 +115,9 @@ namespace Xamarin.Forms
 		public void GoForward()
 			=> GoForwardRequested?.Invoke(this, EventArgs.Empty);
 
+		public void Reload()
+			=> ReloadRequested?.Invoke(this, EventArgs.Empty);
+
 		public event EventHandler<WebNavigatedEventArgs> Navigated;
 
 		public event EventHandler<WebNavigatingEventArgs> Navigating;
@@ -175,6 +178,9 @@ namespace Xamarin.Forms
 		{
 			Navigating?.Invoke(this, args);
 		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public event EventHandler ReloadRequested;
 
 		public IPlatformElementConfiguration<T, WebView> On<T>() where T : IConfigPlatform
 		{

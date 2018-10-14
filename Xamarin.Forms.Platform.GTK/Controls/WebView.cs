@@ -172,6 +172,18 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			}
 		}
 
+		public void Reload()
+		{
+			if (_platform == GTKPlatform.Windows)
+			{
+				_webViewWindows.WebBrowser.Refresh();
+			}
+			else
+			{
+				_webViewLinux.WebView.Reload();
+			}
+		}
+
 		public void ExecuteScript(string script)
 		{
 			if (_platform == GTKPlatform.Windows)

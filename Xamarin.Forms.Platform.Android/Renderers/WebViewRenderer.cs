@@ -55,6 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 					ElementController.EvalRequested -= OnEvalRequested;
 					ElementController.GoBackRequested -= OnGoBackRequested;
 					ElementController.GoForwardRequested -= OnGoForwardRequested;
+					ElementController.ReloadRequested -= OnReloadRequested;
 
 					_webViewClient?.Dispose();
 					_webChromeClient?.Dispose();
@@ -114,6 +115,7 @@ namespace Xamarin.Forms.Platform.Android
 				oldElementController.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElementController.GoBackRequested -= OnGoBackRequested;
 				oldElementController.GoForwardRequested -= OnGoForwardRequested;
+				oldElementController.ReloadRequested -= OnReloadRequested;
 			}
 
 			if (e.NewElement != null)
@@ -123,6 +125,7 @@ namespace Xamarin.Forms.Platform.Android
 				newElementController.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElementController.GoBackRequested += OnGoBackRequested;
 				newElementController.GoForwardRequested += OnGoForwardRequested;
+				newElementController.ReloadRequested += OnReloadRequested;
 
 				UpdateMixedContentMode();
 			}
@@ -183,6 +186,11 @@ namespace Xamarin.Forms.Platform.Android
 				Control.GoForward();
 
 			UpdateCanGoBackForward();
+		}
+
+		void OnReloadRequested(object sender, EventArgs eventArgs)
+		{
+			Control.Reload();
 		}
 
 		protected internal void UpdateCanGoBackForward()

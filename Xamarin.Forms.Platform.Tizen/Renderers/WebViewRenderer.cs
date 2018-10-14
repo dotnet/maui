@@ -48,6 +48,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested -= OnGoBackRequested;
 					Element.GoForwardRequested -= OnGoForwardRequested;
+					Element.ReloadRequested -= OnReloadRequested;
 				}
 			}
 			base.Dispose(disposing);
@@ -70,6 +71,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				e.OldElement.EvalRequested -= OnEvalRequested;
 				e.OldElement.GoBackRequested -= OnGoBackRequested;
 				e.OldElement.GoForwardRequested -= OnGoForwardRequested;
+				e.OldElement.ReloadRequested -= OnReloadRequested;
 			}
 
 			if (e.NewElement != null)
@@ -78,6 +80,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				e.NewElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				e.NewElement.GoForwardRequested += OnGoForwardRequested;
 				e.NewElement.GoBackRequested += OnGoBackRequested;
+				e.NewElement.ReloadRequested += OnReloadRequested;
 				Load();
 			}
 			base.OnElementChanged(e);
@@ -167,6 +170,11 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 
 			UpdateCanGoBackForward();
+		}
+
+		void OnReloadRequested(object sender, EventArgs eventArgs)
+		{
+			NativeWebView.Reload();
 		}
 
 		void SendNavigated(UrlWebViewSource source, WebNavigationEvent evnt, WebNavigationResult result)

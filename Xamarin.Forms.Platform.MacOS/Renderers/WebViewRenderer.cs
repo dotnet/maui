@@ -87,6 +87,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					Element.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 					Element.GoBackRequested += OnGoBackRequested;
 					Element.GoForwardRequested += OnGoForwardRequested;
+					Element.ReloadRequested += OnReloadRequested;
 
 					Control.FrameLoadDelegate = new FormsWebFrameDelegate(this);
 					Control.PolicyDelegate = this;
@@ -114,6 +115,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				Element.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				Element.GoBackRequested -= OnGoBackRequested;
 				Element.GoForwardRequested -= OnGoForwardRequested;
+				Element.ReloadRequested -= OnReloadRequested;
 			}
 			base.Dispose(disposing);
 		}
@@ -173,6 +175,11 @@ namespace Xamarin.Forms.Platform.MacOS
 			}
 
 			UpdateCanGoBackForward();
+		}
+
+		void OnReloadRequested(object sender, EventArgs eventArgs)
+		{
+			Control.Reload(this);
 		}
 
 		internal class FormsWebFrameDelegate : WebKit.WebFrameLoadDelegate

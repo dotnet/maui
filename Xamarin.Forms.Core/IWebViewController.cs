@@ -12,6 +12,7 @@ namespace Xamarin.Forms
 		event EvaluateJavaScriptDelegate EvaluateJavaScriptRequested;
 		event EventHandler GoBackRequested;
 		event EventHandler GoForwardRequested;
+		event EventHandler ReloadRequested;
 		void SendNavigated(WebNavigatedEventArgs args);
 		void SendNavigating(WebNavigatingEventArgs args);
 	}

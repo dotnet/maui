@@ -95,6 +95,7 @@ if(bases.length == 0){
 				oldElement.EvaluateJavaScriptRequested -= OnEvaluateJavaScriptRequested;
 				oldElement.GoBackRequested -= OnGoBackRequested;
 				oldElement.GoForwardRequested -= OnGoForwardRequested;
+				oldElement.ReloadRequested -= OnReloadRequested;
 			}
 
 			if (e.NewElement != null)
@@ -114,6 +115,7 @@ if(bases.length == 0){
 				newElement.EvaluateJavaScriptRequested += OnEvaluateJavaScriptRequested;
 				newElement.GoForwardRequested += OnGoForwardRequested;
 				newElement.GoBackRequested += OnGoBackRequested;
+				newElement.ReloadRequested += OnReloadRequested;
 
 				Load();
 			}
@@ -168,6 +170,11 @@ if(bases.length == 0){
 			}
 
 			UpdateCanGoBackForward();
+		}
+
+		void OnReloadRequested(object sender, EventArgs eventArgs)
+		{
+			Control.Refresh();
 		}
 
 		async void OnNavigationCompleted(Windows.UI.Xaml.Controls.WebView sender, WebViewNavigationCompletedEventArgs e)
