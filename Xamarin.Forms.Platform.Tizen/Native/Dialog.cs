@@ -244,7 +244,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					part = "button2";
 					break;
 
-				case ButtonPosition.Negative:
 				default:
 					part = "button1";
 					break;

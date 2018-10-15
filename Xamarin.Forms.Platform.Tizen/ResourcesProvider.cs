@@ -25,7 +25,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			_dictionary[Device.Styles.ListItemDetailTextStyleKey] = GetStyleByKey(Device.Styles.ListItemDetailTextStyleKey);
 		}
 
-		//TODO: need Tizen API to get system values
 		Style GetStyleByKey(string key)
 		{
 			Style style = null;

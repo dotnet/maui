@@ -2,12 +2,13 @@
 
 namespace Xamarin.Forms.Platform.Tizen.Renderers
 {
-	public class MasterDetailContainer : ElmSharp.Box
+	public class MasterDetailContainer : ElmSharp.Box, IDisposable
 	{
-		MasterDetailPage _parent;
+		readonly MasterDetailPage _parent;
+		readonly bool _isMaster;
+
 		VisualElement _childView;
 		bool _disposed;
-		bool _isMaster;
 		bool _hasAppearedToParent;
 
 		IPageController PageController => ChildView as IPageController;

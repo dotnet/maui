@@ -6,7 +6,6 @@ namespace Xamarin.Forms.Platform.Tizen
 	public class ImageCellRenderer : TextCellRenderer
 	{
 		const int _defaultHeight = 55;
-		Dictionary<EvasObject, Native.Image> _realizedViews = new Dictionary<EvasObject, Native.Image>();
 
 		public ImageCellRenderer() : this(Device.Idiom == TargetIdiom.Watch ? "1icon_2text" : "default")
 		{

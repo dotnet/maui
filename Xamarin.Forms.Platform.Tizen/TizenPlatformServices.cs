@@ -70,7 +70,7 @@ namespace Xamarin.Forms.Platform.Tizen
 					pt = Device.Idiom == TargetIdiom.TV ? 84 : (Device.Idiom == TargetIdiom.Watch ? 36 : 31);
 					break;
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new ArgumentOutOfRangeException(nameof(size));
 			}
 			return Forms.ConvertToDPFont(pt);
 		}
@@ -83,7 +83,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 			TAppControl tAppControl = new TAppControl() { Operation = "%", Uri = uri.AbsoluteUri };
 			var matchedApplications = TAppControl.GetMatchedApplicationIds(tAppControl);
-			if (matchedApplications.Count() > 0)
+			if (matchedApplications.Any())
 			{
 				TAppControl.SendLaunchRequest(tAppControl);
 				return;
@@ -178,7 +178,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			public static AppDomain CurrentDomain { get; private set; }
 
-			List<Assembly> _assemblies;
+			readonly List<Assembly> _assemblies;
 
 			static AppDomain()
 			{

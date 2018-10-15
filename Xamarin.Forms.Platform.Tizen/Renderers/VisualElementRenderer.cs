@@ -18,26 +18,15 @@ namespace Xamarin.Forms.Platform.Tizen
 	/// </summary>
 	public abstract class VisualElementRenderer<TElement> : IVisualElementRenderer, IEffectControlProvider where TElement : VisualElement
 	{
-		/// <summary>
-		/// Holds registered element changed handlers.
-		/// </summary>
 		readonly List<EventHandler<VisualElementChangedEventArgs>> _elementChangedHandlers = new List<EventHandler<VisualElementChangedEventArgs>>();
 
-		/// <summary>
-		/// Flags which control status of renderer.
-		/// </summary>
+		readonly Dictionary<string, Action<bool>> _propertyHandlersWithInit = new Dictionary<string, Action<bool>>();
+
+		readonly Dictionary<string, Action> _propertyHandlers = new Dictionary<string, Action>();
+
+		readonly HashSet<string> _batchedProperties = new HashSet<string>();
+
 		VisualElementRendererFlags _flags = VisualElementRendererFlags.None;
-
-		/// <summary>
-		/// Holds the native view.
-		/// </summary>
-		EvasObject _view;
-
-		Dictionary<string, Action<bool>> _propertyHandlersWithInit = new Dictionary<string, Action<bool>>();
-
-		Dictionary<string, Action> _propertyHandlers = new Dictionary<string, Action>();
-
-		HashSet<string> _batchedProperties = new HashSet<string>();
 
 		bool _movedCallbackEnabled = false;
 
@@ -119,13 +108,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			}
 		}
 
-		public EvasObject NativeView
-		{
-			get
-			{
-				return _view;
-			}
-		}
+		public EvasObject NativeView { get; private set; }
 
 		protected bool IsDisposed => _flags.HasFlag(VisualElementRendererFlags.Disposed);
 
@@ -140,10 +123,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		/// the memory that the <see cref="Xamarin.Forms.Platform.Tizen.VisualElementRenderer"/> was occupying.</remarks>
 		public void Dispose()
 		{
-			// This is the reason why I call SendDisappearing() here.
-			// When OnChildRemove is called first like how it is called in Navigation.PopToRootAsync(),
-			// you can not controll using SendDisappearing() on the lower class.
-			(Element as IPageController)?.SendDisappearing();
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
@@ -186,7 +165,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (newElement == null)
 			{
-				throw new ArgumentNullException("newElement");
+				throw new ArgumentNullException(nameof(newElement));
 			}
 
 			TElement oldElement = Element;
@@ -228,7 +207,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			TElement tElement = element as TElement;
 			if (tElement == null)
 			{
-				throw new ArgumentException("Element is not of type " + typeof(TElement), "Element");
+				throw new ArgumentException("Element is not of type " + typeof(TElement), nameof(element));
 			}
 			SetElement(tElement);
 		}
@@ -278,6 +257,11 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (disposing)
 			{
+				// This is the reason why I call SendDisappearing() here.
+				// When OnChildRemove is called first like how it is called in Navigation.PopToRootAsync(),
+				// you can not controll using SendDisappearing() on the lower class.
+				(Element as IPageController)?.SendDisappearing();
+
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
@@ -310,7 +294,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					NativeView.Deleted -= NativeViewDeleted;
 					NativeView.Unrealize();
-					_view = null;
+					NativeView = null;
 				}
 
 				if (_customFocusManager.IsValueCreated)
@@ -365,8 +349,6 @@ namespace Xamarin.Forms.Platform.Tizen
 					controller.EffectControlProvider = this;
 				}
 			}
-
-			// TODO: handle the event
 		}
 
 		/// <summary>
@@ -438,7 +420,7 @@ namespace Xamarin.Forms.Platform.Tizen
 				widget.Focused -= OnFocused;
 				widget.Unfocused -= OnUnfocused;
 			}
-			_view = control;
+			NativeView = control;
 			if (NativeView != null)
 			{
 				NativeView.Deleted += NativeViewDeleted;

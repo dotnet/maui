@@ -134,13 +134,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Adds elements to the list and defines its presentation based on Cell type.
 		/// </summary>
-		/// <param name="_source">IEnumerable on Cell collection.</param>
+		/// <param name="source">IEnumerable on Cell collection.</param>
 		/// <param name="beforeCell">Cell before which new items will be placed. 
 		/// Null value may also be passed as this parameter, which results in appending new items to the end.
 		/// </param>
-		public void AddSource(IEnumerable _source, Cell beforeCell = null)
+		public void AddSource(IEnumerable source, Cell beforeCell = null)
 		{
-			foreach (var data in _source)
+			foreach (var data in source)
 			{
 				GroupList groupList = data as GroupList;
 				if (groupList != null)
@@ -148,7 +148,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 					AddGroupItem(groupList, beforeCell);
 					foreach (var item in groupList)
 					{
-						AddItem(item as Cell, groupList.HeaderContent);
+						AddItem(item, groupList.HeaderContent);
 					}
 				}
 				else
@@ -451,7 +451,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			if (renderer == null)
 			{
 				Log.Error("Cell type is not handled: {0}", cell.GetType());
-				throw new ArgumentNullException("Unsupported cell type");
+				throw new ArgumentException("Unsupported cell type");
 			}
 
 			renderer.SetGroupMode(isGroup);

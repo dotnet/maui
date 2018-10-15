@@ -12,8 +12,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	/// </summary>
 	public class Entry : EEntry, IMeasurable, IBatchable
 	{
-		static readonly int s_VariationNormal = 0;
-		static readonly int s_VariationSignedAndDecimal = 3;
+		const int VariationNormal = 0;
+		const int VariationSignedAndDecimal = 3;
 
 		/// <summary>
 		/// Holds the formatted text of the entry.
@@ -395,7 +395,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <param name="keyboard">Keyboard type to be used.</param>
 		void ApplyKeyboard(Keyboard keyboard)
 		{
-			SetInternalKeyboard(_keyboard = keyboard);
+			_keyboard = keyboard;
+			SetInternalKeyboard(keyboard);
 		}
 
 		/// <summary>
@@ -414,13 +415,13 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 				SetInputPanelEnabled(true);
 				SetInputPanelLayout(InputPanelLayout.NumberOnly);
 				// InputPanelVariation is used to allow using deciaml point.
-				InputPanelVariation = s_VariationSignedAndDecimal;
+				InputPanelVariation = VariationSignedAndDecimal;
 			}
 			else
 			{
 				SetInputPanelEnabled(true);
 				SetInputPanelLayout((InputPanelLayout)keyboard);
-				InputPanelVariation = s_VariationNormal;
+				InputPanelVariation = VariationNormal;
 			}
 		}
 

@@ -7,7 +7,6 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 	public class Scroller : EScroller
 	{
 		TaskCompletionSource<bool> _animationTaskComplateSource;
-		SmartEvent _scrollAnimationStart, _scrollAnimationStop;
 		bool _isAnimation = false;
 
 		public Scroller(EvasObject parent) : base(parent)
@@ -17,10 +16,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		protected override void OnRealized()
 		{
 			base.OnRealized();
-			_scrollAnimationStart = new SmartEvent(this, RealHandle, "scroll,anim,start");
-			_scrollAnimationStop = new SmartEvent(this, RealHandle, "scroll,anim,stop");
-			_scrollAnimationStart.On += (s, e) => _isAnimation = true;
-			_scrollAnimationStop.On += (s, e) =>
+			new SmartEvent(this, RealHandle, "scroll,anim,start").On += (s, e) => _isAnimation = true;
+			new SmartEvent(this, RealHandle, "scroll,anim,stop").On += (s, e) =>
 			{
 				if (_animationTaskComplateSource != null)
 				{

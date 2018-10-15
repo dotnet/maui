@@ -469,9 +469,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs nre)
 		{
 			if (nre.BeforePage == null)
-				throw new ArgumentNullException("before");
+				throw new ArgumentException("BeforePage is null");
 			if (nre.Page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentException("Page is null");
 
 			_naviItemMap[nre.Page] = _naviFrame.InsertBefore(GetNaviItemForPage(nre.BeforePage), CreateNavItem(nre.Page), SpanTitle(nre.Page.Title));
 			UpdateHasNavigationBar(nre.Page);
@@ -494,7 +494,7 @@ namespace Xamarin.Forms.Platform.Tizen
 
 		EvasObject CreateNavItem(Page page)
 		{
-			View titleView = NavigationPage.GetTitleView(page) as View;
+			View titleView = NavigationPage.GetTitleView(page);
 			EvasObject nativeView = null;
 			if (titleView != null)
 			{

@@ -102,12 +102,12 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (null == MainWindow)
 			{
-				throw new NullReferenceException("MainWindow is not prepared. This method should be called in OnCreated().");
+				throw new InvalidOperationException("MainWindow is not prepared. This method should be called in OnCreated().");
 			}
 
 			if (null == application)
 			{
-				throw new ArgumentNullException("application");
+				throw new ArgumentNullException(nameof(application));
 			}
 			_application = application;
 			Application.Current = application;

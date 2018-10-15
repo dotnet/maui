@@ -209,10 +209,9 @@ namespace Xamarin.Forms.Platform.Tizen
 			// In .NETCore, AppDomain feature is not supported.
 			// The list of assemblies returned by AppDomain.GetAssemblies() method should be registered manually.
 			// The assembly of the executing application and referenced assemblies of it are added into the list here.
-			// TODO: AppDomain is comming back in NETStandard2.0. This logic should be changed at that time.
 			TizenPlatformServices.AppDomain.CurrentDomain.RegisterAssemblyRecursively(application.GetType().GetTypeInfo().Assembly);
 
-			Device.PlatformServices = new TizenPlatformServices(); ;
+			Device.PlatformServices = new TizenPlatformServices();
 			if (Device.info != null)
 			{
 				((TizenDeviceInfo)Device.info).Dispose();
@@ -233,7 +232,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				});
 			}
 
-			// TODO: We should consider various tizen profiles such as TV, Wearable and so on.
 			string profile = ((TizenDeviceInfo)Device.Info).Profile;
 			if (profile == "mobile")
 			{

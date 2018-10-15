@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			Recognizer.PropertyChanged += OnRecognizerPropertyChanged;
 		}
 
-		public virtual event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		protected abstract void OnStarted(View sender, object data);
 

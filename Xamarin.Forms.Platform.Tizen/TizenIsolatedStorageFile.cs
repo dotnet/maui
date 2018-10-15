@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Tizen
 {
 	internal class TizenIsolatedStorageFile : IIsolatedStorageFile
 	{
-		string _rootPath;
+		readonly string _rootPath;
 
 		internal TizenIsolatedStorageFile()
 		{
@@ -18,7 +18,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public void CreateDirectory(string path)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			Directory.CreateDirectory(Path.Combine(_rootPath, path));
 		}
 
@@ -31,9 +31,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		public void MoveFile(string source, string dest)
 		{
 			if (source == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
 			if (dest == null)
-				throw new ArgumentNullException("dest");
+				throw new ArgumentNullException(nameof(dest));
 
 			File.Move(Path.Combine(_rootPath, source), Path.Combine(_rootPath, dest));
 		}
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public void DeleteFile(string path)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public bool DirectoryExists(string path)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			return Directory.Exists(Path.Combine(_rootPath, path));
 		}
 
@@ -63,7 +63,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public bool FileExists(string path)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			return File.Exists(Path.Combine(_rootPath, path));
 		}
 
@@ -75,7 +75,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public DateTimeOffset GetLastWriteTime(string path)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 
@@ -104,7 +104,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		public Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
 		{
 			if (path == null)
-				throw new ArgumentNullException("path");
+				throw new ArgumentNullException(nameof(path));
 			if (path.Trim().Length == 0)
 				throw new ArgumentException("An empty path is not valid.");
 

@@ -86,9 +86,9 @@ namespace Xamarin.Forms.Platform.Tizen
 		bool _disposed;
 		Native.Dialog _pageBusyDialog;
 		int _pageBusyCount;
-		Naviframe _internalNaviframe;
+		readonly Naviframe _internalNaviframe;
 
-		HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
+		readonly HashSet<EvasObject> _alerts = new HashSet<EvasObject>();
 
 		public event EventHandler<RootNativeViewChangedEventArgs> RootNativeViewChanged;
 
@@ -119,8 +119,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		public Page Page { get; private set; }
 
 		public bool HasAlpha { get; set; }
-
-		Action BackPressedAction { get; set; }
 
 		Task CurrentModalNavigationTask { get; set; }
 		TaskCompletionSource<bool> CurrentTaskCompletionSource { get; set; }

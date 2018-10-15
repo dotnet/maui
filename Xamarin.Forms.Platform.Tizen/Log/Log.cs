@@ -8,40 +8,17 @@ namespace Xamarin.Forms.Platform.Tizen
 	/// </summary>
 	public static class Log
 	{
-		static String _tag = "Xamarin";
-
-		static ILogger _logger = IsTizen() ? (ILogger)new DlogLogger() : (ILogger)new ConsoleLogger();
 
 		/// <summary>
 		/// Gets or sets the log tag.
 		/// </summary>
-		public static String Tag
-		{
-			get
-			{
-				return _tag;
-			}
-			set
-			{
-				_tag = value;
-			}
-		}
+		public static string Tag { get; set; } = "Xamarin";
 
-		/// <summary>
-		/// Gets or sets the logger used to report messages.
-		/// It's DlogLogger on a Tizen platform, ConsoleLogger on any other.
-		/// </summary>
-		public static ILogger Logger
-		{
-			get
-			{
-				return _logger;
-			}
-			set
-			{
-				_logger = value;
-			}
-		}
+        /// <summary>
+        /// Gets or sets the logger used to report messages.
+        /// It's DlogLogger on a Tizen platform, ConsoleLogger on any other.
+        /// </summary>
+        public static ILogger Logger { get; set; } = IsTizen() ? (ILogger)new DlogLogger() : (ILogger)new ConsoleLogger();
 
 		public static void Debug(string message,
 								 Guardian _ = default(Guardian),
@@ -49,7 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								 [CallerMemberName] string func = "",
 								 [CallerLineNumber] int line = 0)
 		{
-			_logger.Debug(_tag, message, file, func, line);
+			Logger.Debug(Tag, message, file, func, line);
 		}
 
 		public static void Debug<T0>(string message,
@@ -203,7 +180,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								   [CallerMemberName] string func = "",
 								   [CallerLineNumber] int line = 0)
 		{
-			_logger.Verbose(_tag, message, file, func, line);
+			Logger.Verbose(Tag, message, file, func, line);
 		}
 
 		public static void Verbose<T0>(string message,
@@ -357,7 +334,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								[CallerMemberName] string func = "",
 								[CallerLineNumber] int line = 0)
 		{
-			_logger.Info(_tag, message, file, func, line);
+			Logger.Info(Tag, message, file, func, line);
 		}
 
 		public static void Info<T0>(string message,
@@ -511,7 +488,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								[CallerMemberName] string func = "",
 								[CallerLineNumber] int line = 0)
 		{
-			_logger.Warn(_tag, message, file, func, line);
+			Logger.Warn(Tag, message, file, func, line);
 		}
 
 		public static void Warn<T0>(string message,
@@ -665,7 +642,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								 [CallerMemberName] string func = "",
 								 [CallerLineNumber] int line = 0)
 		{
-			_logger.Error(_tag, message, file, func, line);
+			Logger.Error(Tag, message, file, func, line);
 		}
 
 		public static void Error<T0>(string message,
@@ -819,7 +796,7 @@ namespace Xamarin.Forms.Platform.Tizen
 								 [CallerMemberName] string func = "",
 								 [CallerLineNumber] int line = 0)
 		{
-			_logger.Fatal(_tag, message, file, func, line);
+			Logger.Fatal(Tag, message, file, func, line);
 		}
 
 		public static void Fatal<T0>(string message,
