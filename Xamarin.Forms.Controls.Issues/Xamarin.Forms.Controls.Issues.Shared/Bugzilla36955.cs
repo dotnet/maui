@@ -34,7 +34,7 @@ namespace Xamarin.Forms.Controls.Issues
 			{
 				View = button
 			};
-			vc.SetBinding(IsEnabledProperty, new Binding("On", source: sc));
+			vc.SetBinding(Cell.IsEnabledProperty, new Binding("On", source: sc));
 
 			ts.Add(sc);
 			ts.Add(vc);
