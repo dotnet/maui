@@ -195,7 +195,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void UpdateFont()
 		{
-			Control.Font = Element.ToUIFont();
+			var font = Element.ToUIFont();
+			Control.Font = font;
+			_placeholderLabel.Font = font;
 		}
 
 		void UpdateKeyboard()
