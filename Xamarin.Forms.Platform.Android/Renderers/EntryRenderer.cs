@@ -255,6 +255,8 @@ namespace Xamarin.Forms.Platform.Android
 				Control.InputType = Control.InputType | InputTypes.TextVariationPassword;
 			if (model.IsPassword && ((Control.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber))
 				Control.InputType = Control.InputType | InputTypes.NumberVariationPassword;
+
+			UpdateFont();
 		}
 
 		void UpdatePlaceholderColor()
