@@ -34,8 +34,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			formsStyle.Setters.Add(Label.FontSizeProperty, prototype.FontSize);
 			formsStyle.Setters.Add(Label.FontFamilyProperty, prototype.FontFamily.Source);
-			formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(prototype.FontWeight));
-			formsStyle.Setters.Add(Label.LineBreakModeProperty, ToLineBreakMode(prototype.TextWrapping));
+			formsStyle.Setters.Add(Label.FontAttributesProperty, ToAttributes(prototype.FontWeight));			
 
 			return formsStyle;
 		}
@@ -49,20 +48,6 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 
 			return FontAttributes.None;
-		}
-
-		static LineBreakMode ToLineBreakMode(TextWrapping value)
-		{
-			switch (value)
-			{
-				case TextWrapping.Wrap:
-					return LineBreakMode.CharacterWrap;
-				case TextWrapping.WrapWholeWords:
-					return LineBreakMode.WordWrap;
-				default:
-				case TextWrapping.NoWrap:
-					return LineBreakMode.NoWrap;
-			}
 		}
 	}
 }
