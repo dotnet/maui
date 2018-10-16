@@ -22,20 +22,32 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo;
-			if (Default == null && Phone == null &&
-				Tablet == null && Desktop == null && TV == null && Watch == null)
-			{
+			if (   Default == null
+			    && Phone == null
+			    && Tablet == null
+			    && Desktop == null
+			    && TV == null
+			    && Watch == null) {
+				var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo;
 				throw new XamlParseException("OnIdiomExtension requires a non-null value to be specified for at least one idiom or Default.", lineInfo ?? new XmlLineInfo());
 			}
 
 			var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException();
 
-			var bp = valueProvider.TargetProperty as BindableProperty;
-			var pi = valueProvider.TargetProperty as PropertyInfo;
-			var propertyType = bp?.ReturnType
-				?? pi?.PropertyType
-				?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
+			BindableProperty bp;
+			PropertyInfo pi = null;
+			Type propertyType = null;
+
+			if (valueProvider.TargetObject is Setter setter) {
+				bp = setter.Property;
+			}
+			else {
+				bp = valueProvider.TargetProperty as BindableProperty;
+				pi = valueProvider.TargetProperty as PropertyInfo;
+			}
+			propertyType = bp?.ReturnType
+							  ?? pi?.PropertyType
+							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
 			var info = propertyType.GetTypeInfo();
