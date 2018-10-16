@@ -133,13 +133,19 @@ namespace Xamarin.Forms.Xaml.Internals
 	{
 		readonly object[] objectAndParents;
 		readonly object targetProperty;
+		readonly INameScope scope;
 
 		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 2.3.4. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) instead.")]
 		public SimpleValueTargetProvider(object[] objectAndParents) : this (objectAndParents, null)
 		{
 		}
 
-		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty)
+		[Obsolete("SimpleValueTargetProvider(object[] objectAndParents) is obsolete as of version 3.3.0. Please use SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, NameScope scope) instead.")]
+		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty) : this (objectAndParents, targetProperty, null)
+		{
+		}
+
+		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
 		{
 			if (objectAndParents == null)
 				throw new ArgumentNullException(nameof(objectAndParents));
@@ -148,6 +154,7 @@ namespace Xamarin.Forms.Xaml.Internals
 
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
+			this.scope = scope;
 		}
 
 		IEnumerable<object> IProvideParentValues.ParentObjects
@@ -161,6 +168,9 @@ namespace Xamarin.Forms.Xaml.Internals
 
 		public object FindByName(string name)
 		{
+			if (scope != null)
+				return scope.FindByName(name);
+
 			for (var i = 0; i < objectAndParents.Length; i++) {
 				var bo = objectAndParents[i] as BindableObject;
 				if (bo == null) continue;

@@ -22,21 +22,34 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo;
-			if (Android == null && GTK == null && iOS == null && 
-				macOS == null && Tizen == null && UWP == null && 
-				WPF == null && Default == null)
-			{
-				throw new XamlParseException("OnPlatformExtension requires a non-null value to be specified for at least one platform or Default.", lineInfo ?? new XmlLineInfo());
+			if (   Android == null
+			    && GTK == null
+			    && iOS == null
+			    && macOS == null
+			    && Tizen == null
+			    && UWP == null
+			    && WPF == null
+			    && Default == null) {
+				var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo ?? new XmlLineInfo();
+				throw new XamlParseException("OnPlatformExtension requires a non-null value to be specified for at least one platform or Default.", lineInfo);
 			}
 
 			var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException();
 
-			var bp = valueProvider.TargetProperty as BindableProperty;
-			var pi = valueProvider.TargetProperty as PropertyInfo;
-			var propertyType = bp?.ReturnType 
-				?? pi?.PropertyType 
-				?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
+			BindableProperty bp;
+			PropertyInfo pi = null;
+			Type propertyType = null;
+
+			if (valueProvider.TargetObject is Setter setter) {
+				bp = setter.Property;
+			}
+			else {
+				bp = valueProvider.TargetProperty as BindableProperty;
+				pi = valueProvider.TargetProperty as PropertyInfo;
+			}
+			propertyType = bp?.ReturnType
+							  ?? pi?.PropertyType
+							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
 			var info = propertyType.GetTypeInfo();
