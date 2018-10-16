@@ -6,6 +6,7 @@ using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 using Android.Views;
 using Xamarin.Forms.Internals;
+using Android.Support.V4.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
@@ -137,9 +138,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
-				_defaultLabelFor = LabelFor;
+				_defaultLabelFor = ViewCompat.GetLabelFor(this);
 
-			LabelFor = (int)(id ?? _defaultLabelFor);
+			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
 
 		void IVisualElementRenderer.UpdateLayout() => _visualElementTracker?.UpdateLayout();

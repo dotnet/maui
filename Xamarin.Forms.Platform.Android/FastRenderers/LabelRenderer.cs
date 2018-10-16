@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
+using Android.Support.V4.View;
 using Android.Text;
 using Android.Util;
 using Android.Views;
@@ -138,9 +139,9 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void IVisualElementRenderer.SetLabelFor(int? id)
 		{
 			if (_defaultLabelFor == null)
-				_defaultLabelFor = LabelFor;
+				_defaultLabelFor = ViewCompat.GetLabelFor(this);
 
-			LabelFor = (int)(id ?? _defaultLabelFor);
+			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
 
 		void IVisualElementRenderer.UpdateLayout()

@@ -10,6 +10,7 @@ using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 using AMotionEventActions = Android.Views.MotionEventActions;
 using static System.String;
+using Android.Support.V4.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
@@ -164,10 +165,10 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			if (_defaultLabelFor == null)
 			{
-				_defaultLabelFor = LabelFor;
+				_defaultLabelFor = ViewCompat.GetLabelFor(this);
 			}
 
-			LabelFor = (int)(id ?? _defaultLabelFor);
+			ViewCompat.SetLabelFor(this, (int)(id ?? _defaultLabelFor));
 		}
 
 		void IVisualElementRenderer.UpdateLayout()
