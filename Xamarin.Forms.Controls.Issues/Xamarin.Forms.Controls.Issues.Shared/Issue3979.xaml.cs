@@ -12,8 +12,8 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 3979, "Issue Description", PlatformAffected.UWP)]
-	public partial class Issue3979 : TestContentPage // or TestMasterDetailPage, etc ...
+	[Issue(IssueTracker.Github, 3979, "Removing LineBreakMode support from WindowsResourcesProvider", PlatformAffected.UWP)]
+	public partial class Issue3979 : TestContentPage
 	{
 		public Issue3979()
 		{
@@ -26,10 +26,11 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 
 		}
-
+#if APP
 		private void Button_OnClicked(object sender, EventArgs e)
 		{
 			TargetSpan.Style = Device.Styles.BodyStyle;
 		}
+#endif
 	}
 }
