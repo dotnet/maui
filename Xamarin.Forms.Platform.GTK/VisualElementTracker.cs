@@ -244,7 +244,7 @@ namespace Xamarin.Forms.Platform.GTK
 
 			_container.ButtonPressEvent -= OnContainerButtonPressEvent;
 
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any())
+			if (gestures.GetGesturesFor<TapGestureRecognizer>().Any() || gestures.GetGesturesFor<ClickGestureRecognizer>().Any())
 			{
 				_container.ButtonPressEvent += OnContainerButtonPressEvent;
 			}
@@ -339,7 +339,8 @@ namespace Xamarin.Forms.Platform.GTK
 
 		private void OnContainerButtonPressEvent(object o, ButtonPressEventArgs args)
 		{
-			if (args.Event.Button != 1)
+			var button = args.Event.Button;
+			if (button != 1 && button != 3)
 			{
 				return;
 			}
@@ -349,21 +350,47 @@ namespace Xamarin.Forms.Platform.GTK
 			if (view == null)
 				return;
 
-			if (args.Event.Type == Gdk.EventType.TwoButtonPress)
+			int numClicks = 0;
+			switch (args.Event.Type)
 			{
-				IEnumerable<TapGestureRecognizer> doubleTapGestures = view.GestureRecognizers
-					.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 2);
-
-				foreach (TapGestureRecognizer recognizer in doubleTapGestures)
-					recognizer.SendTapped(view);
+				case Gdk.EventType.ThreeButtonPress:
+					numClicks = 3;
+					break;
+				case Gdk.EventType.TwoButtonPress:
+					numClicks = 2;
+					break;
+				case Gdk.EventType.ButtonPress:
+					numClicks = 1;
+					break;
+				default:
+					return;
 			}
-			else
+
+			// Taps or Clicks
+			if (button == 1)
 			{
 				IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers
-					.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1);
+					.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == numClicks);
 
 				foreach (TapGestureRecognizer recognizer in tapGestures)
 					recognizer.SendTapped(view);
+
+				IEnumerable<ClickGestureRecognizer> clickGestures = view.GestureRecognizers
+					.GetGesturesFor<ClickGestureRecognizer>(g => g.NumberOfClicksRequired == numClicks &&
+															g.Buttons == ButtonsMask.Primary);
+
+				foreach (ClickGestureRecognizer recognizer in clickGestures)
+					recognizer.SendClicked(view, ButtonsMask.Primary);
+			}
+			else
+			{
+				// right click
+				IEnumerable<ClickGestureRecognizer> rightClickGestures = view.GestureRecognizers
+					.GetGesturesFor<ClickGestureRecognizer>(g => g.NumberOfClicksRequired == numClicks &&
+															g.Buttons == ButtonsMask.Secondary);
+
+				foreach (ClickGestureRecognizer recognizer in rightClickGestures)
+					recognizer.SendClicked(view, ButtonsMask.Secondary);
 			}
 		}
 
