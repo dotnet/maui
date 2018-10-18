@@ -302,8 +302,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			_titleGroup.Group.View = view;
 			//save a reference so we can paint this for the background
 			_nsToolbarItemViewer = _titleGroup.Group.View.Superview;
+			if (_nsToolbarItemViewer == null)
+				return;
 			//position is hard .. we manually set the title to be centered 
-			var totalWidth = _titleGroup.Group.View.Superview.Superview.Frame.Width;
+			var totalWidth = _nsToolbarItemViewer.Superview.Frame.Width;
 			var fieldWidth = titleField.Frame.Width;
 			var x = ((totalWidth - fieldWidth) / 2) - _nsToolbarItemViewer.Frame.X;
 			titleField.Frame = new CGRect(x, 0, fieldWidth, ToolbarHeight);
