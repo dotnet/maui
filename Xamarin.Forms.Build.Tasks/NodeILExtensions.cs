@@ -103,8 +103,13 @@ namespace Xamarin.Forms.Build.Tasks
 			if (compiledConverterName != null && (compiledConverterType = Type.GetType (compiledConverterName)) != null) {
 				var compiledConverter = Activator.CreateInstance (compiledConverterType);
 				var converter = typeof(ICompiledTypeConverter).GetMethods ().FirstOrDefault (md => md.Name == "ConvertFromString");
-				var instructions = (IEnumerable<Instruction>)converter.Invoke (compiledConverter, new object[] {
+				IEnumerable<Instruction> instructions;
+				try {
+					instructions = (IEnumerable<Instruction>)converter.Invoke(compiledConverter, new object[] {
 					node.Value as string, context, node as BaseNode});
+				} catch (System.Reflection.TargetInvocationException tie) when (tie.InnerException is XamlParseException) {
+					throw tie.InnerException;
+				}
 				foreach (var i in instructions)
 					yield return i;
 				if (targetTypeRef.IsValueType && boxValueTypes)
