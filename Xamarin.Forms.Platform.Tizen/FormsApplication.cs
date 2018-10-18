@@ -135,6 +135,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				_application.Platform = _platform;
 			}
+			_platform.HasAlpha = MainWindow.Alpha;
 			_platform.SetPage(page);
 		}
 
@@ -181,7 +182,6 @@ namespace Xamarin.Forms.Platform.Tizen
 			};
 
 			_platform = Platform.CreatePlatform(BaseLayout);
-			_platform.HasAlpha = MainWindow.Alpha;
 			BaseLayout.SetContent(_platform.GetRootNativeView());
 			_platform.RootNativeViewChanged += (s, e) => BaseLayout.SetContent(e.RootNativeView);
 		}
