@@ -50,11 +50,25 @@ namespace Xamarin.Forms.Platform.WPF
 			//if (Debugger.IsAttached)
 			//	Console.WriteLine("Page type : " + visualElement.GetType() + " (" + (visualElement as Page).Title + ") -- Parent type : " + visualElement.Parent.GetType() + " -- " + parent.ActualHeight + "H*" + parent.ActualWidth + "W");
 
-			visualElement.Layout(new Rectangle(0, 0, parent.ActualWidth, parent.ActualHeight));
+			var actualRect = new Rectangle(0, 0, parent.ActualWidth, parent.ActualHeight);
+			visualElement.Layout(actualRect);
+
+			// ControlTemplate adds an additional layer through which to send sizing changes.
+			var contentPage = visualElement as ContentPage;
+			if (contentPage?.ControlTemplate != null)
+			{
+				contentPage.Content?.Layout(actualRect);
+			}
+			else
+			{
+				var contentView = visualElement as ContentView;
+				if (contentView?.ControlTemplate != null)
+					contentView.Content?.Layout(actualRect);
+			}
 
 			IPageController pageController = visualElement.RealParent as IPageController;
 			if (pageController != null)
-				pageController.ContainerArea = new Rectangle(0, 0, parent.ActualWidth, parent.ActualHeight);
+				pageController.ContainerArea = actualRect;
 				
 			return renderer.GetNativeElement();
 		}

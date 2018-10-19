@@ -263,6 +263,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Effects\AttachedStateEffectList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1648.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1702.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GitHub2642.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub1700.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GitHub2598.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1483.cs" />
