@@ -321,9 +321,11 @@ namespace Xamarin.Forms.Platform.iOS
 			var task = GetAppearedOrDisappearedTask(page);
 
 			UIViewController poppedViewController;
+			_ignorePopCall = true;
 			poppedViewController = base.PopViewController(animated);
 
 			actuallyRemoved = (poppedViewController == null) ? true : !await task;
+			_ignorePopCall = false;
 
 			poppedViewController?.Dispose();
 
@@ -720,6 +722,9 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (NavPage == null)
 				return;
+			if (_ignorePopCall) 
+				return;
+			
 			_ignorePopCall = true;
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
