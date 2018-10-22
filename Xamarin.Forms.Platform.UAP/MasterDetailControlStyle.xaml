@@ -15,7 +15,11 @@
 									<RowDefinition Height="*" />
 								</Grid.RowDefinitions>
 								<StackPanel Grid.Row="0" Orientation="Horizontal" Visibility="{TemplateBinding MasterToolbarVisibility}"  Background="{TemplateBinding ToolbarBackground}">
-									<Button Name="PaneTogglePane" Style="{ThemeResource PaneButton}" Foreground="{TemplateBinding ToolbarForeground}" />
+									<Button Name="PaneTogglePane" Style="{ThemeResource PaneButton}" Foreground="{TemplateBinding ToolbarForeground}"
+											AutomationProperties.Name="{Binding Path=(AutomationProperties.Name), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
+											AutomationProperties.HelpText="{Binding Path=(AutomationProperties.HelpText), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
+											AutomationProperties.LabeledBy="{Binding Path=(AutomationProperties.LabeledBy), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  
+											AutomationProperties.AccessibilityView="{Binding Path=(AutomationProperties.AccessibilityView), RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"  />
 									<TextBlock Margin="10,0,0,0" Style="{ThemeResource TitleTextBlockStyle}" VerticalAlignment="Center" Text="{TemplateBinding MasterTitle}" Visibility="{TemplateBinding MasterTitleVisibility}" Foreground="{TemplateBinding ToolbarForeground}"/>
 								</StackPanel>
 								<ContentPresenter x:Name="MasterPresenter" Grid.Row="1" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Master}" />

@@ -605,6 +605,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			bool showBackButton = Element.InternalChildren.Count > 1 && NavigationPage.GetHasBackButton(_currentPage);
 			_navManager.AppViewBackButtonVisibility = showBackButton ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
+			_container.SetBackButtonTitle(Element);
 		}
 
 		async void UpdateTitleOnParents()

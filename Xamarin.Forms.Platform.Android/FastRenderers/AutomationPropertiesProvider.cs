@@ -7,6 +7,27 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	internal class AutomationPropertiesProvider : IDisposable 
 	{
+		static readonly string s_defaultDrawerId = "drawer";
+		static readonly string s_defaultDrawerIdOpenSuffix = "_open";
+		static readonly string s_defaultDrawerIdCloseSuffix = "_close";
+
+		internal static void GetDrawerAccessibilityResources(global::Android.Content.Context context, MasterDetailPage page, out int resourceIdOpen, out int resourceIdClose)
+		{
+			resourceIdOpen = 0;
+			resourceIdClose = 0;
+			if (page == null)
+				return;
+
+			var automationIdParent = s_defaultDrawerId;
+			if (!string.IsNullOrEmpty(page.Master?.Icon))
+				automationIdParent = page.Master.Icon.AutomationId;
+			else if (!string.IsNullOrEmpty(page.AutomationId))
+				automationIdParent = page.AutomationId;
+
+			resourceIdOpen = context.Resources.GetIdentifier($"{automationIdParent}{s_defaultDrawerIdOpenSuffix}", "string", context.ApplicationInfo.PackageName);
+			resourceIdClose = context.Resources.GetIdentifier($"{automationIdParent}{s_defaultDrawerIdCloseSuffix}", "string", context.ApplicationInfo.PackageName);
+		}
+
 		internal static void SetAutomationId(AView control, VisualElement element, string value = null)
 		{
 			if (element == null || control == null)

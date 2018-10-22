@@ -35,6 +35,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
+
+				this.SetAccessibilityHint(item);
+				this.SetAccessibilityLabel(item);
 			}
 
 			protected override void Dispose(bool disposing)
@@ -63,6 +66,10 @@ namespace Xamarin.Forms.Platform.iOS
 							UpdateTextAndStyle();
 					}
 				}
+				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+					this.SetAccessibilityHint(_item);
+				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+					this.SetAccessibilityLabel(_item);
 			}
 
 			async void UpdateIconAndStyle()
@@ -102,6 +109,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
+
+				this.SetAccessibilityHint(item);
+				this.SetAccessibilityLabel(item);
 			}
 
 			protected override void Dispose(bool disposing)
@@ -119,6 +129,10 @@ namespace Xamarin.Forms.Platform.iOS
 					UpdateIcon();
 				else if (e.PropertyName == _item.IsEnabledPropertyName)
 					UpdateIsEnabled();
+				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
+					this.SetAccessibilityHint(_item);
+				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
+					this.SetAccessibilityLabel(_item);
 			}
 
 			async void UpdateIcon()

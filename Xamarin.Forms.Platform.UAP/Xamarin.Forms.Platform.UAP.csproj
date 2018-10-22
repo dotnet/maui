@@ -43,6 +43,7 @@
     </NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AccessibilityExtensions.cs" />
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />

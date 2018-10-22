@@ -369,76 +369,39 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected virtual void SetAutomationId(string id)
 		{
-			SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, id);
+			this.SetAutomationPropertiesAutomationId(id);
 		}
 
 		protected virtual void SetAutomationPropertiesName()
 		{
-			if (Element == null || Control == null)
+			if (Control == null)
 				return;
 
-			if (_defaultAutomationPropertiesName == null)
-				_defaultAutomationPropertiesName = (string)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty);
-
-			var elemValue = (string)Element.GetValue(AutomationProperties.NameProperty);
-
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty, elemValue);
-			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty, _defaultAutomationPropertiesName);
+			_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 		}
 
 		protected virtual void SetAutomationPropertiesAccessibilityView()
 		{
-			if (Element == null || Control == null)
+			if (Control == null)
 				return;
 
-			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
-				_defaultAutomationPropertiesAccessibilityView = (AccessibilityView)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.AccessibilityViewProperty);
-
-			var newValue = _defaultAutomationPropertiesAccessibilityView;
-			var elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-
-			if (elemValue == true)
-				newValue = AccessibilityView.Content;
-			else if (elemValue == false)
-				newValue = AccessibilityView.Raw;
-
-			Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AccessibilityViewProperty, newValue);
+			_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 		}
 
 		protected virtual void SetAutomationPropertiesHelpText()
 		{
-			if (Element == null || Control == null)
+			if (Control == null)
 				return;
 
-			if (_defaultAutomationPropertiesHelpText == null)
-				_defaultAutomationPropertiesHelpText = (string)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty);
-
-			var elemValue = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
-
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty, elemValue);
-			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty, _defaultAutomationPropertiesHelpText);
+			_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
 		}
 
 		protected virtual void SetAutomationPropertiesLabeledBy()
 		{
-			if (Element == null || Control == null)
+			if (Control == null)
 				return;
 
-			if (_defaultAutomationPropertiesLabeledBy == null)
-				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty);
-
-			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
-			var renderer = elemValue?.GetOrCreateRenderer();
-			var nativeElement = renderer?.GetNativeElement();
-
-			if (nativeElement != null)
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, nativeElement);
-			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
+			_defaultAutomationPropertiesLabeledBy = Control.SetAutomationPropertiesLabeledBy(Element, _defaultAutomationPropertiesLabeledBy);
 		}
 
 		protected void SetNativeControl(TNativeElement control)

@@ -489,6 +489,9 @@ namespace Xamarin.Forms.Controls
 				}
 			};
 
+			this.SetAutomationPropertiesName("Gallery");
+			this.SetAutomationPropertiesHelpText("Lists all gallery pages");
+
 			Content = new AbsoluteLayout
 			{
 				Children = {

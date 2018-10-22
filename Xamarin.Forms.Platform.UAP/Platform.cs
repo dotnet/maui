@@ -11,6 +11,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Xamarin.Forms.Internals;
+using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperties;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -401,6 +402,11 @@ namespace Xamarin.Forms.Platform.UWP
 				button.SetBinding(AppBarButton.IconProperty, "Icon", _fileImageSourcePathConverter);
 				button.Command = new MenuItemCommand(item);
 				button.DataContext = item;
+				button.SetValue(NativeAutomationProperties.AutomationIdProperty, item.AutomationId);
+				button.SetAutomationPropertiesName(item);
+				button.SetAutomationPropertiesAccessibilityView(item);							   
+				button.SetAutomationPropertiesHelpText(item);
+				button.SetAutomationPropertiesLabeledBy(item);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)

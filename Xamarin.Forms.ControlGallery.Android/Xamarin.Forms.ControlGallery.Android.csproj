@@ -234,6 +234,7 @@
     <AndroidResource Include="Resources\drawable\toolbar_close.png" />
     <AndroidResource Include="Resources\drawable\test.jpg" />
     <AndroidResource Include="Resources\drawable\invalidimage.jpg" />
+    <AndroidResource Include="Resources\values\strings.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\Icon.png" />

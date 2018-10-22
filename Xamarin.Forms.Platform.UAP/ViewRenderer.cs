@@ -29,8 +29,8 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, $"{id}_Container");
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AutomationIdProperty, id);
+				this.SetAutomationPropertiesAutomationId($"{id}_Container");
+				Control.SetAutomationPropertiesAutomationId(id);
 			}
 		}
 		protected override void SetAutomationPropertiesName()
@@ -41,18 +41,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			if (Element == null)
-				return;
-
-			if (_defaultAutomationPropertiesName == null)
-				_defaultAutomationPropertiesName = (string)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty);
-
-			var elemValue = (string)Element.GetValue(AutomationProperties.NameProperty);
-
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty, elemValue);
-			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.NameProperty, _defaultAutomationPropertiesName);
+			_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 		}
 
 		protected override void SetAutomationPropertiesAccessibilityView()
@@ -63,21 +52,7 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			if (Element == null)
-				return;
-
-			if (!_defaultAutomationPropertiesAccessibilityView.HasValue)
-				_defaultAutomationPropertiesAccessibilityView = (AccessibilityView)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.AccessibilityViewProperty);
-
-			var newValue = _defaultAutomationPropertiesAccessibilityView;
-			var elemValue = (bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty);
-
-			if (elemValue == true)
-				newValue = AccessibilityView.Content;
-			else if (elemValue == false)
-				newValue = AccessibilityView.Raw;
-
-			Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.AccessibilityViewProperty, newValue);
+			_defaultAutomationPropertiesAccessibilityView = Control.SetAutomationPropertiesAccessibilityView(Element, _defaultAutomationPropertiesAccessibilityView);
 		}
 
 		protected override void SetAutomationPropertiesHelpText()
@@ -88,25 +63,14 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			if (Element == null)
-				return;
-
-			if (_defaultAutomationPropertiesHelpText == null)
-				_defaultAutomationPropertiesHelpText = (string)Control.GetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty);
-
-			var elemValue = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
-
-			if (!string.IsNullOrWhiteSpace(elemValue))
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty, elemValue);
-			else
-				Control.SetValue(Windows.UI.Xaml.Automation.AutomationProperties.HelpTextProperty, _defaultAutomationPropertiesHelpText);
+			_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
 		}
 
 		protected override void SetAutomationPropertiesLabeledBy()
 		{
 			if (Control == null)
 			{
-				base.SetAutomationPropertiesLabeledBy(); 
+				base.SetAutomationPropertiesLabeledBy();
 				return;
 			}
 
