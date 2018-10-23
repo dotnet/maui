@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Support.V7.Widget;
 using Android.Widget;
+using Xamarin.Forms.Platform.Android.FastRenderers;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -12,6 +13,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 	{
 		bool _disposed;
 		Drawable _defaultTrackDrawable;
+		string _defaultContentDescription;
 
 		public SwitchRenderer(Context context) : base(context)
 		{
@@ -23,6 +25,9 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			AutoPackage = false;
 		}
+
+		protected override void SetContentDescription()
+			=> AutomationPropertiesProvider.SetBasicContentDescription(this, Element, ref _defaultContentDescription);
 
 		void CompoundButton.IOnCheckedChangeListener.OnCheckedChanged(CompoundButton buttonView, bool isChecked)
 		{
