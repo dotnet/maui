@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
@@ -13,12 +14,27 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Bugzilla, 45027, "App crashes when double tapping on ToolbarItem or MenuItem very quickly", PlatformAffected.Android)]
 	public class Bugzilla45027 : TestContentPage // or TestMasterDetailPage, etc ...
 	{
+		const string BUTTON_ACTION_TEXT = "Action";
+		const string BUTTON_DELETE_TEXT = "Delete";
+
+		List<int> _list;
+		public List<int> List
+		{
+			get 
+			{
+				if (_list == null)
+				{
+					_list = new List<int>();
+					for (var i = 0; i < 10; i++)
+						_list.Add(i);
+				}
+
+				return _list;
+			}
+		}
+
 		protected override void Init()
 		{
-			var list = new List<int>();
-			for (var i = 0; i < 10; i++)
-				list.Add(i);
-
 			var stackLayout = new StackLayout
 			{
 				Orientation = StackOrientation.Vertical,
@@ -34,7 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 
 			var listView = new ListView
 			{
-				ItemsSource = list,
+				ItemsSource = List,
 				ItemTemplate = new DataTemplate(() =>
 				{
 					var label = new Label();
@@ -48,11 +64,11 @@ namespace Xamarin.Forms.Controls.Issues
 						},
 						ContextActions = { new MenuItem
 						{
-							Text = "Action"
+							Text = BUTTON_ACTION_TEXT
 						},
 						new MenuItem
 						{
-							Text = "Delete",
+							Text = BUTTON_DELETE_TEXT,
 							IsDestructive = true
 						} }
 					};
@@ -62,5 +78,39 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Content = stackLayout;
 		}
+
+#if UITEST && __ANDROID__
+		[Test]
+		public void Bugzilla45027Test()
+		{
+			var firstItemList = List.First().ToString();
+			RunningApp.WaitForElement(q => q.Marked(firstItemList));
+
+			RunningApp.TouchAndHold(q => q.Marked(firstItemList));
+			RunningApp.WaitForElement(q => q.Marked(BUTTON_ACTION_TEXT));
+			RunningApp.DoubleTap(q => q.Marked(BUTTON_ACTION_TEXT));
+
+			RunningApp.TouchAndHold(q => q.Marked(firstItemList));
+			RunningApp.WaitForElement(q => q.Marked(BUTTON_DELETE_TEXT));
+			RunningApp.DoubleTap(q => q.Marked(BUTTON_DELETE_TEXT));
+		}
+#endif
+
+#if UITEST && __IOS__
+		[Test]
+		public void Bugzilla45027Test()
+		{
+			var firstItemList = List.First().ToString();
+			RunningApp.WaitForElement(q => q.Marked(firstItemList));
+
+			RunningApp.SwipeRightToLeft(q => q.Marked(firstItemList));
+			RunningApp.WaitForElement(q => q.Marked(BUTTON_ACTION_TEXT));
+			RunningApp.DoubleTap(q => q.Marked(BUTTON_ACTION_TEXT));
+
+			RunningApp.SwipeRightToLeft(q => q.Marked(firstItemList));
+			RunningApp.WaitForElement(q => q.Marked(BUTTON_DELETE_TEXT));
+			RunningApp.DoubleTap(q => q.Marked(BUTTON_DELETE_TEXT));
+		}
+#endif
 	}
 }
