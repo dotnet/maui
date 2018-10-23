@@ -1,6 +1,7 @@
 ﻿using System;
 using AppKit;
 using CoreGraphics;
+using Foundation;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -45,7 +46,15 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			_onForceUpdateSizeRequested = (sender, e) =>
 			{
-				//TODO: Implement ForceUpdateSize
+				var index = tableView?.RowForView(nativeCell);
+				if (index != null)
+				{
+					NSAnimationContext.BeginGrouping();
+					NSAnimationContext.CurrentContext.Duration = 0;
+					var indexSetRow = NSIndexSet.FromIndex(index.Value);
+					tableView.NoteHeightOfRowsWithIndexesChanged(indexSetRow);
+					NSAnimationContext.EndGrouping();
+				}
 			};
 
 			cell.ForceUpdateSizeRequested += _onForceUpdateSizeRequested;
