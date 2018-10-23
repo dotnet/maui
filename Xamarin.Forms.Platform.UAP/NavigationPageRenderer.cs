@@ -201,6 +201,7 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateTitleColor();
 				UpdateNavigationBarBackground();
 				UpdateToolbarPlacement();
+				UpdateToolbarDynamicOverflowEnabled();
 				UpdateTitleIcon();
 				UpdateTitleView();
 
@@ -368,6 +369,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePadding();
 			else if (e.PropertyName == ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
+			else if (e.PropertyName == ToolbarDynamicOverflowEnabledProperty.PropertyName)
+				UpdateToolbarDynamicOverflowEnabled();
 			else if (e.PropertyName == NavigationPage.TitleIconProperty.PropertyName)
 				UpdateTitleIcon();
 			else if (e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
@@ -585,6 +588,17 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_container.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
 		}
+
+		void UpdateToolbarDynamicOverflowEnabled()
+		{
+			if (_container == null)
+			{
+				return;
+			}
+
+			_container.ToolbarDynamicOverflowEnabled = Element.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
+		}
+		
 
 		void UpdateShowTitle()
 		{

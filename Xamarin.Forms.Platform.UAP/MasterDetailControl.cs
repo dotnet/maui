@@ -74,9 +74,10 @@ namespace Xamarin.Forms.Platform.UWP
 		FrameworkElement _detailPresenter;
 		SplitView _split;
 	    ToolbarPlacement _toolbarPlacement;
+		bool _toolbarDynamicOverflowEnabled = true;
 		FrameworkElement _titleViewPresenter;
 
-	    public MasterDetailControl()
+		public MasterDetailControl()
 		{
 			DefaultStyleKey = typeof(MasterDetailControl);
 
@@ -224,8 +225,18 @@ namespace Xamarin.Forms.Platform.UWP
 	            _toolbarPlacementHelper.UpdateToolbarPlacement();
 	        }
 	    }
+		
+		public bool ToolbarDynamicOverflowEnabled
+		{
+			get { return _toolbarDynamicOverflowEnabled; }
+			set
+			{
+				_toolbarDynamicOverflowEnabled = value;
+				UpdateToolbarDynamicOverflowEnabled();
+			}
+		}
 
-	    public Visibility ContentTogglePaneButtonVisibility
+		public Visibility ContentTogglePaneButtonVisibility
 		{
 			get { return (Visibility)GetValue(ContentTogglePaneButtonVisibilityProperty); }
 			set { SetValue(ContentTogglePaneButtonVisibilityProperty, value); }
@@ -291,6 +302,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_commandBar = GetTemplateChild("CommandBar") as CommandBar;
 			_toolbarPlacementHelper.Initialize(_commandBar, () => ToolbarPlacement, GetTemplateChild);
+			UpdateToolbarDynamicOverflowEnabled();
 			
 			UpdateMode(); 
 
@@ -381,6 +393,14 @@ namespace Xamarin.Forms.Platform.UWP
 
 				if (_titleViewPresenter != null)
 					_titleViewPresenter.Loaded += OnTitleViewPresenterLoaded;
+			}
+		}
+		
+		void UpdateToolbarDynamicOverflowEnabled()
+		{
+			if (_commandBar != null)
+			{
+				_commandBar.IsDynamicOverflowEnabled = ToolbarDynamicOverflowEnabled;
 			}
 		}
 	}

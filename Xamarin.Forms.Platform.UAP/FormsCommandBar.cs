@@ -9,8 +9,6 @@ namespace Xamarin.Forms.Platform.UWP
 {
 	public class FormsCommandBar : CommandBar
 	{
-		// TODO Once 10.0.14393.0 is available (and we don't have to support lower versions), enable dynamic overflow: https://msdn.microsoft.com/en-us/library/windows/apps/windows.ui.xaml.controls.commandbar.isdynamicoverflowenabled.aspx 
-
 		Windows.UI.Xaml.Controls.Button _moreButton;
 		Windows.UI.Xaml.Controls.ItemsControl _primaryItemsControl;
 		bool _isInValidLocation;

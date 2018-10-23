@@ -183,6 +183,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				UpdateCurrentPage();
 				UpdateToolbarPlacement();
+				UpdateToolbarDynamicOverflowEnabled();
 
 				((INotifyCollectionChanged)Element.Children).CollectionChanged += OnPagesChanged;
 				element.PropertyChanged += OnElementPropertyChanged;
@@ -224,6 +225,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateBarBackgroundColor();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
+			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName)
+				UpdateToolbarDynamicOverflowEnabled();
 			else if (e.PropertyName == Specifics.HeaderIconsEnabledProperty.PropertyName)
 				UpdateBarIcons();
 			else if (e.PropertyName == Specifics.HeaderIconsSizeProperty.PropertyName)
@@ -492,6 +495,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateToolbarPlacement()
 		{
 			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
+		}
+
+		void UpdateToolbarDynamicOverflowEnabled()
+		{
+			Control.ToolbarDynamicOverflowEnabled = Element.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 		}
 
 		protected void UpdateAccessKeys()

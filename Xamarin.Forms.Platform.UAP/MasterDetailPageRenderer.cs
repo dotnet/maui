@@ -179,6 +179,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 				((ITitleProvider)this).BarBackgroundBrush = (Brush)Windows.UI.Xaml.Application.Current.Resources["SystemControlBackgroundChromeMediumLowBrush"];
 				UpdateToolbarPlacement();
+				UpdateToolbarDynamicOverflowEnabled();
 
 				_defaultAutomationPropertiesName = Control.SetAutomationPropertiesName(Element, _defaultAutomationPropertiesName);
 				_defaultAutomationPropertiesHelpText = Control.SetAutomationPropertiesHelpText(Element, _defaultAutomationPropertiesHelpText);
@@ -201,6 +202,8 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdateMode();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
+			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName)
+				UpdateToolbarDynamicOverflowEnabled();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection();
 			else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
@@ -402,6 +405,11 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateToolbarPlacement()
 		{
 			Control.ToolbarPlacement = Element.OnThisPlatform().GetToolbarPlacement();
+		}
+
+		void UpdateToolbarDynamicOverflowEnabled()
+		{
+			Control.ToolbarDynamicOverflowEnabled = Element.OnThisPlatform().GetToolbarDynamicOverflowEnabled();
 		}
 
 		void UpdateToolbarVisibilty()

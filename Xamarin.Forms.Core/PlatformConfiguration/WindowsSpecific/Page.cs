@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 {
-    using FormsElement = Forms.Page;
+	using FormsElement = Forms.Page;
 
-    public static class Page
-    {
-        #region ToolbarPlacement
+	public static class Page
+	{
+		#region ToolbarPlacement
 
 		public static readonly BindableProperty ToolbarPlacementProperty =
 			BindableProperty.CreateAttached("ToolbarPlacement", typeof(ToolbarPlacement),
@@ -30,7 +30,7 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 		{
 			return (ToolbarPlacement)config.Element.GetValue(ToolbarPlacementProperty);
 		}
-		
+
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarPlacement(
 			this IPlatformElementConfiguration<Windows, FormsElement> config, ToolbarPlacement value)
 		{
@@ -39,5 +39,35 @@ namespace Xamarin.Forms.PlatformConfiguration.WindowsSpecific
 		}
 
 		#endregion
-    }
+
+		#region ToolbarDynamicOverflowEnabled
+
+		public static readonly BindableProperty ToolbarDynamicOverflowEnabledProperty =
+			BindableProperty.CreateAttached("ToolbarDynamicOverflowEnabled", typeof(bool),
+				typeof(FormsElement), true);
+
+		public static bool GetToolbarDynamicOverflowEnabled(BindableObject element)
+		{
+			return (bool)element.GetValue(ToolbarDynamicOverflowEnabledProperty);
+		}
+
+		public static void SetToolbarDynamicOverflowEnabled(BindableObject element, bool value)
+		{
+			element.SetValue(ToolbarDynamicOverflowEnabledProperty, value);
+		}
+
+		public static bool GetToolbarDynamicOverflowEnabled(this IPlatformElementConfiguration<Windows, FormsElement> config)
+		{
+			return (bool)config.Element.GetValue(ToolbarDynamicOverflowEnabledProperty);
+		}
+
+		public static IPlatformElementConfiguration<Windows, FormsElement> SetToolbarDynamicOverflowEnabled(
+			this IPlatformElementConfiguration<Windows, FormsElement> config, bool value)
+		{
+			config.Element.SetValue(ToolbarDynamicOverflowEnabledProperty, value);
+			return config;
+		}
+
+		#endregion
+	}
 }
