@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq;
 using AppKit;
 using CoreImage;
 
@@ -58,7 +59,13 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			var newColor = color.ToNSColor();
 			if (Equals(s_currentColor, newColor))
+			{
+				if (Control.ContentFilters?.FirstOrDefault() != s_currentColorFilter)
+				{
+					Control.ContentFilters = new CIFilter[] { s_currentColorFilter };
+				}
 				return;
+			}
 
 			s_currentColor = newColor;
 
