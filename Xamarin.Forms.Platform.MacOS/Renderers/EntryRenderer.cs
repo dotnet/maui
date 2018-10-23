@@ -77,7 +77,7 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			void HandleWindowDidBecomeKey(object sender, EventArgs args)
 			{
-				if (CurrentEditor == Window.FirstResponder)
+				if (Window != null && CurrentEditor == Window.FirstResponder)
 					FocusChanged?.Invoke(this, new BoolEventArgs(true));
 			}
 		}
