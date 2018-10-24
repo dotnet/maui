@@ -7,19 +7,34 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+#if UITEST
+using Xamarin.UITest;
+using Xamarin.UITest.Queries;
+using NUnit.Framework;
+#endif
+
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1777, "Adding picker items when picker is in a ViewCell breaks", PlatformAffected.WinPhone)]
-	public class Issue1777 : ContentPage
+	public class Issue1777 : TestContentPage
 	{
 		Picker _pickerTable = null;
 		Picker _pickerNormal = null;
+		string _pickerTableId = "pickerTableId";
+		string _btnText = "do magic";
 
-		public Issue1777 ()
+		protected override void Init ()
 		{
 			StackLayout stackLayout = new StackLayout();
 			Content = stackLayout;
+
+			var instructions = new Label
+			{
+				Text = $@"Tap the ""{_btnText}"" button. Then click on the picker inside the Table. The picker should display ""test 0"". If not, the test failed."
+			};
+
+			stackLayout.Children.Add(instructions);
 
 			TableView tableView = new TableView();
 			stackLayout.Children.Add( tableView);
@@ -38,6 +53,7 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 			viewCell.View = contentView;
 
 			_pickerTable = new Picker ();
+			_pickerTable.AutomationId = _pickerTableId;
 			_pickerTable.HorizontalOptions = LayoutOptions.FillAndExpand;
 			contentView.Content = _pickerTable;
 
@@ -50,7 +66,7 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 
 			Button button = new Button ();
 			button.Clicked += button_Clicked;
-			button.Text = "do magic";
+			button.Text = _btnText;
 			stackLayout.Children.Add (button);
 
 			//button_Clicked(button, EventArgs.Empty);
@@ -63,5 +79,17 @@ namespace Xamarin.Forms.Controls.TestCasesPages
 			_pickerTable.Items.Add ("test " + _pickerTable.Items.Count);
 			_pickerNormal.Items.Add ("test " + _pickerNormal.Items.Count);
 		}
-	}
+
+#if UITEST && __WINDOWS__
+		[Test]
+		public void Issue1777Test()
+		{
+			RunningApp.WaitForElement(q => q.Button(_btnText));
+			RunningApp.Tap(q => q.Button(_btnText));
+			RunningApp.Tap(q => q.Marked(_pickerTableId));
+			RunningApp.WaitForElement(q => q.Marked("test 0"));
+			RunningApp.Screenshot("Picker is displayed correctly in the ViewCell");
+		}
+#endif
+    }
 }
