@@ -879,8 +879,9 @@ namespace Xamarin.Forms.Build.Tasks
 				throw new XamlParseException($"Signature (number of arguments) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
 			if (!invoke.ContainsGenericParameter)
 				for (var i = 0; i < invoke.Parameters.Count;i++)
-					if (!handler.Parameters[i].ParameterType.InheritsFromOrImplements(invoke.Parameters[i].ParameterType))
+					if (!invoke.Parameters[i].ParameterType.InheritsFromOrImplements(handler.Parameters[i].ParameterType))
 						throw new XamlParseException($"Signature (parameter {i}) of EventHandler \"{context.Body.Method.DeclaringType.FullName}.{value}\" doesn't match the event type", iXmlLineInfo);
+			//TODO check generic parameters if any
 
 			if (handler.IsVirtual) {
 				yield return Create(Ldarg_0);
