@@ -83,9 +83,16 @@ namespace Samples.ViewModel
 
         void OnStop()
         {
-            IsActive = false;
-            Barometer.Stop();
-            Barometer.ReadingChanged -= OnBarometerReadingChanged;
+            try
+            {
+                IsActive = false;
+                Barometer.Stop();
+                Barometer.ReadingChanged -= OnBarometerReadingChanged;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"An exception occured: {ex.Message}");
+            }
         }
     }
 }
