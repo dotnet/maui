@@ -15,6 +15,13 @@ namespace Xamarin.Forms.Platform.MacOS
 {
 	public static class FontExtensions
 	{
+
+#if __MOBILE__
+		static readonly string DefaultFontName = UIFont.SystemFontOfSize(12).Name;
+#else
+		static readonly string DefaultFontName = UIFont.SystemFontOfSize(12).FontName;
+#endif
+
 		static readonly Dictionary<ToUIFontKey, UIFont> ToUiFont = new Dictionary<ToUIFontKey, UIFont>();
 #if __MOBILE__
 		public static UIFont ToUIFont(this Font self)
@@ -49,7 +56,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var bold = self.FontAttributes.HasFlag(FontAttributes.Bold);
 			var italic = self.FontAttributes.HasFlag(FontAttributes.Italic);
 
-			if (self.FontFamily != null)
+			if (self.FontFamily != null && self.FontFamily != DefaultFontName)
 			{
 				try
 				{
@@ -157,7 +164,7 @@ namespace Xamarin.Forms.Platform.MacOS
 			var bold = (attributes & FontAttributes.Bold) != 0;
 			var italic = (attributes & FontAttributes.Italic) != 0;
 
-			if (family != null)
+			if (family != null && family != DefaultFontName)
 			{
 				try
 				{
