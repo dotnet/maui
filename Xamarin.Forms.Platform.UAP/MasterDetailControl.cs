@@ -8,7 +8,7 @@ using WImageSource = Windows.UI.Xaml.Media.ImageSource;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public class MasterDetailControl : Control, IToolbarProvider
+	public class MasterDetailControl : Control, IToolbarProvider, ITitleViewRendererController
 	{
 		public static readonly DependencyProperty MasterProperty = DependencyProperty.Register("Master", typeof(FrameworkElement), typeof(MasterDetailControl),
 			new PropertyMetadata(default(FrameworkElement)));
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Platform.UWP
 		public static readonly DependencyProperty ShouldShowNavigationBarProperty = DependencyProperty.Register(nameof(ShouldShowNavigationBar), typeof(bool), typeof(MasterDetailControl),
 		new PropertyMetadata(true, OnShouldShowSplitModeChanged));
 
-		public static readonly DependencyProperty CollapseStyleProperty = DependencyProperty.Register(nameof(CollapseStyle), typeof(CollapseStyle), 
+		public static readonly DependencyProperty CollapseStyleProperty = DependencyProperty.Register(nameof(CollapseStyle), typeof(CollapseStyle),
 			typeof(MasterDetailControl), new PropertyMetadata(CollapseStyle.Full, CollapseStyleChanged));
 
 		public static readonly DependencyProperty CollapsedPaneWidthProperty = DependencyProperty.Register(nameof(CollapsedPaneWidth), typeof(double), typeof(MasterDetailControl),
@@ -58,7 +58,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public static readonly DependencyProperty ContentTogglePaneButtonVisibilityProperty = DependencyProperty.Register(nameof(ContentTogglePaneButtonVisibility), typeof(Visibility), typeof(MasterDetailControl),
 			new PropertyMetadata(default(Visibility)));
-		
+
 		CommandBar _commandBar;
 		readonly ToolbarPlacementHelper _toolbarPlacementHelper = new ToolbarPlacementHelper();
 		bool _firstLoad;
@@ -73,10 +73,11 @@ namespace Xamarin.Forms.Platform.UWP
 		FrameworkElement _masterPresenter;
 		FrameworkElement _detailPresenter;
 		SplitView _split;
-	    ToolbarPlacement _toolbarPlacement;
+		ToolbarPlacement _toolbarPlacement;
 		FrameworkElement _titleViewPresenter;
+		TitleViewManager _titleViewManager;
 
-	    public MasterDetailControl()
+		public MasterDetailControl()
 		{
 			DefaultStyleKey = typeof(MasterDetailControl);
 
@@ -215,17 +216,17 @@ namespace Xamarin.Forms.Platform.UWP
 			set { SetValue(CollapseStyleProperty, value); }
 		}
 
-	    public ToolbarPlacement ToolbarPlacement
-	    {
-	        get { return _toolbarPlacement; }
-	        set
-	        {
-	            _toolbarPlacement = value;
-	            _toolbarPlacementHelper.UpdateToolbarPlacement();
-	        }
-	    }
+		public ToolbarPlacement ToolbarPlacement
+		{
+			get { return _toolbarPlacement; }
+			set
+			{
+				_toolbarPlacement = value;
+				_toolbarPlacementHelper.UpdateToolbarPlacement();
+			}
+		}
 
-	    public Visibility ContentTogglePaneButtonVisibility
+		public Visibility ContentTogglePaneButtonVisibility
 		{
 			get { return (Visibility)GetValue(ContentTogglePaneButtonVisibilityProperty); }
 			set { SetValue(ContentTogglePaneButtonVisibilityProperty, value); }
@@ -291,11 +292,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 			_commandBar = GetTemplateChild("CommandBar") as CommandBar;
 			_toolbarPlacementHelper.Initialize(_commandBar, () => ToolbarPlacement, GetTemplateChild);
-			
-			UpdateMode(); 
+
+			UpdateMode();
 
 			if (_commandBarTcs != null)
 				_commandBarTcs.SetResult(_commandBar);
+
+			_titleViewManager = new TitleViewManager(this);
 		}
 
 		static void OnShouldShowSplitModeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
@@ -315,20 +318,12 @@ namespace Xamarin.Forms.Platform.UWP
 
 		static void OnTitleViewPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
 		{
-			((MasterDetailControl)dependencyObject).UpdateTitleViewPresenter();
+			((MasterDetailControl)dependencyObject)._titleViewManager?.OnTitleViewPropertyChanged();
 		}
 
 		void OnToggleClicked(object sender, RoutedEventArgs args)
 		{
 			IsPaneOpen = !IsPaneOpen;
-		}
-
-		void OnTitleViewPresenterLoaded(object sender, RoutedEventArgs e)
-		{
-			if (DetailTitleView == null || _titleViewPresenter == null || _commandBar == null)
-				return;
-
-			_titleViewPresenter.Width = _commandBar.ActualWidth;
 		}
 
 		void UpdateMode()
@@ -338,8 +333,8 @@ namespace Xamarin.Forms.Platform.UWP
 				return;
 			}
 
-			_split.DisplayMode = ShouldShowSplitMode 
-				? SplitViewDisplayMode.Inline 
+			_split.DisplayMode = ShouldShowSplitMode
+				? SplitViewDisplayMode.Inline
 				: CollapseStyle == CollapseStyle.Full ? SplitViewDisplayMode.Overlay : SplitViewDisplayMode.CompactOverlay;
 
 			_split.CompactPaneLength = CollapsedPaneWidth;
@@ -353,10 +348,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			// If we're in compact mode or the pane is always open,
 			// we don't need to display the content pane's toggle button
-			ContentTogglePaneButtonVisibility = _split.DisplayMode == SplitViewDisplayMode.Overlay 
-				? Visibility.Visible 
+			ContentTogglePaneButtonVisibility = _split.DisplayMode == SplitViewDisplayMode.Overlay
+				? Visibility.Visible
 				: Visibility.Collapsed;
-			
+
 			if (ContentTogglePaneButtonVisibility == Visibility.Visible)
 				DetailTitleVisibility = Visibility.Visible;
 
@@ -366,22 +361,15 @@ namespace Xamarin.Forms.Platform.UWP
 			_firstLoad = true;
 		}
 
-		void UpdateTitleViewPresenter()
+		View ITitleViewRendererController.TitleView => DetailTitleView;
+		FrameworkElement ITitleViewRendererController.TitleViewPresenter => _titleViewPresenter;
+		Visibility ITitleViewRendererController.TitleViewVisibility
 		{
-			if (DetailTitleView == null)
-			{
-				DetailTitleViewVisibility = Visibility.Collapsed;
-
-				if (_titleViewPresenter != null)
-					_titleViewPresenter.Loaded -= OnTitleViewPresenterLoaded;
-			}
-			else
-			{
-				DetailTitleViewVisibility = Visibility.Visible;
-
-				if (_titleViewPresenter != null)
-					_titleViewPresenter.Loaded += OnTitleViewPresenterLoaded;
-			}
+			get => DetailTitleViewVisibility;
+			set => DetailTitleViewVisibility = value;
 		}
+
+		CommandBar ITitleViewRendererController.CommandBar { get => _commandBar; }
+
 	}
 }
