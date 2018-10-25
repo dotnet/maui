@@ -95,33 +95,12 @@ namespace Xamarin.Forms.Platform.MacOS
 
 			if (Control == null)
 			{
-				NSTextField textField;
-				if (e.NewElement.IsPassword)
-					textField = new NSSecureTextField();
-				else
-				{
-					textField = new FormsNSTextField();
-					(textField as FormsNSTextField).FocusChanged += TextFieldFocusChanged;
-					(textField as FormsNSTextField).Completed += OnCompleted;
-				}
-
-				SetNativeControl(textField);
-
-				_defaultTextColor = textField.TextColor;
-
-				textField.Changed += OnChanged;
-				textField.EditingBegan += OnEditingBegan;
-				textField.EditingEnded += OnEditingEnded;
+				CreateControl();
 			}
 
 			if (e.NewElement != null)
 			{
-				UpdatePlaceholder();
-				UpdateText();
-				UpdateColor();
-				UpdateFont();
-				UpdateAlignment();
-				UpdateMaxLength();
+				UpdateControl();
 			}
 		}
 
@@ -171,22 +150,59 @@ namespace Xamarin.Forms.Platform.MacOS
 			if (disposing && !_disposed)
 			{
 				_disposed = true;
-				if (Control != null)
-				{
-					Control.EditingBegan -= OnEditingBegan;
-					Control.Changed -= OnChanged;
-					Control.EditingEnded -= OnEditingEnded;
-					var formsNSTextField = (Control as FormsNSTextField);
-					if (formsNSTextField != null)
-					{
-						formsNSTextField.FocusChanged -= TextFieldFocusChanged;
-						formsNSTextField.Completed -= OnCompleted;
-					}
-				}
+				ClearControl();
 			}
 
 			base.Dispose(disposing);
 		}
+
+		void CreateControl()
+		{
+			NSTextField textField;
+			if (Element.IsPassword)
+				textField = new NSSecureTextField();
+			else
+			{
+				textField = new FormsNSTextField();
+				(textField as FormsNSTextField).FocusChanged += TextFieldFocusChanged;
+				(textField as FormsNSTextField).Completed += OnCompleted;
+			}
+
+			SetNativeControl(textField);
+
+			_defaultTextColor = textField.TextColor;
+
+			textField.Changed += OnChanged;
+			textField.EditingBegan += OnEditingBegan;
+			textField.EditingEnded += OnEditingEnded;
+		}
+
+		void ClearControl()
+		{
+			if (Control != null)
+			{
+				Control.EditingBegan -= OnEditingBegan;
+				Control.Changed -= OnChanged;
+				Control.EditingEnded -= OnEditingEnded;
+				var formsNSTextField = (Control as FormsNSTextField);
+				if (formsNSTextField != null)
+				{
+					formsNSTextField.FocusChanged -= TextFieldFocusChanged;
+					formsNSTextField.Completed -= OnCompleted;
+				}
+			}
+		}
+
+		void UpdateControl()
+		{
+			UpdatePlaceholder();
+			UpdateText();
+			UpdateColor();
+			UpdateFont();
+			UpdateAlignment();
+			UpdateMaxLength();
+		}
+
 		void TextFieldFocusChanged(object sender, BoolEventArgs e)
 		{
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, e.Value);
@@ -231,10 +247,10 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void UpdatePassword()
 		{
-			if (Element.IsPassword && (Control is NSSecureTextField))
-				return;
-			if (!Element.IsPassword && !(Control is NSSecureTextField))
-				return;
+			ClearControl();
+			CreateControl();
+			UpdateControl();
+			Layout();
 		}
 
 		void UpdateFont()
