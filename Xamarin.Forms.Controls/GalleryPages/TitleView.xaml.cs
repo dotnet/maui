@@ -24,18 +24,27 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			}
 		}
 
-		NavigationPage CreateNavigationPage()
+		static NavigationPage CreateNavigationPage()
 		{
-			return new NavigationPage(new TitleView(false) { Title = "Nav Title" });
+			var page = new TitleView(false) { Title = "Nav Title" };
+			return new NavigationPage(page);
 		}
 
-		public Page GetPage()
+		public static Page GetPage()
 		{
 			return new MasterDetailPage()
 			{
 				Detail = CreateNavigationPage(),
 				Master = new ContentPage() { Title = "Master" }
 			};
+		}
+
+		void swapDetails_Page(object sender, EventArgs e)
+		{
+			if (App.Current.MainPage is MasterDetailPage mdp)
+			{
+				mdp.Detail = CreateNavigationPage();
+			}
 		}
 
 		void masterDetailsPage_Clicked(object sender, EventArgs e)
@@ -125,12 +134,12 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			Navigation.PushAsync(page);
 		}
 
-		View createSearchBarView()
+		static View createSearchBarView()
 		{
 			return new SearchBar { BackgroundColor = Color.Cornsilk, HorizontalOptions = LayoutOptions.FillAndExpand, Margin = new Thickness(10, 0) };
 		}
 
-		View createGrid()
+		static View createGrid()
 		{
 			var grid = new Grid
 			{
@@ -157,13 +166,18 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 		void titleIcon_Clicked(object sender, EventArgs e)
 		{
-			var titleIcon = NavigationPage.GetTitleIcon(this);
+			toggleTitleIcon(this);
+
+		}
+
+		static void toggleTitleIcon(Page page)
+		{
+			var titleIcon = NavigationPage.GetTitleIcon(page);
 
 			if (titleIcon == null)
-				NavigationPage.SetTitleIcon(this, "coffee.png");
+				NavigationPage.SetTitleIcon(page, "coffee.png");
 			else
-				NavigationPage.SetTitleIcon(this, null);
-
+				NavigationPage.SetTitleIcon(page, null);
 		}
 
 		void masterDetailsPageIcon_Clicked(object sender, EventArgs e)
@@ -188,9 +202,10 @@ namespace Xamarin.Forms.Controls.GalleryPages
 			(App.Current as App).Reset();
 		}
 
-		void toggleToolBarItem_Clicked(object sender, EventArgs e)
+		void toggleToolBarItem_Clicked(object sender, EventArgs e) => toggleToolBarItem(Navigation.NavigationStack.Last());
+
+		static void toggleToolBarItem(Page page)
 		{
-			var page = Navigation.NavigationStack.Last();
 			var items = page.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Primary).ToList();
 
 			if (items.Any())
@@ -215,14 +230,19 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 		void changeTitleView_Clicked(object sender, EventArgs e)
 		{
-			var currentView = NavigationPage.GetTitleView(Navigation.NavigationStack.Last());
+			changeTitleView(Navigation.NavigationStack.Last());
+		}
+
+		static void changeTitleView(Page page)
+		{
+			var currentView = NavigationPage.GetTitleView(page);
 
 			if (currentView is Grid)
-				NavigationPage.SetTitleView(Navigation.NavigationStack.Last(), createSearchBarView());
+				NavigationPage.SetTitleView(page, createSearchBarView());
 			else if (currentView is SearchBar)
-				NavigationPage.SetTitleView(Navigation.NavigationStack.Last(), null);
+				NavigationPage.SetTitleView(page, null);
 			else
-				NavigationPage.SetTitleView(Navigation.NavigationStack.Last(), createGrid());
+				NavigationPage.SetTitleView(page, createGrid());
 
 		}
 	}

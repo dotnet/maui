@@ -156,9 +156,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected bool TabStop { get; set; } = true;
 
-		protected void UpdateTabStop () => TabStop = Element.IsTabStop;
+		protected void UpdateTabStop () => TabStop = Element?.IsTabStop ?? true;
 
-		protected void UpdateTabIndex () => TabIndex = Element.TabIndex;
+		protected void UpdateTabIndex() => TabIndex = Element?.TabIndex ?? 0;
 
 		public NativeView FocusSearch(bool forwardDirection)
 		{
