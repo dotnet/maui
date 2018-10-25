@@ -58,7 +58,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				{
 					nativeView.PropagateEvents = false;
 				}
-
 				return nativeView;
 			}
 			return null;

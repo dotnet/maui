@@ -61,8 +61,13 @@ namespace Xamarin.Forms.Platform.Tizen
 				var renderer = Platform.GetOrCreateRenderer(layout);
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
+				var nativeEntry = Platform.GetRenderer(entry)?.NativeView ?? null;
+				if (nativeEntry != null)
+				{
+					nativeEntry.PropagateEvents = false;
+				}
+
 				var nativeView = renderer.NativeView;
-				nativeView.PropagateEvents = false;
 				nativeView.MinimumHeight = pixelHeight;
 				_cacheCandidate[nativeView] = layout;
 				nativeView.Deleted += (sender, e) =>

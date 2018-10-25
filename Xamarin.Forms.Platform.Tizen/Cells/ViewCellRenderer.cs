@@ -49,8 +49,9 @@ namespace Xamarin.Forms.Platform.Tizen
 				height = height > 0 ? height : FindCellContentHeight(viewCell);
 
 				renderer.NativeView.MinimumHeight = Forms.ConvertToScaledPixel(height);
-				renderer.NativeView.PropagateEvents = false;
 				(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
+
+				UpdatePropagateEvent(viewCell.View);
 
 				return renderer.NativeView;
 			}
@@ -85,7 +86,26 @@ namespace Xamarin.Forms.Platform.Tizen
 			};
 			(renderer as LayoutRenderer)?.RegisterOnLayoutUpdated();
 
+			UpdatePropagateEvent(duplicatedCell.View);
 			return renderer.NativeView;
 		}
+
+		void UpdatePropagateEvent(View view)
+		{
+			if (!view.IsPlatformEnabled)
+				return;
+			foreach (var element in view.Descendants())
+			{
+				if (element is Button || element is Switch)
+				{
+					var nativeView = Platform.GetRenderer(element).NativeView ?? null;
+					if (nativeView != null)
+					{
+						nativeView.PropagateEvents = false;
+					}
+				}
+			}
+		}
+
 	}
 }
