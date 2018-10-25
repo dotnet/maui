@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Xamarin.Forms.Internals;
 using WImageSource = Windows.UI.Xaml.Media.ImageSource;
+using UwpScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -53,7 +54,7 @@ namespace Xamarin.Forms.Platform.UWP
 		}
 
 		internal static InputScopeNameValue GetKeyboardButtonType(this ReturnType returnType)
-		{		
+		{
 			switch (returnType)
 			{
 				case ReturnType.Default:
@@ -82,6 +83,21 @@ namespace Xamarin.Forms.Platform.UWP
 			};
 
 			return inputScope;
+		}
+
+		internal static UwpScrollBarVisibility ToUwpScrollBarVisibility(this ScrollBarVisibility visibility)
+		{
+			switch (visibility)
+			{
+				case ScrollBarVisibility.Always:
+					return UwpScrollBarVisibility.Visible;
+				case ScrollBarVisibility.Default:
+					return UwpScrollBarVisibility.Auto;
+				case ScrollBarVisibility.Never:
+					return UwpScrollBarVisibility.Hidden;
+				default:
+					return UwpScrollBarVisibility.Auto;
+			}
 		}
 
 		public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>

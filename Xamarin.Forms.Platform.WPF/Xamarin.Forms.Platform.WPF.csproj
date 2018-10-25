@@ -108,6 +108,7 @@
     <Compile Include="Extensions\KeyboardExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PageExtensions.cs" />
+    <Compile Include="Extensions\ScrollBarVisibilityExtensions.cs" />
     <Compile Include="Extensions\VisualElementExtensions.cs" />
     <Compile Include="Forms.cs" />
     <Compile Include="FormsApplicationPage.cs" />
