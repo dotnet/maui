@@ -13,9 +13,11 @@ namespace Xamarin.Forms.Controls
 	{
 		protected override void Init()
 		{
+			Title = "Padding update issue";
 			StackLayout parentLayout1 = null;
 			StackLayout parentLayout2 = null;
 			StackLayout parentLayout3 = null;
+			StackLayout parentLayout4 = null;
 
 			StackLayout stackLayout = new StackLayout
 			{
@@ -26,6 +28,22 @@ namespace Xamarin.Forms.Controls
 				{
 					new BoxView
 					{
+						Color = Color.Red,
+						HeightRequest = 100,
+						WidthRequest = 100,
+					}
+				}
+			};
+			StackLayout stackLayout2 = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				BackgroundColor = Color.Blue,
+				Children =
+				{
+					new BoxView
+					{
+						HorizontalOptions = LayoutOptions.Start,
 						Color = Color.Red,
 						HeightRequest = 100,
 						WidthRequest = 100,
@@ -73,6 +91,7 @@ namespace Xamarin.Forms.Controls
 			stackLayout.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
 			contentView.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
 			flex.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
+			stackLayout2.SetBinding(Forms.Layout.PaddingProperty, new Binding() { Path = "Value", Source = paddingSlider });
 
 			// Build the page.
 			this.Padding = new Thickness(20);
@@ -105,6 +124,8 @@ namespace Xamarin.Forms.Controls
 							parentLayout2.Children.Remove(boxview);
 							parentLayout3.Children.Add(boxview);
 							parentLayout3.Children.Remove(boxview);
+							parentLayout4.Children.Add(boxview);
+							parentLayout4.Children.Remove(boxview);
 						})
 					},
 					new ScrollView
@@ -116,6 +137,11 @@ namespace Xamarin.Forms.Controls
 							Spacing = 20,
 							Children =
 							{
+								(parentLayout4 = new StackLayout
+								{
+									HeightRequest = 200,
+									Children = { new Label { Text = "StackLayout2" }, stackLayout2 },
+								}),
 								(parentLayout1 = new StackLayout
 								{
 									Children = { new Label { Text = "StackLayout" }, stackLayout },
