@@ -434,9 +434,8 @@ namespace Xamarin.Forms
 
 		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
 		{
-			var prop = _properties.ToArray();
-			for (int i = 0, propLength = prop.Length; i < propLength; i++) {
-				BindablePropertyContext context = prop [i];
+			for (int i = 0, propLength = _properties.Count; i < propLength; i++) {
+				BindablePropertyContext context = _properties [i];
 				BindingBase binding = context.Binding;
 				if (binding == null)
 					continue;
