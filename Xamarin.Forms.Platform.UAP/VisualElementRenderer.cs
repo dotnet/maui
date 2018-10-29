@@ -174,7 +174,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnGotFocus(object sender, RoutedEventArgs e)
 		{
 			if (e.OriginalSource == Control)
-				FocusManager.TryMoveFocus(focusDirection);
+				FocusManager.TryMoveFocus(focusDirection != FocusNavigationDirection.None ? focusDirection : FocusNavigationDirection.Next);
 		}
 
 		public event EventHandler<ElementChangedEventArgs<TElement>> ElementChanged;

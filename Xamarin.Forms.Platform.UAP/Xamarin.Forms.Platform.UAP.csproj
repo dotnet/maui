@@ -61,6 +61,7 @@
     <Compile Include="ITitleIconProvider.cs" />
     <Compile Include="ITitleProvider.cs" />
     <Compile Include="ITitleViewProvider.cs" />
+    <Compile Include="ITitleViewRendererController.cs" />
     <Compile Include="IToolbarProvider.cs" />
     <Compile Include="NativeBindingExtensions.cs" />
     <Compile Include="NativeEventWrapper.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="PlatformConfigurationExtensions.cs" />
     <Compile Include="PlatformEffect.cs" />
     <Compile Include="TextBlockExtensions.cs" />
+    <Compile Include="TitleViewManager.cs" />
     <Compile Include="UriImageSourceHandler.cs" />
     <Compile Include="ViewExtensions.cs" />
     <Compile Include="LayoutExtensions.cs" />

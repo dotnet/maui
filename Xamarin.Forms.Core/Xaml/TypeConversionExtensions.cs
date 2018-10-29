@@ -196,17 +196,41 @@ namespace Xamarin.Forms.Xaml
 		{
 #if NETSTANDARD1_0
 			var mi = onType.GetRuntimeMethod("op_Implicit", new[] { fromType });
-#else
-			var bindingFlags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-			var mi = onType.GetMethod("op_Implicit", bindingFlags, null, new[] { fromType }, null);
-#endif
 			if (mi == null) return null;
 			if (!mi.IsSpecialName) return null;
 			if (!mi.IsPublic) return null;
 			if (!mi.IsStatic) return null;
 			if (!toType.IsAssignableFrom(mi.ReturnType)) return null;
 
-			return mi;
+			return mi;		
+#else
+			var bindingAttr = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+			IEnumerable<MethodInfo> mis = null;
+			try {
+				mis = new[] { onType.GetMethod("op_Implicit", bindingAttr, null, new[] { fromType }, null) };
+			} catch (AmbiguousMatchException) {
+				mis = new List<MethodInfo>();
+				foreach (var mi in onType.GetMethods(bindingAttr)) {
+					if (mi.Name != "op_Implicit") break;
+					var p = mi.GetParameters()?.FirstOrDefault();
+					if (p == null) continue;
+					if (!p.ParameterType.IsAssignableFrom(fromType)) continue;
+					((List<MethodInfo>)mis).Add(mi);
+				}
+			}
+
+			foreach (var mi in mis) {
+				if (mi == null) continue;
+				if (!mi.IsSpecialName) continue;
+				if (!mi.IsPublic) continue;
+				if (!mi.IsStatic) continue;
+				if (!toType.IsAssignableFrom(mi.ReturnType)) continue;
+
+				return mi;
+			}
+			return null;
+#endif
+
 		}
 	}
 }

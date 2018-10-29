@@ -197,8 +197,8 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == "Detail")
 				UpdateDetail();
 			else if (e.PropertyName == nameof(MasterDetailControl.ShouldShowSplitMode)
-			         || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
-			         || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
+					 || e.PropertyName == Specifics.CollapseStyleProperty.PropertyName
+					 || e.PropertyName == Specifics.CollapsedPaneWidthProperty.PropertyName)
 				UpdateMode();
 			else if (e.PropertyName == PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName)
 				UpdateToolbarPlacement();
@@ -277,7 +277,6 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				UpdateDetailTitle();
 				UpdateDetailTitleIcon();
-				UpdateDetailTitleView();
 			}
 		}
 
@@ -335,7 +334,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_detail == null)
 				return;
 
-			Control.DetailTitle = (_detail as NavigationPage)?.CurrentPage?.Title ?? _detail.Title ?? Element?.Title;
+			Control.DetailTitle = GetCurrentPage().Title ?? Element?.Title;
 			(this as ITitleProvider).ShowTitle = !string.IsNullOrEmpty(Control.DetailTitle);
 		}
 
@@ -344,7 +343,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_detail == null)
 				return;
 
-			Control.DetailTitleIcon = await NavigationPage.GetTitleIcon(_detail).ToWindowsImageSource();
+			Control.DetailTitleIcon = await NavigationPage.GetTitleIcon(GetCurrentPage()).ToWindowsImageSource();
 			Control.InvalidateMeasure();
 		}
 
@@ -353,7 +352,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (_detail == null)
 				return;
 
-			Control.DetailTitleView = NavigationPage.GetTitleView(_detail) as View;
+			Control.DetailTitleView = NavigationPage.GetTitleView(GetCurrentPage()) as View;
 			Control.InvalidateMeasure();
 		}
 
@@ -416,9 +415,9 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			// Enforce consistency rules on toolbar
 			Control.ShouldShowToolbar = _detail is NavigationPage || _master is NavigationPage;
-			if(_detail is NavigationPage _detailNav)
+			if (_detail is NavigationPage _detailNav)
 				Control.ShouldShowNavigationBar = NavigationPage.GetHasNavigationBar(_detailNav.CurrentPage);
-			
+
 		}
 
 		public void BindForegroundColor(AppBar appBar)
@@ -435,6 +434,14 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			element.SetBinding(Windows.UI.Xaml.Controls.Control.ForegroundProperty,
 				new Windows.UI.Xaml.Data.Binding { Path = new PropertyPath("Control.ToolbarForeground"), Source = this, RelativeSource = new RelativeSource { Mode = RelativeSourceMode.TemplatedParent } });
+		}
+
+		Page GetCurrentPage()
+		{
+			if (_detail is NavigationPage page)
+				return page.CurrentPage;
+
+			return _detail;
 		}
 	}
 }

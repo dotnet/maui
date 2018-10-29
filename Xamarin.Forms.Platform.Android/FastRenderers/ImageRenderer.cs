@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics;
 using AImageView = Android.Widget.ImageView;
 using AView = Android.Views.View;
 using Android.Views;
@@ -214,6 +215,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 
 			await Control.UpdateBitmap(_element, previous);
+		}
+
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+			ClipBounds = GetScaleType() == ScaleType.CenterCrop ? new Rect(0, 0, right - left, bottom - top) : null;
 		}
 
 		void UpdateAspect()

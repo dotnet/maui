@@ -9,7 +9,6 @@
 			<Label Text="I can be a subtitle" />
 		</StackLayout>
 	</NavigationPage.TitleView>
-
 	<ScrollView>
 		<StackLayout BackgroundColor="Pink">
 			<Button Clicked="masterDetailsPage_Clicked" Text="Master Details Page"></Button>
@@ -22,6 +21,7 @@
 			<Button Clicked="toggleSecondaryToolBarItem_Clicked" Text="Toggle Secondary Tool Bar Item" ></Button>
 			<Button Clicked="toggleLargeTitles_Clicked" Text="Toggle Large Titles" ></Button>
 			<Button Clicked="changeTitleView_Clicked" Text="Toggle Different Title Views"></Button>
+			<Button Clicked="swapDetails_Page" Text="Swap Details Page"></Button>
 			<Button x:Name="btnToggleBackButtonTitle" Clicked="toggleBackButtonText_Clicked" Text="Toggle Back Button Title Text"></Button>
 			<Button Clicked="backToGallery_Clicked" Text="Back to Gallery"></Button>
 		</StackLayout>

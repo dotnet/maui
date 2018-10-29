@@ -108,6 +108,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				UpdateText();
 				UpdateLineBreakMode();
+				UpdateLineHeight();
 				UpdateGravity();
 				UpdateMaxLines();
 			}

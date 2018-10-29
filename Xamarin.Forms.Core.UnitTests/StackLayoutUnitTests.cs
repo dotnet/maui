@@ -615,5 +615,73 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			stack.Layout (new Rectangle (0, 0, 100, 100));
 		}
+
+		[Test]
+		public void PaddingResizeTest()
+		{
+			var child = new BoxView
+			{
+				IsPlatformEnabled = true,
+				WidthRequest = 20,
+				HeightRequest = 20,
+			};
+
+			var innerStack = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				IsPlatformEnabled = true,
+				Children = { child }
+			};
+
+			var outterLayout = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsPlatformEnabled = true,
+				Platform = new UnitPlatform(),
+				Children = { innerStack }
+			};
+
+			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+			var beforeSize = innerStack.Bounds.Size;
+			innerStack.Padding = new Thickness(30);
+			var afterSize = innerStack.Bounds.Size;
+			Assert.AreNotEqual(beforeSize, afterSize, "Padding was grow, so Size should be bigger");
+		}
+
+		[Test]
+		public void PaddingChildRelayoutTest()
+		{
+			var child = new BoxView
+			{
+				IsPlatformEnabled = true,
+				WidthRequest = 20,
+				HeightRequest = 20,
+			};
+
+			var innerStack = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsPlatformEnabled = true,
+				Children = { child }
+			};
+
+			var outterLayout = new StackLayout
+			{
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsPlatformEnabled = true,
+				Platform = new UnitPlatform(),
+				Children = { innerStack }
+			};
+
+			outterLayout.Layout(new Rectangle(0, 0, 100, 100));
+			var before = child.Bounds;
+			innerStack.Padding = new Thickness(30);
+			var after = child.Bounds;
+			Assert.AreNotEqual(before, after, "child should be moved within padding size");
+		}
 	}
 }

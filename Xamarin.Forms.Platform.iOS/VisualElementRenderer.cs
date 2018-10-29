@@ -156,9 +156,9 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		protected bool TabStop { get; set; } = true;
 
-		protected void UpdateTabStop () => TabStop = Element.IsTabStop;
+		protected void UpdateTabStop () => TabStop = Element?.IsTabStop ?? true;
 
-		protected void UpdateTabIndex () => TabIndex = Element.TabIndex;
+		protected void UpdateTabIndex() => TabIndex = Element?.TabIndex ?? 0;
 
 		public NativeView FocusSearch(bool forwardDirection)
 		{
@@ -186,19 +186,19 @@ namespace Xamarin.Forms.Platform.MacOS
 		}
 
 #if __MACOS__
-		public override NativeView NextKeyView { 
+		public override NativeView NextKeyView {
 			get {
-				return FocusSearch (forwardDirection: true) ?? base.NextKeyView;
+				return Element == null ? null : (FocusSearch(forwardDirection: true) ?? base.NextKeyView);
 			}
 			set {
-				if (value != null) // setting the value to null throws an exception
+				if (Element != null && value != null) // setting the value to null throws an exception
 					base.NextKeyView = value;
 			}
 		}
 
 		public override NativeView PreviousKeyView {
 			get {
-				return FocusSearch (forwardDirection: false) ?? base.PreviousKeyView;
+				return Element == null ? null : (FocusSearch(forwardDirection: false) ?? base.PreviousKeyView);
 			}
 		}
 #else
