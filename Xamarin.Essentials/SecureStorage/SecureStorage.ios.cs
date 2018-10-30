@@ -141,8 +141,8 @@ namespace Xamarin.Essentials
         bool RemoveRecord(SecRecord record)
         {
             var result = SecKeyChain.Remove(record);
-            if (result != SecStatusCode.Success)
-                throw new Exception(string.Format($"Error removing record: {result}"));
+            if (result != SecStatusCode.Success && result != SecStatusCode.ItemNotFound)
+                throw new Exception($"Error removing record: {result}");
 
             return true;
         }
