@@ -15,13 +15,12 @@ namespace Xamarin.Forms.Platform.GTK
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
-
 			if (Control != null)
 			{
-				Control.Dispose();
+				Control.Destroy();
 				Control = null;
 			}
+			base.Dispose(disposing);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)

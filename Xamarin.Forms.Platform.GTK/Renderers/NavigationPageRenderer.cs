@@ -67,6 +67,12 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				if (_currentPage != null)
 				{
 					_currentPage.PropertyChanged -= OnCurrentPagePropertyChanged;
+					_currentPage = null;
+				}
+				if (_currentStack != null)
+				{
+					_currentStack.ForEach(s => s.Dispose());
+					_currentStack = null;
 				}
 			}
 

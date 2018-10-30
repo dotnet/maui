@@ -95,14 +95,19 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			Children.Last().Show();
 		}
 
-		public override void Dispose()
+		public override void Destroy()
 		{
-			base.Dispose();
-
+			base.Destroy();
 			if (_contentContainerWrapper != null)
 			{
 				_contentContainerWrapper.SizeAllocated -= OnContentContainerWrapperSizeAllocated;
+				_contentContainerWrapper = null;
 			}
+			_contentContainer = null;
+			_image = null;
+			_toolbar = null;
+			_content = null;
+			_headerContainer = null;
 		}
 
 		private void BuildPage()
@@ -135,7 +140,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		private void RefreshToolbar(HBox newToolbar)
 		{
-			_headerContainer.RemoveFromContainer(_toolbar);
+			_toolbar.Destroy();
 			_toolbar = newToolbar;
 			_headerContainer.Add(_toolbar);
 			_toolbar.ShowAll();
@@ -143,7 +148,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 
 		private void RefreshContent(GtkFormsContainer newContent)
 		{
-			_contentContainer.RemoveFromContainer(_content);
+			_content.Destroy();
 			_content = newContent;
 			_contentContainer.Add(_content);
 			_content.ShowAll();

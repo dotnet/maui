@@ -137,10 +137,9 @@ namespace Xamarin.Forms.Platform.GTK
 			UpdateIsVisible();
 		}
 
-		public override void Dispose()
+		public override void Destroy()
 		{
-			base.Dispose();
-
+			base.Destroy();
 			Dispose(true);
 		}
 

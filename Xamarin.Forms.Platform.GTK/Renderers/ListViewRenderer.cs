@@ -128,6 +128,8 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				{
 					_listView.OnItemTapped -= OnItemTapped;
 					_listView.OnRefresh -= OnRefresh;
+					_listView.Destroy();
+					_listView = null;
 				}
 
 				if (_footerRenderer != null)

@@ -58,8 +58,7 @@ namespace Xamarin.Forms.Platform.GTK
 
 			renderer = GetRenderer((VisualElement)view);
 
-			renderer?.Dispose();
-
+			(renderer as Widget)?.Destroy();
 			view.ClearValue(RendererProperty);
 		}
 
@@ -106,11 +105,11 @@ namespace Xamarin.Forms.Platform.GTK
 			MessagingCenter.Unsubscribe<Page, AlertArguments>(this, Page.AlertSignalName);
 			MessagingCenter.Unsubscribe<Page, bool>(this, Page.BusySetSignalName);
 
-			DisposeModelAndChildrenRenderers(Page);
 			foreach (var modal in _modals)
 				DisposeModelAndChildrenRenderers(modal);
+			DisposeModelAndChildrenRenderers(Page);
 
-			PlatformRenderer.Dispose();
+			PlatformRenderer.Destroy();
 		}
 
 		internal void SetPage(Page newRoot)

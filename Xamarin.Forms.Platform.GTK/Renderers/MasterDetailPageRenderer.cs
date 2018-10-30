@@ -10,6 +10,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 {
 	public class MasterDetailPageRenderer : AbstractPageRenderer<Controls.MasterDetailPage, MasterDetailPage>
 	{
+		Page _currentMaster;
+		Page _currentDetail;
+
 		public MasterDetailPageRenderer()
 		{
 			MessagingCenter.Subscribe(this, Forms.BarTextColor, (NavigationPage sender, Color color) =>
@@ -122,22 +125,29 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 		{
 			Gtk.Application.Invoke(async delegate
 			{
-				Page.Master.PropertyChanged -= HandleMasterPropertyChanged;
 				await UpdateHamburguerIconAsync();
-
-				if (Platform.GetRenderer(Page.Master) == null)
-					Platform.SetRenderer(Page.Master, Platform.CreateRenderer(Page.Master));
-				if (Platform.GetRenderer(Page.Detail) == null)
-					Platform.SetRenderer(Page.Detail, Platform.CreateRenderer(Page.Detail));
-
-				Widget.Master = Platform.GetRenderer(Page.Master).Container;
-				Widget.Detail = Platform.GetRenderer(Page.Detail).Container;
-				Widget.MasterTitle = Page.Master?.Title ?? string.Empty;
-
+				if (Page.Master != _currentMaster)
+				{
+					if (_currentMaster != null)
+					{
+						_currentMaster.PropertyChanged -= HandleMasterPropertyChanged;
+					}
+					if (Platform.GetRenderer(Page.Master) == null)
+						Platform.SetRenderer(Page.Master, Platform.CreateRenderer(Page.Master));
+					Widget.Master = Platform.GetRenderer(Page.Master).Container;
+					Widget.MasterTitle = Page.Master?.Title ?? string.Empty;
+					Page.Master.PropertyChanged += HandleMasterPropertyChanged;
+					_currentMaster = Page.Master;
+				}
+				if (Page.Detail != _currentDetail)
+				{
+					if (Platform.GetRenderer(Page.Detail) == null)
+						Platform.SetRenderer(Page.Detail, Platform.CreateRenderer(Page.Detail));
+					Widget.Detail = Platform.GetRenderer(Page.Detail).Container;
+					_currentDetail = Page.Detail;
+				}
 				UpdateBarTextColor();
 				UpdateBarBackgroundColor();
-
-				Page.Master.PropertyChanged += HandleMasterPropertyChanged;
 			});
 		}
 

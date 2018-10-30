@@ -2,7 +2,7 @@
 
 namespace Xamarin.Forms.Platform.GTK.Controls
 {
-	public class NavigationChildPage : Gtk.Object
+	public class NavigationChildPage : IDisposable
 	{
 		bool _disposed;
 
@@ -12,15 +12,13 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 			Identifier = Guid.NewGuid().ToString();
 		}
 
-		public override void Dispose()
+		public void Dispose()
 		{
 			if (!_disposed)
 			{
 				_disposed = true;
 				Page = null;
 			}
-
-			base.Dispose();
 		}
 
 		public string Identifier { get; set; }

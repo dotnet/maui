@@ -87,6 +87,11 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				if (Control.Vadjustment != null)
 					Control.Vadjustment.ValueChanged -= OnScrollEvent;
 			}
+			if (_viewPort != null)
+			{
+				_viewPort.Destroy();
+				_viewPort = null;
+			}
 
 			base.Dispose(disposing);
 		}

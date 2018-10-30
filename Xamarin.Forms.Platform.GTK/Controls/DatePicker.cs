@@ -153,8 +153,7 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 		private void Close()
 		{
 			Helpers.GrabHelper.RemoveGrab(this);
-			this.Dispose();
-			this.Destroy();
+			Destroy();
 		}
 
 		private void NotifyDateChanged()

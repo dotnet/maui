@@ -48,14 +48,14 @@ namespace Xamarin.Forms.Platform.GTK.Extensions
 				IVisualElementRenderer childRenderer = Platform.GetRenderer(visual);
 				if (childRenderer != null)
 				{
-					childRenderer.Dispose();
+					((Gtk.Widget)childRenderer).Destroy();
 					Platform.SetRenderer(visual, null);
 				}
 			}
 
 			if (renderer != null)
 			{
-				renderer.Dispose();
+				((Gtk.Widget)renderer).Destroy();
 				Platform.SetRenderer(self, null);
 			}
 		}

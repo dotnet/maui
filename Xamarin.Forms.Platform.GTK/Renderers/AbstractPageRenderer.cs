@@ -54,11 +54,6 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			VisualElement oldElement = Element;
 			Element = element;
 
-			if (element != null)
-			{
-				element.PropertyChanged += _propertyChangedHandler;
-			}
-
 			OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
@@ -84,9 +79,9 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			return Container.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		public override void Dispose()
+		public override void Destroy()
 		{
-			base.Dispose();
+			base.Destroy();
 
 			if (!_disposed)
 			{
@@ -123,18 +118,6 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			_appeared = true;
 
 			PageController.SendAppearing();
-		}
-
-		protected override void OnDestroyed()
-		{
-			base.OnDestroyed();
-
-			if (!_appeared || _disposed)
-				return;
-
-			_appeared = false;
-
-			PageController.SendDisappearing();
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
