@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AppKit;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Platform.MacOS
 {
@@ -20,7 +21,13 @@ namespace Xamarin.Forms.Platform.MacOS
 			var filesource = imagesource as FileImageSource;
 			var file = filesource?.File;
 			if (!string.IsNullOrEmpty(file))
-				image = File.Exists(file) ? new NSImage(file) : null;
+				image = File.Exists(file) ? new NSImage(file) : NSImage.ImageNamed(file);
+
+			if (image == null)
+			{
+				Log.Warning(nameof(FileImageSourceHandler), "Could not find image: {0}", imagesource);
+			}
+
 			return Task.FromResult(image);
 		}
 	}
