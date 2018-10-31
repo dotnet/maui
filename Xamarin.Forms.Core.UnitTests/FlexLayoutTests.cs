@@ -11,12 +11,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestBasicLayout()
 		{
-			var platform = new UnitPlatform();
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true };
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label1 = new Label { IsPlatformEnabled = true };
+			var label2 = new Label { IsPlatformEnabled = true };
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					label1,
@@ -34,12 +32,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestBasicLayoutWithElementsWidth()
 		{
-			var platform = new UnitPlatform();
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true, WidthRequest = 120 };
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true, WidthRequest = 120 };
+			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
+			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 120 };
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					label1,
@@ -58,12 +54,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestBasicLayoutWithElementsWidthAndMargin()
 		{
-			var platform = new UnitPlatform();
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
+			var label1 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
+			var label2 = new Label { IsPlatformEnabled = true, WidthRequest = 100, Margin = new Thickness(5, 0, 0, 0) };
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					label1,
@@ -84,24 +78,22 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestSetBounds()
 		{
 			var layoutSize = new Size(320, 50);
-			var platform = new UnitPlatform();
 
 			var layout = new FlexLayout {
 				Direction = FlexDirection.Row,
 				AlignItems = FlexAlignItems.Start,
-				Platform = platform,
 				IsPlatformEnabled = true
 			};
 
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label1 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label2 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label3 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
@@ -124,23 +116,20 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var layoutSize = new Size(300, 50);
 
-			var platform = new UnitPlatform();
-
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Row
 			};
 
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label1 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label2 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label3 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label3, 1);
 			layout.Children.Add(label3);
 
@@ -160,22 +149,20 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestFlexLayoutIsIncludeChangeWorksOnSecondPass()
 		{
 			var layoutSize = new Size(300, 50);
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
 				Direction = FlexDirection.Row,
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label1 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label2 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
-			var label3 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label3 = new Label { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(label3, 1);
 
 			layout.Layout(new Rectangle(0, 0, layoutSize.Width, layoutSize.Height));
@@ -198,22 +185,20 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var layoutSize = new Size(300, 50);
 
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout { 
 				Direction = FlexDirection.Row,
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 
-			var label0 = new Label { Platform = platform, IsPlatformEnabled = true, Text="Label0" };
+			var label0 = new Label { IsPlatformEnabled = true, Text="Label0" };
 			FlexLayout.SetGrow(label0, 1);
 			layout.Children.Add(label0);
 
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true, Text = "Label1" };
+			var label1 = new Label { IsPlatformEnabled = true, Text = "Label1" };
 			FlexLayout.SetGrow(label1, 1);
 			layout.Children.Add(label1);
 
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true, Text = "Label2" };
+			var label2 = new Label { IsPlatformEnabled = true, Text = "Label2" };
 			FlexLayout.SetGrow(label2, 1);
 			layout.Children.Add(label2);
 
@@ -240,17 +225,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSizeThatFits()
 		{
-			var platform = new UnitPlatform(useRealisticLabelMeasure: true);
+			Device.PlatformServices = new MockPlatformServices(useRealisticLabelMeasure:true);
 
 			var layout = new FlexLayout {
 				Direction = FlexDirection.Row,
 				AlignItems = FlexAlignItems.Start,
-				Platform = platform,
 				IsPlatformEnabled = true
 			};
 
 			var label1 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				LineBreakMode = LineBreakMode.TailTruncation,
 				Text = @"This is a very very very very very very very very long piece of text."
@@ -260,7 +243,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var label2 = new Label {
 				Text = "",
-				Platform = platform,
 				IsPlatformEnabled = true,
 				WidthRequest = 10,
 				HeightRequest = 10
@@ -279,8 +261,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestNesting()
 		{
-			var platform = new UnitPlatform();
-
 			var header = new View { HeightRequest = 50, IsPlatformEnabled = true, };
 			var footer = new View { HeightRequest = 50, IsPlatformEnabled = true, };
 			Func<View> createItem = () => {
@@ -291,7 +271,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var layout = new FlexLayout
 			{
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					header,
@@ -330,13 +309,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMeasuring()
 		{
-			var platform = new UnitPlatform();
 			var label = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var Layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Row,
 				Wrap = FlexWrap.Wrap,
@@ -362,19 +338,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginsWithWrap()
 		{
-			var platform = new UnitPlatform();
 			var label0 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Margin=6,
 			};
 			var label1 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Margin=6,
 			};
 			var label2 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			FlexLayout.SetGrow(label0, 0);
@@ -384,7 +356,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			FlexLayout.SetGrow(label2, 0);
 			FlexLayout.SetBasis(label2, new FlexBasis(1f, true));
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Row,
 				Wrap = FlexWrap.Wrap,
@@ -409,14 +380,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		//https://github.com/xamarin/Xamarin.Forms/issues/2551
 		public void TestReverseWithGrow()
 		{
-			var platform = new UnitPlatform();
 			var label0 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			FlexLayout.SetGrow(label0, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.ColumnReverse,
 				Children = {
@@ -432,21 +400,16 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestIsVisible()
 		//https://github.com/xamarin/Xamarin.Forms/issues/2593
 		{
-			var platform = new UnitPlatform();
 			var label0 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var label1 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var label2 = new Label {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Column,
 				Children = {
@@ -475,9 +438,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ChangingGrowTriggersLayout()
 		//https://github.com/xamarin/Xamarin.Forms/issues/2821
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Column,
 			};
@@ -485,7 +446,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			layout.Layout(new Rectangle(0, 0, 300, 300));
 			for (var i = 0; i < 3; i++) {
 				var box = new BoxView {
-					Platform = platform,
 					IsPlatformEnabled = true,
 				};
 				layout.Children.Add(box);

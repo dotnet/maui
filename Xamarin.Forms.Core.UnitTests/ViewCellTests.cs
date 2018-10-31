@@ -10,7 +10,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void SetParentBeforeView ()
 		{
-			var parent = new View { Platform = new UnitPlatform () };
+			var parent = new View();
 			var child = new View ();
 			var viewCell = new ViewCell ();
 
@@ -20,7 +20,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			viewCell.View = child;
 			Assert.AreSame (parent, viewCell.Parent);
 			Assert.AreSame (viewCell, child.Parent);
-			Assert.AreSame (parent.Platform, child.Platform);
 		}
 
 		[Test]
@@ -28,7 +27,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SetBindingContextBeforeParent ()
 		{
 			var parent = new View { 
-				Platform = new UnitPlatform (),
 				BindingContext = new object (),
 			};
 

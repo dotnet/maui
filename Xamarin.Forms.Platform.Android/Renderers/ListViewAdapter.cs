@@ -253,7 +253,6 @@ namespace Xamarin.Forms.Platform.Android
 				// We are going to re-set the Platform here because in some cases (headers mostly) its possible this is unset and
 				// when the binding context gets updated the measure passes will all fail. By applying this here the Update call
 				// further down will result in correct layouts.
-				cell.Platform = _listView.Platform;
 
 				ICellController cellController = cell;
 				cellController.SendDisappearing();

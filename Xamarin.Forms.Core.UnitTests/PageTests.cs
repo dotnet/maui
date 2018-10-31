@@ -43,9 +43,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSizedChildBehavior ()
 		{
-			var plat = new UnitPlatform ();
-			var child = new Label {Platform = plat, IsPlatformEnabled = true, WidthRequest = 100, HorizontalOptions = LayoutOptions.Center};
-			var root = new ContentPage {Platform = plat, IsPlatformEnabled = true, Content = child};
+			var child = new Label {IsPlatformEnabled = true, WidthRequest = 100, HorizontalOptions = LayoutOptions.Center};
+			var root = new ContentPage {IsPlatformEnabled = true, Content = child};
 			
 			root.Layout (new Rectangle (0, 0, 200, 500));
 
@@ -54,13 +53,13 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (500, child.Height);
 
 			child = new Label () {
-				Platform = plat, IsPlatformEnabled = true, 
+				IsPlatformEnabled = true, 
 				HeightRequest = 100, 
 				VerticalOptions = LayoutOptions.Center
 			};
 
 			root = new ContentPage {
-				Platform = plat, IsPlatformEnabled = true, 
+				IsPlatformEnabled = true, 
 				Content = child
 			};
 
@@ -77,7 +76,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			
 			root = new ContentPage {
 				Content = child,
-				Platform = plat, IsPlatformEnabled = true
+				IsPlatformEnabled = true
 			};
 
 			root.Layout (new Rectangle (0, 0, 200, 500));
@@ -91,9 +90,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void NativeSizedChildBehavior ()
 		{
-			var plat = new UnitPlatform ();
-			var child = new Label {Platform = plat, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center};
-			var root = new ContentPage {Platform = plat, IsPlatformEnabled = true, Content = child};
+			var child = new Label {IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center};
+			var root = new ContentPage {IsPlatformEnabled = true, Content = child};
 			
 			root.Layout (new Rectangle (0, 0, 200, 500));
 
@@ -102,12 +100,12 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (500, child.Height);
 
 			child = new Label () {
-				Platform = plat, IsPlatformEnabled = true,
+				IsPlatformEnabled = true,
 				VerticalOptions = LayoutOptions.Center
 			};
 
 			root = new ContentPage {
-				Platform = plat, IsPlatformEnabled = true, 
+				IsPlatformEnabled = true, 
 				Content = child
 			};
 
@@ -154,7 +152,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			page.Layout (new Rectangle (0, 0, 800, 800));
@@ -179,7 +176,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			page.Layout (new Rectangle (0, 0, 800, 800));
@@ -204,7 +200,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			page.Layout (new Rectangle (0, 0, 800, 800));
@@ -229,7 +224,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			page.Layout (new Rectangle (0, 0, 800, 800));
@@ -252,7 +246,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			page.Layout (new Rectangle (0, 0, 800, 800));
@@ -282,7 +275,6 @@ namespace Xamarin.Forms.Core.UnitTests
 						IsPlatformEnabled = true
 					},
 					IsPlatformEnabled = true,
-					Platform = new UnitPlatform ()
 				};
 			} catch (ArgumentOutOfRangeException) {
 				thrown = true;

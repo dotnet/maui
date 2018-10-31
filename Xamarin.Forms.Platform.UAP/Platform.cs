@@ -15,7 +15,7 @@ using NativeAutomationProperties = Windows.UI.Xaml.Automation.AutomationProperti
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	public abstract class Platform : IPlatform, INavigation
+	public abstract class Platform : INavigation
 	{
 		static Task<bool> s_currentAlert;
 
@@ -99,11 +99,6 @@ namespace Xamarin.Forms.Platform.UWP
 			Application.Current.NavigationProxy.Inner = this;
 		}
 
-		internal void SetPlatformDisconnected(VisualElement visualElement)
-		{
-			visualElement.Platform = this;
-		}
-
 		public IReadOnlyList<Page> NavigationStack
 		{
 			get { return _navModel.Tree.Last(); }
@@ -185,7 +180,7 @@ namespace Xamarin.Forms.Platform.UWP
 			return tcs.Task;
 		}
 
-		SizeRequest IPlatform.GetNativeSize(VisualElement element, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetNativeSize(VisualElement element, double widthConstraint, double heightConstraint)
 		{
 			// Hack around the fact that Canvas ignores the child constraints.
 			// It is entirely possible using Canvas as our base class is not wise.
@@ -277,8 +272,6 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (newPage == _currentPage)
 				return;
-
-			newPage.Platform = this;
 
 			if (_currentPage != null)
 			{

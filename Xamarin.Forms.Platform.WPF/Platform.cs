@@ -9,7 +9,7 @@ using Xamarin.Forms.Platform.WPF.Controls;
 
 namespace Xamarin.Forms.Platform.WPF
 {
-	public class Platform : BindableObject, IPlatform, INavigation
+	public class Platform : BindableObject, INavigation
 	{
 		readonly FormsApplicationPage _page;
 		Page Page { get; set; }
@@ -118,7 +118,7 @@ namespace Xamarin.Forms.Platform.WPF
 
 		}
 
-		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			if (widthConstraint > 0 && heightConstraint > 0 && GetRenderer(view) != null)
 			{
@@ -161,7 +161,6 @@ namespace Xamarin.Forms.Platform.WPF
 				return;
 
 			Page = newRoot;
-			Page.Platform = this;
 			_page.StartupPage = Page;
 			Application.Current.NavigationProxy.Inner = this;
 		}
@@ -235,7 +234,6 @@ namespace Xamarin.Forms.Platform.WPF
 				throw new ArgumentNullException(nameof(page));
 
 			var tcs = new TaskCompletionSource<bool>();
-			page.Platform = this;
 			_page.PushModal(page, animated);
 			tcs.SetResult(true);
 			return tcs.Task;

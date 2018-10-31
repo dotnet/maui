@@ -34,7 +34,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			View child1, child2;
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
@@ -52,7 +51,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			View child1, child2;
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
@@ -84,7 +82,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var stack = new StackLayout {
 				Spacing = 0,
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = { child1, child2 }
 			};
@@ -107,7 +104,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			View child1, child2;
 			var stack = new StackLayout {
 				Orientation = StackOrientation.Horizontal,
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					(child1 = new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true}),
@@ -126,7 +122,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			View child1, child2, child3;
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Vertical,
 				Children = {
@@ -153,7 +148,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestExpandHorizontal() {
 			View child1, child2, child3;
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Horizontal,
 				Children = {
@@ -179,7 +173,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestSizeRequestVertical ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
@@ -196,7 +189,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var stack = new StackLayout {
 				Orientation = StackOrientation.Horizontal,
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					new View {WidthRequest = 20, HeightRequest = 20, IsPlatformEnabled = true},
@@ -212,7 +204,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void HorizontalRequestInVerticalLayout ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					new View {WidthRequest = 20, HeightRequest = 30, IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Start},
@@ -237,7 +228,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void VerticalRequestInHorizontalLayout ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Horizontal,
 				Children = {
@@ -258,7 +248,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void RespectMinimumHeightRequest ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 10,
 				Children = {
@@ -279,7 +268,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void RespectMinimumWidthRequest ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Orientation = StackOrientation.Horizontal,
 				Spacing = 10,
@@ -301,7 +289,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void GetMinimumSizeVertical ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 10,
 				Children = {
@@ -319,7 +306,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void GetMinimumSizeHorizontal ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 10,
 				Orientation = StackOrientation.Horizontal,
@@ -339,7 +325,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			View child1, child2;
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					(child1 = new View {IsPlatformEnabled = true}),
@@ -366,7 +351,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void OffOrientationMinimumSize ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 0
 			};
@@ -387,7 +371,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void NestedMinimumSizeOverflow ()
 		{
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 0
 			};
@@ -439,7 +422,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var options = new LayoutOptions (align, expand);
 			var stack = new StackLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Spacing = 0,
 				Orientation = orientation
@@ -482,7 +464,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var stack = new StackLayout {
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1, child2}
 			};
 
@@ -511,7 +492,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var stack = new StackLayout {
 				ComputedConstraint = LayoutConstraint.Fixed,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1, child2}
 			};
 
@@ -535,7 +515,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var stack = new StackLayout {
 				ComputedConstraint = LayoutConstraint.HorizontallyFixed,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1, child2}
 			};
 
@@ -560,7 +539,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				ComputedConstraint = LayoutConstraint.Fixed,
 				Orientation = StackOrientation.Horizontal,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1, child2}
 			};
 
@@ -585,7 +563,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				ComputedConstraint = LayoutConstraint.VerticallyFixed,
 				Orientation = StackOrientation.Horizontal,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1, child2}
 			};
 
@@ -609,7 +586,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var stack = new StackLayout {
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				Children = {child1}
 			};
 

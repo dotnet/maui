@@ -786,11 +786,12 @@ namespace Xamarin.Forms
 		[Obsolete("OnSizeRequest is obsolete as of version 2.2.0. Please use OnMeasure instead.")]
 		protected virtual SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
-			if (Platform == null || !IsPlatformEnabled)
+			if (!IsPlatformEnabled)
 			{
 				return new SizeRequest(new Size(-1, -1));
 			}
-			return Platform.GetNativeSize(this, widthConstraint, heightConstraint);
+
+			return Device.PlatformServices.GetNativeSize(this, widthConstraint, heightConstraint);
 		}
 
 		protected void SizeAllocated(double width, double height)

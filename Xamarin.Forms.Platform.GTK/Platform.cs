@@ -9,7 +9,7 @@ using Xamarin.Forms.Platform.GTK.Renderers;
 
 namespace Xamarin.Forms.Platform.GTK
 {
-	public class Platform : BindableObject, IPlatform, INavigation, IDisposable
+	public class Platform : BindableObject, INavigation, IDisposable
 	{
 		private bool _disposed;
 		readonly List<Page> _modals;
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Platform.GTK
 			view.ClearValue(RendererProperty);
 		}
 
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		public static SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
 		{
 			var renderView = GetRenderer(view);
 
@@ -121,7 +121,6 @@ namespace Xamarin.Forms.Platform.GTK
 				throw new NotImplementedException();
 
 			Page = newRoot;
-			Page.Platform = this;
 
 			AddChild(Page);
 
@@ -216,7 +215,6 @@ namespace Xamarin.Forms.Platform.GTK
 		Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			_modals.Add(modal);
-			modal.Platform = this;
 			modal.DescendantRemoved += HandleChildRemoved;
 
 			var modalRenderer = GetRenderer(modal);

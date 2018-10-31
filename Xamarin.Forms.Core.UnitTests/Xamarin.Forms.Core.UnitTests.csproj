@@ -168,7 +168,6 @@
     <Compile Include="ContentViewUnitTest.cs" />
     <Compile Include="MockPlatformServices.cs" />
     <Compile Include="GridTests.cs" />
-    <Compile Include="UnitPlatform.cs" />
     <Compile Include="GridLengthTypeConverterTests.cs" />
     <Compile Include="BoxViewUnitTests.cs" />
     <Compile Include="NotifiedPropertiesTests.cs" />

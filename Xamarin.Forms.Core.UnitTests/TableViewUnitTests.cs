@@ -49,7 +49,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			ViewCell viewCell = new ViewCell { View = new Label () };
 			var table = new TableView {
-				Platform = new UnitPlatform (),
 				Root = new TableRoot {
 					new TableSection {
 						viewCell
@@ -59,7 +58,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (table, viewCell.Parent);
 			Assert.AreEqual (viewCell, viewCell.View.Parent);
-			Assert.AreEqual (table.Platform, viewCell.View.Platform);
 		}
 
 		[Test]
@@ -68,7 +66,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var viewCell = new ViewCell { View = new Label () };
 			var section = new TableSection (); 
 			var table = new TableView {
-				Platform = new UnitPlatform (),
 				Root = new TableRoot {
 					section
 				}
@@ -78,7 +75,6 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.AreEqual (table, viewCell.Parent);
 			Assert.AreEqual (viewCell, viewCell.View.Parent);
-			Assert.AreEqual (table.Platform, viewCell.View.Platform);
 		}
 	}	
 }

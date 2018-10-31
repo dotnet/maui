@@ -11,11 +11,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestOrderingElements()
 		{
-			var platform = new UnitPlatform();
-			var label0 = new Label { Platform = platform, IsPlatformEnabled = true };
-			var label1 = new Label { Platform = platform, IsPlatformEnabled = true };
-			var label2 = new Label { Platform = platform, IsPlatformEnabled = true };
-			var label3 = new Label { Platform = platform, IsPlatformEnabled = true };
+			var label0 = new Label { IsPlatformEnabled = true };
+			var label1 = new Label { IsPlatformEnabled = true };
+			var label2 = new Label { IsPlatformEnabled = true };
+			var label3 = new Label { IsPlatformEnabled = true };
 
 			FlexLayout.SetOrder(label3, 0);
 			FlexLayout.SetOrder(label2, 1);
@@ -23,7 +22,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			FlexLayout.SetOrder(label0, 3);
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Direction = FlexDirection.Column,
 				Children = {

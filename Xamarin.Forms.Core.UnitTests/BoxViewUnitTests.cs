@@ -17,7 +17,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				WidthRequest=20, 
 				HeightRequest=30,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			Assert.AreEqual (new Color (0.2, 0.3, 0.4), box.Color);
@@ -31,7 +30,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var box = new BoxView {
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			var request = box.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity).Request;

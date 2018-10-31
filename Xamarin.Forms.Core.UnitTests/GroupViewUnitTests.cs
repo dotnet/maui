@@ -244,14 +244,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			View view;
 			var group = new NaiveLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true,
 				Children = {
 					(view = new View {
 						WidthRequest = 50,
 						HeightRequest = 20,
 						IsPlatformEnabled = true,
-						Platform = new UnitPlatform ()
 					})
 				}
 			};

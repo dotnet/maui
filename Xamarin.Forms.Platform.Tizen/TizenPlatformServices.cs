@@ -222,6 +222,11 @@ namespace Xamarin.Forms.Platform.Tizen
 				return _assemblies.ToArray();
 			}
 		}
+
+		public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+		{
+			return Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+		}
 	}
 }
 

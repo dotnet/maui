@@ -8,9 +8,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignSelfCenter()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				Direction = FlexDirection.Column,
@@ -27,9 +25,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignSelfFlexEnd()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				Direction = FlexDirection.Column,
@@ -46,9 +42,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignSelfFlexStart()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				Direction = FlexDirection.Column,
@@ -65,9 +59,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignSelfFlexEndOverrideFlexStart()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.Start,

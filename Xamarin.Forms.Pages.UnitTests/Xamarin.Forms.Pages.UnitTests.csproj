@@ -51,9 +51,6 @@
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\MockPlatformServices.cs">
       <Link>MockPlatformServices.cs</Link>
     </Compile>
-    <Compile Include="..\Xamarin.Forms.Core.UnitTests\UnitPlatform.cs">
-      <Link>UnitPlatform.cs</Link>
-    </Compile>
     <Compile Include="DataPageTests.cs" />
     <Compile Include="DataSourceListTests.cs" />
     <Compile Include="IntegrationTests.cs" />

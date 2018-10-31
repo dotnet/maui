@@ -14,9 +14,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsStretch()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				Direction = FlexDirection.Column,
@@ -32,9 +30,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsCenter()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.Center,
@@ -51,9 +47,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsFlexStart()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.Start,
@@ -70,9 +64,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAlignItemsFlexEnd()
 		{
-			var platform = new UnitPlatform();
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 
 				AlignItems = FlexAlignItems.End,

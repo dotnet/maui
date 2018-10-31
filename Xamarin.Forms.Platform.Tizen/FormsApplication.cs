@@ -131,10 +131,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				throw new InvalidOperationException("Call Forms.Init (UIApplication) before this");
 			}
 
-			if (_application != null)
-			{
-				_application.Platform = _platform;
-			}
 			_platform.HasAlpha = MainWindow.Alpha;
 			_platform.SetPage(page);
 		}

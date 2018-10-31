@@ -591,6 +591,11 @@ namespace Xamarin.Forms
 				Internals.Log.Warning(nameof(AndroidPlatformServices), "Platform doesn't implement QuitApp");
 			}
 
+			public SizeRequest GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
+			{
+				return Platform.Android.Platform.GetNativeSize(view, widthConstraint, heightConstraint);
+			}
+
 			public class _IsolatedStorageFile : IIsolatedStorageFile
 			{
 				readonly IsolatedStorageFile _isolatedStorageFile;

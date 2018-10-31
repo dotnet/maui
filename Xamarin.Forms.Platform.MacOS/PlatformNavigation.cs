@@ -72,7 +72,6 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
-			modal.Platform = _platformRenderer.Platform;
 			return _modalTracker.PushAsync(modal, _animateModals && animated);
 		}
 

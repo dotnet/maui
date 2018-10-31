@@ -16,7 +16,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>();
@@ -31,7 +30,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>();
@@ -47,7 +45,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>();
@@ -63,7 +60,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -82,7 +78,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>() { 0, 1, 2 };
@@ -100,7 +95,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -119,7 +113,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>() { 0, 1 };
@@ -135,7 +128,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -153,7 +145,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -171,7 +162,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -188,7 +178,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -206,7 +195,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			layout.Children.Add(new Label());
@@ -224,7 +212,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -250,7 +237,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -265,7 +251,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
@@ -284,7 +269,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int?>(Enumerable.Range(0, 10).Cast<int?>());
@@ -299,7 +283,6 @@ namespace Xamarin.Forms.Core.UnitTests
 			var layout = new StackLayout
 			{
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform()
 			};
 
 			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));

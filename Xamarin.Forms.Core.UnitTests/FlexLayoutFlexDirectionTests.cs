@@ -10,12 +10,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionColumnWithoutHeight()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
+			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -37,12 +35,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionRowNoWidth()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
+			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -65,12 +61,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionColumn()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
+			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -91,12 +85,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionRow()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
+			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -117,12 +109,10 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionColumnReverse()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10 };
+			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view1 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
+			var view2 = new View { IsPlatformEnabled = true, HeightRequest = 10 };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -143,13 +133,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFlexDirectionRowReverse()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
-			var view2 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, };
+			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view1 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
+			var view2 = new View { IsPlatformEnabled = true, WidthRequest = 10, };
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,

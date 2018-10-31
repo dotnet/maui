@@ -111,7 +111,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			Assert.AreEqual (new Size (140, 240), frame.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity).Request);
@@ -137,7 +136,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					IsPlatformEnabled = true
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				WidthRequest = 20
 			};
 
@@ -152,10 +150,8 @@ namespace Xamarin.Forms.Core.UnitTests
 					WidthRequest = 100,
 					HeightRequest = 200,
 					IsPlatformEnabled = true,
-					Platform = new UnitPlatform ()
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform (),
 				HeightRequest = 20
 			};
 
@@ -175,7 +171,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					VerticalOptions = LayoutOptions.Center
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));
@@ -196,7 +191,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					VerticalOptions = LayoutOptions.Start
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));
@@ -217,7 +211,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					VerticalOptions = LayoutOptions.End
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));
@@ -238,7 +231,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					HorizontalOptions = LayoutOptions.Center
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));
@@ -259,7 +251,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					HorizontalOptions = LayoutOptions.Start
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));
@@ -280,7 +271,6 @@ namespace Xamarin.Forms.Core.UnitTests
 					HorizontalOptions = LayoutOptions.End
 				},
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform ()
 			};
 
 			frame.Layout (new Rectangle (0, 0, 200, 200));

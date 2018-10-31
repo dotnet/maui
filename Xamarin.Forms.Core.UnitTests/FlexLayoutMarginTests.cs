@@ -12,10 +12,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginLeft()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
+			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(10, 0, 0, 0), };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -31,10 +29,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginTop()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
+			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 10, 0, 0), };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -51,10 +47,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginRight()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
+			var view0 = new View { IsPlatformEnabled = true, WidthRequest = 10, Margin = new Thickness(0, 0, 10, 0), };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -72,10 +66,8 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginBottom()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
+			var view0 = new View { IsPlatformEnabled = true, HeightRequest = 10, Margin = new Thickness(0, 0, 0, 10), };
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -93,11 +85,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginAndFlexRow()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
+			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(10, 0, 10, 0), };
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -113,11 +103,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginAndFlexColumn()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -133,11 +121,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginAndStretchRow()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
+			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 10, 0, 10), };
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -155,11 +141,9 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void TestMarginAndStretchColumn()
 		{
 
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true,Margin = new Thickness(10, 0, 10, 0) };
+			var view0 = new View { IsPlatformEnabled = true,Margin = new Thickness(10, 0, 10, 0) };
 			FlexLayout.SetGrow(view0, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -175,13 +159,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginWithSiblingRow()
 		{
-			var platform = new UnitPlatform((visual, width, height) => new SizeRequest(new Size(0, 0)));
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
+			Device.PlatformServices = new MockPlatformServices(getNativeSizeFunc:(visual, width, height) => new SizeRequest(new Size(0, 0)));
+
+			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 10, 0) };
 			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true };
+			var view1 = new View { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(view1, 1);
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,
@@ -200,14 +184,12 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestMarginWithSiblingColumn()
 		{
-			var platform = new UnitPlatform();
-			var view0 = new View { Platform = platform, IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
+			var view0 = new View { IsPlatformEnabled = true, Margin = new Thickness(0, 0, 0, 10) };
 			FlexLayout.SetGrow(view0, 1);
-			var view1 = new View { Platform = platform, IsPlatformEnabled = true };
+			var view1 = new View { IsPlatformEnabled = true };
 			FlexLayout.SetGrow(view1, 1);
 
 			var layout = new FlexLayout {
-				Platform = platform,
 				IsPlatformEnabled = true,
 				Children = {
 					view0,

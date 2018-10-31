@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		public override void Setup()
 		{
 			base.Setup ();
-			Device.PlatformServices = new MockPlatformServices ();
+			Device.PlatformServices = new MockPlatformServices (getNativeSizeFunc:(b, d, e) => new SizeRequest(new Size(100,50)));
 		}
 
 		[TearDown]
@@ -22,15 +22,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void GetSizeRequestIncludesMargins ()
 		{
-			var platform = new UnitPlatform ((b, d, e) => new SizeRequest(new Size(100,50)));
-
 			var parent = new ContentView {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var child = new Button {
 				Text = "Test",
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			
@@ -45,15 +41,11 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void MarginsAffectPositionInContentView ()
 		{
-			var platform = new UnitPlatform ((b, d, e) => new SizeRequest(new Size(100,50)));
-
 			var parent = new ContentView {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var child = new Button {
 				Text = "Test",
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			
@@ -68,17 +60,13 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void ChangingMarginCausesRelayout ()
 		{
-			var platform = new UnitPlatform ((b, d, e) => new SizeRequest(new Size(100,50)));
-
 			var parent = new ContentView {
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			var child = new Button {
 				Text = "Test",
 				VerticalOptions = LayoutOptions.Start,
 				HorizontalOptions = LayoutOptions.Start,
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 			
@@ -93,10 +81,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void IntegrationTest ()
 		{
-			var platform = new UnitPlatform ((b, d, e) => new SizeRequest(new Size(100,50)));
-
 			var parent = new StackLayout {
-				Platform = platform,
 				Spacing = 0,
 				IsPlatformEnabled = true,
 			};
@@ -105,13 +90,11 @@ namespace Xamarin.Forms.Core.UnitTests
 				Text = "Test",
 				VerticalOptions = LayoutOptions.Start,
 				HorizontalOptions = LayoutOptions.Start,
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 
 			var child2 = new Button {
 				Text = "Test",
-				Platform = platform,
 				IsPlatformEnabled = true,
 			};
 

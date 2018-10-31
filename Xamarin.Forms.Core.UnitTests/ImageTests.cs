@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestSizing ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			var result = image.GetSizeRequest (double.PositiveInfinity, double.PositiveInfinity);
 
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAspectSizingWithConstrainedHeight ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			var result = image.GetSizeRequest (double.PositiveInfinity, 10);
 
@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAspectSizingWithConstrainedWidth ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			var result = image.GetSizeRequest (25, double.PositiveInfinity);
 
@@ -62,7 +62,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAspectFillSizingWithConstrainedHeight ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.GetSizeRequest (double.PositiveInfinity, 10);
@@ -74,7 +74,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestAspectFillSizingWithConstrainedWidth ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.GetSizeRequest (25, double.PositiveInfinity);
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFillSizingWithConstrainedHeight ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.GetSizeRequest (double.PositiveInfinity, 10);
@@ -98,7 +98,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void TestFillSizingWithConstrainedWidth ()
 		{
-			var image = new Image {Source = ImageSource.FromFile ("File.png"), Platform = new UnitPlatform (), IsPlatformEnabled = true};
+			var image = new Image {Source = ImageSource.FromFile ("File.png"), IsPlatformEnabled = true};
 
 			image.Aspect = Aspect.AspectFill;
 			var result = image.GetSizeRequest (25, double.PositiveInfinity);

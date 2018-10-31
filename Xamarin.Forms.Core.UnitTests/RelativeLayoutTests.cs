@@ -56,7 +56,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SimpleLayout ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -80,7 +79,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			var relativeLayout = new RelativeLayout
 			{
-				Platform = new UnitPlatform(),
 				IsPlatformEnabled = true
 			};
 
@@ -121,7 +119,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void BoundsUpdatedIfConstraintsChangedWhileNotParented()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform(),
 				IsPlatformEnabled = true
 			};
 
@@ -144,7 +141,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SimpleExpressionLayout ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -167,7 +163,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void SimpleBoundsSizing ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -186,7 +181,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void UnconstrainedSize()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -207,7 +201,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ViewRelativeLayout ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -241,7 +234,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ViewRelativeLayoutWithExpressions()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -275,7 +267,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ViewRelativeToMultipleViews ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -320,7 +311,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ExpressionRelativeToMultipleViews()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -365,7 +355,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ThreePassLayout ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -421,7 +410,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ThreePassLayoutWithExpressions()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -477,7 +465,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ThrowsWithUnsolvableConstraints ()
 		{
 			var relativeLayout = new RelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 
@@ -508,7 +495,6 @@ namespace Xamarin.Forms.Core.UnitTests
 		public void ChildAddedBeforeLayoutChildrenAfterInitialLayout ()
 		{
 			var relativeLayout = new MockRelativeLayout {
-				Platform = new UnitPlatform (),
 				IsPlatformEnabled = true
 			};
 

@@ -106,7 +106,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			var page = new TestPage ();
 			
 			page.DataSource = new SimpleDataSource ();
-			page.Platform = new UnitPlatform();
 
 			Assert.AreEqual (9, page.DataSource.MaskedKeys.Count ());
 		}

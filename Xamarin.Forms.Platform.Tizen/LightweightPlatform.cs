@@ -49,8 +49,6 @@ namespace Xamarin.Forms.Platform.Tizen
 
 			if (_page == null) return;
 
-			_page.Platform = this;
-
 			var renderer = Platform.CreateRenderer(_page);
 			_rootView = renderer.NativeView;
 			RootNativeViewChanged?.Invoke(this, new RootNativeViewChangedEventArgs(_rootView));
@@ -77,17 +75,6 @@ namespace Xamarin.Forms.Platform.Tizen
 				SetPage(null);
 			}
 			_disposed = true;
-		}
-
-		SizeRequest IPlatform.GetNativeSize(VisualElement view, double widthConstraint, double heightConstraint)
-		{
-			widthConstraint = widthConstraint <= -1 ? double.PositiveInfinity : widthConstraint;
-			heightConstraint = heightConstraint <= -1 ? double.PositiveInfinity : heightConstraint;
-
-			double width = !double.IsPositiveInfinity(widthConstraint) ? widthConstraint : Int32.MaxValue;
-			double height = !double.IsPositiveInfinity(heightConstraint) ? heightConstraint : Int32.MaxValue;
-
-			return Platform.GetRenderer(view).GetDesiredSize(width, height);
 		}
 	}
 }

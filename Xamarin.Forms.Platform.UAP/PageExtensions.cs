@@ -56,7 +56,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var root = new Windows.UI.Xaml.Controls.Page();
 
-			new WindowsPlatform(root).SetPlatformDisconnected(visualElement);
+			// Yes, this looks awkward. But the page needs to be Platformed or several things won't work
+			new WindowsPlatform(root);
 
 			var renderer = visualElement.GetOrCreateRenderer();
 

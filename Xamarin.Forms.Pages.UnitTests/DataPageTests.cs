@@ -77,7 +77,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["Name"] = "Jason";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.DataSource = dataSource;
 
 			Assert.AreEqual ("Jason", detailpage.Name);
@@ -90,7 +89,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["UserName"] = "Jason";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.SetBinding (TestDataPage.NameProperty, new DataSourceBinding ("UserName"));
 			detailpage.DataSource = dataSource;
 
@@ -104,7 +102,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["UserName"] = "Jason";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.DataSource = dataSource;
 
 			detailpage.SetBinding (TestDataPage.NameProperty, new DataSourceBinding ("UserName"));
@@ -120,7 +117,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["UserName"] = "Jason";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.SetBinding (TestDataPage.NameProperty, new DataSourceBinding ("UserName"));
 			detailpage.DataSource = dataSource;
 
@@ -137,7 +133,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["Other"] = "Foo";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.DataSource = dataSource;
 
 			Assert.AreEqual ("Jason", detailpage.Name);
@@ -153,7 +148,6 @@ namespace Xamarin.Forms.Pages.UnitTests
 			dataSource["UserName"] = "Jason";
 
 			var detailpage = new TestDataPage ();
-			detailpage.Platform = new UnitPlatform ();
 			detailpage.SetBinding (TestDataPage.NameProperty, new DataSourceBinding ("UserName", BindingMode.TwoWay));
 			detailpage.DataSource = dataSource;
 
