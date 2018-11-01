@@ -45,6 +45,17 @@ namespace Xamarin.Forms.Core.UnitTests
 		{
 			public string Name { get; set; }
 			public string Description { get; set; }
+
+			public override string ToString() => Name ?? base.ToString();
+		}
+
+		static ListItem[] CreateListItemCollection()
+		{
+			return new[]
+			{
+				new ListItem { Name = "Foo", Description = "Bar" },
+				new ListItem { Name = "Baz", Description = "Raz" }
+			};
 		}
 
 		[Test]
@@ -55,10 +66,7 @@ namespace Xamarin.Forms.Core.UnitTests
 			cellTemplate.SetBinding (TextCell.DetailProperty, new Binding ("Description"));
 
 			var listView = new ListView {
-				ItemsSource = new[] {
-					new ListItem {Name = "Foo", Description = "Bar"},
-					new ListItem {Name = "Baz", Description = "Raz"}
-				},
+				ItemsSource = CreateListItemCollection(),
 				ItemTemplate = cellTemplate
 			};
 
@@ -85,6 +93,27 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.That (cell, Is.Not.Null);
 			Assert.That (cell, Is.InstanceOf<TextCell>());
 			Assert.That (((TextCell) cell).Text, Is.Null);
+		}
+
+		[Test]
+		public void ItemTemplateIsNullObjectExecutesToString()
+		{
+			var listView = new ListView
+			{
+				ItemsSource = CreateListItemCollection()
+			};
+
+			Assert.AreEqual(2, listView.TemplatedItems.Count);
+
+			Cell cell = listView.TemplatedItems[0];
+			Assert.That(cell, Is.Not.Null);
+			Assert.That(cell, Is.InstanceOf<TextCell>());
+			Assert.That(((TextCell)cell).Text, Is.EqualTo("Foo"));
+
+			cell = listView.TemplatedItems[1];
+			Assert.That(cell, Is.Not.Null);
+			Assert.That(cell, Is.InstanceOf<TextCell>());
+			Assert.That(((TextCell)cell).Text, Is.EqualTo("Baz"));
 		}
 
 		[Test]
