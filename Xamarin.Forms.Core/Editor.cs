@@ -23,6 +23,8 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
 
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
+
 		public static readonly BindableProperty AutoSizeProperty = BindableProperty.Create(nameof(AutoSize), typeof(EditorAutoSizeOption), typeof(Editor), defaultValue: EditorAutoSizeOption.Disabled, propertyChanged: (bindable, oldValue, newValue)
 			=> ((Editor)bindable)?.InvalidateMeasure());
 
@@ -60,6 +62,12 @@ namespace Xamarin.Forms
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
+		}
+
+		public bool IsTextPredictionEnabled
+		{
+			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
+			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
 		public string FontFamily

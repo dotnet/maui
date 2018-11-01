@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue3509.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Github3856.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1937.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue3555.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3843.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4053.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3809.cs" />
