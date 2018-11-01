@@ -615,7 +615,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform(),
 				Children = { innerStack }
 			};
 
@@ -649,7 +648,6 @@ namespace Xamarin.Forms.Core.UnitTests
 				HorizontalOptions = LayoutOptions.FillAndExpand,
 				VerticalOptions = LayoutOptions.FillAndExpand,
 				IsPlatformEnabled = true,
-				Platform = new UnitPlatform(),
 				Children = { innerStack }
 			};
 
