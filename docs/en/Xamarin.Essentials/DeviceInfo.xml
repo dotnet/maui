@@ -172,7 +172,9 @@
       <Docs>
         <summary>Gets the version of the operating system.</summary>
         <value>The version of the operating system.</value>
-        <remarks></remarks>
+        <remarks>
+          <para></para>
+        </remarks>
       </Docs>
     </Member>
   </Members>
