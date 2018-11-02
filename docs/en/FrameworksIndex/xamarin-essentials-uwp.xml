@@ -389,7 +389,7 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
-          <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
+      <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
     </Type>
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
       <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
