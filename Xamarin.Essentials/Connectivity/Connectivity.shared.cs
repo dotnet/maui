@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
 
         public static NetworkAccess NetworkAccess => PlatformNetworkAccess;
 
-        public static IEnumerable<ConnectionProfile> Profiles => PlatformProfiles;
+        public static IEnumerable<ConnectionProfile> ConnectionProfiles => PlatformConnectionProfiles;
 
         public static event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged
         {
@@ -46,18 +46,18 @@ namespace Xamarin.Essentials
         static void SetCurrent()
         {
             currentAccess = NetworkAccess;
-            currentProfiles = new List<ConnectionProfile>(Profiles);
+            currentProfiles = new List<ConnectionProfile>(ConnectionProfiles);
         }
 
         static void OnConnectivityChanged(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
             => OnConnectivityChanged(new ConnectivityChangedEventArgs(access, profiles));
 
         static void OnConnectivityChanged()
-            => OnConnectivityChanged(NetworkAccess, Profiles);
+            => OnConnectivityChanged(NetworkAccess, ConnectionProfiles);
 
         static void OnConnectivityChanged(ConnectivityChangedEventArgs e)
         {
-            if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.Profiles))
+            if (currentAccess != e.NetworkAccess || !currentProfiles.SequenceEqual(e.ConnectionProfiles))
             {
                 SetCurrent();
                 MainThread.BeginInvokeOnMainThread(() => ConnectivityChangedInternal?.Invoke(null, e));
@@ -67,18 +67,18 @@ namespace Xamarin.Essentials
 
     public class ConnectivityChangedEventArgs : EventArgs
     {
-        internal ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> profiles)
+        internal ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
         {
             NetworkAccess = access;
-            Profiles = profiles;
+            ConnectionProfiles = connectionProfiles;
         }
 
         public NetworkAccess NetworkAccess { get; }
 
-        public IEnumerable<ConnectionProfile> Profiles { get; }
+        public IEnumerable<ConnectionProfile> ConnectionProfiles { get; }
 
         public override string ToString() =>
             $"{nameof(NetworkAccess)}: {NetworkAccess}, " +
-            $"{nameof(Profiles)}: [{string.Join(", ", Profiles)}]";
+            $"{nameof(ConnectionProfiles)}: [{string.Join(", ", ConnectionProfiles)}]";
     }
 }

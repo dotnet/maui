@@ -111,7 +111,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static IEnumerable<ConnectionProfile> PlatformProfiles
+        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
         {
             get
             {
@@ -165,32 +165,31 @@ namespace Xamarin.Essentials
             {
                 case ConnectivityType.Ethernet:
                     return ConnectionProfile.Ethernet;
-                case ConnectivityType.Wimax:
-                    return ConnectionProfile.WiMAX;
                 case ConnectivityType.Wifi:
                     return ConnectionProfile.WiFi;
                 case ConnectivityType.Bluetooth:
                     return ConnectionProfile.Bluetooth;
+                case ConnectivityType.Wimax:
                 case ConnectivityType.Mobile:
                 case ConnectivityType.MobileDun:
                 case ConnectivityType.MobileHipri:
                 case ConnectivityType.MobileMms:
                     return ConnectionProfile.Cellular;
                 case ConnectivityType.Dummy:
-                    return ConnectionProfile.Other;
+                    return ConnectionProfile.Unknown;
                 default:
                     if (string.IsNullOrWhiteSpace(typeName))
-                        return ConnectionProfile.Other;
+                        return ConnectionProfile.Unknown;
 
                     var typeNameLower = typeName.ToLowerInvariant();
                     if (typeNameLower.Contains("mobile"))
                         return ConnectionProfile.Cellular;
 
+                    if (typeNameLower.Contains("wimax"))
+                        return ConnectionProfile.Cellular;
+
                     if (typeNameLower.Contains("wifi"))
                         return ConnectionProfile.WiFi;
-
-                    if (typeNameLower.Contains("wimax"))
-                        return ConnectionProfile.WiMAX;
 
                     if (typeNameLower.Contains("ethernet"))
                         return ConnectionProfile.Ethernet;
@@ -198,7 +197,7 @@ namespace Xamarin.Essentials
                     if (typeNameLower.Contains("bluetooth"))
                         return ConnectionProfile.Bluetooth;
 
-                    return ConnectionProfile.Other;
+                    return ConnectionProfile.Unknown;
             }
         }
     }

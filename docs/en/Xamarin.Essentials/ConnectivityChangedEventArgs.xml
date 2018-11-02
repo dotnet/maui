@@ -37,10 +37,10 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="Profiles">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; Profiles { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; Profiles" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
+    <Member MemberName="ConnectionProfiles">
+      <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

@@ -38,14 +38,14 @@ namespace Xamarin.Essentials
             }
         }
 
-        static IEnumerable<ConnectionProfile> PlatformProfiles
+        static IEnumerable<ConnectionProfile> PlatformConnectionProfiles
         {
             get
             {
                 var networkInterfaceList = NetworkInformation.GetConnectionProfiles();
                 foreach (var interfaceInfo in networkInterfaceList.Where(nii => nii.GetNetworkConnectivityLevel() != NetworkConnectivityLevel.None))
                 {
-                    var type = ConnectionProfile.Other;
+                    var type = ConnectionProfile.Unknown;
 
                     if (interfaceInfo.NetworkAdapter != null)
                     {
