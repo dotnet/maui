@@ -1,8 +1,8 @@
 ﻿namespace Samples.View
 {
-    public partial class DataTransferPage : BasePage
+    public partial class SharePage : BasePage
     {
-        public DataTransferPage()
+        public SharePage()
         {
             InitializeComponent();
         }

@@ -1,7 +1,7 @@
-<Type Name="DataTransfer" FullName="Xamarin.Essentials.DataTransfer">
-  <TypeSignature Language="C#" Value="public static class DataTransfer" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit DataTransfer extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DataTransfer" />
+<Type Name="Share" FullName="Xamarin.Essentials.Share">
+  <TypeSignature Language="C#" Value="public static class Share" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Share extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Share" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -20,7 +20,7 @@
     <Member MemberName="RequestAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (string text);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(string text) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -44,7 +44,7 @@
     <Member MemberName="RequestAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (Xamarin.Essentials.ShareTextRequest request);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(class Xamarin.Essentials.ShareTextRequest request) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -68,7 +68,7 @@
     <Member MemberName="RequestAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task RequestAsync (string text, string title);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task RequestAsync(string text, string title) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String,System.String)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>

@@ -73,12 +73,6 @@ namespace Samples.ViewModel
                     "Check connectivity state and detect changes.",
                     new[] { "connectivity", "internet", "wifi" }),
                 new SampleItem(
-                    "📲",
-                    "Data Transfer",
-                    typeof(DataTransferPage),
-                    "Send text and website uris to other apps.",
-                    new[] { "data", "transfer", "share", "communication" }),
-                new SampleItem(
                     "📱",
                     "Device Info",
                     typeof(DeviceInfoPage),
@@ -168,6 +162,12 @@ namespace Samples.ViewModel
                     typeof(SecureStoragePage),
                     "Securely store data.",
                     new[] { "settings", "preferences", "prefs", "security", "storage" }),
+                new SampleItem(
+                    "📲",
+                    "Share",
+                    typeof(SharePage),
+                    "Send text and website uris to other apps.",
+                    new[] { "data", "transfer", "share", "communication" }),
                 new SampleItem(
                     "💬",
                     "SMS",

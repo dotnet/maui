@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class DataTransfer
+    public static partial class Share
     {
         static Task PlatformRequestAsync(ShareTextRequest request)
         {

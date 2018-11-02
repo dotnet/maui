@@ -107,7 +107,7 @@
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
-      <Type Name="DataTransfer" Kind="Class" />
+      <Type Name="Share" Kind="Class" />
       <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceInfo+Idioms" Kind="Class" />

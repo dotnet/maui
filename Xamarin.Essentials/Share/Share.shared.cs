@@ -2,7 +2,7 @@
 
 namespace Xamarin.Essentials
 {
-    public static partial class DataTransfer
+    public static partial class Share
     {
         public static Task RequestAsync(string text) =>
             RequestAsync(new ShareTextRequest(text));

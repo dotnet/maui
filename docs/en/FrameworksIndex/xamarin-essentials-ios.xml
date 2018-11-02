@@ -124,10 +124,10 @@
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
     </Type>
-    <Type Name="Xamarin.Essentials.DataTransfer" Id="T:Xamarin.Essentials.DataTransfer">
-      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(System.String,System.String)" />
-      <Member Id="M:Xamarin.Essentials.DataTransfer.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
+    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
       <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
