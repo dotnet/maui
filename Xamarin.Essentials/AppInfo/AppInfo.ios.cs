@@ -16,7 +16,7 @@ namespace Xamarin.Essentials
         static string GetBundleValue(string key)
            => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
-        static void PlatformOpenSettings() =>
+        static void PlatformShowSettingsUI() =>
             UIApplication.SharedApplication.OpenUrl(new NSUrl(UIApplication.OpenSettingsUrlString));
     }
 }

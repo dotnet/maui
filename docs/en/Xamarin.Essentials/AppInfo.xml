@@ -53,10 +53,10 @@
         <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="OpenSettings">
-      <MemberSignature Language="C#" Value="public static void OpenSettings ();" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OpenSettings() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppInfo.OpenSettings" />
+    <Member MemberName="ShowSettingsUI">
+      <MemberSignature Language="C#" Value="public static void ShowSettingsUI ();" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void ShowSettingsUI() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

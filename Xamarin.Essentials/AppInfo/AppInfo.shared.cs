@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Xamarin.Essentials
+﻿namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
@@ -14,6 +12,6 @@ namespace Xamarin.Essentials
 
         public static string BuildString => PlatformGetBuild();
 
-        public static void OpenSettings() => PlatformOpenSettings();
+        public static void ShowSettingsUI() => PlatformShowSettingsUI();
     }
 }

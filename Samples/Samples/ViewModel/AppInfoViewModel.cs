@@ -13,11 +13,11 @@ namespace Samples.ViewModel
 
         public string AppBuild => AppInfo.BuildString;
 
-        public Command OpenSettingsCommand { get; }
+        public Command ShowSettingsUICommand { get; }
 
         public AppInfoViewModel()
         {
-            OpenSettingsCommand = new Command(() => AppInfo.OpenSettings());
+            ShowSettingsUICommand = new Command(() => AppInfo.ShowSettingsUI());
         }
     }
 }
