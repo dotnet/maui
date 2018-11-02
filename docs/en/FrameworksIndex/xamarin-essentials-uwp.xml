@@ -106,22 +106,21 @@
       <Member Id="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectionProfile" Id="T:Xamarin.Essentials.ConnectionProfile">
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Other" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiMAX" />
     </Type>
     <Type Name="Xamarin.Essentials.Connectivity" Id="T:Xamarin.Essentials.Connectivity">
       <Member Id="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
       <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.Connectivity.Profiles" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectivityChangedEventArgs" Id="T:Xamarin.Essentials.ConnectivityChangedEventArgs">
       <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
     </Type>
     <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
       <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
