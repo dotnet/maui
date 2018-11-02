@@ -26,7 +26,7 @@ namespace Xamarin.Essentials
             {
                 // null voice if fine - it is the default
                 speechUtterance.Voice =
-                    AVSpeechSynthesisVoice.FromLanguage(settings.Locale.Language) ??
+                    AVSpeechSynthesisVoice.FromLanguage(settings.Locale?.Language) ??
                     AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
 
                 // the platform has a range of 0.5 - 2.0

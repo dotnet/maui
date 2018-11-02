@@ -125,7 +125,7 @@ namespace Xamarin.Essentials
                 });
             }
 
-            if (settings?.Locale.Language != null)
+            if (settings?.Locale?.Language != null)
             {
                 JavaLocale locale = null;
                 if (!string.IsNullOrWhiteSpace(settings?.Locale.Country))
