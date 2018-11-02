@@ -10,8 +10,8 @@ namespace Tests
             Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Connectivity.NetworkAccess);
 
         [Fact]
-        public void Profiles_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Connectivity.Profiles);
+        public void ConnectionProfiles_On_NetStandard() =>
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Connectivity.ConnectionProfiles);
 
         [Fact]
         public void Connectivity_Changed_Event_On_NetStandard() =>

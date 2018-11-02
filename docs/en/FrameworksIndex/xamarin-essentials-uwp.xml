@@ -1,4 +1,7 @@
 <Framework Name="xamarin-essentials-uwp">
+  <Assemblies>
+    <Assembly Name="Xamarin.Essentials" Version="1.0.0.0" />
+  </Assemblies>
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
@@ -46,7 +49,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
       <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
+      <Member Id="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
       <Member Id="P:Xamarin.Essentials.Battery.PowerSource" />
       <Member Id="P:Xamarin.Essentials.Battery.State" />
     </Type>
@@ -83,7 +88,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
-      <Member Id="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
     </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
@@ -109,24 +114,18 @@
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Other" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiMAX" />
     </Type>
     <Type Name="Xamarin.Essentials.Connectivity" Id="T:Xamarin.Essentials.Connectivity">
       <Member Id="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
       <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.Connectivity.Profiles" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectivityChangedEventArgs" Id="T:Xamarin.Essentials.ConnectivityChangedEventArgs">
       <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
-    </Type>
-    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
       <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
@@ -188,6 +187,7 @@
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.EnergySaverStatusChangedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.FeatureNotEnabledException" Id="T:Xamarin.Essentials.FeatureNotEnabledException">
@@ -213,7 +213,6 @@
       <Member Id="M:Xamarin.Essentials.Geocoding.GetLocationsAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
-      <Member Id="P:Xamarin.Essentials.Geocoding.MapKey" />
     </Type>
     <Type Name="Xamarin.Essentials.Geolocation" Id="T:Xamarin.Essentials.Geolocation">
       <Member Id="M:Xamarin.Essentials.Geolocation.GetLastKnownLocationAsync" />
@@ -223,6 +222,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.GeolocationAccuracy" Id="T:Xamarin.Essentials.GeolocationAccuracy">
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Default" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.High" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
@@ -389,10 +389,8 @@
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
     </Type>
-    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
-    <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
-      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
-      <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
+    <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
+      <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
@@ -474,6 +472,11 @@
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Game" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Normal" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.UI" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />

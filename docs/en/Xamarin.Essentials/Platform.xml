@@ -65,6 +65,24 @@
         </remarks>
       </Docs>
     </Member>
+    <Member MemberName="MapServiceToken">
+      <MemberSignature Language="C#" Value="public static string MapServiceToken { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property string MapServiceToken" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Platform.MapServiceToken" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Get or sets the map API key.</summary>
+        <value>The current key for maps.</value>
+        <remarks>Needed only for UWP and can be generated from Bing Maps.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="OnRequestPermissionsResult">
       <MemberSignature Language="C#" Value="public static void OnRequestPermissionsResult (int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void OnRequestPermissionsResult(int32 requestCode, string[] permissions, valuetype Android.Content.PM.Permission[] grantResults) cil managed" />

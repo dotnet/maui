@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Browser
     {
-        static Task PlatformOpenAsync(Uri uri, BrowserLaunchMode launchMode)
+        static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchMode launchMode)
         {
             var nativeUri = AndroidUri.Parse(uri.AbsoluteUri);
 
@@ -36,7 +36,7 @@ namespace Xamarin.Essentials
                     break;
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
     }
 }

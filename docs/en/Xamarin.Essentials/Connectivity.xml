@@ -17,6 +17,26 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName="ConnectionProfiles">
+      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the active connectivity types for the device.</summary>
+        <value>List of all connection profiles.</value>
+        <remarks>
+          <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
+        </remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ConnectivityChanged">
       <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged;" />
       <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.ConnectivityChangedEventArgs&gt; ConnectivityChanged" />
@@ -54,26 +74,6 @@
       <Docs>
         <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
         <value>The current network access state.</value>
-        <remarks>
-          <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Profiles">
-      <MemberSignature Language="C#" Value="public static System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; Profiles { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; Profiles" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Connectivity.Profiles" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets the active connectivity types for the device.</summary>
-        <value>List of all connection profiles.</value>
         <remarks>
           <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
         </remarks>

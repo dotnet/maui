@@ -7,6 +7,24 @@ namespace Xamarin.Essentials
     {
         static NSObject levelObserver;
         static NSObject stateObserver;
+        static NSObject saverStatusObserver;
+
+        static void StartEnergySaverListeners()
+        {
+            saverStatusObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSProcessInfo.PowerStateDidChangeNotification, PowerChangedNotification);
+        }
+
+        static void StopEnergySaverListeners()
+        {
+            saverStatusObserver?.Dispose();
+            saverStatusObserver = null;
+        }
+
+        static void PowerChangedNotification(NSNotification notification)
+            => MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+
+        static EnergySaverStatus PlatformEnergySaverStatus =>
+            NSProcessInfo.ProcessInfo?.LowPowerModeEnabled == true ? EnergySaverStatus.On : EnergySaverStatus.Off;
 
         static void StartBatteryListeners()
         {

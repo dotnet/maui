@@ -6,6 +6,8 @@ namespace Xamarin.Essentials
     {
         static event EventHandler<BatteryChangedEventArgs> BatteryChangedInternal;
 
+        static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChangedInternal;
+
         // a cache so that events aren't fired unnecessarily
         // this is mainly an issue on Android, but we can stiil do this everywhere
         static double currentLevel;
@@ -17,6 +19,8 @@ namespace Xamarin.Essentials
         public static BatteryState State => PlatformState;
 
         public static BatteryPowerSource PowerSource => PlatformPowerSource;
+
+        public static EnergySaverStatus EnergySaverStatus => PlatformEnergySaverStatus;
 
         public static event EventHandler<BatteryChangedEventArgs> BatteryChanged
         {
@@ -44,6 +48,29 @@ namespace Xamarin.Essentials
             }
         }
 
+        public static event EventHandler<EnergySaverStatusChangedEventArgs> EnergySaverStatusChanged
+        {
+            add
+            {
+                var wasRunning = EnergySaverStatusChangedInternal != null;
+
+                EnergySaverStatusChangedInternal += value;
+
+                if (!wasRunning && EnergySaverStatusChangedInternal != null)
+                    StartEnergySaverListeners();
+            }
+
+            remove
+            {
+                var wasRunning = EnergySaverStatusChangedInternal != null;
+
+                EnergySaverStatusChangedInternal -= value;
+
+                if (wasRunning && EnergySaverStatusChangedInternal == null)
+                    StopEnergySaverListeners();
+            }
+        }
+
         static void SetCurrent()
         {
             currentLevel = Battery.ChargeLevel;
@@ -65,6 +92,15 @@ namespace Xamarin.Essentials
                 BatteryChangedInternal?.Invoke(null, e);
             }
         }
+
+        static void OnEnergySaverChanged()
+            => OnEnergySaverChanged(EnergySaverStatus);
+
+        static void OnEnergySaverChanged(EnergySaverStatus saverStatus)
+            => OnEnergySaverChanged(new EnergySaverStatusChangedEventArgs(saverStatus));
+
+        static void OnEnergySaverChanged(EnergySaverStatusChangedEventArgs e)
+            => EnergySaverStatusChangedInternal?.Invoke(null, e);
     }
 
     public enum BatteryState
@@ -86,6 +122,13 @@ namespace Xamarin.Essentials
         Wireless
     }
 
+    public enum EnergySaverStatus
+    {
+        Unknown,
+        On,
+        Off
+    }
+
     public class BatteryChangedEventArgs : EventArgs
     {
         internal BatteryChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
@@ -105,5 +148,18 @@ namespace Xamarin.Essentials
             $"{nameof(ChargeLevel)}: {ChargeLevel}, " +
             $"{nameof(State)}: {State}, " +
             $"{nameof(PowerSource)}: {PowerSource}";
+    }
+
+    public class EnergySaverStatusChangedEventArgs : EventArgs
+    {
+        internal EnergySaverStatusChangedEventArgs(EnergySaverStatus saverStatus)
+        {
+            EnergySaverStatus = saverStatus;
+        }
+
+        public EnergySaverStatus EnergySaverStatus { get; }
+
+        public override string ToString() =>
+            $"{nameof(EnergySaverStatus)}: {EnergySaverStatus}";
     }
 }
