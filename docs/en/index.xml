@@ -51,9 +51,6 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName="")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+8db259fd337f910db5b9158f8ab6b5cdbb783499")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsShared")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
@@ -79,6 +76,9 @@
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-uwp">
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
+        </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+2fe4bedaf457fd79b590e4b34d21e5fdb6de1b33")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -107,7 +107,6 @@
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
-      <Type Name="Share" Kind="Class" />
       <Type Name="DeviceDisplay" Kind="Class" />
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DeviceInfo+Idioms" Kind="Class" />
@@ -160,6 +159,7 @@
       <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
+      <Type Name="Share" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />

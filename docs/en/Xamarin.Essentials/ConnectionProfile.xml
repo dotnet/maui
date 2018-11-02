@@ -16,23 +16,6 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="Unknown">
-      <MemberSignature Language="C#" Value="Unknown" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Unknown = int32(0)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
-      </ReturnValue>
-      <MemberValue>0</MemberValue>
-      <Docs>
-        <summary>Other unknown type of connection.</summary>
-      </Docs>
-    </Member>
     <Member MemberName="Bluetooth">
       <MemberSignature Language="C#" Value="Bluetooth" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Bluetooth = int32(1)" />
@@ -82,6 +65,23 @@
       <MemberValue>3</MemberValue>
       <Docs>
         <summary>The ethernet data connection.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.ConnectionProfile Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.ConnectionProfile</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>Other unknown type of connection.</summary>
       </Docs>
     </Member>
     <Member MemberName="WiFi">

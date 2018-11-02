@@ -1,4 +1,7 @@
 <Framework Name="xamarin-essentials-android">
+  <Assemblies>
+    <Assembly Name="Xamarin.Essentials" Version="1.0.0.0" />
+  </Assemblies>
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
@@ -106,26 +109,21 @@
       <Member Id="P:Xamarin.Essentials.CompassData.HeadingMagneticNorth" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectionProfile" Id="T:Xamarin.Essentials.ConnectionProfile">
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
     </Type>
     <Type Name="Xamarin.Essentials.Connectivity" Id="T:Xamarin.Essentials.Connectivity">
       <Member Id="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
-      <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
       <Member Id="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectivityChangedEventArgs" Id="T:Xamarin.Essentials.ConnectivityChangedEventArgs">
       <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
-      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
-    </Type>
-    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
       <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
@@ -476,6 +474,11 @@
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Game" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Normal" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.UI" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />

@@ -66,8 +66,8 @@
       </Docs>
     </Member>
     <Member MemberName="MapServiceToken">
-      <MemberSignature Language="C#" Value="public static string MapKey { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property string MapKey" />
+      <MemberSignature Language="C#" Value="public static string MapServiceToken { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property string MapServiceToken" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Platform.MapServiceToken" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
