@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Orientation event args when reading changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Reading">

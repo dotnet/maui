@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>The device idiom.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Desktop">

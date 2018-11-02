@@ -66,9 +66,7 @@
         <param name="key">Storage Key.</param>
         <summary>Gets the decrypted value for a given Key.</summary>
         <returns>Decrypted string.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -131,12 +129,8 @@
         <param name="key">Storage Key.</param>
         <param name="value">The value to be encrypted.</param>
         <summary>Stores the value which is encrypted, for a given Key.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAsync">
@@ -161,12 +155,8 @@
         <param name="value">The value to be encrypted.</param>
         <param name="accessible">The KeyChain accessibility to create the encrypted record with.</param>
         <summary>Stores the value which is encrypted, for a given Key. iOS override to specify SecAccessible for the KeyChain.</summary>
-        <returns>
-          <para></para>
-        </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <returns></returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

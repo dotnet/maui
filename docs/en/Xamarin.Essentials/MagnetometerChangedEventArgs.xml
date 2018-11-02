@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments containing the current reading.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Reading">
@@ -32,9 +30,7 @@
       <Docs>
         <summary>Gets the reading of the magnetometer.</summary>
         <value>The reading.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

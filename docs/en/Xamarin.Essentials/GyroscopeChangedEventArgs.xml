@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments containing the current reading.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Reading">

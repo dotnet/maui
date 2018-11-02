@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Detect device's orentation relative to Earth's magnetic field.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="IsMonitoring">
@@ -90,9 +88,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to magnetometer.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

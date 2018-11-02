@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Location Extensions</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="CalculateDistance">
@@ -40,9 +38,7 @@
         <param name="units">Units to use during calculation.</param>
         <summary>Extension to calculate distance from location to another location.</summary>
         <returns>Distance in units fro two locations.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
@@ -70,9 +66,7 @@
         <param name="units">Units to use.</param>
         <summary>Extension to calculate distance from location to another location.</summary>
         <returns>Distance calculated.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenMapsAsync">

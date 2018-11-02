@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides a way to work with text on the device clipboard.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTextAsync">
@@ -76,10 +74,10 @@
         <Parameter Name="text" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="text">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="text">The text to put on the clipboard.</param>
+        <summary>Sets the contents of the clipboard to be the specified text.</summary>
+        <returns>Returns text that is on the clipboard, or null if there is none.</returns>
+        <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns</remarks>
       </Docs>
     </Member>
   </Members>
