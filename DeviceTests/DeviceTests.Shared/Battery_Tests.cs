@@ -42,5 +42,11 @@ namespace DeviceTests
 
             Assert.NotEqual(BatteryPowerSource.Unknown, Battery.PowerSource);
         }
+
+        [Fact]
+        public void App_Is_Not_Lower_Power_mode()
+        {
+            Assert.Equal(EnergySaverStatus.Off, Battery.EnergySaverStatus);
+        }
     }
 }

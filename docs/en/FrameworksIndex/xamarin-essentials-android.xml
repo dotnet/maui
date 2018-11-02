@@ -49,7 +49,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
       <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
+      <Member Id="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
       <Member Id="P:Xamarin.Essentials.Battery.PowerSource" />
       <Member Id="P:Xamarin.Essentials.Battery.State" />
     </Type>
@@ -185,6 +187,7 @@
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.EnergySaverStatusChangedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.FeatureNotEnabledException" Id="T:Xamarin.Essentials.FeatureNotEnabledException">
@@ -389,10 +392,6 @@
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Activity,Android.OS.Bundle)" />
       <Member Id="M:Xamarin.Essentials.Platform.Init(Android.App.Application)" />
       <Member Id="M:Xamarin.Essentials.Platform.OnRequestPermissionsResult(System.Int32,System.String[],Android.Content.PM.Permission[])" />
-    </Type>
-    <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
-      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
-      <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />

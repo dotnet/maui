@@ -16,5 +16,14 @@
 
         static BatteryPowerSource PlatformPowerSource =>
             throw new NotImplementedInReferenceAssemblyException();
+
+        static void StartEnergySaverListeners() =>
+            throw new NotImplementedInReferenceAssemblyException();
+
+        static void StopEnergySaverListeners() =>
+            throw new NotImplementedInReferenceAssemblyException();
+
+        static EnergySaverStatus PlatformEnergySaverStatus =>
+            throw new NotImplementedInReferenceAssemblyException();
     }
 }
