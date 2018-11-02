@@ -1,4 +1,6 @@
-﻿namespace Xamarin.Essentials
+﻿using System;
+
+namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
