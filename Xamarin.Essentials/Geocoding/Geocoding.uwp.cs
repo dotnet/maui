@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
     {
         static async Task<IEnumerable<Placemark>> PlatformGetPlacemarksAsync(double latitude, double longitude)
         {
-            ValidateMapKey();
+            ValidateMapServiceToken();
 
             var point = new Geopoint(new BasicGeoposition { Latitude = latitude, Longitude = longitude });
 
@@ -21,20 +21,20 @@ namespace Xamarin.Essentials
 
         static async Task<IEnumerable<Location>> PlatformGetLocationsAsync(string address)
         {
-            ValidateMapKey();
+            ValidateMapServiceToken();
 
             var queryResults = await MapLocationFinder.FindLocationsAsync(address, null, 10);
 
             return queryResults?.Locations?.ToLocations();
         }
 
-        internal static void ValidateMapKey()
+        internal static void ValidateMapServiceToken()
         {
-            if (string.IsNullOrWhiteSpace(MapKey) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
-                throw new ArgumentNullException(nameof(MapKey));
+            if (string.IsNullOrWhiteSpace(Platform.MapServiceToken) && string.IsNullOrWhiteSpace(MapService.ServiceToken))
+                throw new ArgumentNullException(nameof(Platform.MapServiceToken));
 
-            if (!string.IsNullOrWhiteSpace(MapKey))
-                MapService.ServiceToken = MapKey;
+            if (!string.IsNullOrWhiteSpace(Platform.MapServiceToken))
+                MapService.ServiceToken = Platform.MapServiceToken;
         }
     }
 }
