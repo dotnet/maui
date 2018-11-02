@@ -83,8 +83,8 @@
       <Member Id="M:Xamarin.Essentials.Browser.OpenAsync(System.Uri,Xamarin.Essentials.BrowserLaunchMode)" />
     </Type>
     <Type Name="Xamarin.Essentials.BrowserLaunchMode" Id="T:Xamarin.Essentials.BrowserLaunchMode">
-      <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.External" />
       <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
+      <Member Id="F:Xamarin.Essentials.BrowserLaunchMode.External" />
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />

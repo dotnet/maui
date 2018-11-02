@@ -14,10 +14,10 @@
     <remarks>Recommended to use the SystemBrowser as it is the default and falls back to UriLauncher.</remarks>
   </Docs>
   <Members>
-    <Member MemberName="External">
-      <MemberSignature Language="C#" Value="External" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode External = int32(0)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.External" />
+    <Member MemberName="SystemPreferred">
+      <MemberSignature Language="C#" Value="SystemPreferred" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode SystemPreferred = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -28,13 +28,13 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>Use the default external launcher to open the browser outside of the app.</summary>
+        <summary>Launch the optimized system browser and stay inside of your application. (Chrome Custom Tabs and SFSafariViewController).</summary>
       </Docs>
     </Member>
-    <Member MemberName="SystemPreferred">
-      <MemberSignature Language="C#" Value="SystemPreferred" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode SystemPreferred = int32(1)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
+    <Member MemberName="External">
+      <MemberSignature Language="C#" Value="External" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode External = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.External" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -45,7 +45,7 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>Launch the optimized system browser and stay inside of your application. (Chrome Custom Tabs and SFSafariViewController).</summary>
+        <summary>Use the default external launcher to open the browser outside of the app.</summary>
       </Docs>
     </Member>
   </Members>
