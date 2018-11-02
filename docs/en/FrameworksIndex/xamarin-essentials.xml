@@ -222,11 +222,12 @@
       <Member Id="M:Xamarin.Essentials.Geolocation.GetLocationAsync(Xamarin.Essentials.GeolocationRequest,System.Threading.CancellationToken)" />
     </Type>
     <Type Name="Xamarin.Essentials.GeolocationAccuracy" Id="T:Xamarin.Essentials.GeolocationAccuracy">
-      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
-      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.High" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Default" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Medium" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.High" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
     </Type>
     <Type Name="Xamarin.Essentials.GeolocationRequest" Id="T:Xamarin.Essentials.GeolocationRequest">
       <Member Id="M:Xamarin.Essentials.GeolocationRequest.#ctor" />

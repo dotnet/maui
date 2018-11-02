@@ -17,6 +17,7 @@ namespace Xamarin.Essentials
                         return CLLocation.AccuracyThreeKilometers;
                     case GeolocationAccuracy.Low:
                         return CLLocation.AccuracyKilometer;
+                    case GeolocationAccuracy.Default:
                     case GeolocationAccuracy.Medium:
                         return CLLocation.AccuracyHundredMeters;
                     case GeolocationAccuracy.High:

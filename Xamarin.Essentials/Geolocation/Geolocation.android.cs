@@ -134,6 +134,7 @@ namespace Xamarin.Essentials
                     criteria.PowerRequirement = LocationPower.Low;
                     accuracyDistance = 500;
                     break;
+                case GeolocationAccuracy.Default:
                 case GeolocationAccuracy.Medium:
                     criteria.Accuracy = Accuracy.Coarse;
                     criteria.HorizontalAccuracy = Accuracy.Medium;

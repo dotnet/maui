@@ -16,6 +16,7 @@ namespace Xamarin.Essentials
                         return 3000;
                     case GeolocationAccuracy.Low:
                         return 1000;
+                    case GeolocationAccuracy.Default:
                     case GeolocationAccuracy.Medium:
                         return 100;
                     case GeolocationAccuracy.High:
