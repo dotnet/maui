@@ -390,6 +390,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform">
           <Member Id="P:Xamarin.Essentials.Platform.MapServiceToken" />
+    </Type>
     <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
       <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
