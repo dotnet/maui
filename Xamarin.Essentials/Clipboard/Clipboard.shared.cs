@@ -1,12 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
-        public static void SetText(string text)
-            => PlatformSetText(text);
+        public static Task SetTextAsync(string text)
+            => PlatformSetTextAsync(text);
 
         public static bool HasText
             => PlatformHasText;

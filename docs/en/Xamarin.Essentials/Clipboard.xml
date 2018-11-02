@@ -61,16 +61,16 @@
       </Docs>
     </Member>
     <Member MemberName="SetText">
-      <MemberSignature Language="C#" Value="public static void SetText (string text);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetText(string text) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetTextAsync (string text);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig System.Threading.Tasks.Task SetTextAsync(string text) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="text" Type="System.String" />
