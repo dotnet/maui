@@ -13,10 +13,7 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                Clipboard.SetText(text);
-
-                await Task.Delay(100);
-
+                await Clipboard.SetTextAsync(text);
                 Assert.True(Clipboard.HasText);
             });
         }
@@ -28,7 +25,7 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                Clipboard.SetText(text);
+                await Clipboard.SetTextAsync(text);
                 var clipText = await Clipboard.GetTextAsync();
 
                 Assert.NotNull(clipText);

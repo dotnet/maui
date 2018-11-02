@@ -86,7 +86,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
-      <Member Id="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
     </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">

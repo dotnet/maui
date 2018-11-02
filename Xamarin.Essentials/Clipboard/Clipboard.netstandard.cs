@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
-        static void PlatformSetText(string text)
+        static Task PlatformSetTextAsync(string text)
             => throw new NotImplementedInReferenceAssemblyException();
 
         static bool PlatformHasText

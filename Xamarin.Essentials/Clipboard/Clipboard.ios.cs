@@ -5,8 +5,11 @@ namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
-        static void PlatformSetText(string text)
-            => UIPasteboard.General.String = text;
+        static Task PlatformSetTextAsync(string text)
+        {
+            UIPasteboard.General.String = text;
+            return Task.CompletedTask;
+        }
 
         static bool PlatformHasText
             => UIPasteboard.General.HasStrings;
