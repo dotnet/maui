@@ -93,23 +93,5 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="MapKey">
-      <MemberSignature Language="C#" Value="public static string MapKey { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property string MapKey" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Geocoding.MapKey" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Get or sets the map API key.</summary>
-        <value>The current key for maps.</value>
-        <remarks>Needed only for UWP and can be generated from Bing Maps.</remarks>
-      </Docs>
-    </Member>
   </Members>
 </Type>
