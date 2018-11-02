@@ -14,7 +14,24 @@
     <remarks></remarks>
   </Docs>
   <Members>
-      <Member MemberName="Default">
+    <Member MemberName="Best">
+      <MemberSignature Language="C#" Value="Best" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Best = int32(5)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
+      </ReturnValue>
+      <MemberValue>5</MemberValue>
+      <Docs>
+        <summary>Represents the best accuracy, using the most power to obtain and typically within 10 meters.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Default">
       <MemberSignature Language="C#" Value="Default" />
       <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Default = int32(0)" />
       <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Default" />
@@ -29,57 +46,6 @@
       <MemberValue>0</MemberValue>
       <Docs>
         <summary>Represents default accuracy (Medium), typically within 30-500 meters.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Low">
-      <MemberSignature Language="C#" Value="Low" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Low = int32(1)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
-      </ReturnValue>
-      <MemberValue>1</MemberValue>
-      <Docs>
-        <summary>Represents low accuracy, typically within 300-3000 meters.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Lowest">
-      <MemberSignature Language="C#" Value="Lowest" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Lowest = int32(2)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
-      </ReturnValue>
-      <MemberValue>2</MemberValue>
-      <Docs>
-        <summary>Represents the lowest accuracy, using the least power to obtain and typically within 1000-5000 meters.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Medium">
-      <MemberSignature Language="C#" Value="Medium" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Medium = int32(3)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Medium" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
-      </ReturnValue>
-      <MemberValue>3</MemberValue>
-      <Docs>
-        <summary>Represents medium accuracy, typically within 30-500 meters.</summary>
       </Docs>
     </Member>
     <Member MemberName="High">
@@ -99,10 +65,10 @@
         <summary>Represents high accuracy, typically within 10-100 meters.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Best">
-      <MemberSignature Language="C#" Value="Best" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Best = int32(5)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
+    <Member MemberName="Low">
+      <MemberSignature Language="C#" Value="Low" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Low = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -111,9 +77,43 @@
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
       </ReturnValue>
-      <MemberValue>5</MemberValue>
+      <MemberValue>2</MemberValue>
       <Docs>
-        <summary>Represents the best accuracy, using the most power to obtain and typically within 10 meters.</summary>
+        <summary>Represents low accuracy, typically within 300-3000 meters.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Lowest">
+      <MemberSignature Language="C#" Value="Lowest" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Lowest = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
+      <Docs>
+        <summary>Represents the lowest accuracy, using the least power to obtain and typically within 1000-5000 meters.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="Medium">
+      <MemberSignature Language="C#" Value="Medium" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.GeolocationAccuracy Medium = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.GeolocationAccuracy.Medium" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.GeolocationAccuracy</ReturnType>
+      </ReturnValue>
+      <MemberValue>3</MemberValue>
+      <Docs>
+        <summary>Represents medium accuracy, typically within 30-500 meters.</summary>
       </Docs>
     </Member>
   </Members>
