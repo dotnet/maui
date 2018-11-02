@@ -16,6 +16,11 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 | App Center   | Sample App   | Android  | [![Build status](https://build.appcenter.ms/v0.1/apps/7a1f46ca-ba2f-477e-aacc-ff013c7d5f7a/branches/master/badge)](https://appcenter.ms) |
 | App Center   | Sample App   | iOS      | [![Build status](https://build.appcenter.ms/v0.1/apps/43b39e9e-2b2b-482f-8afa-e9906334c85e/branches/master/badge)](https://appcenter.ms) |
 
+## Sample App
+Try out Xamarin.Essentials on your device!
+
+* [Android Sample App](https://install.appcenter.ms/orgs/microsoft-liveplayer/apps/essentials-android/distribution_groups/public%20testers) via App Center.
+
 ## Installation
 
 Xamarin.Essentials is available via:

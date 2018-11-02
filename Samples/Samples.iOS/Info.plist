@@ -55,5 +55,14 @@
 	<string>1.0</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>appcenter-APP_SECRET</string>
+      </array>
+    </dict>
+  </array>
 </dict>
 </plist>

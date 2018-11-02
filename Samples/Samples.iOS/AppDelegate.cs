@@ -1,4 +1,5 @@
 ﻿using Foundation;
+using Microsoft.AppCenter.Distribute;
 using UIKit;
 
 namespace Samples.iOS
@@ -9,6 +10,7 @@ namespace Samples.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             Xamarin.Forms.Forms.Init();
+            Distribute.DontCheckForUpdatesInDebug();
             LoadApplication(new App());
 
             return base.FinishedLaunching(app, options);

@@ -1,7 +1,13 @@
-﻿using Samples.View;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using Microsoft.AppCenter.Distribute;
+using Samples.Helpers;
+using Samples.View;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using Device = Xamarin.Forms.Device;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -20,6 +26,19 @@ namespace Samples
 
         protected override void OnStart()
         {
+            if ((Device.RuntimePlatform == Device.Android && CommonConstants.AppCenterAndroid != "AC_ANDROID") ||
+               (Device.RuntimePlatform == Device.iOS && CommonConstants.AppCenteriOS != "AC_IOS") ||
+               (Device.RuntimePlatform == Device.UWP && CommonConstants.AppCenterUWP != "AC_UWP"))
+            {
+                AppCenter.Start(
+                $"ios={CommonConstants.AppCenteriOS};" +
+                $"android={CommonConstants.AppCenterAndroid};" +
+                $"uwp={CommonConstants.AppCenterUWP}",
+                typeof(Analytics),
+                typeof(Crashes),
+                typeof(Distribute));
+            }
+
             // set UWP Map Key
             Geocoding.MapKey = "RJHqIE53Onrqons5CNOx~FrDr3XhjDTyEXEjng-CRoA~Aj69MhNManYUKxo6QcwZ0wmXBtyva0zwuHB04rFYAPf7qqGJ5cHb03RCDw1jIW8l";
         }
