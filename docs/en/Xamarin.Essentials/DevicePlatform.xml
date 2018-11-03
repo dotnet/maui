@@ -45,8 +45,8 @@
       </Docs>
     </Member>
     <Member MemberName="Create">
-      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Create (string deviceIdiom);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Essentials.DevicePlatform Create(string deviceIdiom) cil managed" />
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Create (string devicePlatform);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Essentials.DevicePlatform Create(string devicePlatform) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.Create(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -57,10 +57,10 @@
         <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
       </ReturnValue>
       <Parameters>
-        <Parameter Name="deviceIdiom" Type="System.String" />
+        <Parameter Name="devicePlatform" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="deviceIdiom">To be added.</param>
+        <param name="devicePlatform">To be added.</param>
         <summary>Creates a new Device Platform.</summary>
         <returns>To be added.</returns>
         <remarks>To be added.</remarks>
