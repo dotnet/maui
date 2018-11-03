@@ -24,11 +24,11 @@ namespace Xamarin.Essentials
 
         static string GetVersionString() => Build.VERSION.Release;
 
-        static string GetPlatform() => Platforms.Android;
+        static DevicePlatform GetPlatform() => DevicePlatform.Android;
 
-        static string GetIdiom()
+        static DeviceIdiom GetIdiom()
         {
-            var currentIdiom = Idioms.Unsupported;
+            var currentIdiom = DeviceIdiom.Unknown;
 
             // first try UIModeManager
             using (var uiModeManager = UiModeManager.FromContext(Essentials.Platform.AppContext))
@@ -38,7 +38,7 @@ namespace Xamarin.Essentials
             }
 
             // then try Configuration
-            if (currentIdiom == Idioms.Unsupported)
+            if (currentIdiom == DeviceIdiom.Unknown)
             {
                 var configuration = Essentials.Platform.AppContext.Resources?.Configuration;
                 if (configuration != null)
@@ -47,24 +47,24 @@ namespace Xamarin.Essentials
                     currentIdiom = DetectIdiom(uiMode);
 
                     // now just guess
-                    if (currentIdiom == Idioms.Unsupported)
+                    if (currentIdiom == DeviceIdiom.Unknown)
                     {
                         var minWidth = configuration.SmallestScreenWidthDp;
                         var isWide = minWidth >= tabletCrossover;
-                        currentIdiom = isWide ? Idioms.Tablet : Idioms.Phone;
+                        currentIdiom = isWide ? DeviceIdiom.Tablet : DeviceIdiom.Phone;
                     }
                 }
             }
 
             // start clutching at straws
-            if (currentIdiom == Idioms.Unsupported)
+            if (currentIdiom == DeviceIdiom.Unknown)
             {
                 var metrics = Essentials.Platform.AppContext.Resources?.DisplayMetrics;
                 if (metrics != null)
                 {
                     var minSize = Math.Min(metrics.WidthPixels, metrics.HeightPixels);
                     var isWide = minSize * metrics.Density >= tabletCrossover;
-                    currentIdiom = isWide ? Idioms.Tablet : Idioms.Phone;
+                    currentIdiom = isWide ? DeviceIdiom.Tablet : DeviceIdiom.Phone;
                 }
             }
 
@@ -72,16 +72,18 @@ namespace Xamarin.Essentials
             return currentIdiom;
         }
 
-        static string DetectIdiom(UiMode uiMode)
+        static DeviceIdiom DetectIdiom(UiMode uiMode)
         {
             if (uiMode.HasFlag(UiMode.TypeNormal))
-                return Idioms.Phone;
+                return DeviceIdiom.Phone;
             else if (uiMode.HasFlag(UiMode.TypeTelevision))
-                return Idioms.TV;
+                return DeviceIdiom.TV;
             else if (uiMode.HasFlag(UiMode.TypeDesk))
-                return Idioms.Desktop;
+                return DeviceIdiom.Desktop;
+            else if (Essentials.Platform.HasApiLevel(BuildVersionCodes.KitkatWatch) && uiMode.HasFlag(UiMode.TypeWatch))
+                return DeviceIdiom.Watch;
 
-            return Idioms.Unsupported;
+            return DeviceIdiom.Unknown;
         }
 
         static DeviceType GetDeviceType()
