@@ -78,7 +78,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+c2fdf1b17d8b6418ae8fd474dbc21ec709d8b0f7")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+2d55930aa6f65dd776e5b74110ca27d6bb66a4df")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -162,7 +162,7 @@
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
-      <Type Name="SpeakSettings" Kind="Class" />
+      <Type Name="SpeechOptions" Kind="Class" />
       <Type Name="TextToSpeech" Kind="Class" />
       <Type Name="VersionTracking" Kind="Class" />
       <Type Name="Vibration" Kind="Class" />

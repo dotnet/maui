@@ -29,7 +29,7 @@ namespace Xamarin.Essentials
             return tts;
         }
 
-        internal static Task PlatformSpeakAsync(string text, SpeakSettings settings, CancellationToken cancelToken = default)
+        internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
         {
             var textToSpeech = GetTextToSpeech();
 
@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
             if (Platform.HasApiLevel(BuildVersionCodes.JellyBeanMr2))
                 max = AndroidTextToSpeech.MaxSpeechInputLength;
 
-            return textToSpeech.SpeakAsync(text, max, settings, cancelToken);
+            return textToSpeech.SpeakAsync(text, max, options, cancelToken);
         }
 
         internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync()
@@ -101,7 +101,7 @@ namespace Xamarin.Essentials
         int numExpectedUtterances = 0;
         int numCompletedUtterances = 0;
 
-        public async Task SpeakAsync(string text, int max, SpeakSettings settings, CancellationToken cancelToken)
+        public async Task SpeakAsync(string text, int max, SpeechOptions options, CancellationToken cancelToken)
         {
             await Initialize();
 
@@ -125,13 +125,13 @@ namespace Xamarin.Essentials
                 });
             }
 
-            if (settings?.Locale?.Language != null)
+            if (options?.Locale?.Language != null)
             {
                 JavaLocale locale = null;
-                if (!string.IsNullOrWhiteSpace(settings?.Locale.Country))
-                    locale = new JavaLocale(settings.Locale.Language, settings.Locale.Country);
+                if (!string.IsNullOrWhiteSpace(options?.Locale.Country))
+                    locale = new JavaLocale(options.Locale.Language, options.Locale.Country);
                 else
-                    locale = new JavaLocale(settings.Locale.Language);
+                    locale = new JavaLocale(options.Locale.Language);
 
                 tts.SetLanguage(locale);
             }
@@ -140,8 +140,8 @@ namespace Xamarin.Essentials
                 SetDefaultLanguage();
             }
 
-            if (settings?.Pitch.HasValue ?? false)
-                tts.SetPitch(settings.Pitch.Value);
+            if (options?.Pitch.HasValue ?? false)
+                tts.SetPitch(options.Pitch.Value);
             else
                 tts.SetPitch(TextToSpeech.PitchDefault);
 
@@ -160,8 +160,8 @@ namespace Xamarin.Essentials
                     { AndroidTextToSpeech.Engine.KeyParamUtteranceId, $"{guid}.{i}" }
                 };
 
-                if (settings != null && settings.Volume.HasValue)
-                    map.Add(AndroidTextToSpeech.Engine.KeyParamVolume, settings.Volume.Value.ToString(CultureInfo.InvariantCulture));
+                if (options != null && options.Volume.HasValue)
+                    map.Add(AndroidTextToSpeech.Engine.KeyParamVolume, options.Volume.Value.ToString(CultureInfo.InvariantCulture));
 
                 // We use an obsolete overload here so it works on older API levels at runtime
                 // Flush on first entry and add (to not flush our own previous) subsequent entries

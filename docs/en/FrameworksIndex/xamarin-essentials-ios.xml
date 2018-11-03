@@ -513,16 +513,16 @@
       <Member Id="P:Xamarin.Essentials.SmsMessage.Body" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Recipients" />
     </Type>
-    <Type Name="Xamarin.Essentials.SpeakSettings" Id="T:Xamarin.Essentials.SpeakSettings">
-      <Member Id="M:Xamarin.Essentials.SpeakSettings.#ctor" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Locale" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Pitch" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Volume" />
+    <Type Name="Xamarin.Essentials.SpeechOptions" Id="T:Xamarin.Essentials.SpeechOptions">
+      <Member Id="M:Xamarin.Essentials.SpeechOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Locale" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Pitch" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Volume" />
     </Type>
     <Type Name="Xamarin.Essentials.TextToSpeech" Id="T:Xamarin.Essentials.TextToSpeech">
       <Member Id="M:Xamarin.Essentials.TextToSpeech.GetLocalesAsync" />
       <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,System.Threading.CancellationToken)" />
-      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeakSettings,System.Threading.CancellationToken)" />
+      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeechOptions,System.Threading.CancellationToken)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
       <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />

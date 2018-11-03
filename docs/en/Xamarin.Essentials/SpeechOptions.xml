@@ -1,7 +1,7 @@
-<Type Name="SpeakSettings" FullName="Xamarin.Essentials.SpeakSettings">
-  <TypeSignature Language="C#" Value="public class SpeakSettings" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit SpeakSettings extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SpeakSettings" />
+<Type Name="SpeechOptions" FullName="Xamarin.Essentials.SpeechOptions">
+  <TypeSignature Language="C#" Value="public class SpeechOptions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit SpeechOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SpeechOptions" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -11,14 +11,14 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>Text to Speech Settings.</summary>
+    <summary>Text-to-speech options.</summary>
     <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public SpeakSettings ();" />
+      <MemberSignature Language="C#" Value="public SpeechOptions ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SpeakSettings.#ctor" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SpeechOptions.#ctor" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -33,7 +33,7 @@
     <Member MemberName="Locale">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.Locale Locale { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Locale Locale" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeakSettings.Locale" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Locale" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -51,7 +51,7 @@
     <Member MemberName="Pitch">
       <MemberSignature Language="C#" Value="public Nullable&lt;float&gt; Pitch { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float32&gt; Pitch" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeakSettings.Pitch" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Pitch" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -69,7 +69,7 @@
     <Member MemberName="Volume">
       <MemberSignature Language="C#" Value="public Nullable&lt;float&gt; Volume { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float32&gt; Volume" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeakSettings.Volume" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Volume" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

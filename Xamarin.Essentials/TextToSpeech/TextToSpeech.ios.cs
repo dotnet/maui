@@ -12,30 +12,30 @@ namespace Xamarin.Essentials
             Task.FromResult(AVSpeechSynthesisVoice.GetSpeechVoices()
                 .Select(v => new Locale(v.Language, null, v.Language, v.Identifier)));
 
-        internal static Task PlatformSpeakAsync(string text, SpeakSettings settings, CancellationToken cancelToken = default)
+        internal static Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
         {
-            var speechUtterance = GetSpeechUtterance(text, settings);
+            var speechUtterance = GetSpeechUtterance(text, options);
             return SpeakUtterance(speechUtterance, cancelToken);
         }
 
-        private static AVSpeechUtterance GetSpeechUtterance(string text, SpeakSettings settings)
+        private static AVSpeechUtterance GetSpeechUtterance(string text, SpeechOptions options)
         {
             var speechUtterance = new AVSpeechUtterance(text);
 
-            if (settings != null)
+            if (options != null)
             {
                 // null voice if fine - it is the default
                 speechUtterance.Voice =
-                    AVSpeechSynthesisVoice.FromLanguage(settings.Locale?.Language) ??
+                    AVSpeechSynthesisVoice.FromLanguage(options.Locale?.Language) ??
                     AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
 
                 // the platform has a range of 0.5 - 2.0
                 // anything lower than 0.5 is set to 0.5
-                if (settings.Pitch.HasValue)
-                    speechUtterance.PitchMultiplier = settings.Pitch.Value;
+                if (options.Pitch.HasValue)
+                    speechUtterance.PitchMultiplier = options.Pitch.Value;
 
-                if (settings.Volume.HasValue)
-                    speechUtterance.Volume = settings.Volume.Value;
+                if (options.Volume.HasValue)
+                    speechUtterance.Volume = options.Volume.Value;
             }
 
             return speechUtterance;
