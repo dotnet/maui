@@ -303,6 +303,7 @@ namespace Xamarin.Forms.Controls
 				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 				new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),
 				new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
+				new GalleryPageFactory(() => new ImageButtonCoreGalleryPage(), "Image Button Gallery"),
 				new GalleryPageFactory(() => new KeyboardCoreGallery(), "Keyboard Gallery"),
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),

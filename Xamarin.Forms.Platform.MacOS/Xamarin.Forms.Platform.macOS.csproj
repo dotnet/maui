@@ -75,6 +75,9 @@
       <Link>Flags.cs</Link>
     </Compile>
     <Compile Include="Controls\FormsBoxView.cs" />
+    <Compile Include="..\Xamarin.Forms.Platform.iOS\IVisualNativeElementRenderer.cs">
+      <Link>IVisualNativeElementRenderer.cs</Link>
+    </Compile>
     <Compile Include="Controls\FormsNSDatePicker.cs" />
     <Compile Include="Extensions\FlowDirectionExtensions.cs" />
     <Compile Include="FormsApplicationDelegate.cs" />

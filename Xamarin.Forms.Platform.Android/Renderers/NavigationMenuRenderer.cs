@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
 using Xamarin.Forms.Internals;
+using AImageButton = Android.Widget.ImageButton;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -78,14 +79,14 @@ namespace Xamarin.Forms.Platform.Android
 
 		class MenuElementView : LinearLayout
 		{
-			readonly ImageButton _image;
+			readonly AImageButton _image;
 			readonly TextView _label;
 			string _icon;
 
 			public MenuElementView(Context context) : base(context)
 			{
 				Orientation = Orientation.Vertical;
-				_image = new ImageButton(context);
+				_image = new AImageButton(context);
 				_image.SetScaleType(ImageView.ScaleType.FitCenter);
 				_image.Click += (object sender, EventArgs e) =>
 				{

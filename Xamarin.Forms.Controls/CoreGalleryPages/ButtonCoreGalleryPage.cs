@@ -60,6 +60,14 @@ namespace Xamarin.Forms.Controls
 			);
 			clickedContainer.View.Clicked += (sender, args) => clickedContainer.EventFired ();
 
+			var pressedContainer = new EventViewContainer<Button>(Test.Button.Pressed,
+				new Button
+				{
+					Text = "Pressed"
+				}
+			);
+			pressedContainer.View.Pressed += (sender, args) => pressedContainer.EventFired();
+
 			var commandContainer = new ViewContainer<Button> (Test.Button.Command, 
 				new Button {
 					Text = "Command", 
@@ -103,6 +111,7 @@ namespace Xamarin.Forms.Controls
 			Add (borderRadiusContainer);
 			Add (borderWidthContainer);
 			Add (clickedContainer);
+			Add(pressedContainer);
 			Add (commandContainer);
 			Add (fontContainer);
 			Add (imageContainer);

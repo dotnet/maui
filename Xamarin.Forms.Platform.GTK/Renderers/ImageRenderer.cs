@@ -9,7 +9,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 {
 	public class ImageRenderer : ViewRenderer<Image, Controls.ImageControl>
 	{
-		private bool _isDisposed;
+		bool _isDisposed;
 
 		protected override void Dispose(bool disposing)
 		{
@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			Control.SetSizeRequest(allocation.Width, allocation.Height);
 		}
 
-		private async void SetImage(Image oldElement = null)
+		async void SetImage(Image oldElement = null)
 		{
 			var source = Element.Source;
 
@@ -122,7 +122,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 				((IImageController)Element).SetIsLoading(false);
 		}
 
-		private void SetAspect()
+		void SetAspect()
 		{
 			switch (Element.Aspect)
 			{
@@ -140,7 +140,7 @@ namespace Xamarin.Forms.Platform.GTK.Renderers
 			}
 		}
 
-		private void SetOpacity()
+		void SetOpacity()
 		{
 			var opacity = Element.Opacity;
 

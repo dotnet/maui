@@ -8,16 +8,16 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ImageRenderer))]
-	public class Image : View, IImageController, IElementConfiguration<Image>
+	public class Image : View, IImageController, IElementConfiguration<Image>, IViewController
 	{
-		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(ImageSource), typeof(Image), default(ImageSource), 
-			propertyChanging: OnSourcePropertyChanging, propertyChanged: OnSourcePropertyChanged);
+		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(ImageSource), typeof(Image), default(ImageSource),
+			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
 
-		public static readonly BindableProperty AspectProperty = BindableProperty.Create("Aspect", typeof(Aspect), typeof(Image), Aspect.AspectFit);
+		public static readonly BindableProperty AspectProperty = BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(Image), Aspect.AspectFit);
 
-		public static readonly BindableProperty IsOpaqueProperty = BindableProperty.Create("IsOpaque", typeof(bool), typeof(Image), false);
+		public static readonly BindableProperty IsOpaqueProperty = BindableProperty.Create(nameof(IsOpaque), typeof(bool), typeof(Image), false);
 
-		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly("IsLoading", typeof(bool), typeof(Image), default(bool));
+		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsLoading), typeof(bool), typeof(Image), default(bool));
 
 		public static readonly BindableProperty IsLoadingProperty = IsLoadingPropertyKey.BindableProperty;
 
@@ -54,9 +54,7 @@ namespace Xamarin.Forms
 
 		protected override void OnBindingContextChanged()
 		{
-			if (Source != null)
-				SetInheritedBindingContext(Source, BindingContext);
-
+			ImageElementManager.OnBindingContextChanged(this, this);
 			base.OnBindingContextChanged();
 		}
 
@@ -64,101 +62,7 @@ namespace Xamarin.Forms
 		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			SizeRequest desiredSize = base.OnSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-
-			double desiredAspect = desiredSize.Request.Width / desiredSize.Request.Height;
-			double constraintAspect = widthConstraint / heightConstraint;
-
-			double desiredWidth = desiredSize.Request.Width;
-			double desiredHeight = desiredSize.Request.Height;
-
-			if (desiredWidth == 0 || desiredHeight == 0)
-				return new SizeRequest(new Size(0, 0));
-
-			double width = desiredWidth;
-			double height = desiredHeight;
-			if (constraintAspect > desiredAspect)
-			{
-				// constraint area is proportionally wider than image
-				switch (Aspect)
-				{
-					case Aspect.AspectFit:
-					case Aspect.AspectFill:
-						height = Math.Min(desiredHeight, heightConstraint);
-						width = desiredWidth * (height / desiredHeight);
-						break;
-					case Aspect.Fill:
-						width = Math.Min(desiredWidth, widthConstraint);
-						height = desiredHeight * (width / desiredWidth);
-						break;
-				}
-			}
-			else if (constraintAspect < desiredAspect)
-			{
-				// constraint area is proportionally taller than image
-				switch (Aspect)
-				{
-					case Aspect.AspectFit:
-					case Aspect.AspectFill:
-						width = Math.Min(desiredWidth, widthConstraint);
-						height = desiredHeight * (width / desiredWidth);
-						break;
-					case Aspect.Fill:
-						height = Math.Min(desiredHeight, heightConstraint);
-						width = desiredWidth * (height / desiredHeight);
-						break;
-				}
-			}
-			else
-			{
-				// constraint area is same aspect as image
-				width = Math.Min(desiredWidth, widthConstraint);
-				height = desiredHeight * (width / desiredWidth);
-			}
-
-			return new SizeRequest(new Size(width, height));
-		}
-
-		void OnSourceChanged(object sender, EventArgs eventArgs)
-		{
-			OnPropertyChanged(SourceProperty.PropertyName);
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
-		static void OnSourcePropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
-		{
-			((Image)bindable).OnSourcePropertyChanged((ImageSource)oldvalue, (ImageSource)newvalue);
-		}
-
-		void OnSourcePropertyChanged(ImageSource oldvalue, ImageSource newvalue)
-		{
-			if (newvalue != null)
-			{
-				newvalue.SourceChanged += OnSourceChanged;
-				SetInheritedBindingContext(newvalue, BindingContext);
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-		}
-
-		static void OnSourcePropertyChanging(BindableObject bindable, object oldvalue, object newvalue)
-		{
-			((Image)bindable).OnSourcePropertyChanging((ImageSource)oldvalue, (ImageSource)newvalue);
-		}
-
-		async void OnSourcePropertyChanging(ImageSource oldvalue, ImageSource newvalue)
-		{
-			if (oldvalue == null)
-				return;
-			
-			oldvalue.SourceChanged -= OnSourceChanged;
-			try
-			{
-				await oldvalue.Cancel();
-			}
-			catch(ObjectDisposedException)
-			{ 
-				// Workaround bugzilla 37792 https://bugzilla.xamarin.com/show_bug.cgi?id=37792
-			}
+			return ImageElementManager.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -171,5 +75,37 @@ namespace Xamarin.Forms
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
+
+		BindableProperty IImageController.SourceProperty => SourceProperty;
+		BindableProperty IImageController.AspectProperty => AspectProperty;
+		BindableProperty IImageController.IsOpaqueProperty => IsOpaqueProperty;
+
+		void OnImageSourcesSourceChanged(object sender, EventArgs e) =>
+			ImageElementManager.ImageSourcesSourceChanged(this, EventArgs.Empty);
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			ImageSource newSource = (ImageSource)newValue;
+			Image image = (Image)bindable;
+			if (newSource != null)
+			{
+				newSource.SourceChanged += image.OnImageSourcesSourceChanged;
+			}
+			ImageElementManager.ImageSourceChanged(bindable, newSource);
+		}
+
+		static void OnImageSourceChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			ImageSource oldSource = (ImageSource)oldValue;
+			Image image = (Image)bindable;
+
+			if (oldSource != null)
+			{
+				oldSource.SourceChanged -= image.OnImageSourcesSourceChanged;
+			}
+			ImageElementManager.ImageSourceChanging(oldSource);
+		}
+
+		void IImageController.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
 	}
 }

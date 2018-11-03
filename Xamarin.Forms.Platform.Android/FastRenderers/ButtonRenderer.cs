@@ -8,13 +8,15 @@ using Android.Util;
 using Android.Views;
 using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
-using AMotionEventActions = Android.Views.MotionEventActions;
 using static System.String;
+using AColor = Android.Graphics.Color;
+using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
+using Android.Support.V4.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
 	internal sealed class ButtonRenderer : AppCompatButton, IVisualElementRenderer, AView.IOnAttachStateChangeListener,
-		AView.IOnFocusChangeListener, IEffectControlProvider, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer, ITabStop
+		AView.IOnFocusChangeListener, AView.IOnClickListener, AView.IOnTouchListener, IViewRenderer, ITabStop, IBorderVisualElementRenderer
 	{
 		float _defaultFontSize;
 		int? _defaultLabelFor;
@@ -24,10 +26,12 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		bool _inputTransparent;
 		Lazy<TextColorSwitcher> _textColorSwitcher;
 		readonly AutomationPropertiesProvider _automationPropertiesProvider;
-		readonly EffectControlProvider _effectControlProvider;
 		VisualElementTracker _tracker;
-		ButtonBackgroundTracker _backgroundTracker;
+		VisualElementRenderer _visualElementRenderer;
+		BorderBackgroundManager _backgroundTracker;
 		Thickness _paddingDeltaPix = new Thickness();
+		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> _platformElementConfiguration;
+		private Button _button;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs> ElementPropertyChanged;
@@ -35,7 +39,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		public ButtonRenderer(Context context) : base(context)
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
-			_effectControlProvider = new EffectControlProvider(this);
 
 			Initialize();
 		}
@@ -44,7 +47,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		public ButtonRenderer() : base(Forms.Context)
 		{
 			_automationPropertiesProvider = new AutomationPropertiesProvider(this);
-			_effectControlProvider = new EffectControlProvider(this);
 
 			Initialize();
 		}
@@ -54,35 +56,21 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		ViewGroup IVisualElementRenderer.ViewGroup => null;
 		VisualElementTracker IVisualElementRenderer.Tracker => _tracker;
 
-		Button Button { get; set; }
+		Button Button
+		{
+			get => _button;
+			set
+			{
+				_button = value;
+				_platformElementConfiguration = null;
+			}
+		}
 
 		AView ITabStop.TabStop => this;
 
-		public void OnClick(AView v)
-		{
-			((IButtonController)Button)?.SendClicked();
-		}
+		void IOnClickListener.OnClick(AView v) => ButtonElementManager.OnClick(Button, Button, v);
 
-		public bool OnTouch(AView v, MotionEvent e)
-		{
-			var buttonController = Element as IButtonController;
-			switch (e.Action)
-			{
-				case AMotionEventActions.Down:
-					buttonController?.SendPressed();
-					break;
-				case AMotionEventActions.Up:
-					buttonController?.SendReleased();
-					break;
-			}
-
-			return false;
-		}
-
-		void IEffectControlProvider.RegisterEffect(Effect effect)
-		{
-			_effectControlProvider.RegisterEffect(effect);
-		}
+		bool IOnTouchListener.OnTouch(AView v, MotionEvent e) => ButtonElementManager.OnTouch(Button, Button, v, e);
 
 		void IOnAttachStateChangeListener.OnViewAttachedToWindow(AView attachedView)
 		{
@@ -95,8 +83,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void IOnFocusChangeListener.OnFocusChange(AView v, bool hasFocus)
 		{
-			OnNativeFocusChanged(hasFocus);
-
 			((IElementController)Button).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, hasFocus);
 		}
 
@@ -132,16 +118,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				oldElement.PropertyChanged -= OnElementPropertyChanged;
 			}
 
-			if (_backgroundTracker == null)
-				_backgroundTracker = new ButtonBackgroundTracker(Button, this);
-			else
-				_backgroundTracker.Button = Button;
-
-			Color currentColor = oldElement?.BackgroundColor ?? Color.Default;
-			if (element.BackgroundColor != currentColor)
-			{
-				UpdateBackgroundColor();
-			}
 
 			element.PropertyChanged += OnElementPropertyChanged;
 
@@ -150,12 +126,14 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				// Can't set up the tracker in the constructor because it access the Element (for now)
 				SetTracker(new VisualElementTracker(this));
 			}
+			if (_visualElementRenderer == null)
+			{
+				_visualElementRenderer = new VisualElementRenderer(this);
+			}
 
 			OnElementChanged(new ElementChangedEventArgs<Button>(oldElement as Button, Button));
 
 			SendVisualElementInitialized(element, this);
-
-			EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
 
 			Performance.Stop(reference);
 		}
@@ -170,11 +148,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			LabelFor = (int)(id ?? _defaultLabelFor);
 		}
 
-		void IVisualElementRenderer.UpdateLayout()
-		{
-			var reference = Guid.NewGuid().ToString();
-			_tracker?.UpdateLayout();
-		}
+		void IVisualElementRenderer.UpdateLayout() => _tracker?.UpdateLayout();
 
 		void IViewRenderer.MeasureExactly()
 		{
@@ -198,7 +172,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				_automationPropertiesProvider?.Dispose();
 				_tracker?.Dispose();
-
+				_visualElementRenderer?.Dispose();
 				_backgroundTracker?.Dispose();
 				_backgroundTracker = null;
 
@@ -229,10 +203,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		void OnElementChanged(ElementChangedEventArgs<Button> e)
 		{
-			if (e.OldElement != null)
-			{
-				_backgroundTracker?.Reset();
-			}
 			if (e.NewElement != null && !_isDisposed)
 			{
 				this.EnsureId();
@@ -244,7 +214,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				UpdateText();
 				UpdateBitmap();
 				UpdateTextColor();
-				UpdateIsEnabled();
 				UpdateInputTransparent();
 				UpdateBackgroundColor();
 				UpdatePadding();
@@ -264,10 +233,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			else if (e.PropertyName == Button.TextColorProperty.PropertyName)
 			{
 				UpdateTextColor();
-			}
-			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
-			{
-				UpdateIsEnabled();
 			}
 			else if (e.PropertyName == Button.FontProperty.PropertyName)
 			{
@@ -344,6 +309,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			OnFocusChangeListener = this;
 
 			Tag = this;
+			_backgroundTracker = new BorderBackgroundManager(this);
 		}
 
 		void UpdateBitmap()
@@ -439,16 +405,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			}
 		}
 
-		void UpdateIsEnabled()
-		{
-			if (Element == null || _isDisposed)
-			{
-				return;
-			}
-
-			Enabled = Element.IsEnabled;
-		}
-
 		void UpdateInputTransparent()
 		{
 			if (Element == null || _isDisposed)
@@ -502,5 +458,21 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			UpdatePadding();
 		}
 
+		float IBorderVisualElementRenderer.ShadowRadius => ShadowRadius;
+		float IBorderVisualElementRenderer.ShadowDx => ShadowDx;
+		float IBorderVisualElementRenderer.ShadowDy => ShadowDy;
+		AColor IBorderVisualElementRenderer.ShadowColor => ShadowColor;
+		bool IBorderVisualElementRenderer.UseDefaultPadding() => OnThisPlatform().UseDefaultPadding();
+		bool IBorderVisualElementRenderer.UseDefaultShadow() => OnThisPlatform().UseDefaultShadow();
+		bool IBorderVisualElementRenderer.IsShadowEnabled() => true;
+		AView IBorderVisualElementRenderer.View => this;
+
+		IPlatformElementConfiguration<PlatformConfiguration.Android, Button> OnThisPlatform()
+		{
+			if (_platformElementConfiguration == null)
+				_platformElementConfiguration = Button.OnThisPlatform();
+
+			return _platformElementConfiguration;
+		}
 	}
 }

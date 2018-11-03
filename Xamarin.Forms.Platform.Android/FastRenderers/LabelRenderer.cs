@@ -35,13 +35,15 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		{
 			_labelTextColorDefault = TextColors;
 			_visualElementRenderer = new VisualElementRenderer(this);
+			BackgroundManager.Init(this);
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]
-		public LabelRenderer(): base(Forms.Context)
+		public LabelRenderer() : base(Forms.Context)
 		{
 			_labelTextColorDefault = TextColors;
 			_visualElementRenderer = new VisualElementRenderer(this);
+			BackgroundManager.Init(this);
 		}
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
@@ -70,17 +72,17 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 				OnElementChanged(new ElementChangedEventArgs<Label>(oldElement, _element));
 
-			    _element?.SendViewInitialized(this);
+				_element?.SendViewInitialized(this);
 			}
 		}
 
 		SizeRequest IVisualElementRenderer.GetDesiredSize(int widthConstraint, int heightConstraint)
 		{
-		 	if (_disposed)
- 			{
- 				return new SizeRequest();
- 			}
-		
+			if (_disposed)
+			{
+				return new SizeRequest();
+			}
+
 			if (_lastSizeRequest.HasValue)
 			{
 				// if we are measuring the same thing, no need to waste the time
@@ -163,6 +165,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 			if (disposing)
 			{
+				BackgroundManager.Dispose(this);
 				if (_visualElementTracker != null)
 				{
 					_visualElementTracker.Dispose();
@@ -187,17 +190,17 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			base.Dispose(disposing);
 		}
 
-        public override bool OnTouchEvent(MotionEvent e)
-        {
-	        if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
-	        {
-		        return true;
-	        }
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (_visualElementRenderer.OnTouchEvent(e) || base.OnTouchEvent(e))
+			{
+				return true;
+			}
 
-	        return _motionEventHelper.HandleMotionEvent(Parent, e);
-        }
+			return _motionEventHelper.HandleMotionEvent(Parent, e);
+		}
 
-        void OnElementChanged(ElementChangedEventArgs<Label> e)
+		void OnElementChanged(ElementChangedEventArgs<Label> e)
 		{
 			ElementChanged?.Invoke(this, new VisualElementChangedEventArgs(e.OldElement, e.NewElement));
 

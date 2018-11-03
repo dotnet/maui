@@ -76,6 +76,7 @@
     <Compile Include="DependencyResolutionTests.cs" />
     <Compile Include="EffectiveFlowDirectionExtensions.cs" />
     <Compile Include="FlowDirectionTests.cs" />
+    <Compile Include="ImageButtonUnitTest.cs" />
     <Compile Include="LayoutChildIntoBoundingRegionTests.cs" />
     <Compile Include="MenuUnitTests.cs" />
     <Compile Include="RegionTests.cs" />

@@ -27,6 +27,10 @@
 	{
 	}
 
+	internal class _ImageButtonRenderer
+	{
+	}
+
 	internal class _ButtonRenderer
 	{
 	}

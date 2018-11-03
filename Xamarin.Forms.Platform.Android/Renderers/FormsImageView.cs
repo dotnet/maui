@@ -32,5 +32,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			_skipInvalidate = true;
 		}
+
+		bool IImageRendererController.IsDisposed => false;
 	}
 }

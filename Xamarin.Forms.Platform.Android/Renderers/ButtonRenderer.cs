@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
@@ -10,28 +10,34 @@ using AView = Android.Views.View;
 using AMotionEvent = Android.Views.MotionEvent;
 using AMotionEventActions = Android.Views.MotionEventActions;
 using Object = Java.Lang.Object;
+using AColor = Android.Graphics.Color;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class ButtonRenderer : ViewRenderer<Button, AButton>, AView.IOnAttachStateChangeListener
+	public class ButtonRenderer : ViewRenderer<Button, AButton>, AView.IOnAttachStateChangeListener, IBorderVisualElementRenderer
 	{
-		ButtonBackgroundTracker _backgroundTracker;
+		BorderBackgroundManager _backgroundTracker;
 		TextColorSwitcher _textColorSwitcher;
 		float _defaultFontSize;
 		Typeface _defaultTypeface;
 		bool _isDisposed;
 		int _imageHeight = -1;
 		Thickness _paddingDeltaPix = new Thickness();
+		IVisualElementRenderer _visualElementRenderer;
 
 		public ButtonRenderer(Context context) : base(context)
 		{
 			AutoPackage = false;
+			_visualElementRenderer = this;
+			_backgroundTracker = new BorderBackgroundManager(this);
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use ButtonRenderer(Context) instead.")]
 		public ButtonRenderer()
 		{
 			AutoPackage = false;
+			_visualElementRenderer = this;
+			_backgroundTracker = new BorderBackgroundManager(this);
 		}
 
 		AButton NativeButton
@@ -83,6 +89,7 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				_backgroundTracker?.Dispose();
 				_backgroundTracker = null;
+				_visualElementRenderer = null;
 			}
 
 			base.Dispose(disposing);
@@ -114,11 +121,6 @@ namespace Xamarin.Forms.Platform.Android
 					button.AddOnAttachStateChangeListener(this);
 				}
 			}
-
-			if (_backgroundTracker == null)
-				_backgroundTracker = new ButtonBackgroundTracker(Element, Control);
-			else
-				_backgroundTracker.Button = e.NewElement;
 
 			UpdateAll();
 		}
@@ -262,6 +264,21 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
+		}
+
+		float IBorderVisualElementRenderer.ShadowRadius => Control.ShadowRadius;
+		float IBorderVisualElementRenderer.ShadowDx => Control.ShadowDx;
+		float IBorderVisualElementRenderer.ShadowDy => Control.ShadowDy;
+		AColor IBorderVisualElementRenderer.ShadowColor => Control.ShadowColor;
+		bool IBorderVisualElementRenderer.UseDefaultPadding() => Element.OnThisPlatform().UseDefaultPadding();
+		bool IBorderVisualElementRenderer.UseDefaultShadow() => Element.OnThisPlatform().UseDefaultShadow();
+		bool IBorderVisualElementRenderer.IsShadowEnabled() => true;
+		VisualElement IBorderVisualElementRenderer.Element => Element;
+		AView IBorderVisualElementRenderer.View => Control;
+		event EventHandler<VisualElementChangedEventArgs> IBorderVisualElementRenderer.ElementChanged
+		{
+			add => _visualElementRenderer.ElementChanged += value;
+			remove => _visualElementRenderer.ElementChanged -= value;
 		}
 
 		void UpdatePadding()
