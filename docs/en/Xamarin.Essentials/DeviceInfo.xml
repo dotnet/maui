@@ -13,7 +13,7 @@
   <Docs>
     <summary>Represents information about the device.</summary>
     <remarks>
-      <para />
+      <para></para>
     </remarks>
   </Docs>
   <Members>
@@ -38,8 +38,8 @@
       </Docs>
     </Member>
     <Member MemberName="Idiom">
-      <MemberSignature Language="C#" Value="public static string Idiom { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property string Idiom" />
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DeviceIdiom Idiom { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DeviceIdiom Idiom" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Idiom" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
@@ -47,7 +47,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.String</ReturnType>
+        <ReturnType>Xamarin.Essentials.DeviceIdiom</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets the idiom of the device. </summary>
@@ -118,8 +118,8 @@
       </Docs>
     </Member>
     <Member MemberName="Platform">
-      <MemberSignature Language="C#" Value="public static string Platform { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property string Platform" />
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Platform { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Platform" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DeviceInfo.Platform" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
@@ -127,7 +127,7 @@
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.String</ReturnType>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Gets the platform or operating system of the device.</summary>

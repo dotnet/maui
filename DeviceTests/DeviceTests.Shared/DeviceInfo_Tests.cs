@@ -68,11 +68,11 @@ namespace DeviceTests
         public void Platform_Is_Correct()
         {
 #if WINDOWS_UWP
-            Assert.Equal(DeviceInfo.Platforms.UWP, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
 #elif __IOS__
-            Assert.Equal(DeviceInfo.Platforms.iOS, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
 #elif __ANDROID__
-            Assert.Equal(DeviceInfo.Platforms.Android, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.Android, DeviceInfo.Platform);
 #else
             throw new PlatformNotSupportedException();
 #endif
