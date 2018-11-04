@@ -5,11 +5,11 @@ namespace Xamarin.Essentials
 {
     public static partial class PlacemarkExtensions
     {
-        public static Task OpenMapsAsync(this Placemark placemark, MapsLaunchOptions options) =>
-            Maps.OpenAsync(placemark, options);
+        public static Task OpenMapsAsync(this Placemark placemark, MapLaunchOptions options) =>
+            Map.OpenAsync(placemark, options);
 
         public static Task OpenMapsAsync(this Placemark placemark) =>
-            Maps.OpenAsync(placemark);
+            Map.OpenAsync(placemark);
 
         internal static Placemark Escape(this Placemark placemark)
         {

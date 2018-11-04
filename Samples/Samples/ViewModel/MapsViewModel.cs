@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -71,23 +72,15 @@ namespace Samples.ViewModel
             set => SetProperty(ref zipCode, value);
         }
 
-        public List<string> DirectionModes { get; } =
-           new List<string>
-           {
-                "None",
-                "Bicycling",
-                "Default",
-                "Driving",
-                "Transit",
-                "Walking"
-           };
+        public string[] NavigationModes { get; } =
+           Enum.GetNames(typeof(NavigationMode));
 
-        int directionMode;
+        int navigationMode;
 
-        public int DirectionMode
+        public int NavigationMode
         {
-            get => directionMode;
-            set => SetProperty(ref directionMode, value);
+            get => navigationMode;
+            set => SetProperty(ref navigationMode, value);
         }
 
         public ICommand MapsCommand { get; }
@@ -102,7 +95,11 @@ namespace Samples.ViewModel
 
         async void OpenLocation()
         {
-            await Maps.OpenAsync(double.Parse(Latitude), double.Parse(Longitude), new MapsLaunchOptions { Name = Name, MapDirectionsMode = (MapDirectionsMode)DirectionMode });
+            await Map.OpenAsync(double.Parse(Latitude), double.Parse(Longitude), new MapLaunchOptions
+            {
+                Name = Name,
+                NavigationMode = (NavigationMode)NavigationMode
+            });
         }
 
         async void OpenPlacemark()
@@ -115,7 +112,11 @@ namespace Samples.ViewModel
                 Thoroughfare = Thoroughfare,
                 PostalCode = ZipCode
             };
-            await Maps.OpenAsync(placemark, new MapsLaunchOptions() { Name = Name, MapDirectionsMode = (MapDirectionsMode)DirectionMode });
+            await Map.OpenAsync(placemark, new MapLaunchOptions
+            {
+                Name = Name,
+                NavigationMode = (NavigationMode)NavigationMode
+            });
         }
     }
 }

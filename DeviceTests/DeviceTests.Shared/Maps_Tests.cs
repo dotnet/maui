@@ -15,7 +15,7 @@ namespace DeviceTests
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public async Task LaunchMap_CoordinatesDisplayCorrectPlace()
         {
-            await Maps.OpenAsync(testLatitude, testLongitude, new MapsLaunchOptions { Name = mapName });
+            await Map.OpenAsync(testLatitude, testLongitude, new MapLaunchOptions { Name = mapName });
         }
 
         [Fact]
@@ -29,28 +29,28 @@ namespace DeviceTests
                 Thoroughfare = "Microsoft Building 25",
                 Locality = "Redmond"
             };
-            await Maps.OpenAsync(placemark, new MapsLaunchOptions { Name = mapName });
+            await Map.OpenAsync(placemark, new MapLaunchOptions { Name = mapName });
         }
 
         [Fact]
         public async Task LaunchMap_NullLocation()
         {
             Location location = null;
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
         }
 
         [Fact]
         public async Task LaunchMap_NullOptionsLocation()
         {
             var location = new Location(testLatitude, testLongitude);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location, null));
         }
 
         [Fact]
         public async Task LaunchMap_NullPlacemark()
         {
             Placemark location = null;
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace DeviceTests
                 Thoroughfare = "Microsoft Building 25",
                 Locality = "Redmond"
             };
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(placemark, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(placemark, null));
         }
     }
 }

@@ -4,44 +4,44 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Maps
+    public static partial class Map
     {
-        internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapsLaunchOptions options)
+        internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
         {
             var lat = latitude.ToString(CultureInfo.InvariantCulture);
             var lng = longitude.ToString(CultureInfo.InvariantCulture);
             var name = options.Name ?? string.Empty;
             var uri = string.Empty;
 
-            if (options.MapDirectionsMode == MapDirectionsMode.None)
+            if (options.NavigationMode == NavigationMode.None)
             {
                 uri = $"bingmaps:?collection=point.{lat}_{lng}_{name}";
             }
             else
             {
-                uri = $"bingmaps:?rtp=~pos.{lat}_{lng}_{name}{GetMode(options.MapDirectionsMode)}";
+                uri = $"bingmaps:?rtp=~pos.{lat}_{lng}_{name}{GetMode(options.NavigationMode)}";
             }
 
             return LaunchUri(new Uri(uri));
         }
 
-        internal static string GetMode(MapDirectionsMode mode)
+        internal static string GetMode(NavigationMode mode)
         {
             switch (mode)
             {
-                case MapDirectionsMode.Driving: return "&mode=d";
-                case MapDirectionsMode.Transit: return "&mode=t";
-                case MapDirectionsMode.Walking: return "&mode=w";
+                case NavigationMode.Driving: return "&mode=d";
+                case NavigationMode.Transit: return "&mode=t";
+                case NavigationMode.Walking: return "&mode=w";
             }
             return string.Empty;
         }
 
-        internal static Task PlatformOpenMapsAsync(Placemark placemark, MapsLaunchOptions options)
+        internal static Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
         {
             placemark = placemark.Escape();
             var uri = string.Empty;
 
-            if (options.MapDirectionsMode == MapDirectionsMode.None)
+            if (options.NavigationMode == NavigationMode.None)
             {
                 uri = $"bingmaps:?where=" +
                     $"{placemark.Thoroughfare}" +
@@ -58,7 +58,7 @@ namespace Xamarin.Essentials
                     $"%20{placemark.AdminArea}" +
                     $"%20{placemark.PostalCode}" +
                     $"%20{placemark.CountryName}" +
-                    $"{GetMode(options.MapDirectionsMode)}";
+                    $"{GetMode(options.NavigationMode)}";
             }
 
             return LaunchUri(new Uri(uri));

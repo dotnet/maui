@@ -305,7 +305,7 @@
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location)" />
-      <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Magnetometer" Id="T:Xamarin.Essentials.Magnetometer">
       <Member Id="E:Xamarin.Essentials.Magnetometer.ReadingChanged" />
@@ -329,26 +329,26 @@
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
-    <Type Name="Xamarin.Essentials.MapDirectionsMode" Id="T:Xamarin.Essentials.MapDirectionsMode">
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Bicycling" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Default" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.None" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Transit" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
+    <Type Name="Xamarin.Essentials.Map" Id="T:Xamarin.Essentials.Map">
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
-    <Type Name="Xamarin.Essentials.Maps" Id="T:Xamarin.Essentials.Maps">
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+    <Type Name="Xamarin.Essentials.MapLaunchOptions" Id="T:Xamarin.Essentials.MapLaunchOptions">
+      <Member Id="M:Xamarin.Essentials.MapLaunchOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.MapLaunchOptions.Name" />
+      <Member Id="P:Xamarin.Essentials.MapLaunchOptions.NavigationMode" />
     </Type>
-    <Type Name="Xamarin.Essentials.MapsLaunchOptions" Id="T:Xamarin.Essentials.MapsLaunchOptions">
-      <Member Id="M:Xamarin.Essentials.MapsLaunchOptions.#ctor" />
-      <Member Id="P:Xamarin.Essentials.MapsLaunchOptions.MapDirectionsMode" />
-      <Member Id="P:Xamarin.Essentials.MapsLaunchOptions.Name" />
+    <Type Name="Xamarin.Essentials.NavigationMode" Id="T:Xamarin.Essentials.NavigationMode">
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Bicycling" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Default" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Driving" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.None" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Transit" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Walking" />
     </Type>
     <Type Name="Xamarin.Essentials.NetworkAccess" Id="T:Xamarin.Essentials.NetworkAccess">
       <Member Id="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />
@@ -402,7 +402,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.PlacemarkExtensions" Id="T:Xamarin.Essentials.PlacemarkExtensions">
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
-      <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />

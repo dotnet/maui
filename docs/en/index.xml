@@ -78,7 +78,7 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+2d55930aa6f65dd776e5b74110ca27d6bb66a4df")</AttributeName>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+06f6e2b7c393a97f6c3d4b34bb339c7a1081e993")</AttributeName>
         </Attribute>
       </Attributes>
     </Assembly>
@@ -137,9 +137,9 @@
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerData" Kind="Structure" />
       <Type Name="MainThread" Kind="Class" />
-      <Type Name="MapDirectionsMode" Kind="Enumeration" />
-      <Type Name="Maps" Kind="Class" />
-      <Type Name="MapsLaunchOptions" Kind="Class" />
+      <Type Name="Map" Kind="Class" />
+      <Type Name="MapLaunchOptions" Kind="Class" />
+      <Type Name="NavigationMode" Kind="Enumeration" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
@@ -251,23 +251,23 @@
         <Target Type="T:Xamarin.Essentials.Location" />
       </Targets>
       <Member MemberName="OpenMapsAsync">
-        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapsLaunchOptions options);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Threading.Tasks.Task</ReturnType>
         </ReturnValue>
         <Parameters>
           <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
-          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
         </Parameters>
         <Docs>
           <param name="location">Location to open to.</param>
           <param name="options">Options to use.</param>
           <summary>Open maps to this location.</summary>
         </Docs>
-        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
@@ -297,23 +297,23 @@
         <Target Type="T:Xamarin.Essentials.Placemark" />
       </Targets>
       <Member MemberName="OpenMapsAsync">
-        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapsLaunchOptions options);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Threading.Tasks.Task</ReturnType>
         </ReturnValue>
         <Parameters>
           <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
-          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
         </Parameters>
         <Docs>
           <param name="placemark">To be added.</param>
           <param name="options">To be added.</param>
           <summary>To be added.</summary>
         </Docs>
-        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
     </ExtensionMethod>
   </ExtensionMethods>

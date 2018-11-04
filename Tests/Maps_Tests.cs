@@ -14,44 +14,44 @@ namespace Tests
         [Fact]
         public async Task Open_Map_LatLong_NetStandard() =>
           await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(
-              () => Maps.OpenAsync(
+              () => Map.OpenAsync(
                   testLatitude,
                   testLongitude,
-                  new MapsLaunchOptions { Name = mapName }));
+                  new MapLaunchOptions { Name = mapName }));
 
         [Fact]
         public async Task Open_Map_Location_NetStandard() =>
           await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(
-              () => Maps.OpenAsync(
+              () => Map.OpenAsync(
                   new Location(testLatitude, testLongitude),
-                  new MapsLaunchOptions { Name = mapName }));
+                  new MapLaunchOptions { Name = mapName }));
 
         [Fact]
         public async Task Open_Map_Placemark_NetStandard() =>
           await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(
-              () => Maps.OpenAsync(
+              () => Map.OpenAsync(
                   new Placemark(),
-                  new MapsLaunchOptions { Name = mapName }));
+                  new MapLaunchOptions { Name = mapName }));
 
         [Fact]
         public async Task LaunchMap_NullLocation()
         {
             Location location = null;
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
         }
 
         [Fact]
         public async Task LaunchMap_NullOptionsLocation()
         {
             var location = new Location(testLatitude, testLongitude);
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location, null));
         }
 
         [Fact]
         public async Task LaunchMap_NullPlacemark()
         {
             Placemark location = null;
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(location));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Tests
                 Thoroughfare = "Microsoft Building 25",
                 Locality = "Redmond"
             };
-            await Assert.ThrowsAsync<ArgumentNullException>(() => Maps.OpenAsync(placemark, null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(placemark, null));
         }
     }
 }
