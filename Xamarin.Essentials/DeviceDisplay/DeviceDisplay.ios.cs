@@ -1,5 +1,4 @@
 ﻿using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Xamarin.Essentials
@@ -8,12 +7,18 @@ namespace Xamarin.Essentials
     {
         static NSObject observer;
 
-        static ScreenMetrics GetScreenMetrics()
+        static bool PlatformKeepScreenOn
+        {
+            get => UIApplication.SharedApplication.IdleTimerDisabled;
+            set => UIApplication.SharedApplication.IdleTimerDisabled = value;
+        }
+
+        static DisplayInfo GetMainDisplayInfo()
         {
             var bounds = UIScreen.MainScreen.Bounds;
             var scale = UIScreen.MainScreen.Scale;
 
-            return new ScreenMetrics(
+            return new DisplayInfo(
                 width: bounds.Width * scale,
                 height: bounds.Height * scale,
                 density: scale,
@@ -36,37 +41,37 @@ namespace Xamarin.Essentials
 
         static void OnScreenMetricsChanged(NSNotification obj)
         {
-            var metrics = GetScreenMetrics();
-            OnScreenMetricsChanged(metrics);
+            var metrics = GetMainDisplayInfo();
+            OnMainDisplayInfoChanged(metrics);
         }
 
-        static ScreenOrientation CalculateOrientation()
+        static DisplayOrientation CalculateOrientation()
         {
             var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
             if (orientation.IsLandscape())
-                return ScreenOrientation.Landscape;
+                return DisplayOrientation.Landscape;
 
-            return ScreenOrientation.Portrait;
+            return DisplayOrientation.Portrait;
         }
 
-        static ScreenRotation CalculateRotation()
+        static DisplayRotation CalculateRotation()
         {
             var orientation = UIApplication.SharedApplication.StatusBarOrientation;
 
             switch (orientation)
             {
                 case UIInterfaceOrientation.Portrait:
-                    return ScreenRotation.Rotation0;
+                    return DisplayRotation.Rotation0;
                 case UIInterfaceOrientation.PortraitUpsideDown:
-                    return ScreenRotation.Rotation180;
+                    return DisplayRotation.Rotation180;
                 case UIInterfaceOrientation.LandscapeLeft:
-                    return ScreenRotation.Rotation270;
+                    return DisplayRotation.Rotation270;
                 case UIInterfaceOrientation.LandscapeRight:
-                    return ScreenRotation.Rotation90;
+                    return DisplayRotation.Rotation90;
             }
 
-            return ScreenRotation.Rotation0;
+            return DisplayRotation.Unknown;
         }
     }
 }

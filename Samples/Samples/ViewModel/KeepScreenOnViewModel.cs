@@ -4,15 +4,15 @@ using Xamarin.Forms;
 
 namespace Samples.ViewModel
 {
-    public class ScreenLockViewModel : BaseViewModel
+    public class KeepScreenOnViewModel : BaseViewModel
     {
-        public ScreenLockViewModel()
+        public KeepScreenOnViewModel()
         {
             RequestActiveCommand = new Command(OnRequestActive);
             RequestReleaseCommand = new Command(OnRequestRelease);
         }
 
-        public bool IsActive => ScreenLock.IsActive;
+        public bool IsActive => DeviceDisplay.KeepScreenOn;
 
         public ICommand RequestActiveCommand { get; }
 
@@ -20,14 +20,14 @@ namespace Samples.ViewModel
 
         void OnRequestActive()
         {
-            ScreenLock.RequestActive();
+            DeviceDisplay.KeepScreenOn = true;
 
             OnPropertyChanged(nameof(IsActive));
         }
 
         void OnRequestRelease()
         {
-            ScreenLock.RequestRelease();
+            DeviceDisplay.KeepScreenOn = false;
 
             OnPropertyChanged(nameof(IsActive));
         }

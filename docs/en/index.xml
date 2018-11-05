@@ -112,6 +112,9 @@
       <Type Name="DeviceInfo" Kind="Class" />
       <Type Name="DevicePlatform" Kind="Structure" />
       <Type Name="DeviceType" Kind="Enumeration" />
+      <Type Name="DisplayInfo" Kind="Structure" />
+      <Type Name="DisplayOrientation" Kind="Enumeration" />
+      <Type Name="DisplayRotation" Kind="Enumeration" />
       <Type Name="DistanceUnits" Kind="Enumeration" />
       <Type Name="Email" Kind="Class" />
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
@@ -136,6 +139,7 @@
       <Type Name="Magnetometer" Kind="Class" />
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerData" Kind="Structure" />
+      <Type Name="MainDisplayInfoChangedEventArgs" Kind="Class" />
       <Type Name="MainThread" Kind="Class" />
       <Type Name="Map" Kind="Class" />
       <Type Name="MapLaunchOptions" Kind="Class" />
@@ -151,11 +155,6 @@
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
-      <Type Name="ScreenLock" Kind="Class" />
-      <Type Name="ScreenMetrics" Kind="Structure" />
-      <Type Name="ScreenMetricsChangedEventArgs" Kind="Class" />
-      <Type Name="ScreenOrientation" Kind="Enumeration" />
-      <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
       <Type Name="Share" Kind="Class" />

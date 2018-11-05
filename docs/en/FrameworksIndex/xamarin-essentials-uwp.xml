@@ -128,8 +128,9 @@
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
-      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
-      <Member Id="P:Xamarin.Essentials.DeviceDisplay.ScreenMetrics" />
+      <Member Id="E:Xamarin.Essentials.DeviceDisplay.MainDisplayInfoChanged" />
+      <Member Id="P:Xamarin.Essentials.DeviceDisplay.KeepScreenOn" />
+      <Member Id="P:Xamarin.Essentials.DeviceDisplay.MainDisplayInfo" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceIdiom" Id="T:Xamarin.Essentials.DeviceIdiom">
       <Member Id="M:Xamarin.Essentials.DeviceIdiom.Create(System.String)" />
@@ -172,6 +173,32 @@
     <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
       <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
       <Member Id="F:Xamarin.Essentials.DeviceType.Virtual" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayInfo" Id="T:Xamarin.Essentials.DisplayInfo">
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(System.Object)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.GetHashCode" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.op_Equality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.op_Inequality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.ToString" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Density" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Height" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Orientation" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Rotation" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Width" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayOrientation" Id="T:Xamarin.Essentials.DisplayOrientation">
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Landscape" />
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Portrait" />
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayRotation" Id="T:Xamarin.Essentials.DisplayRotation">
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation0" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation180" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation270" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation90" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.DistanceUnits" Id="T:Xamarin.Essentials.DistanceUnits">
       <Member Id="F:Xamarin.Essentials.DistanceUnits.Kilometers" />
@@ -325,6 +352,10 @@
       <Member Id="M:Xamarin.Essentials.MagnetometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
+    <Type Name="Xamarin.Essentials.MainDisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.MainDisplayInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.MainDisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="P:Xamarin.Essentials.MainDisplayInfoChangedEventArgs.MainDisplayInfo" />
+    </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
@@ -442,39 +473,6 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.Single,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String,System.String)" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenLock" Id="T:Xamarin.Essentials.ScreenLock">
-      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestActive" />
-      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestRelease" />
-      <Member Id="P:Xamarin.Essentials.ScreenLock.IsActive" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetrics" Id="T:Xamarin.Essentials.ScreenMetrics">
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.Equals(System.Object)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.Equals(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.GetHashCode" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.op_Equality(Xamarin.Essentials.ScreenMetrics,Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.op_Inequality(Xamarin.Essentials.ScreenMetrics,Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.ToString" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Density" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Height" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Orientation" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Width" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetricsChangedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.ScreenMetricsChangedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetricsChangedEventArgs.Metrics" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenOrientation" Id="T:Xamarin.Essentials.ScreenOrientation">
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Landscape" />
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Portrait" />
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Unknown" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenRotation" Id="T:Xamarin.Essentials.ScreenRotation">
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation0" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation180" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation270" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation90" />
     </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
