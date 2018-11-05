@@ -52,9 +52,7 @@
       <Docs>
         <summary>Gets the current state of network access. Does not guarantee full access to the internet.</summary>
         <value>The current network access state.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">

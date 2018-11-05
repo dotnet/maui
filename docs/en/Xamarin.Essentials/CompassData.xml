@@ -23,9 +23,7 @@
     <summary>
       <para>Contains the orientation of the user's device.</para>
     </summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Equals">

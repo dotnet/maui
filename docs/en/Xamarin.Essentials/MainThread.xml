@@ -33,9 +33,7 @@
       <Docs>
         <param name="action">Action to execute.</param>
         <summary>Invokes an action on the main thread of the application.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="IsMainThread">

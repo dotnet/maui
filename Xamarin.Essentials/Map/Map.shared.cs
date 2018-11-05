@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Maps
+    public static partial class Map
     {
         public static Task OpenAsync(Location location) =>
-            OpenAsync(location, new MapsLaunchOptions());
+            OpenAsync(location, new MapLaunchOptions());
 
-        public static Task OpenAsync(Location location, MapsLaunchOptions options)
+        public static Task OpenAsync(Location location, MapLaunchOptions options)
         {
             if (location == null)
                 throw new ArgumentNullException(nameof(location));
@@ -20,9 +20,9 @@ namespace Xamarin.Essentials
         }
 
         public static Task OpenAsync(double latitude, double longitude) =>
-            OpenAsync(latitude, longitude, new MapsLaunchOptions());
+            OpenAsync(latitude, longitude, new MapLaunchOptions());
 
-        public static Task OpenAsync(double latitude, double longitude, MapsLaunchOptions options)
+        public static Task OpenAsync(double latitude, double longitude, MapLaunchOptions options)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
@@ -31,9 +31,9 @@ namespace Xamarin.Essentials
         }
 
         public static Task OpenAsync(Placemark placemark) =>
-            OpenAsync(placemark, new MapsLaunchOptions());
+            OpenAsync(placemark, new MapLaunchOptions());
 
-        public static Task OpenAsync(Placemark placemark, MapsLaunchOptions options)
+        public static Task OpenAsync(Placemark placemark, MapLaunchOptions options)
         {
             if (placemark == null)
                 throw new ArgumentNullException(nameof(placemark));

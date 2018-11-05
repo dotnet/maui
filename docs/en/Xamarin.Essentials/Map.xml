@@ -1,7 +1,7 @@
-<Type Name="Maps" FullName="Xamarin.Essentials.Maps">
-  <TypeSignature Language="C#" Value="public static class Maps" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Maps extends System.Object" />
-  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Maps" />
+<Type Name="Map" FullName="Xamarin.Essentials.Map">
+  <TypeSignature Language="C#" Value="public static class Map" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi abstract sealed beforefieldinit Map extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.Map" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -12,15 +12,13 @@
   <Interfaces />
   <Docs>
     <summary>Map helpers to open a route to specified places via default platforms maps implementation.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Location location);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Location location) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -36,15 +34,13 @@
         <param name="location">Location to open on maps.</param>
         <summary>Open the installed application to a specific location.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Placemark placemark);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Placemark placemark) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -60,13 +56,13 @@
         <param name="placemark">Placemark to open on maps.</param>
         <summary>Open the installed application to a specific placemark.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>To be added.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
       <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (double latitude, double longitude);" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(float64 latitude, float64 longitude) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -84,15 +80,13 @@
         <param name="longitude">Longitude to open to.</param>
         <summary>Open the installed application to a specific location.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para />
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Location location, Xamarin.Essentials.MapsLaunchOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Location location, Xamarin.Essentials.MapLaunchOptions options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -103,22 +97,20 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="location" Type="Xamarin.Essentials.Location" />
-        <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
         <param name="location">Location to open maps to.</param>
         <param name="options">Launch options to use.</param>
         <summary>Open the installed application to a specific location with launch options.</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapsLaunchOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapLaunchOptions options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -129,22 +121,20 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" />
-        <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
         <param name="placemark">Placemark to open maps to.</param>
         <param name="options">Launch options to use.</param>
         <summary>Open the installed application to a specific placemark with launch options..</summary>
         <returns>Task to be completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (double latitude, double longitude, Xamarin.Essentials.MapsLaunchOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(float64 latitude, float64 longitude, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenAsync (double latitude, double longitude, Xamarin.Essentials.MapLaunchOptions options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenAsync(float64 latitude, float64 longitude, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapLaunchOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -156,7 +146,7 @@
       <Parameters>
         <Parameter Name="latitude" Type="System.Double" />
         <Parameter Name="longitude" Type="System.Double" />
-        <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
         <param name="latitude">Latitude to open to.</param>

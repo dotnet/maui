@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>How the device and battery are currently being powered or charged.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="AC">

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Open the platform phone dialer to place a call.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Open">
@@ -36,7 +34,7 @@
         <param name="number">Phone number to initialize the dialer with. Example 15555555555</param>
         <summary>Open the phone dialer to a specific phone number.</summary>
         <remarks>
-          <para></para>Throws ArgumentNullException if number is not valid.<para>Throws FeatureNotSupportedException if placing phone call is not supported on the device.</para></remarks>
+          Throws ArgumentNullException if number is not valid.<para>Throws FeatureNotSupportedException if placing phone call is not supported on the device.</para></remarks>
       </Docs>
     </Member>
   </Members>

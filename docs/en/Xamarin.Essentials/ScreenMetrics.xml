@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>This type represents the properties of the current screen.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Density">
@@ -40,9 +38,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value representing the current screen density.</summary>
-        <value>
-          <para></para>
-        </value>
+        <value></value>
         <remarks>This value is a multiple value, such that a retina display would be 2.0 or 3.0. On Windows, the scaling percent of 200% means that the density will be 2.0.</remarks>
       </Docs>
     </Member>
@@ -130,9 +126,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the height of the screen for the current orientation.</summary>
-        <value>
-          <para></para>
-        </value>
+        <value></value>
         <remarks>This value is the height after rotation, so a landscape iPhone will have a smaller height than width.</remarks>
       </Docs>
     </Member>
@@ -261,9 +255,7 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the width of the screen in the current orientation.</summary>
-        <value>
-          <para></para>
-        </value>
+        <value></value>
         <remarks>This value is the width after rotation, so a landscape Android phone will have a larget width than height.</remarks>
       </Docs>
     </Member>

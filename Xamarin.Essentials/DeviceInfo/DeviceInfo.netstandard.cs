@@ -10,9 +10,9 @@
 
         static string GetVersionString() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetPlatform() => throw new NotImplementedInReferenceAssemblyException();
+        static DevicePlatform GetPlatform() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetIdiom() => throw new NotImplementedInReferenceAssemblyException();
+        static DeviceIdiom GetIdiom() => throw new NotImplementedInReferenceAssemblyException();
 
         static DeviceType GetDeviceType() => throw new NotImplementedInReferenceAssemblyException();
     }

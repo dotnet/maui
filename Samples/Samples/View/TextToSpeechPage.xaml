@@ -24,18 +24,18 @@
                 <Switch HorizontalOptions="Center" x:Name="SwitchMultiple"/>
 
                 <Label Text="Advanced" HorizontalOptions="Start" />
-                <Switch HorizontalOptions="Center" IsToggled="{Binding AdvancedSettings}"/>
+                <Switch HorizontalOptions="Center" IsToggled="{Binding AdvancedOptions}"/>
 
-                <Label Text="Volume" HorizontalOptions="Start"  IsVisible="{Binding AdvancedSettings}"/>
-                <Label Text="{Binding Volume}" HorizontalOptions="Center"  IsVisible="{Binding AdvancedSettings}"/>
-                <Slider Value="{Binding Volume}" Minimum="0.0" Maximum="1.0" IsVisible="{Binding AdvancedSettings}"/>
+                <Label Text="Volume" HorizontalOptions="Start"  IsVisible="{Binding AdvancedOptions}"/>
+                <Label Text="{Binding Volume}" HorizontalOptions="Center"  IsVisible="{Binding AdvancedOptions}"/>
+                <Slider Value="{Binding Volume}" Minimum="0.0" Maximum="1.0" IsVisible="{Binding AdvancedOptions}"/>
 
-                <Label Text="Pitch" HorizontalOptions="Start"  IsVisible="{Binding AdvancedSettings}"/>
-                <Label Text="{Binding Pitch}" HorizontalOptions="Center"  IsVisible="{Binding AdvancedSettings}"/>
-                <Slider Value="{Binding Pitch}" Minimum="0.0" Maximum="2.0" IsVisible="{Binding AdvancedSettings}"/>
+                <Label Text="Pitch" HorizontalOptions="Start"  IsVisible="{Binding AdvancedOptions}"/>
+                <Label Text="{Binding Pitch}" HorizontalOptions="Center"  IsVisible="{Binding AdvancedOptions}"/>
+                <Slider Value="{Binding Pitch}" Minimum="0.0" Maximum="2.0" IsVisible="{Binding AdvancedOptions}"/>
 
-                <Button Text="Pick Locale" Command="{Binding PickLocaleCommand}" IsVisible="{Binding AdvancedSettings}"/>
-                <Label Text="{Binding Locale}" IsVisible="{Binding AdvancedSettings}"/>
+                <Button Text="Pick Locale" Command="{Binding PickLocaleCommand}" IsVisible="{Binding AdvancedOptions}"/>
+                <Label Text="{Binding Locale}" IsVisible="{Binding AdvancedOptions}"/>
                 
                 <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" />
             </StackLayout>

@@ -10,10 +10,10 @@ namespace Xamarin.Essentials
         public static double CalculateDistance(this Location locationStart, Location locationEnd, DistanceUnits units) =>
             Location.CalculateDistance(locationStart, locationEnd, units);
 
-        public static Task OpenMapsAsync(this Location location, MapsLaunchOptions options) =>
-            Maps.OpenAsync(location, options);
+        public static Task OpenMapsAsync(this Location location, MapLaunchOptions options) =>
+            Map.OpenAsync(location, options);
 
         public static Task OpenMapsAsync(this Location location) =>
-            Maps.OpenAsync(location);
+            Map.OpenAsync(location);
     }
 }

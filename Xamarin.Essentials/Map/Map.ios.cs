@@ -7,9 +7,9 @@ using MapKit;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Maps
+    public static partial class Map
     {
-        internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapsLaunchOptions options)
+        internal static Task PlatformOpenMapsAsync(double latitude, double longitude, MapLaunchOptions options)
         {
             if (string.IsNullOrWhiteSpace(options.Name))
                 options.Name = string.Empty;
@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
             return OpenPlacemark(placemark, options);
         }
 
-        internal static async Task PlatformOpenMapsAsync(Placemark placemark, MapsLaunchOptions options)
+        internal static async Task PlatformOpenMapsAsync(Placemark placemark, MapLaunchOptions options)
         {
             var address = new MKPlacemarkAddress
             {
@@ -51,7 +51,7 @@ namespace Xamarin.Essentials
             await OpenPlacemark(new MKPlacemark(placemarks[0].Location.Coordinate, address), options);
         }
 
-        static Task OpenPlacemark(MKPlacemark placemark, MapsLaunchOptions options)
+        static Task OpenPlacemark(MKPlacemark placemark, MapLaunchOptions options)
         {
             var mapItem = new MKMapItem(placemark)
             {
@@ -59,22 +59,22 @@ namespace Xamarin.Essentials
             };
 
             MKLaunchOptions launchOptions = null;
-            if (options.MapDirectionsMode != MapDirectionsMode.None)
+            if (options.NavigationMode != NavigationMode.None)
             {
                 var mode = MKDirectionsMode.Default;
 
-                switch (options.MapDirectionsMode)
+                switch (options.NavigationMode)
                 {
-                    case MapDirectionsMode.Driving:
+                    case NavigationMode.Driving:
                         mode = MKDirectionsMode.Driving;
                         break;
-                    case MapDirectionsMode.Transit:
+                    case NavigationMode.Transit:
                         mode = MKDirectionsMode.Transit;
                         break;
-                    case MapDirectionsMode.Walking:
+                    case NavigationMode.Walking:
                         mode = MKDirectionsMode.Walking;
                         break;
-                    case MapDirectionsMode.Default:
+                    case NavigationMode.Default:
                         mode = MKDirectionsMode.Default;
                         break;
                 }

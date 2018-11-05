@@ -1,5 +1,4 @@
-﻿using Windows.Graphics.Display;
-using Windows.Security.ExchangeActiveSyncProvisioning;
+﻿using Windows.Security.ExchangeActiveSyncProvisioning;
 using Windows.System.Profile;
 using Windows.UI.ViewManagement;
 
@@ -36,28 +35,28 @@ namespace Xamarin.Essentials
             return version;
         }
 
-        static string GetPlatform() => Platforms.UWP;
+        static DevicePlatform GetPlatform() => DevicePlatform.UWP;
 
-        static string GetIdiom()
+        static DeviceIdiom GetIdiom()
         {
             switch (AnalyticsInfo.VersionInfo.DeviceFamily)
             {
                 case "Windows.Mobile":
-                    return Idioms.Phone;
+                    return DeviceIdiom.Phone;
                 case "Windows.Universal":
                 case "Windows.Desktop":
                     {
                         var uiMode = UIViewSettings.GetForCurrentView().UserInteractionMode;
-                        return uiMode == UserInteractionMode.Mouse ? Idioms.Desktop : Idioms.Tablet;
+                        return uiMode == UserInteractionMode.Mouse ? DeviceIdiom.Desktop : DeviceIdiom.Tablet;
                     }
                 case "Windows.Xbox":
                 case "Windows.Team":
-                    return Idioms.TV;
+                    return DeviceIdiom.TV;
                 case "Windows.IoT":
-                    return Idioms.Unsupported;
+                    return DeviceIdiom.Unknown;
             }
 
-            return Idioms.Unsupported;
+            return DeviceIdiom.Unknown;
         }
 
         static DeviceType GetDeviceType()

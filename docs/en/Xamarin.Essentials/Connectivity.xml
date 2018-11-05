@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Connectivity and networking helpers.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="ConnectionProfiles">
@@ -55,7 +53,6 @@
         </summary>
         <remarks>
           <para>Can throw PermissionException on Android if ACCESS_NETWORK_STATE is not set in manifest.</para>
-          <para></para>
         </remarks>
       </Docs>
     </Member>

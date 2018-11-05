@@ -31,10 +31,10 @@
         <Parameter Name="uri" Type="System.String" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">Uri to launch.</param>
+        <summary>Open the browser to specified uri.</summary>
+        <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -53,10 +53,10 @@
         <Parameter Name="uri" Type="System.Uri" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">Uri to launch.</param>
+        <summary>Open the browser to specified uri.</summary>
+        <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -76,11 +76,11 @@
         <Parameter Name="launchMode" Type="Xamarin.Essentials.BrowserLaunchMode" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <param name="launchMode">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">Uri to launch.</param>
+        <param name="launchMode">How to launch the browser.</param>
+        <summary>Open the browser to specified uri.</summary>
+        <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenAsync">
@@ -100,11 +100,11 @@
         <Parameter Name="launchMode" Type="Xamarin.Essentials.BrowserLaunchMode" />
       </Parameters>
       <Docs>
-        <param name="uri">To be added.</param>
-        <param name="launchMode">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <param name="uri">Uri to launch.</param>
+        <param name="launchMode">How to launch the browser.</param>
+        <summary>Open the browser to specified uri.</summary>
+        <returns>Completed task when browser is launched, but not necessarily closed.  Result indicates if launching was successful or not.</returns>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

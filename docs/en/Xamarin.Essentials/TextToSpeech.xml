@@ -53,15 +53,15 @@
       <Docs>
         <param name="text">The text to speak..</param>
         <param name="cancelToken">Optional cancellation token to stop speaking.</param>
-        <summary>Speaks the given text with default settings.</summary>
+        <summary>Speaks the given text with default options.</summary>
         <returns></returns>
         <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="SpeakAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SpeakAsync (string text, Xamarin.Essentials.SpeakSettings settings, System.Threading.CancellationToken cancelToken = null);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SpeakAsync(string text, class Xamarin.Essentials.SpeakSettings settings, valuetype System.Threading.CancellationToken cancelToken) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeakSettings,System.Threading.CancellationToken)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SpeakAsync (string text, Xamarin.Essentials.SpeechOptions options, System.Threading.CancellationToken cancelToken = null);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SpeakAsync(string text, class Xamarin.Essentials.SpeechOptions options, valuetype System.Threading.CancellationToken cancelToken) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeechOptions,System.Threading.CancellationToken)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -72,14 +72,14 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="text" Type="System.String" />
-        <Parameter Name="settings" Type="Xamarin.Essentials.SpeakSettings" />
+        <Parameter Name="options" Type="Xamarin.Essentials.SpeechOptions" />
         <Parameter Name="cancelToken" Type="System.Threading.CancellationToken" />
       </Parameters>
       <Docs>
         <param name="text">The text to speak.</param>
-        <param name="settings">The settings to use for speaking.</param>
+        <param name="options">The options to use for speaking.</param>
         <param name="cancelToken">Optional cancellation token to stop speaking.</param>
-        <summary>Speaks the given text with the specified settings.</summary>
+        <summary>Speaks the given text with the specified options.</summary>
         <returns></returns>
         <remarks></remarks>
       </Docs>

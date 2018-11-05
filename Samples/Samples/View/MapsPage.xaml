@@ -13,14 +13,12 @@
             <Label Text="Open location in maps." FontAttributes="Bold"/>
 
             <Label Text="Options:"/>
-            <Label Text="Navigation Mode (iOS Only)"/>
+            <Label Text="Navigation Mode"/>
             <Picker HorizontalOptions="FillAndExpand"
-                        ItemsSource="{Binding DirectionModes}"
-                        SelectedIndex="{Binding DirectionMode, Mode=TwoWay}" />
+                    ItemsSource="{Binding NavigationModes}"
+                    SelectedIndex="{Binding NavigationMode, Mode=TwoWay}" />
             <Label Text="Name"/>
             <Entry Text="{Binding Name}"/>
-                
-                
 
             <Label Text="Latitude" Margin="0,24,0,0" />
             <Entry Keyboard="Numeric" Text="{Binding Latitude}" />

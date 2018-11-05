@@ -21,9 +21,7 @@
   </Attributes>
   <Docs>
     <summary>Data for magnetometer changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Equals">

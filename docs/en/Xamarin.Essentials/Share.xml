@@ -60,9 +60,7 @@
         <param name="request">Share request with options.</param>
         <summary>Show the share user interface to share text or uri.</summary>
         <returns>Task when completed.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestAsync">

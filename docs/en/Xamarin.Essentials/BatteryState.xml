@@ -11,9 +11,7 @@
   </Base>
   <Docs>
     <summary>The current state of the battery and if it is being charged or full.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="Charging">
