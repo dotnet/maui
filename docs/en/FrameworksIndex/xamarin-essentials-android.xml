@@ -48,18 +48,18 @@
       <Member Id="P:Xamarin.Essentials.BarometerData.Pressure" />
     </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
-      <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
+      <Member Id="E:Xamarin.Essentials.Battery.BatteryInfoChanged" />
       <Member Id="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
       <Member Id="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
       <Member Id="P:Xamarin.Essentials.Battery.PowerSource" />
       <Member Id="P:Xamarin.Essentials.Battery.State" />
     </Type>
-    <Type Name="Xamarin.Essentials.BatteryChangedEventArgs" Id="T:Xamarin.Essentials.BatteryChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.BatteryChangedEventArgs.ToString" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.ChargeLevel" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.PowerSource" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.State" />
+    <Type Name="Xamarin.Essentials.BatteryInfoChangedEventArgs" Id="T:Xamarin.Essentials.BatteryInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.ToString" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.PowerSource" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.State" />
     </Type>
     <Type Name="Xamarin.Essentials.BatteryPowerSource" Id="T:Xamarin.Essentials.BatteryPowerSource">
       <Member Id="F:Xamarin.Essentials.BatteryPowerSource.AC" />

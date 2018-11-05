@@ -20,7 +20,7 @@ namespace Xamarin.Essentials
             DefaultBattery.ReportUpdated -= ReportUpdated;
 
         static void ReportUpdated(object sender, object e)
-            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
+            => MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
         static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;

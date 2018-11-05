@@ -95,7 +95,7 @@
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
       <Type Name="BarometerData" Kind="Structure" />
       <Type Name="Battery" Kind="Class" />
-      <Type Name="BatteryChangedEventArgs" Kind="Class" />
+      <Type Name="BatteryInfoChangedEventArgs" Kind="Class" />
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />

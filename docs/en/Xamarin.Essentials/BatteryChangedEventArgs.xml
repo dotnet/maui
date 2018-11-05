@@ -1,7 +1,7 @@
-<Type Name="BatteryChangedEventArgs" FullName="Xamarin.Essentials.BatteryChangedEventArgs">
-  <TypeSignature Language="C#" Value="public class BatteryChangedEventArgs : EventArgs" />
-  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BatteryChangedEventArgs extends System.EventArgs" />
-  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BatteryChangedEventArgs" />
+<Type Name="BatteryInfoChangedEventArgs" FullName="Xamarin.Essentials.BatteryInfoChangedEventArgs">
+  <TypeSignature Language="C#" Value="public class BatteryInfoChangedEventArgs : EventArgs" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit BatteryInfoChangedEventArgs extends System.EventArgs" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.BatteryInfoChangedEventArgs" />
   <AssemblyInfo>
     <AssemblyName>Xamarin.Essentials</AssemblyName>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -18,7 +18,7 @@
     <Member MemberName="ChargeLevel">
       <MemberSignature Language="C#" Value="public double ChargeLevel { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 ChargeLevel" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryChangedEventArgs.ChargeLevel" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.ChargeLevel" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -36,7 +36,7 @@
     <Member MemberName="PowerSource">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.BatteryPowerSource PowerSource { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BatteryPowerSource PowerSource" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryChangedEventArgs.PowerSource" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.PowerSource" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -54,7 +54,7 @@
     <Member MemberName="State">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.BatteryState State { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BatteryState State" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryChangedEventArgs.State" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.State" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -72,7 +72,7 @@
     <Member MemberName="ToString">
       <MemberSignature Language="C#" Value="public override string ToString ();" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BatteryChangedEventArgs.ToString" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.ToString" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>

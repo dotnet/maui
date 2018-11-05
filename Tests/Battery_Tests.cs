@@ -19,9 +19,9 @@ namespace Tests
 
         [Fact]
         public void Battery_Changed_Event_On_NetStandard() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.BatteryChanged += Battery_BatteryChanged);
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Battery.BatteryInfoChanged += Battery_BatteryInfoChanged);
 
-        void Battery_BatteryChanged(object sender, BatteryChangedEventArgs e)
+        void Battery_BatteryInfoChanged(object sender, BatteryInfoChangedEventArgs e)
         {
         }
     }

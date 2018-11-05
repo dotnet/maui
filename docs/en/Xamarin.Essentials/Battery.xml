@@ -20,17 +20,17 @@
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="BatteryChanged">
-      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged" />
-      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryChanged" />
+    <Member MemberName="BatteryInfoChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryInfoChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event trigger when battery properties have changed.</summary>
