@@ -18,8 +18,8 @@
   </Docs>
   <Members>
     <Member MemberName=".ctor">
-      <MemberSignature Language="C#" Value="public DisplayInfoChangedEventArgs (Xamarin.Essentials.DisplayInfo mainDisplayInfo);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.DisplayInfo mainDisplayInfo) cil managed" />
+      <MemberSignature Language="C#" Value="public DisplayInfoChangedEventArgs (Xamarin.Essentials.DisplayInfo displayInfo);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.DisplayInfo displayInfo) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
       <MemberType>Constructor</MemberType>
       <AssemblyInfo>
@@ -27,17 +27,17 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <Parameters>
-        <Parameter Name="mainDisplayInfo" Type="Xamarin.Essentials.DisplayInfo" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp" />
+        <Parameter Name="displayInfo" Type="Xamarin.Essentials.DisplayInfo" Index="0" FrameworkAlternate="xamarin-essentials;xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp" />
       </Parameters>
       <Docs>
-        <param name="mainDisplayInfo">To be added.</param>
+        <param name="displayInfo">To be added.</param>
         <summary>Main constructor for event args.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="MainDisplayInfo">
-      <MemberSignature Language="C#" Value="public Xamarin.Essentials.DisplayInfo MainDisplayInfo { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.DisplayInfo MainDisplayInfo" />
+    <Member MemberName="DisplayInfo">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.DisplayInfo DisplayInfo { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.DisplayInfo DisplayInfo" />
       <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>

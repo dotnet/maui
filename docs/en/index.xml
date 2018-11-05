@@ -113,6 +113,7 @@
       <Type Name="DevicePlatform" Kind="Structure" />
       <Type Name="DeviceType" Kind="Enumeration" />
       <Type Name="DisplayInfo" Kind="Structure" />
+      <Type Name="DisplayInfoChangedEventArgs" Kind="Class" />
       <Type Name="DisplayOrientation" Kind="Enumeration" />
       <Type Name="DisplayRotation" Kind="Enumeration" />
       <Type Name="DistanceUnits" Kind="Enumeration" />
@@ -139,7 +140,6 @@
       <Type Name="Magnetometer" Kind="Class" />
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerData" Kind="Structure" />
-      <Type Name="DisplayInfoChangedEventArgs" Kind="Class" />
       <Type Name="MainThread" Kind="Class" />
       <Type Name="Map" Kind="Class" />
       <Type Name="MapLaunchOptions" Kind="Class" />

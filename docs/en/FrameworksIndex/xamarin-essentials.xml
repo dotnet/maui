@@ -188,6 +188,10 @@
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Rotation" />
       <Member Id="P:Xamarin.Essentials.DisplayInfo.Width" />
     </Type>
+    <Type Name="Xamarin.Essentials.DisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.DisplayInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
+    </Type>
     <Type Name="Xamarin.Essentials.DisplayOrientation" Id="T:Xamarin.Essentials.DisplayOrientation">
       <Member Id="F:Xamarin.Essentials.DisplayOrientation.Landscape" />
       <Member Id="F:Xamarin.Essentials.DisplayOrientation.Portrait" />
@@ -351,10 +355,6 @@
       <Member Id="M:Xamarin.Essentials.MagnetometerData.op_Inequality(Xamarin.Essentials.MagnetometerData,Xamarin.Essentials.MagnetometerData)" />
       <Member Id="M:Xamarin.Essentials.MagnetometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
-    </Type>
-    <Type Name="Xamarin.Essentials.DisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.DisplayInfoChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
-      <Member Id="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
     </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
