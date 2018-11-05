@@ -11,7 +11,7 @@
     <StackLayout>
         <Label Text="Monitor compass for changes." FontAttributes="Bold" Margin="12" />
 
-        <Switch IsToggled="{Binding CompassApplyLowPassFilter}" >
+        <Switch IsToggled="{Binding ApplyLowPassFilter}" >
             <Switch.IsVisible>
                 <OnPlatform x:TypeArguments="x:Boolean" Android="True" Default="False"/>
             </Switch.IsVisible>
@@ -36,7 +36,7 @@
                        Text="{Binding Compass1, StringFormat='Compass 1 Degrees: {0:N}'}" />
 
                 <Picker Grid.Row="1" Grid.ColumnSpan="2" HorizontalOptions="FillAndExpand"
-                        ItemsSource="{Binding CompassSpeeds}" 
+                        ItemsSource="{Binding Speeds}"
                         SelectedIndex="{Binding Speed1, Mode=TwoWay}"
                         IsEnabled="{Binding Compass1IsActive, Converter={StaticResource NegativeConverter}}" />
 
@@ -51,7 +51,7 @@
 
                 <Picker Grid.Row="4" Grid.ColumnSpan="2" 
                         HorizontalOptions="FillAndExpand"
-                        ItemsSource="{Binding CompassSpeeds}" 
+                        ItemsSource="{Binding Speeds}"
                         SelectedIndex="{Binding Speed2, Mode=TwoWay}"
                         IsEnabled="{Binding Compass2IsActive, Converter={StaticResource NegativeConverter}}" />
 

@@ -17,10 +17,10 @@ namespace Xamarin.Essentials
                 throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
-                return;
+                throw new InvalidOperationException("Accelerometer has already been started.");
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+            useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
             try
             {
@@ -68,19 +68,19 @@ namespace Xamarin.Essentials
 
     public class AccelerometerChangedEventArgs : EventArgs
     {
-        internal AccelerometerChangedEventArgs(AccelerometerData reading) => Reading = reading;
+        public AccelerometerChangedEventArgs(AccelerometerData reading) => Reading = reading;
 
         public AccelerometerData Reading { get; }
     }
 
     public readonly struct AccelerometerData : IEquatable<AccelerometerData>
     {
-        internal AccelerometerData(double x, double y, double z)
+        public AccelerometerData(double x, double y, double z)
             : this((float)x, (float)y, (float)z)
         {
         }
 
-        internal AccelerometerData(float x, float y, float z) =>
+        public AccelerometerData(float x, float y, float z) =>
             Acceleration = new Vector3(x, y, z);
 
         public Vector3 Acceleration { get; }

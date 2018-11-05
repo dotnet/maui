@@ -15,9 +15,8 @@ namespace Xamarin.Essentials
             altitudeManager = new CMAltimeter();
             altitudeManager.StartRelativeAltitudeUpdates(Platform.GetCurrentQueue(), LocationManagerUpdatedHeading);
 
-            // Heading updates Convert to HectoPascal from KiloPascal
             void LocationManagerUpdatedHeading(CMAltitudeData e, NSError error) =>
-                OnChanged(new BarometerData(e.Pressure.DoubleValue / 10d));
+                OnChanged(new BarometerData(UnitConverters.KilopascalsToHectopascals(e.Pressure.DoubleValue)));
         }
 
         static void PlatformStop()

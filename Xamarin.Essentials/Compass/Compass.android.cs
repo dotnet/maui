@@ -14,12 +14,12 @@ namespace Xamarin.Essentials
         static Sensor magnetometer;
         static Sensor accelerometer;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed)
+        internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
         {
             var delay = sensorSpeed.ToPlatform();
             accelerometer = Platform.SensorManager.GetDefaultSensor(SensorType.Accelerometer);
             magnetometer = Platform.SensorManager.GetDefaultSensor(SensorType.MagneticField);
-            listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay);
+            listener = new SensorListener(accelerometer.Name, magnetometer.Name, delay, applyLowPassFilter);
             Platform.SensorManager.RegisterListener(listener, accelerometer, delay);
             Platform.SensorManager.RegisterListener(listener, magnetometer, delay);
         }
@@ -48,14 +48,16 @@ namespace Xamarin.Essentials
 
         string magnetometer;
         string accelerometer;
+        bool applyLowPassFilter;
 
-        internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay)
+        internal SensorListener(string accelerometer, string magnetometer, SensorDelay delay, bool applyLowPassFilter)
         {
             this.magnetometer = magnetometer;
             this.accelerometer = accelerometer;
+            this.applyLowPassFilter = applyLowPassFilter;
         }
 
-        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, [GeneratedEnum] SensorStatus accuracy)
+        void ISensorEventListener.OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
         {
         }
 
@@ -77,7 +79,7 @@ namespace Xamarin.Essentials
                 SensorManager.GetRotationMatrix(r, null, lastAccelerometer, lastMagnetometer);
                 SensorManager.GetOrientation(r, orientation);
                 var azimuthInRadians = orientation[0];
-                if (Compass.ApplyLowPassFilter)
+                if (applyLowPassFilter)
                 {
                     filter.Add(azimuthInRadians);
                     azimuthInRadians = filter.Average();

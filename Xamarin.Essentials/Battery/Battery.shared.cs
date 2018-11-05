@@ -131,7 +131,7 @@ namespace Xamarin.Essentials
 
     public class BatteryChangedEventArgs : EventArgs
     {
-        internal BatteryChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
+        public BatteryChangedEventArgs(double level, BatteryState state, BatteryPowerSource source)
         {
             ChargeLevel = level;
             State = state;
@@ -152,7 +152,7 @@ namespace Xamarin.Essentials
 
     public class EnergySaverStatusChangedEventArgs : EventArgs
     {
-        internal EnergySaverStatusChangedEventArgs(EnergySaverStatus saverStatus)
+        public EnergySaverStatusChangedEventArgs(EnergySaverStatus saverStatus)
         {
             EnergySaverStatus = saverStatus;
         }

@@ -209,8 +209,8 @@
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
-      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double latitudeEnd, double longitudeStart, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 latitudeEnd, float64 longitudeStart, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
+      <MemberSignature Language="C#" Value="public static double CalculateDistance (double latitudeStart, double longitudeStart, double latitudeEnd, double longitudeEnd, Xamarin.Essentials.DistanceUnits units);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 CalculateDistance(float64 latitudeStart, float64 longitudeStart, float64 latitudeEnd, float64 longitudeEnd, valuetype Xamarin.Essentials.DistanceUnits units) cil managed" />
       <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
@@ -258,30 +258,6 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="KilometersToMiles">
-      <MemberSignature Language="C#" Value="public static double KilometersToMiles (double kilometers);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 KilometersToMiles(float64 kilometers) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="kilometers" Type="System.Double" />
-      </Parameters>
-      <Docs>
-        <param name="kilometers">
-          <para>Kilometers to convert to miles.</para>
-        </param>
-        <summary>Convert kilometers to miles.</summary>
-        <returns>Miles conversion from kilometers.</returns>
-        <remarks></remarks>
-      </Docs>
-    </Member>
     <Member MemberName="Latitude">
       <MemberSignature Language="C#" Value="public double Latitude { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 Latitude" />
@@ -315,28 +291,6 @@
       <Docs>
         <summary>Gets or sets the longitude of location.</summary>
         <value>Longitude of the location.</value>
-        <remarks></remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MilesToKilometers">
-      <MemberSignature Language="C#" Value="public static double MilesToKilometers (double miles);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig float64 MilesToKilometers(float64 miles) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Double</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="miles" Type="System.Double" />
-      </Parameters>
-      <Docs>
-        <param name="miles">Miles to be converted.</param>
-        <summary>Converts miles to kilometers.</summary>
-        <returns>Value of miles converted to kilometers.</returns>
         <remarks></remarks>
       </Docs>
     </Member>

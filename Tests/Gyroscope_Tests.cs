@@ -11,7 +11,7 @@ namespace Tests
 
         [Fact]
         public void Gyroscope_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Gyroscope.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Gyroscope.Start(SensorSpeed.Default));
 
         [Fact]
         public void Gyroscope_IsMonitoring() =>

@@ -20,7 +20,7 @@ namespace Xamarin.Essentials
         internal static bool IsSupported =>
             DefaultCompass != null;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed)
+        internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
         {
             sensor = DefaultCompass;
 

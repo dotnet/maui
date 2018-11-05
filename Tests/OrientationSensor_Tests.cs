@@ -11,7 +11,7 @@ namespace Tests
 
         [Fact]
         public void OrientationSensor_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => OrientationSensor.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => OrientationSensor.Start(SensorSpeed.Default));
 
         [Fact]
         public void OrientationSensor_IsMonitoring() =>

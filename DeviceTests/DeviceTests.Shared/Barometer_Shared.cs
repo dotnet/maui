@@ -29,7 +29,7 @@ namespace DeviceTests
 
             var d = await tcs.Task;
 
-            Assert.True(d.Pressure >= 0);
+            Assert.True(d.PressureInHectopascals >= 0);
             Barometer.Stop();
             Barometer.ReadingChanged -= Barometer_ReadingChanged;
         }
