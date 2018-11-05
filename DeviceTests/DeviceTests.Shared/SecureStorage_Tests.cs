@@ -6,6 +6,11 @@ namespace DeviceTests
 {
     public class SecureStorage_Tests
     {
+        public SecureStorage_Tests()
+        {
+            SecureStorage.RemoveAll();
+        }
+
         [Theory]
         [InlineData("test.txt", "data", true, true)]
         [InlineData("noextension", "data2", true, false)]
@@ -39,6 +44,32 @@ namespace DeviceTests
 
             Assert.Equal(data, c);
         }
+
+#if __ANDROID__
+        [Theory]
+        [InlineData("test.txt", "data")]
+        public async Task Fix_Corrupt_Key(string key, string data)
+        {
+            // set a valid key
+            SecureStorage.AlwaysUseAsymmetricKeyStorage = true;
+            await SecureStorage.SetAsync(key, data);
+
+            // simulate corrupt the key
+            var prefKey = "SecureStorageKey";
+            var mainKey = "A2PfJSNdEDjM+422tpu7FqFcVQQbO3ti/DvnDnIqrq9CFwaBi6NdXYcicjvMW6nF7X/Clpto5xerM41U1H4qtWJDO0Ijc5QNTHGZl9tDSbXJ6yDCDDnEDryj2uTa8DiHoNcNX68QtcV3at4kkJKXXAwZXSC88a73/xDdh1u5gUdCeXJzVc5vOY6QpAGUH0bjR5NHrqEQNNGDdquFGN9n2ZJPsEK6C9fx0QwCIL+uldpAYSWrpmUIr+/0X7Y0mJpN84ldygEVxHLBuVrzB4Bbu5XGLUN/0Sr2plWcKm7XhM6wp3JRW6Eae2ozys42p1YLeM0HXWrhTqP6FRPkS6mOtw==";
+
+            Preferences.Set(prefKey, mainKey, SecureStorage.Alias);
+
+            var c = await SecureStorage.GetAsync(key);
+            Assert.Null(c);
+
+            // try to reset and get again
+            await SecureStorage.SetAsync(key, data);
+            c = await SecureStorage.GetAsync(key);
+
+            Assert.Equal(data, c);
+        }
+#endif
 
         [Theory]
         [InlineData(true)]
