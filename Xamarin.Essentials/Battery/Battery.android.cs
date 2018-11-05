@@ -75,7 +75,7 @@ namespace Xamarin.Essentials
             {
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
-                using (var filter = new IntentFilter(Intent.ActionBatteryInfoChanged))
+                using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
@@ -95,7 +95,7 @@ namespace Xamarin.Essentials
             {
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
-                using (var filter = new IntentFilter(Intent.ActionBatteryInfoChanged))
+                using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
