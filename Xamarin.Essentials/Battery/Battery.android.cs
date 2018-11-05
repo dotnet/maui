@@ -122,7 +122,7 @@ namespace Xamarin.Essentials
             {
                 Permissions.EnsureDeclared(PermissionType.Battery);
 
-                using (var filter = new IntentFilter(Intent.ActionBatteryInfoChanged))
+                using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
                 using (var battery = Platform.AppContext.RegisterReceiver(null, filter))
                 {
                     var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
