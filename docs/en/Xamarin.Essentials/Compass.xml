@@ -12,7 +12,9 @@
   <Interfaces />
   <Docs>
     <summary>Monitor changes to the orientation of the user's device.</summary>
-    <remarks></remarks>
+    <remarks>
+      <para />
+    </remarks>
   </Docs>
   <Members>
     <Member MemberName="ApplyLowPassFilter">
