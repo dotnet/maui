@@ -352,9 +352,9 @@
       <Member Id="M:Xamarin.Essentials.MagnetometerData.ToString" />
       <Member Id="P:Xamarin.Essentials.MagnetometerData.MagneticField" />
     </Type>
-    <Type Name="Xamarin.Essentials.MainDisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.MainDisplayInfoChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.MainDisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
-      <Member Id="P:Xamarin.Essentials.MainDisplayInfoChangedEventArgs.MainDisplayInfo" />
+    <Type Name="Xamarin.Essentials.DisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.DisplayInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
     </Type>
     <Type Name="Xamarin.Essentials.MainThread" Id="T:Xamarin.Essentials.MainThread">
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />

@@ -4,7 +4,7 @@ namespace Xamarin.Essentials
 {
     public static partial class DeviceDisplay
     {
-        static event EventHandler<MainDisplayInfoChangedEventArgs> MainDisplayInfoChangedInternal;
+        static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChangedInternal;
 
         static DisplayInfo currentMetrics;
 
@@ -19,7 +19,7 @@ namespace Xamarin.Essentials
         static void SetCurrent(DisplayInfo metrics) =>
             currentMetrics = new DisplayInfo(metrics.Width, metrics.Height, metrics.Density, metrics.Orientation, metrics.Rotation);
 
-        public static event EventHandler<MainDisplayInfoChangedEventArgs> MainDisplayInfoChanged
+        public static event EventHandler<DisplayInfoChangedEventArgs> MainDisplayInfoChanged
         {
             add
             {
@@ -46,23 +46,23 @@ namespace Xamarin.Essentials
         }
 
         static void OnMainDisplayInfoChanged(DisplayInfo metrics)
-            => OnMainDisplayInfoChanged(new MainDisplayInfoChangedEventArgs(metrics));
+            => OnMainDisplayInfoChanged(new DisplayInfoChangedEventArgs(metrics));
 
-        static void OnMainDisplayInfoChanged(MainDisplayInfoChangedEventArgs e)
+        static void OnMainDisplayInfoChanged(DisplayInfoChangedEventArgs e)
         {
-            if (!currentMetrics.Equals(e.MainDisplayInfo))
+            if (!currentMetrics.Equals(e.DisplayInfo))
             {
-                SetCurrent(e.MainDisplayInfo);
+                SetCurrent(e.DisplayInfo);
                 MainDisplayInfoChangedInternal?.Invoke(null, e);
             }
         }
     }
 
-    public class MainDisplayInfoChangedEventArgs : EventArgs
+    public class DisplayInfoChangedEventArgs : EventArgs
     {
-        public MainDisplayInfoChangedEventArgs(DisplayInfo mainDisplayInfo) =>
-            MainDisplayInfo = mainDisplayInfo;
+        public DisplayInfoChangedEventArgs(DisplayInfo displayInfo) =>
+            DisplayInfo = displayInfo;
 
-        public DisplayInfo MainDisplayInfo { get; }
+        public DisplayInfo DisplayInfo { get; }
     }
 }

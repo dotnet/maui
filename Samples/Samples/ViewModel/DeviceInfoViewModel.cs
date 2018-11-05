@@ -43,9 +43,9 @@ namespace Samples.ViewModel
             base.OnDisappearing();
         }
 
-        void OnScreenMetricsChanged(object sender, MainDisplayInfoChangedEventArgs e)
+        void OnScreenMetricsChanged(object sender, DisplayInfoChangedEventArgs e)
         {
-            ScreenMetrics = e.MainDisplayInfo;
+            ScreenMetrics = e.DisplayInfo;
         }
     }
 }
