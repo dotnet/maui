@@ -88,13 +88,13 @@ namespace Xamarin.Essentials
             keyStore.Load(null);
         }
 
-        Context appContext;
-        string alias;
-        KeyStore keyStore;
-        bool alwaysUseAsymmetricKey;
+        readonly Context appContext;
+        readonly string alias;
+        readonly bool alwaysUseAsymmetricKey;
+        readonly string useSymmetricPreferenceKey = "essentials_use_symmetric";
 
+        KeyStore keyStore;
         bool useSymmetric = false;
-        string useSymmetricPreferenceKey = "essentials_use_symmetric";
 
         ISecretKey GetKey()
         {
@@ -131,11 +131,15 @@ namespace Xamarin.Essentials
 
                     return kp;
                 }
-                catch (Exception ex)
+                catch (IllegalBlockSizeException ibsEx)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Unable to unwrap key. This may be caused by system backup or upgrades. All secure storage items will now be removed. {ex.Message}");
-                    SecureStorage.RemoveAll();
+                    System.Diagnostics.Debug.WriteLine($"Unable to unwrap key: Illegal Block Size. This may be caused by system backup or upgrades. All secure storage items will now be removed. {ibsEx.Message}");
                 }
+                catch (BadPaddingException paddingEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unable to unwrap key: Bad Padding. This may be caused by system backup or upgrades. All secure storage items will now be removed. {paddingEx.Message}");
+                }
+                SecureStorage.RemoveAll();
             }
 
             var keyGenerator = KeyGenerator.GetInstance(aesAlgorithm);
@@ -242,6 +246,7 @@ namespace Xamarin.Essentials
 
             // Generate initialization vector
             var iv = new byte[initializationVectorLen];
+
             var sr = new SecureRandom();
             sr.NextBytes(iv);
 
@@ -253,7 +258,7 @@ namespace Xamarin.Essentials
                 cipher = Cipher.GetInstance(cipherTransformationSymmetric);
                 cipher.Init(CipherMode.EncryptMode, key, new GCMParameterSpec(128, iv));
             }
-            catch (Java.Security.InvalidAlgorithmParameterException)
+            catch (InvalidAlgorithmParameterException)
             {
                 // If we encounter this error, it's likely an old bouncycastle provider version
                 // is being used which does not recognize GCMParameterSpec, but should work
@@ -294,7 +299,7 @@ namespace Xamarin.Essentials
                 cipher = Cipher.GetInstance(cipherTransformationSymmetric);
                 cipher.Init(CipherMode.DecryptMode, key, new GCMParameterSpec(128, iv));
             }
-            catch (Java.Security.InvalidAlgorithmParameterException)
+            catch (InvalidAlgorithmParameterException)
             {
                 // If we encounter this error, it's likely an old bouncycastle provider version
                 // is being used which does not recognize GCMParameterSpec, but should work
