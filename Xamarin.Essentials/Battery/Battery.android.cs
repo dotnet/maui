@@ -51,7 +51,7 @@ namespace Xamarin.Essentials
         {
             Permissions.EnsureDeclared(PermissionType.Battery);
 
-            batteryReceiver = new BatteryBroadcastReceiver(OnBatteryChanged);
+            batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
             Platform.AppContext.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
         }
 

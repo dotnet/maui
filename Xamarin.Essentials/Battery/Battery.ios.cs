@@ -29,8 +29,8 @@ namespace Xamarin.Essentials
         static void StartBatteryListeners()
         {
             UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
-            levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryChangedNotification);
-            stateObserver = UIDevice.Notifications.ObserveBatteryStateDidChange(BatteryChangedNotification);
+            levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryInfoChangedNotification);
+            stateObserver = UIDevice.Notifications.ObserveBatteryStateDidChange(BatteryInfoChangedNotification);
         }
 
         static void StopBatteryListeners()
@@ -42,8 +42,8 @@ namespace Xamarin.Essentials
             stateObserver = null;
         }
 
-        static void BatteryChangedNotification(object sender, NSNotificationEventArgs args)
-            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
+        static void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
+            => MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
         static double PlatformChargeLevel
         {
