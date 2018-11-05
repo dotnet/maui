@@ -162,8 +162,10 @@ namespace Xamarin.Forms.Platform.Android
 				if (currentDialog != null && currentDialog.IsShowing)
 				{
 					currentDialog.Dismiss();
-					_dialog = CreateDatePickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
-					_dialog.Show();
+					if (Forms.IsLollipopOrNewer)
+						currentDialog.CancelEvent -= OnCancelButtonClicked;
+
+					ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
 				}
 			}
 		}
@@ -178,7 +180,12 @@ namespace Xamarin.Forms.Platform.Android
 			DatePicker view = Element;
 			((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			_dialog = CreateDatePickerDialog(view.Date.Year, view.Date.Month - 1, view.Date.Day);
+			ShowPickerDialog(view.Date.Year, view.Date.Month - 1, view.Date.Day);
+		}
+
+		void ShowPickerDialog(int year, int month, int day)
+		{
+			_dialog = CreateDatePickerDialog(year, month, day);
 
 			UpdateMinimumDate();
 			UpdateMaximumDate();
