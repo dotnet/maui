@@ -103,8 +103,7 @@ If using Visual Studio for Mac the project can be built at the command line with
 To build through the command line, navigate to where Xamarin.Essentials.csproj exists then run:
 
 ```csharp
-dotnet restore
-msbuild Xamarin.Essentials.csproj
+msbuild /restore Xamarin.Essentials.csproj
 ```
 
 ## FAQ
