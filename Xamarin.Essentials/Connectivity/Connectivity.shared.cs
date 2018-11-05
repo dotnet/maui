@@ -67,7 +67,7 @@ namespace Xamarin.Essentials
 
     public class ConnectivityChangedEventArgs : EventArgs
     {
-        internal ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
+        public ConnectivityChangedEventArgs(NetworkAccess access, IEnumerable<ConnectionProfile> connectionProfiles)
         {
             NetworkAccess = access;
             ConnectionProfiles = connectionProfiles;

@@ -15,6 +15,24 @@
     <remarks></remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public AccelerometerChangedEventArgs (Xamarin.Essentials.AccelerometerData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.AccelerometerData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.AccelerometerChangedEventArgs.#ctor(Xamarin.Essentials.AccelerometerData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.AccelerometerData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Reading">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.AccelerometerData Reading { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.AccelerometerData Reading" />

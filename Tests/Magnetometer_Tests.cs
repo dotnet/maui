@@ -11,7 +11,7 @@ namespace Tests
 
         [Fact]
         public void Magnetometer_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Magnetometer.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Magnetometer.Start(SensorSpeed.Default));
 
         [Fact]
         public void Magnetometer_IsMonitoring() =>

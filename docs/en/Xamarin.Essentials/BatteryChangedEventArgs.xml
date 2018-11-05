@@ -15,6 +15,28 @@
     <remarks>Returns the current information of the battery.</remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BatteryChangedEventArgs (double level, Xamarin.Essentials.BatteryState state, Xamarin.Essentials.BatteryPowerSource source);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 level, valuetype Xamarin.Essentials.BatteryState state, valuetype Xamarin.Essentials.BatteryPowerSource source) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BatteryChangedEventArgs.#ctor(System.Double,Xamarin.Essentials.BatteryState,Xamarin.Essentials.BatteryPowerSource)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="level" Type="System.Double" />
+        <Parameter Name="state" Type="Xamarin.Essentials.BatteryState" />
+        <Parameter Name="source" Type="Xamarin.Essentials.BatteryPowerSource" />
+      </Parameters>
+      <Docs>
+        <param name="level">To be added.</param>
+        <param name="state">To be added.</param>
+        <param name="source">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ChargeLevel">
       <MemberSignature Language="C#" Value="public double ChargeLevel { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance float64 ChargeLevel" />

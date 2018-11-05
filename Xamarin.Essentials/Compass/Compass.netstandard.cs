@@ -5,7 +5,7 @@
         internal static bool IsSupported =>
             throw new NotImplementedInReferenceAssemblyException();
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed) =>
+        internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter) =>
             throw new NotImplementedInReferenceAssemblyException();
 
         internal static void PlatformStop() =>

@@ -16,10 +16,10 @@ namespace Xamarin.Essentials
                throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
-                return;
+                throw new InvalidOperationException("Barometer has already been started.");
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+            useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
             try
             {
@@ -67,7 +67,7 @@ namespace Xamarin.Essentials
 
     public class BarometerChangedEventArgs : EventArgs
     {
-        internal BarometerChangedEventArgs(BarometerData reading) =>
+        public BarometerChangedEventArgs(BarometerData reading) =>
             Reading = reading;
 
         public BarometerData Reading { get; }
@@ -75,10 +75,10 @@ namespace Xamarin.Essentials
 
     public readonly struct BarometerData : IEquatable<BarometerData>
     {
-        internal BarometerData(double pressure) =>
-            Pressure = pressure;
+        public BarometerData(double pressure) =>
+            PressureInHectopascals = pressure;
 
-        public double Pressure { get; }
+        public double PressureInHectopascals { get; }
 
         public static bool operator ==(BarometerData left, BarometerData right) =>
             Equals(left, right);
@@ -90,11 +90,11 @@ namespace Xamarin.Essentials
             (obj is BarometerData data) && Equals(data);
 
         public bool Equals(BarometerData other) =>
-            Pressure.Equals(other.Pressure);
+            PressureInHectopascals.Equals(other.PressureInHectopascals);
 
         public override int GetHashCode() =>
-            Pressure.GetHashCode();
+            PressureInHectopascals.GetHashCode();
 
-        public override string ToString() => $"{nameof(Pressure)}: {Pressure}";
+        public override string ToString() => $"{nameof(PressureInHectopascals)}: {PressureInHectopascals}";
     }
 }

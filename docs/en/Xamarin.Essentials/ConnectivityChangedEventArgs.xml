@@ -17,6 +17,26 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public ConnectivityChangedEventArgs (Xamarin.Essentials.NetworkAccess access, System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; connectionProfiles);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.NetworkAccess access, class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; connectionProfiles) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.ConnectivityChangedEventArgs.#ctor(Xamarin.Essentials.NetworkAccess,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ConnectionProfile})" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="access" Type="Xamarin.Essentials.NetworkAccess" />
+        <Parameter Name="connectionProfiles" Type="System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt;" />
+      </Parameters>
+      <Docs>
+        <param name="access">To be added.</param>
+        <param name="connectionProfiles">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="ConnectionProfiles">
       <MemberSignature Language="C#" Value="public System.Collections.Generic.IEnumerable&lt;Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IEnumerable`1&lt;valuetype Xamarin.Essentials.ConnectionProfile&gt; ConnectionProfiles" />

@@ -17,10 +17,10 @@ namespace Xamarin.Essentials
                 throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
-                return;
+                throw new InvalidOperationException("Gyroscope has already been started.");
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+            useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
             try
             {
@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
 
     public class GyroscopeChangedEventArgs : EventArgs
     {
-        internal GyroscopeChangedEventArgs(GyroscopeData reading) =>
+        public GyroscopeChangedEventArgs(GyroscopeData reading) =>
             Reading = reading;
 
         public GyroscopeData Reading { get; }
@@ -76,12 +76,12 @@ namespace Xamarin.Essentials
 
     public readonly struct GyroscopeData : IEquatable<GyroscopeData>
     {
-        internal GyroscopeData(double x, double y, double z)
+        public GyroscopeData(double x, double y, double z)
             : this((float)x, (float)y, (float)z)
         {
         }
 
-        internal GyroscopeData(float x, float y, float z) =>
+        public GyroscopeData(float x, float y, float z) =>
             AngularVelocity = new Vector3(x, y, z);
 
         public Vector3 AngularVelocity { get; }

@@ -26,6 +26,24 @@
     <remarks></remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BarometerData (double pressure);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 pressure) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BarometerData.#ctor(System.Double)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="pressure" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="pressure">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Equals">
       <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
@@ -144,10 +162,10 @@
         <remarks></remarks>
       </Docs>
     </Member>
-    <Member MemberName="Pressure">
-      <MemberSignature Language="C#" Value="public double Pressure { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance float64 Pressure" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerData.Pressure" />
+    <Member MemberName="PressureInHectopascals">
+      <MemberSignature Language="C#" Value="public double PressureInHectopascals { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance float64 PressureInHectopascals" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.BarometerData.PressureInHectopascals" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -157,9 +175,9 @@
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Pressure in hPA</summary>
-        <value>The pressure</value>
-        <remarks></remarks>
+        <summary>To be added.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">

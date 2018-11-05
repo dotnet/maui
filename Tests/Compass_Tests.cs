@@ -12,7 +12,7 @@ namespace Tests
 
         [Fact]
         public void Compass_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Compass.Start(SensorSpeed.Default));
 
         [Fact]
         public void Compass_IsMonitoring() =>

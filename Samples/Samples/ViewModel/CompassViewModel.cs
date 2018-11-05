@@ -10,11 +10,11 @@ namespace Samples.ViewModel
     {
         bool compass1IsActive;
         bool compass2IsActive;
-        bool compassApplyLowPassFilter;
+        bool applyLowPassFilter;
         double compass1;
         double compass2;
-        int speed1 = 2;
-        int speed2 = 2;
+        int speed1 = 0;
+        int speed2 = 0;
 
         public CompassViewModel()
         {
@@ -44,13 +44,12 @@ namespace Samples.ViewModel
             set => SetProperty(ref compass2IsActive, value);
         }
 
-        public bool CompassApplyLowPassFilter
+        public bool ApplyLowPassFilter
         {
-            get => compassApplyLowPassFilter;
+            get => applyLowPassFilter;
             set
             {
-                SetProperty(ref compassApplyLowPassFilter, value);
-                Compass.ApplyLowPassFilter = value;
+                SetProperty(ref applyLowPassFilter, value);
             }
         }
 
@@ -78,14 +77,8 @@ namespace Samples.ViewModel
             set => SetProperty(ref speed2, value);
         }
 
-        public List<string> CompassSpeeds { get; } =
-            new List<string>
-            {
-                "Fastest",
-                "Game",
-                "Normal",
-                "User Interface"
-            };
+        public string[] Speeds { get; } =
+           Enum.GetNames(typeof(SensorSpeed));
 
         public override void OnDisappearing()
         {
@@ -102,7 +95,7 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass2();
 
-                Compass.Start((SensorSpeed)Speed1);
+                Compass.Start((SensorSpeed)Speed1, ApplyLowPassFilter);
                 Compass.ReadingChanged += OnCompass1ReadingChanged;
                 Compass1IsActive = true;
             }
@@ -140,7 +133,7 @@ namespace Samples.ViewModel
                 if (Compass.IsMonitoring)
                     OnStopCompass1();
 
-                Compass.Start((SensorSpeed)Speed2);
+                Compass.Start((SensorSpeed)Speed2, ApplyLowPassFilter);
                 Compass.ReadingChanged += OnCompass2ReadingChanged;
                 Compass2IsActive = true;
             }

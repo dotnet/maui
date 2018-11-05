@@ -10,22 +10,22 @@ namespace Xamarin.Essentials
 
         public static bool IsMonitoring { get; private set; }
 
-        public static bool ApplyLowPassFilter { get; set; }
+        public static void Start(SensorSpeed sensorSpeed) => Start(sensorSpeed, true);
 
-        public static void Start(SensorSpeed sensorSpeed)
+        public static void Start(SensorSpeed sensorSpeed, bool applyLowPassFilter)
         {
             if (!IsSupported)
                 throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
-                return;
+                throw new InvalidOperationException("Compass has already been started.");
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+            useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
             try
             {
-                PlatformStart(sensorSpeed);
+                PlatformStart(sensorSpeed, applyLowPassFilter);
             }
             catch
             {
@@ -69,7 +69,7 @@ namespace Xamarin.Essentials
 
     public class CompassChangedEventArgs : EventArgs
     {
-        internal CompassChangedEventArgs(CompassData reading) =>
+        public CompassChangedEventArgs(CompassData reading) =>
             Reading = reading;
 
         public CompassData Reading { get; }
@@ -77,7 +77,7 @@ namespace Xamarin.Essentials
 
     public readonly struct CompassData : IEquatable<CompassData>
     {
-        internal CompassData(double headingMagneticNorth) =>
+        public CompassData(double headingMagneticNorth) =>
             HeadingMagneticNorth = headingMagneticNorth;
 
         public double HeadingMagneticNorth { get; }

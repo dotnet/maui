@@ -17,10 +17,10 @@ namespace Xamarin.Essentials
                 throw new FeatureNotSupportedException();
 
             if (IsMonitoring)
-                return;
+                throw new InvalidOperationException("Orientation sensor has already been started.");
 
             IsMonitoring = true;
-            useSyncContext = sensorSpeed == SensorSpeed.Normal || sensorSpeed == SensorSpeed.UI;
+            useSyncContext = sensorSpeed == SensorSpeed.Default || sensorSpeed == SensorSpeed.UI;
 
             try
             {
@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
 
     public class OrientationSensorChangedEventArgs : EventArgs
     {
-        internal OrientationSensorChangedEventArgs(OrientationSensorData reading) =>
+        public OrientationSensorChangedEventArgs(OrientationSensorData reading) =>
             Reading = reading;
 
         public OrientationSensorData Reading { get; }
@@ -76,12 +76,12 @@ namespace Xamarin.Essentials
 
     public readonly struct OrientationSensorData : IEquatable<OrientationSensorData>
     {
-        internal OrientationSensorData(double x, double y, double z, double w)
+        public OrientationSensorData(double x, double y, double z, double w)
             : this((float)x, (float)y, (float)z, (float)w)
         {
         }
 
-        internal OrientationSensorData(float x, float y, float z, float w) =>
+        public OrientationSensorData(float x, float y, float z, float w) =>
             Orientation = new Quaternion(x, y, z, w);
 
         public Quaternion Orientation { get; }
