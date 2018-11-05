@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public bool IsDisposed => _isDisposed;
 
-		protected ButtonRenderer() : base()
+		public ButtonRenderer() : base()
 		{
 			BorderElementManager.Init(this);
 			ImageElementManager.Init(this);
