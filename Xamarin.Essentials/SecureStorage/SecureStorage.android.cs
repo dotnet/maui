@@ -33,7 +33,7 @@ namespace Xamarin.Essentials
                 catch (AEADBadTagException)
                 {
                     System.Diagnostics.Debug.WriteLine($"Unable to decrypt key, {key}, which is likely due to an app uninstall. Removing old key and returning null.");
-                    PlatformRemove(key);
+                    Remove(key);
                 }
             }
 
@@ -122,24 +122,30 @@ namespace Xamarin.Essentials
 
             if (!string.IsNullOrEmpty(existingKeyStr))
             {
-                var wrappedKey = Convert.FromBase64String(existingKeyStr);
+                try
+                {
+                    var wrappedKey = Convert.FromBase64String(existingKeyStr);
 
-                var unwrappedKey = UnwrapKey(wrappedKey, keyPair.Private);
-                var kp = unwrappedKey.JavaCast<ISecretKey>();
+                    var unwrappedKey = UnwrapKey(wrappedKey, keyPair.Private);
+                    var kp = unwrappedKey.JavaCast<ISecretKey>();
 
-                return kp;
+                    return kp;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unable to unwrap key. This may be caused by system backup or upgrades. All secure storage items will now be removed. {ex.Message}");
+                    SecureStorage.RemoveAll();
+                }
             }
-            else
-            {
-                var keyGenerator = KeyGenerator.GetInstance(aesAlgorithm);
-                var defSymmetricKey = keyGenerator.GenerateKey();
 
-                var wrappedKey = WrapKey(defSymmetricKey, keyPair.Public);
+            var keyGenerator = KeyGenerator.GetInstance(aesAlgorithm);
+            var defSymmetricKey = keyGenerator.GenerateKey();
 
-                Preferences.Set(prefsMasterKey, Convert.ToBase64String(wrappedKey), alias);
+            var newWrappedKey = WrapKey(defSymmetricKey, keyPair.Public);
 
-                return defSymmetricKey;
-            }
+            Preferences.Set(prefsMasterKey, Convert.ToBase64String(newWrappedKey), alias);
+
+            return defSymmetricKey;
         }
 
         // API 23+ Only
