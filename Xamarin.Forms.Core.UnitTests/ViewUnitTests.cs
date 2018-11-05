@@ -407,6 +407,15 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void TestOnIdiomDefault()
+		{
+			Device.Idiom = TargetIdiom.Tablet;
+			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(12));
+			Device.Idiom = TargetIdiom.Watch;
+			Assert.That((int)(new OnIdiom<int> { Tablet = 12, Default = 42 }), Is.EqualTo(42));
+		}
+
+		[Test]
 		public void TestBatching ()
 		{
 			var view = new View ();
