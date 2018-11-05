@@ -2,7 +2,13 @@
 {
     public static partial class DeviceDisplay
     {
-        static ScreenMetrics GetScreenMetrics() => throw new NotImplementedInReferenceAssemblyException();
+        static bool PlatformKeepScreenOn
+        {
+            get => throw new NotImplementedInReferenceAssemblyException();
+            set => throw new NotImplementedInReferenceAssemblyException();
+        }
+
+        static DisplayInfo GetMainDisplayInfo() => throw new NotImplementedInReferenceAssemblyException();
 
         static void StartScreenMetricsListeners() => throw new NotImplementedInReferenceAssemblyException();
 

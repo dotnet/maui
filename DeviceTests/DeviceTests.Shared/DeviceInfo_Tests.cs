@@ -96,11 +96,55 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(() =>
             {
-                var metrics = DeviceDisplay.ScreenMetrics;
+                var metrics = DeviceDisplay.MainDisplayInfo;
 
                 Assert.True(metrics.Width > 0);
                 Assert.True(metrics.Height > 0);
                 Assert.True(metrics.Density > 0);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Locks()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Unlocks_Without_Locking()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Locks_Only_Once()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
             });
         }
     }

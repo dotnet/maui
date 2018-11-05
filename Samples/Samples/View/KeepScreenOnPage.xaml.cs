@@ -1,8 +1,8 @@
 ﻿namespace Samples.View
 {
-    public partial class ScreenLockPage : BasePage
+    public partial class KeepScreenOnPage : BasePage
     {
-        public ScreenLockPage()
+        public KeepScreenOnPage()
         {
             InitializeComponent();
         }
