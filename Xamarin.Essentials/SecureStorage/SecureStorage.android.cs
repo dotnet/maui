@@ -131,6 +131,10 @@ namespace Xamarin.Essentials
 
                     return kp;
                 }
+                catch (InvalidKeyException ikEx)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Unable to unwrap key: Invalid Key. This may be caused by system backup or upgrades. All secure storage items will now be removed. {ikEx.Message}");
+                }
                 catch (IllegalBlockSizeException ibsEx)
                 {
                     System.Diagnostics.Debug.WriteLine($"Unable to unwrap key: Illegal Block Size. This may be caused by system backup or upgrades. All secure storage items will now be removed. {ibsEx.Message}");
