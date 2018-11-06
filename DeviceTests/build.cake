@@ -24,7 +24,7 @@ var UWP_PROJ = "./DeviceTests.UWP/DeviceTests.UWP.csproj";
 var UWP_TEST_RESULTS_PATH = "./xunit-uwp.xml";
 var UWP_PACKAGE_ID = "ec0cc741-fd3e-485c-81be-68815c480690";
 
-var TCP_LISTEN_TIMEOUT = 60;
+var TCP_LISTEN_TIMEOUT = 120;
 var TCP_LISTEN_PORT = 10578;
 var TCP_LISTEN_HOST = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName())
         .AddressList.First(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).ToString();
