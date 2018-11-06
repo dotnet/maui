@@ -156,7 +156,10 @@ namespace Xamarin.Forms.Platform.MacOS
 			else if (e.PropertyName == Label.FontProperty.PropertyName)
 				UpdateFont();
 			else if (e.PropertyName == Label.TextProperty.PropertyName)
+			{
 				UpdateText();
+				UpdateTextDecorations();
+			}
 			else if (e.PropertyName == Label.TextDecorationsProperty.PropertyName)
 				UpdateTextDecorations();
 			else if (e.PropertyName == Label.FormattedTextProperty.PropertyName)
