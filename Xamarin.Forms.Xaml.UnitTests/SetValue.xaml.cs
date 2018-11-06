@@ -16,6 +16,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 
 	public class MockViewWithValues : View
 	{ 
+		public char AChar { get; set; }
+		public byte AByte { get; set; }
+		public sbyte ASByte { get; set; }
+		public Int16 AShort { get; set; }
 		public UInt16 UShort { get; set; }
 		public decimal ADecimal { get; set; }
 		public SV_Foo Foo { get; set; }
@@ -292,6 +296,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			public void MorePrimitiveTypes(bool useCompiledXaml)
 			{ 
 				var page = new SetValue(useCompiledXaml);
+				Assert.AreEqual('!', page.mockView0.AChar);
+				Assert.AreEqual((byte)2, page.mockView0.AByte);
+				Assert.AreEqual((sbyte)-12, page.mockView0.ASByte);
+				Assert.AreEqual((short)-22, page.mockView0.AShort);
 				Assert.AreEqual((ushort)32, page.mockView0.UShort);
 				Assert.AreEqual((decimal)42, page.mockView0.ADecimal);
 			}

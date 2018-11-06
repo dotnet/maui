@@ -166,17 +166,17 @@ namespace Xamarin.Forms.Build.Tasks
 			if (targetTypeRef.ResolveCached().BaseType != null && targetTypeRef.ResolveCached().BaseType.FullName == "System.Enum")
 				yield return PushParsedEnum(targetTypeRef, str, node);
 			else if (targetTypeRef.FullName == "System.Char")
-				yield return Instruction.Create(OpCodes.Ldc_I4, Char.Parse(str));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Char.Parse(str)));
 			else if (targetTypeRef.FullName == "System.SByte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, SByte.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)SByte.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.Int16")
-				yield return Instruction.Create(OpCodes.Ldc_I4, Int16.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Int16.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.Int32")
 				yield return Instruction.Create(OpCodes.Ldc_I4, Int32.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Int64")
 				yield return Instruction.Create(OpCodes.Ldc_I8, Int64.Parse(str, CultureInfo.InvariantCulture));
 			else if (targetTypeRef.FullName == "System.Byte")
-				yield return Instruction.Create(OpCodes.Ldc_I4, Byte.Parse(str, CultureInfo.InvariantCulture));
+				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)Byte.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.UInt16")
 				yield return Instruction.Create(OpCodes.Ldc_I4, unchecked((int)UInt16.Parse(str, CultureInfo.InvariantCulture)));
 			else if (targetTypeRef.FullName == "System.UInt32")
