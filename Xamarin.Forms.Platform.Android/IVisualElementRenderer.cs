@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using Android.Views;
 using AView = Android.Views.View;
+using ALayoutChangeEventArgs = Android.Views.View.LayoutChangeEventArgs;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -27,5 +28,7 @@ namespace Xamarin.Forms.Platform.Android
 		void SetLabelFor(int? id);
 
 		void UpdateLayout();
+
+		event EventHandler<ALayoutChangeEventArgs> LayoutChange;
 	}
 }

@@ -99,6 +99,11 @@ namespace Xamarin.Forms.Core.UITests
 			App.Tap(q => q.Raw(ViewQuery));
 		}
 
+		public void TouchAndHoldView()
+		{
+			App.TouchAndHold(q => q.Raw(ViewQuery));
+		}
+
 		public void DismissPopOver()
 		{
 			App.Screenshot("About to dismiss pop over");

@@ -29,6 +29,7 @@ using Xamarin.Forms.Platform.Android;
 [assembly: ExportRenderer (typeof (Label), typeof (LabelRenderer))]
 [assembly: ExportRenderer (typeof (Image), typeof (ImageRenderer))]
 [assembly: ExportRenderer (typeof (Button), typeof (ButtonRenderer))]
+[assembly: ExportRenderer (typeof (ImageButton), typeof (ImageButtonRenderer))]
 [assembly: ExportRenderer (typeof (TableView), typeof (TableViewRenderer))]
 [assembly: ExportRenderer (typeof (ListView), typeof (ListViewRenderer))]
 [assembly: ExportRenderer (typeof (Slider), typeof (SliderRenderer))]

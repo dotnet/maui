@@ -74,8 +74,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public void UpdateLayout()
 		{
-			var reference = Guid.NewGuid().ToString();
-			Performance.Start(reference);
+			Performance.Start(out string reference);
 
 			VisualElement view = _renderer.Element;
 			AView aview = _renderer.View;
@@ -154,7 +153,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateAnchorX();
 			else if (e.PropertyName == VisualElement.AnchorYProperty.PropertyName)
 				UpdateAnchorY();
-			else if (   e.PropertyName == VisualElement.ScaleProperty.PropertyName
+			else if (e.PropertyName == VisualElement.ScaleProperty.PropertyName
 					 || e.PropertyName == VisualElement.ScaleXProperty.PropertyName
 					 || e.PropertyName == VisualElement.ScaleYProperty.PropertyName)
 				UpdateScale();

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Platform.Android
 	internal interface IImageRendererController
 	{
 		void SkipInvalidate();
+		bool IsDisposed { get; }
 	}
 
 	public class ImageRenderer : ViewRenderer<Image, AImageView>
@@ -110,7 +111,7 @@ namespace Xamarin.Forms.Platform.Android
 				return;
 			}
 
-			await Control.UpdateBitmap(Element, previous);
+			await Control.UpdateBitmap(Element, previous).ConfigureAwait(false);
 		}
 
 		public override bool OnTouchEvent(MotionEvent e)

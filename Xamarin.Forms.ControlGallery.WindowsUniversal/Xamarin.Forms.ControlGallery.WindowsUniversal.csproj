@@ -135,12 +135,14 @@
     <Compile Include="_60122ImageRenderer.cs" />
     <Content Include="Assets\Fonts\OFL.txt" />
     <Content Include="bank.png" />
+    <Content Include="calculator.png" />
     <Content Include="coffee.png" />
     <Content Include="cover1.jpg" />
     <Content Include="cover1small.jpg" />
     <Content Include="crimson.jpg" />
     <Content Include="crimsonsmall.jpg" />
     <Content Include="default.css" />
+    <Content Include="Fruits.jpg" />
     <Content Include="invalidimage.jpg" />
     <Content Include="local.html" />
     <Content Include="test.jpg" />

@@ -192,7 +192,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			try
 			{
-				await _imageView.UpdateBitmap(null, source, null, previousSource);
+				await _imageView.UpdateBitmap(source, previousSource).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{

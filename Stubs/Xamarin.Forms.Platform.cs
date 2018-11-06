@@ -51,6 +51,13 @@ namespace Xamarin.Forms.Platform
 	[RenderWith (typeof (ButtonRenderer))]
 	internal class _ButtonRenderer { }
 
+#if __ANDROID__
+	[RenderWith(typeof(ImageButtonRenderer))]
+#elif !TIZEN4_0
+	[RenderWith(typeof(ImageButtonRenderer))]
+#endif
+	internal class _ImageButtonRenderer { }
+
 	[RenderWith (typeof (TableViewRenderer))]
 	internal class _TableViewRenderer { }
 

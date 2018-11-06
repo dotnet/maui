@@ -2,11 +2,11 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using Android.Graphics;
-using Android.Widget;
+using AImageButton = Android.Widget.ImageButton;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	internal sealed class ToolbarImageButton : ImageButton, IToolbarButton
+	internal sealed class ToolbarImageButton : AImageButton, IToolbarButton
 	{
 		IMenuItemController Controller => Item;
 		public ToolbarImageButton(Context context, ToolbarItem item) : base(context)
