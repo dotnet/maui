@@ -5,7 +5,7 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using System.ComponentModel;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 44525, "Listview Row Height Does Not Adapt In iOS")]

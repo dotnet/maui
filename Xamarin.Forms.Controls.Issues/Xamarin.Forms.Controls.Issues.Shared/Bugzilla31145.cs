@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 31145, "Picker cause memory leak holding entire Page in memory after it popped (WP8 SL only)", PlatformAffected.WinPhone)]

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1722, "MasterDetailPage crashes when assigning a NavigationPage to Detail with no children pushed", PlatformAffected.iOS)]

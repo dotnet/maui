@@ -2,7 +2,7 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	// This test covers the issue reported in https://github.com/xamarin/Xamarin.Forms/issues/2763
 

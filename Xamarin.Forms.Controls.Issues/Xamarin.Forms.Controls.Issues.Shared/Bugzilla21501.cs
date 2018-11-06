@@ -3,7 +3,7 @@ using Xamarin.Forms.CustomAttributes;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 21501, "ListView: Button in ItemTemplate breaks SelectedItem",PlatformAffected.Android)]

@@ -7,13 +7,8 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
-	public interface ICacheService
-	{
-		void ClearImageCache ();
-	}
-
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 32691, "Clearing an image by setting Image.Source to null, while Image.IsLoading is true, doesn't work.")]
 	public class Bugzilla32691 : TestContentPage

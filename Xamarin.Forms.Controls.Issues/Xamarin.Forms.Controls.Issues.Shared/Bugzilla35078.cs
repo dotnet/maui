@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 35078,
 		"Checking IsInvokeRequired on WinRT when off the dispatcher thread causes a null reference exception",

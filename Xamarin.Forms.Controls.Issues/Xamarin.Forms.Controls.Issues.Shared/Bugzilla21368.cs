@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 21368, "Button text alignment breaks if the buttons are in a stack layout inside another layout and the button is clicked", PlatformAffected.Android)]

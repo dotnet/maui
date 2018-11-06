@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 24769, "Layout cycle when Progress Bar is in a ListView", PlatformAffected.WinPhone | PlatformAffected.WinRT)]

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 34720, "Incorrect iOS button IsEnabled when scrolling ListView with command binding ")]

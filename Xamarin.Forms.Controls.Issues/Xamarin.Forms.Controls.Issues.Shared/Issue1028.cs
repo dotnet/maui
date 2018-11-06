@@ -3,7 +3,7 @@
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView" ,PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]

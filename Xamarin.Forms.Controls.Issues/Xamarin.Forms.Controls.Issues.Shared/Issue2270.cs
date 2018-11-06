@@ -2,7 +2,7 @@
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 2270, "NSInternalCOnsistencyException when bound to ObservableCollection", PlatformAffected.iOS)]

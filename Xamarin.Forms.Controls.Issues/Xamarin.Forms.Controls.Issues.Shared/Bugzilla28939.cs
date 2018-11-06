@@ -1,6 +1,6 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Issue (IssueTracker.Bugzilla, 28939, " Entry Control loses cursor position to either beginning or end of input ",
 		PlatformAffected.WinPhone)]

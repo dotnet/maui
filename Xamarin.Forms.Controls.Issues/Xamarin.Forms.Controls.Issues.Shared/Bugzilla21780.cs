@@ -1,7 +1,7 @@
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 21780, "Windows Phone Editor control has black background with black text, background turns to white when editing", PlatformAffected.WinPhone)]

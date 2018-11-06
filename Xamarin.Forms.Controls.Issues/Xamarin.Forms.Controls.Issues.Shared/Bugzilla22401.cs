@@ -4,7 +4,7 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls.TestCasesPages
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 22401, "MasterDetailPage detail width broken when landscape", PlatformAffected.iOS, NavigationBehavior.PushAsync)]

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 32034, "MissingMethodException while pushing and popping pages",PlatformAffected.Android, NavigationBehavior.PushModalAsync)]

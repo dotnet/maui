@@ -1,7 +1,7 @@
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 36649, "LineBreakMode.NoWrap is handled incorrectly on Windows Phone 8.1 RT",

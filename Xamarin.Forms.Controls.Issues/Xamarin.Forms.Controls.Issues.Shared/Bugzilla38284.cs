@@ -5,7 +5,7 @@ using Xamarin.Forms.Internals;
 using Xamarin.Forms.Maps;
 
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 38284, "when creating a map in iOS, if the map is not visible when the page is created the zoom level is offn")]

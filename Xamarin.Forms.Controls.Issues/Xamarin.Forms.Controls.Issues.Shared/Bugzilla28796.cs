@@ -4,7 +4,7 @@ using System.Text;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Bugzilla, 28796, "Crash on Tab change", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]

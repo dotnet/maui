@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 1723, "Picker's Items.Clear cause exception", PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]

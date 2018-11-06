@@ -115,7 +115,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 }
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	public class ButtonExtensions

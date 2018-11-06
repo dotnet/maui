@@ -5,7 +5,7 @@ using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
-namespace Xamarin.Forms.Controls
+namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.None, 0, "Activity Indicator Does Not Show when set to default color")]
