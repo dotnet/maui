@@ -12,7 +12,6 @@ using static System.String;
 using Android.Support.V4.View;
 using AColor = Android.Graphics.Color;
 using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using Android.Support.V4.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
 {
