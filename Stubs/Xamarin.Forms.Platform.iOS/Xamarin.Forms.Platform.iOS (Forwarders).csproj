@@ -11,6 +11,7 @@
     <RootNamespace>Xamarin.Forms.Platform</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Xamarin.Forms.Platform</AssemblyName>
+    <PackageId>Xamarin.Forms.Platform.iOSForwarders</PackageId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
