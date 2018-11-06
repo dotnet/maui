@@ -182,6 +182,11 @@ namespace Xamarin.Forms.Platform.MacOS
 
 	class TrackingClickNSView : NSView
 	{
+		internal TrackingClickNSView()
+		{
+			AutoresizingMask = NSViewResizingMask.WidthSizable | NSViewResizingMask.HeightSizable;
+		}
+
 		public override void RightMouseDown(NSEvent theEvent)
 		{
 			HandleContextActions(theEvent);
