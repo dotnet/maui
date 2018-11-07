@@ -145,6 +145,12 @@ namespace Samples.ViewModel
                     "Retrieve orientation of the device in 3D space.",
                     new[] { "orientation", "sensors", "hardware", "device" }),
                 new SampleItem(
+                    "📷",
+                    "Media Picker",
+                    typeof(MediaPickerPage),
+                    "Pick or capture a photo or video.",
+                    new[] { "media", "picker", "video", "picture", "photo", "image", "movie" }),
+                new SampleItem(
                     "📞",
                     "Phone Dialer",
                     typeof(PhoneDialerPage),

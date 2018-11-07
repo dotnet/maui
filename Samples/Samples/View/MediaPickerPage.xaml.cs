@@ -2,9 +2,9 @@
 
 namespace Samples.View
 {
-    public partial class MapsPage : BasePage
+    public partial class MediaPickerPage : BasePage
     {
-        public MapsPage()
+        public MediaPickerPage()
         {
             InitializeComponent();
         }

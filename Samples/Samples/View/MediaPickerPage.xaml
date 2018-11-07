@@ -1,0 +1,18 @@
+﻿<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:views="clr-namespace:Samples.View"
+                xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                x:Class="Samples.View.MediaPickerPage"
+                Title="Media Picker">
+    <views:BasePage.BindingContext>
+        <viewmodels:MediaPickerViewModel />
+    </views:BasePage.BindingContext>
+
+    <ScrollView>
+        <StackLayout Padding="10">
+            <Button Text="Pick photo" Command="{Binding PickPhotoCommand}" />
+            <Image VerticalOptions="FillAndExpand" Source="{Binding MediaPath}" />
+        </StackLayout>
+    </ScrollView>
+
+</views:BasePage>

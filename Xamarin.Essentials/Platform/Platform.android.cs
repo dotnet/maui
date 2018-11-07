@@ -19,6 +19,8 @@ namespace Xamarin.Essentials
         internal static Context AppContext =>
             Application.Context;
 
+        internal static event Action<int, Result, Intent> ActivityResult;
+
         internal static Activity GetCurrentActivity(bool throwOnNull)
         {
             var activity = lifecycleListener?.Activity;
@@ -42,6 +44,9 @@ namespace Xamarin.Essentials
 
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
             Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        public static void OnActivityResult(int requestCode, Result resultCode, Intent data) =>
+            ActivityResult?.Invoke(requestCode, resultCode, data);
 
         internal static bool HasSystemFeature(string systemFeature)
         {
@@ -123,8 +128,8 @@ namespace Xamarin.Essentials
 
         internal Activity Activity
         {
-           get => currentActivity.TryGetTarget(out var a) ? a : null;
-           set => currentActivity.SetTarget(value);
+            get => currentActivity.TryGetTarget(out var a) ? a : null;
+            set => currentActivity.SetTarget(value);
         }
 
         void Application.IActivityLifecycleCallbacks.OnActivityCreated(Activity activity, Bundle savedInstanceState) =>
