@@ -13,6 +13,8 @@ namespace Samples.ViewModel
         public MediaPickerViewModel()
         {
             PickPhotoCommand = new Command(DoPickPhoto);
+
+            MediaPicker.MediaPicked += OnMediaPicked;
         }
 
         public ICommand PickPhotoCommand { get; }
@@ -23,30 +25,30 @@ namespace Samples.ViewModel
             set => SetProperty(ref mediaPath, value);
         }
 
-        public override void OnAppearing()
-        {
-            MediaPicker.MediaPicked += OnMediaPicked;
-        }
-
-        public override void OnDisappearing()
-        {
-            MediaPicker.MediaPicked -= OnMediaPicked;
-        }
-
         async void DoPickPhoto()
         {
-            await MediaPicker.ShowPhotoPickerAsync();
+            try
+            {
+                var photo = await MediaPicker.ShowPhotoPickerAsync();
+                MediaPath = photo.Path;
+
+                Console.WriteLine("ShowPhotoPickerAsync COMPLETED: " + photo.Path);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ShowPhotoPickerAsync THREW: " + ex.Message);
+            }
         }
 
         void OnMediaPicked(object sender, MediaPickedEventArgs e)
         {
             if (e.IsCanceled)
             {
-                DisplayAlertAsync("Media picker CANCELED!");
+                Console.WriteLine("Media picker CANCELED!");
             }
             else
             {
-                MediaPath = e.Path;
+                Console.WriteLine("Media picker PICKED: " + e.Path);
             }
         }
     }

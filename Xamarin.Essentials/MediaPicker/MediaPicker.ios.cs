@@ -5,9 +5,9 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        static Task PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static Task<MediaPickedEventArgs> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
-            return Task.CompletedTask;
+            return Task.FromResult<MediaPickedEventArgs>(null);
         }
     }
 }

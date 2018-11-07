@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Provider;
@@ -40,6 +38,33 @@ namespace Xamarin.Essentials
                 return;
             }
 
+            // an OK, so process
+            var args = ProcessPickerIntent(requestCode, data);
+
+            // raise the global event
+            OnMediaPicked(args);
+        }
+
+        static async Task<MediaPickedEventArgs> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        {
+            // make sure we have permission and an activity
+            await Permissions.RequireAsync(PermissionType.ExternalStorage);
+
+            var intent = new Intent(Intent.ActionPick);
+            intent.SetType("image/*");
+
+            // launch the picker intent via the intermediate activity
+            var data = await IntermediateActivity.StartAsync(intent, (int)RequestCode.PickPhoto);
+
+            // process the task response
+            var args = ProcessPickerIntent((int)RequestCode.PickPhoto, data);
+
+            return args;
+        }
+
+        static MediaPickedEventArgs ProcessPickerIntent(int requestCode, Intent data)
+        {
+            // this is a result of a pick
             if (requestCode == (int)RequestCode.PickPhoto || requestCode == (int)RequestCode.PickVideo)
             {
                 string imagePath = null;
@@ -62,27 +87,16 @@ namespace Xamarin.Essentials
                     }
                 }
 
-                OnMediaPicked(new MediaPickedEventArgs(imagePath));
+                return new MediaPickedEventArgs(imagePath);
             }
-            else if (requestCode == (int)RequestCode.TakePhoto || requestCode == (int)RequestCode.TakeVideo)
+
+            // this is a result of a camera operation
+            if (requestCode == (int)RequestCode.TakePhoto || requestCode == (int)RequestCode.TakeVideo)
             {
             }
-            else
-            {
-                // TODO: should we do something here?
-            }
-        }
 
-        static async Task PlatformShowPhotoPickerAsync(MediaPickerOptions options)
-        {
-            await Permissions.RequireAsync(PermissionType.ExternalStorage);
-
-            var activity = Platform.GetCurrentActivity(true);
-
-            var intent = new Intent(Intent.ActionPick);
-            intent.SetType("image/*");
-
-            activity.StartActivityForResult(intent, (int)RequestCode.PickPhoto);
+            // something went wrong
+            return new MediaPickedEventArgs(null);
         }
     }
 }
