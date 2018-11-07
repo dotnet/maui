@@ -23,6 +23,7 @@
         Unknown,
         Battery,
         Camera,
+        ExternalStorage,
         Flashlight,
         LocationWhenInUse,
         NetworkState,

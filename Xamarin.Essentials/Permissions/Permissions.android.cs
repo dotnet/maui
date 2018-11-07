@@ -147,6 +147,9 @@ namespace Xamarin.Essentials
                 case PermissionType.Camera:
                     permissions.Add((Manifest.Permission.Camera, true));
                     break;
+                case PermissionType.ExternalStorage:
+                    permissions.Add((Manifest.Permission.ReadExternalStorage, true));
+                    break;
                 case PermissionType.Flashlight:
                     permissions.Add((Manifest.Permission.Camera, true));
                     permissions.Add((Manifest.Permission.Flashlight, false));

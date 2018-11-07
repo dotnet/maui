@@ -73,9 +73,9 @@ namespace Xamarin.Essentials
             }
         }
 
-        static Task PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static async Task PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
-            // TODO: request read external storage permission
+            await Permissions.RequireAsync(PermissionType.ExternalStorage);
 
             var activity = Platform.GetCurrentActivity(true);
 
@@ -83,8 +83,6 @@ namespace Xamarin.Essentials
             intent.SetType("image/*");
 
             activity.StartActivityForResult(intent, (int)RequestCode.PickPhoto);
-
-            return Task.CompletedTask;
         }
     }
 }
