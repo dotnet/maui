@@ -21,21 +21,6 @@ namespace Samples.Droid
             LoadApplication(new App());
         }
 
-        protected override void OnResume()
-        {
-            base.OnResume();
-        }
-
-        protected override void OnPause()
-        {
-            base.OnPause();
-        }
-
-        protected override void OnPostResume()
-        {
-            base.OnPostResume();
-        }
-
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
