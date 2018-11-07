@@ -44,7 +44,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void AvoidAmbiguousMatch(bool useCompiledXaml)
 			{
-				var layout = new Gh4215();
+				var layout = new Gh4215(useCompiledXaml);
 				Assert.DoesNotThrow(() => layout.BindingContext = new Gh4215VM());
 				Assert.That(layout.l0.Text, Is.EqualTo("foo"));
 			}
