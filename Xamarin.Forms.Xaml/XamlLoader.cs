@@ -157,6 +157,11 @@ namespace Xamarin.Forms.Xaml
 			var assembly = type.GetTypeInfo().Assembly;
 			var resourceId = XamlResourceIdAttribute.GetResourceIdForType(type);
 
+			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), XamlResourceIdAttribute.GetPathForType(type));
+			if (alternateXaml != null) {
+				return alternateXaml;
+			}
+
 			if (resourceId == null)
 				return LegacyGetXamlForType(type);
 
@@ -168,8 +173,7 @@ namespace Xamarin.Forms.Xaml
 					xaml = null;
 			}
 
-			var alternateXaml = ResourceLoader.ResourceProvider?.Invoke(assembly.GetName(), XamlResourceIdAttribute.GetPathForType(type));
-			return alternateXaml ?? xaml;
+			return xaml;
 		}
 
 		//if the assembly was generated using a version of XamlG that doesn't outputs XamlResourceIdAttributes, we still need to find the resource, and load it
