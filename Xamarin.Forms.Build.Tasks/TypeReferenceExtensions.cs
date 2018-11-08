@@ -68,6 +68,15 @@ namespace Xamarin.Forms.Build.Tasks
 			var properties = typeDef.Properties.Where(predicate);
 			if (properties.Any())
 				return properties.Single();
+			if (typeDef.IsInterface) {
+				foreach (var face in typeDef.Interfaces) {
+					var p = face.InterfaceType.GetProperty(predicate, out var interfaceDeclaringTypeRef);
+					if (p != null) {
+						declaringTypeRef = interfaceDeclaringTypeRef;
+						return p;
+					}
+				}
+			}
 			if (typeDef.BaseType == null || typeDef.BaseType.FullName == "System.Object")
 				return null;
 			return typeDef.BaseType.ResolveGenericParameters(typeRef).GetProperty(predicate, out declaringTypeRef);
