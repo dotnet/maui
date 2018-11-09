@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
@@ -36,16 +36,6 @@
     <Compile Include="..\Xamarin.Forms.Core.UnitTests\BaseTestFixture.cs">
       <Link>BaseTestFixture.cs</Link>
     </Compile>
-    <Compile Include="Issues\Gh4227.xaml.cs">
-      <DependentUpon>Gh4227.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh4326.xaml.cs">
-      <DependentUpon>Gh4326.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Issues\Gh4348.xaml.cs">
-      <DependentUpon>Gh4348.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DesignTimeLoaderTests.cs" />
   </ItemGroup>
   
 	<PropertyGroup>
