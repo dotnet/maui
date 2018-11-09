@@ -50,6 +50,7 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue1469Test()
 		{
+			RunningApp.WaitForElement("Select 3rd item");
 			RunningApp.Tap("Select 3rd item");
 			RunningApp.WaitForElement("Success");
 		}
