@@ -261,8 +261,7 @@ namespace Xamarin.Forms.Xaml.Internals
 			return getTypeFromXmlName(new XmlType(namespaceuri, name, null), xmlLineInfo, currentAssembly, out exception);
 		}
 
-		internal delegate Type GetTypeFromXmlName(
-			XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);
+		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);
 	}
 
 	class XamlRootObjectProvider : IRootObjectProvider

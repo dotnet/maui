@@ -70,10 +70,8 @@ namespace Xamarin.Forms.Xaml
 		public static void Load(object view, string xaml)
 		{
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader))
-			{
-				while (reader.Read())
-				{
+			using (var reader = XmlReader.Create(textReader)) {
+				while (reader.Read()) {
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
@@ -84,12 +82,12 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
-					XamlParser.ParseXaml (rootnode, reader);
-					Visit (rootnode, new HydrationContext {
+					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader);
+					XamlParser.ParseXaml(rootnode, reader);
+					Visit(rootnode, new HydrationContext {
 						RootElement = view,
 #pragma warning disable 0618
-						ExceptionHandler = ResourceLoader.ExceptionHandler ?? (Internals.XamlLoader.DoNotThrowOnExceptions ? e => { }: (Action<Exception>)null)
+						ExceptionHandler = ResourceLoader.ExceptionHandler ?? (Internals.XamlLoader.DoNotThrowOnExceptions ? e => { } : (Action<Exception>)null)
 #pragma warning restore 0618
 					});
 					break;
@@ -97,13 +95,14 @@ namespace Xamarin.Forms.Xaml
 			}
 		}
 
-		[Obsolete ("Use the XamlFileProvider to provide xaml files. We will remove this when Cycle 8 hits Stable.")]
-		public static object Create (string xaml, bool doNotThrow = false)
+		public static object Create(string xaml, bool doNotThrow = false)
 		{
+			doNotThrow = doNotThrow || ResourceLoader.ExceptionHandler != null;
+			var exceptionHandler = doNotThrow ? (ResourceLoader.ExceptionHandler ?? (e => { })) : null;
 			object inflatedView = null;
 			using (var textreader = new StringReader(xaml))
-			using (var reader = XmlReader.Create (textreader)) {
-				while (reader.Read ()) {
+			using (var reader = XmlReader.Create(textreader)) {
+				while (reader.Read()) {
 					//Skip until element
 					if (reader.NodeType == XmlNodeType.Whitespace)
 						continue;
@@ -114,33 +113,33 @@ namespace Xamarin.Forms.Xaml
 						continue;
 					}
 
-					var rootnode = new RuntimeRootNode (new XmlType (reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
-					XamlParser.ParseXaml (rootnode, reader);
+					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), null, (IXmlNamespaceResolver)reader);
+					XamlParser.ParseXaml(rootnode, reader);
 					var visitorContext = new HydrationContext {
-						ExceptionHandler = doNotThrow ? e => { } : (Action<Exception>)null,
+						ExceptionHandler = exceptionHandler,
 					};
-					var cvv = new CreateValuesVisitor (visitorContext);
-					cvv.Visit ((ElementNode)rootnode, null);
-					inflatedView = rootnode.Root = visitorContext.Values [rootnode];
+					var cvv = new CreateValuesVisitor(visitorContext);
+					cvv.Visit((ElementNode)rootnode, null);
+					inflatedView = rootnode.Root = visitorContext.Values[rootnode];
 					visitorContext.RootElement = inflatedView as BindableObject;
 
-					Visit (rootnode, visitorContext);
+					Visit(rootnode, visitorContext);
 					break;
 				}
 			}
 			return inflatedView;
 		}
 
-		static void Visit (RootNode rootnode, HydrationContext visitorContext)
+		static void Visit(RootNode rootnode, HydrationContext visitorContext)
 		{
-			rootnode.Accept (new XamlNodeVisitor ((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
-			rootnode.Accept (new ExpandMarkupsVisitor (visitorContext), null);
-			rootnode.Accept (new PruneIgnoredNodesVisitor(), null);
-			rootnode.Accept (new NamescopingVisitor (visitorContext), null); //set namescopes for {x:Reference}
-			rootnode.Accept (new CreateValuesVisitor (visitorContext), null);
-			rootnode.Accept (new RegisterXNamesVisitor (visitorContext), null);
-			rootnode.Accept (new FillResourceDictionariesVisitor (visitorContext), null);
-			rootnode.Accept (new ApplyPropertiesVisitor (visitorContext, true), null);
+			rootnode.Accept(new XamlNodeVisitor((node, parent) => node.Parent = parent), null); //set parents for {StaticResource}
+			rootnode.Accept(new ExpandMarkupsVisitor(visitorContext), null);
+			rootnode.Accept(new PruneIgnoredNodesVisitor(), null);
+			rootnode.Accept(new NamescopingVisitor(visitorContext), null); //set namescopes for {x:Reference}
+			rootnode.Accept(new CreateValuesVisitor(visitorContext), null);
+			rootnode.Accept(new RegisterXNamesVisitor(visitorContext), null);
+			rootnode.Accept(new FillResourceDictionariesVisitor(visitorContext), null);
+			rootnode.Accept(new ApplyPropertiesVisitor(visitorContext, true), null);
 		}
 
 		static string GetXamlForType(Type type)
@@ -173,7 +172,7 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		//if the assembly was generated using a version of XamlG that doesn't outputs XamlResourceIdAttributes, we still need to find the resource, and load it
-		static readonly Dictionary<Type, string> XamlResources = new Dictionary<Type, string>();		
+		static readonly Dictionary<Type, string> XamlResources = new Dictionary<Type, string>();
 		static string LegacyGetXamlForType(Type type)
 		{
 			var assembly = type.GetTypeInfo().Assembly;
@@ -277,12 +276,30 @@ namespace Xamarin.Forms.Xaml
 
 		public class RuntimeRootNode : RootNode
 		{
-			public RuntimeRootNode(XmlType xmlType, object root, IXmlNamespaceResolver resolver) : base (xmlType, resolver)
+			public RuntimeRootNode(XmlType xmlType, object root, IXmlNamespaceResolver resolver) : base(xmlType, resolver)
 			{
 				Root = root;
 			}
 
 			public object Root { get; internal set; }
 		}
+
+		public struct FallbackTypeInfo
+		{
+			public string ClrNamespace { get; internal set; }
+			public string TypeName { get; internal set; }
+			public string AssemblyName { get; internal set; }
+			public string XmlNamespace { get; internal set; }
+		}
+
+		public struct CallbackTypeInfo
+		{
+			public string XmlNamespace { get; internal set; }
+			public string XmlTypeName { get; internal set; }
+
+		}
+
+		internal static Func<IList<FallbackTypeInfo>, Type, Type> FallbackTypeResolver { get; set; }
+		internal static Action<CallbackTypeInfo, object> ValueCreatedCallback  { get; set; }
 	}
 }

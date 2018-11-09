@@ -15,11 +15,15 @@ namespace Xamarin.Forms
 
 		string IStyleSelectable.Id => StyleId;
 
+		internal string _cssFallbackTypeName;
+
 		string[] _styleSelectableNameAndBaseNames;
 		string[] IStyleSelectable.NameAndBases {
 			get {
 				if (_styleSelectableNameAndBaseNames == null) {
 					var list = new List<string>();
+					if (_cssFallbackTypeName != null)
+						list.Add(_cssFallbackTypeName);
 					var t = GetType();
 					while (t != typeof(BindableObject)) {
 						list.Add(t.Name);
