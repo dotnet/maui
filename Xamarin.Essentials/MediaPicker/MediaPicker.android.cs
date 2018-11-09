@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.Provider;
@@ -45,7 +47,7 @@ namespace Xamarin.Essentials
             OnMediaPicked(args);
         }
 
-        static async Task<MediaPickedEventArgs> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
+        static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
             // make sure we have permission and an activity
             await Permissions.RequireAsync(PermissionType.ExternalStorage);
@@ -53,13 +55,19 @@ namespace Xamarin.Essentials
             var intent = new Intent(Intent.ActionPick);
             intent.SetType("image/*");
 
-            // launch the picker intent via the intermediate activity
-            var data = await IntermediateActivity.StartAsync(intent, (int)RequestCode.PickPhoto);
+            try
+            {
+                // launch the picker intent via the intermediate activity
+                var data = await IntermediateActivity.StartAsync(intent, (int)RequestCode.PickPhoto);
 
-            // process the task response
-            var args = ProcessPickerIntent((int)RequestCode.PickPhoto, data);
-
-            return args;
+                // process the task response
+                var result = ProcessPickerIntent((int)RequestCode.PickPhoto, data);
+                return result.File;
+            }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
         }
 
         static MediaPickedEventArgs ProcessPickerIntent(int requestCode, Intent data)
@@ -87,7 +95,7 @@ namespace Xamarin.Essentials
                     }
                 }
 
-                return new MediaPickedEventArgs(imagePath);
+                return new MediaPickedEventArgs(new MediaFile(imagePath));
             }
 
             // this is a result of a camera operation
@@ -98,5 +106,16 @@ namespace Xamarin.Essentials
             // something went wrong
             return new MediaPickedEventArgs(null);
         }
+    }
+
+    public partial class MediaFile
+    {
+        public MediaFile(string file)
+        {
+            FilePath = file;
+        }
+
+        Task<Stream> PlatformOpenReadAsync() =>
+            Task.FromResult((Stream)File.OpenRead(FilePath));
     }
 }

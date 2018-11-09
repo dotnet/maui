@@ -6,10 +6,10 @@ namespace Xamarin.Essentials
 {
     public static partial class MediaPicker
     {
-        public static Task<MediaPickedEventArgs> ShowPhotoPickerAsync() =>
+        public static Task<MediaFile> ShowPhotoPickerAsync() =>
             PlatformShowPhotoPickerAsync(null);
 
-        public static Task<MediaPickedEventArgs> ShowPhotoPickerAsync(MediaPickerOptions options) =>
+        public static Task<MediaFile> ShowPhotoPickerAsync(MediaPickerOptions options) =>
             PlatformShowPhotoPickerAsync(options);
 
         public static event EventHandler<MediaPickedEventArgs> MediaPicked;
@@ -29,13 +29,23 @@ namespace Xamarin.Essentials
             IsCanceled = canceled;
         }
 
-        public MediaPickedEventArgs(string path)
+        public MediaPickedEventArgs(MediaFile file)
         {
-            Path = path;
+            File = file;
         }
 
         public bool IsCanceled { get; }
 
-        public string Path { get; }
+        public MediaFile File { get; }
+    }
+
+    public partial class MediaFile
+    {
+        public string FilePath { get; }
+
+        public string FileName => Path.GetFileName(FilePath);
+
+        public Task<Stream> OpenReadAsync() =>
+            PlatformOpenReadAsync();
     }
 }
