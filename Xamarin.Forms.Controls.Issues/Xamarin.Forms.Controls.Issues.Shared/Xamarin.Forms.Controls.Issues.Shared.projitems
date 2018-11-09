@@ -835,6 +835,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1480.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2223.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4001.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4303.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\GridExtension.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ViewModelBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\DisposedSharedPages.cs" />
