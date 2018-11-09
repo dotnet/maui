@@ -52,7 +52,7 @@ namespace Xamarin.Essentials
             controller.Finished += (sender, e) =>
             {
                 controller.DismissViewController(true, null);
-                tcs.SetResult(e.Result == MFMailComposeResult.Sent);
+                tcs.TrySetResult(e.Result == MFMailComposeResult.Sent);
             };
             parentController.PresentViewController(controller, true, null);
 

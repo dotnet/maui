@@ -14,8 +14,6 @@ namespace Samples.ViewModel
         public MediaPickerViewModel()
         {
             PickPhotoCommand = new Command(DoPickPhoto);
-
-            MediaPicker.MediaPicked += OnMediaPicked;
         }
 
         public ICommand PickPhotoCommand { get; }
@@ -54,18 +52,6 @@ namespace Samples.ViewModel
             catch (Exception ex)
             {
                 Console.WriteLine("ShowPhotoPickerAsync THREW: " + ex.Message);
-            }
-        }
-
-        void OnMediaPicked(object sender, MediaPickedEventArgs e)
-        {
-            if (e.IsCanceled)
-            {
-                Console.WriteLine("Media picker CANCELED!");
-            }
-            else
-            {
-                Console.WriteLine("Media picker PICKED: " + e.File.FilePath);
             }
         }
     }

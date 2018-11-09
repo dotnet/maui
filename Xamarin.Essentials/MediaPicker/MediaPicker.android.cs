@@ -22,31 +22,6 @@ namespace Xamarin.Essentials
             Max = TakeVideo,
         }
 
-        static MediaPicker()
-        {
-            Platform.ActivityResult += OnActivityResult;
-        }
-
-        static void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            // this wasn't us
-            if (requestCode < (int)RequestCode.Min || requestCode > (int)RequestCode.Max)
-                return;
-
-            // the user canceled
-            if (resultCode == Result.Canceled)
-            {
-                OnMediaPicked(new MediaPickedEventArgs(true));
-                return;
-            }
-
-            // an OK, so process
-            var args = ProcessPickerIntent(requestCode, data);
-
-            // raise the global event
-            OnMediaPicked(args);
-        }
-
         static async Task<MediaFile> PlatformShowPhotoPickerAsync(MediaPickerOptions options)
         {
             // make sure we have permission and an activity
@@ -61,8 +36,7 @@ namespace Xamarin.Essentials
                 var data = await IntermediateActivity.StartAsync(intent, (int)RequestCode.PickPhoto);
 
                 // process the task response
-                var result = ProcessPickerIntent((int)RequestCode.PickPhoto, data);
-                return result.File;
+                return ProcessPickerIntent((int)RequestCode.PickPhoto, data);
             }
             catch (OperationCanceledException)
             {
@@ -70,7 +44,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static MediaPickedEventArgs ProcessPickerIntent(int requestCode, Intent data)
+        static MediaFile ProcessPickerIntent(int requestCode, Intent data)
         {
             // this is a result of a pick
             if (requestCode == (int)RequestCode.PickPhoto || requestCode == (int)RequestCode.PickVideo)
@@ -95,7 +69,7 @@ namespace Xamarin.Essentials
                     }
                 }
 
-                return new MediaPickedEventArgs(new MediaFile(imagePath));
+                return new MediaFile(imagePath);
             }
 
             // this is a result of a camera operation
@@ -104,7 +78,7 @@ namespace Xamarin.Essentials
             }
 
             // something went wrong
-            return new MediaPickedEventArgs(null);
+            return null;
         }
     }
 

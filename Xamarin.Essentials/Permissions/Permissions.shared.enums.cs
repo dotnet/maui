@@ -23,6 +23,7 @@
         Unknown,
         Battery,
         Camera,
+        Photos,
         ExternalStorage,
         Flashlight,
         LocationWhenInUse,

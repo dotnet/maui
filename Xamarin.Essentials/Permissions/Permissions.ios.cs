@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using CoreLocation;
 using Foundation;
+using Photos;
 
 namespace Xamarin.Essentials
 {
@@ -10,10 +11,17 @@ namespace Xamarin.Essentials
         {
             var info = NSBundle.MainBundle.InfoDictionary;
 
-            if (permission == PermissionType.LocationWhenInUse)
+            switch (permission)
             {
-                if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
-                    throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable Authorization Requests for Location updates.");
+                case PermissionType.LocationWhenInUse:
+                    if (!info.ContainsKey(new NSString("NSLocationWhenInUseUsageDescription")))
+                        throw new PermissionException("You must set `NSLocationWhenInUseUsageDescription` in your Info.plist file to enable authorization requests for location updates.");
+                    break;
+
+                case PermissionType.Photos:
+                    if (!info.ContainsKey(new NSString("NSPhotoLibraryUsageDescription")))
+                        throw new PermissionException("You must set `NSPhotoLibraryUsageDescription` in your Info.plist file to enable authorization requests for access to the photo library.");
+                    break;
             }
         }
 
@@ -25,6 +33,8 @@ namespace Xamarin.Essentials
             {
                 case PermissionType.LocationWhenInUse:
                     return Task.FromResult(GetLocationStatus());
+                case PermissionType.Photos:
+                    return Task.FromResult(GetPhotosStatus());
             }
 
             return Task.FromResult(PermissionStatus.Granted);
@@ -43,6 +53,8 @@ namespace Xamarin.Essentials
             {
                 case PermissionType.LocationWhenInUse:
                     return await RequestLocationAsync();
+                case PermissionType.Photos:
+                    return await RequestPhotosAsync();
                 default:
                     return PermissionStatus.Granted;
             }
@@ -67,6 +79,28 @@ namespace Xamarin.Essentials
                 default:
                     return PermissionStatus.Unknown;
             }
+        }
+
+        static PermissionStatus GetPhotosStatus()
+        {
+            var status = PHPhotoLibrary.AuthorizationStatus;
+            switch (status)
+            {
+                case PHAuthorizationStatus.Authorized:
+                    return PermissionStatus.Granted;
+                case PHAuthorizationStatus.Denied:
+                    return PermissionStatus.Denied;
+                case PHAuthorizationStatus.Restricted:
+                    return PermissionStatus.Restricted;
+                default:
+                    return PermissionStatus.Unknown;
+            }
+        }
+
+        static async Task<PermissionStatus> RequestPhotosAsync()
+        {
+            await PHPhotoLibrary.RequestAuthorizationAsync();
+            return GetPhotosStatus();
         }
 
         static CLLocationManager locationManager;

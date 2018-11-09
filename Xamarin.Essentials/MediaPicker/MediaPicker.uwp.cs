@@ -26,15 +26,10 @@ namespace Xamarin.Essentials
 
             // cancelled
             if (result == null)
-            {
-                OnMediaPicked(new MediaPickedEventArgs(true));
                 return null;
-            }
 
             // picked
-            var mediaFile = new MediaFile(result);
-            OnMediaPicked(new MediaPickedEventArgs(mediaFile));
-            return mediaFile;
+            return new MediaFile(result);
         }
     }
 
