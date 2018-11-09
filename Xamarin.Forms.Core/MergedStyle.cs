@@ -105,6 +105,7 @@ namespace Xamarin.Forms
 		void OnImplicitStyleChanged()
 		{
 			var first = true;
+			ImplicitStyle = null;
 			foreach (BindableProperty implicitStyleProperty in _implicitStyles)
 			{
 				var implicitStyle = (Style)Target.GetValue(implicitStyleProperty);
@@ -132,6 +133,24 @@ namespace Xamarin.Forms
 				if (s_stopAtTypes.Contains(type))
 					return;
 			}
+		}
+
+		internal void ReRegisterImplicitStyles(string fallbackTypeName)
+		{
+			//Clear old implicit Styles
+			for (var i = 0; i < _implicitStyles.Count; i++)
+				Target.RemoveDynamicResource(_implicitStyles[i]);
+			_implicitStyles.Clear();
+
+			//Register the fallback
+			BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(VisualElement), default(Style),
+						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
+			_implicitStyles.Add(implicitStyleProperty);
+			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);
+
+			//and proceed as usual
+			RegisterImplicitStyles();
+			Apply(Target);
 		}
 
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)

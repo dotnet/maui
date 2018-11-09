@@ -25,10 +25,7 @@ namespace Xamarin.Forms
 
 		public Style([TypeConverter(typeof(TypeTypeConverter))] [Parameter("TargetType")] Type targetType)
 		{
-			if (targetType == null)
-				throw new ArgumentNullException("targetType");
-
-			TargetType = targetType;
+			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
 

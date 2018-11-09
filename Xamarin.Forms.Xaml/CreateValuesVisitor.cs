@@ -50,7 +50,6 @@ namespace Xamarin.Forms.Xaml
 				throw xpe;
 
 			Context.Types[node] = type;
-			string ctorargname;
 			if (IsXaml2009LanguagePrimitive(node))
 				value = CreateLanguagePrimitive(type, node);
 			else if (node.Properties.ContainsKey(XmlName.xArguments) || node.Properties.ContainsKey(XmlName.xFactoryMethod))
@@ -60,25 +59,21 @@ namespace Xamarin.Forms.Xaml
 					.DeclaredConstructors.Any(
 						ci =>
 							ci.IsPublic && ci.GetParameters().Length != 0 &&
-							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof (ParameterAttribute)))) &&
-				ValidateCtorArguments(type, node, out ctorargname))
+							ci.GetParameters().All(pi => pi.CustomAttributes.Any(attr => attr.AttributeType == typeof(ParameterAttribute)))) &&
+				ValidateCtorArguments(type, node, out string ctorargname))
 				value = CreateFromParameterizedConstructor(type, node);
 			else if (!type.GetTypeInfo().DeclaredConstructors.Any(ci => ci.IsPublic && ci.GetParameters().Length == 0) &&
-			         !ValidateCtorArguments(type, node, out ctorargname))
-			{
+					 !ValidateCtorArguments(type, node, out ctorargname)) {
 				throw new XamlParseException($"The Property {ctorargname} is required to create a {type.FullName} object.", node);
 			}
-			else
-			{
+			else {
 				//this is a trick as the DataTemplate parameterless ctor is internal, and we can't CreateInstance(..., false) on WP7
-				try
-				{
-					if (type == typeof (DataTemplate))
+				try {
+					if (type == typeof(DataTemplate))
 						value = new DataTemplate();
-					if (type == typeof (ControlTemplate))
+					if (type == typeof(ControlTemplate))
 						value = new ControlTemplate();
-					if (value == null && node.CollectionItems.Any() && node.CollectionItems.First() is ValueNode)
-					{
+					if (value == null && node.CollectionItems.Any() && node.CollectionItems.First() is ValueNode) {
 						var serviceProvider = new XamlServiceProvider(node, Context);
 						var converted = ((ValueNode)node.CollectionItems.First()).Value.ConvertTo(type, () => type.GetTypeInfo(),
 							serviceProvider);
@@ -88,8 +83,7 @@ namespace Xamarin.Forms.Xaml
 					if (value == null)
 						value = Activator.CreateInstance(type);
 				}
-				catch (TargetInvocationException e)
-				{
+				catch (TargetInvocationException e) {
 					if (e.InnerException is XamlParseException || e.InnerException is XmlException)
 						throw e.InnerException;
 					throw;
@@ -98,9 +92,7 @@ namespace Xamarin.Forms.Xaml
 
 			Values[node] = value;
 
-			var markup = value as IMarkupExtension;
-			if (markup != null && (value is TypeExtension || value is StaticExtension || value is ArrayExtension))
-			{
+			if (value is IMarkupExtension markup && (value is TypeExtension || value is StaticExtension || value is ArrayExtension)) {
 				var serviceProvider = new XamlServiceProvider(node, Context);
 
 				var visitor = new ApplyPropertiesVisitor(Context);
@@ -111,8 +103,7 @@ namespace Xamarin.Forms.Xaml
 
 				value = markup.ProvideValue(serviceProvider);
 
-				INode xKey;
-				if (!node.Properties.TryGetValue(XmlName.xKey, out xKey))
+				if (!node.Properties.TryGetValue(XmlName.xKey, out INode xKey))
 					xKey = null;
 
 				node.Properties.Clear();
@@ -124,9 +115,15 @@ namespace Xamarin.Forms.Xaml
 				Values[node] = value;
 			}
 
-			var bindableValue = value as BindableObject;
-			if (bindableValue != null && node.Namescope != (parentNode as IElementNode)?.Namescope)
+			if (value is BindableObject bindableValue && node.Namescope != (parentNode as IElementNode)?.Namescope)
 				NameScope.SetNameScope(bindableValue, node.Namescope);
+
+			if (XamlLoader.ValueCreatedCallback != null) {
+				var name = node.XmlType.Name;
+				if (name.Contains(":"))
+					name = name.Substring(name.LastIndexOf(':') + 1);
+				XamlLoader.ValueCreatedCallback(new XamlLoader.CallbackTypeInfo { XmlNamespace = node.XmlType.NamespaceUri, XmlTypeName = name }, value);
+			}
 		}
 
 		public void Visit(RootNode node, INode parentNode)

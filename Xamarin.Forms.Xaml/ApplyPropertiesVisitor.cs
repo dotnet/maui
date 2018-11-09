@@ -231,10 +231,17 @@ namespace Xamarin.Forms.Xaml
 			if (serviceProvider != null && propertyName != XmlName.Empty)
 				((XamlValueTargetProvider)serviceProvider.IProvideValueTarget).TargetProperty = GetTargetProperty(source, propertyName, Context, node);
 
-			if (markupExtension != null)
-				value = markupExtension.ProvideValue(serviceProvider);
-			else if (valueProvider != null)
-				value = valueProvider.ProvideValue(serviceProvider);
+			try {
+				if (markupExtension != null)
+					value = markupExtension.ProvideValue(serviceProvider);
+				else if (valueProvider != null)
+					value = valueProvider.ProvideValue(serviceProvider);
+			} catch (Exception e) {
+				if (Context.ExceptionHandler != null)
+					Context.ExceptionHandler(e);
+				else
+					throw e;
+			}
 		}
 
 		static string GetContentPropertyName(IEnumerable<CustomAttributeData> attributes)
