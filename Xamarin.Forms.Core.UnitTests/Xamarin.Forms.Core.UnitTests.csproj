@@ -80,6 +80,7 @@
     <Compile Include="ImageButtonUnitTest.cs" />
     <Compile Include="LayoutChildIntoBoundingRegionTests.cs" />
     <Compile Include="MenuUnitTests.cs" />
+    <Compile Include="PreviewerReflectionTests.cs" />
     <Compile Include="RegionTests.cs" />
     <Compile Include="SpanTests.cs" />
     <Compile Include="TitleViewUnitTests.cs" />
