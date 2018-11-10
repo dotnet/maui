@@ -29,7 +29,7 @@ namespace Xamarin.Forms.Platform.iOS
 		static void OnControlChanged(object sender, EventArgs e)
 		{
 			var renderer = sender as IImageVisualElementRenderer;
-			var imageElement = renderer.Element as IImageController;
+			var imageElement = renderer.Element as IImageElement;
 			SetAspect(renderer, imageElement);
 			SetOpacity(renderer, imageElement);
 		}
@@ -39,7 +39,7 @@ namespace Xamarin.Forms.Platform.iOS
 			if (e.NewElement != null)
 			{
 				var renderer = sender as IImageVisualElementRenderer;
-				var imageElement = renderer.Element as IImageController;
+				var imageElement = renderer.Element as IImageElement;
 
 				SetAspect(renderer, imageElement);
 				SetOpacity(renderer, imageElement);
@@ -49,17 +49,17 @@ namespace Xamarin.Forms.Platform.iOS
 		static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			var renderer = sender as IImageVisualElementRenderer;
-			var imageElement = renderer.Element as IImageController;
+			var imageElement = renderer.Element as IImageElement;
 
-			if (e.PropertyName == imageElement.IsOpaqueProperty?.PropertyName)
-				SetOpacity(renderer, renderer.Element as IImageController);
-			else if (e.PropertyName == imageElement.AspectProperty?.PropertyName)
-				SetAspect(renderer, renderer.Element as IImageController);
+			if (e.PropertyName == Image.IsOpaqueProperty.PropertyName)
+				SetOpacity(renderer, renderer.Element as IImageElement);
+			else if (e.PropertyName == Image.AspectProperty.PropertyName)
+				SetAspect(renderer, renderer.Element as IImageElement);
 		}
 
 
 
-		public static void SetAspect(IImageVisualElementRenderer renderer, IImageController imageElement)
+		public static void SetAspect(IImageVisualElementRenderer renderer, IImageElement imageElement)
 		{
 			var Element = renderer.Element;
 			var Control = renderer.GetImage();
@@ -73,7 +73,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.ContentMode = imageElement.Aspect.ToUIViewContentMode();
 		}
 
-		public static void SetOpacity(IImageVisualElementRenderer renderer, IImageController imageElement)
+		public static void SetOpacity(IImageVisualElementRenderer renderer, IImageElement imageElement)
 		{
 			var Element = renderer.Element;
 			var Control = renderer.GetImage();
@@ -86,7 +86,7 @@ namespace Xamarin.Forms.Platform.iOS
 			Control.Opaque = imageElement.IsOpaque;
 		}
 
-		public static async Task SetImage(IImageVisualElementRenderer renderer, IImageController imageElement, Image oldElement = null)
+		public static async Task SetImage(IImageVisualElementRenderer renderer, IImageElement imageElement, Image oldElement = null)
 		{
 			_ = renderer ?? throw new ArgumentNullException($"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(renderer)} cannot be null");
 			_ = imageElement ?? throw new ArgumentNullException($"{nameof(ImageElementManager)}.{nameof(SetImage)} {nameof(imageElement)} cannot be null");
@@ -98,6 +98,8 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				return;
 			}
+
+			var imageController = imageElement as IImageController;
 
 			var source = imageElement.Source;
 
@@ -114,7 +116,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			IImageSourceHandler handler;
-			imageElement.SetIsLoading(true);
+			imageController?.SetIsLoading(true);
 			try
 			{
 				if (source != null &&
@@ -147,7 +149,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			finally
 			{
-				imageElement.SetIsLoading(false);
+				imageController?.SetIsLoading(false);
 			}
 
 			(imageElement as IViewController)?.NativeSizeChanged();

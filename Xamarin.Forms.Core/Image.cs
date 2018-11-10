@@ -8,14 +8,13 @@ using Xamarin.Forms.Platform;
 namespace Xamarin.Forms
 {
 	[RenderWith(typeof(_ImageRenderer))]
-	public class Image : View, IImageController, IElementConfiguration<Image>, IViewController
+	public class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
 	{
-		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(Source), typeof(ImageSource), typeof(Image), default(ImageSource),
-			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
+		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
-		public static readonly BindableProperty AspectProperty = BindableProperty.Create(nameof(Aspect), typeof(Aspect), typeof(Image), Aspect.AspectFit);
+		public static readonly BindableProperty AspectProperty = ImageElement.AspectProperty;
 
-		public static readonly BindableProperty IsOpaqueProperty = BindableProperty.Create(nameof(IsOpaque), typeof(bool), typeof(Image), false);
+		public static readonly BindableProperty IsOpaqueProperty = ImageElement.IsOpaqueProperty;
 
 		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsLoading), typeof(bool), typeof(Image), default(bool));
 
@@ -54,7 +53,7 @@ namespace Xamarin.Forms
 
 		protected override void OnBindingContextChanged()
 		{
-			ImageElementManager.OnBindingContextChanged(this, this);
+			ImageElement.OnBindingContextChanged(this, this);
 			base.OnBindingContextChanged();
 		}
 
@@ -62,7 +61,7 @@ namespace Xamarin.Forms
 		protected override SizeRequest OnSizeRequest(double widthConstraint, double heightConstraint)
 		{
 			SizeRequest desiredSize = base.OnSizeRequest(double.PositiveInfinity, double.PositiveInfinity);
-			return ImageElementManager.Measure(this, desiredSize, widthConstraint, heightConstraint);
+			return ImageElement.Measure(this, desiredSize, widthConstraint, heightConstraint);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -76,36 +75,9 @@ namespace Xamarin.Forms
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		BindableProperty IImageController.SourceProperty => SourceProperty;
-		BindableProperty IImageController.AspectProperty => AspectProperty;
-		BindableProperty IImageController.IsOpaqueProperty => IsOpaqueProperty;
+		void IImageElement.OnImageSourcesSourceChanged(object sender, EventArgs e) =>
+			ImageElement.ImageSourcesSourceChanged(this, e);
 
-		void OnImageSourcesSourceChanged(object sender, EventArgs e) =>
-			ImageElementManager.ImageSourcesSourceChanged(this, EventArgs.Empty);
-
-		static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			ImageSource newSource = (ImageSource)newValue;
-			Image image = (Image)bindable;
-			if (newSource != null)
-			{
-				newSource.SourceChanged += image.OnImageSourcesSourceChanged;
-			}
-			ImageElementManager.ImageSourceChanged(bindable, newSource);
-		}
-
-		static void OnImageSourceChanging(BindableObject bindable, object oldValue, object newValue)
-		{
-			ImageSource oldSource = (ImageSource)oldValue;
-			Image image = (Image)bindable;
-
-			if (oldSource != null)
-			{
-				oldSource.SourceChanged -= image.OnImageSourcesSourceChanged;
-			}
-			ImageElementManager.ImageSourceChanging(oldSource);
-		}
-
-		void IImageController.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
+		void IImageElement.RaiseImageSourcePropertyChanged() => OnPropertyChanged(nameof(Source));
 	}
 }
