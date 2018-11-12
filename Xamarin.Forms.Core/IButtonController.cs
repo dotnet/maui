@@ -8,14 +8,5 @@ namespace Xamarin.Forms
 		void SendClicked();
 		void SendPressed();
 		void SendReleased();
-		object CommandParameter { get; set; }
-		ICommand Command { get; set; }
-		bool IsEnabledCore { set; }
-		void PropagateUpClicked();
-		void PropagateUpPressed();
-		void PropagateUpReleased();
-		bool IsPressed { get; }
-		void SetIsPressed(bool isPressed);
-
 	}
 }

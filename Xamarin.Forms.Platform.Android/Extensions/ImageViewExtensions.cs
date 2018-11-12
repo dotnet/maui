@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.Android
 {
 	internal static class ImageViewExtensions
 	{
-		public static Task UpdateBitmap(this AImageView imageView, IImageController newView, IImageController previousView) =>
+		public static Task UpdateBitmap(this AImageView imageView, IImageElement newView, IImageElement previousView) =>
 			imageView.UpdateBitmap(newView, previousView, null, null);
 
 		public static Task UpdateBitmap(this AImageView imageView, ImageSource newImageSource, ImageSource previousImageSourc) =>
@@ -17,12 +17,13 @@ namespace Xamarin.Forms.Platform.Android
 		// TODO hartez 2017/04/07 09:33:03 Review this again, not sure it's handling the transition from previousImage to 'null' newImage correctly
 		static async Task UpdateBitmap(
 			this AImageView imageView,
-			IImageController newView,
-			IImageController previousView,
+			IImageElement newView,
+			IImageElement previousView,
 			ImageSource newImageSource,
 			ImageSource previousImageSource)
 		{
 
+			IImageController imageController = newView as IImageController;
 			newImageSource = newView?.Source;
 			previousImageSource = previousView?.Source;
 
@@ -32,7 +33,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (Equals(previousImageSource, newImageSource))
 				return;
 
-			newView?.SetIsLoading(true);
+			imageController?.SetIsLoading(true);
 
 			(imageView as IImageRendererController)?.SkipInvalidate();
 			imageView.SetImageResource(global::Android.Resource.Color.Transparent);
@@ -59,7 +60,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 			catch (TaskCanceledException)
 			{
-				newView?.SetIsLoading(false);
+				imageController?.SetIsLoading(false);
 			}
 
 			// Check if the source on the new image has changed since the image was loaded
@@ -78,7 +79,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 
 			bitmap?.Dispose();
-			newView?.SetIsLoading(false);
+			imageController?.SetIsLoading(false);
 		}
 	}
 }

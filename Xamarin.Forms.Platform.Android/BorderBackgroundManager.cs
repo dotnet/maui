@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.Android
 		bool _drawableEnabled;
 		bool _disposed;
 		IBorderVisualElementRenderer _renderer;
+		private IBorderElement _borderElement;
+
 		VisualElement Element => _renderer?.Element;
 		AView Control => _renderer?.View;
 		readonly bool _drawOutlineWithBackground;
@@ -41,38 +43,47 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (e.OldElement != null)
 			{
-				(e.OldElement as IBorderController).PropertyChanged -= BorderElementPropertyChanged;
+				if (e.OldElement is INotifyPropertyChanged oldElement)
+					oldElement.PropertyChanged -= BorderElementPropertyChanged;
 			}
 
 			if (e.NewElement != null)
 			{
-				if (BorderElement != null)
+				if (BorderPropertyChanged != null)
 				{
-					BorderElement.PropertyChanged -= BorderElementPropertyChanged;
+					BorderPropertyChanged.PropertyChanged -= BorderElementPropertyChanged;
 				}
-				BorderElement = (IBorderController)e.NewElement;
-				BorderElement.PropertyChanged += BorderElementPropertyChanged;
+				BorderElement = (IBorderElement)e.NewElement;
+
+				if (BorderPropertyChanged != null)
+					BorderPropertyChanged.PropertyChanged += BorderElementPropertyChanged;
 			}
 
 			Reset();
 			UpdateDrawable();
 		}
 
-		public IBorderController BorderElement
+		public IBorderElement BorderElement
 		{
-			get;
-			private set;
+			get => _borderElement;
+			private set
+			{
+				_borderElement = value;
+				BorderPropertyChanged = value as INotifyPropertyChanged;
+			}
 		}
+
+		INotifyPropertyChanged BorderPropertyChanged { get; set; }
 
 		public void UpdateDrawable()
 		{
 			if (BorderElement == null || Control == null)
 				return;
 
-			bool cornerRadiusIsDefault = !BorderElement.IsSet(BorderElement.CornerRadiusProperty) || (BorderElement.CornerRadius == (int)BorderElement.CornerRadiusProperty.DefaultValue || BorderElement.CornerRadius == BorderDrawable.DefaultCornerRadius);
-			bool backgroundColorIsDefault = !BorderElement.IsSet(VisualElement.BackgroundColorProperty) || BorderElement.BackgroundColor == (Color)VisualElement.BackgroundColorProperty.DefaultValue;
-			bool borderColorIsDefault = !BorderElement.IsSet(BorderElement.BorderColorProperty) || BorderElement.BorderColor == (Color)BorderElement.BorderColorProperty.DefaultValue;
-			bool borderWidthIsDefault = !BorderElement.IsSet(BorderElement.BorderWidthProperty) || BorderElement.BorderWidth == (double)BorderElement.BorderWidthProperty.DefaultValue;
+			bool cornerRadiusIsDefault = !BorderElement.IsCornerRadiusSet() || (BorderElement.CornerRadius == (int)BorderElement.CornerRadiusDefaultValue || BorderElement.CornerRadius == BorderDrawable.DefaultCornerRadius);
+			bool backgroundColorIsDefault = !BorderElement.IsBackgroundColorSet() || BorderElement.BackgroundColor == (Color)VisualElement.BackgroundColorProperty.DefaultValue;
+			bool borderColorIsDefault = !BorderElement.IsBorderColorSet() || BorderElement.BorderColor == (Color)BorderElement.BorderColorDefaultValue;
+			bool borderWidthIsDefault = !BorderElement.IsBorderWidthSet() || BorderElement.BorderWidth == (double)BorderElement.BorderWidthDefaultValue;
 
 			if (backgroundColorIsDefault
 				&& cornerRadiusIsDefault
@@ -93,7 +104,7 @@ namespace Xamarin.Forms.Platform.Android
 				if (_backgroundDrawable == null)
 					_backgroundDrawable = new BorderDrawable(Control.Context.ToPixels, Forms.GetColorButtonNormal(Control.Context), _drawOutlineWithBackground);
 
-				_backgroundDrawable.BorderController = BorderElement;
+				_backgroundDrawable.BorderElement = BorderElement;
 
 				var useDefaultPadding = _renderer.UseDefaultPadding();
 
@@ -191,11 +202,12 @@ namespace Xamarin.Forms.Platform.Android
 					_defaultDrawable = null;
 					_rippleDrawable?.Dispose();
 					_rippleDrawable = null;
-					if (BorderElement != null)
+					if (BorderPropertyChanged != null)
 					{
-						BorderElement.PropertyChanged -= BorderElementPropertyChanged;
-						BorderElement = null;
+						BorderPropertyChanged.PropertyChanged -= BorderElementPropertyChanged;
 					}
+
+					BorderElement = null;
 
 					if (_renderer != null)
 					{
@@ -209,9 +221,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		void BorderElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName.Equals(BorderElement.BorderColorProperty.PropertyName) ||
-				e.PropertyName.Equals(BorderElement.BorderWidthProperty.PropertyName) ||
-				e.PropertyName.Equals(BorderElement.CornerRadiusProperty.PropertyName) ||
+			if (e.PropertyName.Equals(Button.BorderColorProperty.PropertyName) ||
+				e.PropertyName.Equals(Button.BorderWidthProperty.PropertyName) ||
+				e.PropertyName.Equals(Button.CornerRadiusProperty.PropertyName) ||
 				e.PropertyName.Equals(VisualElement.BackgroundColorProperty.PropertyName) ||
 				e.PropertyName.Equals(Specifics.Button.UseDefaultPaddingProperty.PropertyName) ||
 				e.PropertyName.Equals(Specifics.Button.UseDefaultShadowProperty.PropertyName) ||

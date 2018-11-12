@@ -30,9 +30,9 @@ namespace Xamarin.Forms.Platform.UWP
 		static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			IImageVisualElementRenderer renderer = sender as IImageVisualElementRenderer;
-			var controller = renderer.Element as IImageController;
+			var controller = renderer.Element as IImageElement;
 
-			if (e.PropertyName == controller.AspectProperty?.PropertyName)
+			if (e.PropertyName == Image.AspectProperty.PropertyName)
 				UpdateAspect(renderer, controller);
 		}
 
@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Platform.UWP
 			if (e.NewElement != null)
 			{
 				IImageVisualElementRenderer renderer = sender as IImageVisualElementRenderer;
-				var controller = renderer.Element as IImageController;
+				var controller = renderer.Element as IImageElement;
 
 				UpdateAspect(renderer, controller);
 			}
@@ -53,12 +53,12 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			IImageVisualElementRenderer renderer = sender as IImageVisualElementRenderer;
 
-			var controller = renderer.Element as IImageController;
+			var controller = renderer.Element as IImageElement;
 
 			UpdateAspect(renderer, controller);
 		}
 
-		public static void UpdateAspect(IImageVisualElementRenderer renderer, IImageController controller)
+		public static void UpdateAspect(IImageVisualElementRenderer renderer, IImageElement controller)
 		{
 			var Element = renderer.Element;
 			var Control = renderer.GetNativeElement();
@@ -101,16 +101,18 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			var Element = renderer.Element;
 			var Control = renderer.GetNativeElement();
-			var controller = Element as IImageController;
+			var imageElement = Element as IImageElement;
 
 			if (renderer.IsDisposed || Element == null || Control == null)
 			{
 				return;
 			}
 
-			controller.SetIsLoading(true);
+			var imageController = Element as IImageController;
 
-			ImageSource source = controller.Source;
+			imageController?.SetIsLoading(true);
+
+			ImageSource source = imageElement.Source;
 			IImageSourceHandler handler;
 			if (source != null && (handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(source)) != null)
 			{
@@ -132,12 +134,12 @@ namespace Xamarin.Forms.Platform.UWP
 					renderer.SetImage(imagesource);
 				}
 
-				RefreshImage(controller as IViewController);
+				RefreshImage(imageElement as IViewController);
 			}
 			else
 			{
 				renderer.SetImage(null);
-				controller.SetIsLoading(false);
+				imageController?.SetIsLoading(false);
 			}
 		}
 

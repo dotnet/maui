@@ -25,9 +25,9 @@ namespace Xamarin.Forms.Platform.iOS
 		static void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			IVisualNativeElementRenderer renderer = (IVisualNativeElementRenderer)sender;
-			IBorderController backgroundView = (IBorderController)renderer.Element;
+			IBorderElement backgroundView = (IBorderElement)renderer.Element;
 
-			if (e.PropertyName == backgroundView.BorderWidthProperty.PropertyName || e.PropertyName == backgroundView.CornerRadiusProperty.PropertyName || e.PropertyName == backgroundView.BorderColorProperty.PropertyName)
+			if (e.PropertyName == Button.BorderWidthProperty.PropertyName || e.PropertyName == Button.CornerRadiusProperty.PropertyName || e.PropertyName == Button.BorderColorProperty.PropertyName)
 				UpdateBorder(renderer, backgroundView);
 		}
 
@@ -35,11 +35,11 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			if (e.NewElement != null)
 			{
-				UpdateBorder((IVisualNativeElementRenderer)sender, (IBorderController)e.NewElement);
+				UpdateBorder((IVisualNativeElementRenderer)sender, (IBorderElement)e.NewElement);
 			}
 		}
 
-		public static void UpdateBorder(IVisualNativeElementRenderer renderer, IBorderController backgroundView)
+		public static void UpdateBorder(IVisualNativeElementRenderer renderer, IBorderElement backgroundView)
 		{
 			var control = renderer.Control;
 			var ImageButton = backgroundView;
@@ -56,7 +56,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 			nfloat cornerRadius = _defaultCornerRadius;
 
-			if (ImageButton.IsSet(ImageButton.CornerRadiusProperty) && ImageButton.CornerRadius != (int)ImageButton.CornerRadiusProperty.DefaultValue)
+			if (ImageButton.IsCornerRadiusSet() && ImageButton.CornerRadius != ImageButton.CornerRadiusDefaultValue)
 				cornerRadius = ImageButton.CornerRadius;
 
 			control.Layer.CornerRadius = cornerRadius;
@@ -65,7 +65,7 @@ namespace Xamarin.Forms.Platform.iOS
 		static void OnControlChanged(object sender, EventArgs e)
 		{
 			IVisualNativeElementRenderer renderer = (IVisualNativeElementRenderer)sender;
-			IBorderController backgroundView = (IBorderController)renderer.Element;
+			IBorderElement backgroundView = (IBorderElement)renderer.Element;
 			UpdateBorder(renderer, backgroundView);
 		}
 	}
