@@ -2,6 +2,5 @@
 {
 	internal static class Flags
 	{
-		
 	}
 }

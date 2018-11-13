@@ -41,9 +41,12 @@ namespace Xamarin.Forms.ControlGallery.Android
 			base.OnCreate(bundle);
 
 #if TEST_EXPERIMENTAL_RENDERERS
+			// CollectionView lets us test CollectionView stuff until it's officially released
 			Forms.SetFlags("FastRenderers_Experimental");
 #else
-			Forms.SetFlags("Fake_Flag"); // So we can test for flag initialization issues
+			// Fake_Flag is here so we can test for flag initialization issues
+			// CollectionView lets us test CollectionView stuff until it's officially released
+			Forms.SetFlags("Fake_Flag"); 
 #endif
 
 			Forms.Init(this, bundle);

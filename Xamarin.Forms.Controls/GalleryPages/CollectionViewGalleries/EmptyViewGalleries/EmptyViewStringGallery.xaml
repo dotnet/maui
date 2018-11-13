@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries.EmptyViewStringGallery">
+    <ContentPage.Content>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="*"></RowDefinition>
+			</Grid.RowDefinitions>
+
+			<SearchBar x:Name="SearchBar" Placeholder="Filter" />
+			
+			<CollectionView x:Name="CollectionView" Grid.Row="1">
+				<CollectionView.ItemsLayout>
+					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
+				</CollectionView.ItemsLayout>
+				<CollectionView.EmptyView>
+					No items match your filter.
+				</CollectionView.EmptyView>
+			</CollectionView>
+		</Grid>
+    </ContentPage.Content>
+</ContentPage>

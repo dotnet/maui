@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Xamarin.Forms.Platform.UWP;
 
 namespace Xamarin.Forms.Platform.WinRT
 {

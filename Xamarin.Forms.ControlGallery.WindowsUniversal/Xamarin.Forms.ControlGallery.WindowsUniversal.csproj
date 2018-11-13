@@ -142,8 +142,10 @@
     <Content Include="crimson.jpg" />
     <Content Include="crimsonsmall.jpg" />
     <Content Include="default.css" />
+    <Content Include="FlowerBuds.jpg" />
     <Content Include="Fruits.jpg" />
     <Content Include="invalidimage.jpg" />
+    <Content Include="Legumes.jpg" />
     <Content Include="local.html" />
     <Content Include="test.jpg" />
     <Content Include="oasis.jpg" />
@@ -151,6 +153,7 @@
     <Content Include="photo.jpg" />
     <Content Include="seth.png" />
     <Content Include="toolbar_close.png" />
+    <Content Include="Vegetables.jpg" />
     <Content Include="WebImages\XamarinLogo.png" />
     <Content Include="Assets\Fonts\Lobster-Regular.ttf" />
     <Content Include="Properties\default.rd.xml" />

@@ -63,7 +63,12 @@ namespace Xamarin.Forms.Platform
 
 	[RenderWith (typeof (ListViewRenderer))]
 	internal class _ListViewRenderer { }
-	
+#if !TIZEN4_0	
+	[RenderWith (typeof (CollectionViewRenderer))]
+	internal class _CollectionViewRenderer { }
+	[RenderWith (typeof (CarouselViewRenderer))]
+	internal class _CarouselViewRenderer { }
+#endif
 	[RenderWith (typeof (SliderRenderer))]
 	internal class _SliderRenderer { }
 

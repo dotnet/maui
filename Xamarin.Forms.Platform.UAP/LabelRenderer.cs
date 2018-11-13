@@ -77,6 +77,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			rect.Height = childHeight;
 			rect.Width = finalSize.Width;
+			
 			Control.Arrange(rect);
 			Control.RecalculateSpanPositions(Element, _inlineHeights);
 			return finalSize;
@@ -148,8 +149,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == Label.TextProperty.PropertyName || e.PropertyName == Label.FormattedTextProperty.PropertyName)
+			if (e.PropertyName == Label.TextProperty.PropertyName ||
+				e.PropertyName == Label.FormattedTextProperty.PropertyName)
+			{
 				UpdateText(Control);
+			}
 			else if (e.PropertyName == Label.TextColorProperty.PropertyName)
 				UpdateColor(Control);
 			else if (e.PropertyName == Label.HorizontalTextAlignmentProperty.PropertyName || e.PropertyName == Label.VerticalTextAlignmentProperty.PropertyName)
@@ -199,7 +203,7 @@ namespace Xamarin.Forms.Platform.UWP
 			}
 			else
 			{
-				textBlock.Text = textBlock.Text; 
+				textBlock.Text = textBlock.Text;
 			}
 
 		}
@@ -299,7 +303,9 @@ namespace Xamarin.Forms.Platform.UWP
 			_perfectSizeValid = false;
 
 			if (textBlock == null)
+			{
 				return;
+			}
 
 			Label label = Element;
 			if (label != null)
@@ -349,7 +355,7 @@ namespace Xamarin.Forms.Platform.UWP
 		{
 			if (textBlock == null)
 				return;
-			
+
 			if (Element.LineHeight >= 0)
 			{
 				textBlock.LineHeight = Element.LineHeight * textBlock.FontSize;

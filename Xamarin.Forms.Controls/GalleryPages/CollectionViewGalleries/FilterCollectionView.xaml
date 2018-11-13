@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.FilterCollectionView"
+             Title="Filter CollectionView Items">
+    <ContentPage.Content>
+	    <Grid>
+		    <Grid.RowDefinitions>
+				<RowDefinition Height="Auto"></RowDefinition>
+				<RowDefinition Height="Auto"></RowDefinition>
+			    <RowDefinition Height="*"></RowDefinition>
+		    </Grid.RowDefinitions>
+
+			<StackLayout Orientation="Horizontal">
+				<Label Text="Use EmptyView"></Label>
+				<Switch x:Name="UseEmptyView" IsToggled="True"></Switch>
+			</StackLayout>
+
+		    <SearchBar Grid.Row="1" x:Name="SearchBar" Placeholder="Filter" />
+			
+		    <CollectionView x:Name="CollectionView" Grid.Row="2">
+				<CollectionView.ItemsLayout>
+					<GridItemsLayout Span="2" Orientation="Vertical"></GridItemsLayout>
+				</CollectionView.ItemsLayout>
+		    </CollectionView>
+	    </Grid>
+    </ContentPage.Content>
+</ContentPage>

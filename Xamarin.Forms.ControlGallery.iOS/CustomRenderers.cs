@@ -12,7 +12,7 @@ using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.Platform.iOS;
 using RectangleF = CoreGraphics.CGRect;
 
-[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(CollectionViewRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Xamarin.Forms.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(Bugzilla31395.CustomContentView), typeof(CustomContentRenderer))]
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]

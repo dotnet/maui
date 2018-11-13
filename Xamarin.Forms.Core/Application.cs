@@ -51,6 +51,9 @@ namespace Xamarin.Forms
 			}
 		}
 
+		bool MainPageSet { get; set; }
+		
+
 		public Application()
 		{
 			var f = false;
@@ -120,6 +123,7 @@ namespace Xamarin.Forms
 				}
 
 				_mainPage = value;
+				MainPageSet = true;
 
 				if (_mainPage != null)
 				{
@@ -205,7 +209,6 @@ namespace Xamarin.Forms
 		public event EventHandler<Page> PageAppearing;
 
 		public event EventHandler<Page> PageDisappearing;
-
 
 		async void SaveProperties()
 		{

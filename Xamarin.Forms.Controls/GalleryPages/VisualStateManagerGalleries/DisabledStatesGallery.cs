@@ -4,13 +4,6 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 {
 	public class DisabledStatesGallery : ContentPage
 	{
-		static Button GalleryNav(string control, Func<ContentPage> gallery, INavigation nav)
-		{
-			var button = new Button { Text = $"{control} Disabled States" };
-			button.Clicked += (sender, args) => { nav.PushAsync(gallery()); };
-			return button;
-		}
-
 		public DisabledStatesGallery()
 		{
 			var desc = "Some of the XF controls have legacy (pre-VSM) behaviors such that when IsEnabled is set to `false`, they " 
@@ -32,13 +25,13 @@ namespace Xamarin.Forms.Controls.GalleryPages.VisualStateManagerGalleries
 					Children =
 					{
 						descriptionLabel,
-						GalleryNav("Editor", () => new EditorDisabledStatesGallery(), Navigation),
-						GalleryNav("SearchBar", () => new SearchBarDisabledStatesGallery(), Navigation),
-						GalleryNav("Entry", () => new EntryDisabledStatesGallery(), Navigation),
-						GalleryNav("Button", () => new ButtonDisabledStatesGallery(), Navigation),
-						GalleryNav("Picker", () => new PickerDisabledStatesGallery(), Navigation),
-						GalleryNav("TimePicker", () => new TimePickerDisabledStatesGallery(), Navigation),
-						GalleryNav("DatePicker", () => new DatePickerDisabledStatesGallery(), Navigation)
+						GalleryBuilder.NavButton("Editor Disabled States", () => new EditorDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("SearchBar Disabled States", () => new SearchBarDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("Entry Disabled States", () => new EntryDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("Button Disabled States", () => new ButtonDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("Picker Disabled States", () => new PickerDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("TimePicker Disabled States", () => new TimePickerDisabledStatesGallery(), Navigation),
+						GalleryBuilder.NavButton("DatePicker Disabled States", () => new DatePickerDisabledStatesGallery(), Navigation)
 					}
 				}
 			};

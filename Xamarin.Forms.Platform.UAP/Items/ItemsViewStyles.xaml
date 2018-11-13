@@ -1,0 +1,47 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Xamarin.Forms.Platform.UWP">
+    
+	<ItemsPanelTemplate x:Key="HorizontalListItemsPanel">
+		<VirtualizingStackPanel Orientation="Horizontal" />
+	</ItemsPanelTemplate>
+
+	<ItemsPanelTemplate x:Key="HorizontalGridItemsPanel">
+		<!-- Yes, this is counterintuitive. Orientation here means "direction we lay out the items until we hit the 
+		edge and then wrap around". -->
+		<ItemsWrapGrid Orientation="Vertical" />
+	</ItemsPanelTemplate>
+
+	<ItemsPanelTemplate x:Key="VerticalGridItemsPanel">
+		<!-- Yes, this is counterintuitive. Orientation here means "direction we lay out the items until we hit the 
+		edge and then wrap around". -->
+		<ItemsWrapGrid Orientation="Horizontal" />
+	</ItemsPanelTemplate>
+
+	<DataTemplate x:Key="ItemsViewDefaultTemplate">
+		<local:ItemContentControl x:Name="ItemContentControl" 
+									FormsDataTemplate="{Binding FormsDataTemplate}" FormsDataContext="{Binding Item}">
+			
+		</local:ItemContentControl>
+	</DataTemplate>
+	
+	<Style TargetType="local:ItemContentControl" >
+		<Setter Property="HorizontalContentAlignment" Value="Left"/>
+		<Setter Property="VerticalContentAlignment" Value="Top"/>
+		<!--<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="local:ItemContentControl">
+					<ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}"
+									ContentTemplate="{TemplateBinding ContentTemplate}"
+									Margin="{TemplateBinding Padding}"
+									ContentTransitions="{TemplateBinding ContentTransitions}"
+									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>-->
+	</Style>
+
+</ResourceDictionary>
+

@@ -4,9 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
-
 using Xamarin.Forms.CustomAttributes;
+using System.Threading;
 using Xamarin.Forms.Internals;
 
 using Xamarin.Forms.PlatformConfiguration;

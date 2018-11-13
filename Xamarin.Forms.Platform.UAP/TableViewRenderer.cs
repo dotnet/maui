@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using WItemsControl = Windows.UI.Xaml.Controls.ItemsControl;
 
 namespace Xamarin.Forms.Platform.UWP
 {
@@ -37,7 +38,7 @@ namespace Xamarin.Forms.Platform.UWP
 					});
 
 					// You can't set ItemsSource directly to a CollectionViewSource, it crashes.
-					Control.SetBinding(ItemsControl.ItemsSourceProperty, "");
+					Control.SetBinding(WItemsControl.ItemsSourceProperty, "");
 					Control.SelectionChanged += OnSelectionChanged;
 				}
 
