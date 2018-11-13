@@ -1,0 +1,138 @@
+steps:
+    - task: NuGetToolInstaller@0
+      displayName: 'Use NuGet 4.8.1'
+      inputs:
+        versionSpec: 4.8.1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore'
+      inputs:
+        restoreSolution: Xamarin.Forms.sln
+
+
+    - task: MSBuild@1
+      displayName: 'Build solution Xamarin.Forms.sln'
+      inputs:
+        solution: Xamarin.Forms.sln
+
+        msbuildVersion: 15.0
+
+        platform: '$(BuildPlatform)'
+
+        configuration: '$(BuildConfiguration)'
+
+        msbuildArguments: '/nowarn:VSX1000'
+
+        clean: true
+
+
+    - task: DeleteFiles@1
+      displayName: 'Delete files from $(Build.ArtifactStagingDirectory)'
+      inputs:
+        SourceFolder: '$(Build.ArtifactStagingDirectory)'
+        Contents: '**/*'
+
+
+    - task: CopyFiles@2
+      displayName: 'Copy Files dlls'
+      inputs:
+        Contents: |
+          Stubs/**/bin/**/*.dll
+          Microsoft.XamlStandard/bin/**/*.dll
+          Microsoft.XamlStandard.Design/bin/**/*.dll
+          Xamarin.Forms.Core/bin/**/*.dll
+          Xamarin.Forms.Core/bin/**/*.pdb
+          Xamarin.Forms.Core/bin/**/*.mdb
+          Xamarin.Forms.Xaml/bin/**/*.dll
+          Xamarin.Forms.Xaml/bin/**/*.pdb
+          Xamarin.Forms.Xaml/bin/**/*.mdb
+          Xamarin.Forms.Platform/bin/**/*.dll
+          Xamarin.Forms.Build.Tasks/bin/**/*.dll
+          Xamarin.Forms.Core.Design/bin/**/*.dll
+          Xamarin.Forms.Xaml.Design/bin/**/*.dll
+          Xamarin.Forms.Maps.Design/bin/**/*.dll
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.Android/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.Android/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.Android.FormsViewGroup/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.iOS/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Platform.WP8/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.pri
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xr.xml
+          Xamarin.Forms.Platform.UAP/bin/$(BuildConfiguration)/**/*.xbf
+          Xamarin.Forms.Platform.UAP/Properties/Xamarin.Forms.Platform.UAP.rd.xml
+          Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.MacOS/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Maps/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps.Android/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.iOS/bin/iPhoneSimulator/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.MacOS/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.WP8/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.pri
+          Xamarin.Forms.Maps.UWP/bin/$(BuildConfiguration)/**/*.xbf
+          Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Pages/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Pages.Azure/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.Android.AppLinks/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Core.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Xaml.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Pages.UnitTests/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.Tizen/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Build.Tasks.Core/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps.WPF/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Maps.GTK/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Platform.WPF/bin/$(BuildConfiguration)/**/*.pdb
+          Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.dll
+          Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.mdb
+          Xamarin.Forms.Platform.GTK/bin/$(BuildConfiguration)/**/*.pdb
+          Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.dll
+          Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.mdb
+          Microsoft.XamlStandard/bin/$(BuildConfiguration)/**/*.pdb
+
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    - task: CopyFiles@2
+      displayName: 'Copy files test adapter'
+      inputs:
+        Contents: '**/NUnitTestAdapter.*/tools/*.dll'
+
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/testadapter'
+
+        CleanTargetFolder: true
+
+        OverWrite: true
+
+        flattenFolders: true
+
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: win_build'
+      inputs:
+        ArtifactName: 'win_build'

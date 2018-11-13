@@ -1,0 +1,93 @@
+variables:
+- name: BuildConfiguration
+  value: Debug
+- name: BuildPlatform
+  value: 'any cpu'
+- name: XamarinFormsPackageVersion
+  value: ''
+- name: Suffix
+  value: ''
+- group: Xamarin.Forms
+- group: XQA Secrets
+
+jobs:
+- job: Phase_1
+  displayName: Prepare Build Phase
+  condition: succeeded()
+  pool:
+    name: Hosted VS2017
+  steps:
+     - template: build/steps/build-prepare.yml
+
+- job: Phase_2
+  displayName: Build Windows Phase
+  dependsOn: Phase_1
+  condition: succeeded()
+  pool:
+    name: Hosted VS2017
+    demands: msbuild
+  strategy:
+    matrix:
+      debug:
+        BuildConfiguration: 'Debug'
+        BuildPlatform: 'any cpu'
+      release:
+        BuildConfiguration: 'Release'
+        BuildPlatform: 'any cpu'
+  steps:
+     - template: build/steps/build-windows.yml
+
+- job: Phase_3
+  displayName: Test Windows Phase
+  dependsOn: Phase_2
+  condition: succeeded()
+  pool:
+    name: Hosted VS2017
+    demands: vstest
+  strategy:
+    matrix:
+      debug:
+        BuildConfiguration: 'Debug'
+      release:
+        BuildConfiguration: 'Release'
+  steps:
+     - template: build/steps/build-windows-test.yml
+
+- job: Phase_4
+  displayName: OSX Phase
+  dependsOn: Phase_1
+  condition: succeeded()
+  pool:
+    name: Hosted Mac Internal
+    demands:
+      - Agent.OS -equals darwin
+      - sh
+      - msbuild
+      - Xamarin.iOS
+  steps:
+     - template: build/steps/build-osx.yml
+
+- job: Phase_5
+  displayName: Nuget Phase
+  dependsOn:
+   - Phase_3
+  condition: succeeded()
+  pool:
+    name: Hosted VS2017
+    demands: DotNetFramework
+  variables:
+    FormsIdAppend: ''
+  steps:
+     - template: build/steps/build-nuget.yml
+
+- job: Phase_6
+  displayName: Sign Phase
+  dependsOn: Phase_5
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
+  pool:
+    name: VSEng-Xamarin-Forms
+  steps:
+     - template: build/steps/build-sign.yml
+
+
+
