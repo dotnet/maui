@@ -11,7 +11,7 @@ steps:
       jobParameters: |
        REPO=xamarin/xamarin.forms
        COMMIT=$(Build.SourceVersion)
-       JOB_ID=10316
+       JOB_ID=$(System.DefinitionId)
        BUILD_ID=$(Build.BuildId)
 
   - powershell: |
