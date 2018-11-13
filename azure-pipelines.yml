@@ -10,6 +10,18 @@ variables:
 - group: Xamarin.Forms
 - group: XQA Secrets
 
+trigger:
+  branches:
+    include:
+    - master
+    - 3.4.0
+    - 3.3.0
+  paths:
+    exclude:
+    - README.md
+
+pr: none
+
 jobs:
 - job: Phase_1
   displayName: Prepare Build Phase
