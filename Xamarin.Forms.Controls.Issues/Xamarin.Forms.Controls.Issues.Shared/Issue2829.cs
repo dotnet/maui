@@ -143,7 +143,7 @@ namespace Xamarin.Forms.Controls.Issues
 			public event PropertyChangedEventHandler PropertyChanged;
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 		[Test]
 		public void ViewCellsAllDisposed()
 		{

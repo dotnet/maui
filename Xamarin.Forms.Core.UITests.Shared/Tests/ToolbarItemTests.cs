@@ -141,9 +141,11 @@ namespace Xamarin.Forms.Core.UITests
 #if __MACOS__
 			var btn1 = App.Query(c => c.Button())[4];
 #else
+			App.WaitForElement(c => c.Marked(btn1Id));
 			var btn1 = App.Query(c => c.Marked(btn1Id))[0];
 #endif
 			ShouldShowMenu();
+			App.WaitForElement(c => c.Marked(btn4Id));
 			var btn2 = App.Query(c => c.Marked(btn4Id))[0];
 #if __IOS__
 			Assert.True(btn1.Rect.CenterY < btn2.Rect.CenterY);

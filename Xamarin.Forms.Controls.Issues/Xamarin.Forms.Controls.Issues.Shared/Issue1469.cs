@@ -14,6 +14,10 @@ namespace Xamarin.Forms.Controls.Issues
 	[Issue(IssueTracker.Github, 1469, "Setting SelectedItem to null inside ItemSelected event handler does not work", PlatformAffected.UWP)]
 	public class Issue1469 : TestContentPage
 	{
+		const string Go = "Select 3rd item";
+		const string Back = "Clear selection";
+		const string Success = "Success";
+		const string Fail = "Fail";
 		protected override void Init()
 		{
 			var statusLabel = new Label() { FontSize = 40 };
@@ -31,15 +35,15 @@ namespace Xamarin.Forms.Controls.Issues
 
 				statusLabel.Text = "One moment please...";
 				await Task.Delay(500);
-				statusLabel.Text = list.SelectedItem == null ? "Success" : "Fail";
+				statusLabel.Text = list.SelectedItem == null ? Success : Fail;
 			};
 
 			Content = new StackLayout
 			{
 				Children = {
 					new Label { Text = "If you click an item in the list it should not become selected" },
-					new Button { Text = "Select 3rd item", Command = new Command(() => list.SelectedItem = _items[2]) },
-					new Button { Text = "Clear selection", Command = new Command(() => list.SelectedItem = list.SelectedItem = null) },
+					new Button { Text = Go, Command = new Command(() => list.SelectedItem = _items[2]) },
+					new Button { Text = Back, Command = new Command(() => list.SelectedItem = list.SelectedItem = null) },
 					statusLabel,
 					list
 				}
@@ -50,9 +54,9 @@ namespace Xamarin.Forms.Controls.Issues
 		[Test]
 		public void Issue1469Test()
 		{
-			RunningApp.WaitForElement("Select 3rd item");
-			RunningApp.Tap("Select 3rd item");
-			RunningApp.WaitForElement("Success");
+			RunningApp.WaitForElement(Go);
+			RunningApp.Tap(Go);
+			RunningApp.WaitForElement(Success);
 		}
 #endif
 	}
