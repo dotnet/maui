@@ -213,13 +213,28 @@ namespace Xamarin.Forms.Platform.MacOS
 			return pageRenderer;
 		}
 
-		//TODO: Implement InserPageBefore
 		void InsertPageBefore(Page page, Page before)
 		{
 			if (before == null)
 				throw new ArgumentNullException(nameof(before));
 			if (page == null)
 				throw new ArgumentNullException(nameof(page));
+
+			var currentList = _currentStack.Reverse().ToList();
+			var beforePageIndex = currentList.IndexOf(p => p.Page == before);
+			var pageWrapper = new NavigationChildPageWrapper(page);
+			currentList.Insert(beforePageIndex, pageWrapper);
+			_currentStack = new Stack<NavigationChildPageWrapper>(currentList);
+
+			var vc = CreateViewControllerForPage(page);
+			vc.SetElementSize(new Size(View.Bounds.Width, View.Bounds.Height));
+			page.Layout(new Rectangle(0, 0, View.Bounds.Width, View.Frame.Height));
+
+			var beforeViewController = Platform.GetRenderer(before).ViewController;
+			var beforeControllerIndex = ChildViewControllers.IndexOf(beforeViewController);
+
+			InsertChildViewController(vc.ViewController, beforeControllerIndex);
+			View.AddSubview(vc.NativeView);
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs e)
