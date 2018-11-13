@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Xamarin.Forms.Controls.Issues.Issue4194">
+	<StackLayout>
+		<Label Text="On iOS, after clicking the button, the second SearchBar should appear having same color as the first SearchBar, it should not be dark green " />
+		<SearchBar Text="Visible"
+				   BackgroundColor="Lime" />
+		<SearchBar x:Name="SearchBar1"
+				   IsVisible="false"
+				   BackgroundColor="Lime" />
+		<Button Text="Show"
+				Clicked="Handle_Clicked"
+				HorizontalOptions="Center"
+				VerticalOptions="CenterAndExpand" />
+	</StackLayout>
+</ContentPage>

@@ -120,8 +120,7 @@ namespace Xamarin.Forms.Platform.iOS
 			
 			Control.BarTintColor = color.ToUIColor(_defaultTintColor);
 
-			if (color.A < 1)
-				Control.SetBackgroundImage(new UIImage(), UIBarPosition.Any, UIBarMetrics.Default);
+			Control.SetBackgroundImage(new UIImage(), UIBarPosition.Any, UIBarMetrics.Default);
 
 			// updating BarTintColor resets the button color so we need to update the button color again
 			UpdateCancelButton();
