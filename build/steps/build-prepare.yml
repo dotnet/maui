@@ -1,0 +1,88 @@
+steps:
+  - powershell: |
+       Write-Host "Finding the right branch"
+       $sourceBranchName = "" + $env:BUILD_SOURCEBRANCHNAME
+       $sourceBranch = "" + $env:BUILD_SOURCEBRANCH
+       $sourceVersion = "" + $env:BUILD_SOURCEVERSION
+       $tags = New-Object System.Collections.ArrayList
+       $realBuildName = ""
+       $buildId = "" + $env:BUILD_BUILDID
+
+       if($sourceBranch) {
+           $branchParts = $sourceBranch.Split('/')
+
+           if(($sourceBranchName -eq "merge" -or $sourceBranchName -eq "head")  -and $branchParts.Count -eq 4 -and $branchParts[1] -contains "pull") {
+               $realBuildName = "PR-{0} - ({1})" -f  $branchParts[2],$buildId
+           } else {
+               $shortVersion = If ($sourceVersion.Length -gt 7) { $sourceVersion.Substring(0,7) } Else { $sourceVersion }
+               $realBuildName = "{0}-{1} ({2})" -f $sourceBranchName,$shortVersion,$buildId
+           }
+       }
+
+       #Update VSTS build number
+       if($realBuildName) {
+           Write-Host "##vso[build.updatebuildnumber]$realBuildName"
+       }
+    displayName: 'Set Build Number'
+  - powershell: |
+       Write-Host "Finding the right branch"
+       $sourceBranchName =  ""+ $env:BUILD_SOURCEBRANCHNAME
+       $sourceBranch = ""+  $env:BUILD_SOURCEBRANCH
+       $publicTags =  ""+ $env:PUBLICTAGS
+       $tags = New-Object System.Collections.ArrayList
+       $buildId = ""+ $env:BUILD_BUILDID
+       $sorceV = "" +$env:BUILD_SOURCEVERSION
+
+       echo $sorceV
+       echo $sourceBranchName
+       echo $sourceBranch
+       echo $publicTags
+
+       if($sourceBranch)
+       {
+           $branchParts =  $sourceBranch.Split('/')
+           if($branchParts.Count -eq 1)
+           {
+               $tags.Add($branchParts[0] +"-release");
+           }
+           if($branchParts.Count -eq 3)
+           {
+               if($branchParts[1] -contains "heads")
+               {
+                   $branchName = $branchParts[2]
+                   $tags.Add($branchName+"-release")
+               }
+           }
+           if($branchParts.Count -eq 4)
+           {
+               if($branchParts[1] -contains "pull")
+               {
+                  $tags.Add("pull-release");
+                  $tags.Add("pr-"+$branchParts[2]);
+               }
+               if($branchParts[1] -contains "heads")
+               {
+                   $branchName = $branchParts[2] + "-" +$branchParts[3]
+                   $tags.Add($branchName+"-release")
+               }
+           }
+       }
+       #Tag this build
+       #check PublicTags also add them to the tag list
+       foreach($publicTag in $publicTags.Split(';'))
+       {
+           if($publicTag){
+               $tags.Add($publicTag);
+           }
+       }
+
+       #Add tags to the VSTS Build
+       foreach ($tag in $tags) {
+          Write-Host "##vso[build.addbuildtag]$tag"
+       }
+
+       $publicTags = $tags -join ';'
+       Write-Host "##vso[task.setvariable variable=publictags;isOutput=true;]$publicTags"
+
+
+    displayName: 'Tag and name build copy'
