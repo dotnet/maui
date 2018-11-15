@@ -26,10 +26,7 @@ namespace Xamarin.Forms.Platform.Tizen
 		const string PartLeftToolbar = "title_left_btn";
 		const string PartRightToolbar = "title_right_btn";
 		const string PartNavigationBar = "navigationbar";
-		const string StyleLeftToolBarButton = "naviframe/title_left";
-		const string StyleRightToolbarButton = "naviframe/title_right";
 		const string StyleBackButton = "naviframe/back_btn/default";
-		const string StyleDefaultToolbarIcon = "naviframe/drawers";
 		const string StyleNavigationBar = "navigationbar";
 
 		readonly List<Widget> _naviItemContentPartList = new List<Widget>();
@@ -317,37 +314,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			if (item == default(ToolbarItem))
 				return null;
 
-			Native.Button button = new Native.Button(Forms.NativeParent);
-			button.Clicked += (s, e) =>
-			{
-				IMenuItemController control = item;
-				control.Activate();
-			};
-			button.Text = item.Text;
-			button.BackgroundColor = Color.Transparent.ToNative();
-
-			if (string.IsNullOrEmpty(item.Icon))
-			{
-				if (string.IsNullOrEmpty(item.Text))
-				{
-					// We assumed the default toolbar icon is "naviframe/drawer" if there are no icon and text.
-					button.Style = StyleDefaultToolbarIcon;
-				}
-				else
-				{
-					if (position == ToolbarButtonPosition.Right)
-						button.Style = StyleRightToolbarButton;
-					else
-						button.Style = StyleLeftToolBarButton;
-				}
-			}
-			else
-			{
-				Native.Image iconImage = new Native.Image(Forms.NativeParent);
-				var task = iconImage.LoadFromImageSourceAsync(item.Icon);
-				button.Image = iconImage;
-			}
-
+			Native.ToolbarItemButton button = new Native.ToolbarItemButton(item);
 			return button;
 		}
 
