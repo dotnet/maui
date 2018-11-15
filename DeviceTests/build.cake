@@ -300,6 +300,11 @@ Task ("test-uwp-emu")
     uninstallPS();
     
     // Install the appx
+    var dependencies = GetFiles("./**/AppPackages/**/Dependencies/x86/*.appx");
+    foreach (var dep in dependencies) {
+        Information("Installing Dependency appx: {0}", dep);
+        StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+    }
     var appxBundlePath = GetFiles("./**/AppPackages/**/*.appxbundle").First ();
     Information("Installing appx: {0}", appxBundlePath);
     StartProcess ("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(appxBundlePath).FullPath + "\"");
