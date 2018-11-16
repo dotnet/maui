@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using ElmSharp;
 
 namespace Xamarin.Forms.Platform.Tizen.Native
 {
 	public class RoundRectangle : Polygon
 	{
-		int[] _radius = new int[4];
+		readonly int[] _radius = new int[4];
 		public RoundRectangle(EvasObject parent) : base(parent)
 		{
 		}
@@ -27,6 +28,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			_radius[1] = topRight;
 			_radius[2] = bottomLeft;
 			_radius[3] = bottomRight;
+		}
+
+		public IReadOnlyList<int> GetRadius()
+		{
+			return _radius;
 		}
 
 		public void Draw()
@@ -96,7 +102,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			}
 		}
 
-		void AddRelativePoint(int x, int y)
+		protected void AddRelativePoint(int x, int y)
 		{
 			AddPoint(X + x, Y + y);
 		}
