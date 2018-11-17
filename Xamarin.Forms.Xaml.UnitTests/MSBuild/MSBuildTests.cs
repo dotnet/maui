@@ -67,7 +67,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			Directory.CreateDirectory (tempDirectory);
 
 			//We need to copy Xamarin.Forms.targets to the test directory, to reliably import them
-			var xamarinFormsTargets = Path.Combine (testDirectory, "..", "..", "..", ".nuspec", XamarinFormsTargets);
+			var xamarinFormsTargets = Path.Combine (testDirectory, "..", "..", "..", "..", ".nuspec", XamarinFormsTargets);
 			if (!File.Exists (xamarinFormsTargets)) {
 				//NOTE: VSTS may be running tests in a staging directory, so we can use an environment variable to find the source
 				//	https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?view=vsts&tabs=batch#buildsourcesdirectory

@@ -3,7 +3,9 @@ steps:
       displayName: 'Download build artifact win_build'
       inputs:
         downloadType: specific
-        itemPattern: '**/*.UnitTests/bin/$(BuildConfiguration)/*'
+        itemPattern: |
+          **/*.UnitTests/bin/$(BuildConfiguration)/*
+          **/*.Xaml.UnitTests/bin/$(BuildConfiguration)/**/*
         downloadPath: '$(Build.BinariesDirectory)'
         parallelizationLimit: 20
 
@@ -23,7 +25,7 @@ steps:
         testAssemblyVer2: |
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Core.UnitTests.dll
           **/bin/$(BuildConfiguration)/Xamarin.Forms.Pages.UnitTests.dll
-          **/bin/$(BuildConfiguration)/Xamarin.Forms.Xaml.UnitTests.dll
+          **/bin/$(BuildConfiguration)/**/Xamarin.Forms.Xaml.UnitTests.dll
         searchFolder: '$(Build.BinariesDirectory)'
         pathtoCustomTestAdapters: '$(Build.BinariesDirectory)/testadapters/'
         codeCoverageEnabled: true
