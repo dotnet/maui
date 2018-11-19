@@ -80,6 +80,7 @@ namespace Xamarin.Forms.Platform.Android
 
 			bitmap?.Dispose();
 			imageController?.SetIsLoading(false);
+			imageController?.NativeSizeChanged();
 		}
 	}
 }

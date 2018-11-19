@@ -192,8 +192,10 @@
     <file src="..\Xamarin.Forms.Platform.MacOS\bin\$Configuration$\Xamarin.Forms.Platform.dll" target="lib\Xamarin.Mac" />
 
     <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.dll" target="lib\uap10.0" />
+    <file src="..\Xamarin.Forms.Core\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Core.*pdb" target="lib\uap10.0" />
     <file src="..\docs\Xamarin.Forms.Core.xml" target="lib\uap10.0" />
     <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.dll" target="lib\uap10.0" />
+    <file src="..\Xamarin.Forms.Xaml\bin\$Configuration$\netstandard2.0\Xamarin.Forms.Xaml.*pdb" target="lib\uap10.0" />
     <file src="..\docs\Xamarin.Forms.Xaml.xml" target="lib\uap10.0" />
 
     <!-- iOS Localized String Resource Assemblies -->
