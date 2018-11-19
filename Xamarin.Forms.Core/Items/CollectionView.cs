@@ -24,7 +24,7 @@ namespace Xamarin.Forms
 			string constructorHint = null,
 			[CallerMemberName] string memberName = "")
 		{
-			if (!Device.Flags.Contains(CollectionViewExperimental))
+			if (Device.Flags == null || !Device.Flags.Contains(CollectionViewExperimental))
 			{
 				if (!String.IsNullOrEmpty(memberName))
 				{
