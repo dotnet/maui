@@ -5,14 +5,14 @@ using Xamarin.Forms.PlatformConfiguration.WindowsSpecific;
 
 namespace Xamarin.Forms.Controls
 {
-	internal class WebViewCoreGalleryPage : CoreGalleryPage<WebView>
+	internal class WkWebViewCoreGalleryPage : CoreGalleryPage<WkWebView>
 	{
 		protected override bool SupportsFocus
 		{
 			get { return false; }
 		}
 
-		protected override void InitializeElement (WebView element)
+		protected override void InitializeElement (WkWebView element)
 		{
 			element.HeightRequest = 200;
 
@@ -23,8 +23,8 @@ namespace Xamarin.Forms.Controls
 		{
 			base.Build (stackLayout);
 
-			var urlWebViewSourceContainer = new ViewContainer<WebView> (Test.WebView.UrlWebViewSource, 
-				new WebView {
+			var urlWebViewSourceContainer = new ViewContainer<WkWebView> (Test.WebView.UrlWebViewSource, 
+				new WkWebView {
 					Source = new UrlWebViewSource { Url = "https://www.google.com/" },
 					HeightRequest = 200
 				}
@@ -34,17 +34,16 @@ namespace Xamarin.Forms.Controls
 				"<head><meta name='viewport' content='width=device-width,initial-scale=1.0'></head>" +
 				"<body><div class=\"test\"><h2>I am raw html</h2></div></body></html>";
 
-			var htmlWebViewSourceContainer = new ViewContainer<WebView> (Test.WebView.HtmlWebViewSource, 
-				new WebView {
+			var htmlWebViewSourceContainer = new ViewContainer<WkWebView> (Test.WebView.HtmlWebViewSource, 
+				new WkWebView {
 					Source = new HtmlWebViewSource { Html = html },
 					HeightRequest = 200
 				}
 			);
 
-			var htmlFileWebSourceContainer = new ViewContainer<WebView> (Test.WebView.LoadHtml,
-				new WebView {
-					Source = new HtmlWebViewSource
-					{
+			var htmlFileWebSourceContainer = new ViewContainer<WkWebView> (Test.WebView.LoadHtml,
+				new WkWebView {
+					Source = new HtmlWebViewSource { 
 						Html = @"<!DOCTYPE html><html>
 <head>
 <meta name='viewport' content='width=device-width,initial-scale=1.0'>
@@ -67,23 +66,23 @@ namespace Xamarin.Forms.Controls
 			{
 				var mixedContentTestPage = "https://mixed-content-test.appspot.com/";
 
-				var mixedContentDisallowedWebView = new WebView() { HeightRequest = 1000 };
+				var mixedContentDisallowedWebView = new WkWebView() { HeightRequest = 1000 };
 				mixedContentDisallowedWebView.On<Android>().SetMixedContentMode(MixedContentHandling.NeverAllow);
 				mixedContentDisallowedWebView.Source = new UrlWebViewSource
 				{
 					Url = mixedContentTestPage
 				};
 
-				var mixedContentAllowedWebView = new WebView() { HeightRequest = 1000 };
+				var mixedContentAllowedWebView = new WkWebView() { HeightRequest = 1000 };
 				mixedContentAllowedWebView.On<Android>().SetMixedContentMode(MixedContentHandling.AlwaysAllow);
 				mixedContentAllowedWebView.Source = new UrlWebViewSource
 				{
 					Url = mixedContentTestPage
 				};
 
-				var mixedContentDisallowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentDisallowed,
+				var mixedContentDisallowedContainer = new ViewContainer<WkWebView>(Test.WebView.MixedContentDisallowed,
 					mixedContentDisallowedWebView);
-				var mixedContentAllowedContainer = new ViewContainer<WebView>(Test.WebView.MixedContentAllowed,
+				var mixedContentAllowedContainer = new ViewContainer<WkWebView>(Test.WebView.MixedContentAllowed,
 					mixedContentAllowedWebView);
 
 				Add(mixedContentDisallowedContainer);
@@ -91,7 +90,7 @@ namespace Xamarin.Forms.Controls
 			}
 
 
-			var jsAlertWebView = new WebView
+			var jsAlertWebView = new WkWebView
 			{
 				Source = new HtmlWebViewSource
 				{
@@ -110,16 +109,16 @@ namespace Xamarin.Forms.Controls
 
 			jsAlertWebView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
 			
-			var javascriptAlertWebSourceContainer = new ViewContainer<WebView>(Test.WebView.JavaScriptAlert,
+			var javascriptAlertWebSourceContainer = new ViewContainer<WkWebView>(Test.WebView.JavaScriptAlert,
 				jsAlertWebView
 			);
 
-			var evaluateJsWebView = new WebView
+			var evaluateJsWebView = new WkWebView
 			{
 				Source = new UrlWebViewSource { Url = "https://www.google.com/" },
 				HeightRequest = 50
 			};
-			var evaluateJsWebViewSourceContainer = new ViewContainer<WebView>(Test.WebView.EvaluateJavaScript,
+			var evaluateJsWebViewSourceContainer = new ViewContainer<WkWebView>(Test.WebView.EvaluateJavaScript,
 				evaluateJsWebView
 			);
 

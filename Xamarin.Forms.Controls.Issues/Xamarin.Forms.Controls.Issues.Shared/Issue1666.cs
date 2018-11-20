@@ -29,6 +29,10 @@ namespace Xamarin.Forms.Controls.Issues
 			var buttonState = new Button() { Text = "?", BackgroundColor = Color.LightBlue, AutomationId = "buttonState" };
 			var buttonStop = new Button() { Text = "X", BackgroundColor = Color.LightBlue, AutomationId = "buttonStop" };
 
+			var buttonJsAlert = new Button() { Text = "ALERT", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsAlert" };
+			var buttonJsPrompt = new Button() { Text = "PROMPT", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsPrompt" };
+			var buttonJsConfirm = new Button() { Text = "CONFIRM", BackgroundColor = Color.LightBlue, AutomationId = "buttonJsConfirm" };
+
 			var buttonA = new Button() { Text = "GO", BackgroundColor = Color.LightBlue, AutomationId = "buttonA" };
 			var buttonB = new Button() { Text = "HTML", BackgroundColor = Color.LightBlue, AutomationId = "buttonB" };
 			var buttonC = new Button() { Text = "EVAL", BackgroundColor = Color.LightBlue, AutomationId = "buttonC" };
@@ -52,9 +56,13 @@ namespace Xamarin.Forms.Controls.Issues
 			var entry = new Entry() { AutomationId = "entry" };
 			entry.BackgroundColor = Color.Wheat;
 
+			var jsAlerts = new Grid();
+			jsAlerts.Children.AddHorizontal(new[] { buttonJsAlert, buttonJsPrompt, buttonJsConfirm });
+
 			var buttons = new Grid();
 			buttons.Children.AddVertical(vcr);
 			buttons.Children.AddVertical(evals);
+			buttons.Children.AddVertical(jsAlerts);
 			buttons.Children.AddVertical(entry);
 
 			var console = new Label()
@@ -107,6 +115,10 @@ namespace Xamarin.Forms.Controls.Issues
 				log($"F/B: {webView.CanGoBack}/{webView.CanGoForward}");
 				log($"Source: {webView.Source.ToString()}");
 			};
+
+			buttonJsAlert.Clicked += async (s, e) => { await webView.EvaluateJavaScriptAsync("alert('foo')"); };
+			buttonJsPrompt.Clicked += async (s, e) => { log($"{await webView.EvaluateJavaScriptAsync("prompt('enter something:')")} was enterred"); };
+			buttonJsConfirm.Clicked += async (s, e) => { log($"{await webView.EvaluateJavaScriptAsync("confirm('choose')")} was chosen"); };
 
 			bool navigating = false;
 			webView.Navigating += (s, e) =>
