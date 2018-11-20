@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Collections.Generic;
 using Xamarin.Forms.Internals;
+using System.Reflection;
 
 namespace Xamarin.Forms.Internals
 {
