@@ -35,6 +35,14 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 		{
 		}
 
+		class Quux<T> : Foo<Foo<T>>
+		{
+		}
+
+		class Corge<T> : Foo<Foo<Foo<T>>>
+		{
+		}
+
 		ModuleDefinition module;
 
 		[SetUp]
@@ -117,6 +125,23 @@ namespace Xamarin.Forms.Xaml.XamlcUnitTests
 			var test = typeof(TypeReferenceExtensionsTests).Assembly;
 
 			Assert.False(TestInheritsFromOrImplements(test.GetType("Xamarin.Forms.Effect"), core.GetType("Xamarin.Forms.Effect")));
+		}
+
+		[TestCase(typeof(Bar<byte>), 1)]
+		[TestCase(typeof(Quux<byte>), 2)]
+		[TestCase(typeof(Corge<byte>), 3)]
+		public void TestResolveGenericParameters(Type typeRef, int depth)
+		{
+			var imported = module.ImportReference(typeRef);
+			var resolvedType = imported.Resolve().BaseType.ResolveGenericParameters(imported);
+
+			for (var count = 0; count < depth; count++)
+			{
+				resolvedType = ((GenericInstanceType)resolvedType).GenericArguments[0];
+			}
+
+			Assert.AreEqual("System", resolvedType.Namespace);
+			Assert.AreEqual("Byte", resolvedType.Name);
 		}
 	}
 }

@@ -343,13 +343,10 @@ namespace Xamarin.Forms.Build.Tasks
 			if (genericdeclType == null)
 				return self;
 
-			if (!genericself.GenericArguments.Any(arg => arg.IsGenericParameter))
-				return self;
-
 			List<TypeReference> args = new List<TypeReference>();
 			for (var i = 0; i < genericself.GenericArguments.Count; i++) {
 				if (!genericself.GenericArguments[i].IsGenericParameter)
-					args.Add(genericself.GenericArguments[i]);
+					args.Add(genericself.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));
 				else
 					args.Add(genericdeclType.GenericArguments[(genericself.GenericArguments[i] as GenericParameter).Position]);
 			}
