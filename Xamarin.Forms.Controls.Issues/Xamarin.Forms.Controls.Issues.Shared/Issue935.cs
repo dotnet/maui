@@ -9,6 +9,7 @@ using Xamarin.UITest;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+	[Preserve(AllMembers = true)]
 	public class Person 
 	{
 		public string Name { get; set; }
@@ -20,6 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 	}
 
 
+	[Preserve(AllMembers = true)]
 	public class CustomViewCell : ViewCell 
 	{
 
@@ -41,7 +43,9 @@ namespace Xamarin.Forms.Controls.Issues
 			View = label;
 		}
 	}
-
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 935, "ViewCell.ItemTapped only fires once for ListView.SelectedItem", PlatformAffected.Android)]
 	public class Issue935 : TestContentPage

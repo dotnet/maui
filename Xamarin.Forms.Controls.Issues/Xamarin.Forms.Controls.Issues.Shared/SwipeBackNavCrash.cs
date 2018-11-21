@@ -17,6 +17,10 @@ namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.None, 0, "Swipe back nav crash", PlatformAffected.iOS)]
+#if UITEST
+	[NUnit.Framework.Category(UITestCategories.Navigation)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+#endif
 	public class SwipeBackNavCrash : TestNavigationPage
 	{
 		protected override void Init ()

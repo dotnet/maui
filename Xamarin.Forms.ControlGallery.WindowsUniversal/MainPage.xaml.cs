@@ -30,7 +30,14 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 		{
 			InitializeComponent();
 
-			
+			// some tests need to window to be large enough to click on things
+			// can we make this only open to window size for UI Tests?
+			//var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+			//var scaleFactor = DisplayInformation.GetForCurrentView().RawPixelsPerViewPixel;
+			//var size = new Windows.Foundation.Size(bounds.Width * scaleFactor, bounds.Height * scaleFactor);
+			//ApplicationView.PreferredLaunchViewSize = size;
+			//ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+
 
 			_app = new Controls.App();
 
@@ -43,6 +50,7 @@ namespace Xamarin.Forms.ControlGallery.WindowsUniversal
 			LoadApplication(_app);
 
 			CoreWindow.GetForCurrentThread().KeyDown += OnKeyDown;
+
 		}
 
 		void OnKeyDown(CoreWindow coreWindow, KeyEventArgs args)

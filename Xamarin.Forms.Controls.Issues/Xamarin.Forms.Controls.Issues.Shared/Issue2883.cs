@@ -13,6 +13,9 @@ using Xamarin.UITest.iOS;
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
+#endif
 	[Preserve (AllMembers = true)]
 	[Issue (IssueTracker.Github, 2883, "ViewCell IsEnabled set to false does not disable a cell in a TableView")]
 	public class Issue2883 : TestContentPage

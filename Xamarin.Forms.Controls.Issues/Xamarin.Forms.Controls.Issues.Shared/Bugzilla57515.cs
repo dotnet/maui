@@ -10,6 +10,7 @@ using NUnit.Framework;
 namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Gestures)]
 #endif 
 	[Preserve(AllMembers = true)]

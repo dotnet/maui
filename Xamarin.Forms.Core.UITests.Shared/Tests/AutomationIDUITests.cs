@@ -9,6 +9,7 @@ namespace Xamarin.Forms.Core.UITests
 {
 	[TestFixture]
 	[Category(UITestCategories.AutomationId)]
+	[Category(UITestCategories.UwpIgnore)]
 	internal class AutomationIDUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery ()

@@ -159,6 +159,10 @@ namespace Xamarin.Forms.Controls.Issues
 					from Layout element in layout.InternalChildren
 					from Button button in element.InternalChildren
 					let text = button.Text
+					// UwpIgnore
+#if __WINDOWS__
+					where text != "Stepper" && text != "Entry"
+#endif
 					select new object[]
 					{
 						text,

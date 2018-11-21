@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Configuration;
 
 using NUnit.Framework;
-
+using Xamarin.Forms.Controls.Issues;
 using Xamarin.Forms.CustomAttributes;
 using Xamarin.UITest.Android;
 using Xamarin.UITest.iOS;
@@ -98,12 +98,12 @@ namespace Xamarin.Forms.Core.UITests
 
 			remote.TapStateButton ();
 
-			var isEnabled = remote.GetStateLabel ().Text;
+			var isEnabled = remote.GetStateLabel ().ReadText();
 			Assert.AreEqual ("True", isEnabled);
 
 			remote.TapStateButton ();
 
-			var isDisabled = remote.GetStateLabel ().Text;
+			var isDisabled = remote.GetStateLabel ().ReadText();
 			Assert.AreEqual ("False", isDisabled);
 		}
 

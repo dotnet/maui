@@ -5,12 +5,18 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params", PlatformAffected.iOS, issueTestNumber: 1)]
+#if UITEST
+	// this doesn't fail on Uwp but it leaves a browser window open and breaks later tests
+	[Category(UITestCategories.UwpIgnore)]
+#endif
 	public class Bugzilla29247 : TestContentPage
 	{
 		protected override void Init()
@@ -45,8 +51,14 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 #endif
 	}
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 2", PlatformAffected.iOS, issueTestNumber: 2)]
+#if UITEST
+	// This one isn't failing on UWP but it opens a browser window
+	// and causes the rest to fail
+	[Category(UITestCategories.UwpIgnore)]
+#endif
 	public class Bugzilla29247_2 : TestContentPage
 	{
 		protected override void Init()
@@ -82,6 +94,12 @@ namespace Xamarin.Forms.Controls.Issues
 
 #endif
 	}
+
+#if UITEST
+	// This one isn't failing on UWP but it opens a browser window
+	// and causes the rest to fail
+	[Category(UITestCategories.UwpIgnore)]
+#endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 29247, "iOS Device.OpenUri breaks with encoded params 3", PlatformAffected.iOS, issueTestNumber: 3)]
 	public class Bugzilla29247_3 : TestContentPage

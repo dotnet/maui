@@ -37,6 +37,19 @@ namespace Xamarin.Forms.Core.UITests
 		{
 		}
 
+		[Category(UITestCategories.UwpIgnore)]
+		public override void _IsEnabled()
+		{
+			base._IsEnabled();
+		} 
+
+		 
+		[Category(UITestCategories.UwpIgnore)] 
+		public override void _IsVisible()
+		{
+			base._IsVisible();
+		}
+
 		// TODO
 		// Implement control specific ui tests
 		protected override void FixtureTeardown()

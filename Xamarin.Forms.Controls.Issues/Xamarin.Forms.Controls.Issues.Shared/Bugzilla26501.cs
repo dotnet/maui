@@ -5,6 +5,7 @@ using Xamarin.Forms.Internals;
 #if UITEST
 using NUnit.Framework;
 using Xamarin.UITest;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
@@ -78,6 +79,10 @@ namespace Xamarin.Forms.Controls.Issues
 		}
 	}
 
+#if UITEST
+	[Category(UITestCategories.InputTransparent)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]
 	public class Bugzilla26501 : TestContentPage

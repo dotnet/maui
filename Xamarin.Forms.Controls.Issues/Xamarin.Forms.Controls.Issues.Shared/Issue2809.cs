@@ -6,10 +6,15 @@ using Xamarin.Forms.Internals;
 using NUnit.Framework;
 using Xamarin.UITest;
 using Xamarin.UITest.Android;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+#if UITEST
+	[Category(UITestCategories.DisplayAlert)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
+#endif
 	[Preserve (AllMembers=true)]
 	[Issue (IssueTracker.Github, 2809, "Secondary ToolbarItems cause app to hang during PushAsync", PlatformAffected.iOS)]
 	public class Issue2809: TestContentPage

@@ -12,6 +12,7 @@ namespace Xamarin.Forms.Core.UITests
 #endif
 	[TestFixture]
 	[Category(UITestCategories.Cells)]
+	[Category(UITestCategories.UwpIgnore)]
 	internal class CellsGalleryTests : BaseTestFixture
 	{
 		public const string CellTestContainerId = "CellTestContainer";

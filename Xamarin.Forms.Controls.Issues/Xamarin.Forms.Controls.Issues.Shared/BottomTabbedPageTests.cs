@@ -10,12 +10,14 @@ using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
 using System.Collections.Specialized;
 
 #if UITEST
+using Xamarin.Forms.Core.UITests;
 using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
+
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1675, "Bottom Tabbed Page Basic Test", PlatformAffected.All)]
 	public class BottomTabbedPageTests : TestTabbedPage
@@ -246,7 +248,7 @@ namespace Xamarin.Forms.Controls.Issues
 			pageCountLabel.Text = $"{Children.Count} Pages";
 		}
 
-#if UITEST
+#if UITEST && __ANDROID__
 		[Test]
 		public async Task AddAndRemovePages()
 		{

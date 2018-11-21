@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Controls.Issues
 		PlatformAffected.iOS)]
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.ListView)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	public class Issue1342 : TestNavigationPage
 	{

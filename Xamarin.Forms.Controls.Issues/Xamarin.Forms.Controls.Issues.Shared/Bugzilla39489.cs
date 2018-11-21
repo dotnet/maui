@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Controls.Issues
 	[Preserve(AllMembers = true)]
 #if UITEST
 	[Category(UITestCategories.Maps)]
+	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
 #endif
 	[Issue(IssueTracker.Bugzilla, 39489, "Memory leak when using NavigationPage with Maps", PlatformAffected.Android | PlatformAffected.iOS)]
 	public class Bugzilla39489 : TestNavigationPage

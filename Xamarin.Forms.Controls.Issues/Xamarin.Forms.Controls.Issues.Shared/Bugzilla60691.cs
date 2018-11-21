@@ -5,12 +5,17 @@ using System.Threading.Tasks;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 60691, "Device.OpenUri(new Uri(\"tel: 123 456\")) crashes the app (space in phone number)", PlatformAffected.iOS)]
+#if UITEST
+	// this doesn't fail on Uwp but it leaves a browser window open and breaks later tests
+	[Category(UITestCategories.UwpIgnore)]
+#endif
 	public class Bugzilla60691 : TestContentPage
 	{
 		protected override void Init()

@@ -6,12 +6,16 @@ using Xamarin.Forms.Internals;
 using Xamarin.UITest.iOS;
 using Xamarin.UITest;
 using NUnit.Framework;
+using Xamarin.Forms.Core.UITests;
 #endif
 
 namespace Xamarin.Forms.Controls.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 30353, "MasterDetailPage.IsPresentedChanged is not raised")]
+#if UITEST
+	[Category(UITestCategories.UwpIgnore)]
+#endif
 	public class Bugzilla30353 : TestMasterDetailPage
 	{
 		protected override void Init()

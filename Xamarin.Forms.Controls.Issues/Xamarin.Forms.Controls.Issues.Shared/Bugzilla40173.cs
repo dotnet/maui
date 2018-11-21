@@ -13,8 +13,8 @@ namespace Xamarin.Forms.Controls.Issues
 #if UITEST
 	[Category(UITestCategories.BoxView)]
 	[Category(UITestCategories.InputTransparent)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
-
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40173, "Android BoxView/Frame not clickthrough in ListView")]
 	public class Bugzilla40173 : TestContentPage

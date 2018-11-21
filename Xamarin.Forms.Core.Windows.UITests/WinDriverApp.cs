@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
@@ -30,7 +31,8 @@ namespace Xamarin.Forms.Core.UITests
 
 		readonly Dictionary<string, string> _translatePropertyAccessor = new Dictionary<string, string>
 		{
-			{ "getAlpha", "Opacity" }
+			{ "getAlpha", "Opacity" },
+			{ "isEnabled", "IsEnabled" }
 		};
 
 		int _scrollBarOffset = 5;
@@ -109,17 +111,21 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void EnterText(string text)
 		{
-			_session.Keyboard.SendKeys(text);
+			new Actions(_session)
+					.SendKeys(text)
+					.Perform();
 		}
 
 		public void EnterText(Func<AppQuery, AppQuery> query, string text)
 		{
-			QueryWindows(query).First().SendKeys(text);
+			var result = QueryWindows(query).First();
+			result.SendKeys(text);
 		}
 
 		public void EnterText(string marked, string text)
 		{
-			QueryWindows(marked).First().SendKeys(text);
+			var results = QueryWindows(marked).First();
+			results.SendKeys(text);
 		}
 
 		public void EnterText(Func<AppQuery, AppWebQuery> query, string text)
@@ -188,7 +194,9 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void PressEnter()
 		{
-			_session.Keyboard.PressKey(Keys.Enter);
+			new Actions(_session)
+					   .SendKeys(Keys.Enter)
+					   .Perform();
 		}
 
 		public void PressVolumeDown()
@@ -240,7 +248,12 @@ namespace Xamarin.Forms.Core.UITests
 			// Now that we have them in text form, we can reinterpret them for Windows
 			WinQuery winQuery = WinQuery.FromRaw(selector);
 			// TODO hartez 2017/07/19 17:08:44 Make this a bit more resilient if the translation isn't there	
-			string attribute = _translatePropertyAccessor[invoke.Substring(8).Replace("\")", "")];
+			var translationKey = invoke.Substring(8).Replace("\")", "");
+
+			if (!_translatePropertyAccessor.ContainsKey(translationKey))
+				throw new Exception($"{translationKey} not found please add to _translatePropertyAccessor");
+
+			string attribute = _translatePropertyAccessor[translationKey];
 
 			ReadOnlyCollection<WindowsElement> elements = QueryWindows(winQuery);
 
@@ -270,7 +283,7 @@ namespace Xamarin.Forms.Core.UITests
 			string filename = $"{title}.png";
 
 			Screenshot screenshot = _session.GetScreenshot();
-			screenshot.SaveAsFile(filename, ImageFormat.Png);
+			screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
 			return new FileInfo(filename);
 		}
 
@@ -588,21 +601,25 @@ namespace Xamarin.Forms.Core.UITests
 			WindowsElement viewPort = GetViewPort();
 			int xOffset = viewPort.Coordinates.LocationInViewport.X;
 			int yOffset = viewPort.Coordinates.LocationInViewport.Y;
-			_session.Mouse.MouseMove(viewPort.Coordinates, (int)x - xOffset, (int)y - yOffset);
+
+			var actions = new Actions(_session)
+					   .MoveToElement(viewPort, (int)x - xOffset, (int)y - yOffset);
 
 			switch (clickType)
 			{
 				case ClickType.DoubleClick:
-					_session.Mouse.DoubleClick(null);
+					actions.DoubleClick();
 					break;
 				case ClickType.ContextClick:
-					_session.Mouse.ContextClick(null);
+					actions.ContextClick();					
 					break;
 				case ClickType.SingleClick:
 				default:
-					_session.Mouse.Click(null);
+					actions.Click();					
 					break;
 			}
+
+			actions.Perform();
 		}
 
 		void ClickOrTapElement(WindowsElement element)
@@ -778,7 +795,7 @@ namespace Xamarin.Forms.Core.UITests
 			WindowsElement viewPort = GetViewPort();
 			int xOffset = viewPort.Coordinates.LocationInViewport.X;
 			int yOffset = viewPort.Coordinates.LocationInViewport.Y;
-			_session.Mouse.MouseMove(viewPort.Coordinates, xOffset, yOffset);
+			new Actions(_session).MoveToElement(viewPort, xOffset, yOffset);
 		}
 
 		ReadOnlyCollection<WindowsElement> QueryWindows(WinQuery query)

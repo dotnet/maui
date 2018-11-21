@@ -11,8 +11,8 @@ namespace Xamarin.Forms.Controls.Issues
 {
 #if UITEST
 	[Category(UITestCategories.IsEnabled)]
+	[NUnit.Framework.Category(Core.UITests.UITestCategories.UwpIgnore)]
 #endif
-
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0112358, "ScrollView set to disabled will still allow scrolling", PlatformAffected.All)]
 	public class ScrollViewIsEnabled : TestNavigationPage
