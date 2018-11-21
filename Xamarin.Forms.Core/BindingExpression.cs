@@ -124,8 +124,7 @@ namespace Xamarin.Forms
 				if (!part.IsSelf && current != null)
 				{
 					// Allow the object instance itself to provide its own TypeInfo 
-					var reflectable = current as IReflectableType;
-					TypeInfo currentType = reflectable != null ? reflectable.GetTypeInfo() : current.GetType().GetTypeInfo();
+					TypeInfo currentType = current is IReflectableType reflectable ? reflectable.GetTypeInfo() : current.GetType().GetTypeInfo();
 					if (part.LastGetter == null || !part.LastGetter.DeclaringType.GetTypeInfo().IsAssignableFrom(currentType))
 						SetupPart(currentType, part);
 
@@ -133,21 +132,17 @@ namespace Xamarin.Forms
 						part.TryGetValue(current, out current);
 				}
 
-				if (!part.IsSelf && current != null)
-				{
-					if ((needsGetter && part.LastGetter == null) || (needsSetter && part.NextPart == null && part.LastSetter == null))
-					{
-						Log.Warning("Binding", PropertyNotFoundErrorMessage, part.Content, current, target.GetType(), property.PropertyName);
-						break;
-					}
+				if (   !part.IsSelf
+				    && current != null
+				    && (   (needsGetter && part.LastGetter == null)
+				        || (needsSetter && part.NextPart == null && part.LastSetter == null))) {
+					Log.Warning("Binding", PropertyNotFoundErrorMessage, part.Content, current, target.GetType(), property.PropertyName);
+					break;
 				}
 
-				if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
-				{
-					var inpc = current as INotifyPropertyChanged;
-					if (inpc != null && !ReferenceEquals(current, previous))
+				if (part.NextPart != null &&   (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
+				    && current is INotifyPropertyChanged inpc)
 						part.Subscribe(inpc);
-				}
 
 				previous = current;
 			}
