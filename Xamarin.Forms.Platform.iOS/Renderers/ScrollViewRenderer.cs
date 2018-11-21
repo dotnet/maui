@@ -160,6 +160,7 @@ namespace Xamarin.Forms.Platform.iOS
 				if (_packager == null)
 					return;
 
+				Element?.ClearValue(Platform.RendererProperty);
 				SetElement(null);
 
 				_packager.Dispose();
