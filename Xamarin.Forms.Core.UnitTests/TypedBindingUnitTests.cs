@@ -1004,6 +1004,22 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		//https://github.com/xamarin/Xamarin.Forms/issues/4103
+		public void TestTargetNullValue()
+		{
+			var property = BindableProperty.Create("Text", typeof(string), typeof(MockBindable), default(string));
+			var binding = new TypedBinding<MockViewModel, string>(vm => vm.Text, null, null) { TargetNullValue = "target null"};
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, binding);
+			bindable.BindingContext = new MockViewModel("initial");
+			Assert.That(bindable.GetValue(property), Is.EqualTo("initial"));
+
+			bindable.BindingContext = new MockViewModel(null);
+			Assert.That(bindable.GetValue(property), Is.EqualTo("target null"));
+
+		}
+
+		[Test]
 		[Description("OneWay bindings should not double apply on source updates.")]
 		public void OneWayBindingsDontDoubleApplyOnSourceUpdates()
 		{

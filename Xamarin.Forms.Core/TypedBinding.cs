@@ -148,11 +148,7 @@ namespace Xamarin.Forms.Internals
 			if (Converter != null)
 				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
-			//return base.GetSourceValue(value, targetPropertyType);
-			if (StringFormat != null)
-				return string.Format(StringFormat, value);
-
-			return value;
+			return base.GetSourceValue(value, targetPropertyType);
 		}
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
