@@ -5,12 +5,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using static Xamarin.Forms.Xaml.UnitTests.MSBuildXmlExtensions;
+using static Xamarin.Forms.MSBuild.UnitTests.MSBuildXmlExtensions;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.MSBuild.UnitTests
 {
 	//This set of tests is for validating Xamarin.Forms.targets
 	[TestFixture]
+	[Category("LongRunning")]
 	public class MSBuildTests
 	{
 		const string XamarinFormsTargets = "Xamarin.Forms.targets";

@@ -7,7 +7,7 @@ using Xamarin.Forms.Build.Tasks;
 
 using Xamarin.Forms.Core.UnitTests;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.MSBuild.UnitTests
 {
 	[TestFixture]
 	public class XamlgTests : BaseTestFixture
@@ -334,7 +334,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		[Test]
 		public void XamlGDifferentInputOutputLengths ()
 		{
-			var engine = new DummyBuildEngine ();
+			var engine = new MSBuild.UnitTests.DummyBuildEngine();
 			var generator = new XamlGTask () {
 				BuildEngine = engine,
 				AssemblyName = "test",

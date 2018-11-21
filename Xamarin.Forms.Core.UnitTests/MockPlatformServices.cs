@@ -71,7 +71,7 @@ namespace Xamarin.Forms.Core.UnitTests
 				case NamedSize.Large:
 					return 16;
 				default:
-					throw new ArgumentOutOfRangeException ("size");
+					throw new ArgumentOutOfRangeException (nameof(size));
 			}
 		}
 

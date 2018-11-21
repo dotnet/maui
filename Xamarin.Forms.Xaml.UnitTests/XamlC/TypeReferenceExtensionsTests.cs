@@ -10,7 +10,7 @@ namespace Xamarin.Forms
 	{
 	}
 }
-namespace Xamarin.Forms.Xaml.XamlcUnitTests
+namespace Xamarin.Forms.XamlcUnitTests
 {
 	[TestFixture]
 	public class TypeReferenceExtensionsTests

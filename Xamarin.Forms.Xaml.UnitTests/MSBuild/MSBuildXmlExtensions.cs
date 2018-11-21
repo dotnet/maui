@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.MSBuild.UnitTests
 {
 	static class MSBuildXmlExtensions
 	{

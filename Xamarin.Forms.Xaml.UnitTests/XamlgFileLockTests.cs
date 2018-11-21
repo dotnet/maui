@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Xaml.UnitTests
 			var item = new TaskItem(xamlInputFile);
 			item.SetMetadata("TargetPath", xamlInputFile);
 			var generator = new XamlGTask() {
-				BuildEngine= new DummyBuildEngine(),
+				BuildEngine= new MSBuild.UnitTests.DummyBuildEngine(),
 				AssemblyName = "test",
 				Language = "C#",
 				XamlFiles = new[] { item },

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
-namespace Xamarin.Forms.Xaml.UnitTests
+namespace Xamarin.Forms.MSBuild.UnitTests
 {
 	public class DummyBuildEngine : IBuildEngine
 	{
