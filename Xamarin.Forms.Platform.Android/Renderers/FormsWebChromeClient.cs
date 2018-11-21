@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.Webkit;
+using Xamarin.Forms.Internals;
 using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
@@ -33,6 +34,9 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected bool ChooseFile(IValueCallback filePathCallback, Intent intent, string title)
 		{
+			if (_activity == null)
+				return false;
+
 			Action<Result, Intent> callback = (resultCode, intentData) =>
 			{
 				if (filePathCallback == null)
@@ -65,12 +69,11 @@ namespace Xamarin.Forms.Platform.Android
 			return FileChooserParams.ParseResult((int)resultCode, data);
 		}
 
-		internal void SetContext(Activity thisActivity)
+		internal void SetContext(Context thisActivity)
 		{
-			if (thisActivity == null)
-				throw new ArgumentNullException(nameof(thisActivity));
-
-			_activity = thisActivity;
+			_activity = thisActivity as Activity;
+			if (_activity == null)
+				Log.Warning(nameof(WebViewRenderer), $"Failed to set the activity of the WebChromeClient, can't show pickers on the Webview");
 		}
 	}
 }

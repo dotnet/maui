@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Platform.Android
 				webView.SetWebViewClient(_webViewClient);
 
 				_webChromeClient = GetFormsWebChromeClient();
-				_webChromeClient.SetContext(Context as Activity);
+				_webChromeClient.SetContext(Context);
 				webView.SetWebChromeClient(_webChromeClient);
 
 				webView.Settings.JavaScriptEnabled = true;
