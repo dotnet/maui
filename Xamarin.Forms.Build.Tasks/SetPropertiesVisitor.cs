@@ -392,7 +392,11 @@ namespace Xamarin.Forms.Build.Tasks
 				yield break; //throw
 
 			var properties = ParsePath(path, tSourceRef, node as IXmlLineInfo, module);
-			var tPropertyRef = properties != null && properties.Any() ? properties.Last().Item1.PropertyType : tSourceRef;
+			TypeReference tPropertyRef = tSourceRef;
+			if (properties != null && properties.Count > 0) {
+				var lastProp = properties[properties.Count - 1];
+				tPropertyRef = lastProp.property.ResolveGenericPropertyType(lastProp.propDeclTypeRef, module);
+			}
 			tPropertyRef = module.ImportReference(tPropertyRef);
 
 			var funcRef = module.ImportReference(module.ImportReference(("mscorlib", "System", "Func`2")).MakeGenericInstanceType(new [] { tSourceRef, tPropertyRef }));
