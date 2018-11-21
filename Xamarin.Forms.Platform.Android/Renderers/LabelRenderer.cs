@@ -71,7 +71,16 @@ namespace Xamarin.Forms.Platform.Android
 					return _lastSizeRequest.Value;
 			}
 
+			//We need to clear the Hint or else it will interfere with the sizing of the Label
+			var hint = Control.Hint;
+			if(!string.IsNullOrEmpty(hint))
+				Control.Hint = string.Empty;
+		
 			SizeRequest result = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			//Set Hint back after sizing
+			Control.Hint = hint;
+
 			result.Minimum = new Size(Math.Min(Context.ToPixels(10), result.Request.Width), result.Request.Height);
 
 			_lastConstraintWidth = widthConstraint;
