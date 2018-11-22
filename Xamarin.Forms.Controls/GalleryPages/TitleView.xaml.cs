@@ -153,7 +153,20 @@ namespace Xamarin.Forms.Controls.GalleryPages
 
 			var label = new Label { Text = "hello", HorizontalOptions = LayoutOptions.Start, BackgroundColor = Color.Yellow };
 			var label2 = new Label { Text = "hello 2", HorizontalOptions = LayoutOptions.Start, BackgroundColor = Color.Yellow };
-			grid.Children.Add(label);
+			grid.Children.Add(
+				new StackLayout()
+				{
+					Orientation = StackOrientation.Horizontal,
+					Children =
+					{
+						label,
+						new ImageButton()
+						{
+							Source = "bank"
+						}
+					}
+				});
+
 			grid.Children.Add(label2);
 			Grid.SetRow(label2, 1);
 
