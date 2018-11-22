@@ -44,6 +44,9 @@
     <Reference Include="System.Xaml" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Xamarin.Forms.Design" Version="1.0.26-pre" Condition=" '$(OS)' != 'Unix' " />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\Xamarin.Forms.Core\Properties\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
@@ -64,7 +67,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' != 'Unix' ">
-    <None Include="packages.config" />
   </ItemGroup>
   <!-- The IDE will look for a top level assembly resource called 'Xamarin.Forms.toolbox.xml' to -->
   <!-- load the toolbox metadata from.                                                           -->
@@ -74,13 +76,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Xamarin.Forms.Design.1.0.26-pre\build\Xamarin.Forms.Design.targets" Condition="Exists('..\packages\Xamarin.Forms.Design.1.0.26-pre\build\Xamarin.Forms.Design.targets') And '$(OS)' != 'Unix' " />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition=" '$(OS)' != 'Unix'">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Xamarin.Forms.Design.1.0.26-pre\build\Xamarin.Forms.Design.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Forms.Design.1.0.26-pre\build\Xamarin.Forms.Design.targets'))" />
-  </Target>
   <!-- Ensure that all images in the 'mac' and 'win' subdirectories are included as embedded resources -->
   <!-- using a defined format. That format is "{platform}.{imagename}". We will look up images using   -->
   <!-- exact-match logic so there's no guessework to figure out which image we need to load.           -->
