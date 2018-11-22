@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Reflection;
+using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
@@ -58,11 +59,37 @@ namespace Xamarin.Forms.Xaml
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
+			if (converterProvider != null) {
+				MemberInfo minforetriever()
+				{
+					if (pi != null)
+						return pi;
 
+					MemberInfo minfo = null;
+					try {
+						minfo = bp.DeclaringType.GetRuntimeProperty(bp.PropertyName);
+					}
+					catch (AmbiguousMatchException e) {
+						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
+						throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", lineInfo, innerException: e);
+					}
+					if (minfo != null)
+						return minfo;
+					try {
+						return bp.DeclaringType.GetRuntimeMethod("Get" + bp.PropertyName, new[] { typeof(BindableObject) });
+					}
+					catch (AmbiguousMatchException e) {
+						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
+						throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", lineInfo, innerException: e);
+					}
+				}
+
+				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
+			}
 			if (converterProvider != null)
 				return converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
-			else
-				return value.ConvertTo(propertyType, () => pi, serviceProvider);
+
+			return value.ConvertTo(propertyType, () => pi, serviceProvider);
 		}
 
 		object GetValue()
