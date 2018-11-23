@@ -14,7 +14,8 @@
     <FileAlignment>512</FileAlignment>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion Condition="$(AndroidTargetFrameworkVersion) == ''">v9.0</AndroidTargetFrameworkVersion>
+    <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>
@@ -26,7 +27,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Debug\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Debug\monoandroid90\</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,12 +38,19 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>portable</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Release\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Release\monoandroid90\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>CS0109</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
+    <DefineConstants>$(DefineConstants);__ANDROID81__</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
+    <DefineConstants>$(DefineConstants);__ANDROID90__</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -98,7 +107,6 @@
     <Compile Include="AppCompat\IManageFragments.cs" />
     <Compile Include="AppCompat\MasterDetailContainer.cs" />
     <Compile Include="AppCompat\Platform.cs" />
-    <Compile Include="AppCompat\Resource.cs" />
     <Compile Include="CellAdapter.cs" />
     <Compile Include="Cells\EntryCellEditText.cs" />
     <Compile Include="Cells\EntryCellView.cs" />
@@ -133,6 +141,11 @@
     <Compile Include="IBorderVisualElementRenderer.cs" />
     <Compile Include="IDeviceInfoProvider.cs" />
     <Compile Include="ITabStop.cs" />
+    <Compile Include="Material\MaterialFrameRenderer.cs" />
+    <Compile Include="Material\MaterialFormsEditText.cs" />
+    <Compile Include="Material\MaterialButtonRenderer.cs" />
+    <Compile Include="Material\MaterialEntryRenderer.cs" />
+    <Compile Include="Material\MaterialProgressBarRenderer.cs" />
     <Compile Include="Renderers\FormsWebViewClient.cs" />
     <Compile Include="Renderers\IImageViewHandler.cs" />
     <Compile Include="InnerGestureListener.cs" />
@@ -257,6 +270,12 @@
     <Compile Include="SwipeGestureHandler.cs" />
     <Compile Include="Extensions\AccessibilityExtensions.cs" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
+    <Compile Include="Resources\Resource.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
+    <Compile Include="AppCompat\Resource.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -275,16 +294,55 @@
       <Name>Xamarin.Forms.Platform.Android.FormsViewGroup</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
     <PackageReference Include="Xamarin.Android.Support.Design">
-      <Version>27.0.2</Version>
+      <Version>28.0.0-preview7</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.v4">
-      <Version>27.0.2</Version>
+      <Version>28.0.0-preview7</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.v7.CardView">
-      <Version>27.0.2</Version>
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
+    <PackageReference Include="Xamarin.Android.Support.Design">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v4">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView">
+      <Version>27.0.2.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <ProjectToBuild Include="../Stubs/Xamarin.Forms.Platform.Android/Xamarin.Forms.Platform.Android (Forwarders).csproj">
+      <Properties>CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);AndroidTargetFrameworkVersion=v8.1</Properties>
+    </ProjectToBuild>
+    <ProjectToBuild Include="Xamarin.Forms.Platform.Android.csproj">
+      <Properties>CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);AndroidTargetFrameworkVersion=v8.1</Properties>
+    </ProjectToBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Layout\" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
+    <AndroidResource Include="Resources\values\styles.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
+    <!--  create 8.1 binaries-->
+    <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <MSBuild Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <!-- restore 9.0 binaries-->
+    <MSBuild Targets="Restore" Projects="../Stubs/Xamarin.Forms.Platform.Android/Xamarin.Forms.Platform.Android (Forwarders).csproj" Properties="CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);">
+    </MSBuild>
+    <MSBuild Targets="Restore" Projects="Xamarin.Forms.Platform.Android.csproj" Properties="CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);">
+    </MSBuild>
+  </Target>
 </Project>

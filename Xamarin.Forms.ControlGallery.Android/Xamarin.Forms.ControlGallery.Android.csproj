@@ -15,7 +15,8 @@
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion Condition="$(AndroidTargetFrameworkVersion) == ''">v9.0</AndroidTargetFrameworkVersion>
+    <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
     <AndroidStoreUncompressedFileExtensions />
@@ -28,6 +29,7 @@
     <AndroidTlsProvider>
     </AndroidTlsProvider>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <AndroidKeyStore>True</AndroidKeyStore>
@@ -44,16 +46,16 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>Full</AndroidLinkMode>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AndroidSupportedAbis>armeabi;armeabi-v7a;x86</AndroidSupportedAbis>
-    <Debugger>.Net (Xamarin)</Debugger>
+    <Debugger>Xamarin</Debugger>
     <DevInstrumentationEnabled>True</DevInstrumentationEnabled>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>
     </NoWarn>
+    <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>portable</DebugType>
@@ -62,19 +64,16 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <JavaMaximumHeapSize>1G</JavaMaximumHeapSize>
-    <AndroidLinkSkip />
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AndroidSupportedAbis>armeabi-v7a,x86</AndroidSupportedAbis>
-    <AndroidStoreUncompressedFileExtensions />
     <MandroidI18n />
-    <JavaOptions />
     <MonoDroidExtraArgs />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>
     </NoWarn>
+    <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -155,10 +154,6 @@
     <AndroidResource Include="Resources\drawable\cover1.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PagesGallery\PagesGallery.Droid\PagesGallery.Droid.csproj">
-      <Project>{5EB6EB6B-A412-4F41-A89B-D7C9AAD237F2}</Project>
-      <Name>PagesGallery.Droid</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Stubs\Xamarin.Forms.Platform.Android\Xamarin.Forms.Platform.Android (Forwarders).csproj">
       <Project>{6e53feb1-1100-46ae-8013-17bba35cc197}</Project>
       <Name>Xamarin.Forms.Platform.Android (Forwarders)</Name>
@@ -208,7 +203,9 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <TransformFile Include="Properties\AndroidManifest.xml" />
+    <TransformFile Include="Properties\AndroidManifest.xml">
+      <SubType>Designer</SubType>
+    </TransformFile>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\error.xml" />
@@ -264,60 +261,6 @@
     <PackageReference Include="Xam.Plugin.DeviceInfo">
       <Version>3.0.2</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Android.Arch.Core.Common">
-      <Version>1.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Arch.Lifecycle.Common">
-      <Version>1.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Arch.Lifecycle.Runtime">
-      <Version>1.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Animated.Vector.Drawable">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Annotations">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Compat">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Core.UI">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Core.Utils">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Design">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Fragment">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Media.Compat">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Transition">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v4">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v7.CardView">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v7.Palette">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView">
-      <Version>27.0.2</Version>
-    </PackageReference>
-    <PackageReference Include="Xamarin.Android.Support.Vector.Drawable">
-      <Version>27.0.2</Version>
-    </PackageReference>
     <PackageReference Include="Xamarin.Build.Download">
       <Version>0.4.9</Version>
     </PackageReference>
@@ -338,6 +281,112 @@
     </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.Tasks">
       <Version>60.1142.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
+    <PackageReference Include="Xamarin.Android.Support.Animated.Vector.Drawable">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Annotations">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Compat">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Core.UI">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Design">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Fragment">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Media.Compat">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Transition">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v4">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.Palette">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Vector.Drawable">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
+    <PackageReference Include="Xamarin.Android.Support.Animated.Vector.Drawable">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Annotations">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Compat">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Core.UI">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Core.Utils">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Design">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Fragment">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Media.Compat">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Transition">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v4">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.AppCompat">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.CardView">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.Palette">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.v7.RecyclerView">
+      <Version>27.0.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.Vector.Drawable">
+      <Version>27.0.2.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

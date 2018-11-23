@@ -21,7 +21,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>6.0</string>
+	<string>8.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>PagesGallery</string>
 	<key>CFBundleIdentifier</key>

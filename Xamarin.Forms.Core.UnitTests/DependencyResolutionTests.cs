@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			var context = "Pretend this is an Android context";
 
-			var result = Internals.Registrar.Registered.GetHandler(typeof(MockElement), context);
+			var result = Internals.Registrar.Registered.GetHandler(typeof(MockElement), null, context);
 			var typedRenderer = (MockRendererWithParam)result;
 
 			Assert.That(typedRenderer, Is.InstanceOf(typeof(MockRendererWithParam)));

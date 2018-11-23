@@ -54,7 +54,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateProgressColor();
 		}
 
-		void UpdateProgressColor()
+		internal virtual protected void UpdateProgressColor()
 		{
 			if (Element == null || Control == null)
 				return;

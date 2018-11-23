@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Xamarin.Forms.Controls.VisualGallery"
+	Visual="Material"
+	>
+	<ContentPage.Content>
+		<ScrollView>
+			<StackLayout Spacing="20">
+				<ProgressBar x:Name="progressBar" />
+				<Frame
+							 HasShadow="true"
+							 CornerRadius="0"
+							 Margin="10"
+							 Padding="0">
+					<StackLayout BackgroundColor="White" Padding="20,10" Spacing="20">
+						<Image Source="photo.jpg" Margin="-20,-10" Aspect="AspectFit"/>
+						<Label Text="Walk below the arches"
+									 Margin="0,10,0,0"
+									 FontSize="28"
+									 TextColor="Black" />
+						<Label Text="Discover modern interpretations of traditional architectural styles."
+									 TextColor="#666"
+									 FontSize="18"/>
+						<Button Image="bank" Text="learn more">
+
+						</Button>
+					</StackLayout>
+				</Frame>
+
+				<FlexLayout Direction="Row" Margin="10" Wrap="Wrap" JustifyContent="SpaceBetween">
+					<Entry
+							Placeholder="Title"
+							PlaceholderColor="Green"
+							Text="Vintage Dress"
+							BackgroundColor="#ddd"
+							FlexLayout.Grow="1"
+							TextColor="Green" />
+
+					<Entry
+							Placeholder="Price"
+							PlaceholderColor="Purple"
+							Text="$10" FlexLayout.Basis="30%"
+							BackgroundColor="#ddd"
+							TextColor="Purple"/>
+
+					<Entry
+							Placeholder="Location"
+							PlaceholderColor="Black"
+							BackgroundColor="#ddd"
+							FlexLayout.Basis="60%"
+							TextColor="Black"  />
+				</FlexLayout>
+
+				<!--
+                <Button Text="Material Button" Visual="Material"/>
+                <Button Text="Any Button" />
+                -->
+			</StackLayout>
+		</ScrollView>
+	</ContentPage.Content>
+</ContentPage>

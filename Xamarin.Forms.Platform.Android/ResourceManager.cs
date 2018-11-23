@@ -19,6 +19,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Type ResourceClass { get; set; }
 
+		public static Type StyleClass { get; set; }
+
 		internal static Drawable GetFormsDrawable(this Context context, FileImageSource fileImageSource)
 		{
 			var file = fileImageSource.File;
@@ -94,10 +96,17 @@ namespace Xamarin.Forms.Platform.Android
 			return IdFromTitle(name, ResourceClass);
 		}
 
+		public static int GetStyleByName(string name)
+		{
+			return IdFromTitle(name, StyleClass);
+		}
+
 		public static void Init(Assembly masterAssembly)
 		{
 			DrawableClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Drawable" || x.Name == "Resource_Drawable");
 			ResourceClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Id" || x.Name == "Resource_Id");
+			StyleClass = masterAssembly.GetTypes().FirstOrDefault(x => x.Name == "Style" || x.Name == "Resource_Style");
+			
 		}
 
 		internal static int IdFromTitle(string title, Type type)

@@ -21,7 +21,7 @@ steps:
 
         configuration: '$(BuildConfiguration)'
 
-        msbuildArguments: '/nowarn:VSX1000'
+        msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
 
         clean: true
 

@@ -12,7 +12,8 @@
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AssemblyName>Xamarin.Forms.Platform.Android.AppLinks</AssemblyName>
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion Condition="$(AndroidTargetFrameworkVersion) == ''">v9.0</AndroidTargetFrameworkVersion>
+    <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -61,11 +62,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Android.Support.v4">
-      <Version>27.0.2</Version>
-    </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.AppIndexing">
       <Version>60.1142.1</Version>
+    </PackageReference>
+  </ItemGroup>  
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
+    <PackageReference Include="Xamarin.Android.Support.v4">
+      <Version>28.0.0-preview7</Version>
+    </PackageReference>
+  </ItemGroup>  
+  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
+    <PackageReference Include="Xamarin.Android.Support.v4">
+      <Version>27.0.2.1</Version>
     </PackageReference>
   </ItemGroup>
 </Project>

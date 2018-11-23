@@ -107,5 +107,10 @@
       <Name>Xamarin.Forms.Platform.iOS (Forwarders)</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.iOS.MaterialComponents">
+      <Version>60.1.0</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>

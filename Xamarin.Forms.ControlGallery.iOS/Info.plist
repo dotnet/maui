@@ -22,7 +22,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>6.1</string>
+	<string>8.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>XamControl</string>
 	<key>CFBundleIdentifier</key>

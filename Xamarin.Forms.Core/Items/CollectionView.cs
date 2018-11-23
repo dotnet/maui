@@ -24,28 +24,7 @@ namespace Xamarin.Forms
 			string constructorHint = null,
 			[CallerMemberName] string memberName = "")
 		{
-			if (Device.Flags == null || !Device.Flags.Contains(CollectionViewExperimental))
-			{
-				if (!String.IsNullOrEmpty(memberName))
-				{
-					if (!String.IsNullOrEmpty(constructorHint))
-					{
-						constructorHint = constructorHint + " ";
-					}
-
-					var call = $"('{constructorHint}{memberName}')";
-
-					var errorMessage = $"The class, property, or method you are attempting to use {call} is part of "
-										+ "CollectionView; to use it, you must opt-in by calling "
-										+  $"Forms.SetFlags(\"{CollectionViewExperimental}\") before calling Forms.Init().";
-					throw new InvalidOperationException(errorMessage);
-				}
-
-				var genericErrorMessage = 
-					$"To use CollectionView or associated classes, you must opt-in by calling " 
-					+ $"Forms.SetFlags(\"{CollectionViewExperimental}\") before calling Forms.Init().";
-				throw new InvalidOperationException(genericErrorMessage);
-			}
+			ExperimentalFlags.VerifyFlagEnabled(nameof(CollectionView), ExperimentalFlags.CollectionViewExperimental);
 		}
 	}
 }

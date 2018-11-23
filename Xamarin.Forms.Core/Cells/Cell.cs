@@ -8,7 +8,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public abstract class Cell : Element, ICellController, IFlowDirectionController
+	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
 		public const int DefaultCellHeight = 40;
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
@@ -36,9 +36,22 @@ namespace Xamarin.Forms
 			}
 		}
 
+		IVisual _effectiveVisual = Xamarin.Forms.VisualMarker.Default;
+		IVisual IVisualController.EffectiveVisual
+		{
+			get { return _effectiveVisual; }
+			set
+			{
+				_effectiveVisual = value;
+				OnPropertyChanged(VisualElement.VisualProperty.PropertyName);
+			}
+		}
+		IVisual IVisualController.Visual => Xamarin.Forms.VisualMarker.MatchParent;
+
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 
 		IFlowDirectionController FlowController => this;
+		IPropertyPropagationController PropertyPropagationController => this;
 
 		public IList<MenuItem> ContextActions
 		{
@@ -150,7 +163,7 @@ namespace Xamarin.Forms
 
 			base.OnParentSet();
 
-			FlowController.NotifyFlowDirectionChanged();
+			PropertyPropagationController.PropagatePropertyChanged(null);
 		}
 
 		protected override void OnPropertyChanging(string propertyName = null)
@@ -163,7 +176,7 @@ namespace Xamarin.Forms
 					RealParent.PropertyChanging -= OnParentPropertyChanging;
 				}
 
-				FlowController.NotifyFlowDirectionChanged();
+				PropertyPropagationController.PropagatePropertyChanged(null);
 			}
 
 			base.OnPropertyChanging(propertyName);
@@ -189,16 +202,19 @@ namespace Xamarin.Forms
 				container.SendCellDisappearing(this);
 		}
 
-		void IFlowDirectionController.NotifyFlowDirectionChanged()
+		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			SetFlowDirectionFromParent(this);
+			// TODO further generalize this
+			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
+				SetFlowDirectionFromParent(this);
+
+			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
+				SetVisualfromParent(this);
 
 			foreach (var element in LogicalChildren)
 			{
-				var view = element as IFlowDirectionController;
-				if (view == null)
-					continue;
-				view.NotifyFlowDirectionChanged();
+				if (element is IPropertyPropagationController view)
+					view.PropagatePropertyChanged(propertyName);
 			}
 		}
 
@@ -230,8 +246,9 @@ namespace Xamarin.Forms
 			// its uncommon enough that we don't want to take the penalty of N GetValue calls to verify.
 			if (e.PropertyName == "RowHeight")
 				OnPropertyChanged("RenderHeight");
-			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				FlowController.NotifyFlowDirectionChanged();
+			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName ||
+					 e.PropertyName == VisualElement.VisualProperty.PropertyName)
+				PropertyPropagationController.PropagatePropertyChanged(e.PropertyName);
 		}
 
 		void OnParentPropertyChanging(object sender, PropertyChangingEventArgs e)
