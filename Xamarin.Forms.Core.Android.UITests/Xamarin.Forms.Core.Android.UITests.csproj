@@ -85,4 +85,10 @@
   <Import Project="..\Xamarin.Forms.Controls.Issues\Xamarin.Forms.Controls.Issues.Shared\Xamarin.Forms.Controls.Issues.Shared.projitems" Label="Shared" />
   <Import Project="..\Xamarin.Forms.Core.UITests.Shared\Xamarin.Forms.Core.UITests.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">
+    <ItemGroup>
+      <_XamarinUITestFiles Include="$(NuGetPackageRoot)Xamarin.UITest\%(Version)\**" Condition="@(PackageReference -> '%(Identity)') == 'Xamarin.UITest'" InProject="False" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_XamarinUITestFiles)" DestinationFolder="$(SolutionDir)packages\Xamarin.UITest.AnyVersion\%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+  </Target>
 </Project>
