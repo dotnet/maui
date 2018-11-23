@@ -161,7 +161,7 @@ namespace Xamarin.Forms.Xaml
 
 				MethodInfo addMethod;
 				if (xpe == null && (addMethod = collection.GetType().GetRuntimeMethods().First(mi => mi.Name == "Add" && mi.GetParameters().Length == 1)) != null) {
-					addMethod.Invoke(collection, new[] { Values[node] });
+					addMethod.Invoke(collection, new[] { value });
 					return;
 				}
 				xpe = xpe ?? new XamlParseException($"Value of {parentList.XmlName.LocalName} does not have a Add() method", node);
