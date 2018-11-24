@@ -197,7 +197,7 @@ namespace Xamarin.Forms.Internals
 				if (isTSource) {
 					try {
 						value = GetSourceValue(_getter((TSource)sourceObject), property.ReturnType);
-					} catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException) {
+					} catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException) {
 					}
 				}
 				if (!BindingExpression.TryConvert(ref value, property, property.ReturnType, true)) {

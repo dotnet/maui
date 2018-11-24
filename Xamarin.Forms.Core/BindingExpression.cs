@@ -610,15 +610,16 @@ namespace Xamarin.Forms
 				{
 					if (IsIndexer)
 					{
-						try
-						{
+						try {
 							value = LastGetter.Invoke(value, Arguments);
 						}
-						catch (TargetInvocationException ex)
-						{
-							if (!(ex.InnerException is KeyNotFoundException))
-								throw;
-							value = null;
+						catch (TargetInvocationException ex) {
+							if (ex.InnerException is KeyNotFoundException || ex.InnerException is IndexOutOfRangeException) {
+								value = null;
+								return false;
+							}
+							else
+								throw ex.InnerException;
 						}
 						return true;
 					}
