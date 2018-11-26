@@ -850,6 +850,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ContactsPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\FailImageSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ICacheService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4138.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

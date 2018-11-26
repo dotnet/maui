@@ -55,7 +55,7 @@
     <PackageReference Include="Selenium.Support" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.14.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />
-    <PackageReference Include="Xamarin.UITest" Version="2.2.6" />
+    <PackageReference Include="Xamarin.UITest" Version="2.2.7" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1470,9 +1470,13 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_child?.Element != null)
 				{
-					var layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
+					Rectangle layoutBounds = new Rectangle(IconWidth, 0, Bounds.Width - IconWidth, height);
 					if (_child.Element.Bounds != layoutBounds)
 						Layout.LayoutChildIntoBoundingRegion(_child.Element, layoutBounds);
+				}
+				else if(_icon != null && Superview != null)
+				{
+					_icon.Center = new PointF(Superview.Frame.Width / 2 - Frame.X, Superview.Frame.Height / 2);
 				}
 			}
 
