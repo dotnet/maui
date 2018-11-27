@@ -203,6 +203,9 @@ namespace Xamarin.Forms.Platform.MacOS
 				if (Renderer.Control.IsLoading)
 					return;
 
+				if (Renderer.Control.MainFrameUrl == $"file://{NSBundle.MainBundle.BundlePath}/")
+					return;
+
 				Renderer._ignoreSourceChanges = true;
 				Renderer.Element?.SetValueFromRenderer(WebView.SourceProperty, new UrlWebViewSource { Url = Renderer.Control.MainFrameUrl });
 				Renderer._ignoreSourceChanges = false;
