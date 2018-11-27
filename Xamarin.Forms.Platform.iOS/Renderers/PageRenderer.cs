@@ -94,8 +94,12 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_appeared = true;
-			Page.SendAppearing();
 			UpdateStatusBarPrefersHidden();
+
+			if (Element.Parent is CarouselPage)
+				return;
+
+			Page.SendAppearing();
 		}
 
 		public override void ViewDidDisappear(bool animated)
@@ -106,6 +110,10 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			_appeared = false;
+
+			if (Element.Parent is CarouselPage)
+				return;
+
 			Page.SendDisappearing();
 		}
 

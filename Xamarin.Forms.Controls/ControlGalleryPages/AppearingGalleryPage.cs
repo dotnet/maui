@@ -98,6 +98,7 @@ namespace Xamarin.Forms.Controls
 					Children = {
 						new Label { Text = $"Hello Appearing {_theId} page" },
 						new Button { Text = "Push new Page", Command = new Command ( async () => { await Navigation.PushAsync( new AppearingPage(2)); }) },
+						new Button { Text = "Add new Page", Command = new Command ( () => { (Parent as CarouselPage).Children.Add( new AppearingPage(3)); }) },
 						new Button { Text = "Pop page", Command = new Command ( async () => { await Navigation.PopAsync(); }) },
 						new Button { Text = "Pop to root", Command = new Command ( async () => { await Navigation.PopToRootAsync(); }) },
 						new Button { Text = "Change Main Page", Command = new Command ( () => { 
