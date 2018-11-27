@@ -56,12 +56,12 @@ namespace Xamarin.Forms.Platform.UWP
 				UpdatePlaceholder();
 				UpdateTextColor();
 				UpdateFont();
-				UpdateInputScope();
 				UpdateAlignment();
 				UpdatePlaceholderColor();
 				UpdateMaxLength();
 				UpdateDetectReadingOrderFromContent();
 				UpdateReturnType();
+				UpdateInputScope();
 
 				if (_cursorPositionChangePending)
 					UpdateCursorPosition();

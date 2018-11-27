@@ -529,7 +529,8 @@ namespace Xamarin.Forms.CustomAttributes
 			TextDisabledColor,
 			PlaceholderDisabledColor,
 			PasswordColor,
-			MaxLength
+			MaxLength,
+			IsPasswordNumeric
 		}
 
 		public enum Frame

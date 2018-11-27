@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
@@ -19,29 +20,30 @@ namespace Xamarin.Forms.Platform.UWP
 	{
 		const char ObfuscationCharacter = '●';
 
-		public static readonly DependencyProperty PlaceholderForegroundBrushProperty = 
+		public static readonly DependencyProperty PlaceholderForegroundBrushProperty =
 			DependencyProperty.Register(nameof(PlaceholderForegroundBrush), typeof(Brush), typeof(FormsTextBox),
 				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty = 
+		public static readonly DependencyProperty PlaceholderForegroundFocusBrushProperty =
 			DependencyProperty.Register(nameof(PlaceholderForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
 				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty ForegroundFocusBrushProperty = 
-			DependencyProperty.Register(nameof(ForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox), 
+		public static readonly DependencyProperty ForegroundFocusBrushProperty =
+			DependencyProperty.Register(nameof(ForegroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
 				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty BackgroundFocusBrushProperty = 
-			DependencyProperty.Register(nameof(BackgroundFocusBrush), typeof(Brush), typeof(FormsTextBox), 
+		public static readonly DependencyProperty BackgroundFocusBrushProperty =
+			DependencyProperty.Register(nameof(BackgroundFocusBrush), typeof(Brush), typeof(FormsTextBox),
 				new PropertyMetadata(default(Brush), FocusPropertyChanged));
 
-		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register(nameof(IsPassword), 
+		public static readonly DependencyProperty IsPasswordProperty = DependencyProperty.Register(nameof(IsPassword),
 			typeof(bool), typeof(FormsTextBox), new PropertyMetadata(default(bool), OnIsPasswordChanged));
 
-		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), 
+		public new static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text),
 			typeof(string), typeof(FormsTextBox), new PropertyMetadata("", TextPropertyChanged));
 
 		InputScope _passwordInputScope;
+		InputScope _numericPasswordInputScope;
 		Border _borderElement;
 		InputScope _cachedInputScope;
 		bool _cachedPredictionsSetting;
@@ -114,6 +116,23 @@ namespace Xamarin.Forms.Platform.UWP
 				_passwordInputScope.Names.Add(name);
 
 				return _passwordInputScope;
+			}
+		}
+
+		InputScope NumericPasswordInputScope
+		{
+			get
+			{
+				if (_numericPasswordInputScope != null)
+				{
+					return _numericPasswordInputScope;
+				}
+
+				_numericPasswordInputScope = new InputScope();
+				var name = new InputScopeName { NameValue = InputScopeNameValue.NumericPassword };
+				_numericPasswordInputScope.Names.Add(name);
+
+				return _numericPasswordInputScope;
 			}
 		}
 
@@ -340,7 +359,16 @@ namespace Xamarin.Forms.Platform.UWP
 				_cachedInputScope = InputScope;
 				_cachedSpellCheckSetting = IsSpellCheckEnabled;
 				_cachedPredictionsSetting = IsTextPredictionEnabled;
-				InputScope = PasswordInputScope; // Change to default input scope so we don't have suggestions, etc.
+
+				if (InputScope != null && InputScope.Names.Any(i => i.NameValue == InputScopeNameValue.Number))
+				{
+					InputScope = NumericPasswordInputScope;
+				}
+				else
+				{
+					InputScope = PasswordInputScope; // Change to default input scope so we don't have suggestions, etc.
+				}
+
 				IsTextPredictionEnabled = false; // Force the other text modification options off
 				IsSpellCheckEnabled = false;
 			}
