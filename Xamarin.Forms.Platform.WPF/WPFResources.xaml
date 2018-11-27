@@ -290,8 +290,15 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableSectionHeader">
-		<TextBlock Text="{Binding Converter={StaticResource LowerConverter}}" Style="{StaticResource SubheaderTextBlockStyle}" 
-							FontSize="24" Foreground="Black" />
+		<TextBlock Text="{Binding Title, Converter={StaticResource LowerConverter}}" Style="{StaticResource SubheaderTextBlockStyle}" 
+							FontSize="24">
+			<TextBlock.Foreground>
+				<MultiBinding Converter="{StaticResource ColorConverter}" ConverterParameter="{x:Static TextBlock.ForegroundProperty}">
+					<Binding RelativeSource="{RelativeSource Self}"/>
+					<Binding Path="TextColor"/>
+				</MultiBinding>
+			</TextBlock.Foreground>
+		</TextBlock>
 	</DataTemplate>
 
 	<DataTemplate x:Key="TextCell">

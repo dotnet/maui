@@ -94,7 +94,7 @@ namespace Xamarin.Forms.Platform.WPF
 			foreach (var item in Element.Root)
 			{
 				if (!string.IsNullOrWhiteSpace(item.Title))
-					result.Add(item.Title);
+					result.Add(item);
 				
 				result.AddRange(item);
 			}

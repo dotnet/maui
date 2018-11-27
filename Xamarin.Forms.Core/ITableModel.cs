@@ -9,6 +9,7 @@ namespace Xamarin.Forms
 		int GetSectionCount();
 		string[] GetSectionIndexTitles();
 		string GetSectionTitle(int section);
+		Color GetSectionTextColor(int section);
 		void RowLongPressed(int section, int row);
 		void RowSelected(object item);
 		void RowSelected(int section, int row);

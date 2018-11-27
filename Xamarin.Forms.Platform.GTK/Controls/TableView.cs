@@ -142,7 +142,8 @@ namespace Xamarin.Forms.Platform.GTK.Controls
 					var tableSectionSpan = new Span()
 					{
 						FontSize = 12,
-						Text = tableSection.Title ?? string.Empty
+						Text = tableSection.Title ?? string.Empty,
+						TextColor = tableSection.TextColor
 					};
 
 					// Table Section Title

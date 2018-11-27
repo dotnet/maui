@@ -26,7 +26,7 @@
 	<uwp:ImageConverter x:Key="ImageConverter" />
 	<uwp:ViewToRendererConverter x:Key="ViewToRenderer" />
 	<uwp:ColorConverter x:Key="ColorConverter" />
-    <uwp:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
+	<uwp:HorizontalTextAlignmentConverter x:Key="HorizontalTextAlignmentConverter" />
 	<uwp:TextAlignmentToHorizontalAlignmentConverter x:Key="AlignmentConverter" />
 	<uwp:KeyboardConverter x:Key="KeyboardConverter" />
 	<uwp:MasterBackgroundConverter x:Key="MasterBackgroundConverter" />
@@ -97,7 +97,7 @@
 	</DataTemplate>
 
 	<DataTemplate x:Key="TableSection">
-		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" />
+		<TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" Foreground="{Binding TextColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
 	</DataTemplate>
 	
 	<uwp:ListViewGroupStyleSelector x:Key="ListViewGroupSelector" />

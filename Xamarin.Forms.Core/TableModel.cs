@@ -38,6 +38,11 @@ namespace Xamarin.Forms.Internals
 			return null;
 		}
 
+		public virtual Color GetSectionTextColor(int section)
+		{
+			return Color.Default;
+		}
+
 		public event EventHandler<EventArg<object>> ItemLongPressed;
 
 		public event EventHandler<EventArg<object>> ItemSelected;

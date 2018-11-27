@@ -204,6 +204,11 @@ namespace Xamarin.Forms
 				return _root[section].Title;
 			}
 
+			public override Color GetSectionTextColor(int section)
+			{
+				return _root[section].TextColor;
+			}
+
 			protected override void OnRowSelected(object item)
 			{
 				base.OnRowSelected(item);

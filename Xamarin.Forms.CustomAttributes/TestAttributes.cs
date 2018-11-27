@@ -440,6 +440,7 @@ namespace Xamarin.Forms.CustomAttributes
 			Intent,
 			RowHeight,
 			HasUnevenRows,
+			TableSection
 		}
 
 		public enum TableSectionBase

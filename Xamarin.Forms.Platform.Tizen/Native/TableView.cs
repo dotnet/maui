@@ -13,7 +13,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// Initializes a new instance of the TableView class.
 		/// </summary>
 		public TableView(EvasObject parent)
-			: base(parent) {
+			: base(parent)
+		{
 		}
 
 		/// <summary>
@@ -25,8 +26,8 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 			Clear();
 			foreach (TableSection ts in root)
 			{
-				if(!string.IsNullOrEmpty(ts.Title))
-					AddSectionTitle(ts.Title);
+				if (!string.IsNullOrEmpty(ts.Title))
+					AddSectionTitle(ts.Title, ts.TextColor);
 				AddSource(ts);
 			}
 		}
@@ -43,11 +44,12 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 		/// <summary>
 		/// Sets the section title.
 		/// </summary>
-		void AddSectionTitle(string title)
+		void AddSectionTitle(string title, Color textColor)
 		{
 			Cell cell = new SectionCell()
 			{
-				Text = title
+				Text = title,
+				TextColor = textColor
 			};
 			AddCell(cell);
 		}

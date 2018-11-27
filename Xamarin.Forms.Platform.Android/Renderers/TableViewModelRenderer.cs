@@ -217,13 +217,14 @@ namespace Xamarin.Forms.Platform.Android
 			for (var sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++)
 			{
 				var sectionTitle = model.GetSectionTitle(sectionIndex);
+				var sectionTextColor = model.GetSectionTextColor(sectionIndex);
 				var sectionRowCount = model.GetRowCount(sectionIndex);
 
 				if (!string.IsNullOrEmpty(sectionTitle))
 				{
 					Cell headerCell = model.GetHeaderCell(sectionIndex);
 					if (headerCell == null)
-						headerCell = new TextCell { Text = sectionTitle };
+						headerCell = new TextCell { Text = sectionTitle, TextColor = sectionTextColor };
 					headerCell.Parent = _view;
 
 					newIsHeaderCache.Add(true);
