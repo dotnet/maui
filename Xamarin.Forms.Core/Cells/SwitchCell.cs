@@ -12,6 +12,14 @@ namespace Xamarin.Forms
 
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(SwitchCell), default(string));
 
+		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(SwitchCell), Color.Default);
+
+		public Color OnColor
+		{
+			get { return (Color)GetValue(OnColorProperty); }
+			set { SetValue(OnColorProperty, value); }
+		}
+
 		public bool On
 		{
 			get { return (bool)GetValue(OnProperty); }

@@ -9,6 +9,8 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		const string CellName = "Xamarin.SwitchCell";
 
+		UIColor _defaultOnColor;
+
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
 			var tvc = reusableCell as CellTableViewCell;
@@ -32,6 +34,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 			var boolCell = (SwitchCell)item;
 
+			_defaultOnColor = UISwitch.Appearance.OnTintColor;
+
 			tvc.Cell = item;
 			tvc.PropertyChanged += HandlePropertyChanged;
 			tvc.AccessoryView = uiSwitch;
@@ -44,6 +48,7 @@ namespace Xamarin.Forms.Platform.iOS
 			UpdateBackground(tvc, item);
 			UpdateIsEnabled(tvc, boolCell);
 			UpdateFlowDirection(tvc, boolCell);
+			UpdateOnColor(tvc, boolCell);
 
 			return tvc;
 		}
@@ -54,13 +59,18 @@ namespace Xamarin.Forms.Platform.iOS
 			var realCell = (CellTableViewCell)GetRealCell(boolCell);
 
 			if (e.PropertyName == SwitchCell.OnProperty.PropertyName)
+			{
 				((UISwitch)realCell.AccessoryView).SetState(boolCell.On, true);
+				UpdateOnColor(realCell, boolCell);
+			}
 			else if (e.PropertyName == SwitchCell.TextProperty.PropertyName)
 				realCell.TextLabel.Text = boolCell.Text;
 			else if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 				UpdateIsEnabled(realCell, boolCell);
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateFlowDirection(realCell, boolCell);
+			else if (e.PropertyName == SwitchCell.OnColorProperty.PropertyName)
+				UpdateOnColor(realCell, boolCell);
 		}
 
 		void OnSwitchValueChanged(object sender, EventArgs eventArgs)
@@ -96,6 +106,18 @@ namespace Xamarin.Forms.Platform.iOS
 			var uiSwitch = cell.AccessoryView as UISwitch;
 			if (uiSwitch != null)
 				uiSwitch.Enabled = switchCell.IsEnabled;
+		}
+
+		void UpdateOnColor(CellTableViewCell cell, SwitchCell switchCell)
+		{
+			var uiSwitch = cell.AccessoryView as UISwitch;
+			if (uiSwitch != null)
+			{
+				if (switchCell.OnColor == Color.Default)
+					uiSwitch.OnTintColor = _defaultOnColor;
+				else
+					uiSwitch.OnTintColor = switchCell.OnColor.ToUIColor();
+			}
 		}
 	}
 }
