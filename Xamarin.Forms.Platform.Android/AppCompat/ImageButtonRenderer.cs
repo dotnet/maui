@@ -65,7 +65,9 @@ namespace Xamarin.Forms.Platform.Android
 			SetOnTouchListener(this);
 			OnFocusChangeListener = this;
 
-			Tag = this;
+			// Setting the tag will break Glide
+			// Tag = this;
+
 			_backgroundTracker = new BorderBackgroundManager(this, false);
 		}
 
