@@ -8,7 +8,7 @@ namespace Xamarin.Forms.Platform.iOS
 	// TODO hartez 2018/06/01 14:21:24 Add a method for updating the layout	
 	internal class CollectionViewController : UICollectionViewController
 	{
-		readonly IItemsViewSource _itemsSource;
+		IItemsViewSource _itemsSource;
 		readonly ItemsView _itemsView;
 		readonly ItemsViewLayout _layout;
 		bool _initialConstraintsSet;
@@ -66,6 +66,13 @@ namespace Xamarin.Forms.Platform.iOS
 				_layout.ConstrainTo(CollectionView.Bounds.Size);
 				_initialConstraintsSet = true;
 			}
+		}
+
+		public virtual void UpdateItemsSource()
+		{
+			_itemsSource =  ItemsSourceFactory.Create(_itemsView.ItemsSource, CollectionView);
+			CollectionView.ReloadData();
+			CollectionView.CollectionViewLayout.InvalidateLayout();
 		}
 
 		protected virtual void UpdateDefaultCell(DefaultCell cell, NSIndexPath indexPath)

@@ -191,7 +191,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			ElementPropertyChanged?.Invoke(this, changedProperty);
 
-			// TODO hartez 2018/10/24 10:41:55 If the ItemTemplate changes between set and null, we need to make sure to clear the recyclerview pool	
+			// TODO hartez 2018/10/24 10:41:55 If the ItemTemplate changes from set to null, we need to make sure to clear the recyclerview pool	
 
 			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
 			{

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using Foundation;
 using UIKit;
@@ -39,6 +40,16 @@ namespace Xamarin.Forms.Platform.iOS
 			SetUpNewElement(e.NewElement);
 			
 			base.OnElementChanged(e);
+		}
+
+		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)
+		{
+			base.OnElementPropertyChanged(sender, changedProperty);
+
+			if (changedProperty.Is(ItemsView.ItemsSourceProperty))
+			{
+				_collectionViewController.UpdateItemsSource();
+			}
 		}
 
 		protected virtual ItemsViewLayout SelectLayout(IItemsLayout layoutSpecification)
