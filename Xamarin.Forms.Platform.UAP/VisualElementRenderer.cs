@@ -617,6 +617,19 @@ namespace Xamarin.Forms.Platform.UWP
 			{
 				RemoveBackgroundLayer();
 				IsHitTestVisible = Element.IsEnabled && !Element.InputTransparent;
+
+				if (!IsHitTestVisible)
+				{
+					return;
+				}
+
+				// If this Panel's background brush is null, the UWP considers it transparent to hit testing (even 
+				// when IsHitTestVisible is true). So we have to explicitly set a background brush to make it show up
+				// in hit testing. 
+				if (Element is Layout && Background == null)
+				{
+					Background = new SolidColorBrush(Windows.UI.Colors.Transparent);
+				}
 			}
 		}
 
