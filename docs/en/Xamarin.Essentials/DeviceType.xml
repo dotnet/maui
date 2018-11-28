@@ -18,7 +18,7 @@
   <Members>
     <Member MemberName="Physical">
       <MemberSignature Language="C#" Value="Physical" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DeviceType Physical = int32(0)" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DeviceType Physical = int32(1)" />
       <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceType.Physical" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
@@ -28,14 +28,31 @@
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.DeviceType</ReturnType>
       </ReturnValue>
-      <MemberValue>0</MemberValue>
+      <MemberValue>1</MemberValue>
       <Docs>
         <summary>The device is a physical device, such as an iPhone, Android tablet or Windows desktop.</summary>
       </Docs>
     </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="Unknown" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DeviceType Unknown = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceType.Unknown" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DeviceType</ReturnType>
+      </ReturnValue>
+      <MemberValue>0</MemberValue>
+      <Docs>
+        <summary>To be added.</summary>
+      </Docs>
+    </Member>
     <Member MemberName="Virtual">
       <MemberSignature Language="C#" Value="Virtual" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DeviceType Virtual = int32(1)" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.DeviceType Virtual = int32(2)" />
       <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.DeviceType.Virtual" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
@@ -45,7 +62,7 @@
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.DeviceType</ReturnType>
       </ReturnValue>
-      <MemberValue>1</MemberValue>
+      <MemberValue>2</MemberValue>
       <Docs>
         <summary>The device is virtual, such as the iOS simulators, Android emulators or Windows emulators.</summary>
       </Docs>

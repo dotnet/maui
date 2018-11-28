@@ -182,6 +182,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
       <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
+      <Member Id="F:Xamarin.Essentials.DeviceType.Unknown" />
       <Member Id="F:Xamarin.Essentials.DeviceType.Virtual" />
     </Type>
     <Type Name="Xamarin.Essentials.DisplayInfo" Id="T:Xamarin.Essentials.DisplayInfo">
