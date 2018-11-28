@@ -10,6 +10,6 @@
 
         static string PlatformGetBuild() => throw new NotImplementedInReferenceAssemblyException();
 
-        static void PlatformOpenSettings() => throw new NotImplementedInReferenceAssemblyException();
+        static void PlatformShowSettingsUI() => throw new NotImplementedInReferenceAssemblyException();
     }
 }

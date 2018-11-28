@@ -12,7 +12,7 @@ namespace Tests
 
         [Fact]
         public void Barometer_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Barometer.Start(SensorSpeed.Default));
 
         [Fact]
         public void Barometer_IsMonitoring() =>

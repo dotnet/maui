@@ -11,7 +11,7 @@ namespace DeviceTests
             Assert.Equal(NetworkAccess.Internet, Connectivity.NetworkAccess);
 
         [Fact]
-        public void Profiles() =>
-            Assert.True(Connectivity.Profiles.Count() > 0);
+        public void ConnectionProfiles() =>
+            Assert.True(Connectivity.ConnectionProfiles.Count() > 0);
     }
 }

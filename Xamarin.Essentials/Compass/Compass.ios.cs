@@ -17,7 +17,7 @@ namespace Xamarin.Essentials
 
         static CLLocationManager locationManager;
 
-        internal static void PlatformStart(SensorSpeed sensorSpeed)
+        internal static void PlatformStart(SensorSpeed sensorSpeed, bool applyLowPassFilter)
         {
             locationManager = new CLLocationManager();
             locationManager.ShouldDisplayHeadingCalibration += LocationManagerShouldDisplayHeadingCalibration;
@@ -31,7 +31,7 @@ namespace Xamarin.Essentials
                     locationManager.HeadingFilter = GameFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccurracyBestForNavigation;
                     break;
-                case SensorSpeed.Normal:
+                case SensorSpeed.Default:
                     locationManager.HeadingFilter = NormalFilter;
                     locationManager.DesiredAccuracy = CLLocation.AccuracyBest;
                     break;

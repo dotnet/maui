@@ -68,11 +68,11 @@ namespace DeviceTests
         public void Platform_Is_Correct()
         {
 #if WINDOWS_UWP
-            Assert.Equal(DeviceInfo.Platforms.UWP, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.UWP, DeviceInfo.Platform);
 #elif __IOS__
-            Assert.Equal(DeviceInfo.Platforms.iOS, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
 #elif __ANDROID__
-            Assert.Equal(DeviceInfo.Platforms.Android, DeviceInfo.Platform);
+            Assert.Equal(DevicePlatform.Android, DeviceInfo.Platform);
 #else
             throw new PlatformNotSupportedException();
 #endif
@@ -96,11 +96,55 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(() =>
             {
-                var metrics = DeviceDisplay.ScreenMetrics;
+                var metrics = DeviceDisplay.MainDisplayInfo;
 
                 Assert.True(metrics.Width > 0);
                 Assert.True(metrics.Height > 0);
                 Assert.True(metrics.Density > 0);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Locks()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Unlocks_Without_Locking()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
+            });
+        }
+
+        [Fact]
+        public Task ScreenLock_Locks_Only_Once()
+        {
+            return Utils.OnMainThread(() =>
+            {
+                Assert.False(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+                DeviceDisplay.KeepScreenOn = true;
+                Assert.True(DeviceDisplay.KeepScreenOn);
+
+                DeviceDisplay.KeepScreenOn = false;
+                Assert.False(DeviceDisplay.KeepScreenOn);
             });
         }
     }

@@ -25,9 +25,14 @@
                 <Entry Text="{Binding RecipientsBcc}" />
                 <Label Text="Subject:" />
                 <Entry Text="{Binding Subject}" />
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Is Html?" HorizontalTextAlignment="End"  HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
+                    <Switch IsToggled="{Binding IsHtml}" VerticalOptions="Center"/>
+                </StackLayout>
                 <Label Text="Body:" />
                 <Editor Text="{Binding Body}" Keyboard="Chat"
-                        VerticalOptions="FillAndExpand" HeightRequest="200" />
+                        AutoSize="TextChanges"
+                        VerticalOptions="FillAndExpand" HeightRequest="100" />
 
             </StackLayout>
         </ScrollView>

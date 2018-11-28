@@ -17,7 +17,7 @@ namespace Xamarin.Essentials
         internal static Task<IEnumerable<Locale>> PlatformGetLocalesAsync() =>
             Task.FromResult(SpeechSynthesizer.AllVoices.Select(v => new Locale(v.Language, null, v.DisplayName, v.Id)));
 
-        internal static async Task PlatformSpeakAsync(string text, SpeakSettings settings, CancellationToken cancelToken = default)
+        internal static async Task PlatformSpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
         {
             var tcsUtterance = new TaskCompletionSource<bool>();
 
@@ -25,13 +25,13 @@ namespace Xamarin.Essentials
             {
                 var player = new MediaPlayer();
 
-                var ssml = GetSpeakParametersSSMLProsody(text, settings);
+                var ssml = GetSpeakParametersSSMLProsody(text, options);
 
                 var speechSynthesizer = new SpeechSynthesizer();
 
-                if (!string.IsNullOrWhiteSpace(settings?.Locale?.Id))
+                if (!string.IsNullOrWhiteSpace(options?.Locale?.Id))
                 {
-                    var voiceInfo = SpeechSynthesizer.AllVoices.FirstOrDefault(v => v.Id == settings.Locale.Id) ?? SpeechSynthesizer.DefaultVoice;
+                    var voiceInfo = SpeechSynthesizer.AllVoices.FirstOrDefault(v => v.Id == options.Locale.Id) ?? SpeechSynthesizer.DefaultVoice;
                     speechSynthesizer.Voice = voiceInfo;
                 }
 
@@ -67,20 +67,20 @@ namespace Xamarin.Essentials
             }
         }
 
-        static string GetSpeakParametersSSMLProsody(string text, SpeakSettings settings)
+        static string GetSpeakParametersSSMLProsody(string text, SpeechOptions options)
         {
             var volume = "default";
             var pitch = "default";
             var rate = "default";
 
             // Look for the specified language, otherwise the default voice
-            var locale = settings?.Locale?.Language ?? SpeechSynthesizer.DefaultVoice.Language;
+            var locale = options?.Locale?.Language ?? SpeechSynthesizer.DefaultVoice.Language;
 
-            if (settings?.Volume.HasValue ?? false)
-                volume = (settings.Volume.Value * 100f).ToString(CultureInfo.InvariantCulture);
+            if (options?.Volume.HasValue ?? false)
+                volume = (options.Volume.Value * 100f).ToString(CultureInfo.InvariantCulture);
 
-            if (settings?.Pitch.HasValue ?? false)
-                pitch = ProsodyPitch(settings.Pitch);
+            if (options?.Pitch.HasValue ?? false)
+                pitch = ProsodyPitch(options.Pitch);
 
             // SSML generation
             var ssml = new StringBuilder();

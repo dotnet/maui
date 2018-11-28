@@ -2,12 +2,11 @@
 {
     public enum ConnectionProfile
     {
-        Bluetooth,
-        Cellular,
-        Ethernet,
-        WiMAX,
-        WiFi,
-        Other
+        Unknown = 0,
+        Bluetooth = 1,
+        Cellular = 2,
+        Ethernet = 3,
+        WiFi = 4
     }
 
     public enum NetworkAccess

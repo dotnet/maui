@@ -21,7 +21,7 @@
                 <Label Text="{Binding AppVersion, StringFormat='Version: {0}'}" />
                 <Label Text="{Binding AppBuild, StringFormat='Build: {0}'}" />
 
-                <Button Text="Open Settings" Command="{Binding OpenSettingsCommand}"/>
+                <Button Text="Open Settings" Command="{Binding ShowSettingsUICommand}"/>
             </StackLayout>
         </ScrollView>
     </StackLayout>

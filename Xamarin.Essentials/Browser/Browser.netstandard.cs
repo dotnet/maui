@@ -5,7 +5,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Browser
     {
-        static Task PlatformOpenAsync(Uri uri, BrowserLaunchMode launchMode) =>
+        static Task<bool> PlatformOpenAsync(Uri uri, BrowserLaunchMode launchMode) =>
             throw new NotImplementedInReferenceAssemblyException();
     }
 }

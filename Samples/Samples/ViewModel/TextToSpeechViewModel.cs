@@ -12,7 +12,7 @@ namespace Samples.ViewModel
         CancellationTokenSource cts;
 
         string text;
-        bool advancedSettings;
+        bool advancedOptions;
         float volume;
         float pitch;
         string locale = "Default";
@@ -26,7 +26,7 @@ namespace Samples.ViewModel
 
             Text = "Xamarin Essentials makes text to speech easy!";
 
-            AdvancedSettings = false;
+            AdvancedOptions = false;
             Volume = 1.0f;
             Pitch = 1.0f;
         }
@@ -47,10 +47,10 @@ namespace Samples.ViewModel
 
             cts = new CancellationTokenSource();
 
-            SpeakSettings settings = null;
-            if (AdvancedSettings)
+            SpeechOptions options = null;
+            if (AdvancedOptions)
             {
-                settings = new SpeakSettings
+                options = new SpeechOptions
                 {
                     Volume = Volume,
                     Pitch = Pitch,
@@ -62,13 +62,13 @@ namespace Samples.ViewModel
             if (multiple)
             {
                 speaks = Task.WhenAll(
-                    TextToSpeech.SpeakAsync(Text + " 1 ", settings, cancelToken: cts.Token),
-                    TextToSpeech.SpeakAsync(Text + " 2 ", settings, cancelToken: cts.Token),
-                    TextToSpeech.SpeakAsync(Text + " 3 ", settings, cancelToken: cts.Token));
+                    TextToSpeech.SpeakAsync(Text + " 1 ", options, cancelToken: cts.Token),
+                    TextToSpeech.SpeakAsync(Text + " 2 ", options, cancelToken: cts.Token),
+                    TextToSpeech.SpeakAsync(Text + " 3 ", options, cancelToken: cts.Token));
             }
             else
             {
-                speaks = TextToSpeech.SpeakAsync(Text, settings, cts.Token);
+                speaks = TextToSpeech.SpeakAsync(Text, options, cts.Token);
             }
 
             // use ContinueWith so we don't have to catch the cancelled exceptions
@@ -108,10 +108,10 @@ namespace Samples.ViewModel
             set => SetProperty(ref text, value);
         }
 
-        public bool AdvancedSettings
+        public bool AdvancedOptions
         {
-            get => advancedSettings;
-            set => SetProperty(ref advancedSettings, value);
+            get => advancedOptions;
+            set => SetProperty(ref advancedOptions, value);
         }
 
         public float Volume

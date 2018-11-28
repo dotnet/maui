@@ -4,30 +4,33 @@ namespace Xamarin.Essentials
 {
     public enum GeolocationAccuracy
     {
+        // Default is Medium
+        Default = 0,
+
         // iOS:     ThreeKilometers         (3000m)
         // Android: ACCURACY_LOW, POWER_LOW (500m)
         // UWP:     3000                    (1000-5000m)
-        Lowest,
+        Lowest = 1,
 
         // iOS:     Kilometer               (1000m)
         // Android: ACCURACY_LOW, POWER_MED (500m)
         // UWP:     1000                    (300-3000m)
-        Low,
+        Low = 2,
 
         // iOS:     HundredMeters           (100m)
         // Android: ACCURACY_MED, POWER_MED (100-500m)
         // UWP:     100                     (30-500m)
-        Medium,
+        Medium = 3,
 
         // iOS:     NearestTenMeters        (10m)
         // Android: ACCURACY_HI, POWER_MED  (0-100m)
         // UWP:     High                    (<=10m)
-        High,
+        High = 4,
 
         // iOS:     Best                    (0m)
         // Android: ACCURACY_HI, POWER_HI   (0-100m)
         // UWP:     High                    (<=10m)
-        Best
+        Best = 5
     }
 
     public partial class GeolocationRequest
@@ -35,7 +38,7 @@ namespace Xamarin.Essentials
         public GeolocationRequest()
         {
             Timeout = TimeSpan.Zero;
-            DesiredAccuracy = GeolocationAccuracy.Medium;
+            DesiredAccuracy = GeolocationAccuracy.Default;
         }
 
         public GeolocationRequest(GeolocationAccuracy accuracy)

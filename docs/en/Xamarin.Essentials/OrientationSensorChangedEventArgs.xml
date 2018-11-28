@@ -12,11 +12,27 @@
   <Interfaces />
   <Docs>
     <summary>Orientation event args when reading changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public OrientationSensorChangedEventArgs (Xamarin.Essentials.OrientationSensorData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.OrientationSensorData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.OrientationSensorChangedEventArgs.#ctor(Xamarin.Essentials.OrientationSensorData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.OrientationSensorData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Reading">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.OrientationSensorData Reading { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.OrientationSensorData Reading" />

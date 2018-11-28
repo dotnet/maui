@@ -11,7 +11,7 @@ namespace Samples.ViewModel
         string notAvailable = "not available";
         string lastLocation;
         string currentLocation;
-        int accuracy = (int)GeolocationAccuracy.Medium;
+        int accuracy = (int)GeolocationAccuracy.Default;
         CancellationTokenSource cts;
 
         public GeolocationViewModel()

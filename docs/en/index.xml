@@ -51,9 +51,6 @@
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETStandard,Version=v2.0", FrameworkDisplayName="")</AttributeName>
         </Attribute>
         <Attribute>
-          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+8db259fd337f910db5b9158f8ab6b5cdbb783499")</AttributeName>
-        </Attribute>
-        <Attribute>
           <AttributeName>System.Runtime.CompilerServices.InternalsVisibleTo("XamarinEssentialsDeviceTestsShared")</AttributeName>
         </Attribute>
         <Attribute FrameworkAlternate="xamarin-essentials-android">
@@ -80,6 +77,9 @@
         <Attribute FrameworkAlternate="xamarin-essentials-uwp">
           <AttributeName>System.Runtime.Versioning.TargetFramework(".NETCore,Version=v5.0", FrameworkDisplayName=".NET for Windows Universal")</AttributeName>
         </Attribute>
+        <Attribute>
+          <AttributeName>System.Reflection.AssemblyInformationalVersion("1.0.0+6cbf633fff1449502abe23bcb054e7575ea6e214")</AttributeName>
+        </Attribute>
       </Attributes>
     </Assembly>
   </Assemblies>
@@ -95,7 +95,7 @@
       <Type Name="BarometerChangedEventArgs" Kind="Class" />
       <Type Name="BarometerData" Kind="Structure" />
       <Type Name="Battery" Kind="Class" />
-      <Type Name="BatteryChangedEventArgs" Kind="Class" />
+      <Type Name="BatteryInfoChangedEventArgs" Kind="Class" />
       <Type Name="BatteryPowerSource" Kind="Enumeration" />
       <Type Name="BatteryState" Kind="Enumeration" />
       <Type Name="Browser" Kind="Class" />
@@ -107,12 +107,15 @@
       <Type Name="ConnectionProfile" Kind="Enumeration" />
       <Type Name="Connectivity" Kind="Class" />
       <Type Name="ConnectivityChangedEventArgs" Kind="Class" />
-      <Type Name="Share" Kind="Class" />
       <Type Name="DeviceDisplay" Kind="Class" />
+      <Type Name="DeviceIdiom" Kind="Structure" />
       <Type Name="DeviceInfo" Kind="Class" />
-      <Type Name="DeviceInfo+Idioms" Kind="Class" />
-      <Type Name="DeviceInfo+Platforms" Kind="Class" />
+      <Type Name="DevicePlatform" Kind="Structure" />
       <Type Name="DeviceType" Kind="Enumeration" />
+      <Type Name="DisplayInfo" Kind="Structure" />
+      <Type Name="DisplayInfoChangedEventArgs" Kind="Class" />
+      <Type Name="DisplayOrientation" Kind="Enumeration" />
+      <Type Name="DisplayRotation" Kind="Enumeration" />
       <Type Name="DistanceUnits" Kind="Enumeration" />
       <Type Name="Email" Kind="Class" />
       <Type Name="EmailBodyFormat" Kind="Enumeration" />
@@ -138,9 +141,9 @@
       <Type Name="MagnetometerChangedEventArgs" Kind="Class" />
       <Type Name="MagnetometerData" Kind="Structure" />
       <Type Name="MainThread" Kind="Class" />
-      <Type Name="MapDirectionsMode" Kind="Enumeration" />
-      <Type Name="Maps" Kind="Class" />
-      <Type Name="MapsLaunchOptions" Kind="Class" />
+      <Type Name="Map" Kind="Class" />
+      <Type Name="MapLaunchOptions" Kind="Class" />
+      <Type Name="NavigationMode" Kind="Enumeration" />
       <Type Name="NetworkAccess" Kind="Enumeration" />
       <Type Name="NotImplementedInReferenceAssemblyException" Kind="Class" />
       <Type Name="OrientationSensor" Kind="Class" />
@@ -151,20 +154,16 @@
       <Type Name="Placemark" Kind="Class" />
       <Type Name="PlacemarkExtensions" Kind="Class" />
       <Type Name="Platform" Kind="Class" />
-      <Type Name="Power" Kind="Class" />
       <Type Name="Preferences" Kind="Class" />
-      <Type Name="ScreenLock" Kind="Class" />
-      <Type Name="ScreenMetrics" Kind="Structure" />
-      <Type Name="ScreenMetricsChangedEventArgs" Kind="Class" />
-      <Type Name="ScreenOrientation" Kind="Enumeration" />
-      <Type Name="ScreenRotation" Kind="Enumeration" />
       <Type Name="SecureStorage" Kind="Class" />
       <Type Name="SensorSpeed" Kind="Enumeration" />
+      <Type Name="Share" Kind="Class" />
       <Type Name="ShareTextRequest" Kind="Class" />
       <Type Name="Sms" Kind="Class" />
       <Type Name="SmsMessage" Kind="Class" />
-      <Type Name="SpeakSettings" Kind="Class" />
+      <Type Name="SpeechOptions" Kind="Class" />
       <Type Name="TextToSpeech" Kind="Class" />
+      <Type Name="UnitConverters" Kind="Class" />
       <Type Name="VersionTracking" Kind="Class" />
       <Type Name="Vibration" Kind="Class" />
     </Namespace>
@@ -252,23 +251,23 @@
         <Target Type="T:Xamarin.Essentials.Location" />
       </Targets>
       <Member MemberName="OpenMapsAsync">
-        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapsLaunchOptions options);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Threading.Tasks.Task</ReturnType>
         </ReturnValue>
         <Parameters>
           <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
-          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
         </Parameters>
         <Docs>
           <param name="location">Location to open to.</param>
           <param name="options">Options to use.</param>
           <summary>Open maps to this location.</summary>
         </Docs>
-        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+        <Link Type="Xamarin.Essentials.LocationExtensions" Member="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
     </ExtensionMethod>
     <ExtensionMethod>
@@ -298,23 +297,23 @@
         <Target Type="T:Xamarin.Essentials.Placemark" />
       </Targets>
       <Member MemberName="OpenMapsAsync">
-        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapsLaunchOptions options);" />
-        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+        <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapLaunchOptions options);" />
+        <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+        <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
         <MemberType>ExtensionMethod</MemberType>
         <ReturnValue>
           <ReturnType>System.Threading.Tasks.Task</ReturnType>
         </ReturnValue>
         <Parameters>
           <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
-          <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+          <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
         </Parameters>
         <Docs>
           <param name="placemark">To be added.</param>
           <param name="options">To be added.</param>
           <summary>To be added.</summary>
         </Docs>
-        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+        <Link Type="Xamarin.Essentials.PlacemarkExtensions" Member="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       </Member>
     </ExtensionMethod>
   </ExtensionMethods>

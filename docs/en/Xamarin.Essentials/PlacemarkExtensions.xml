@@ -38,9 +38,9 @@
       </Docs>
     </Member>
     <Member MemberName="OpenMapsAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapsLaunchOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Placemark placemark, Xamarin.Essentials.MapLaunchOptions options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Placemark placemark, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -51,7 +51,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="placemark" Type="Xamarin.Essentials.Placemark" RefType="this" />
-        <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
         <param name="placemark">To be added.</param>

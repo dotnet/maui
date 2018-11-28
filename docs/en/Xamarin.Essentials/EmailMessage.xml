@@ -107,7 +107,7 @@
         <ReturnType>Xamarin.Essentials.EmailBodyFormat</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets a value indicating whether the message is in plain text or HTML.</summary>
+        <summary>Gets or sets a value indicating whether the message is in plain text or HTML (not supported on UWP).</summary>
         <value></value>
         <remarks></remarks>
       </Docs>

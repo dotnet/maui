@@ -1,0 +1,88 @@
+<Type Name="SpeechOptions" FullName="Xamarin.Essentials.SpeechOptions">
+  <TypeSignature Language="C#" Value="public class SpeechOptions" />
+  <TypeSignature Language="ILAsm" Value=".class public auto ansi beforefieldinit SpeechOptions extends System.Object" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.SpeechOptions" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.Object</BaseTypeName>
+  </Base>
+  <Interfaces />
+  <Docs>
+    <summary>Text-to-speech options.</summary>
+    <remarks></remarks>
+  </Docs>
+  <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public SpeechOptions ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.SpeechOptions.#ctor" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters />
+      <Docs>
+        <summary></summary>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Locale">
+      <MemberSignature Language="C#" Value="public Xamarin.Essentials.Locale Locale { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance class Xamarin.Essentials.Locale Locale" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Locale" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.Locale</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets or Sets a specific Locale to use with text to speech.</summary>
+        <value></value>
+        <remarks>The Language property should match a Locale value returned by GetLocalesAsync().</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Pitch">
+      <MemberSignature Language="C#" Value="public Nullable&lt;float&gt; Pitch { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float32&gt; Pitch" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Pitch" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Single&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The pitch to use when speaking.</summary>
+        <value></value>
+        <remarks>This value should be between 0f and 2.0f.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Volume">
+      <MemberSignature Language="C#" Value="public Nullable&lt;float&gt; Volume { get; set; }" />
+      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Nullable`1&lt;float32&gt; Volume" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.SpeechOptions.Volume" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Nullable&lt;System.Single&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>The volume to use when speaking.</summary>
+        <value></value>
+        <remarks>This value should be between 0f and 1.0f.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

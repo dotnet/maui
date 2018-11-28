@@ -11,49 +11,30 @@
   </Base>
   <Docs>
     <summary>Sensor speed to monitor for changes.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
-    <Member MemberName="Fastest">
-      <MemberSignature Language="C#" Value="Fastest" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Fastest = int32(0)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Fastest" />
+    <Member MemberName="Default">
+      <MemberSignature Language="C#" Value="Default" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Default = int32(0)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Default" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>Get the sensor data as fast as possible.</summary>
+        <summary>To be added.</summary>
       </Docs>
     </Member>
-    <Member MemberName="Game">
-      <MemberSignature Language="C#" Value="Game" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Game = int32(1)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Game" />
-      <MemberType>Field</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
-      </ReturnValue>
-      <MemberValue>1</MemberValue>
-      <Docs>
-        <summary>Rate suitable for games.</summary>
-      </Docs>
-    </Member>
-    <Member MemberName="Normal">
-      <MemberSignature Language="C#" Value="Normal" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Normal = int32(3)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Normal" />
+    <Member MemberName="Fastest">
+      <MemberSignature Language="C#" Value="Fastest" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Fastest = int32(3)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Fastest" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -64,13 +45,13 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>Default rate suitable for screen orientation changes.</summary>
+        <summary>Get the sensor data as fast as possible.</summary>
       </Docs>
     </Member>
-    <Member MemberName="UI">
-      <MemberSignature Language="C#" Value="UI" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed UI = int32(2)" />
-      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.UI" />
+    <Member MemberName="Game">
+      <MemberSignature Language="C#" Value="Game" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed Game = int32(2)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.Game" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -80,6 +61,23 @@
         <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
       </ReturnValue>
       <MemberValue>2</MemberValue>
+      <Docs>
+        <summary>Rate suitable for games.</summary>
+      </Docs>
+    </Member>
+    <Member MemberName="UI">
+      <MemberSignature Language="C#" Value="UI" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.SensorSpeed UI = int32(1)" />
+      <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.SensorSpeed.UI" />
+      <MemberType>Field</MemberType>
+      <AssemblyInfo>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.SensorSpeed</ReturnType>
+      </ReturnValue>
+      <MemberValue>1</MemberValue>
       <Docs>
         <summary>Rate suitable for general user interface.</summary>
       </Docs>

@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Location Extensions</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="CalculateDistance">
@@ -40,9 +38,7 @@
         <param name="units">Units to use during calculation.</param>
         <summary>Extension to calculate distance from location to another location.</summary>
         <returns>Distance in units fro two locations.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="CalculateDistance">
@@ -70,9 +66,7 @@
         <param name="units">Units to use.</param>
         <summary>Extension to calculate distance from location to another location.</summary>
         <returns>Distance calculated.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="OpenMapsAsync">
@@ -98,9 +92,9 @@
       </Docs>
     </Member>
     <Member MemberName="OpenMapsAsync">
-      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapsLaunchOptions options);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapsLaunchOptions options) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task OpenMapsAsync (this Xamarin.Essentials.Location location, Xamarin.Essentials.MapLaunchOptions options);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task OpenMapsAsync(class Xamarin.Essentials.Location location, class Xamarin.Essentials.MapLaunchOptions options) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
@@ -111,7 +105,7 @@
       </ReturnValue>
       <Parameters>
         <Parameter Name="location" Type="Xamarin.Essentials.Location" RefType="this" />
-        <Parameter Name="options" Type="Xamarin.Essentials.MapsLaunchOptions" />
+        <Parameter Name="options" Type="Xamarin.Essentials.MapLaunchOptions" />
       </Parameters>
       <Docs>
         <param name="location">Location to open to.</param>

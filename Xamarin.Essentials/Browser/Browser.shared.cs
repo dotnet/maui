@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
         public static Task OpenAsync(Uri uri) =>
           OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
 
-        public static Task OpenAsync(Uri uri, BrowserLaunchMode launchMode) =>
+        public static Task<bool> OpenAsync(Uri uri, BrowserLaunchMode launchMode) =>
             PlatformOpenAsync(EscapeUri(uri), launchMode);
 
         internal static Uri EscapeUri(Uri uri)
@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
 
     public enum BrowserLaunchMode
     {
-        External,
-        SystemPreferred
+        SystemPreferred = 0,
+        External = 1,
     }
 }

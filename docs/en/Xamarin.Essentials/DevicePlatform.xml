@@ -1,0 +1,257 @@
+<Type Name="DevicePlatform" FullName="Xamarin.Essentials.DevicePlatform">
+  <TypeSignature Language="C#" Value="public struct DevicePlatform : IEquatable&lt;Xamarin.Essentials.DevicePlatform&gt;" />
+  <TypeSignature Language="ILAsm" Value=".class public sequential ansi sealed beforefieldinit DevicePlatform extends System.ValueType implements class System.IEquatable`1&lt;valuetype Xamarin.Essentials.DevicePlatform&gt;" />
+  <TypeSignature Language="DocId" Value="T:Xamarin.Essentials.DevicePlatform" />
+  <AssemblyInfo>
+    <AssemblyName>Xamarin.Essentials</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+  </AssemblyInfo>
+  <Base>
+    <BaseTypeName>System.ValueType</BaseTypeName>
+  </Base>
+  <Interfaces>
+    <Interface>
+      <InterfaceName>System.IEquatable&lt;Xamarin.Essentials.DevicePlatform&gt;</InterfaceName>
+    </Interface>
+  </Interfaces>
+  <Attributes>
+    <Attribute FrameworkAlternate="xamarin-essentials-android;xamarin-essentials-ios;xamarin-essentials-uwp">
+      <AttributeName>System.Runtime.CompilerServices.IsReadOnly</AttributeName>
+    </Attribute>
+  </Attributes>
+  <Docs>
+    <summary>The device platform that the application is running on.</summary>
+    <remarks>
+      <para></para>
+    </remarks>
+  </Docs>
+  <Members>
+    <Member MemberName="Android">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Android { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Android" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.Android" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the Android platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Create">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Create (string devicePlatform);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig valuetype Xamarin.Essentials.DevicePlatform Create(string devicePlatform) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.Create(System.String)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="devicePlatform" Type="System.String" />
+      </Parameters>
+      <Docs>
+        <param name="devicePlatform">To be added.</param>
+        <summary>Creates a new Device Platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.Equals(System.Object)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="obj" Type="System.Object" />
+      </Parameters>
+      <Docs>
+        <param name="obj">To be added.</param>
+        <summary>Checks the equality of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Equals">
+      <MemberSignature Language="C#" Value="public bool Equals (Xamarin.Essentials.DevicePlatform other);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance bool Equals(valuetype Xamarin.Essentials.DevicePlatform other) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.Equals(Xamarin.Essentials.DevicePlatform)" />
+      <MemberType>Method</MemberType>
+      <Implements>
+        <InterfaceMember>M:System.IEquatable`1.Equals(`0)</InterfaceMember>
+      </Implements>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="other" Type="Xamarin.Essentials.DevicePlatform" />
+      </Parameters>
+      <Docs>
+        <param name="other">To be added.</param>
+        <summary>Checks the equality of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="GetHashCode">
+      <MemberSignature Language="C#" Value="public override int GetHashCode ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance int32 GetHashCode() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.GetHashCode" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Int32</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>Gets the hash code of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="iOS">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform iOS { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform iOS" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the iOS platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Equality">
+      <MemberSignature Language="C#" Value="public static bool operator == (Xamarin.Essentials.DevicePlatform left, Xamarin.Essentials.DevicePlatform right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Equality(valuetype Xamarin.Essentials.DevicePlatform left, valuetype Xamarin.Essentials.DevicePlatform right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.op_Equality(Xamarin.Essentials.DevicePlatform,Xamarin.Essentials.DevicePlatform)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DevicePlatform" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DevicePlatform" />
+      </Parameters>
+      <Docs>
+        <param name="left">To be added.</param>
+        <param name="right">To be added.</param>
+        <summary>Checks the equality of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="op_Inequality">
+      <MemberSignature Language="C#" Value="public static bool operator != (Xamarin.Essentials.DevicePlatform left, Xamarin.Essentials.DevicePlatform right);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig specialname bool op_Inequality(valuetype Xamarin.Essentials.DevicePlatform left, valuetype Xamarin.Essentials.DevicePlatform right) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.op_Inequality(Xamarin.Essentials.DevicePlatform,Xamarin.Essentials.DevicePlatform)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Boolean</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="left" Type="Xamarin.Essentials.DevicePlatform" />
+        <Parameter Name="right" Type="Xamarin.Essentials.DevicePlatform" />
+      </Parameters>
+      <Docs>
+        <param name="left">To be added.</param>
+        <param name="right">To be added.</param>
+        <summary>Checks the equality of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.DevicePlatform.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>The string representation of the platform.</summary>
+        <returns>To be added.</returns>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="Unknown">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform Unknown { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform Unknown" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.Unknown" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the unknown platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="UWP">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.DevicePlatform UWP { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.DevicePlatform UWP" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.DevicePlatform.UWP" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.DevicePlatform</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the UWP platform.</summary>
+        <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+  </Members>
+</Type>

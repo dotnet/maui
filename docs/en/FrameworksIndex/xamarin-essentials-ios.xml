@@ -1,4 +1,7 @@
 <Framework Name="xamarin-essentials-ios">
+  <Assemblies>
+    <Assembly Name="Xamarin.Essentials" Version="1.0.0.0" />
+  </Assemblies>
   <Namespace Name="Xamarin.Essentials">
     <Type Name="Xamarin.Essentials.Accelerometer" Id="T:Xamarin.Essentials.Accelerometer">
       <Member Id="E:Xamarin.Essentials.Accelerometer.ReadingChanged" />
@@ -7,9 +10,12 @@
       <Member Id="P:Xamarin.Essentials.Accelerometer.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.AccelerometerChangedEventArgs" Id="T:Xamarin.Essentials.AccelerometerChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.AccelerometerChangedEventArgs.#ctor(Xamarin.Essentials.AccelerometerData)" />
       <Member Id="P:Xamarin.Essentials.AccelerometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.AccelerometerData" Id="T:Xamarin.Essentials.AccelerometerData">
+      <Member Id="M:Xamarin.Essentials.AccelerometerData.#ctor(System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.AccelerometerData.#ctor(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.AccelerometerData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.AccelerometerData.Equals(Xamarin.Essentials.AccelerometerData)" />
       <Member Id="M:Xamarin.Essentials.AccelerometerData.GetHashCode" />
@@ -19,7 +25,7 @@
       <Member Id="P:Xamarin.Essentials.AccelerometerData.Acceleration" />
     </Type>
     <Type Name="Xamarin.Essentials.AppInfo" Id="T:Xamarin.Essentials.AppInfo">
-      <Member Id="M:Xamarin.Essentials.AppInfo.OpenSettings" />
+      <Member Id="M:Xamarin.Essentials.AppInfo.ShowSettingsUI" />
       <Member Id="P:Xamarin.Essentials.AppInfo.BuildString" />
       <Member Id="P:Xamarin.Essentials.AppInfo.Name" />
       <Member Id="P:Xamarin.Essentials.AppInfo.PackageName" />
@@ -33,28 +39,33 @@
       <Member Id="P:Xamarin.Essentials.Barometer.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.BarometerChangedEventArgs" Id="T:Xamarin.Essentials.BarometerChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.BarometerChangedEventArgs.#ctor(Xamarin.Essentials.BarometerData)" />
       <Member Id="P:Xamarin.Essentials.BarometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.BarometerData" Id="T:Xamarin.Essentials.BarometerData">
+      <Member Id="M:Xamarin.Essentials.BarometerData.#ctor(System.Double)" />
       <Member Id="M:Xamarin.Essentials.BarometerData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.BarometerData.Equals(Xamarin.Essentials.BarometerData)" />
       <Member Id="M:Xamarin.Essentials.BarometerData.GetHashCode" />
       <Member Id="M:Xamarin.Essentials.BarometerData.op_Equality(Xamarin.Essentials.BarometerData,Xamarin.Essentials.BarometerData)" />
       <Member Id="M:Xamarin.Essentials.BarometerData.op_Inequality(Xamarin.Essentials.BarometerData,Xamarin.Essentials.BarometerData)" />
       <Member Id="M:Xamarin.Essentials.BarometerData.ToString" />
-      <Member Id="P:Xamarin.Essentials.BarometerData.Pressure" />
+      <Member Id="P:Xamarin.Essentials.BarometerData.PressureInHectopascals" />
     </Type>
     <Type Name="Xamarin.Essentials.Battery" Id="T:Xamarin.Essentials.Battery">
-      <Member Id="E:Xamarin.Essentials.Battery.BatteryChanged" />
+      <Member Id="E:Xamarin.Essentials.Battery.BatteryInfoChanged" />
+      <Member Id="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
       <Member Id="P:Xamarin.Essentials.Battery.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
       <Member Id="P:Xamarin.Essentials.Battery.PowerSource" />
       <Member Id="P:Xamarin.Essentials.Battery.State" />
     </Type>
-    <Type Name="Xamarin.Essentials.BatteryChangedEventArgs" Id="T:Xamarin.Essentials.BatteryChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.BatteryChangedEventArgs.ToString" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.ChargeLevel" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.PowerSource" />
-      <Member Id="P:Xamarin.Essentials.BatteryChangedEventArgs.State" />
+    <Type Name="Xamarin.Essentials.BatteryInfoChangedEventArgs" Id="T:Xamarin.Essentials.BatteryInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.#ctor(System.Double,Xamarin.Essentials.BatteryState,Xamarin.Essentials.BatteryPowerSource)" />
+      <Member Id="M:Xamarin.Essentials.BatteryInfoChangedEventArgs.ToString" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.ChargeLevel" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.PowerSource" />
+      <Member Id="P:Xamarin.Essentials.BatteryInfoChangedEventArgs.State" />
     </Type>
     <Type Name="Xamarin.Essentials.BatteryPowerSource" Id="T:Xamarin.Essentials.BatteryPowerSource">
       <Member Id="F:Xamarin.Essentials.BatteryPowerSource.AC" />
@@ -83,21 +94,23 @@
     </Type>
     <Type Name="Xamarin.Essentials.Clipboard" Id="T:Xamarin.Essentials.Clipboard">
       <Member Id="M:Xamarin.Essentials.Clipboard.GetTextAsync" />
-      <Member Id="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <Member Id="P:Xamarin.Essentials.Clipboard.HasText" />
     </Type>
     <Type Name="Xamarin.Essentials.Compass" Id="T:Xamarin.Essentials.Compass">
       <Member Id="E:Xamarin.Essentials.Compass.ReadingChanged" />
       <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed)" />
+      <Member Id="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed,System.Boolean)" />
       <Member Id="M:Xamarin.Essentials.Compass.Stop" />
-      <Member Id="P:Xamarin.Essentials.Compass.ApplyLowPassFilter" />
       <Member Id="P:Xamarin.Essentials.Compass.IsMonitoring" />
       <Member Id="P:Xamarin.Essentials.Compass.ShouldDisplayHeadingCalibration" />
     </Type>
     <Type Name="Xamarin.Essentials.CompassChangedEventArgs" Id="T:Xamarin.Essentials.CompassChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.CompassChangedEventArgs.#ctor(Xamarin.Essentials.CompassData)" />
       <Member Id="P:Xamarin.Essentials.CompassChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.CompassData" Id="T:Xamarin.Essentials.CompassData">
+      <Member Id="M:Xamarin.Essentials.CompassData.#ctor(System.Double)" />
       <Member Id="M:Xamarin.Essentials.CompassData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.CompassData.Equals(Xamarin.Essentials.CompassData)" />
       <Member Id="M:Xamarin.Essentials.CompassData.GetHashCode" />
@@ -110,28 +123,39 @@
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Bluetooth" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Cellular" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.Ethernet" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Other" />
+      <Member Id="F:Xamarin.Essentials.ConnectionProfile.Unknown" />
       <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiFi" />
-      <Member Id="F:Xamarin.Essentials.ConnectionProfile.WiMAX" />
     </Type>
     <Type Name="Xamarin.Essentials.Connectivity" Id="T:Xamarin.Essentials.Connectivity">
       <Member Id="E:Xamarin.Essentials.Connectivity.ConnectivityChanged" />
+      <Member Id="P:Xamarin.Essentials.Connectivity.ConnectionProfiles" />
       <Member Id="P:Xamarin.Essentials.Connectivity.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.Connectivity.Profiles" />
     </Type>
     <Type Name="Xamarin.Essentials.ConnectivityChangedEventArgs" Id="T:Xamarin.Essentials.ConnectivityChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.#ctor(Xamarin.Essentials.NetworkAccess,System.Collections.Generic.IEnumerable{Xamarin.Essentials.ConnectionProfile})" />
       <Member Id="M:Xamarin.Essentials.ConnectivityChangedEventArgs.ToString" />
+      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.ConnectionProfiles" />
       <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.NetworkAccess" />
-      <Member Id="P:Xamarin.Essentials.ConnectivityChangedEventArgs.Profiles" />
-    </Type>
-    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
-      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceDisplay" Id="T:Xamarin.Essentials.DeviceDisplay">
-      <Member Id="E:Xamarin.Essentials.DeviceDisplay.ScreenMetricsChanged" />
-      <Member Id="P:Xamarin.Essentials.DeviceDisplay.ScreenMetrics" />
+      <Member Id="E:Xamarin.Essentials.DeviceDisplay.MainDisplayInfoChanged" />
+      <Member Id="P:Xamarin.Essentials.DeviceDisplay.KeepScreenOn" />
+      <Member Id="P:Xamarin.Essentials.DeviceDisplay.MainDisplayInfo" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DeviceIdiom" Id="T:Xamarin.Essentials.DeviceIdiom">
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.Create(System.String)" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.Equals(System.Object)" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.Equals(Xamarin.Essentials.DeviceIdiom)" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.GetHashCode" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.op_Equality(Xamarin.Essentials.DeviceIdiom,Xamarin.Essentials.DeviceIdiom)" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.op_Inequality(Xamarin.Essentials.DeviceIdiom,Xamarin.Essentials.DeviceIdiom)" />
+      <Member Id="M:Xamarin.Essentials.DeviceIdiom.ToString" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.Desktop" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.Phone" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.Tablet" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.TV" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.Unknown" />
+      <Member Id="P:Xamarin.Essentials.DeviceIdiom.Watch" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceInfo" Id="T:Xamarin.Essentials.DeviceInfo">
       <Member Id="P:Xamarin.Essentials.DeviceInfo.DeviceType" />
@@ -143,22 +167,52 @@
       <Member Id="P:Xamarin.Essentials.DeviceInfo.Version" />
       <Member Id="P:Xamarin.Essentials.DeviceInfo.VersionString" />
     </Type>
-    <Type Name="Xamarin.Essentials.DeviceInfo/Idioms" Id="T:Xamarin.Essentials.DeviceInfo.Idioms">
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Desktop" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Phone" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Tablet" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.TV" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Idioms.Unsupported" />
-    </Type>
-    <Type Name="Xamarin.Essentials.DeviceInfo/Platforms" Id="T:Xamarin.Essentials.DeviceInfo.Platforms">
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.Android" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.iOS" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.Unsupported" />
-      <Member Id="F:Xamarin.Essentials.DeviceInfo.Platforms.UWP" />
+    <Type Name="Xamarin.Essentials.DevicePlatform" Id="T:Xamarin.Essentials.DevicePlatform">
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.Create(System.String)" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.Equals(System.Object)" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.Equals(Xamarin.Essentials.DevicePlatform)" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.GetHashCode" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.op_Equality(Xamarin.Essentials.DevicePlatform,Xamarin.Essentials.DevicePlatform)" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.op_Inequality(Xamarin.Essentials.DevicePlatform,Xamarin.Essentials.DevicePlatform)" />
+      <Member Id="M:Xamarin.Essentials.DevicePlatform.ToString" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.Android" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.iOS" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.Unknown" />
+      <Member Id="P:Xamarin.Essentials.DevicePlatform.UWP" />
     </Type>
     <Type Name="Xamarin.Essentials.DeviceType" Id="T:Xamarin.Essentials.DeviceType">
       <Member Id="F:Xamarin.Essentials.DeviceType.Physical" />
       <Member Id="F:Xamarin.Essentials.DeviceType.Virtual" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayInfo" Id="T:Xamarin.Essentials.DisplayInfo">
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.#ctor(System.Double,System.Double,System.Double,Xamarin.Essentials.DisplayOrientation,Xamarin.Essentials.DisplayRotation)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(System.Object)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.Equals(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.GetHashCode" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.op_Equality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.op_Inequality(Xamarin.Essentials.DisplayInfo,Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="M:Xamarin.Essentials.DisplayInfo.ToString" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Density" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Height" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Orientation" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Rotation" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfo.Width" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayInfoChangedEventArgs" Id="T:Xamarin.Essentials.DisplayInfoChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.DisplayInfoChangedEventArgs.#ctor(Xamarin.Essentials.DisplayInfo)" />
+      <Member Id="P:Xamarin.Essentials.DisplayInfoChangedEventArgs.DisplayInfo" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayOrientation" Id="T:Xamarin.Essentials.DisplayOrientation">
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Landscape" />
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Portrait" />
+      <Member Id="F:Xamarin.Essentials.DisplayOrientation.Unknown" />
+    </Type>
+    <Type Name="Xamarin.Essentials.DisplayRotation" Id="T:Xamarin.Essentials.DisplayRotation">
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation0" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation180" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation270" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Rotation90" />
+      <Member Id="F:Xamarin.Essentials.DisplayRotation.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.DistanceUnits" Id="T:Xamarin.Essentials.DistanceUnits">
       <Member Id="F:Xamarin.Essentials.DistanceUnits.Kilometers" />
@@ -189,6 +243,8 @@
       <Member Id="F:Xamarin.Essentials.EnergySaverStatus.Unknown" />
     </Type>
     <Type Name="Xamarin.Essentials.EnergySaverStatusChangedEventArgs" Id="T:Xamarin.Essentials.EnergySaverStatusChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.#ctor(Xamarin.Essentials.EnergySaverStatus)" />
+      <Member Id="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
       <Member Id="P:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.EnergySaverStatus" />
     </Type>
     <Type Name="Xamarin.Essentials.FeatureNotEnabledException" Id="T:Xamarin.Essentials.FeatureNotEnabledException">
@@ -214,7 +270,6 @@
       <Member Id="M:Xamarin.Essentials.Geocoding.GetLocationsAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(System.Double,System.Double)" />
       <Member Id="M:Xamarin.Essentials.Geocoding.GetPlacemarksAsync(Xamarin.Essentials.Location)" />
-      <Member Id="P:Xamarin.Essentials.Geocoding.MapKey" />
     </Type>
     <Type Name="Xamarin.Essentials.Geolocation" Id="T:Xamarin.Essentials.Geolocation">
       <Member Id="M:Xamarin.Essentials.Geolocation.GetLastKnownLocationAsync" />
@@ -224,6 +279,7 @@
     </Type>
     <Type Name="Xamarin.Essentials.GeolocationAccuracy" Id="T:Xamarin.Essentials.GeolocationAccuracy">
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Best" />
+      <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Default" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.High" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Low" />
       <Member Id="F:Xamarin.Essentials.GeolocationAccuracy.Lowest" />
@@ -244,9 +300,12 @@
       <Member Id="P:Xamarin.Essentials.Gyroscope.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.GyroscopeChangedEventArgs" Id="T:Xamarin.Essentials.GyroscopeChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.GyroscopeChangedEventArgs.#ctor(Xamarin.Essentials.GyroscopeData)" />
       <Member Id="P:Xamarin.Essentials.GyroscopeChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.GyroscopeData" Id="T:Xamarin.Essentials.GyroscopeData">
+      <Member Id="M:Xamarin.Essentials.GyroscopeData.#ctor(System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.GyroscopeData.#ctor(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.GyroscopeData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.GyroscopeData.Equals(Xamarin.Essentials.GyroscopeData)" />
       <Member Id="M:Xamarin.Essentials.GyroscopeData.GetHashCode" />
@@ -276,8 +335,6 @@
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(System.Double,System.Double,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.Location.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
-      <Member Id="M:Xamarin.Essentials.Location.KilometersToMiles(System.Double)" />
-      <Member Id="M:Xamarin.Essentials.Location.MilesToKilometers(System.Double)" />
       <Member Id="M:Xamarin.Essentials.Location.ToString" />
       <Member Id="P:Xamarin.Essentials.Location.Accuracy" />
       <Member Id="P:Xamarin.Essentials.Location.Altitude" />
@@ -291,7 +348,7 @@
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,System.Double,System.Double,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.CalculateDistance(Xamarin.Essentials.Location,Xamarin.Essentials.Location,Xamarin.Essentials.DistanceUnits)" />
       <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location)" />
-      <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.LocationExtensions.OpenMapsAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Magnetometer" Id="T:Xamarin.Essentials.Magnetometer">
       <Member Id="E:Xamarin.Essentials.Magnetometer.ReadingChanged" />
@@ -300,9 +357,12 @@
       <Member Id="P:Xamarin.Essentials.Magnetometer.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.MagnetometerChangedEventArgs" Id="T:Xamarin.Essentials.MagnetometerChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.MagnetometerChangedEventArgs.#ctor(Xamarin.Essentials.MagnetometerData)" />
       <Member Id="P:Xamarin.Essentials.MagnetometerChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.MagnetometerData" Id="T:Xamarin.Essentials.MagnetometerData">
+      <Member Id="M:Xamarin.Essentials.MagnetometerData.#ctor(System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.MagnetometerData.#ctor(System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.MagnetometerData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.MagnetometerData.Equals(Xamarin.Essentials.MagnetometerData)" />
       <Member Id="M:Xamarin.Essentials.MagnetometerData.GetHashCode" />
@@ -315,26 +375,26 @@
       <Member Id="M:Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(System.Action)" />
       <Member Id="P:Xamarin.Essentials.MainThread.IsMainThread" />
     </Type>
-    <Type Name="Xamarin.Essentials.MapDirectionsMode" Id="T:Xamarin.Essentials.MapDirectionsMode">
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Bicycling" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Default" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Driving" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.None" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Transit" />
-      <Member Id="F:Xamarin.Essentials.MapDirectionsMode.Walking" />
+    <Type Name="Xamarin.Essentials.Map" Id="T:Xamarin.Essentials.Map">
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark)" />
+      <Member Id="M:Xamarin.Essentials.Map.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
-    <Type Name="Xamarin.Essentials.Maps" Id="T:Xamarin.Essentials.Maps">
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(System.Double,System.Double,Xamarin.Essentials.MapsLaunchOptions)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Location,Xamarin.Essentials.MapsLaunchOptions)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark)" />
-      <Member Id="M:Xamarin.Essentials.Maps.OpenAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+    <Type Name="Xamarin.Essentials.MapLaunchOptions" Id="T:Xamarin.Essentials.MapLaunchOptions">
+      <Member Id="M:Xamarin.Essentials.MapLaunchOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.MapLaunchOptions.Name" />
+      <Member Id="P:Xamarin.Essentials.MapLaunchOptions.NavigationMode" />
     </Type>
-    <Type Name="Xamarin.Essentials.MapsLaunchOptions" Id="T:Xamarin.Essentials.MapsLaunchOptions">
-      <Member Id="M:Xamarin.Essentials.MapsLaunchOptions.#ctor" />
-      <Member Id="P:Xamarin.Essentials.MapsLaunchOptions.MapDirectionsMode" />
-      <Member Id="P:Xamarin.Essentials.MapsLaunchOptions.Name" />
+    <Type Name="Xamarin.Essentials.NavigationMode" Id="T:Xamarin.Essentials.NavigationMode">
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Bicycling" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Default" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Driving" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.None" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Transit" />
+      <Member Id="F:Xamarin.Essentials.NavigationMode.Walking" />
     </Type>
     <Type Name="Xamarin.Essentials.NetworkAccess" Id="T:Xamarin.Essentials.NetworkAccess">
       <Member Id="F:Xamarin.Essentials.NetworkAccess.ConstrainedInternet" />
@@ -353,9 +413,12 @@
       <Member Id="P:Xamarin.Essentials.OrientationSensor.IsMonitoring" />
     </Type>
     <Type Name="Xamarin.Essentials.OrientationSensorChangedEventArgs" Id="T:Xamarin.Essentials.OrientationSensorChangedEventArgs">
+      <Member Id="M:Xamarin.Essentials.OrientationSensorChangedEventArgs.#ctor(Xamarin.Essentials.OrientationSensorData)" />
       <Member Id="P:Xamarin.Essentials.OrientationSensorChangedEventArgs.Reading" />
     </Type>
     <Type Name="Xamarin.Essentials.OrientationSensorData" Id="T:Xamarin.Essentials.OrientationSensorData">
+      <Member Id="M:Xamarin.Essentials.OrientationSensorData.#ctor(System.Double,System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.OrientationSensorData.#ctor(System.Single,System.Single,System.Single,System.Single)" />
       <Member Id="M:Xamarin.Essentials.OrientationSensorData.Equals(System.Object)" />
       <Member Id="M:Xamarin.Essentials.OrientationSensorData.Equals(Xamarin.Essentials.OrientationSensorData)" />
       <Member Id="M:Xamarin.Essentials.OrientationSensorData.GetHashCode" />
@@ -388,13 +451,9 @@
     </Type>
     <Type Name="Xamarin.Essentials.PlacemarkExtensions" Id="T:Xamarin.Essentials.PlacemarkExtensions">
       <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark)" />
-      <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapsLaunchOptions)" />
+      <Member Id="M:Xamarin.Essentials.PlacemarkExtensions.OpenMapsAsync(Xamarin.Essentials.Placemark,Xamarin.Essentials.MapLaunchOptions)" />
     </Type>
     <Type Name="Xamarin.Essentials.Platform" Id="T:Xamarin.Essentials.Platform" />
-    <Type Name="Xamarin.Essentials.Power" Id="T:Xamarin.Essentials.Power">
-      <Member Id="E:Xamarin.Essentials.Power.EnergySaverStatusChanged" />
-      <Member Id="P:Xamarin.Essentials.Power.EnergySaverStatus" />
-    </Type>
     <Type Name="Xamarin.Essentials.Preferences" Id="T:Xamarin.Essentials.Preferences">
       <Member Id="M:Xamarin.Essentials.Preferences.Clear" />
       <Member Id="M:Xamarin.Essentials.Preferences.Clear(System.String)" />
@@ -431,39 +490,6 @@
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String)" />
       <Member Id="M:Xamarin.Essentials.Preferences.Set(System.String,System.String,System.String)" />
     </Type>
-    <Type Name="Xamarin.Essentials.ScreenLock" Id="T:Xamarin.Essentials.ScreenLock">
-      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestActive" />
-      <Member Id="M:Xamarin.Essentials.ScreenLock.RequestRelease" />
-      <Member Id="P:Xamarin.Essentials.ScreenLock.IsActive" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetrics" Id="T:Xamarin.Essentials.ScreenMetrics">
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.Equals(System.Object)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.Equals(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.GetHashCode" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.op_Equality(Xamarin.Essentials.ScreenMetrics,Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.op_Inequality(Xamarin.Essentials.ScreenMetrics,Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="M:Xamarin.Essentials.ScreenMetrics.ToString" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Density" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Height" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Orientation" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Rotation" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetrics.Width" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenMetricsChangedEventArgs" Id="T:Xamarin.Essentials.ScreenMetricsChangedEventArgs">
-      <Member Id="M:Xamarin.Essentials.ScreenMetricsChangedEventArgs.#ctor(Xamarin.Essentials.ScreenMetrics)" />
-      <Member Id="P:Xamarin.Essentials.ScreenMetricsChangedEventArgs.Metrics" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenOrientation" Id="T:Xamarin.Essentials.ScreenOrientation">
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Landscape" />
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Portrait" />
-      <Member Id="F:Xamarin.Essentials.ScreenOrientation.Unknown" />
-    </Type>
-    <Type Name="Xamarin.Essentials.ScreenRotation" Id="T:Xamarin.Essentials.ScreenRotation">
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation0" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation180" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation270" />
-      <Member Id="F:Xamarin.Essentials.ScreenRotation.Rotation90" />
-    </Type>
     <Type Name="Xamarin.Essentials.SecureStorage" Id="T:Xamarin.Essentials.SecureStorage">
       <Member Id="M:Xamarin.Essentials.SecureStorage.GetAsync(System.String)" />
       <Member Id="M:Xamarin.Essentials.SecureStorage.Remove(System.String)" />
@@ -473,10 +499,15 @@
       <Member Id="P:Xamarin.Essentials.SecureStorage.DefaultAccessible" />
     </Type>
     <Type Name="Xamarin.Essentials.SensorSpeed" Id="T:Xamarin.Essentials.SensorSpeed">
+      <Member Id="F:Xamarin.Essentials.SensorSpeed.Default" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Fastest" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.Game" />
-      <Member Id="F:Xamarin.Essentials.SensorSpeed.Normal" />
       <Member Id="F:Xamarin.Essentials.SensorSpeed.UI" />
+    </Type>
+    <Type Name="Xamarin.Essentials.Share" Id="T:Xamarin.Essentials.Share">
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(System.String,System.String)" />
+      <Member Id="M:Xamarin.Essentials.Share.RequestAsync(Xamarin.Essentials.ShareTextRequest)" />
     </Type>
     <Type Name="Xamarin.Essentials.ShareTextRequest" Id="T:Xamarin.Essentials.ShareTextRequest">
       <Member Id="M:Xamarin.Essentials.ShareTextRequest.#ctor" />
@@ -497,16 +528,41 @@
       <Member Id="P:Xamarin.Essentials.SmsMessage.Body" />
       <Member Id="P:Xamarin.Essentials.SmsMessage.Recipients" />
     </Type>
-    <Type Name="Xamarin.Essentials.SpeakSettings" Id="T:Xamarin.Essentials.SpeakSettings">
-      <Member Id="M:Xamarin.Essentials.SpeakSettings.#ctor" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Locale" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Pitch" />
-      <Member Id="P:Xamarin.Essentials.SpeakSettings.Volume" />
+    <Type Name="Xamarin.Essentials.SpeechOptions" Id="T:Xamarin.Essentials.SpeechOptions">
+      <Member Id="M:Xamarin.Essentials.SpeechOptions.#ctor" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Locale" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Pitch" />
+      <Member Id="P:Xamarin.Essentials.SpeechOptions.Volume" />
     </Type>
     <Type Name="Xamarin.Essentials.TextToSpeech" Id="T:Xamarin.Essentials.TextToSpeech">
       <Member Id="M:Xamarin.Essentials.TextToSpeech.GetLocalesAsync" />
       <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,System.Threading.CancellationToken)" />
-      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeakSettings,System.Threading.CancellationToken)" />
+      <Member Id="M:Xamarin.Essentials.TextToSpeech.SpeakAsync(System.String,Xamarin.Essentials.SpeechOptions,System.Threading.CancellationToken)" />
+    </Type>
+    <Type Name="Xamarin.Essentials.UnitConverters" Id="T:Xamarin.Essentials.UnitConverters">
+      <Member Id="M:Xamarin.Essentials.UnitConverters.AtmospheresToPascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.CelsiusToFahrenheit(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.CelsiusToKelvin(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.CoordinatesToKilometers(System.Double,System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.CoordinatesToMiles(System.Double,System.Double,System.Double,System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.DegreesPerSecondToHertz(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.DegreesPerSecondToRadiansPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.DegreesToRadians(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.FahrenheitToCelsius(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.HectopascalsToKilopascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.HectopascalsToPascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToDegreesPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.HertzToRadiansPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.KelvinToCelsius(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.KilometersToMiles(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToHectopascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.KilopascalsToPascals(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToKilometers(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.MilesToMeters(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.PascalsToAtmospheres(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToDegreesPerSecond(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansPerSecondToHertz(System.Double)" />
+      <Member Id="M:Xamarin.Essentials.UnitConverters.RadiansToDegrees(System.Double)" />
     </Type>
     <Type Name="Xamarin.Essentials.VersionTracking" Id="T:Xamarin.Essentials.VersionTracking">
       <Member Id="M:Xamarin.Essentials.VersionTracking.IsFirstLaunchForBuild(System.String)" />

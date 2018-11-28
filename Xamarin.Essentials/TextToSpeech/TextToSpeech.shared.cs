@@ -23,20 +23,20 @@ namespace Xamarin.Essentials
         public static Task SpeakAsync(string text, CancellationToken cancelToken = default) =>
             SpeakAsync(text, default, cancelToken);
 
-        public static async Task SpeakAsync(string text, SpeakSettings settings, CancellationToken cancelToken = default)
+        public static async Task SpeakAsync(string text, SpeechOptions options, CancellationToken cancelToken = default)
         {
             if (string.IsNullOrEmpty(text))
                 throw new ArgumentNullException(nameof(text), "Text cannot be null or empty string");
 
-            if (settings?.Volume.HasValue ?? false)
+            if (options?.Volume.HasValue ?? false)
             {
-                if (settings.Volume.Value < VolumeMin || settings.Volume.Value > VolumeMax)
+                if (options.Volume.Value < VolumeMin || options.Volume.Value > VolumeMax)
                     throw new ArgumentOutOfRangeException($"Volume must be >= {VolumeMin} and <= {VolumeMax}");
             }
 
-            if (settings?.Pitch.HasValue ?? false)
+            if (options?.Pitch.HasValue ?? false)
             {
-                if (settings.Pitch.Value < PitchMin || settings.Pitch.Value > PitchMax)
+                if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
                     throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
             }
 
@@ -46,7 +46,7 @@ namespace Xamarin.Essentials
             try
             {
                 await semaphore.WaitAsync(cancelToken);
-                await PlatformSpeakAsync(text, settings, cancelToken);
+                await PlatformSpeakAsync(text, options, cancelToken);
             }
             finally
             {
@@ -82,7 +82,7 @@ namespace Xamarin.Essentials
         }
     }
 
-    public class SpeakSettings
+    public class SpeechOptions
     {
         public Locale Locale { get; set; }
 

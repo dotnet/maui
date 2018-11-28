@@ -16,7 +16,7 @@
   <Members>
     <Member MemberName="External">
       <MemberSignature Language="C#" Value="External" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode External = int32(0)" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode External = int32(1)" />
       <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.External" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
@@ -26,14 +26,14 @@
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BrowserLaunchMode</ReturnType>
       </ReturnValue>
-      <MemberValue>0</MemberValue>
+      <MemberValue>1</MemberValue>
       <Docs>
         <summary>Use the default external launcher to open the browser outside of the app.</summary>
       </Docs>
     </Member>
     <Member MemberName="SystemPreferred">
       <MemberSignature Language="C#" Value="SystemPreferred" />
-      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode SystemPreferred = int32(1)" />
+      <MemberSignature Language="ILAsm" Value=".field public static literal valuetype Xamarin.Essentials.BrowserLaunchMode SystemPreferred = int32(0)" />
       <MemberSignature Language="DocId" Value="F:Xamarin.Essentials.BrowserLaunchMode.SystemPreferred" />
       <MemberType>Field</MemberType>
       <AssemblyInfo>
@@ -43,7 +43,7 @@
       <ReturnValue>
         <ReturnType>Xamarin.Essentials.BrowserLaunchMode</ReturnType>
       </ReturnValue>
-      <MemberValue>1</MemberValue>
+      <MemberValue>0</MemberValue>
       <Docs>
         <summary>Launch the optimized system browser and stay inside of your application. (Chrome Custom Tabs and SFSafariViewController).</summary>
       </Docs>

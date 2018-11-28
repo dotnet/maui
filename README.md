@@ -67,7 +67,6 @@ The following cross-platform APIs are available in Xamarin.Essentials:
 * [Open Browser](https://docs.microsoft.com/xamarin/essentials/open-browser)
 * [Orientation Sensor](https://docs.microsoft.com/en-us/xamarin/essentials/orientation-sensor)
 * [Phone Dialer](https://docs.microsoft.com/xamarin/essentials/phone-dialer)
-* [Power](https://docs.microsoft.com/en-us/xamarin/essentials/power)
 * [Preferences](https://docs.microsoft.com/xamarin/essentials/preferences)
 * [Screen Lock](https://docs.microsoft.com/xamarin/essentials/screen-lock)
 * [Secure Storage](https://docs.microsoft.com/xamarin/essentials/secure-storage)

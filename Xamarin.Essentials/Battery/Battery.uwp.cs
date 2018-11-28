@@ -1,7 +1,18 @@
-﻿namespace Xamarin.Essentials
+﻿using Windows.System.Power;
+
+namespace Xamarin.Essentials
 {
     public static partial class Battery
     {
+        static void StartEnergySaverListeners() =>
+            PowerManager.EnergySaverStatusChanged += ReportEnergySaverUpdated;
+
+        static void StopEnergySaverListeners() =>
+            PowerManager.EnergySaverStatusChanged -= ReportEnergySaverUpdated;
+
+        static void ReportEnergySaverUpdated(object sender, object e)
+            => MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+
         static void StartBatteryListeners() =>
             DefaultBattery.ReportUpdated += ReportUpdated;
 
@@ -9,7 +20,7 @@
             DefaultBattery.ReportUpdated -= ReportUpdated;
 
         static void ReportUpdated(object sender, object e)
-            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
+            => MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
         static Windows.Devices.Power.Battery DefaultBattery =>
             Windows.Devices.Power.Battery.AggregateBattery;
@@ -19,7 +30,7 @@
             get
             {
                 var finalReport = DefaultBattery.GetReport();
-                var finalPercent = -1.0;
+                var finalPercent = 1.0;
 
                 var remaining = finalReport.RemainingCapacityInMilliwattHours;
                 var full = finalReport.FullChargeCapacityInMilliwattHours;
@@ -39,15 +50,15 @@
 
                 switch (report.Status)
                 {
-                    case Windows.System.Power.BatteryStatus.Charging:
+                    case BatteryStatus.Charging:
                         return BatteryState.Charging;
-                    case Windows.System.Power.BatteryStatus.Discharging:
+                    case BatteryStatus.Discharging:
                         return BatteryState.Discharging;
-                    case Windows.System.Power.BatteryStatus.Idle:
+                    case BatteryStatus.Idle:
                         if (ChargeLevel >= 1.0)
                             return BatteryState.Full;
                         return BatteryState.NotCharging;
-                    case Windows.System.Power.BatteryStatus.NotPresent:
+                    case BatteryStatus.NotPresent:
                         return BatteryState.NotPresent;
                 }
 
@@ -75,5 +86,8 @@
                 }
             }
         }
+
+        static EnergySaverStatus PlatformEnergySaverStatus =>
+            PowerManager.EnergySaverStatus == Windows.System.Power.EnergySaverStatus.On ? EnergySaverStatus.On : EnergySaverStatus.Off;
     }
 }

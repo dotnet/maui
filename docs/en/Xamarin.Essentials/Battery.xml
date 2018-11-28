@@ -17,27 +17,24 @@
       <para>- Android: Battery_Stats permission must be set in manifest.</para>
       <para>- iOS: Simulator will not return battery information, must be run on device</para>
       <para>- UWP: None</para>
-      <para></para>
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="BatteryChanged">
-      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged;" />
-      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryChangedEventArgs&gt; BatteryChanged" />
-      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryChanged" />
+    <Member MemberName="BatteryInfoChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.BatteryInfoChangedEventArgs&gt; BatteryInfoChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.BatteryInfoChanged" />
       <MemberType>Event</MemberType>
       <AssemblyInfo>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryChangedEventArgs&gt;</ReturnType>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.BatteryInfoChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
         <summary>Event trigger when battery properties have changed.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ChargeLevel">
@@ -57,9 +54,42 @@
         <value>
           <para>Level of charge.</para>
         </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EnergySaverStatus">
+      <MemberSignature Language="C#" Value="public static Xamarin.Essentials.EnergySaverStatus EnergySaverStatus { get; }" />
+      <MemberSignature Language="ILAsm" Value=".property valuetype Xamarin.Essentials.EnergySaverStatus EnergySaverStatus" />
+      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Battery.EnergySaverStatus" />
+      <MemberType>Property</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>Xamarin.Essentials.EnergySaverStatus</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Gets the current energy saver status of the device.</summary>
+        <value>The current status of energy saver mode.</value>
+        <remarks></remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="EnergySaverStatusChanged">
+      <MemberSignature Language="C#" Value="public static event EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged;" />
+      <MemberSignature Language="ILAsm" Value=".event class System.EventHandler`1&lt;class Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt; EnergySaverStatusChanged" />
+      <MemberSignature Language="DocId" Value="E:Xamarin.Essentials.Battery.EnergySaverStatusChanged" />
+      <MemberType>Event</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.EventHandler&lt;Xamarin.Essentials.EnergySaverStatusChangedEventArgs&gt;</ReturnType>
+      </ReturnValue>
+      <Docs>
+        <summary>Event that is triggered when energy saver status changes.</summary>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="PowerSource">
@@ -79,9 +109,7 @@
         <value>
           <para>Power source, or uknown.</para>
         </value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="State">
@@ -99,9 +127,7 @@
       <Docs>
         <summary>Gets the charging state of the device if it can be determined.</summary>
         <value>Battery state, or unknown.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

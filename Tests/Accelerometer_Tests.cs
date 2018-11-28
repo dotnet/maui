@@ -11,7 +11,7 @@ namespace Tests
 
         [Fact]
         public void Accelerometer_Stop() =>
-            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Accelerometer.Start(SensorSpeed.Normal));
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Accelerometer.Start(SensorSpeed.Default));
 
         [Fact]
         public void Accelerometer_IsMonitoring() =>

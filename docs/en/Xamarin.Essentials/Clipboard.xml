@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Provides a way to work with text on the device clipboard.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTextAsync">
@@ -60,17 +58,17 @@
         </remarks>
       </Docs>
     </Member>
-    <Member MemberName="SetText">
-      <MemberSignature Language="C#" Value="public static void SetText (string text);" />
-      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void SetText(string text) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetText(System.String)" />
+    <Member MemberName="SetTextAsync">
+      <MemberSignature Language="C#" Value="public static System.Threading.Tasks.Task SetTextAsync (string text);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig class System.Threading.Tasks.Task SetTextAsync(string text) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Clipboard.SetTextAsync(System.String)" />
       <MemberType>Method</MemberType>
       <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
       </AssemblyInfo>
       <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
+        <ReturnType>System.Threading.Tasks.Task</ReturnType>
       </ReturnValue>
       <Parameters>
         <Parameter Name="text" Type="System.String" />
@@ -78,6 +76,7 @@
       <Docs>
         <param name="text">The text to put on the clipboard.</param>
         <summary>Sets the contents of the clipboard to be the specified text.</summary>
+        <returns>Returns text that is on the clipboard, or null if there is none.</returns>
         <remarks>This method returns immediately and does not guarentee that the text is on the clipboard by the time this method returns</remarks>
       </Docs>
     </Member>

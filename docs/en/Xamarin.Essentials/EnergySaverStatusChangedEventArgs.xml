@@ -15,6 +15,24 @@
     <remarks>To be added.</remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public EnergySaverStatusChangedEventArgs (Xamarin.Essentials.EnergySaverStatus saverStatus);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.EnergySaverStatus saverStatus) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.#ctor(Xamarin.Essentials.EnergySaverStatus)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="saverStatus" Type="Xamarin.Essentials.EnergySaverStatus" />
+      </Parameters>
+      <Docs>
+        <param name="saverStatus">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="EnergySaverStatus">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.EnergySaverStatus EnergySaverStatus { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.EnergySaverStatus EnergySaverStatus" />
@@ -30,6 +48,25 @@
       <Docs>
         <summary>To be added.</summary>
         <value>To be added.</value>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
+    <Member MemberName="ToString">
+      <MemberSignature Language="C#" Value="public override string ToString ();" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance string ToString() cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.EnergySaverStatusChangedEventArgs.ToString" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.String</ReturnType>
+      </ReturnValue>
+      <Parameters />
+      <Docs>
+        <summary>To be added.</summary>
+        <returns>To be added.</returns>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

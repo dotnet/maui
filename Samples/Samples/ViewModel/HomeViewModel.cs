@@ -109,6 +109,12 @@ namespace Samples.ViewModel
                     "Quickly get the current location.",
                     new[] { "geolocation", "position", "address", "mapping" }),
                 new SampleItem(
+                    "💤",
+                    "Keep Screen On",
+                    typeof(KeepScreenOnPage),
+                    "Keep the device screen awake.",
+                    new[] { "screen", "awake", "sleep" }),
+                new SampleItem(
                     "📏",
                     "Launcher",
                     typeof(LauncherPage),
@@ -150,12 +156,6 @@ namespace Samples.ViewModel
                     typeof(PreferencesPage),
                     "Quickly and easily add persistent preferences.",
                     new[] { "settings", "preferences", "prefs", "storage" }),
-                new SampleItem(
-                    "💤",
-                    "Screen Lock",
-                    typeof(ScreenLockPage),
-                    "Keep the device screen awake.",
-                    new[] { "screen", "awake", "sleep" }),
                 new SampleItem(
                     "🔒",
                     "Secure Storage",

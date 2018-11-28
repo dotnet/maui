@@ -13,30 +13,10 @@
   <Docs>
     <summary>Monitor changes to the orientation of the user's device.</summary>
     <remarks>
-      <para></para>
+      <para />
     </remarks>
   </Docs>
   <Members>
-    <Member MemberName="ApplyLowPassFilter">
-      <MemberSignature Language="C#" Value="public static bool ApplyLowPassFilter { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property bool ApplyLowPassFilter" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Compass.ApplyLowPassFilter" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Boolean</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Applies a moving average filter on the Android implementation. Unused on other platforms</summary>
-        <value>If a low pass filter is applied</value>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
     <Member MemberName="IsMonitoring">
       <MemberSignature Language="C#" Value="public static bool IsMonitoring { get; }" />
       <MemberSignature Language="ILAsm" Value=".property bool IsMonitoring" />
@@ -52,9 +32,7 @@
       <Docs>
         <summary>Gets if compass is actively being monitored.</summary>
         <value>If compass is being monitored.</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="ReadingChanged">
@@ -115,6 +93,29 @@
         <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
       </Docs>
     </Member>
+    <Member MemberName="Start">
+      <MemberSignature Language="C#" Value="public static void Start (Xamarin.Essentials.SensorSpeed sensorSpeed, bool applyLowPassFilter);" />
+      <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Start(valuetype Xamarin.Essentials.SensorSpeed sensorSpeed, bool applyLowPassFilter) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.Compass.Start(Xamarin.Essentials.SensorSpeed,System.Boolean)" />
+      <MemberType>Method</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <ReturnValue>
+        <ReturnType>System.Void</ReturnType>
+      </ReturnValue>
+      <Parameters>
+        <Parameter Name="sensorSpeed" Type="Xamarin.Essentials.SensorSpeed" />
+        <Parameter Name="applyLowPassFilter" Type="System.Boolean" />
+      </Parameters>
+      <Docs>
+        <param name="sensorSpeed">The speed to monitor for changes.</param>
+        <param name="applyLowPassFilter">Whether or not to apply a moving average filter (only used on Android).</param>
+        <summary>Start monitoring for changes to the compass.</summary>
+        <remarks>Will throw FeatureNotSupportedException if not supported on device. Will throw ArgumentNullException if handler is null.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Stop">
       <MemberSignature Language="C#" Value="public static void Stop ();" />
       <MemberSignature Language="ILAsm" Value=".method public static hidebysig void Stop() cil managed" />
@@ -130,9 +131,7 @@
       <Parameters />
       <Docs>
         <summary>Stop monitoring for changes to the compass.</summary>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

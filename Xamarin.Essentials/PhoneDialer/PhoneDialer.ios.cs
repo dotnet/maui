@@ -9,22 +9,7 @@ namespace Xamarin.Essentials
     {
         const string noNetworkProviderCode = "65535";
 
-        internal static bool IsSupported
-        {
-            get
-            {
-                var isDialerInstalled = UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
-
-                if (!isDialerInstalled)
-                    return false;
-
-                using (var netInfo = new CTTelephonyNetworkInfo())
-                {
-                    var mnc = netInfo.SubscriberCellularProvider?.MobileNetworkCode;
-                    return !string.IsNullOrEmpty(mnc) && mnc != noNetworkProviderCode;
-                }
-            }
-        }
+        internal static bool IsSupported => UIApplication.SharedApplication.CanOpenUrl(CreateNsUrl(new string('0', 10)));
 
         static void PlatformOpen(string number)
         {

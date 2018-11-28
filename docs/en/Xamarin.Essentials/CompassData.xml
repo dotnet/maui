@@ -23,11 +23,27 @@
     <summary>
       <para>Contains the orientation of the user's device.</para>
     </summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public CompassData (double headingMagneticNorth);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(float64 headingMagneticNorth) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassData.#ctor(System.Double)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="headingMagneticNorth" Type="System.Double" />
+      </Parameters>
+      <Docs>
+        <param name="headingMagneticNorth">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Equals">
       <MemberSignature Language="C#" Value="public override bool Equals (object obj);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig virtual instance bool Equals(object obj) cil managed" />

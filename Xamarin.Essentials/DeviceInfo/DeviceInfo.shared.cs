@@ -14,41 +14,17 @@ namespace Xamarin.Essentials
 
         public static Version Version => Utils.ParseVersion(VersionString);
 
-        public static string Platform => GetPlatform();
+        public static DevicePlatform Platform => GetPlatform();
 
-        public static string Idiom => GetIdiom();
+        public static DeviceIdiom Idiom => GetIdiom();
 
         public static DeviceType DeviceType => GetDeviceType();
-
-        public static class Idioms
-        {
-            // try to match Xamarin.Forms:
-            // https://github.com/xamarin/Xamarin.Forms/blob/2.5.1/Xamarin.Forms.Core/TargetIdiom.cs
-
-            public const string Phone = "Phone";
-            public const string Tablet = "Tablet";
-            public const string Desktop = "Desktop";
-            public const string TV = "TV";
-
-            public const string Unsupported = "Unsupported";
-        }
-
-        public static class Platforms
-        {
-            // try to match Xamarin.Forms:
-            // https://github.com/xamarin/Xamarin.Forms/blob/2.5.1/Xamarin.Forms.Core/Device.cs#L14-L19
-
-            public const string iOS = "iOS";
-            public const string Android = "Android";
-            public const string UWP = "UWP";
-
-            public const string Unsupported = "Unsupported";
-        }
     }
 
     public enum DeviceType
     {
-        Physical,
-        Virtual
+        Unknown = 0,
+        Physical = 1,
+        Virtual = 2
     }
 }

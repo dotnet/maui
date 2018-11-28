@@ -17,6 +17,24 @@
     </remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public CompassChangedEventArgs (Xamarin.Essentials.CompassData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.CompassData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.CompassChangedEventArgs.#ctor(Xamarin.Essentials.CompassData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.CompassData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="Reading">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.CompassData Reading { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.CompassData Reading" />

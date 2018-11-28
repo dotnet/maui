@@ -10,10 +10,10 @@
 
         static string GetVersionString() => throw new NotImplementedInReferenceAssemblyException();
 
-        static string GetPlatform() => throw new NotImplementedInReferenceAssemblyException();
+        static DevicePlatform GetPlatform() => DevicePlatform.Unknown;
 
-        static string GetIdiom() => throw new NotImplementedInReferenceAssemblyException();
+        static DeviceIdiom GetIdiom() => DeviceIdiom.Unknown;
 
-        static DeviceType GetDeviceType() => throw new NotImplementedInReferenceAssemblyException();
+        static DeviceType GetDeviceType() => DeviceType.Unknown;
     }
 }

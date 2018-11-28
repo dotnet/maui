@@ -24,7 +24,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref fieldValue, value);
         }
 
-        void OnCopy() => Clipboard.SetText(FieldValue);
+        async void OnCopy() => await Clipboard.SetTextAsync(FieldValue);
 
         async void OnPaste()
         {

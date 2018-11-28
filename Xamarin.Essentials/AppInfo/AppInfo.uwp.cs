@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
         static string PlatformGetBuild() =>
             Package.Current.Id.Version.Build.ToString(CultureInfo.InvariantCulture);
 
-        static void PlatformOpenSettings() =>
+        static void PlatformShowSettingsUI() =>
             Windows.System.Launcher.LaunchUriAsync(new System.Uri("ms-settings:appsfeatures-app")).WatchForError();
     }
 }

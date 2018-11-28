@@ -7,12 +7,30 @@ namespace Xamarin.Essentials
     {
         static NSObject levelObserver;
         static NSObject stateObserver;
+        static NSObject saverStatusObserver;
+
+        static void StartEnergySaverListeners()
+        {
+            saverStatusObserver = NSNotificationCenter.DefaultCenter.AddObserver(NSProcessInfo.PowerStateDidChangeNotification, PowerChangedNotification);
+        }
+
+        static void StopEnergySaverListeners()
+        {
+            saverStatusObserver?.Dispose();
+            saverStatusObserver = null;
+        }
+
+        static void PowerChangedNotification(NSNotification notification)
+            => MainThread.BeginInvokeOnMainThread(OnEnergySaverChanged);
+
+        static EnergySaverStatus PlatformEnergySaverStatus =>
+            NSProcessInfo.ProcessInfo?.LowPowerModeEnabled == true ? EnergySaverStatus.On : EnergySaverStatus.Off;
 
         static void StartBatteryListeners()
         {
             UIDevice.CurrentDevice.BatteryMonitoringEnabled = true;
-            levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryChangedNotification);
-            stateObserver = UIDevice.Notifications.ObserveBatteryStateDidChange(BatteryChangedNotification);
+            levelObserver = UIDevice.Notifications.ObserveBatteryLevelDidChange(BatteryInfoChangedNotification);
+            stateObserver = UIDevice.Notifications.ObserveBatteryStateDidChange(BatteryInfoChangedNotification);
         }
 
         static void StopBatteryListeners()
@@ -24,8 +42,8 @@ namespace Xamarin.Essentials
             stateObserver = null;
         }
 
-        static void BatteryChangedNotification(object sender, NSNotificationEventArgs args)
-            => MainThread.BeginInvokeOnMainThread(OnBatteryChanged);
+        static void BatteryInfoChangedNotification(object sender, NSNotificationEventArgs args)
+            => MainThread.BeginInvokeOnMainThread(OnBatteryInfoChanged);
 
         static double PlatformChargeLevel
         {

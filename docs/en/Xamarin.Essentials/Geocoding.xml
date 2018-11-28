@@ -12,9 +12,7 @@
   <Interfaces />
   <Docs>
     <summary>Easily convert between geographic coordinated and place names.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
     <Member MemberName="GetLocationsAsync">
@@ -38,9 +36,7 @@
         <returns>
           <para>List of locations that best match the address or null if none found.</para>
         </returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPlacemarksAsync">
@@ -62,9 +58,7 @@
         <param name="location">Location to find placemarks for.</param>
         <summary>Retrieve placemarks for a given location.</summary>
         <returns>List of placemarks or null if no placemarks are found.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPlacemarksAsync">
@@ -88,27 +82,7 @@
         <param name="longitude">Longitude of the location.</param>
         <summary>Retrieve location for a given address.</summary>
         <returns>List of placemarks or null if no placemarks are found.</returns>
-        <remarks>
-          <para></para>
-        </remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="MapKey">
-      <MemberSignature Language="C#" Value="public static string MapKey { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property string MapKey" />
-      <MemberSignature Language="DocId" Value="P:Xamarin.Essentials.Geocoding.MapKey" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyName>Xamarin.Essentials</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Get or sets the map API key.</summary>
-        <value>The current key for maps.</value>
-        <remarks>Needed only for UWP and can be generated from Bing Maps.</remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>

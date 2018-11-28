@@ -12,11 +12,27 @@
   <Interfaces />
   <Docs>
     <summary>The current pressure information from the change event.</summary>
-    <remarks>
-      <para></para>
-    </remarks>
+    <remarks></remarks>
   </Docs>
   <Members>
+    <Member MemberName=".ctor">
+      <MemberSignature Language="C#" Value="public BarometerChangedEventArgs (Xamarin.Essentials.BarometerData reading);" />
+      <MemberSignature Language="ILAsm" Value=".method public hidebysig specialname rtspecialname instance void .ctor(valuetype Xamarin.Essentials.BarometerData reading) cil managed" />
+      <MemberSignature Language="DocId" Value="M:Xamarin.Essentials.BarometerChangedEventArgs.#ctor(Xamarin.Essentials.BarometerData)" />
+      <MemberType>Constructor</MemberType>
+      <AssemblyInfo>
+        <AssemblyName>Xamarin.Essentials</AssemblyName>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+      </AssemblyInfo>
+      <Parameters>
+        <Parameter Name="reading" Type="Xamarin.Essentials.BarometerData" />
+      </Parameters>
+      <Docs>
+        <param name="reading">To be added.</param>
+        <summary>To be added.</summary>
+        <remarks>To be added.</remarks>
+      </Docs>
+    </Member>
     <Member MemberName="BarometerData">
       <MemberSignature Language="C#" Value="public Xamarin.Essentials.BarometerData Reading { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance valuetype Xamarin.Essentials.BarometerData Reading" />
@@ -32,9 +48,7 @@
       <Docs>
         <summary>Gets the current barometer pressure data</summary>
         <value>Pressure in hPA</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
     <Member MemberName="Reading">
@@ -52,9 +66,7 @@
       <Docs>
         <summary>Get the current reading of the barometer</summary>
         <value>The reading</value>
-        <remarks>
-          <para></para>
-        </remarks>
+        <remarks></remarks>
       </Docs>
     </Member>
   </Members>
