@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls
 {
@@ -14,6 +15,7 @@ namespace Xamarin.Forms.Controls
 		}
 	}
 
+	[Preserve (AllMembers = true)]
 	public class VM
 	{ 
 		public string NativeText { get; set; }
