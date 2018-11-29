@@ -45,6 +45,8 @@ namespace Xamarin.Forms.Maps.WPF
 				// Suscribe element event
 				MessagingCenter.Subscribe<Map, MapSpan>(this, "MapMoveToRegion", (s, a) => MoveToRegion(a), Element);
 				((ObservableCollection<Pin>)Element.Pins).CollectionChanged += OnCollectionChanged;
+
+				LoadPins();
 			}
 
 			base.OnElementChanged(e);
