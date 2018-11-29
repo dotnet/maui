@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (type == null)
-				throw new XamlParseException(xmlType.GetErrorText(), xmlInfo);
+				throw new XamlParseException($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}", xmlInfo);
 
 			return module.ImportReference(type);
 		}

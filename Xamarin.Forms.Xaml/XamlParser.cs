@@ -391,19 +391,9 @@ namespace Xamarin.Forms.Xaml
 				type = XamlLoader.FallbackTypeResolver(potentialTypes, type);
 
 			if (type == null)
-				exception = new XamlParseException(xmlType.GetErrorText(), xmlInfo);
+				exception = new XamlParseException($"Type {xmlType.Name} not found in xmlns {xmlType.NamespaceUri}", xmlInfo);
 
 			return type;
-		}
-
-		public static string GetErrorText(this XmlType xmlType)
-		{
-			return string.Format(
-				"Type {0} not found in xmlns {1}. Ensure third party control " +
-				"libraries are referenced in the code of your project and not " +
-				"just in XAML.",
-				xmlType.Name,
-				xmlType.NamespaceUri);
 		}
 
 		public static T GetTypeReference<T>(
