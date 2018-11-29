@@ -25,7 +25,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Debug\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Debug\monoandroid90\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,7 +37,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>portable</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Release\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Release\monoandroid90\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -86,10 +88,10 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
     <PackageReference Include="Xamarin.Android.Support.v4">
-      <Version>28.0.0-preview7</Version>
+      <Version>28.0.0-preview8</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter">
-      <Version>28.0.0-preview7</Version>
+      <Version>28.0.0-preview8</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
@@ -102,11 +104,20 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+
+  <ItemGroup>
+    <ProjectToBuild Include="Xamarin.Forms.Maps.Android.csproj">
+      <Properties>CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);AndroidTargetFrameworkVersion=v8.1</Properties>
+    </ProjectToBuild>
+  </ItemGroup>
+  <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
+    <!--  create 8.1 binaries-->
+    <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <MSBuild Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <!-- restore 9.0 binaries-->
+    <MSBuild Targets="Restore" Projects="Xamarin.Forms.Maps.Android.csproj" Properties="CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);">
+    </MSBuild>
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

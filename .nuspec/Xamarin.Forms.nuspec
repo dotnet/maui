@@ -21,11 +21,11 @@
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="27.0.2"/>
       </group>
       <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.Android.Support.v4" version="28.0.0-preview7"/>
-        <dependency id="Xamarin.Android.Support.Design" version="28.0.0-preview7"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0-preview7"/>
-        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0-preview7"/>
-        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0-preview7"/>
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.Design" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0-preview8"/>
       </group>
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>
@@ -34,8 +34,10 @@
       <group targetFramework="tizen40">
         <dependency id="Tizen.NET" version="4.0.0"/>
       </group>
+      <group targetFramework="Xamarin.iOS10">
+        <dependency id="Xamarin.iOS.MaterialComponents" version="60.1.0"/>
+      </group>
     </dependencies>
-    
     <references>    
         <group> 
             <reference file="Xamarin.Forms.Core.dll" /> 

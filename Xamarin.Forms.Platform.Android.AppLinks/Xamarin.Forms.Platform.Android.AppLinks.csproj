@@ -21,7 +21,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Debug\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Debug\monoandroid90\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,7 +32,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">bin\Release\monoandroid81\</OutputPath>
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">bin\Release\monoandroid90\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
@@ -68,7 +70,7 @@
   </ItemGroup>  
   <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
     <PackageReference Include="Xamarin.Android.Support.v4">
-      <Version>28.0.0-preview7</Version>
+      <Version>28.0.0-preview8</Version>
     </PackageReference>
   </ItemGroup>  
   <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
@@ -76,4 +78,19 @@
       <Version>27.0.2.1</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectToBuild Include="Xamarin.Forms.Platform.Android.AppLinks.csproj">
+      <Properties>CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);AndroidTargetFrameworkVersion=v8.1</Properties>
+    </ProjectToBuild>
+  </ItemGroup>
+  <Target Name="BeforeBuild" Condition=" '$(CreateAllAndroidTargets)' == 'true' ">
+    <!--  create 8.1 binaries-->
+    <MSBuild Targets="Restore" Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <MSBuild Projects="@(ProjectToBuild)">
+    </MSBuild>
+    <!-- restore 9.0 binaries-->
+    <MSBuild Targets="Restore" Projects="Xamarin.Forms.Platform.Android.AppLinks.csproj" Properties="CreateAllAndroidTargets=false;Configuration=$(Configuration);Platform=$(Platform);">
+    </MSBuild>
+  </Target>
 </Project>
