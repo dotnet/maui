@@ -9,6 +9,11 @@ namespace Xamarin.Forms.Platform.iOS
 	{
 		public static IItemsViewSource Create(IEnumerable itemsSource, UICollectionView collectionView)
 		{
+			if (itemsSource == null)
+			{
+				return new EmptySource();
+			}
+
 			switch (itemsSource)
 			{
 				case IList _ when itemsSource is INotifyCollectionChanged:

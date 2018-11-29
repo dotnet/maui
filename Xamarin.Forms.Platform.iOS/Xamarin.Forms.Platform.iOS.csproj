@@ -114,6 +114,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CellExtensions.cs" />
     <Compile Include="CADisplayLinkTicker.cs" />
+    <Compile Include="CollectionView\EmptySource.cs" />
     <Compile Include="CollectionView\IItemsViewSource.cs" />
     <Compile Include="CollectionView\ItemsSourceFactory.cs" />
     <Compile Include="CollectionView\ItemsViewCell.cs" />

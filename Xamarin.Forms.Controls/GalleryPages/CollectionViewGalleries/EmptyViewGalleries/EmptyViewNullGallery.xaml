@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Xamarin.Forms.Controls.GalleryPages.CollectionViewGalleries.EmptyViewGalleries.EmptyViewNullGallery">
+    <ContentPage.Content>
+			<CollectionView x:Name="CollectionView">
+				<CollectionView.ItemsLayout>
+					<GridItemsLayout Span="3" Orientation="Vertical"></GridItemsLayout>
+				</CollectionView.ItemsLayout>
+				<CollectionView.EmptyView>
+					Nothing to display.
+				</CollectionView.EmptyView>
+			</CollectionView>
+    </ContentPage.Content>
+</ContentPage>

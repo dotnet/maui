@@ -14,7 +14,6 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 	}
 
-	// TODO hartez 2018/05/30 08:58:42 This follows the same basic scheme as RecyclerView.Adapter; you should be able to reuse the same wrapper class for the IEnumerable	
 	//// TODO hartez 2018/05/30 09:05:38 Think about whether this Controller and/or the new Adapter should be internal or public
 	public class CollectionViewRenderer : ViewRenderer<CollectionView, UIView>
 	{

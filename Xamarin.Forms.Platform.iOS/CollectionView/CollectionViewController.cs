@@ -150,8 +150,12 @@ namespace Xamarin.Forms.Platform.iOS
 
 		UICollectionViewCell GetPrototype()
 		{
+			if (_itemsSource.Count == 0)
+			{
+				return null;
+			}
+
 			// TODO hartez assuming this works, we'll need to evaluate using this nsindexpath (what about groups?)
-			// TODO hartez Also, what about situations where there is no data which matches the path?
 			var indexPath = NSIndexPath.Create(0, 0);
 			return GetCell(CollectionView, indexPath);
 		}

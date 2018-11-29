@@ -16,6 +16,8 @@
 					Children =
 					{
 						descriptionLabel,
+						GalleryBuilder.NavButton("EmptyView (null ItemsSource)", () =>
+							new EmptyViewNullGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (String)", () =>
 							new EmptyViewStringGallery(), Navigation),
 						GalleryBuilder.NavButton("EmptyView (View)", () =>

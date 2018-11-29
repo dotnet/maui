@@ -9,6 +9,11 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		public static IItemsViewSource Create(IEnumerable itemsSource, RecyclerView.Adapter adapter)
 		{
+			if (itemsSource == null)
+			{
+				return new EmptySource();
+			}
+
 			switch (itemsSource)
 			{
 				case IList _ when itemsSource is INotifyCollectionChanged:

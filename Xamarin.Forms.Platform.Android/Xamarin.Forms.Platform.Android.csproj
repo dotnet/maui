@@ -75,6 +75,7 @@
     <Compile Include="BorderBackgroundManager.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\DataChangeObserver.cs" />
+    <Compile Include="CollectionView\EmptySource.cs" />
     <Compile Include="CollectionView\EmptyViewAdapter.cs" />
     <Compile Include="CollectionView\ItemsViewAdapter.cs" />
     <Compile Include="CollectionView\EdgeSnapHelper.cs" />
