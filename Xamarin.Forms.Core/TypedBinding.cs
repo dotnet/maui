@@ -193,7 +193,7 @@ namespace Xamarin.Forms.Internals
 				Subscribe((TSource)sourceObject);
 
 			if (needsGetter) {
-				var value = FallbackValue ?? property.DefaultValue;
+				var value = FallbackValue ?? property.GetDefaultValue(target);
 				if (isTSource) {
 					try {
 						value = GetSourceValue(_getter((TSource)sourceObject), property.ReturnType);

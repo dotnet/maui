@@ -152,12 +152,11 @@ namespace Xamarin.Forms
 			if (needsGetter)
 			{
 				object value = property.DefaultValue;
-				if (part.TryGetValue(current, out value) || part.IsSelf)
-				{
+				if (part.TryGetValue(current, out value) || part.IsSelf) {
 					value = Binding.GetSourceValue(value, property.ReturnType);
 				}
 				else
-					value = Binding.FallbackValue ?? property.DefaultValue;
+					value = Binding.FallbackValue ?? property.GetDefaultValue(target);
 
 				if (!TryConvert(ref value, property, property.ReturnType, true))
 				{
