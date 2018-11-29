@@ -7,9 +7,9 @@ namespace Xamarin.Forms.Controls
 {
 	internal class MessagesViewModel : ViewModelBase
 	{
-		public MessagesViewModel()
+		public MessagesViewModel(int messagesCount)
 		{
-			Messages = new ObservableCollection<MessageViewModel> (Enumerable.Range (0, 100).Select (i => {
+			Messages = new ObservableCollection<MessageViewModel> (Enumerable.Range (0, messagesCount).Select (i => {
 				return new MessageViewModel { Subject = "Subject Line " + i, MessagePreview = "Lorem ipsum dolorem monkeys bonkers " + i };
 			}));
 
@@ -26,7 +26,7 @@ namespace Xamarin.Forms.Controls
 	}
 
 	[Preserve (AllMembers = true)]
-	internal class MessageViewModel : ViewModelBase
+	public class MessageViewModel : ViewModelBase
 	{
 		public MessageViewModel()
 		{
@@ -86,13 +86,16 @@ namespace Xamarin.Forms.Controls
 			}
 		}
 
-		public ContextActionsGallery (bool tableView = false)
+		public ContextActionsGallery (bool tableView = false, bool hasUnevenRows = false, int messagesCount = 100)
 		{
-			BindingContext = new MessagesViewModel();
+			BindingContext = new MessagesViewModel(messagesCount);
 
 			View list;
 			if (!tableView) {
-				list = new ListView();
+				list = new ListView
+				{
+					HasUnevenRows = hasUnevenRows
+				};
 				list.SetBinding (ListView.ItemsSourceProperty, "Messages");
 				((ListView)list).ItemTemplate = new DataTemplate (typeof (MessageCell));
 			} else {
