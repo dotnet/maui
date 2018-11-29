@@ -153,6 +153,7 @@ namespace Xamarin.Forms
 				}
 
 				subscriptions.Remove(current);
+				break;
 			}
 		}
 

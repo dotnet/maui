@@ -190,6 +190,21 @@ namespace Xamarin.Forms.Core.UnitTests
 		}
 
 		[Test]
+		public void RemoveHandlerWithMultipleSubscriptionsRemovesOne()
+		{
+			int beforeRun = s_count;
+
+			var source = new TestEventSource();
+			source.TestEvent += Handler;
+			source.TestEvent += Handler;
+			source.TestEvent -= Handler;
+
+			source.FireTestEvent();
+
+			Assert.AreEqual (beforeRun + 1, s_count);
+		}
+
+		[Test]
 		public void StaticHandlerShouldRun()
 		{
 			int beforeRun = s_count;
