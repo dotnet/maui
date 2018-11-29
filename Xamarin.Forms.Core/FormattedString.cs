@@ -54,7 +54,11 @@ namespace Xamarin.Forms
 					var bo = item as Span;
 					bo.Parent = null;
 					if (bo != null)
+					{
+						bo.PropertyChanging -= OnItemPropertyChanging;
 						bo.PropertyChanged -= OnItemPropertyChanged;
+					}
+						
 				}
 			}
 
@@ -65,7 +69,11 @@ namespace Xamarin.Forms
 					var bo = item as Span;
 					bo.Parent = this;
 					if (bo != null)
+					{
+						bo.PropertyChanging += OnItemPropertyChanging;
 						bo.PropertyChanged += OnItemPropertyChanged;
+					}
+						
 				}
 			}
 
@@ -76,6 +84,11 @@ namespace Xamarin.Forms
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(Spans));
+		}
+
+		void OnItemPropertyChanging(object sender, PropertyChangingEventArgs e)
+		{
+			OnPropertyChanging(nameof(Spans));
 		}
 
 		class SpanCollection : ObservableCollection<Span>

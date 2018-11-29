@@ -542,6 +542,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ViewClipBoundsShouldUpdate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3988.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue2580.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4026.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_Template.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla56298.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bugzilla42620.cs" />
