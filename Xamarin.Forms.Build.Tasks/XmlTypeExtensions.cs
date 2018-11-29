@@ -3,30 +3,49 @@ using System.Linq;
 using System.Xml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
-		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
+		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions = 
+			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
+		static object _nsLock = new object();
 
-		static void GatherXmlnsDefinitionAttributes()
+		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
-			var assemblies = new [] {
-				typeof(XamlLoader).Assembly,
-				typeof(View).Assembly,
-			};
+			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
-
-			foreach (var assembly in assemblies)
-				foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
-					s_xmlnsDefinitions.Add(attribute);
-					attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+			if (module.AssemblyReferences?.Count > 0) {
+				// Search for the attribute in the assemblies being
+				// referenced.
+				foreach (var asmRef in module.AssemblyReferences) {
+					var asmDef = module.AssemblyResolver.Resolve(asmRef);
+					foreach (var ca in asmDef.CustomAttributes) {
+						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+							var attr = GetXmlnsDefinition(ca, asmDef);
+							xmlnsDefinitions.Add(attr);
+						}
+					}
 				}
+			} else {
+				// Use standard XF assemblies
+				// (Should only happen in unit tests)
+				var requiredAssemblies = new[] {
+					typeof(XamlLoader).Assembly,
+					typeof(View).Assembly,
+				};
+				foreach (var assembly in requiredAssemblies)
+					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false)) {
+						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+						xmlnsDefinitions.Add(attribute);
+					}
+			}
+
+			s_xmlnsDefinitions[module] = xmlnsDefinitions;
+			return xmlnsDefinitions;
 		}
 
 		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
@@ -51,73 +70,27 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			return new XmlType(namespaceURI, typename, null).GetTypeReference(module, xmlInfo);
 		}
-
+	
 		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = null;
+			lock (_nsLock) {
+				if (!s_xmlnsDefinitions.TryGetValue(module, out xmlnsDefinitions))
+					xmlnsDefinitions = GatherXmlnsDefinitionAttributes(module);
+			}
 
-			var namespaceURI = xmlType.NamespaceUri;
-			var elementName = xmlType.Name;
 			var typeArguments = xmlType.TypeArguments;
 
-			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
-
-			var lookupNames = new List<string>();
-
-			foreach (var xmlnsDef in s_xmlnsDefinitions) {
-				if (xmlnsDef.XmlNamespace != namespaceURI)
-					continue;
-				lookupAssemblies.Add(xmlnsDef);
-			}
-
-			if (lookupAssemblies.Count == 0) {
-				string ns;
-				string typename;
-				string asmstring;
-				string targetPlatform;
-
-				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
-				asmstring = asmstring ?? module.Assembly.Name.Name;
-				if (ns != null)
-					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
-						AssemblyName = asmstring
-					});
-			}
-
-			lookupNames.Add(elementName + "Extension");
-			lookupNames.Add(elementName);
-
-			for (var i = 0; i < lookupNames.Count; i++)
-			{
-				var name = lookupNames[i];
-				if (name.Contains(":"))
-					name = name.Substring(name.LastIndexOf(':') + 1);
-				if (typeArguments != null)
-					name += "`" + typeArguments.Count; //this will return an open generic Type
-				lookupNames[i] = name;
-			}
-
-			TypeReference type = null;
-			foreach (var asm in lookupAssemblies)
-			{
-				if (type != null)
-					break;
-				foreach (var name in lookupNames)
+			IList<XamlLoader.FallbackTypeInfo> potentialTypes;
+			TypeReference type = xmlType.GetTypeReference(
+				xmlnsDefinitions,
+				module.Assembly.Name.Name,
+				(typeInfo) =>
 				{
-					if (type != null)
-						break;
-
-					var clrNamespace = asm.ClrNamespace;
-					var typeName = name.Replace('+', '/'); //Nested types
-					var idx = typeName.LastIndexOf('.');
-					if (idx >= 0) {
-						clrNamespace += '.' + typeName.Substring(0, typeName.LastIndexOf('.'));
-						typeName = typeName.Substring(typeName.LastIndexOf('.') + 1);
-					}
-					type = module.GetTypeDefinition((asm.AssemblyName, clrNamespace, typeName));
-				}
-			}
+					string typeName = typeInfo.TypeName.Replace('+', '/'); //Nested types
+					return module.GetTypeDefinition((typeInfo.AssemblyName, typeInfo.ClrNamespace, typeName));
+				},
+				out potentialTypes);
 
 			if (type != null && typeArguments != null && type.HasGenericParameters)
 			{
@@ -127,9 +100,22 @@ namespace Xamarin.Forms.Build.Tasks
 			}
 
 			if (type == null)
-				throw new XamlParseException(string.Format("Type {0} not found in xmlns {1}", elementName, namespaceURI), xmlInfo);
+				throw new XamlParseException(xmlType.GetErrorText(), xmlInfo);
 
 			return module.ImportReference(type);
+		}
+
+		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
+		{
+			var attr = new XmlnsDefinitionAttribute(
+							ca.ConstructorArguments[0].Value as string,
+							ca.ConstructorArguments[1].Value as string);
+
+			string assemblyName = null;
+			if (ca.Properties.Count > 0)
+				assemblyName = ca.Properties[0].Argument.Value as string;
+			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
+			return attr;
 		}
 	}
 }

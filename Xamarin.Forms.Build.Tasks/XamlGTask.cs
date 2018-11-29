@@ -17,6 +17,7 @@ namespace Xamarin.Forms.Build.Tasks
 
 		public string Language { get; set; }
 		public string AssemblyName { get; set; }
+		public string References { get; set; }		
 
 		public override bool Execute()
 		{
@@ -41,8 +42,8 @@ namespace Xamarin.Forms.Build.Tasks
 					outputFile = outputFile.Replace('\\','/');
 				else if (Path.DirectorySeparatorChar == '\\' && outputFile.Contains(@"/"))
 					outputFile = outputFile.Replace('/', '\\');
-
-				var generator = new XamlGenerator(xamlFile, Language, AssemblyName, outputFile, Log);
+	
+				var generator = new XamlGenerator(xamlFile, Language, AssemblyName, outputFile, References, Log);
 				try {
 					if (!generator.Execute()) {
 						//If Execute() fails, the file still needs to exist because it is added to the <Compile/> ItemGroup

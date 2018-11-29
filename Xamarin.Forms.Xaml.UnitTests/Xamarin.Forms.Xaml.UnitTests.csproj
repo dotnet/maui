@@ -3,22 +3,22 @@
     <TargetFramework>net47</TargetFramework>
     <RootNamespace>Xamarin.Forms.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Xamarin.Forms.Xaml.UnitTests</AssemblyName>
-	</PropertyGroup>
+  </PropertyGroup>
 	
-	<Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.props" />
-	<Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.targets" />
+  <Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.props" />
+  <Import Project="..\.nuspec\Xamarin.Forms.DefaultItems.targets" />
 	
-	<PropertyGroup>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0672;0219;0414</NoWarn>
-	</PropertyGroup>
+  </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,12 +38,12 @@
     </Compile>
   </ItemGroup>
   
-	<PropertyGroup>
-		<__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
-		<__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">..\.nuspec\netstandard2.0\</__XFBuildTasksLocation>
-		<__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">..\.nuspec\net461\</__XFBuildTasksLocation>
-	</PropertyGroup>
+  <PropertyGroup>
+    <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
+    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">..\.nuspec\netstandard2.0\</__XFBuildTasksLocation>
+    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">..\.nuspec\net461\</__XFBuildTasksLocation>
+  </PropertyGroup>
 
-	<Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
+  <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="..\.nuspec\Xamarin.Forms.Debug.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>

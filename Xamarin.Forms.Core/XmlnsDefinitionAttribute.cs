@@ -2,11 +2,18 @@
 using System.Diagnostics;
 
 
-namespace Xamarin.Forms.Internals
+namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	[DebuggerDisplay("{XmlNamespace}, {ClrNamespace}, {AssemblyName}")]
-	sealed class XmlnsDefinitionAttribute : Attribute
+#if NETSTANDARD2_0
+	public
+#else
+	// Certain needed reflection methods are not possible in .NET Standard 1.X
+	// so the attribute needs to remain internal in that case.
+	internal
+#endif
+		sealed class XmlnsDefinitionAttribute : Attribute
 	{
 		public string XmlNamespace { get; }
 		public string ClrNamespace { get; }

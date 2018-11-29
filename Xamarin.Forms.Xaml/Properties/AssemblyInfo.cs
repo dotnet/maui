@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+using Xamarin.Forms;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.Xaml;
 
 [assembly: InternalsVisibleTo("Xamarin.Forms.Xaml.UnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Build.Tasks")]

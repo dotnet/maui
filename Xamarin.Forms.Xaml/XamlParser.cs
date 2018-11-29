@@ -311,11 +311,15 @@ namespace Xamarin.Forms.Xaml
 
 		static void GatherXmlnsDefinitionAttributes()
 		{
-			//this could be extended to look for [XmlnsDefinition] in all assemblies
-			var assemblies = new [] {
+			Assembly[] assemblies = null;
+#if !NETSTANDARD2_0
+			assemblies = new[] {
 				typeof(XamlLoader).GetTypeInfo().Assembly,
 				typeof(View).GetTypeInfo().Assembly,
 			};
+#else
+			assemblies = AppDomain.CurrentDomain.GetAssemblies();
+#endif
 
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
@@ -329,59 +333,24 @@ namespace Xamarin.Forms.Xaml
 		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
+			bool hasRetriedNsSearch = false;
+			IList<XamlLoader.FallbackTypeInfo> potentialTypes;
+
+#if NETSTANDARD2_0
+		retry:
+#endif
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAttributes();
 
-			var namespaceURI = xmlType.NamespaceUri;
-			var elementName = xmlType.Name;
+			Type type = xmlType.GetTypeReference(
+				s_xmlnsDefinitions,
+				currentAssembly?.FullName,
+				(typeInfo) =>
+					Type.GetType($"{typeInfo.ClrNamespace}.{typeInfo.TypeName}, {typeInfo.AssemblyName}"),
+				out potentialTypes);
+			
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
-
-			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
-			var lookupNames = new List<string>();
-
-			foreach (var xmlnsDef in s_xmlnsDefinitions) {
-				if (xmlnsDef.XmlNamespace != namespaceURI)
-					continue;
-				lookupAssemblies.Add(xmlnsDef);
-			}
-
-			if (lookupAssemblies.Count == 0) {
-				XmlnsHelper.ParseXmlns(namespaceURI, out _, out string ns, out string asmstring, out _);
-				lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns) {
-					AssemblyName = asmstring ?? currentAssembly.FullName
-				});
-			}
-
-			lookupNames.Add(elementName + "Extension");
-			lookupNames.Add(elementName);
-
-			for (var i = 0; i < lookupNames.Count; i++)
-			{
-				var name = lookupNames[i];
-				if (name.Contains(":"))
-					name = name.Substring(name.LastIndexOf(':') + 1);
-				if (typeArguments != null)
-					name += "`" + typeArguments.Count; //this will return an open generic Type
-				lookupNames[i] = name;
-			}
-
-			Type type = null;
-
-			IList<XamlLoader.FallbackTypeInfo> potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
-			foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
-			foreach (string typeName in lookupNames)
-				potentialTypes.Add(new XamlLoader.FallbackTypeInfo
-				{
-					ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
-					TypeName = typeName,
-					AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
-					XmlNamespace = xmlnsDefinitionAttribute.XmlNamespace
-				});
-
-			foreach (XamlLoader.FallbackTypeInfo typeInfo in potentialTypes)
-				if ((type = Type.GetType($"{typeInfo.ClrNamespace}.{typeInfo.TypeName}, {typeInfo.AssemblyName}")) != null)
-					break;
 
 			if (type != null && typeArguments != null)
 			{
@@ -403,12 +372,111 @@ namespace Xamarin.Forms.Xaml
 				type = type.MakeGenericType(args);
 			}
 
+#if NETSTANDARD2_0
+			if (type == null)
+			{
+				// This covers the scenario where the AppDomain's loaded
+				// assemblies might have changed since this method was first
+				// called. This occurred during unit test runs and could
+				// conceivably occur in the field. 
+				if (!hasRetriedNsSearch) {
+					hasRetriedNsSearch = true;
+					s_xmlnsDefinitions = null;
+					goto retry;
+				}
+			}
+#endif
+							
 			if (XamlLoader.FallbackTypeResolver != null)
 				type = XamlLoader.FallbackTypeResolver(potentialTypes, type);
 
 			if (type == null)
-				exception = new XamlParseException($"Type {elementName} not found in xmlns {namespaceURI}", xmlInfo);
+				exception = new XamlParseException(xmlType.GetErrorText(), xmlInfo);
 
+			return type;
+		}
+
+		public static string GetErrorText(this XmlType xmlType)
+		{
+			return string.Format(
+				"Type {0} not found in xmlns {1}. Ensure third party control " +
+				"libraries are referenced in the code of your project and not " +
+				"just in XAML.",
+				xmlType.Name,
+				xmlType.NamespaceUri);
+		}
+
+		public static T GetTypeReference<T>(
+			this XmlType xmlType,
+			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
+			string defaultAssemblyName,
+			Func<XamlLoader.FallbackTypeInfo, T> refFromTypeInfo,
+			out IList<XamlLoader.FallbackTypeInfo> potentialTypes) 
+			where T : class
+		{
+			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
+			var namespaceURI = xmlType.NamespaceUri;
+			var elementName = xmlType.Name;
+			var typeArguments = xmlType.TypeArguments;
+			potentialTypes = null;			
+
+			foreach (var xmlnsDef in xmlnsDefinitions)
+			{
+				if (xmlnsDef.XmlNamespace != namespaceURI)
+					continue;
+				lookupAssemblies.Add(xmlnsDef);
+			}
+
+			if (lookupAssemblies.Count == 0)
+			{
+				if (defaultAssemblyName == null)
+					return null;
+
+				string ns;
+				string typename;
+				string asmstring;
+				string targetPlatform;
+
+				XmlnsHelper.ParseXmlns(namespaceURI, out typename, out ns, out asmstring, out targetPlatform);
+				asmstring = asmstring ?? defaultAssemblyName;
+				if (ns != null)
+					lookupAssemblies.Add(new XmlnsDefinitionAttribute(namespaceURI, ns)
+					{
+						AssemblyName = asmstring
+					});
+			}
+
+			var lookupNames = new List<string>();
+			if ( !elementName.EndsWith("Extension"))
+				lookupNames.Add(elementName + "Extension");
+			lookupNames.Add(elementName);
+
+			for (var i = 0; i < lookupNames.Count; i++)
+			{
+				var name = lookupNames[i];
+				if (name.Contains(":"))
+					name = name.Substring(name.LastIndexOf(':') + 1);
+				if (typeArguments != null)
+					name += "`" + typeArguments.Count; //this will return an open generic Type
+				lookupNames[i] = name;
+			}
+			
+			potentialTypes = new List<XamlLoader.FallbackTypeInfo>();
+			foreach (string typeName in lookupNames)
+				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)				
+					potentialTypes.Add(new XamlLoader.FallbackTypeInfo
+					{
+						ClrNamespace = xmlnsDefinitionAttribute.ClrNamespace,
+						TypeName = typeName,
+						AssemblyName = xmlnsDefinitionAttribute.AssemblyName,
+						XmlNamespace = xmlnsDefinitionAttribute.XmlNamespace
+					});
+
+			T type = null;
+			foreach (XamlLoader.FallbackTypeInfo typeInfo in potentialTypes)
+				if ((type = refFromTypeInfo(typeInfo)) != null)
+					break;
+				
 			return type;
 		}
 	}
