@@ -178,6 +178,7 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateIsSwipeToRefreshEnabled();
 				UpdateFastScrollEnabled();
 				UpdateSelectionMode();
+				UpdateSpinnerColor();
 				UpdateHorizontalScrollBarVisibility();
 				UpdateVerticalScrollBarVisibility();
 			}
@@ -217,6 +218,8 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateFastScrollEnabled();
 			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
 				UpdateSelectionMode();
+			else if (e.PropertyName == ListView.RefreshControlColorProperty.PropertyName)
+				UpdateSpinnerColor();
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
 				UpdateHorizontalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
@@ -417,6 +420,12 @@ namespace Xamarin.Forms.Platform.Android
 					Control.ChoiceMode = ChoiceMode.Single;
 				}
 			}
+		}
+
+		void UpdateSpinnerColor()
+		{
+			if (_refresh != null)
+				_refresh.SetColorSchemeColors(Element.RefreshControlColor.ToAndroid());
 		}
 
 		void UpdateHorizontalScrollBarVisibility()

@@ -249,6 +249,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateSeparatorColor();
 				UpdateSeparatorVisibility();
 				UpdateSelectionMode();
+				UpdateSpinnerColor();
 				UpdateVerticalScrollBarVisibility();
 				UpdateHorizontalScrollBarVisibility();
 
@@ -289,6 +290,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdatePullToRefreshEnabled();
 			else if (e.PropertyName == Xamarin.Forms.ListView.SelectionModeProperty.PropertyName)
 				UpdateSelectionMode();
+			else if (e.PropertyName == Xamarin.Forms.ListView.RefreshControlColorProperty.PropertyName)
+				UpdateSpinnerColor();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
 				UpdateVerticalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
@@ -682,6 +685,14 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void UpdateSpinnerColor()
+		{
+			var color = Element.RefreshControlColor;
+
+			if (_tableViewController != null)
+				_tableViewController.UpdateRefreshControlColor(color == Color.Default ? null : color.ToUIColor());
+    }
+    
 		void UpdateVerticalScrollBarVisibility()
 		{
 			if (_defaultVerticalScrollVisibility == null)
@@ -1461,6 +1472,12 @@ namespace Xamarin.Forms.Platform.iOS
 			// Restart the refreshing to get the animation to trigger
 			UpdateIsRefreshing(false);
 			UpdateIsRefreshing(true);
+		}
+
+		public void UpdateRefreshControlColor(UIColor color)
+		{
+			if (RefreshControl != null)
+				RefreshControl.TintColor = color;
 		}
 
 		protected override void Dispose(bool disposing)
