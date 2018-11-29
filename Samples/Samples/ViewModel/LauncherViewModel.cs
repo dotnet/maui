@@ -34,7 +34,6 @@ namespace Samples.ViewModel
         {
             try
             {
-
                 await Launcher.OpenAsync(LaunchUri);
             }
             catch (Exception ex)
@@ -52,7 +51,6 @@ namespace Samples.ViewModel
         {
             try
             {
-
                 var canBeLaunched = await Launcher.CanOpenAsync(LaunchUri);
                 await DisplayAlertAsync($"Uri {LaunchUri} can be launched: {canBeLaunched}");
             }
