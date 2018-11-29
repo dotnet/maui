@@ -115,6 +115,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				}
 			}
 
+			UpdateAccessibilityImportance(CurrentPageController as Page, ImportantForAccessibility.Auto, true);
+
 			return source.Task;
 		}
 
@@ -146,12 +148,15 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		async Task INavigation.PushModalAsync(Page modal, bool animated)
 		{
 			CurrentPageController?.SendDisappearing();
+			UpdateAccessibilityImportance(CurrentPageController as Page, ImportantForAccessibility.NoHideDescendants, false);
 
 			_navModel.PushModal(modal);
 
 			Task presentModal = PresentModal(modal, animated);
 
 			await presentModal;
+
+			UpdateAccessibilityImportance(modal, ImportantForAccessibility.Auto, true);
 
 			// Verify that the modal is still on the stack
 			if (_navModel.CurrentPage == modal)
@@ -260,6 +265,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				SetPageInternal(newRoot);
 			}
+		}
+
+		void UpdateAccessibilityImportance(Page page, ImportantForAccessibility importantForAccessibility, bool forceFocus)
+		{
+
+			var pageRenderer = Android.Platform.GetRenderer(page);
+			if (pageRenderer?.View == null)
+				return;
+			pageRenderer.View.ImportantForAccessibility = importantForAccessibility;
+			if (forceFocus)
+				pageRenderer.View.SendAccessibilityEvent(global::Android.Views.Accessibility.EventTypes.ViewFocused);
+			
 		}
 
 		void SetPageInternal(Page newRoot)
