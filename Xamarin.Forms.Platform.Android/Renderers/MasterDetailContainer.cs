@@ -111,9 +111,8 @@ namespace Xamarin.Forms.Platform.Android
 		void DisposeChildRenderers()
 		{
 			IVisualElementRenderer childRenderer = Platform.GetRenderer(_childView);
-			if (childRenderer != null)
-				childRenderer.Dispose();
-			_childView.ClearValue(Platform.RendererProperty);
+			childRenderer?.Dispose();
+			_childView?.ClearValue(Platform.RendererProperty);
 		}
 
 		Rectangle GetBounds(bool isMasterPage, int left, int top, int right, int bottom)
