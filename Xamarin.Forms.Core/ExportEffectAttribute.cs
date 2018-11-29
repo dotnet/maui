@@ -3,7 +3,7 @@ using System;
 namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class ExportEffectAttribute : Attribute
+	public sealed class ExportEffectAttribute : Attribute
 	{
 		public ExportEffectAttribute(Type effectType, string uniqueName)
 		{

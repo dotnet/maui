@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Internals
 {
 	[AttributeUsage(AttributeTargets.All)]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public class PreserveAttribute : Attribute
+	public sealed class PreserveAttribute : Attribute
 	{
 		public bool AllMembers;
 		public bool Conditional;

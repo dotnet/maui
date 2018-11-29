@@ -3,7 +3,7 @@ using System;
 namespace Xamarin.Forms
 {
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-	public class DependencyAttribute : Attribute
+	public sealed class DependencyAttribute : Attribute
 	{
 		public DependencyAttribute(Type implementorType)
 		{
