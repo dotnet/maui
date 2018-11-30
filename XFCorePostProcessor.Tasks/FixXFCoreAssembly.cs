@@ -1,11 +1,13 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
-
 using Mono.Cecil.Cil;
-using Microsoft.Build.Framework;
-using System.IO;
 
 namespace XFCorePostProcessor.Tasks
 {
@@ -32,6 +34,10 @@ namespace XFCorePostProcessor.Tasks
 			using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(Assembly, new ReaderParameters { AssemblyResolver = resolver, ReadWrite = true, ReadSymbols = true })) {
 				var resourceLoader = assemblyDefinition.MainModule.GetType("Xamarin.Forms.Internals.ResourceLoader");
 				var module = assemblyDefinition.MainModule;
+				if(resourceLoader.GetMethods().Count(md=>md.Name == "get_ResourceProvider") > 1) {
+					Log.LogMessage("  already executed");
+					return false;
+				}
 				var methodDef = new MethodDefinition("get_ResourceProvider",
 													 MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
 													 module.ImportReference(module.ImportReference(typeof(Func<,>)).MakeGenericInstanceType(module.ImportReference(typeof(string)),
