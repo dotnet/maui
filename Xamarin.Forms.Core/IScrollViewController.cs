@@ -11,5 +11,7 @@ namespace Xamarin.Forms
 		void SendScrollFinished();
 
 		void SetScrolledPosition(double x, double y);
+
+		Rectangle LayoutAreaOverride { get; set; }
 	}
 }

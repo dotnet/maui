@@ -437,7 +437,7 @@ namespace Xamarin.Forms.Xaml
 			}
 
 			var lookupNames = new List<string>();
-			if ( !elementName.EndsWith("Extension"))
+			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension"))
 				lookupNames.Add(elementName + "Extension");
 			lookupNames.Add(elementName);
 

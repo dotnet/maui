@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 Title="Welcome"
+			 Routing.Route="shellcontent"
+			 Shell.SetPaddingInsets="true"
+			 Shell.TabBarIsVisible="false"
+             x:Class="Xamarin.Forms.Controls.ShellContent">
+	<Page.ToolbarItems>
+		<ToolbarItem Text="Search" Icon="bank.png" />
+	</Page.ToolbarItems>
+	<!--<Shell.SearchHandler>
+		<SearchHandler Placeholder="My Placeholder!" />
+	</Shell.SearchHandler>-->
+	<ScrollView>
+		<StackLayout Margin="0, 40, 0, 30">
+			<Label  x:Name="_mainLabel"       HorizontalOptions="Center" Text="Hello World!" />
+			<Button x:Name="_toggleButton"    HorizontalOptions="Center" Text="Toggle Flyout" />
+			<Button x:Name="_queryButton"     HorizontalOptions="Center" Text="Query Navigate" />
+			<Button x:Name="_navButton"       HorizontalOptions="Center" Text="URI Navigate" />
+			<Button x:Name="_popToRootButton" HorizontalOptions="Center" Text="Pop To Root" />
+			<Button x:Name="_popButton"       HorizontalOptions="Center" Text="Pop page" />
+			<Button x:Name="_pushButton"      HorizontalOptions="Center" Text="Push page" />
+			<Button x:Name="_insertButton"    HorizontalOptions="Center" Text="Insert page" />
+			<Button x:Name="_removeButton"    HorizontalOptions="Center" Text="Remove page" />
+		</StackLayout>
+	</ScrollView>
+</ContentPage>

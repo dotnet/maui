@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
@@ -14,7 +15,7 @@ namespace Xamarin.Forms
 			BindableProperty.Create("BindingContext", typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
 
-		readonly List<BindablePropertyContext> _properties = new List<BindablePropertyContext>(4);
+		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 
 		bool _applying;
 		object _inheritedContext;
@@ -50,6 +51,28 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException("propertyKey");
 
 			ClearValue(propertyKey.BindableProperty, fromStyle:false, checkAccess: false);
+		}
+
+		internal (bool IsSet, T Value)[] GetValues<T>(BindableProperty[] propArray)
+		{
+			Dictionary<BindableProperty, BindablePropertyContext> properties = _properties;
+			var resultArray = new(bool IsSet, T Value)[propArray.Length];
+
+			for (int i = 0; i < propArray.Length; i++)
+			{
+				if (properties.TryGetValue(propArray[i], out var context))
+				{
+					resultArray[i].IsSet = (context.Attributes & BindableContextAttributes.IsDefaultValue) == 0;
+					resultArray[i].Value = (T)context.Value;
+				}
+				else
+				{
+					resultArray[i].IsSet = false;
+					resultArray[i].Value = default(T);
+				}
+			}
+
+			return resultArray;
 		}
 
 		public bool IsSet(BindableProperty targetProperty)
@@ -154,8 +177,7 @@ namespace Xamarin.Forms
 
 		protected void UnapplyBindings()
 		{
-			for (int i = 0, _propertiesCount = _properties.Count; i < _propertiesCount; i++) {
-				BindablePropertyContext context = _properties [i];
+			foreach (var context in _properties.Values) {
 				if (context.Binding == null)
 					continue;
 
@@ -177,23 +199,16 @@ namespace Xamarin.Forms
 		{
 			var values = new object[2];
 
-			for (var i = 0; i < _properties.Count; i++)
+			if (_properties.TryGetValue(property0, out var context0))
 			{
-				BindablePropertyContext context = _properties[i];
+				values[0] = context0.Value;
+				property0 = null;
+			}
 
-				if (ReferenceEquals(context.Property, property0))
-				{
-					values[0] = context.Value;
-					property0 = null;
-				}
-				else if (ReferenceEquals(context.Property, property1))
-				{
-					values[1] = context.Value;
-					property1 = null;
-				}
-
-				if (property0 == null && property1 == null)
-					return values;
+			if (_properties.TryGetValue(property1, out var context1))
+			{
+				values[1] = context1.Value;
+				property1 = null;
 			}
 
 			if (!ReferenceEquals(property0, null))
@@ -209,28 +224,22 @@ namespace Xamarin.Forms
 		{
 			var values = new object[3];
 
-			for (var i = 0; i < _properties.Count; i++)
+			if (_properties.TryGetValue(property0, out var context0))
 			{
-				BindablePropertyContext context = _properties[i];
+				values[0] = context0.Value;
+				property0 = null;
+			}
 
-				if (ReferenceEquals(context.Property, property0))
-				{
-					values[0] = context.Value;
-					property0 = null;
-				}
-				else if (ReferenceEquals(context.Property, property1))
-				{
-					values[1] = context.Value;
-					property1 = null;
-				}
-				else if (ReferenceEquals(context.Property, property2))
-				{
-					values[2] = context.Value;
-					property2 = null;
-				}
+			if (_properties.TryGetValue(property1, out var context1))
+			{
+				values[1] = context1.Value;
+				property1 = null;
+			}
 
-				if (property0 == null && property1 == null && property2 == null)
-					return values;
+			if (_properties.TryGetValue(property2, out var context2))
+			{
+				values[2] = context2.Value;
+				property2 = null;
 			}
 
 			if (!ReferenceEquals(property0, null))
@@ -247,18 +256,14 @@ namespace Xamarin.Forms
 		internal object[] GetValues(params BindableProperty[] properties)
 		{
 			var values = new object[properties.Length];
-			for (var i = 0; i < _properties.Count; i++) {
-				var context = _properties[i];
-				var index = properties.IndexOf(context.Property);
-				if (index < 0)
-					continue;
-				values[index] = context.Value;
+			for (var i = 0; i < properties.Length; i++) {
+				var prop = properties[i];
+				if (_properties.TryGetValue(prop, out var context))
+					values[i] = context.Value;
+				else
+					values[i] = prop.DefaultValueCreator == null ? prop.DefaultValue : CreateAndAddContext(prop).Value;
 			}
-			for (var i = 0; i < values.Length; i++) {
-				if (!ReferenceEquals(values[i], null))
-					continue;
-				values[i] = properties[i].DefaultValueCreator == null ? properties[i].DefaultValue : CreateAndAddContext(properties[i]).Value;
-			}
+
 			return values;
 		}
 
@@ -434,8 +439,9 @@ namespace Xamarin.Forms
 
 		internal void ApplyBindings(bool skipBindingContext, bool fromBindingContextChanged)
 		{
-			for (int i = 0, propLength = _properties.Count; i < propLength; i++) {
-				BindablePropertyContext context = _properties [i];
+			var prop = _properties.Values.ToArray();
+			for (int i = 0, propLength = prop.Length; i < propLength; i++) {
+				BindablePropertyContext context = prop [i];
 				BindingBase binding = context.Binding;
 				if (binding == null)
 					continue;
@@ -511,29 +517,23 @@ namespace Xamarin.Forms
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext CreateAndAddContext(BindableProperty property)
 		{
-			var context = new BindablePropertyContext { Property = property, Value = property.DefaultValueCreator != null ? property.DefaultValueCreator(this) : property.DefaultValue };
+			var defaultValueCreator = property.DefaultValueCreator;
+			var context = new BindablePropertyContext { Property = property, Value = defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue };
 
-			if (property.DefaultValueCreator == null)
+			if (defaultValueCreator == null)
 				context.Attributes = BindableContextAttributes.IsDefaultValue;
 			else
 				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
 
-			_properties.Add(context);
+			_properties.Add(property, context);
 			return context;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetContext(BindableProperty property)
 		{
-			List<BindablePropertyContext> properties = _properties;
-
-			for (var i = 0; i < properties.Count; i++)
-			{
-				BindablePropertyContext context = properties[i];
-				if (ReferenceEquals(context.Property, property))
-					return context;
-			}
-
+			if (_properties.TryGetValue(property, out var result))
+				return result;
 			return null;
 		}
 

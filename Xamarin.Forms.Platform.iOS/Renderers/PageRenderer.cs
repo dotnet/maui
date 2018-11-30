@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xamarin.Forms.Internals;
 using UIKit;
 using PageUIStatusBarAnimation = Xamarin.Forms.PlatformConfiguration.iOSSpecific.UIStatusBarAnimation;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -66,9 +65,19 @@ namespace Xamarin.Forms.Platform.iOS
 			Element.Layout(new Rectangle(Element.X, Element.Y, size.Width, size.Height));
 		}
 
+		public override void ViewDidLayoutSubviews()
+		{
+			base.ViewDidLayoutSubviews();
+
+			if (Element.Parent is BaseShellItem)
+				Element.Layout(View.Bounds.ToRectangle());
+
+			UpdateShellInsetPadding();
+		}
+
 		public override void ViewSafeAreaInsetsDidChange()
 		{
-
+			UpdateShellInsetPadding();
 			var page = (Element as Page);
 			if (page != null && Forms.IsiOS11OrNewer)
 			{
@@ -135,7 +144,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_packager.Load();
 
 			Element.PropertyChanged += OnHandlePropertyChanged;
-			_tracker = new VisualElementTracker(this);
+			_tracker = new VisualElementTracker(this, !(Element.Parent is BaseShellItem));
 
 			_events = new EventTracker(this);
 			_events.LoadEvents(View);
@@ -247,6 +256,29 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 
+		void UpdateShellInsetPadding()
+		{
+			var setInsets = Shell.GetSetPaddingInsets(Element);
+			if (setInsets)
+			{
+				nfloat topPadding = 0;
+				nfloat bottomPadding = 0;
+
+				if (Forms.IsiOS11OrNewer)
+				{
+					topPadding = View.SafeAreaInsets.Top;
+					bottomPadding = View.SafeAreaInsets.Bottom;
+				}
+				else
+				{
+					topPadding = TopLayoutGuide.Length;
+					bottomPadding = BottomLayoutGuide.Length;
+				}
+
+				(Element as Page).Padding = new Thickness(0, topPadding, 0, bottomPadding);
+			}
+		}
+
 		void UpdateStatusBarPrefersHidden()
 		{
 			if (Element == null)
@@ -303,7 +335,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateTitle()
 		{
 			if (!string.IsNullOrWhiteSpace(((Page)Element).Title))
-				Title = ((Page)Element).Title;
+				NavigationItem.Title = ((Page)Element).Title;
 		}
 
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)

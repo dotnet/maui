@@ -21,6 +21,17 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Type StyleClass { get; set; }
 
+		internal static async Task<Drawable> GetFormsDrawable(this Context context, ImageSource imageSource)
+		{
+			if (imageSource is FileImageSource fileSource)
+				return context.GetFormsDrawable(fileSource);
+
+			var handler = Registrar.Registered.GetHandlerForObject<IImageSourceHandler>(imageSource);
+			var icon = await handler.LoadImageAsync(imageSource, context);
+			var drawable = new BitmapDrawable(context.Resources, icon);
+			return drawable;
+		}
+
 		internal static Drawable GetFormsDrawable(this Context context, FileImageSource fileImageSource)
 		{
 			var file = fileImageSource.File;
@@ -118,10 +129,34 @@ namespace Xamarin.Forms.Platform.Android
 
 		static int GetId(Type type, string memberName)
 		{
-			object value = type.GetFields().FirstOrDefault(p => p.Name == memberName)?.GetValue(type)
-				?? type.GetProperties().FirstOrDefault(p => p.Name == memberName)?.GetValue(type);
-			if (value is int)
-				return (int)value;
+			object value = null;
+			var fields = type.GetFields();
+			for (int i = 0; i < fields.Length; i++)
+			{
+				var field = fields[i];
+				if (field.Name == memberName)
+				{
+					value = field.GetValue(type);
+					break;
+				}
+			}
+
+			if (value == null)
+			{
+				var properties = type.GetProperties();
+				for (int i = 0; i < properties.Length; i++)
+				{
+					var prop = properties[i];
+					if (prop.Name == memberName)
+					{
+						value = prop.GetValue(type);
+						break;
+					}
+				}
+			}
+
+			if (value is int result)
+				return result;
 			return 0;
 		}
 	}

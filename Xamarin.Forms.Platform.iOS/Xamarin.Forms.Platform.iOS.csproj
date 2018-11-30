@@ -48,6 +48,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <BundleResource Include="Resources\3bar%402x.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ContextActionCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContextScrollViewDelegate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalCloseContextGestureRecognizer.cs" />
@@ -154,6 +157,41 @@
     <Compile Include="Forms.cs" />
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
+    <Compile Include="Renderers\BarAppearanceTrackerUtils.cs" />
+    <Compile Include="Renderers\ElementSelectedEventArgs.cs" />
+    <Compile Include="Renderers\IShellContext.cs" />
+    <Compile Include="Renderers\IShellFlyoutContentRenderer.cs" />
+    <Compile Include="Renderers\IShellFlyoutRenderer.cs" />
+    <Compile Include="Renderers\IShellFlyoutTransition.cs" />
+    <Compile Include="Renderers\IShellItemController.cs" />
+    <Compile Include="Renderers\IShellItemTransition.cs" />
+    <Compile Include="Renderers\IShellNavBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\IShellPageRendererTracker.cs" />
+    <Compile Include="Renderers\IShellSearchResultsRenderer.cs" />
+    <Compile Include="Renderers\IShellSectionRootRenderer.cs" />
+    <Compile Include="Renderers\IShellTabBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\IShellSectionRenderer.cs" />
+    <Compile Include="Renderers\SafeShellNavBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\SafeShellTabBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellFlyoutContentRenderer.cs" />
+    <Compile Include="Renderers\ShellFlyoutRenderer.cs" />
+    <Compile Include="Renderers\ShellItemRenderer.cs" />
+    <Compile Include="Renderers\ShellItemTransition.cs" />
+    <Compile Include="Renderers\ShellNavBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellPageRendererTracker.cs" />
+    <Compile Include="Renderers\ShellRenderer.cs" />
+    <Compile Include="Renderers\ShellScrollViewTracker.cs" />
+    <Compile Include="Renderers\ShellSearchResultsRenderer.cs" />
+    <Compile Include="Renderers\ShellSectionRootHeader.cs" />
+    <Compile Include="Renderers\ShellSectionRootRenderer.cs" />
+    <Compile Include="Renderers\ShellTabBarAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellSectionRenderer.cs" />
+    <Compile Include="Renderers\ShellTableViewController.cs" />
+    <Compile Include="Renderers\ShellTableViewSource.cs" />
+    <Compile Include="Renderers\SlideFlyoutTransition.cs" />
+    <Compile Include="Renderers\TabletShellFlyoutRenderer.cs" />
+    <Compile Include="Renderers\UIContainerCell.cs" />
+    <Compile Include="Renderers\UIContainerView.cs" />
     <Compile Include="Renderers\BorderElementManager.cs" />
     <Compile Include="Renderers\ButtonElementManager.cs" />
     <Compile Include="Renderers\IImageVisualElementRenderer.cs" />
@@ -229,4 +267,8 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="Resources\3bar.png" />
+  </ItemGroup>
+  <ItemGroup />
 </Project>

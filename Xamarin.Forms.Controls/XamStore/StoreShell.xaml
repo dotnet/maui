@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:local="clr-namespace:Xamarin.Forms.Controls.XamStore"
+			Route="xamstore"
+			RouteHost="www.xamarin.com"
+			RouteScheme="http"
+			x:Class="Xamarin.Forms.Controls.XamStore.StoreShell">
+	<Shell.Resources>
+		<Style x:Key="BaseStyle" TargetType="Element">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#455A64" />
+			<Setter Property="Shell.ShellForegroundColor" Value="White" />
+			<Setter Property="Shell.ShellTitleColor" Value="White" />
+			<Setter Property="Shell.ShellDisabledColor" Value="#B4FFFFFF" />
+			<Setter Property="Shell.ShellUnselectedColor" Value="#95FFFFFF" />
+		</Style>
+		<Style TargetType="ShellItem" BasedOn="{StaticResource BaseStyle}" />
+		<Style x:Key="GreenShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#689F39" />
+		</Style>
+		<Style x:Key="MusicShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#EF6C00" />
+		</Style>
+		<Style x:Key="MoviesShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#ED3B3B" />
+		</Style>
+		<Style x:Key="BooksShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#039BE6" />
+		</Style>
+		<Style x:Key="NewsShell" TargetType="Element" BasedOn="{StaticResource BaseStyle}">
+			<Setter Property="Shell.ShellBackgroundColor" Value="#546DFE" />
+		</Style>
+	</Shell.Resources>
+
+	<Shell.FlyoutHeader>
+		<local:FlyoutHeader />
+	</Shell.FlyoutHeader>
+
+	<ShellSection FlyoutDisplayOptions="AsMultipleItems" Route="apps" Title="My apps &amp; games" Icon="grid.png" Style="{StaticResource GreenShell}">
+		<ShellContent Route="updates" Title="Updates" ContentTemplate="{DataTemplate local:UpdatesPage}" />
+		<ShellContent Route="installed" Title="Installed" ContentTemplate="{DataTemplate local:InstalledPage}" />
+		<ShellContent Route="library" Title="Library" ContentTemplate="{DataTemplate local:LibraryPage}" />
+	</ShellSection>
+
+	<ShellContent Route="notifications" Style="{StaticResource BaseStyle}" Title="My notifications" Icon="bell.png" ContentTemplate="{DataTemplate local:NotificationsPage}" />
+
+	<ShellContent Route="subs" Title="Subscriptions" Icon="loop.png" ContentTemplate="{DataTemplate local:SubscriptionsPage}" />
+
+	<ShellItem Route="xamtube" Title="XamTube">
+		<ShellContent Route="home" Style="{StaticResource GreenShell}" Title="Home" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
+		<ShellSection Route="activity" Title="Activity" Icon="grid.png" Style="{StaticResource GreenShell}">
+			<ShellContent Route="shared" Title="Shared" ContentTemplate="{DataTemplate local:UpdatesPage}" />
+			<ShellContent Route="Notifications" Title="Notifications" ContentTemplate="{DataTemplate local:LibraryPage}" />
+		</ShellSection>
+		<ShellContent Route="library" Title="Library" ContentTemplate="{DataTemplate local:LibraryPage}" />
+	</ShellItem>
+
+	<ShellItem Route="store" x:Name="_storeItem" FlyoutDisplayOptions="AsMultipleItems">
+		<ShellContent Route="home" Style="{StaticResource GreenShell}" Title="Home" Icon="home.png" FlyoutIcon="homeflyout.png" ContentTemplate="{DataTemplate local:HomePage}" />
+		<ShellContent Route="games" Style="{StaticResource GreenShell}" Title="Games" Icon="games.png" FlyoutIcon="gamesflyout.png" ContentTemplate="{DataTemplate local:GamesPage}" />
+		<ShellContent Route="movies" Style="{StaticResource MoviesShell}" Title="Movies &amp; TV" 
+					  Icon="film.png" FlyoutIcon="filmflyout.png" ContentTemplate="{DataTemplate local:MoviesPage}">
+			<ShellContent.MenuItems>
+				<MenuItem Icon="film.png" Text="Open Movies App" />
+			</ShellContent.MenuItems>
+		</ShellContent>
+		<ShellContent Route="books" Style="{StaticResource BooksShell}" Title="Books" 
+					  Icon="books.png" FlyoutIcon="booksflyout.png" ContentTemplate="{DataTemplate local:BooksPage}">
+			<ShellContent.MenuItems>
+				<MenuItem Icon="books.png" Text="Open Reader" />
+			</ShellContent.MenuItems>
+		</ShellContent>
+		<ShellContent Route="music" Style="{StaticResource MusicShell}" Title="Music" 
+					  Icon="headphone.png" FlyoutIcon="headphoneflyout.png" ContentTemplate="{DataTemplate local:MusicPage}">
+			<ShellContent.MenuItems>
+				<MenuItem Icon="headphone.png" Text="Open Music App" />
+			</ShellContent.MenuItems>
+		</ShellContent>
+		<ShellContent Route="news" Style="{StaticResource NewsShell}" Title="Newsstand" 
+					  Icon="newspaper.png" FlyoutIcon="newspaperflyout.png" ContentTemplate="{DataTemplate local:NewsPage}">
+			<ShellContent.MenuItems>
+				<MenuItem Icon="newspaper.png" Text="Open News App" />
+			</ShellContent.MenuItems>
+		</ShellContent>
+	</ShellItem>
+
+	<ShellContent Route="account" Title="Account" Icon="person.png" ContentTemplate="{DataTemplate local:AccountsPage}" />
+
+	<MenuItem Text="Redeem" Icon="card.png" />
+
+	<ShellContent Route="wishlist" Title="Wishlist" Icon="star.png" ContentTemplate="{DataTemplate local:WishlistPage}" />
+	
+	<MenuItem Text="Xam Protect" Icon="jet.png" />
+
+	<ShellContent Route="settings" Title="Settings" Icon="gear.png" ContentTemplate="{DataTemplate local:SettingsPage}" />
+
+	<Shell.MenuItems>
+		<MenuItem Text="Help &amp; feedback" />
+		<MenuItem Text="Parent Guide" />
+		<MenuItem Text="About Xam Store" />
+	</Shell.MenuItems>
+</Shell>

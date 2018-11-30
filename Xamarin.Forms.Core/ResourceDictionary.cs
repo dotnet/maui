@@ -72,7 +72,7 @@ namespace Xamarin.Forms
 			OnValuesChanged(_mergedInstance.ToArray());
 		}
 
-		ICollection<ResourceDictionary> _mergedDictionaries;
+		ObservableCollection<ResourceDictionary> _mergedDictionaries;
 		public ICollection<ResourceDictionary> MergedDictionaries {
 			get {
 				if (_mergedDictionaries == null) {
@@ -241,8 +241,15 @@ namespace Xamarin.Forms
 		internal IEnumerable<KeyValuePair<string, object>> MergedResources {
 			get {
 				if (MergedDictionaries != null)
-					foreach (var r in MergedDictionaries.Reverse().SelectMany(x => x.MergedResources))
-						yield return r;
+				{
+					for (int i = _mergedDictionaries.Count - 1; i >= 0; i--)
+					{
+						ResourceDictionary r = _mergedDictionaries[i];
+						foreach (var x in r.MergedResources)
+							yield return x;
+					}
+				}
+
 				if (_mergedInstance != null)
 					foreach (var r in _mergedInstance.MergedResources)
 						yield return r;

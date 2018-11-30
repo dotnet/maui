@@ -84,6 +84,7 @@
     <Compile Include="MenuUnitTests.cs" />
     <Compile Include="PreviewerReflectionTests.cs" />
     <Compile Include="RegionTests.cs" />
+    <Compile Include="ShellTests.cs" />
     <Compile Include="SpanTests.cs" />
     <Compile Include="TitleViewUnitTests.cs" />
     <Compile Include="TemplatedViewUnitTests.cs" />

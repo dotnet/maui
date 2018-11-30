@@ -11,11 +11,6 @@ namespace Xamarin.Forms.Platform.Android
 	{
 		static readonly Dictionary<Tuple<string, FontAttributes>, Typeface> Typefaces = new Dictionary<Tuple<string, FontAttributes>, Typeface>();
 
-		// We don't create and cache a Regex object here because we may not ever need it, and creating Regexes is surprisingly expensive (especially on older hardware)
-		// Instead, we'll use the static Regex.IsMatch below, which will create and cache the regex internally as needed. It's the equivalent of Lazy<Regex> with less code.
-		// See https://msdn.microsoft.com/en-us/library/sdx2bds0(v=vs.110).aspx#Anchor_2
-		const string LoadFromAssetsRegex = @"\w+\.((ttf)|(otf))\#\w*";
-
 		static Typeface s_defaultTypeface;
 
 		public static float ToScaledPixel(this Font self)
@@ -47,7 +42,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public static Typeface ToTypeface(this Font self)
 		{
-			if (self.IsDefault)
+			if (self.IsDefault || (self.FontAttributes == FontAttributes.None && string.IsNullOrEmpty(self.FontFamily)))
 				return s_defaultTypeface ?? (s_defaultTypeface = Typeface.Default);
 
 			var key = new Tuple<string, FontAttributes>(self.FontFamily, self.FontAttributes);
@@ -60,7 +55,7 @@ namespace Xamarin.Forms.Platform.Android
 				var style = ToTypefaceStyle(self.FontAttributes);
 				result = Typeface.Create(Typeface.Default, style);
 			}
-			else if (Regex.IsMatch(self.FontFamily, LoadFromAssetsRegex))
+			else if (IsAssetFontFamily(self.FontFamily))
 			{
 				result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(self.FontFamily));
 			}
@@ -75,6 +70,11 @@ namespace Xamarin.Forms.Platform.Android
 		internal static bool IsDefault(this IFontElement self)
 		{
 			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
+		}
+
+		static bool IsAssetFontFamily (string name)
+		{
+			return name.Contains(".ttf#") || name.Contains(".otf#");
 		}
 
 		internal static Typeface ToTypeface(this IFontElement self)
@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.Android
 				var style = ToTypefaceStyle(self.FontAttributes);
 				result = Typeface.Create(Typeface.Default, style);
 			}
-			else if (Regex.IsMatch(self.FontFamily, LoadFromAssetsRegex))
+			else if (IsAssetFontFamily(self.FontFamily))
 			{
 				result = Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(self.FontFamily));
 			}

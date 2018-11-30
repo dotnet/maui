@@ -10,6 +10,8 @@ namespace Xamarin.Forms.Controls
 	{
 		public ButtonGallery ()
 		{
+			//ShellAppearance.SetNavBarVisible(this, false);
+			Shell.SetSearchHandler(this, new SearchHandler() { SearchBoxVisibility = SearchBoxVisiblity.Collapsable });
 			BackgroundColor = new Color (0.9);
 
 			var normal = new Button { Text = "Normal Button" };
@@ -96,6 +98,7 @@ namespace Xamarin.Forms.Controls
 			borderButton.Clicked += (sender, args) => borderButton.BackgroundColor = Color.Default;
 
 			Content = new ScrollView {
+				BackgroundColor = Color.Red,
 				Content = new StackLayout {
 					Padding = new Size (20, 20),
 					Children = {

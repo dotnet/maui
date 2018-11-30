@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms.Internals;
@@ -397,9 +398,142 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(FlowDirection.MatchParent, ((View)view).FlowDirection);
 		}
 
+		[Test]
+		public void ShellPropagatesDownRightToLeftChange()
+		{
+			Button button = new Button();
+			StackLayout flyout = new StackLayout();
+			Shell shell = new Shell()
+			{
+				FlyoutHeader = flyout,
+				Items =
+				{
+					new ShellItem()
+					{
+						Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = button
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+
+			var buttonVisualController = (button as IViewController).EffectiveFlowDirection;
+			var stacklayoutVisualController = (flyout as IViewController).EffectiveFlowDirection;
+
+			Assert.IsTrue(buttonVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!buttonVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(buttonVisualController.IsLeftToRight(), "EffectiveFlowDirection should be LeftToRight");
+			Assert.IsTrue(!buttonVisualController.IsRightToLeft(), "EffectiveFlowDirection should be LeftToRight");
+
+			Assert.IsTrue(stacklayoutVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!stacklayoutVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(stacklayoutVisualController.IsLeftToRight(), "EffectiveFlowDirection should be LeftToRight");
+			Assert.IsTrue(!stacklayoutVisualController.IsRightToLeft(), "EffectiveFlowDirection should be LeftToRight");
+
+			shell.FlowDirection = FlowDirection.RightToLeft;
+			buttonVisualController = (button as IViewController).EffectiveFlowDirection;
+			stacklayoutVisualController = (flyout as IViewController).EffectiveFlowDirection;
+
+			Assert.IsTrue(buttonVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!buttonVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!buttonVisualController.IsLeftToRight(), "EffectiveFlowDirection should be RightToLeft");
+			Assert.IsTrue(buttonVisualController.IsRightToLeft(), "EffectiveFlowDirection should be RightToLeft");
+
+			Assert.IsTrue(stacklayoutVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!stacklayoutVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!stacklayoutVisualController.IsLeftToRight(), "EffectiveFlowDirection should be RightToLeft");
+			Assert.IsTrue(stacklayoutVisualController.IsRightToLeft(), "EffectiveFlowDirection should be RightToLeft");
+		}
+
+
+		[Test]
+		public void ShellPropagatesRightToLeftChangetoNewElements()
+		{
+			Button button = new Button();
+			StackLayout flyout = new StackLayout();
+			Shell shell = new Shell()
+			{
+				Visual = Forms.VisualMarker.Default,
+				Items =
+				{
+					new ShellItem()
+					{
+						Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = new Label()
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+
+			shell.FlowDirection = FlowDirection.RightToLeft;
+			shell.FlyoutHeader = flyout;
+			shell.Items.Add(
+				new ShellItem()
+				{
+					Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = button
+										}
+									}
+								}
+							}
+						}
+				});
+
+			var buttonVisualController = (button as IViewController).EffectiveFlowDirection;
+			var stacklayoutVisualController = (flyout as IViewController).EffectiveFlowDirection;
+
+			Assert.IsTrue(buttonVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!buttonVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!buttonVisualController.IsLeftToRight(), "EffectiveFlowDirection should be RightToLeft");
+			Assert.IsTrue(buttonVisualController.IsRightToLeft(), "EffectiveFlowDirection should be RightToLeft");
+
+			Assert.IsTrue(stacklayoutVisualController.IsImplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!stacklayoutVisualController.IsExplicit(), "EffectiveFlowDirection should be Implicit");
+			Assert.IsTrue(!stacklayoutVisualController.IsLeftToRight(), "EffectiveFlowDirection should be RightToLeft");
+			Assert.IsTrue(stacklayoutVisualController.IsRightToLeft(), "EffectiveFlowDirection should be RightToLeft");
+		}
+
+
 		[SetUp]
 		public override void Setup()
 		{
+			Device.SetFlags(new List<string> { ExperimentalFlags.VisualExperimental, ExperimentalFlags.ShellExperimental });
+
 			base.Setup();
 			Device.PlatformServices = new MockPlatformServices();
 		}

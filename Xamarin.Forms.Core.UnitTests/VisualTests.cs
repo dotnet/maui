@@ -12,11 +12,119 @@ namespace Xamarin.Forms.Core.UnitTests
 		[SetUp]
 		public override void Setup()
 		{
-			Device.SetFlags(new List<string> { ExperimentalFlags.VisualExperimental });
+			Device.SetFlags(new List<string> { ExperimentalFlags.VisualExperimental, ExperimentalFlags.ShellExperimental });
 			base.Setup();
 			var mockDeviceInfo = new TestDeviceInfo();
 			Device.Info = mockDeviceInfo;
 		}
+
+
+		[Test]
+		public void ShellPropagatesChangeToNewElements()
+		{
+			Button button = new Button();
+			StackLayout flyout = new StackLayout();
+			Shell shell = new Shell()
+			{
+				Visual = Forms.VisualMarker.Default,
+				Items =
+				{
+					new ShellItem()
+					{
+						Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = new Label()
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+
+			shell.Visual = VisualMarker.Material;
+			shell.FlyoutHeader = flyout;
+			shell.Items.Add(
+				new ShellItem()
+				{
+					Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = button
+										}
+									}
+								}
+							}
+						}
+				});
+
+			var buttonVisualController = (button as IVisualController);
+			var stacklayoutVisualController = (flyout as IVisualController);
+			Assert.AreEqual(Forms.VisualMarker.Material, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(Forms.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
+		}
+
+
+		[Test]
+		public void ShellPropagatesDownVisualChange()
+		{
+			Button button = new Button();
+			StackLayout flyout = new StackLayout();
+			Shell shell = new Shell()
+			{
+				
+				Visual = Forms.VisualMarker.Default,
+				FlyoutHeader = flyout,
+				Items =
+				{
+					new ShellItem()
+					{
+						Items =
+						{
+							new ShellSection()
+							{
+								Items =
+								{
+									new ShellContent()
+									{
+										Content = new ContentPage()
+										{
+											Content = button
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+
+			var buttonVisualController = (button as IVisualController);
+			var stacklayoutVisualController = (flyout as IVisualController);
+
+			Assert.AreEqual(Forms.VisualMarker.Default, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(Forms.VisualMarker.Default, stacklayoutVisualController.EffectiveVisual);
+			shell.Visual = VisualMarker.Material;
+			Assert.AreEqual(Forms.VisualMarker.Material, buttonVisualController.EffectiveVisual);
+			Assert.AreEqual(Forms.VisualMarker.Material, stacklayoutVisualController.EffectiveVisual);
+		}
+
 
 		[Test]
 		public void ListViewVisualIsInheritedByViewCells()

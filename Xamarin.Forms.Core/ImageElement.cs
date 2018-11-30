@@ -102,12 +102,28 @@ namespace Xamarin.Forms
 		}
 
 
-		public static async void ImageSourceChanging(ImageSource oldImageSource)
+		public static void ImageSourceChanging(ImageSource oldImageSource)
 		{
 			if (oldImageSource == null) return;
 			try
 			{
-				await oldImageSource.Cancel().ConfigureAwait(false);
+				// This method generates are particularly unhappy async/await state-machine combined
+				// with the CoW mechanisms of the try/catch that actually makes it worth avoiding
+				// if oldValue is null (which it often is). Early return does not prevent the
+				// state-machine mechanisms being kicked in, only moving to another method will do that.
+				CancelOldValue(oldImageSource);
+			}
+			catch (ObjectDisposedException)
+			{
+				// Workaround bugzilla 37792 https://bugzilla.xamarin.com/show_bug.cgi?id=37792
+			}
+		}
+
+		async static void CancelOldValue(ImageSource oldvalue)
+		{
+			try
+			{
+				await oldvalue.Cancel();
 			}
 			catch (ObjectDisposedException)
 			{

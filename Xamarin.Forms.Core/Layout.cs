@@ -416,8 +416,9 @@ namespace Xamarin.Forms
 
 			if (e.OldItems != null)
 			{
-				foreach (object item in e.OldItems)
+				for (int i = 0; i < e.OldItems.Count; i++)
 				{
+					object item = e.OldItems[i];
 					var v = item as View;
 					if (v == null)
 						continue;
@@ -428,8 +429,9 @@ namespace Xamarin.Forms
 
 			if (e.NewItems != null)
 			{
-				foreach (object item in e.NewItems)
+				for (int i = 0; i < e.NewItems.Count; i++)
 				{
+					object item = e.NewItems[i];
 					var v = item as View;
 					if (v == null)
 						continue;

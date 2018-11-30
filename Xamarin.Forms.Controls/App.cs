@@ -122,9 +122,12 @@ namespace Xamarin.Forms.Controls
 			mdp.Master.Icon.SetAutomationPropertiesHelpText("This as MDP icon");
 			mdp.Master.Icon.SetAutomationPropertiesName("MDPICON");
 			return mdp;
-		}
 
-		protected override void OnAppLinkRequestReceived(Uri uri)
+			//Device.SetFlags(new[] { "Shell_Experimental" });
+            //return new XamStore.StoreShell();
+        }
+
+        protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			var appDomain = "http://" + AppName.ToLowerInvariant() + "/";
 

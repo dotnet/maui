@@ -268,10 +268,14 @@ namespace Xamarin.Forms.Internals
 			{
 				foreach (Type attrType in attrTypes)
 				{
-					Attribute[] attributes;
+					object[] attributes;
 					try
 					{
+#if NETSTANDARD2_0
+						attributes = assembly.GetCustomAttributes(attrType, true);
+#else
 						attributes = assembly.GetCustomAttributes(attrType).ToArray();
+#endif
 					}
 					catch (System.IO.FileNotFoundException)
 					{
@@ -293,7 +297,11 @@ namespace Xamarin.Forms.Internals
 				if (resolutionNameAttribute != null)
 					resolutionName = resolutionNameAttribute.ShortName;
 
-				Attribute[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute)).ToArray();
+#if NETSTANDARD2_0
+				object[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute), true);
+#else
+				object[] effectAttributes = assembly.GetCustomAttributes(typeof(ExportEffectAttribute)).ToArray();
+#endif
 				var exportEffectsLength = effectAttributes.Length;
 				for (var i = 0; i < exportEffectsLength; i++)
 				{
@@ -301,7 +309,11 @@ namespace Xamarin.Forms.Internals
 					Effects[resolutionName + "." + effect.Id] = effect.Type;
 				}
 
-				Attribute[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
+#if NETSTANDARD2_0
+				object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute), true);
+#else
+				object[] styleAttributes = assembly.GetCustomAttributes(typeof(StyleSheets.StylePropertyAttribute)).ToArray();
+#endif
 				var stylePropertiesLength = styleAttributes.Length;
 				for (var i = 0; i < stylePropertiesLength; i++)
 				{

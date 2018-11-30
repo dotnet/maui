@@ -106,7 +106,13 @@ namespace Xamarin.Forms.Platform.Android
 
 		void UpdateBackgroundColor(Page view)
 		{
-			if (view.BackgroundColor != Color.Default)
+			if (view.Parent is BaseShellItem)
+			{
+				var background = view.BackgroundColor;
+				var color = Context.Resources.GetColor(global::Android.Resource.Color.BackgroundLight, Context.Theme);
+				SetBackgroundColor(background.IsDefault ? color : background.ToAndroid());
+			}
+			else if (view.BackgroundColor != Color.Default)
 				SetBackgroundColor(view.BackgroundColor.ToAndroid());
 		}
 

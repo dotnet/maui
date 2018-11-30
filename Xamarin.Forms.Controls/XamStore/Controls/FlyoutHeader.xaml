@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
+				xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				x:Class="Xamarin.Forms.Controls.XamStore.FlyoutHeader"
+				HeightRequest="200">
+	<ContentView.Content>
+		<Grid BackgroundColor="Black">
+			<Image Aspect="AspectFill" Source="xamarinstore.jpg" Opacity="0.6" />
+			<Label Margin="0, 40, 0, 0" Text="Hello XamStore" TextColor="White" FontAttributes="Bold" VerticalTextAlignment="Center" />
+		</Grid>
+	</ContentView.Content>
+</ContentView>

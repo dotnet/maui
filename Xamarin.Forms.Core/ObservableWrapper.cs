@@ -65,7 +65,18 @@ namespace Xamarin.Forms
 
 		public int Count
 		{
-			get { return _list.Where(i => i.Owned).OfType<TRestrict>().Count(); }
+			//get { return _list.Where(i => i.Owned).OfType<TRestrict>().Count(); }
+			get
+			{
+				int result = 0;
+				for (int i = 0; i < _list.Count; i++)
+				{
+					var item = _list[i];
+					if (item.Owned && item is TRestrict)
+						result++;
+				}
+				return result;
+			}
 		}
 
 		public bool IsReadOnly { get; internal set; }

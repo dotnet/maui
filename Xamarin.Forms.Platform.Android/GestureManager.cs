@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		public class TapAndPanGestureDetector : GestureDetector
 		{
-			readonly InnerGestureListener _listener;
+			InnerGestureListener _listener;
 			public TapAndPanGestureDetector(Context context, InnerGestureListener listener) : base(context, listener)
 			{
 				_listener = listener;
@@ -92,6 +92,20 @@ namespace Xamarin.Forms.Platform.Android
 					_listener.EndScrolling();
 
 				return false;
+			}
+
+			protected override void Dispose(bool disposing)
+			{
+				base.Dispose(disposing);
+
+				if (disposing)
+				{
+					if (_listener != null)
+					{
+						_listener.Dispose();
+						_listener = null;
+					}
+				}
 			}
 		}
 
@@ -185,9 +199,21 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (disposing)
 			{
+				_renderer.ElementChanged -= OnElementChanged;
+
 				if (Element != null)
 				{
 					Element.PropertyChanged -= OnElementPropertyChanged;
+				}
+
+				if (_tapAndPanAndSwipeDetector.IsValueCreated)
+				{
+					_tapAndPanAndSwipeDetector.Value.Dispose();
+				}
+
+				if (_scaleDetector.IsValueCreated)
+				{
+					_scaleDetector.Value.Dispose();
 				}
 
 				_renderer = null;

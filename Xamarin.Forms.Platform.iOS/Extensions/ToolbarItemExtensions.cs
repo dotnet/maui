@@ -9,9 +9,11 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false)
+		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
-			return item.Order == ToolbarItemOrder.Secondary ? new SecondaryToolbarItem(item) : (UIBarButtonItem)new PrimaryToolbarItem(item, forceName);
+			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
+				return new SecondaryToolbarItem(item);
+			return new PrimaryToolbarItem(item, forceName);
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem

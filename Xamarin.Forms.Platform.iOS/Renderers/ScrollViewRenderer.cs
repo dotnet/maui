@@ -5,9 +5,11 @@ using UIKit;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
+using CoreGraphics;
 
 namespace Xamarin.Forms.Platform.iOS
 {
+
 	public class ScrollViewRenderer : UIScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		EventTracker _events;
@@ -20,6 +22,8 @@ namespace Xamarin.Forms.Platform.iOS
 		VisualElementTracker _tracker;
 		bool _checkedForRtlScroll = false;
 		bool _previousLTR = true;
+
+		ShellScrollViewTracker _shellScrollTracker;
 
 		public ScrollViewRenderer() : base(RectangleF.Empty)
 		{
@@ -87,6 +91,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateVerticalScrollBarVisibility();
 				UpdateHorizontalScrollBarVisibility();
 
+				_shellScrollTracker = new ShellScrollViewTracker(this);
+
 				OnElementChanged(new VisualElementChangedEventArgs(oldElement, element));
 
 				EffectUtilities.RegisterEffectControlProvider(this, oldElement, element);
@@ -109,8 +115,12 @@ namespace Xamarin.Forms.Platform.iOS
 			get { return null; }
 		}
 
+		
+
 		public override void LayoutSubviews()
 		{
+			_shellScrollTracker.OnLayoutSubviews();
+
 			base.LayoutSubviews();
 
 			if(Superview != null)
@@ -162,6 +172,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 				Element?.ClearValue(Platform.RendererProperty);
 				SetElement(null);
+
+				_shellScrollTracker.Dispose();
+				_shellScrollTracker = null;
 
 				_packager.Dispose();
 				_packager = null;

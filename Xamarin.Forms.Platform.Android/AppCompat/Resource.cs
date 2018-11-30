@@ -27,5 +27,45 @@ namespace Xamarin.Forms.Platform.Android
 			{
 			}
 		}
+
+		public class Id
+		{
+			public static int main_appbar = 2131165336;
+
+			public static int main_backdrop = 2131165338;
+
+			public static int main_collapsing = 2131165337;
+
+			public static int main_scrollview = 2131165341;
+
+			public static int main_tablayout = 2131165340;
+
+			public static int main_toolbar = 2131165339;
+
+			static Id()
+			{
+				ResourceIdManager.UpdateIdValues();
+			}
+
+			private Id()
+			{
+			}
+		}
+
+
+		public class Layout
+		{
+			public static int RootLayout = 2130903096;
+
+			static Layout()
+			{
+				ResourceIdManager.UpdateIdValues();
+			}
+
+			private Layout()
+			{
+			}
+		}
+
 	}
 }

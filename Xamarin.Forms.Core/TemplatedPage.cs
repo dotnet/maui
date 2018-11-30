@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Forms
 {
+
 	public class TemplatedPage : Page, IControlTemplated
 	{
 		public static readonly BindableProperty ControlTemplateProperty = BindableProperty.Create(nameof(ControlTemplate), typeof(ControlTemplate), typeof(TemplatedPage), null,

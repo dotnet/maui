@@ -76,6 +76,16 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			SetMeasuredDimension(MeasureSpec.GetSize(widthMeasureSpec), MeasureSpec.GetSize(heightMeasureSpec));
+
+			var width = MeasureSpecFactory.GetSize(widthMeasureSpec);
+			var height = MeasureSpecFactory.GetSize(heightMeasureSpec);
+
+			for (int i = 0; i < ChildCount; i++)
+			{
+				var child = GetChildAt(i);
+				child.Measure(MeasureSpecFactory.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
+					MeasureSpecFactory.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+			}
 		}
 	}
 }

@@ -107,3 +107,16 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("-xf-spacing", typeof(StackLayout), nameof(StackLayout.SpacingProperty))]
 [assembly: StyleProperty("-xf-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty))]
 [assembly: StyleProperty("-xf-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty))]
+
+//shell
+[assembly: StyleProperty("-xf-flyout-background", typeof(Shell), nameof(Shell.FlyoutBackgroundColorProperty))]
+[assembly: StyleProperty("-xf-shell-background", typeof(Element), nameof(Shell.ShellBackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-disabled", typeof(Element), nameof(Shell.ShellDisabledColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-foreground", typeof(Element), nameof(Shell.ShellForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-tabbar-background", typeof(Element), nameof(Shell.ShellTabBarBackgroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-tabbar-disabled", typeof(Element), nameof(Shell.ShellTabBarDisabledColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-tabbar-foreground", typeof(Element), nameof(Shell.ShellTabBarForegroundColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-tabbar-title", typeof(Element), nameof(Shell.ShellTabBarTitleColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-tabbar-unselected", typeof(Element), nameof(Shell.ShellTabBarUnselectedColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-title", typeof(Element), nameof(Shell.ShellTitleColorProperty), PropertyOwnerType = typeof(Shell))]
+[assembly: StyleProperty("-xf-shell-unselected", typeof(Element), nameof(Shell.ShellUnselectedColorProperty), PropertyOwnerType = typeof(Shell))]

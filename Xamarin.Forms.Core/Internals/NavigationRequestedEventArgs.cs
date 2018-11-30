@@ -6,10 +6,9 @@ namespace Xamarin.Forms.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationRequestedEventArgs : NavigationEventArgs
 	{
-		public NavigationRequestedEventArgs(Page page, bool animated, bool realize = true) : base(page)
+		public NavigationRequestedEventArgs(Page page, bool animated) : base(page)
 		{
 			Animated = animated;
-			Realize = realize;
 		}
 
 		public NavigationRequestedEventArgs(Page page, Page before, bool animated) : this(page, animated)
@@ -21,8 +20,8 @@ namespace Xamarin.Forms.Internals
 
 		public Page BeforePage { get; set; }
 
-		public bool Realize { get; set; }
-
 		public Task<bool> Task { get; set; }
+
+		public NavigationRequestType RequestType { get; set; } = NavigationRequestType.Unknown;
 	}
 }

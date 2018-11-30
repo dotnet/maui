@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 namespace Xamarin.Forms.Internals
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	public interface INavigationProxy
+	{
+		NavigationProxy NavigationProxy { get; }
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationProxy : INavigation
 	{
 		INavigation _inner;

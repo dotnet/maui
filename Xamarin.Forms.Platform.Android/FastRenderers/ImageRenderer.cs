@@ -183,6 +183,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ElementPropertyChanged?.Invoke(this, e);
-        }
-    }
+		}
+	}
 }

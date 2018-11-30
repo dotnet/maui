@@ -14,7 +14,7 @@
     <FileAlignment>512</FileAlignment>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <AndroidTargetFrameworkVersion Condition="$(AndroidTargetFrameworkVersion) == ''">v9.0</AndroidTargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion Condition="'$(AndroidTargetFrameworkVersion)' == ''">v9.0</AndroidTargetFrameworkVersion>
     <TargetFrameworkVersion>$(AndroidTargetFrameworkVersion)</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
@@ -72,6 +72,7 @@
     <Compile Include="AppCompat\FrameRenderer.cs" />
     <Compile Include="BackgroundManager.cs" />
     <Compile Include="AppCompat\ILifeCycleState.cs" />
+    <Compile Include="AppCompat\ShellFragmentContainer.cs" />
     <Compile Include="BorderBackgroundManager.cs" />
     <Compile Include="CollectionView\CarouselViewRenderer.cs" />
     <Compile Include="CollectionView\DataChangeObserver.cs" />
@@ -170,12 +171,17 @@
     <Compile Include="LayoutExtensions.cs" />
     <Compile Include="PowerSaveModeBroadcastReceiver.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
+    <Compile Include="Renderers\BottomNavigationViewUtils.cs" />
+    <Compile Include="Renderers\AlignmentExtensions.cs" />
+    <Compile Include="Renderers\ColorChangeRevealDrawable.cs" />
     <Compile Include="Renderers\BorderDrawable.cs" />
     <Compile Include="Renderers\ButtonRenderer.cs" />
-    <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="CollectionView\CollectionViewRenderer.cs" />
     <Compile Include="Renderers\ConditionalFocusLayout.cs" />
+    <Compile Include="Renderers\ContainerView.cs" />
+    <Compile Include="Renderers\CustomFrameLayout.cs" />
     <Compile Include="Renderers\DescendantFocusToggler.cs" />
+    <Compile Include="Renderers\ElementSelectedEventArgs.cs" />
     <Compile Include="Renderers\FormsEditText.cs" />
     <Compile Include="Renderers\FileImageSourceHandler.cs" />
     <Compile Include="Renderers\FormattedStringExtensions.cs" />
@@ -187,6 +193,17 @@
     <Compile Include="Renderers\IImageSourceHandler.cs" />
     <Compile Include="Renderers\ImageExtensions.cs" />
     <Compile Include="Renderers\ImageLoaderSourceHandler.cs" />
+    <Compile Include="Renderers\IShellBottomNavigationViewAppearanceTracker.cs" />
+    <Compile Include="Renderers\IShellContext.cs" />
+    <Compile Include="Renderers\IShellFlyoutContentRenderer.cs" />
+    <Compile Include="Renderers\IShellFlyoutRenderer.cs" />
+    <Compile Include="Renderers\IShellItemRenderer.cs" />
+    <Compile Include="Renderers\IShellObservableFragment.cs" />
+    <Compile Include="Renderers\IShellSearchView.cs" />
+    <Compile Include="Renderers\IShellSectionRenderer.cs" />
+    <Compile Include="Renderers\IShellTabLayoutAppearanceTracker.cs" />
+    <Compile Include="Renderers\IShellToolbarAppearanceTracker.cs" />
+    <Compile Include="Renderers\IShellToolbarTracker.cs" />
     <Compile Include="Renderers\IToolbarButton.cs" />
     <Compile Include="Renderers\KeyboardExtensions.cs" />
     <Compile Include="AppCompat\PickerRenderer.cs" />
@@ -196,11 +213,29 @@
     <Compile Include="Renderers\MotionEventHelper.cs" />
     <Compile Include="Renderers\PageContainer.cs" />
     <Compile Include="Renderers\ScrollViewContainer.cs" />
+    <Compile Include="Renderers\ShellBottomNavViewAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellItemRenderer.cs" />
+    <Compile Include="Renderers\ShellContentFragment.cs" />
+    <Compile Include="Renderers\ShellFlyoutContentRenderer.cs" />
+    <Compile Include="Renderers\ShellFlyoutRecyclerAdapter.cs" />
+    <Compile Include="Renderers\ShellFlyoutRenderer.cs" />
+    <Compile Include="Renderers\ShellFlyoutTemplatedContentRenderer.cs" />
+    <Compile Include="Renderers\ShellFragmentPagerAdapter.cs" />
+    <Compile Include="Renderers\ShellItemRendererBase.cs" />
+    <Compile Include="Renderers\ShellPageContainer.cs" />
+    <Compile Include="Renderers\ShellRenderer.cs" />
+    <Compile Include="Renderers\ShellSearchView.cs" />
+    <Compile Include="Renderers\ShellSearchViewAdapter.cs" />
+    <Compile Include="Renderers\ShellTabLayoutAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellToolbarAppearanceTracker.cs" />
+    <Compile Include="Renderers\ShellToolbarTracker.cs" />
+    <Compile Include="Renderers\ShellSectionRenderer.cs" />
     <Compile Include="Renderers\StreamImagesourceHandler.cs" />
     <Compile Include="Renderers\ToolbarButton.cs" />
     <Compile Include="Renderers\ToolbarImageButton.cs" />
     <Compile Include="Renderers\ViewCellExtensions.cs" />
     <Compile Include="Renderers\ViewGroupExtensions.cs" />
+    <AndroidResource Include="Resources\Layout\RootLayout.axml" />
     <Compile Include="TapGestureHandler.cs" />
     <Compile Include="TextColorSwitcher.cs" />
     <Compile Include="ViewInitializedEventArgs.cs" />
@@ -270,12 +305,7 @@
     <Compile Include="Extensions\TextViewExtensions.cs" />
     <Compile Include="SwipeGestureHandler.cs" />
     <Compile Include="Extensions\AccessibilityExtensions.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v9.0' ">
     <Compile Include="Resources\Resource.Designer.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFrameworkVersion)' == 'v8.1' ">
-    <Compile Include="AppCompat\Resource.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -316,6 +346,27 @@
     <PackageReference Include="Xamarin.Android.Support.v7.CardView">
       <Version>27.0.2.1</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Layout\ShellContent.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Layout\FlyoutContent.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\Layout\BottomTabLayout.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\EnterFromLeft.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\EnterFromRight.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\ExitToLeft.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\anim\ExitToRight.xml" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>

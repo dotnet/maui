@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 
 namespace Xamarin.Forms
 {
-	public interface IPageController
+	public interface IPageController : IVisualElementController
 	{
 		Rectangle ContainerArea { get; set; }
 

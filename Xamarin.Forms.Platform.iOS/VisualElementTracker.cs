@@ -31,7 +31,7 @@ namespace Xamarin.Forms.Platform.MacOS
 		CALayer _layer;
 		int _updateCount;
 
-		public VisualElementTracker(IVisualElementRenderer renderer)
+		public VisualElementTracker(IVisualElementRenderer renderer, bool trackFrame = true)
 		{
 			Renderer = renderer ?? throw new ArgumentNullException("renderer");
 
@@ -39,9 +39,12 @@ namespace Xamarin.Forms.Platform.MacOS
 			_sizeChangedEventHandler = HandleSizeChanged;
 			_batchCommittedHandler = HandleRedrawNeeded;
 
+			TrackFrame = trackFrame;
 			renderer.ElementChanged += OnRendererElementChanged;
 			SetElement(null, renderer.Element);
 		}
+
+		bool TrackFrame { get; set; }
 
 		IVisualElementRenderer Renderer { get; set; }
 
@@ -76,14 +79,31 @@ namespace Xamarin.Forms.Platform.MacOS
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName || e.PropertyName == VisualElement.WidthProperty.PropertyName ||
-				e.PropertyName == VisualElement.HeightProperty.PropertyName || e.PropertyName == VisualElement.AnchorXProperty.PropertyName || e.PropertyName == VisualElement.AnchorYProperty.PropertyName ||
-				e.PropertyName == VisualElement.TranslationXProperty.PropertyName || e.PropertyName == VisualElement.TranslationYProperty.PropertyName || e.PropertyName == VisualElement.ScaleProperty.PropertyName || e.PropertyName == VisualElement.ScaleXProperty.PropertyName || e.PropertyName == VisualElement.ScaleYProperty.PropertyName ||
-				e.PropertyName == VisualElement.RotationProperty.PropertyName || e.PropertyName == VisualElement.RotationXProperty.PropertyName || e.PropertyName == VisualElement.RotationYProperty.PropertyName ||
-				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName || e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
-				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName || e.PropertyName == VisualElement.OpacityProperty.PropertyName || 
+			if (TrackFrame && (e.PropertyName == VisualElement.XProperty.PropertyName ||
+							   e.PropertyName == VisualElement.YProperty.PropertyName ||
+							   e.PropertyName == VisualElement.WidthProperty.PropertyName ||
+							   e.PropertyName == VisualElement.HeightProperty.PropertyName))
+			{
+				UpdateNativeControl();
+			}
+			else if (e.PropertyName == VisualElement.AnchorXProperty.PropertyName ||
+				e.PropertyName == VisualElement.AnchorYProperty.PropertyName ||
+				e.PropertyName == VisualElement.TranslationXProperty.PropertyName ||
+				e.PropertyName == VisualElement.TranslationYProperty.PropertyName ||
+				e.PropertyName == VisualElement.ScaleProperty.PropertyName ||
+				e.PropertyName == VisualElement.ScaleXProperty.PropertyName ||
+				e.PropertyName == VisualElement.ScaleYProperty.PropertyName ||
+				e.PropertyName == VisualElement.RotationProperty.PropertyName ||
+				e.PropertyName == VisualElement.RotationXProperty.PropertyName ||
+				e.PropertyName == VisualElement.RotationYProperty.PropertyName ||
+				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName ||
+				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
+				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName ||
+				e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
 				e.PropertyName == Layout.CascadeInputTransparentProperty.PropertyName)
+			{
 				UpdateNativeControl(); // poorly optimized
+			}
 		}
 
 		void HandleRedrawNeeded(object sender, EventArgs e)
@@ -138,7 +158,7 @@ namespace Xamarin.Forms.Platform.MacOS
 				_isInteractive = shouldInteract;
 			}
 
-			var boundsChanged = _lastBounds != view.Bounds;
+			var boundsChanged = _lastBounds != view.Bounds && TrackFrame;
 #if !__MOBILE__
 			var viewParent = view.RealParent as VisualElement;
 			var parentBoundsChanged = _lastParentBounds != (viewParent == null ? Rectangle.Zero : viewParent.Bounds);
@@ -206,7 +226,7 @@ namespace Xamarin.Forms.Platform.MacOS
 #endif
 				// Dont ever attempt to actually change the layout of a Page unless it is a ContentPage
 				// iOS is a really big fan of you not actually modifying the View's of the UIViewControllers
-				if (shouldUpdate)
+				if (shouldUpdate && TrackFrame)
 				{
 #if __MOBILE__
 					var target = new RectangleF(x, y, width, height);

@@ -329,6 +329,7 @@ namespace Xamarin.Forms
 		{
 			ParentSet?.Invoke(this, EventArgs.Empty);
 			ApplyStyleSheetsOnParentSet();
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Android.Animation;
 using Android.Content;
 using Android.Graphics;
+using Android.Support.V4.Widget;
 using Android.Views;
 using Android.Widget;
 using Xamarin.Forms.Internals;
@@ -12,7 +13,7 @@ using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class ScrollViewRenderer : AScrollView, IVisualElementRenderer, IEffectControlProvider
+	public class ScrollViewRenderer : NestedScrollView, IVisualElementRenderer, IEffectControlProvider
 	{
 		ScrollViewContainer _container;
 		HorizontalScrollView _hScrollView;
@@ -216,7 +217,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.Dispose(disposing);
 		}
 
-		protected override void OnAttachedToWindow()
+		public override void OnAttachedToWindow()
 		{
 			base.OnAttachedToWindow();
 
@@ -245,6 +246,8 @@ namespace Xamarin.Forms.Platform.Android
 			bool requestContainerLayout = bottom > _previousBottom;
 			_previousBottom = bottom;
 
+			_container.Measure(MeasureSpecFactory.MakeMeasureSpec(right - left, MeasureSpecMode.Unspecified),
+				MeasureSpecFactory.MakeMeasureSpec(bottom - top, MeasureSpecMode.Unspecified));
 			base.OnLayout(changed, left, top, right, bottom);
 			if (_view.Content != null && _hScrollView != null)
 				_hScrollView.Layout(0, 0, right - left, Math.Max(bottom - top, (int)Context.ToPixels(_view.Content.Height)));

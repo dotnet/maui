@@ -11,6 +11,7 @@ namespace Xamarin.Forms
 	{
 		internal const string CollectionViewExperimental = "CollectionView_Experimental";
 		internal const string VisualExperimental = "Visual_Experimental";
+		internal const string ShellExperimental = "Shell_Experimental";
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void VerifyFlagEnabled(

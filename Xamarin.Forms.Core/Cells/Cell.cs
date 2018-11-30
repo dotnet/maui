@@ -204,18 +204,7 @@ namespace Xamarin.Forms
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			// TODO further generalize this
-			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
-				SetFlowDirectionFromParent(this);
-
-			if (propertyName == null || propertyName == VisualElement.VisualProperty.PropertyName)
-				SetVisualfromParent(this);
-
-			foreach (var element in LogicalChildren)
-			{
-				if (element is IPropertyPropagationController view)
-					view.PropagatePropertyChanged(propertyName);
-			}
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, LogicalChildren);
 		}
 
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -22,6 +22,8 @@ namespace Xamarin.Forms.Xaml
 				markupExtension = new OnPlatformExtension();
 			else if (match == "OnIdiom")
 				markupExtension = new OnIdiomExtension();
+			else if (match == "DataTemplate")
+				markupExtension = new DataTemplateExtension();
 			else
 			{
 				if (typeResolver == null)

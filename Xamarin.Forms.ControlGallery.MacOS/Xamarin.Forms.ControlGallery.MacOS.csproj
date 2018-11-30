@@ -88,7 +88,6 @@
     <ImageAsset Include="Assets.xcassets\AppIcons.appiconset\AppIcon-512%402x.png" />
     <ImageAsset Include="Assets.xcassets\Contents.json" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />

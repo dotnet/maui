@@ -98,10 +98,14 @@ namespace Xamarin.Forms
 			// Naive implementation can easily take over a second to run
 			foreach (Assembly assembly in assemblies)
 			{
-				Attribute[] attributes;
+				object[] attributes;
 				try
 				{
+#if NETSTANDARD2_0
+					attributes = assembly.GetCustomAttributes(targetAttrType, true);
+#else
 					attributes = assembly.GetCustomAttributes(targetAttrType).ToArray();
+#endif
 				}
 				catch (System.IO.FileNotFoundException)
 				{
@@ -109,12 +113,14 @@ namespace Xamarin.Forms
 					Log.Warning(nameof(Registrar), "Could not load assembly: {0} for Attibute {1} | Some renderers may not be loaded", assembly.FullName, targetAttrType.FullName);
 					continue;
 				}
-				
-				if (attributes.Length == 0)
+
+				var length = attributes.Length;
+				if (length == 0)
 					continue;
 
-				foreach (DependencyAttribute attribute in attributes)
+				for (int i = 0; i < length; i++)
 				{
+					DependencyAttribute attribute = (DependencyAttribute)attributes[i];
 					if (!DependencyTypes.Contains(attribute.Implementor))
 					{
 						DependencyTypes.Add(attribute.Implementor);

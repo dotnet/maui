@@ -139,28 +139,33 @@ namespace Xamarin.Forms.Platform.Android
 				if (Control != null && ManageNativeControlLifetime)
 				{
 					Control.OnFocusChangeListener = null;
-					RemoveView(Control);
-					Control.Dispose();
-					Control = null;
 				}
+			}
 
+			base.Dispose(disposing);
+
+			if (disposing && !_disposed)
+			{
 				if (_container != null && _container != this)
 				{
-					_container.RemoveFromParent();
-					_container.Dispose();
+					if (_container.Handle != IntPtr.Zero)
+					{
+						_container.RemoveFromParent();
+						_container.Dispose();
+					}
 					_container = null;
 				}
 
 				if (Element != null && _focusChangeHandler != null)
 				{
 					Element.FocusChangeRequested -= _focusChangeHandler;
-					_focusChangeHandler = null;
+				
 				}
-
+				_focusChangeHandler = null;
 				_disposed = true;
 			}
 
-			base.Dispose(disposing);
+			
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TView> e)
@@ -261,7 +266,8 @@ namespace Xamarin.Forms.Platform.Android
 				var handler = new Handler(looper);
 				handler.Post(() =>
 				{
-					Control?.RequestFocus();
+					if(!_disposed)
+						Control?.RequestFocus();
 				});
 			}
 			else

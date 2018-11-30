@@ -46,11 +46,11 @@ namespace Xamarin.Forms
 			var toRaise = new List<Tuple<object, MethodInfo>>();
 			var toRemove = new List<Subscription>();
 
-			List<Subscription> target;
-			if (_eventHandlers.TryGetValue(eventName, out target))
+			if (_eventHandlers.TryGetValue(eventName, out List<Subscription> target))
 			{
-				foreach (Subscription subscription in target)
+				for (int i = 0; i < target.Count; i++)
 				{
+					Subscription subscription = target[i];
 					bool isStatic = subscription.Subscriber == null;
 					if (isStatic)
 					{
@@ -72,14 +72,16 @@ namespace Xamarin.Forms
 					}
 				}
 
-				foreach (Subscription subscription in toRemove)
+				for (int i = 0; i < toRemove.Count; i++)
 				{
+					Subscription subscription = toRemove[i];
 					target.Remove(subscription);
 				}
 			}
 
-			foreach (Tuple<object, MethodInfo> tuple in toRaise)
+			for (int i = 0; i < toRaise.Count; i++)
 			{
+				Tuple<object, MethodInfo> tuple = toRaise[i];
 				tuple.Item2.Invoke(tuple.Item1, new[] { sender, args });
 			}
 		}

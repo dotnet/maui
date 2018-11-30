@@ -38,7 +38,6 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			_effectControlProvider.RegisterEffect(effect);
 		}
 
-
 		void UpdateFlowDirection()
 		{
 			if (_disposed)
