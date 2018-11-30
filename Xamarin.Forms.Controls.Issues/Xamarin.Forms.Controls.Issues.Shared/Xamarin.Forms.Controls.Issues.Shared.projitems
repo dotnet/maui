@@ -857,6 +857,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ICacheService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue3622.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue4138.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4314.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Bugzilla22229.xaml">

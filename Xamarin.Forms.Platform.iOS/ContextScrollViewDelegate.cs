@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Platform.iOS
 				RestoreHighlight(scrollView);
 
 				s_scrollViewBeingScrolled = null;
-				ClearCloserRecognizer(scrollView);
+				ClearCloserRecognizer(GetContextCell(scrollView));
 				ClosedCallback?.Invoke();
 			}
 		}
@@ -133,7 +133,7 @@ namespace Xamarin.Forms.Platform.iOS
 		public void Unhook(UIScrollView scrollView)
 		{
 			RestoreHighlight(scrollView);
-			ClearCloserRecognizer(scrollView);
+			ClearCloserRecognizer(GetContextCell(scrollView));
 		}
 
 		public override void WillEndDragging(UIScrollView scrollView, PointF velocity, ref PointF targetContentOffset)
@@ -158,36 +158,35 @@ namespace Xamarin.Forms.Platform.iOS
 					while (view.Superview != null)
 					{
 						view = view.Superview;
-
-						NSAction close = () =>
-						{
-							if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
-								RestoreHighlight(scrollView);
-
-							IsOpen = false;
-							scrollView.SetContentOffset(new PointF(0, 0), true);
-
-							ClearCloserRecognizer(scrollView);
-						};
-
 						var table = view as UITableView;
 						if (table != null)
 						{
+							ContextActionsCell contentCell = GetContextCell(scrollView);
+							NSAction close = () =>
+							{
+								if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
+									RestoreHighlight(scrollView);
+
+								IsOpen = false;
+								scrollView.SetContentOffset(new PointF(0, 0), true);
+								ClearCloserRecognizer(contentCell);
+								contentCell = null;
+							};
+
 							_table = table;
 							_globalCloser = new GlobalCloseContextGestureRecognizer(scrollView, close);
 							_globalCloser.ShouldRecognizeSimultaneously = (recognizer, r) => r == _table.PanGestureRecognizer;
 							table.AddGestureRecognizer(_globalCloser);
 
 							_closer = new UITapGestureRecognizer(close);
-							var cell = GetContextCell(scrollView);
-							cell.ContentCell.AddGestureRecognizer(_closer);
+							contentCell.AddGestureRecognizer(_closer);
 						}
 					}
 				}
 			}
 			else
 			{
-				ClearCloserRecognizer(scrollView);
+				ClearCloserRecognizer(GetContextCell(scrollView));
 
 				IsOpen = false;
 				targetContentOffset = new PointF(0, 0);
@@ -234,13 +233,12 @@ namespace Xamarin.Forms.Platform.iOS
 			base.Dispose(disposing);
 		}
 
-		void ClearCloserRecognizer(UIScrollView scrollView)
+		void ClearCloserRecognizer(ContextActionsCell cell)
 		{
 			if (_globalCloser == null || _globalCloser.State == UIGestureRecognizerState.Cancelled)
 				return;
 
-			var cell = GetContextCell(scrollView);
-			cell.ContentCell.RemoveGestureRecognizer(_closer);
+			cell?.ContentCell?.RemoveGestureRecognizer(_closer);
 			_closer.Dispose();
 			_closer = null;
 
@@ -252,9 +250,9 @@ namespace Xamarin.Forms.Platform.iOS
 
 		ContextActionsCell GetContextCell(UIScrollView scrollView)
 		{
-			var view = scrollView.Superview.Superview;
+			var view = scrollView?.Superview?.Superview;
 			var cell = view as ContextActionsCell;
-			while (view.Superview != null)
+			while (view?.Superview != null)
 			{
 				cell = view as ContextActionsCell;
 				if (cell != null)
