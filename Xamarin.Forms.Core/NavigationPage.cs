@@ -154,18 +154,28 @@ namespace Xamarin.Forms
 		public async Task<Page> PopAsync(bool animated)
 		{
 			var tcs = new TaskCompletionSource<bool>();
-			if (CurrentNavigationTask != null && !CurrentNavigationTask.IsCompleted)
+			try
 			{
-				var oldTask = CurrentNavigationTask;
-				CurrentNavigationTask = tcs.Task;
-				await oldTask;
-			}
-			else
-				CurrentNavigationTask = tcs.Task;
+				if (CurrentNavigationTask != null && !CurrentNavigationTask.IsCompleted)
+				{
+					var oldTask = CurrentNavigationTask;
+					CurrentNavigationTask = tcs.Task;
+					await oldTask;
+				}
+				else
+					CurrentNavigationTask = tcs.Task;
 
-			var result = await PopAsyncInner(animated, false);
-			tcs.SetResult(true);
-			return result;
+				var result = await PopAsyncInner(animated, false);
+				tcs.SetResult(true);
+				return result;
+			}
+			catch (Exception)
+			{
+				CurrentNavigationTask = null;
+				tcs.SetCanceled();
+
+				throw;
+			}
 		}
 
 		public event EventHandler<NavigationEventArgs> Popped;
