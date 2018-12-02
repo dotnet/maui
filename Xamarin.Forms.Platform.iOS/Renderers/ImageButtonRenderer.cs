@@ -75,7 +75,9 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				if (Control == null)
 				{
-					SetNativeControl(CreateNativeControl());
+					var control = CreateNativeControl();
+					control.ClipsToBounds = true;
+					SetNativeControl(control);
 
 					Debug.Assert(Control != null, "Control != null");
 				}
