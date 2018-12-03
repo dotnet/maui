@@ -7,7 +7,7 @@ namespace Xamarin.Forms.Platform.Tizen
 	{
 		const int _defaultHeight = 55;
 
-		public ImageCellRenderer() : this(Device.Idiom == TargetIdiom.Watch ? "1icon_2text" : "default")
+		public ImageCellRenderer() : this(Device.Idiom == TargetIdiom.Watch ? "1icon_2text" : (Device.Idiom == TargetIdiom.Phone ? "double_label" : "default"))
 		{
 			ImagePart = "elm.swallow.icon";
 		}
