@@ -800,15 +800,11 @@ namespace Xamarin.Forms
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
 			if (_accumulateNavigatedEvents)
-			{
 				_accumulatedEvent = args;
-			}
-			else
-			{
-				if (args.Current.Location.AbsolutePath != _lastNavigating.Location.AbsolutePath)
-				{
-					throw new Exception();
-				}
+			else {
+				if (args.Current.Location.AbsolutePath.TrimEnd('/') != _lastNavigating.Location.AbsolutePath.TrimEnd('/'))
+					throw new InvalidOperationException($"Navigation: Current location doesn't match navigation uri {args.Current.Location.AbsolutePath} != {_lastNavigating.Location.AbsolutePath}");
+
 				Navigated?.Invoke(this, args);
 				//System.Diagnostics.Debug.WriteLine("Navigated: " + args.Current.Location);
 			}
