@@ -376,10 +376,10 @@ namespace Xamarin.Forms
 			bool converted = (privateAttributes & SetValuePrivateFlags.Converted) != 0;
 
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException(nameof(property));
 			if (checkAccess && property.IsReadOnly)
 			{
-				Debug.WriteLine("Can not set the BindableProperty \"{0}\" because it is readonly.", property.PropertyName);
+				Log.Warning("BindableObject", "Can not set the BindableProperty \"{0}\" because it is readonly.", property.PropertyName);
 				return;
 			}
 
