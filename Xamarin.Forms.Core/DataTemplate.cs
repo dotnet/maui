@@ -13,8 +13,8 @@ namespace Xamarin.Forms
 		string _idString;
 		public DataTemplate()
 		{
-			_idString = GetType().FullName + idCounter++;
-			_id = idCounter;
+			_id = Interlocked.Increment(ref idCounter);
+			_idString = GetType().FullName + _id;
 		}
 
 		public DataTemplate(Type type) : base(type)

@@ -1,5 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
+using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Core.UnitTests
 {
@@ -36,6 +37,26 @@ namespace Xamarin.Forms.Core.UnitTests
 
 			Assert.That(shell.CurrentItem, Is.EqualTo(shellItem));
 		}
+
+		[Test]
+		public void NavigationProxyWireUpTest()
+		{
+			var page = new ContentPage();
+			var shell = new Shell();
+			var shellItem = new ShellItem();
+			var shellSection = new ShellSection();
+			var shellContent = new ShellContent { Content = page };
+			shellSection.Items.Add(shellContent);
+			shellItem.Items.Add(shellSection);
+			shell.Items.Add(shellItem);
+
+			NavigationProxy proxy = page.NavigationProxy.Inner as NavigationProxy;
+			Assert.IsNotNull(proxy);
+
+			NavigationProxy shellProxy = proxy.Inner as ShellSection.NavigationImpl;
+			Assert.IsNotNull(shellProxy);
+		}
+
 
 		[Test]
 		public void CurrentItemDoesNotChangeOnSecondAdd()

@@ -771,22 +771,6 @@ namespace Xamarin.Forms
 #pragma warning restore 0618
 		}
 
-		protected override void OnParentSet()
-		{
-#pragma warning disable 0618 // retain until ParentView removed
-			base.OnParentSet();
-
-			if (ParentView != null)
-			{
-				NavigationProxy.Inner = ParentView.NavigationProxy;
-			}
-			else
-			{
-				NavigationProxy.Inner = null;
-			}
-#pragma warning restore 0618	    
-		}
-
 		protected virtual void OnSizeAllocated(double width, double height)
 		{
 		}

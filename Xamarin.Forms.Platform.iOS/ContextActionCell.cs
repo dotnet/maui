@@ -276,6 +276,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 				if (_scroller != null)
 				{
+					_scroller.Delegate = null;
 					_scroller.Dispose();
 					_scroller = null;
 				}
