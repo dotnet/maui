@@ -10,13 +10,13 @@ namespace Xamarin.Forms.Platform.iOS
 			textInput.AutocapitalizationType = UITextAutocapitalizationType.None;
 			textInput.AutocorrectionType = UITextAutocorrectionType.No;
 			textInput.SpellCheckingType = UITextSpellCheckingType.No;
+			textInput.KeyboardType = UIKeyboardType.Default;
 
 			if (keyboard == Keyboard.Default)
 			{
 				textInput.AutocapitalizationType = UITextAutocapitalizationType.Sentences;
 				textInput.AutocorrectionType = UITextAutocorrectionType.Default;
 				textInput.SpellCheckingType = UITextSpellCheckingType.Default;
-				textInput.KeyboardType = UIKeyboardType.Default;
 			}
 			else if (keyboard == Keyboard.Chat)
 			{
