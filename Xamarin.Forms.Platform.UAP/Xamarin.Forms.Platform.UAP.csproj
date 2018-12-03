@@ -47,7 +47,6 @@
     <Compile Include="IImageVisualElementRenderer.cs" />
     <Compile Include="ImageButtonRenderer.cs" />
     <Compile Include="CollectionViewRenderer.cs" />
-    <Compile Include="ColorExtensions.cs" />
     <Compile Include="FormsCancelButton.cs" />
     <Compile Include="AlertDialog.cs" />
     <Compile Include="Items\ItemContentControl.cs" />
@@ -124,7 +123,7 @@
     <Compile Include="CellControl.cs" />
     <Compile Include="CollapseWhenEmptyConverter.cs" />
     <Compile Include="ColorConverter.cs" />
-    <Compile Include="ConvertExtensions.cs" />
+    <Compile Include="ColorExtensions.cs" />
     <Compile Include="DatePickerRenderer.cs" />
     <Compile Include="DefaultRenderer.cs" />
     <Compile Include="EditorRenderer.cs" />

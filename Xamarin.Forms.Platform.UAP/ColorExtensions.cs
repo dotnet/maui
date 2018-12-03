@@ -4,7 +4,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Xamarin.Forms.Platform.UWP
 {
-	internal static class ColorExtensions
+	public static class ColorExtensions
 	{
 		public static Windows.UI.Color GetContrastingColor(this Windows.UI.Color color)
 		{
@@ -23,6 +23,16 @@ namespace Xamarin.Forms.Platform.UWP
 		public static Color ToFormsColor(this SolidColorBrush solidColorBrush)
 		{
 			return solidColorBrush.Color.ToFormsColor();
+		}
+
+		public static Brush ToBrush(this Color color)
+		{
+			return new SolidColorBrush(color.ToWindowsColor());
+		}
+
+		public static Windows.UI.Color ToWindowsColor(this Color color)
+		{
+			return Windows.UI.Color.FromArgb((byte)(color.A * 255), (byte)(color.R * 255), (byte)(color.G * 255), (byte)(color.B * 255));
 		}
 	}
 }
