@@ -26,5 +26,28 @@
 			SetSeparatorStyle(config.Element, value);
 			return config;
 		}
+
+		public static readonly BindableProperty GroupHeaderStyleProperty = BindableProperty.Create(nameof(GroupHeaderStyle), typeof(GroupHeaderStyle), typeof(FormsElement), GroupHeaderStyle.Plain);
+
+		public static GroupHeaderStyle GetGroupHeaderStyle(BindableObject element)
+		{
+			return (GroupHeaderStyle)element.GetValue(GroupHeaderStyleProperty);
+		}
+
+		public static void SetGroupHeaderStyle(BindableObject element, GroupHeaderStyle value)
+		{
+			element.SetValue(GroupHeaderStyleProperty, value);
+		}
+
+		public static GroupHeaderStyle GetGroupHeaderStyle(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetGroupHeaderStyle(config.Element);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetGroupHeaderStyle(this IPlatformElementConfiguration<iOS, FormsElement> config, GroupHeaderStyle value)
+		{
+			SetGroupHeaderStyle(config.Element, value);
+			return config;
+		}
 	}
 }

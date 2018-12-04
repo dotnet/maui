@@ -1368,7 +1368,10 @@ namespace Xamarin.Forms.Platform.iOS
 		internal bool _usingLargeTitles;
 		bool _isRefreshing;
 
-		public FormsUITableViewController(ListView element, bool usingLargeTitles)
+		public FormsUITableViewController(ListView element, bool usingLargeTitles) 
+		: base(element.OnThisPlatform().GetGroupHeaderStyle() == GroupHeaderStyle.Plain 
+			? UITableViewStyle.Plain 
+			  : UITableViewStyle.Grouped)
 		{
 			if (Forms.IsiOS9OrNewer)
 				TableView.CellLayoutMarginsFollowReadableWidth = false;
