@@ -51,7 +51,7 @@ namespace Xamarin.Forms.Core.UnitTests
 		[Test]
 		public void InvalidCtor()
 		{
-			Assert.Throws<ArgumentNullException>(() => new TypedBinding<MockViewModel, string>(null, (mvm, s) => mvm.Text = s, null), "Allowed null getter");
+			Assert.Throws<ArgumentNullException>(() => new TypedBinding<MockViewModel, string>((Func<MockViewModel, string>)null, (mvm, s) => mvm.Text = s, null), "Allowed null getter");
 		}
 
 		[Test, NUnit.Framework.Category("[Binding] Set Value")]

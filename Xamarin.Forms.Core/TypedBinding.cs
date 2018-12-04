@@ -58,11 +58,19 @@ namespace Xamarin.Forms.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public sealed class TypedBinding<TSource, TProperty> : TypedBindingBase
 	{
-		readonly Func<TSource, TProperty> _getter;
+		readonly Func<TSource, (TProperty value, bool success)> _getter;
 		readonly Action<TSource, TProperty> _setter;
 		readonly PropertyChangedProxy [] _handlers;
 
+		[Obsolete("deprecated one. kept for backcompat")]
 		public TypedBinding(Func<TSource, TProperty> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string> [] handlers)
+				: this (s=>(getter(s), true), setter, handlers)
+		{
+			if (getter == null)
+				throw new ArgumentNullException(nameof(getter));
+		}
+
+		public TypedBinding(Func<TSource, (TProperty value, bool success)> getter, Action<TSource, TProperty> setter, Tuple<Func<TSource, object>, string>[] handlers)
 		{
 			_getter = getter ?? throw new ArgumentNullException(nameof(getter));
 			_setter = setter;
@@ -70,9 +78,9 @@ namespace Xamarin.Forms.Internals
 			if (handlers == null)
 				return;
 
-			_handlers = new PropertyChangedProxy [handlers.Length];
+			_handlers = new PropertyChangedProxy[handlers.Length];
 			for (var i = 0; i < handlers.Length; i++)
-				_handlers [i] = new PropertyChangedProxy(handlers [i].Item1, handlers [i].Item2, this);
+				_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, this);
 		}
 
 		readonly WeakReference<object> _weakSource = new WeakReference<object>(null);
@@ -196,7 +204,9 @@ namespace Xamarin.Forms.Internals
 				var value = FallbackValue ?? property.GetDefaultValue(target);
 				if (isTSource) {
 					try {
-						value = GetSourceValue(_getter((TSource)sourceObject), property.ReturnType);
+						(var retval, bool success) = _getter((TSource)sourceObject);
+						if (success) //if the getter failed, return the FallbackValue
+							value = GetSourceValue(retval, property.ReturnType);
 					} catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException) {
 					}
 				}
