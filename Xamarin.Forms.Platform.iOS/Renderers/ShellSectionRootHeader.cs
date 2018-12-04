@@ -30,7 +30,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void SetAppearance(ShellAppearance appearance)
 		{
-			SetValues(appearance.BackgroundColor.IsDefault ? _defaultBackgroundColor : BarAppearanceTrackerUtils.UnblendColor(appearance.BackgroundColor),
+			SetValues(appearance.BackgroundColor.IsDefault ? _defaultBackgroundColor : appearance.BackgroundColor,
 				appearance.ForegroundColor.IsDefault ? _defaultForegroundColor : appearance.ForegroundColor,
 				appearance.UnselectedColor.IsDefault ? _defaultUnselectedColor : appearance.UnselectedColor);
 		}
