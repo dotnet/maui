@@ -58,7 +58,10 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override void DisableTimer()
 		{
-			_val?.Cancel();
+			Device.BeginInvokeOnMainThread(new Action(() =>
+			{
+				_val?.Cancel();
+			}));
 		}
 
 		protected override void EnableTimer()
