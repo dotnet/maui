@@ -59,5 +59,7 @@ AndroidNative/.gradle/
 AndroidNative/gradlew
 AndroidNative/gradlew.bat
 !EmbeddingTestBeds/Embedding.iOS/*.designer.cs
+*.nupkg
+*.pdb
 # temporary vim files
 *.swp
