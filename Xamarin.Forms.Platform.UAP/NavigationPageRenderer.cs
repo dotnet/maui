@@ -634,7 +634,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		async void UpdateTitleOnParents()
 		{
-			if (Element == null)
+			if (Element == null || _currentPage == null)
 				return;
 
 			ITitleProvider render = null;
