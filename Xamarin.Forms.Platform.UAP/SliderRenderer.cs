@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
@@ -12,6 +13,27 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush defaultforegroundcolor;
 		Brush defaultbackgroundcolor;
 		Brush _defaultThumbColor;
+
+		PointerEventHandler _pointerPressedHandler;
+		PointerEventHandler _pointerReleasedHandler;
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (Control != null)
+				{
+					Control.RemoveHandler(PointerPressedEvent, _pointerPressedHandler);
+					Control.RemoveHandler(PointerReleasedEvent, _pointerReleasedHandler);
+					Control.RemoveHandler(PointerCanceledEvent, _pointerReleasedHandler);
+
+					_pointerPressedHandler = null;
+					_pointerReleasedHandler = null;
+				}
+			}
+
+			base.Dispose(disposing);
+		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Slider> e)
 		{
@@ -55,6 +77,13 @@ namespace Xamarin.Forms.Platform.UWP
 
 						slider.Margin = new Windows.UI.Xaml.Thickness(0, 7, 0, 0);
 					}
+
+					_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
+					_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
+
+					Control.AddHandler(PointerPressedEvent, _pointerPressedHandler, true);
+					Control.AddHandler(PointerReleasedEvent, _pointerReleasedHandler, true);
+					Control.AddHandler(PointerCanceledEvent, _pointerReleasedHandler, true);
 				}
 
 				double stepping = Math.Min((e.NewElement.Maximum - e.NewElement.Minimum) / 1000, 1);
@@ -180,6 +209,16 @@ namespace Xamarin.Forms.Platform.UWP
 		void OnNativeValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, e.NewValue);
+		}
+
+		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			((ISliderController)Element)?.SendDragStarted();
+		}
+
+		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+		{
+			((ISliderController)Element)?.SendDragCompleted();
 		}
 	}
 }

@@ -28,6 +28,9 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.RemoveGestureRecognizer(_sliderTapRecognizer);
 					_sliderTapRecognizer = null;
 				}
+
+				Control.RemoveTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+				Control.RemoveTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 			}
 
 			base.Dispose(disposing);
@@ -54,6 +57,9 @@ namespace Xamarin.Forms.Platform.iOS
 					// except if your not running iOS 7... then it fails...
 					if (_fitSize.Width <= 0 || _fitSize.Height <= 0)
 						_fitSize = new SizeF(22, 22); // Per the glorious documentation known as the SDK docs
+
+					Control.AddTarget(OnTouchDownControlEvent, UIControlEvent.TouchDown);
+					Control.AddTarget(OnTouchUpControlEvent, UIControlEvent.TouchUpInside | UIControlEvent.TouchUpOutside);
 				}
 
 				UpdateMaximum();
@@ -170,6 +176,16 @@ namespace Xamarin.Forms.Platform.iOS
 		void OnControlValueChanged(object sender, EventArgs eventArgs)
 		{
 			((IElementController)Element).SetValueFromRenderer(Slider.ValueProperty, Control.Value);
+		}
+
+		void OnTouchDownControlEvent(object sender, EventArgs e)
+		{
+			((ISliderController)Element)?.SendDragStarted();
+		}
+
+		void OnTouchUpControlEvent(object sender, EventArgs e)
+		{
+			((ISliderController)Element)?.SendDragCompleted();
 		}
 
 		void UpdateTapRecognizer()

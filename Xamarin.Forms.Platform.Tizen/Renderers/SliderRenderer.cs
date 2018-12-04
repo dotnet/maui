@@ -18,6 +18,8 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				SetNativeControl(new ESlider(Forms.NativeParent));
 				Control.ValueChanged += OnValueChanged;
+				Control.DragStarted += OnDragStarted;
+				Control.DragStopped += OnDragStopped;
 				_defaultMinColor = Control.GetPartColor("bar");
 				_defaultMaxColor = Control.GetPartColor("bg");
 				_defaultThumbColor = Control.GetPartColor("handler");
@@ -65,6 +67,8 @@ namespace Xamarin.Forms.Platform.Tizen
 				if (Control != null)
 				{
 					Control.ValueChanged -= OnValueChanged;
+					Control.DragStarted -= OnDragStarted;
+					Control.DragStopped -= OnDragStopped;
 				}
 			}
 			base.Dispose(disposing);
@@ -78,6 +82,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		void OnValueChanged(object sender, EventArgs e)
 		{
 			Element.SetValueFromRenderer(Slider.ValueProperty, Control.Value);
+		}
+
+		void OnDragStarted(object sender, EventArgs e)
+		{
+			((ISliderController)Element)?.SendDragStarted();
+		}
+
+		void OnDragStopped(object sender, EventArgs e)
+		{
+			((ISliderController)Element)?.SendDragCompleted();
 		}
 
 		protected void UpdateValue()

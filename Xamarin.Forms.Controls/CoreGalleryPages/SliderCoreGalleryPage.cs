@@ -26,6 +26,11 @@ namespace Xamarin.Forms.Controls
 			var thumbColorContainer = new ValueViewContainer<Slider> (Test.Slider.ThumbColor, new Slider { ThumbColor = Color.Red, Value = 0.5 }, "Value", value => value.ToString ());
 			var thumbImageContainer = new ValueViewContainer<Slider> (Test.Slider.ThumbImage, new Slider { ThumbImage = "coffee.png", Value = 0.5 }, "Value", value => value.ToString ());
 
+			var dragStartedContainer = new EventViewContainer<Slider>(Test.Slider.DragStarted, new Slider { Value = 0.5 });
+			dragStartedContainer.View.DragStarted += (sender, args) => dragStartedContainer.EventFired();
+			var dragCompletedContainer = new EventViewContainer<Slider>(Test.Slider.DragCompleted, new Slider { Value = 0.5 });
+			dragCompletedContainer.View.DragCompleted += (sender, args) => dragCompletedContainer.EventFired();
+
 			Add (maximumContainer);
 			Add (minimumContainer);
 			Add (valueContainer);
@@ -33,6 +38,8 @@ namespace Xamarin.Forms.Controls
 			Add (maxTrackColorContainer);
 			Add (thumbColorContainer);
 			Add (thumbImageContainer);
+			Add (dragStartedContainer);
+			Add (dragCompletedContainer);
 		}
 	}
 }

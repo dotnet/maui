@@ -56,6 +56,16 @@ namespace Xamarin.Forms.Platform.MacOS
 		void OnControlActivated(object sender, EventArgs eventArgs)
 		{
 			ElementController?.SetValueFromRenderer(Slider.ValueProperty, Control.DoubleValue);
+
+			var controlEvent = NSApplication.SharedApplication.CurrentEvent;
+			if (controlEvent.Type == NSEventType.LeftMouseDown)
+			{
+				((ISliderController)Element)?.SendDragStarted();
+			}
+			else if (controlEvent.Type == NSEventType.LeftMouseUp)
+			{
+				((ISliderController)Element)?.SendDragCompleted();
+			}
 		}
 
 		void UpdateMaximum()

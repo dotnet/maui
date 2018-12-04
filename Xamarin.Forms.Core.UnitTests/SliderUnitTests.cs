@@ -108,5 +108,29 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual (initialValue, oldValue);
 			Assert.AreEqual (finalValue, newValue);
 		}
+
+		[Test]
+		public void TestDragStarted()
+		{
+			var slider = new Slider();
+			var started = false;
+
+			slider.DragStarted += (sender, arg) => started = true;
+			((ISliderController)slider).SendDragStarted();
+
+			Assert.True(started);			
+		}
+
+		[Test]
+		public void TestDragCompleted()
+		{
+			var slider = new Slider();
+			var completed = false;
+
+			slider.DragCompleted += (sender, arg) => completed = true;
+			((ISliderController)slider).SendDragCompleted();
+
+			Assert.True(completed);
+		}
 	}	
 }
