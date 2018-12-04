@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -104,5 +103,15 @@ namespace Xamarin.Forms
 		}
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
 		double IFlowDirectionController.Width => (Parent as VisualElement)?.Width ?? 0;
+
+
+		internal virtual void ApplyQueryAttributes(IDictionary<string, string> query)
+		{
+		}
+	}
+
+	public interface IQueryAttributable
+	{
+		void ApplyQueryAttributes(IDictionary<string, string> query);
 	}
 }

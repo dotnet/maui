@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Xamarin.Forms.Internals;
 
@@ -76,13 +77,24 @@ namespace Xamarin.Forms.Core.UnitTests
 			Assert.AreEqual(shellItem, shell.CurrentItem);
 		}
 
-		ShellSection MakeSimpleShellSection (string route, string contentRoute)
+		ShellSection MakeSimpleShellSection(string route, string contentRoute)
+		{
+			return MakeSimpleShellSection(route, contentRoute, new ShellTestPage());
+		}
+
+		ShellSection MakeSimpleShellSection (string route, string contentRoute, ContentPage contentPage)
 		{
 			var shellSection = new ShellSection();
 			shellSection.Route = route;
-			var shellContent = new ShellContent { Content = new ContentPage(), Route = contentRoute };
+			var shellContent = new ShellContent { Content = contentPage, Route = contentRoute };
 			shellSection.Items.Add(shellContent);
 			return shellSection;
+		}
+
+		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
+		public class ShellTestPage : ContentPage
+		{
+			public string SomeQueryParameter { get; set; }
 		}
 
 		[Test]
@@ -113,6 +125,65 @@ namespace Xamarin.Forms.Core.UnitTests
 			shell.GoToAsync(new ShellNavigationState("app:///s/two/tabfour/"));
 
 			Assert.That(shell.CurrentState.Location.ToString(), Is.EqualTo("app:///s/two/tabfour/content/"));
+		}
+
+
+
+		[Test]
+		public async Task NavigationWithQueryStringWhenPageMatchesBindingContext()
+		{
+			var shell = new Shell();
+			shell.Route = "s";
+
+			var one = new ShellItem { Route = "one" };
+			var two = new ShellItem { Route = "two" };
+
+			var tabone = MakeSimpleShellSection("tabone", "content");
+			var tabfour = MakeSimpleShellSection("tabfour", "content", null);
+
+			one.Items.Add(tabone);
+			two.Items.Add(tabfour);
+
+			shell.Items.Add(one);
+			shell.Items.Add(two);
+
+			ShellTestPage pagetoTest = new ShellTestPage();
+			await shell.GoToAsync(new ShellNavigationState($"app:///s/two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			two.CurrentItem.CurrentItem.ContentTemplate = new DataTemplate(() =>
+			{
+				pagetoTest = new ShellTestPage();
+				pagetoTest.BindingContext = pagetoTest;
+				return pagetoTest;
+			});
+
+			
+			var page = (two.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent();
+			Assert.AreEqual("1234", (page as ShellTestPage).SomeQueryParameter);
+
+		}
+
+
+		[Test]
+		public async Task NavigationWithQueryStringAndNoDataTemplate()
+		{
+			var shell = new Shell();
+			shell.Route = "s";
+
+			var one = new ShellItem { Route = "one" };
+			var two = new ShellItem { Route = "two" };
+
+			var tabone = MakeSimpleShellSection("tabone", "content");
+			var tabfour = MakeSimpleShellSection("tabfour", "content");
+
+			one.Items.Add(tabone);
+			two.Items.Add(tabfour);
+
+			shell.Items.Add(one);
+			shell.Items.Add(two);
+
+			await shell.GoToAsync(new ShellNavigationState($"app:///s/two/tabfour/content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
+			Assert.AreEqual("1234", (two.CurrentItem.CurrentItem.Content as ShellTestPage).SomeQueryParameter);
+
 		}
 
 		[Test]
