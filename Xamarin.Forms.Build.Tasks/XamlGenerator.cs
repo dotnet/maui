@@ -385,20 +385,20 @@ namespace Xamarin.Forms.Build.Tasks
 			_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 			_xmlnsModules = new Dictionary<string, ModuleDefinition>();
 
-			if (string.IsNullOrEmpty(this.References))
+			if (string.IsNullOrEmpty(References))
 				return;
 
-			string[] paths = this.References.Split(';');
+			string[] paths = References.Split(';').Distinct().ToArray();
 
-			foreach ( var path in paths ) {
+			foreach (var path in paths) {
 				string asmName = Path.GetFileName(path);
-				if ( AssemblyIsSystem(asmName) )
+				if (AssemblyIsSystem(asmName))
 					// Skip the myriad "System." assemblies and others
 					continue;				
 
 				using (var asmDef = AssemblyDefinition.ReadAssembly(path)) {
-					foreach ( var ca in asmDef.CustomAttributes ) {
-						if ( ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
+					foreach (var ca in asmDef.CustomAttributes) {
+						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName) {
 							_xmlnsDefinitions.Add(ca.GetXmlnsDefinition(asmDef));
 							_xmlnsModules[asmDef.FullName] = asmDef.MainModule;
 						}
