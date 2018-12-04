@@ -38,6 +38,7 @@ using Xamarin.Forms.StyleSheets;
 [assembly: Preserve]
 
 [assembly: XmlnsDefinition("http://xamarin.com/schemas/2014/forms", "Xamarin.Forms")]
+[assembly: XmlnsPrefix("http://xamarin.com/schemas/2014/forms", "xf")]
 
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
 [assembly: StyleProperty("background-image", typeof(Page), nameof(Page.BackgroundImageProperty))]
