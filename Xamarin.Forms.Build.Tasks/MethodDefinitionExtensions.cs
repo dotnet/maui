@@ -51,5 +51,16 @@ namespace Xamarin.Forms.Build.Tasks
 			var t = ((GenericInstanceType)declaringTypeRef).GenericArguments[((GenericParameter)self.ReturnType).Position];
 			return t;
 		}
+
+		public static bool HasCustomAttributes(this MethodDefinition self, TypeReference attribute)
+		{
+			if (!self.HasCustomAttributes)
+				return false;
+			foreach (var arg in self.CustomAttributes) {
+				if (TypeRefComparer.Default.Equals(arg.AttributeType, attribute))
+					return true;
+			}
+			return false;
+		}
 	}
 }

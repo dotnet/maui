@@ -157,7 +157,6 @@
     <Compile Include="Forms.cs" />
     <Compile Include="PageExtensions.cs" />
     <Compile Include="Renderers\WkWebViewRenderer.cs" />
-    <Compile Include="Renderers\BarAppearanceTrackerUtils.cs" />
     <Compile Include="Renderers\ElementSelectedEventArgs.cs" />
     <Compile Include="Renderers\IShellContext.cs" />
     <Compile Include="Renderers\IShellFlyoutContentRenderer.cs" />

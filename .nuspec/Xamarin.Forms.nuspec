@@ -26,6 +26,7 @@
         <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0-preview8"/>
         <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0-preview8"/>
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0-preview8"/>
       </group>
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>

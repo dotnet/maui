@@ -38,7 +38,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 
 			if (!background.IsDefault)
-				navBar.BarTintColor = BarAppearanceTrackerUtils.UnblendColor(background).ToUIColor();
+				navBar.BarTintColor = background.ToUIColor();
 			if (!foreground.IsDefault)
 				navBar.TintColor = foreground.ToUIColor();
 			if (!titleColor.IsDefault)

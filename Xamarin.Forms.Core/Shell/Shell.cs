@@ -402,89 +402,35 @@ namespace Xamarin.Forms
 				prefix = route + ".";
 			}
 
-			var type = element.GetType();
-			var typeInfo = type.GetTypeInfo();
-#if NETSTANDARD1_0
-			var effectAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
-#else
-			var effectAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-#endif
-
-			if (effectAttributes.Length == 0)
-				return;
-
-			foreach (var a in effectAttributes)
-			{
-				if (a is QueryPropertyAttribute attrib)
-				{
-					if (query.TryGetValue(prefix + attrib.QueryId, out var value))
-					{
-						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-						{
-							prop.SetValue(element, value);
-						}
-					}
-				}
-			}
-		}
-
-		static string GenerateQueryString(Dictionary<string, string> queryData)
-		{
-			if (queryData.Count == 0)
-				return string.Empty;
-			string result = "?";
-
-			bool addAnd = false;
-			foreach (var kvp in queryData)
-			{
-				if (addAnd)
-					result += "&";
-				result += kvp.Key + "=" + kvp.Value;
-				addAnd = true;
+			//if the lastItem is implicitly wrapped, get the actual ShellContent
+			if (isLastItem) {
+				if (element is ShellItem shellitem && shellitem.Items.FirstOrDefault() is ShellSection section)
+					element = section;
+				if (element is ShellSection shellsection && shellsection.Items.FirstOrDefault() is ShellContent content)
+					element = content;
+				if (element is ShellContent shellcontent && shellcontent.Content is Element e)
+					element = e;
 			}
 
-			return result;
-		}
-
-		static void GetQueryStringData(Element element, bool isLastItem, Dictionary<string, string> result)
-		{
-			string prefix = string.Empty;
-			if (!isLastItem)
+			if (!(element is BaseShellItem baseShellItem))
 			{
-				var route = Routing.GetRoute(element);
-				if (string.IsNullOrEmpty(route) || route.StartsWith(Routing.ImplicitPrefix, StringComparison.Ordinal))
+				baseShellItem = element?.Parent as BaseShellItem;
+				if(baseShellItem == null)
 					return;
-				prefix = route + ".";
 			}
 
-			var type = element.GetType();
-			var typeInfo = type.GetTypeInfo();
-
-#if NETSTANDARD1_0
-			var effectAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
-#else
-			var effectAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
-#endif
-
-			if (effectAttributes.Length == 0)
-				return;
-
-			for (int i = 0; i < effectAttributes.Length; i++)
-			{
-				if (effectAttributes[i] is QueryPropertyAttribute attrib)
-				{
-					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
-
-					if (prop != null && prop.CanRead && prop.GetMethod.IsPublic)
-					{
-						var val = (string)prop.GetValue(element);
-						var key = isLastItem ? prefix + attrib.QueryId : attrib.QueryId;
-						result[key] = val;
-					}
-				}
+			//filter the query to only apply the keys with matching prefix
+			var filteredQuery = new Dictionary<string, string>(query.Count);
+			foreach (var q in query) {
+				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
+					continue;
+				var key = q.Key.Substring(prefix.Length);
+				if (key.Contains("."))
+					continue;
+				filteredQuery.Add(key, q.Value);
 			}
+
+			baseShellItem.ApplyQueryAttributes(filteredQuery);
 		}
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack)
@@ -493,8 +439,6 @@ namespace Xamarin.Forms
 			Dictionary<string, string> queryData = new Dictionary<string, string>();
 
 			bool stackAtRoot = sectionStack == null || sectionStack.Count <= 1;
-
-			GetQueryStringData(this, false, queryData);
 
 			if (shellItem != null)
 			{
@@ -505,8 +449,6 @@ namespace Xamarin.Forms
 					stateBuilder.Append("/");
 				}
 
-				GetQueryStringData(shellItem, shellSection == null, queryData);
-
 				if (shellSection != null)
 				{
 					var shellSectionRoute = shellSection.Route;
@@ -516,8 +458,6 @@ namespace Xamarin.Forms
 						stateBuilder.Append("/");
 					}
 
-					GetQueryStringData(shellSection, shellContent == null && stackAtRoot, queryData);
-
 					if (shellContent != null)
 					{
 						var shellContentRoute = shellContent.Route;
@@ -526,8 +466,6 @@ namespace Xamarin.Forms
 							stateBuilder.Append(shellContentRoute);
 							stateBuilder.Append("/");
 						}
-
-						GetQueryStringData(shellContent, stackAtRoot, queryData);
 					}
 
 					if (!stackAtRoot)
@@ -536,7 +474,6 @@ namespace Xamarin.Forms
 						{
 							var page = sectionStack[i];
 							stateBuilder.Append(Routing.GetRoute(page));
-							GetQueryStringData(page, i == sectionStack.Count - 1, queryData);
 							if (i < sectionStack.Count - 1)
 								stateBuilder.Append("/");
 						}
@@ -544,7 +481,6 @@ namespace Xamarin.Forms
 				}
 			}
 
-			stateBuilder.Append(GenerateQueryString(queryData));
 			return stateBuilder.ToString();
 		}
 
@@ -800,15 +736,12 @@ namespace Xamarin.Forms
 		protected virtual void OnNavigated(ShellNavigatedEventArgs args)
 		{
 			if (_accumulateNavigatedEvents)
-			{
 				_accumulatedEvent = args;
-			}
-			else
-			{
-				if (args.Current.Location.AbsolutePath != _lastNavigating.Location.AbsolutePath)
-				{
-					throw new Exception();
-				}
+			else {
+				/* Removing this check for now as it doesn't properly cover all implicit scenarios
+				 * if (args.Current.Location.AbsolutePath.TrimEnd('/') != _lastNavigating.Location.AbsolutePath.TrimEnd('/'))
+					throw new InvalidOperationException($"Navigation: Current location doesn't match navigation uri {args.Current.Location.AbsolutePath} != {_lastNavigating.Location.AbsolutePath}");
+					*/
 				Navigated?.Invoke(this, args);
 				//System.Diagnostics.Debug.WriteLine("Navigated: " + args.Current.Location);
 			}

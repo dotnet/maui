@@ -10,14 +10,10 @@ namespace Xamarin.Forms.Xaml.UnitTests
 	{
 		public string SomeNullableValue { get; set; } = "initial";
 	}
+
 	public partial class Gh4103 : ContentPage
 	{
-		private string _someNullableValue = "initial";
-
-		public Gh4103()
-		{
-			InitializeComponent();
-		}
+		public Gh4103() => InitializeComponent();
 
 		public Gh4103(bool useCompiledXaml)
 		{

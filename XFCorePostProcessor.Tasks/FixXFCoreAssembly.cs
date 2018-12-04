@@ -36,7 +36,7 @@ namespace XFCorePostProcessor.Tasks
 				var module = assemblyDefinition.MainModule;
 				if(resourceLoader.GetMethods().Count(md=>md.Name == "get_ResourceProvider") > 1) {
 					Log.LogMessage("  already executed");
-					return false;
+					return true;
 				}
 				var methodDef = new MethodDefinition("get_ResourceProvider",
 													 MethodAttributes.Static | MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,

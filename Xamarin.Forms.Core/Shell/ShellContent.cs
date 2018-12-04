@@ -1,6 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+
+#if NETSTANDARD1_0
+using System.Linq;
+#endif
+
+using System.Reflection;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
@@ -8,15 +15,29 @@ namespace Xamarin.Forms
 	[ContentProperty("Content")]
 	public class ShellContent : BaseShellItem, IShellContentController
 	{
-		#region PropertyKeys
-
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
 				defaultValueCreator: bo => new MenuItemCollection());
 
-		#endregion PropertyKeys
+		public static readonly BindableProperty MenuItemsProperty = MenuItemsPropertyKey.BindableProperty;
 
-		#region IShellContentController
+		public static readonly BindableProperty ContentProperty =
+			BindableProperty.Create(nameof(Content), typeof(object), typeof(ShellContent), null, BindingMode.OneTime, propertyChanged: OnContentChanged);
+
+		public static readonly BindableProperty ContentTemplateProperty =
+			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
+
+		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
+
+		public object Content {
+			get => GetValue(ContentProperty);
+			set => SetValue(ContentProperty, value);
+		}
+
+		public DataTemplate ContentTemplate {
+			get => (DataTemplate)GetValue(ContentTemplateProperty);
+			set => SetValue(ContentTemplateProperty, value);
+		}
 
 		Page IShellContentController.Page => ContentCache;
 
@@ -40,6 +61,12 @@ namespace Xamarin.Forms
 			if (result != null && result.Parent != this)
 				OnChildAdded(result);
 
+
+			if (_delayedQueryParams != null && result  != null) {
+				ApplyQueryAttributes(result, _delayedQueryParams);
+				_delayedQueryParams = null;
+			}
+
 			return result;
 		}
 
@@ -52,16 +79,6 @@ namespace Xamarin.Forms
 			}
 		}
 
-		#endregion IShellContentController
-
-		public static readonly BindableProperty ContentProperty =
-			BindableProperty.Create(nameof(Content), typeof(object), typeof(ShellContent), null, BindingMode.OneTime, propertyChanged: OnContentChanged);
-
-		public static readonly BindableProperty ContentTemplateProperty =
-			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
-
-		public static readonly BindableProperty MenuItemsProperty = MenuItemsPropertyKey.BindableProperty;
-
 		Page _contentCache;
 		IList<Element> _logicalChildren = new List<Element>();
 		ReadOnlyCollection<Element> _logicalChildrenReadOnly;
@@ -71,19 +88,7 @@ namespace Xamarin.Forms
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
 		}
 
-		public object Content
-		{
-			get { return GetValue(ContentProperty); }
-			set { SetValue(ContentProperty, value); }
-		}
 
-		public DataTemplate ContentTemplate
-		{
-			get { return (DataTemplate)GetValue(ContentTemplateProperty); }
-			set { SetValue(ContentTemplateProperty, value); }
-		}
-
-		public MenuItemCollection MenuItems => (MenuItemCollection)GetValue(MenuItemsProperty);
 		internal override ReadOnlyCollection<Element> LogicalChildrenInternal => _logicalChildrenReadOnly ?? (_logicalChildrenReadOnly = new ReadOnlyCollection<Element>(_logicalChildren));
 
 		Page ContentCache {
@@ -142,15 +147,53 @@ namespace Xamarin.Forms
 		void MenuItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (e.NewItems != null)
-			{
 				foreach (Element el in e.NewItems)
 					OnChildAdded(el);
-			}
 
 			if (e.OldItems != null)
-			{
 				foreach (Element el in e.OldItems)
 					OnChildRemoved(el);
+		}
+
+		IDictionary<string, string> _delayedQueryParams;
+		internal override void ApplyQueryAttributes(IDictionary<string, string> query)
+		{
+			base.ApplyQueryAttributes(query);
+			ApplyQueryAttributes(this, query);
+
+			if (Content == null) {
+				_delayedQueryParams = query;
+				return;
+			}
+			ApplyQueryAttributes(Content as Page, query);
+		}
+
+		static void ApplyQueryAttributes(object content, IDictionary<string, string> query)
+		{
+			if (content is IQueryAttributable attributable)
+				attributable.ApplyQueryAttributes(query);
+
+			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
+				ApplyQueryAttributes(bindable.BindingContext, query);
+
+			var type = content.GetType();
+			var typeInfo = type.GetTypeInfo();
+#if NETSTANDARD1_0
+			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true).ToArray();
+#else
+			var queryPropertyAttributes = typeInfo.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
+#endif
+
+			if (queryPropertyAttributes.Length == 0)
+				return;
+
+			foreach (QueryPropertyAttribute attrib in queryPropertyAttributes) {
+				if (query.TryGetValue(attrib.QueryId, out var value)) {
+					PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
+
+					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
+						prop.SetValue(content, value);
+				}
 			}
 		}
 	}
