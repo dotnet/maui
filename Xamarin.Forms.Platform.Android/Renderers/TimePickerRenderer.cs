@@ -3,27 +3,17 @@ using System.ComponentModel;
 using Android.App;
 using Android.Content;
 using Android.Util;
-using Android.Widget;
 using Android.Text.Format;
 using ATimePicker = Android.Widget.TimePicker;
-using Object = Java.Lang.Object;
-using AView = Android.Views.View;
 using Android.OS;
-using Android.Views;
-using System.Collections.Generic;
-using Android.Text;
+using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class TimePickerRenderer : ViewRenderer<TimePicker, EditText>, TimePickerDialog.IOnTimeSetListener
+	public class TimePickerRenderer : ViewRenderer<TimePicker, EditText>, TimePickerDialog.IOnTimeSetListener, IPickerRenderer
 	{
 		AlertDialog _dialog;
 		TextColorSwitcher _textColorSwitcher;
-		 
-
-		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
-			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
-		});
 
 		bool Is24HourView
 		{
@@ -57,7 +47,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override EditText CreateNativeControl()
 		{
-			return new EditText(Context) { Focusable = true, Clickable = true, Tag = this };
+			return new PickerEditText(Context, this);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<TimePicker> e)
@@ -68,9 +58,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var textField = CreateNativeControl();
 
-				textField.SetOnClickListener(TimePickerListener.Instance);
-				textField.InputType = InputTypes.Null;
-				textField.KeyPress += TextFieldKeyPress;
 				SetNativeControl(textField);
 
 				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
@@ -83,24 +70,6 @@ namespace Xamarin.Forms.Platform.Android
 
 			if ((int)Build.VERSION.SdkInt > 16)
 				Control.TextAlignment = global::Android.Views.TextAlignment.ViewStart;
-		}
-
-		void TextFieldKeyPress(object sender, KeyEventArgs e)
-		{
-			if (availableKeys.Contains(e.KeyCode))
-			{
-				e.Handled = false;
-				return;
-			}
-			e.Handled = true;
-			OnClick();
-		}
-
-		internal override void OnNativeFocusChanged(bool hasFocus)
-		{
-			base.OnNativeFocusChanged(hasFocus);
-			if (hasFocus)
-				OnClick();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -120,7 +89,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnFocusChangeRequested(sender, e);
 
 			if (e.Focus)
-				OnClick();
+				CallOnClick();
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
@@ -143,7 +112,7 @@ namespace Xamarin.Forms.Platform.Android
 			return dialog;
 		}
 
-		void OnClick()
+		void IPickerRenderer.OnClick()
 		{
 			if (_dialog != null && _dialog.IsShowing)
 			{
@@ -177,20 +146,6 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
-		}
-
-		class TimePickerListener : Object, IOnClickListener
-		{
-			public static readonly TimePickerListener Instance = new TimePickerListener();
-
-			public void OnClick(AView v)
-			{
-				var renderer = v.Tag as TimePickerRenderer;
-				if (renderer == null)
-					return;
-
-				renderer.OnClick();
-			}
 		}
 	}
 }

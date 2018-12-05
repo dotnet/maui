@@ -1,29 +1,19 @@
 using Android.App;
-using Android.Content.Res;
-using Android.Text;
 using Android.Util;
-using Android.Widget;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
-using Object = Java.Lang.Object;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using System.Collections.Generic;
-using Android.Views;
+using Android.Widget;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
-	public class PickerRenderer : ViewRenderer<Picker, EditText>
+	public class PickerRenderer : ViewRenderer<Picker, EditText>, IPickerRenderer
 	{
 		AlertDialog _dialog;
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
-
-		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
-			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
-		});
 
 		public PickerRenderer(Context context) : base(context)
 		{
@@ -38,7 +28,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 
 		protected override EditText CreateNativeControl()
 		{
-			return new EditText(Context);
+			return new PickerEditText(Context, this);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -63,17 +53,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 				((INotifyCollectionChanged)e.NewElement.Items).CollectionChanged += RowsCollectionChanged;
 				if (Control == null)
 				{
-					EditText textField = CreateNativeControl();
-					textField.Focusable = true;
-					textField.Clickable = true;
-					textField.Tag = this;
-					textField.InputType = InputTypes.Null;
-					textField.KeyPress += TextFieldKeyPress;
-					textField.SetOnClickListener(PickerListener.Instance);
+					var textField = CreateNativeControl();
 
 					var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
 					_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
-					
+
 					SetNativeControl(textField);
 				}
 				UpdateFont();
@@ -82,24 +66,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 
 			base.OnElementChanged(e);
-		}
-
-		void TextFieldKeyPress(object sender, KeyEventArgs e)
-		{
-			if (availableKeys.Contains(e.KeyCode))
-			{
-				e.Handled = false;
-				return;
-			}
-			e.Handled = true;
-			OnClick();
-		}
-
-		internal override void OnNativeFocusChanged(bool hasFocus)
-		{
-			base.OnNativeFocusChanged(hasFocus);
-			if (hasFocus)
-				OnClick();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -121,7 +87,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			base.OnFocusChangeRequested(sender, e);
 
 			if (e.Focus)
-				OnClick();
+				CallOnClick();
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
@@ -131,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			}
 		}
 
-		void OnClick()
+		void IPickerRenderer.OnClick()
 		{
 			Picker model = Element;
 			if (_dialog == null)
@@ -143,7 +109,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					builder.SetItems(items, (s, e) => ((IElementController)model).SetValueFromRenderer(Picker.SelectedIndexProperty, e.Which));
 
 					builder.SetNegativeButton(global::Android.Resource.String.Cancel, (o, args) => { });
-					
+
 					((IElementController)Element).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
 					_dialog = builder.Create();
@@ -184,21 +150,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
-		}
-
-		class PickerListener : Object, IOnClickListener
-		{
-			#region Statics
-
-			public static readonly PickerListener Instance = new PickerListener();
-
-			#endregion
-
-			public void OnClick(global::Android.Views.View v)
-			{
-				var renderer = v.Tag as PickerRenderer;
-				renderer?.OnClick();
-			}
 		}
 	}
 }

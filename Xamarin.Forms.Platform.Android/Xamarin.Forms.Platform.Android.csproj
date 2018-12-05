@@ -114,6 +114,8 @@
     <Compile Include="IBorderVisualElementRenderer.cs" />
     <Compile Include="IDeviceInfoProvider.cs" />
     <Compile Include="ITabStop.cs" />
+    <Compile Include="IPickerRenderer.cs" />
+    <Compile Include="Renderers\PickerEditText.cs" />
     <Compile Include="Renderers\FormsWebViewClient.cs" />
     <Compile Include="Renderers\IImageViewHandler.cs" />
     <Compile Include="InnerGestureListener.cs" />

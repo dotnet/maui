@@ -533,6 +533,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue1236.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1259.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1267.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue4187.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1305.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1329.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue1384.cs" />
