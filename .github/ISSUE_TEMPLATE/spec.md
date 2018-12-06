@@ -1,6 +1,9 @@
 ---
 name: Spec
 about: An official specification for enhancements
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
