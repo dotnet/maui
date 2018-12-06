@@ -178,27 +178,6 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void TestBindingAsElement ()
-		{
-			var xaml = @"
-			<Label 
-			xmlns=""http://xamarin.com/schemas/2014/forms"">
-				<Label.Text>
-					<Binding Path=""labeltext""/>
-				</Label.Text>
-			</Label>";
-
-			var label = new Label ();
-			label.LoadFromXaml (xaml);
-
-			Assert.AreEqual (Label.TextProperty.DefaultValue, label.Text);
-
-			label.BindingContext = new {labeltext="Foo"};
-			Assert.AreEqual ("Foo", label.Text);
-
-		}
-
-		[Test]
 		public void TestSetBindingToNonBindablePropertyShouldThrow ()
 		{
 			var xaml = @"
