@@ -162,8 +162,6 @@ namespace Xamarin.Forms
 
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(Shell), null, defaultValueCreator: bo => new MenuItemCollection());
-			
-#region IShellController
 
 		List<(IAppearanceObserver Observer, Element Pivot)> _appearanceObservers = new List<(IAppearanceObserver Observer, Element Pivot)>();
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
@@ -324,9 +322,7 @@ namespace Xamarin.Forms
 			OnNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 		}
 
-#endregion IShellController
-
-#region URI Navigation
+		public static Shell CurrentShell => Application.Current?.MainPage as Shell;
 
 		public async Task GoToAsync(ShellNavigationState state, bool animate = true)
 		{
@@ -483,8 +479,6 @@ namespace Xamarin.Forms
 
 			return stateBuilder.ToString();
 		}
-
-#endregion URI Navigation
 
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
