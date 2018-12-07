@@ -60,7 +60,8 @@ namespace Xamarin.Forms.Platform.Android
 		void OnUpdate(object sender, ValueAnimator.AnimatorUpdateEventArgs e)
 		{
 			_progress = (float)e.Animation.AnimatedValue;
-			InvalidateSelf();
+			if (!this.IsDisposed())
+				InvalidateSelf();
 		}
 	}
 }

@@ -138,7 +138,8 @@ namespace Xamarin.Forms.Platform.Android
 					void clickCallback(object s, EventArgs e)
 					{
 						selectCallback(shellContent, bottomSheetDialog);
-						innerLayout.Click -= clickCallback;
+						if (!innerLayout.IsDisposed())
+							innerLayout.Click -= clickCallback;
 					}
 					innerLayout.Click += clickCallback;
 
