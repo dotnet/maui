@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Controls
 			var layout = new StackLayout ();
 
 			foreach (var keyboardType in keyboardTypes) {
-				var viewContainer = new ViewContainer<Entry> (Test.Entry.Keyboard, new Entry { Placeholder = keyboardType.ToString (), Keyboard = keyboardType } );
+				var viewContainer = new ViewContainer<Entry> (Test.InputView.Keyboard, new Entry { Placeholder = keyboardType.ToString (), Keyboard = keyboardType } );
 				layout.Children.Add (viewContainer.ContainerLayout);
 			}
 
@@ -40,7 +40,7 @@ namespace Xamarin.Forms.Controls
 			};
 
 			foreach (var customKeyboard in customKeyboards) {
-				var viewContainer = new ViewContainer<Entry> (Test.Entry.Keyboard, new Entry { Placeholder = customKeyboard.Item1, Keyboard = customKeyboard.Item2 } );
+				var viewContainer = new ViewContainer<Entry> (Test.InputView.Keyboard, new Entry { Placeholder = customKeyboard.Item1, Keyboard = customKeyboard.Item2 } );
 				layout.Children.Add (viewContainer.ContainerLayout);
 			}
 

@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
@@ -18,6 +20,8 @@ namespace Xamarin.Forms.Platform.iOS
 		string _typedText;
 		bool _useLegacyColorManagement;
 
+		UIToolbar _numericAccessoryView;
+
 		IElementController ElementController => Element as IElementController;
 
 		protected override void Dispose(bool disposing)
@@ -29,6 +33,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.CancelButtonClicked -= OnCancelClicked;
 					Control.SearchButtonClicked -= OnSearchButtonClicked;
 					Control.TextChanged -= OnTextChanged;
+					Control.ShouldChangeTextInRange -= ShouldChangeText;
 
 					Control.OnEditingStarted -= OnEditingEnded;
 					Control.OnEditingStopped -= OnEditingStarted;
@@ -59,6 +64,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.CancelButtonClicked += OnCancelClicked;
 					Control.SearchButtonClicked += OnSearchButtonClicked;
 					Control.TextChanged += OnTextChanged;
+					Control.ShouldChangeTextInRange += ShouldChangeText;
 
 					Control.OnEditingStarted += OnEditingStarted;
 					Control.OnEditingStopped += OnEditingEnded;
@@ -71,6 +77,8 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateCancelButton();
 				UpdateAlignment();
 				UpdateTextColor();
+				UpdateMaxLength();
+				UpdateKeyboard();
 			}
 
 			base.OnElementChanged(e);
@@ -104,6 +112,12 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateAlignment();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if(e.PropertyName == Xamarin.Forms.InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
+			else if(e.PropertyName == Xamarin.Forms.InputView.KeyboardProperty.PropertyName)
+				UpdateKeyboard();
+			else if(e.PropertyName == Xamarin.Forms.InputView.IsSpellCheckEnabledProperty.PropertyName)
+				UpdateKeyboard();
 		}
 
 		protected override void SetBackgroundColor(Color color)
@@ -293,6 +307,61 @@ namespace Xamarin.Forms.Platform.iOS
 			{
 				_textField.TextColor = targetColor.IsDefault ? _defaultTextColor : targetColor.ToUIColor();
 			}
+		}
+
+		void UpdateMaxLength()
+		{
+			var currentControlText = Control.Text;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.Text = currentControlText.Substring(0, Element.MaxLength);
+		}
+
+		bool ShouldChangeText(UISearchBar searchBar, NSRange range, string text)
+		{
+			var newLength = searchBar?.Text?.Length + text.Length - range.Length;
+			return newLength <= Element?.MaxLength;
+		}
+
+		void UpdateKeyboard()
+		{
+			var keyboard = Element.Keyboard;
+			Control.ApplyKeyboard(keyboard);
+			if (!(keyboard is Internals.CustomKeyboard))
+			{
+				if (Element.IsSet(Xamarin.Forms.InputView.IsSpellCheckEnabledProperty))
+				{
+					if (!Element.IsSpellCheckEnabled)
+					{
+						Control.SpellCheckingType = UITextSpellCheckingType.No;
+					}
+				}
+			}
+
+			// iPhone does not have an enter key on numeric keyboards
+			if (Device.Idiom == TargetIdiom.Phone && (keyboard == Keyboard.Numeric || keyboard == Keyboard.Telephone))
+			{
+				_numericAccessoryView = _numericAccessoryView ?? CreateNumericKeyboardAccessoryView();
+				Control.InputAccessoryView = _numericAccessoryView;
+			}
+			else
+			{
+				Control.InputAccessoryView = null;
+			}
+
+			Control.ReloadInputViews();
+		}
+
+		UIToolbar CreateNumericKeyboardAccessoryView()
+		{
+			var keyboardWidth = UIScreen.MainScreen.Bounds.Width;
+			var accessoryView = new UIToolbar(new CGRect(0, 0, keyboardWidth, 44)) { BarStyle = UIBarStyle.Default, Translucent = true };
+
+			var spacer = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace);
+			var searchButton = new UIBarButtonItem(UIBarButtonSystemItem.Search, OnSearchButtonClicked);
+			accessoryView.SetItems(new[] { spacer, searchButton }, false);
+
+			return accessoryView;
 		}
 	}
 }

@@ -35,7 +35,10 @@ namespace Xamarin.Forms.Controls
 			var textColorDisabledContainer = new ViewContainer<Editor>(Test.Editor.TextColor,
 				new Editor { Text = "I should have the default disabled text color", TextColor = Color.Red, IsEnabled = false });
 
-			var maxLengthContainer = new ViewContainer<Editor>(Test.Editor.MaxLength, new Editor { MaxLength = 3 });
+			var keyboardContainer = new ViewContainer<Editor>(Test.InputView.Keyboard,
+				new Editor { Keyboard = Keyboard.Numeric });
+
+			var maxLengthContainer = new ViewContainer<Editor>(Test.InputView.MaxLength, new Editor { MaxLength = 3 });
 
 			Add(completedContainer);
 			Add(textContainer);
@@ -49,6 +52,7 @@ namespace Xamarin.Forms.Controls
 			Add(textFontSizeLargeContainer);
 			Add(textColorContainer);
 			Add(textColorDisabledContainer);
+			Add(keyboardContainer);
 			Add(maxLengthContainer);
 		}
 	}

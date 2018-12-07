@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Android.Content;
@@ -6,6 +7,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Text;
+using Android.Text.Method;
 using Android.Util;
 using Android.Widget;
 using AView = Android.Views.View;
@@ -74,16 +76,8 @@ namespace Xamarin.Forms.Platform.Android
 
 			}
 
-			BuildVersionCodes androidVersion = Build.VERSION.SdkInt;
-			if (androidVersion >= BuildVersionCodes.JellyBean)
-				_inputType = searchView.InputType;
-			else
-			{
-				// < API 16, Cannot get the default InputType for a SearchView
-				_inputType = InputTypes.ClassText | InputTypes.TextFlagAutoComplete | InputTypes.TextFlagNoSuggestions;
-			}
-
 			ClearFocus(searchView);
+			UpdateInputType();
 			UpdatePlaceholder();
 			UpdateText();
 			UpdateEnabled();
@@ -92,6 +86,7 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateAlignment();
 			UpdateTextColor();
 			UpdatePlaceholderColor();
+			UpdateMaxLength();
 
 			if (e.OldElement == null)
 			{
@@ -126,6 +121,12 @@ namespace Xamarin.Forms.Platform.Android
 				UpdatePlaceholderColor();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
+			else if (e.PropertyName == InputView.MaxLengthProperty.PropertyName)
+				UpdateMaxLength();
+			else if(e.PropertyName == InputView.KeyboardProperty.PropertyName)
+				UpdateInputType();
+			else if(e.PropertyName == InputView.IsSpellCheckEnabledProperty.PropertyName)
+				UpdateInputType();
 		}
 
 		internal override void OnNativeFocusChanged(bool hasFocus)
@@ -222,6 +223,66 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(_editText, Element.TextColor);
+		}
+
+		void UpdateMaxLength()
+		{
+			_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			var currentFilters = new List<IInputFilter>(_editText?.GetFilters() ?? new IInputFilter[0]);
+
+			for (var i = 0; i < currentFilters.Count; i++)
+			{
+				if (currentFilters[i] is InputFilterLengthFilter)
+				{
+					currentFilters.RemoveAt(i);
+					break;
+				}
+			}
+
+			currentFilters.Add(new InputFilterLengthFilter(Element.MaxLength));
+
+			_editText?.SetFilters(currentFilters.ToArray());
+
+			var currentControlText = Control.Query;
+
+			if (currentControlText.Length > Element.MaxLength)
+				Control.SetQuery(currentControlText.Substring(0, Element.MaxLength), false);
+		}
+
+		void UpdateInputType()
+		{
+			SearchBar model = Element;
+			var keyboard = model.Keyboard;
+
+			_inputType = keyboard.ToInputType();
+			if (!(keyboard is Internals.CustomKeyboard))
+			{
+				if (model.IsSet(InputView.IsSpellCheckEnabledProperty))
+				{
+					if ((_inputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					{
+						if (!model.IsSpellCheckEnabled)
+							_inputType = _inputType | InputTypes.TextFlagNoSuggestions;
+					}
+				}
+			}
+			Control.SetInputType(_inputType);
+
+			if (keyboard == Keyboard.Numeric)
+			{
+				_editText = _editText ?? Control.GetChildrenOfType<EditText>().FirstOrDefault();
+				if(_editText != null)
+					_editText.KeyListener = GetDigitsKeyListener(_inputType);
+			}
+		}
+
+		protected virtual NumberKeyListener GetDigitsKeyListener(InputTypes inputTypes)
+		{
+			// Override this in a custom renderer to use a different NumberKeyListener
+			// or to filter out input types you don't want to allow
+			// (e.g., inputTypes &= ~InputTypes.NumberFlagSigned to disallow the sign)
+			return LocalizedDigitsKeyListener.Create(inputTypes);
 		}
 	}
 }

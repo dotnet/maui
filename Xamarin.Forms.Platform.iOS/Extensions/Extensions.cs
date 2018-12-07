@@ -5,7 +5,7 @@ namespace Xamarin.Forms.Platform.iOS
 {
 	public static class Extensions
 	{
-		public static void ApplyKeyboard(this IUITextInput textInput, Keyboard keyboard)
+		public static void ApplyKeyboard(this IUITextInputTraits textInput, Keyboard keyboard)
 		{
 			textInput.AutocapitalizationType = UITextAutocapitalizationType.None;
 			textInput.AutocorrectionType = UITextAutocorrectionType.No;

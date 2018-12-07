@@ -64,6 +64,13 @@ namespace Xamarin.Forms.Controls
 
 			var placeholderColorContainer = new ViewContainer<SearchBar> (Test.SearchBar.PlaceholderColor,
 				new SearchBar { Placeholder = "I should be red", PlaceholderColor = Color.Red });
+
+			var keyboardContainer = new ViewContainer<SearchBar>(Test.InputView.Keyboard,
+				new SearchBar { Keyboard = Keyboard.Numeric });
+
+			var maxLengthContainer = new ViewContainer<SearchBar>(Test.InputView.MaxLength, 
+				new SearchBar { MaxLength = 3 });
+
 			Add (placeholderContainer);
 			Add (searchButtonPressedContainer);
 			Add (searchCommandContainer);
@@ -84,6 +91,8 @@ namespace Xamarin.Forms.Controls
 			Add (placeholderAlignmentEndContainer);
 			Add (textColorContainer);
 			Add (placeholderColorContainer);
+			Add (keyboardContainer);
+			Add (maxLengthContainer);
 		}
 	}
 }

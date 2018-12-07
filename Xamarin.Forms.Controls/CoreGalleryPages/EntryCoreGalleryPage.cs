@@ -64,7 +64,7 @@ namespace Xamarin.Forms.Controls
 			var passwordColorContainer = new ViewContainer<Entry> (Test.Entry.PasswordColor,
 				new Entry { IsPassword = true, Text = "12345", TextColor = Color.Red });
 
-			var maxLengthContainer = new ViewContainer<Entry>(Test.Entry.MaxLength,	new Entry { MaxLength = 3 });
+			var maxLengthContainer = new ViewContainer<Entry>(Test.InputView.MaxLength,	new Entry { MaxLength = 3 });
 
 			var isPasswordInputScopeContainer = new ViewContainer<Entry>(Test.Entry.IsPasswordNumeric,	new Entry { Keyboard = Keyboard.Numeric });
 			var switchPasswordButton = new Button
