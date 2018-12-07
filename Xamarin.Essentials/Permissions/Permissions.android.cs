@@ -101,6 +101,9 @@ namespace Xamarin.Essentials
             if (!doRequest)
                 return await tcs.Task;
 
+            if (!MainThread.IsMainThread)
+                throw new PermissionException("Permission request must be invoked on main thread.");
+
             var androidPermissions = permission.ToAndroidPermissions(onlyRuntimePermissions: true).ToArray();
 
             ActivityCompat.RequestPermissions(Platform.GetCurrentActivity(true), androidPermissions, requestCode);

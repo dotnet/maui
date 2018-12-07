@@ -51,6 +51,9 @@ namespace Xamarin.Essentials
 
         static async Task<PermissionStatus> CheckLocationAsync()
         {
+            if (!MainThread.IsMainThread)
+                throw new PermissionException("Permission request must be invoked on main thread.");
+
             var accessStatus = await Geolocator.RequestAccessAsync();
             switch (accessStatus)
             {

@@ -42,6 +42,10 @@ namespace Xamarin.Essentials
             switch (permission)
             {
                 case PermissionType.LocationWhenInUse:
+
+                    if (!MainThread.IsMainThread)
+                        throw new PermissionException("Permission request must be invoked on main thread.");
+
                     return await RequestLocationAsync();
                 default:
                     return PermissionStatus.Granted;
