@@ -8,7 +8,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms
 {
-	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController
+	public abstract class Cell : Element, ICellController, IElementConfiguration<Cell>, IFlowDirectionController, IPropertyPropagationController, IVisualController
 	{
 		public const int DefaultCellHeight = 40;
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
@@ -18,6 +18,13 @@ namespace Xamarin.Forms
 		double _height = -1;
 
 		bool _nextCallToForceUpdateSizeQueued;
+
+		readonly Lazy<PlatformConfigurationRegistry<Cell>> _platformConfigurationRegistry;
+
+		public Cell()
+		{
+			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Cell>>(() => new PlatformConfigurationRegistry<Cell>(this));
+		}
 
 		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);
 		EffectiveFlowDirection IFlowDirectionController.EffectiveFlowDirection
@@ -118,6 +125,11 @@ namespace Xamarin.Forms
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler ForceUpdateSizeRequested;
+
+		public IPlatformElementConfiguration<T, Cell> On<T>() where T : IConfigPlatform
+		{
+			return _platformConfigurationRegistry.Value.On<T>();
+		}
 
 		public void ForceUpdateSize()
 		{

@@ -1,6 +1,7 @@
 using System;
 using UIKit;
 using Xamarin.Forms.Internals;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Xamarin.Forms.Platform.iOS
 {
@@ -55,22 +56,30 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected void UpdateBackground(UITableViewCell tableViewCell, Cell cell)
 		{
-			if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+			var uiBgColor = UIColor.White; // Must be set to a solid color or blending issues will occur
+
+			var  defaultBgColor = cell.OnThisPlatform().DefaultBackgroundColor();
+			if (defaultBgColor != Color.Default)
 			{
-				if (UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
-					SetBackgroundColor(tableViewCell, cell, new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1));
+				uiBgColor = defaultBgColor.ToUIColor();
 			}
 			else
 			{
-				// Must be set to a solid color or blending issues will occur
-				var bgColor = UIColor.White;
+				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
+				{
+					if (!UIDevice.CurrentDevice.CheckSystemVersion(7, 0))
+						return;
 
-				var element = cell.RealParent as VisualElement;
-				if (element != null)
-					bgColor = element.BackgroundColor == Color.Default ? bgColor : element.BackgroundColor.ToUIColor();
-
-				SetBackgroundColor(tableViewCell, cell, bgColor);
+					uiBgColor = new UIColor(247f / 255f, 247f / 255f, 247f / 255f, 1);
+				}
+				else
+				{
+					if (cell.RealParent is VisualElement element && element.BackgroundColor != Color.Default)
+						uiBgColor = element.BackgroundColor.ToUIColor();
+				}
 			}
+
+			SetBackgroundColor(tableViewCell, cell, uiBgColor);
 		}
 
 		protected void WireUpForceUpdateSizeRequested(ICellController cell, UITableViewCell nativeCell, UITableView tableView)
