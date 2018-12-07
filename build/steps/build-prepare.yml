@@ -1,6 +1,5 @@
 steps:
   - powershell: |
-       Write-Host "Finding the right branch"
        $sourceBranchName = "" + $env:BUILD_SOURCEBRANCHNAME
        $sourceBranch = "" + $env:BUILD_SOURCEBRANCH
        $sourceVersion = "" + $env:BUILD_SOURCEVERSION
@@ -25,13 +24,14 @@ steps:
        }
     displayName: 'Set Build Number'
   - powershell: |
-       Write-Host "Finding the right branch"
-       $sourceBranchName =  ""+ $env:BUILD_SOURCEBRANCHNAME
-       $sourceBranch = ""+  $env:BUILD_SOURCEBRANCH
-       $publicTags =  ""+ $env:PUBLICTAGS
+       $sourceBranchName = "" + $env:BUILD_SOURCEBRANCHNAME
+       $sourceBranch = "" + $env:BUILD_SOURCEBRANCH
+       $publicTags = "" + $env:PUBLICTAGS
        $tags = New-Object System.Collections.ArrayList
-       $buildId = ""+ $env:BUILD_BUILDID
-       $sorceV = "" +$env:BUILD_SOURCEVERSION
+       $buildId = "" + $env:BUILD_BUILDID
+       $sorceV = "" + $env:BUILD_SOURCEVERSION
+       $sign = "" + $env:SIGN
+       $reason = "" + $env:BUILD_REASON
 
        echo $sorceV
        echo $sourceBranchName
@@ -67,22 +67,36 @@ steps:
                }
            }
        }
+       if($reason -eq "Schedule")
+        {
+            $tags.Add("nightly-release")
+        }
        #Tag this build
        #check PublicTags also add them to the tag list
        foreach($publicTag in $publicTags.Split(';'))
        {
-           if($publicTag){
-               $tags.Add($publicTag);
-           }
+            if($publicTag){
+                $tags.Add($publicTag);
+            }
        }
 
        #Add tags to the VSTS Build
        foreach ($tag in $tags) {
-          Write-Host "##vso[build.addbuildtag]$tag"
+            if($tag -eq "public-release")
+            {
+                $sign = 'true'
+            }
+            if($tag -eq "nightly-release")
+            {
+                $sign = 'true'
+            }
+            Write-Host "##vso[build.addbuildtag]$tag"
        }
-
+       Write-Host "Sign: $sign"
        $publicTags = $tags -join ';'
        Write-Host "##vso[task.setvariable variable=publictags;isOutput=true;]$publicTags"
+       Write-Host "##vso[task.setvariable variable=sign;isOutput=true]$sign"
 
 
-    displayName: 'Tag and name build copy'
+    displayName: 'Tag and name build'
+    name: prepare
