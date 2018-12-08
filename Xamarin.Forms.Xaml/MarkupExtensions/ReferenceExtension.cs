@@ -4,7 +4,7 @@ using Xamarin.Forms.Xaml.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	[ContentProperty("Name")]
+	[ContentProperty(nameof(Name))]
 	public class ReferenceExtension : IMarkupExtension
 	{
 		public string Name { get; set; }

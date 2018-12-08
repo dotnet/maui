@@ -3,7 +3,7 @@ using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Xaml
 {
-	[ContentProperty("Path")]
+	[ContentProperty(nameof(Path))]
 	[AcceptEmptyServiceProvider]
 	public sealed class BindingExtension : IMarkupExtension<BindingBase>
 	{

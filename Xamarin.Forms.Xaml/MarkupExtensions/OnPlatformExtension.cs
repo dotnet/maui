@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
-	[ContentProperty("Default")]
+	[ContentProperty(nameof(Default))]
 	public class OnPlatformExtension : IMarkupExtension
 	{
 		public object Default { get; set; }

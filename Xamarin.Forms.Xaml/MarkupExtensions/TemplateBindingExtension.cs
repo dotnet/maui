@@ -2,7 +2,7 @@ using System;
 
 namespace Xamarin.Forms.Xaml
 {
-	[ContentProperty("Path")]
+	[ContentProperty(nameof(Path))]
 	[AcceptEmptyServiceProvider]
 	public sealed class TemplateBindingExtension : IMarkupExtension<BindingBase>
 	{
