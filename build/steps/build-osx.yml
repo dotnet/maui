@@ -1,8 +1,10 @@
 steps:
   - checkout: self
     submodules: true
+
   - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
     displayName: 'Add QA cert password to keychain'
+    condition: eq(variables['provisioningSign'], 'true')
     inputs:
       type: InlineScript
       script: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh keychain set pb_dev_iphone.p12 $(.p12.Password)'
@@ -10,9 +12,17 @@ steps:
 
   - bash: '$(Build.Repository.LocalPath)/$(ProvisionatorExecutablePath) keychain set github.com $(GitHub.Token) || echo "PAT already set"'
     displayName: 'Initialize PAT'
+    condition: eq(variables['provisioningSign'], 'true')
 
-  - bash: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning.csx -v'
+
+  - bash: '$(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisionator.sh $(Build.Repository.LocalPath)/Xamarin.Forms.Build/provisioning_sign.csx -v'
     displayName: Provisioning
+    condition: eq(variables['provisioningSign'], 'true')
+    env:
+      APPLECODESIGNIDENTITY: $(AppleCodesignIdentity)
+      APPLECODESIGNIDENTITYURL: $(AppleCodesignIdentityUrl)
+      APPLECODESIGNPROFILEURL: $(AppleCodesignProfileUrl)
+
 
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 4.8.1'
@@ -38,7 +48,6 @@ steps:
     inputs:
       solutionFile: Xamarin.Forms.sln
       configuration: '$(BuildConfiguration)'
-      runNugetRestore: true
 
 
   - task: MSBuild@1
@@ -111,6 +120,7 @@ steps:
       Contents: |
        **/$(IpaName)
        Xamarin.Forms.Core.iOS.UITests/bin/$(BuildConfiguration)/**
+
       TargetFolder: '$(build.artifactstagingdirectory)/ios'
       CleanTargetFolder: true
       flattenFolders: true

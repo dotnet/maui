@@ -148,6 +148,8 @@
     <Compile Include="Material\MaterialButtonRenderer.cs" />
     <Compile Include="Material\MaterialEntryRenderer.cs" />
     <Compile Include="Material\MaterialProgressBarRenderer.cs" />
+    <Compile Include="IPickerRenderer.cs" />
+    <Compile Include="Renderers\PickerEditText.cs" />
     <Compile Include="Renderers\FormsWebViewClient.cs" />
     <Compile Include="Renderers\IImageViewHandler.cs" />
     <Compile Include="InnerGestureListener.cs" />
@@ -308,7 +310,7 @@
     <Compile Include="Resources\Resource.Designer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

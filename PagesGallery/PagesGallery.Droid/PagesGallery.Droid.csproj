@@ -375,11 +375,6 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <PropertyGroup>
-    <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">..\..\.nuspec\netstandard2.0\</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">..\..\.nuspec\net461\</__XFBuildTasksLocation>
-  </PropertyGroup>
   <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true' AND Exists('$(__XFBuildTasksLocation)Xamarin.Forms.Build.Tasks.dll')" />
   <Import Project="..\..\.nuspec\Xamarin.Forms.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true'" />
 </Project>

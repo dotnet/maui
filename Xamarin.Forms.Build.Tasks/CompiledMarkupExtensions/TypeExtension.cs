@@ -10,7 +10,6 @@ using Xamarin.Forms.Xaml;
 using static Mono.Cecil.Cil.Instruction;
 using static Mono.Cecil.Cil.OpCodes;
 
-
 namespace Xamarin.Forms.Build.Tasks
 {
 	class TypeExtension : ICompiledMarkupExtension
@@ -18,14 +17,12 @@ namespace Xamarin.Forms.Build.Tasks
 		public IEnumerable<Instruction> ProvideValue(IElementNode node, ModuleDefinition module, ILContext context, out TypeReference memberRef)
 		{
 			memberRef = module.ImportReference(("mscorlib", "System", "Type"));
-			INode typeNameNode;
-
 			var name = new XmlName("", "TypeName");
-			if (!node.Properties.TryGetValue(name, out typeNameNode) && node.CollectionItems.Any())
+
+			if (!node.Properties.TryGetValue(name, out INode typeNameNode) && node.CollectionItems.Any())
 				typeNameNode = node.CollectionItems[0];
 
-			var valueNode = typeNameNode as ValueNode;
-			if (valueNode == null)
+			if (!(typeNameNode is ValueNode valueNode))
 				throw new XamlParseException("TypeName isn't set.", node as XmlLineInfo);
 
 			if (!node.Properties.ContainsKey(name)) {

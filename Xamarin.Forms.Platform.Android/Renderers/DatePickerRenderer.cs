@@ -1,28 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using Android.App;
 using Android.Content;
-using Android.Content.Res;
-using Android.Text;
 using Android.Util;
-using Android.Views;
 using Android.Widget;
-using Xamarin.Forms.PlatformConfiguration.AndroidSpecific;
-using AView = Android.Views.View;
-using Object = Java.Lang.Object;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class DatePickerRenderer : ViewRenderer<DatePicker, EditText>
+	public class DatePickerRenderer : ViewRenderer<DatePicker, EditText>, IPickerRenderer
 	{
 		DatePickerDialog _dialog;
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
-
-		HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
-			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
-		});
 
 		public DatePickerRenderer(Context context) : base(context)
 		{
@@ -62,7 +51,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		protected override EditText CreateNativeControl()
 		{
-			return new EditText(Context) { Focusable = true, Clickable = true, Tag = this };
+			return new PickerEditText(Context, this);
 		}
 
 		protected override void OnElementChanged(ElementChangedEventArgs<DatePicker> e)
@@ -73,9 +62,6 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var textField = CreateNativeControl();
 
-				textField.SetOnClickListener(TextFieldClickHandler.Instance);
-				textField.InputType = InputTypes.Null;
-				textField.KeyPress += TextFieldKeyPress;
 				SetNativeControl(textField);
 
 				var useLegacyColorManagement = e.NewElement.UseLegacyColorManagement();
@@ -88,24 +74,6 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateMinimumDate();
 			UpdateMaximumDate();
 			UpdateTextColor();
-		}
-
-		void TextFieldKeyPress(object sender, KeyEventArgs e)
-		{
-			if (availableKeys.Contains(e.KeyCode))
-			{
-				e.Handled = false;
-				return;
-			}
-			e.Handled = true;
-			OnTextFieldClicked();
-		}
-
-		internal override void OnNativeFocusChanged(bool hasFocus)
-		{
-			base.OnNativeFocusChanged(hasFocus);
-			if (hasFocus)
-				OnTextFieldClicked();
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -129,7 +97,7 @@ namespace Xamarin.Forms.Platform.Android
 			base.OnFocusChangeRequested(sender, e);
 
 			if (e.Focus)
-				OnTextFieldClicked();
+				CallOnClick();
 			else if (_dialog != null)
 			{
 				_dialog.Hide();
@@ -170,7 +138,7 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
-		void OnTextFieldClicked()
+		void IPickerRenderer.OnClick()
 		{
 			if (_dialog != null && _dialog.IsShowing)
 			{
@@ -231,16 +199,6 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdateTextColor()
 		{
 			_textColorSwitcher?.UpdateTextColor(Control, Element.TextColor);
-		}
-
-		class TextFieldClickHandler : Object, IOnClickListener
-		{
-			public static readonly TextFieldClickHandler Instance = new TextFieldClickHandler();
-
-			public void OnClick(AView v)
-			{
-				((DatePickerRenderer)v.Tag).OnTextFieldClicked();
-			}
 		}
 	}
 }

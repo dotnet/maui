@@ -14,15 +14,10 @@ steps:
       displayName: 'Build solution Xamarin.Forms.sln'
       inputs:
         solution: Xamarin.Forms.sln
-
         msbuildVersion: 15.0
-
         platform: '$(BuildPlatform)'
-
         configuration: '$(BuildConfiguration)'
-
         msbuildArguments: '/nowarn:VSX1000 /p:CreateAllAndroidTargets=true'
-
         clean: true
 
 
@@ -122,13 +117,9 @@ steps:
       displayName: 'Copy files test adapter'
       inputs:
         Contents: '**/NUnitTestAdapter.*/tools/*.dll'
-
         TargetFolder: '$(Build.ArtifactStagingDirectory)/testadapter'
-
         CleanTargetFolder: true
-
         OverWrite: true
-
         flattenFolders: true
 
 

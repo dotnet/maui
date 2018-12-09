@@ -120,10 +120,14 @@ echo foo > Xamarin.Forms.Platform.UAP\bin\debug\MasterDetailControlStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\PageControlStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\TabbedPageStyle.xbf
 echo foo > Xamarin.Forms.Platform.UAP\bin\debug\FormsEmbeddedPageWrapper.xbf
+echo foo > Xamarin.Forms.Platform.UAP\bin\debug\StepperControl.xbf
+
+mkdir Xamarin.Forms.Platform.UAP\bin\debug\Items
+echo foo > Xamarin.Forms.Platform.UAP\bin\debug\Items\ItemsViewStyles.xbf
             
 if "%1" == "droid" (
    %NUGET_EXE% restore .xamarin.forms.android.nuget.sln
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.android.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.android.nuget.sln
 )
 if "%1" == "ios" (
    %NUGET_EXE% restore .xamarin.forms.ios.nuget.sln
@@ -143,7 +147,7 @@ if "%1" == "uap" (
 if "%1" == "all" (
    %NUGET_EXE% restore .xamarin.forms.sln
    msbuild /v:m /p:platform="any cpu" .xamarin.forms.uap.nuget.sln /t:restore
-   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 .xamarin.forms.nuget.sln
+   msbuild /v:m /p:platform="any cpu" /p:WarningLevel=0 /p:CreateAllAndroidTargets=true .xamarin.forms.nuget.sln
 )
 
 if "%DEBUG_VERSION%"=="" set DEBUG_VERSION=0

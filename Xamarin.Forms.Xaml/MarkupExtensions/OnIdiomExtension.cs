@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace Xamarin.Forms.Xaml
 {
-	[ContentProperty("Default")]
+	[ContentProperty(nameof(Default))]
 	public class OnIdiomExtension : IMarkupExtension
 	{
 		// See Device.Idiom

@@ -7,6 +7,24 @@ variables:
   value: ''
 - name: Suffix
   value: ''
+- name: major
+  value: 4
+- name: minor
+  value: 0
+- name: patch
+  value: 1
+- name: buildversion
+  value: $[counter('versioncounter', 1000)]
+- name: sign
+  value: 'false'
+- name: provisioning
+  value: 'true'
+- name: AppleCodesignIdentity
+  value: ''
+- name: AppleCodesignIdentityUrl
+  value: ''
+- name: AppleCodesignProfileUrl
+  value: ''
 - group: Xamarin.Forms
 - group: XQA Secrets
 
@@ -14,8 +32,9 @@ trigger:
   branches:
     include:
     - master
-    - 3.4.0
     - 3.3.0
+    - 3.4.0
+    - 3.5.0
   paths:
     exclude:
     - README.md
@@ -76,6 +95,9 @@ jobs:
       - sh
       - msbuild
       - Xamarin.iOS
+  variables:
+    provisioningOSX : true
+    provisioningSign : $(provisioning)
   steps:
      - template: build/steps/build-osx.yml
 
@@ -95,9 +117,11 @@ jobs:
 - job: Phase_6
   displayName: Sign Phase
   dependsOn: Phase_5
-  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'],'refs/tags/')))
+  condition: and(succeeded(), eq(dependencies.Phase_1.outputs['prepare.sign'], 'true'))
   pool:
     name: VSEng-Xamarin-Forms
+  variables:
+    sign: $[dependencies.Phase_1.outputs['prepare.sign']]
   steps:
      - template: build/steps/build-sign.yml
 
