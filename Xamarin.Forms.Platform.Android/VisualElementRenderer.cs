@@ -166,6 +166,10 @@ namespace Xamarin.Forms.Platform.Android
 				control = (renderer as ITabStop)?.TabStop;
 			} while (!(control?.Focusable == true || ++attempt >= maxAttempts));
 
+			// when the user focuses on picker show a popup dialog
+			if (control is PickerEditText picker)
+				picker.FromFocusSearch = true;
+
 			return control;
 		}
 

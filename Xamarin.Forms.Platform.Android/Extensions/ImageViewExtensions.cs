@@ -24,13 +24,13 @@ namespace Xamarin.Forms.Platform.Android
 		{
 
 			IImageController imageController = newView as IImageController;
-			newImageSource = newView?.Source;
-			previousImageSource = previousView?.Source;
+			newImageSource = newImageSource ?? newView?.Source;
+			previousImageSource = previousImageSource ?? previousView?.Source;
 
-			if (newImageSource == null || imageView.IsDisposed())
+			if (imageView.IsDisposed())
 				return;
 
-			if (Equals(previousImageSource, newImageSource))
+			if (newImageSource != null && Equals(previousImageSource, newImageSource))
 				return;
 
 			imageController?.SetIsLoading(true);
