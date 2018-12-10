@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <__XFBuildTasksLocation>$(_XFBuildTasksLocation)</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">.nuspec\netstandard2.0\</__XFBuildTasksLocation>
-    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">.nuspec\net46\</__XFBuildTasksLocation>
+    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == '' AND '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory).nuspec\netstandard2.0\</__XFBuildTasksLocation>
+    <__XFBuildTasksLocation Condition="'$(__XFBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).nuspec\net46\</__XFBuildTasksLocation>
   </PropertyGroup>
  </Project> 
