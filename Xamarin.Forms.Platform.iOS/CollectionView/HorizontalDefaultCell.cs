@@ -3,13 +3,12 @@ using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	// TODO hartez 2018/09/12 21:43:54 The "List" part of all these cell names needs to go	
-	internal sealed class DefaultHorizontalListCell : DefaultCell
+	internal sealed class HorizontalDefaultCell : DefaultCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.DefaultHorizontalListCell");
+		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.HorizontalDefaultCell");
 
 		[Export("initWithFrame:")]
-		public DefaultHorizontalListCell(CGRect frame) : base(frame)
+		public HorizontalDefaultCell(CGRect frame) : base(frame)
 		{
 			Constraint = Label.HeightAnchor.ConstraintEqualTo(Frame.Height);
 			Constraint.Active = true;

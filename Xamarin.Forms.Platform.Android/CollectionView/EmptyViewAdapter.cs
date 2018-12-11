@@ -47,14 +47,15 @@ namespace Xamarin.Forms.Platform.Android
 				}
 
 				// EmptyView is a Forms View; display that
-				var itemContentControl = new SizedItemContentControl(CreateRenderer(formsView, context), context,
+				var itemContentControl = new SizedItemContentView(CreateRenderer(formsView, context), context,
 					() => parent.Width, () => parent.Height);
 				return new EmptyViewHolder(itemContentControl, formsView);
 			}
 
 			// We have a template, so create a view from it
 			var templateElement = EmptyViewTemplate.CreateContent() as View;
-			var templatedItemContentControl = new SizedItemContentControl(CreateRenderer(templateElement, context), context, () => parent.Width, () => parent.Height);
+			var templatedItemContentControl = new SizedItemContentView(CreateRenderer(templateElement, context), 
+				context, () => parent.Width, () => parent.Height);
 			return new EmptyViewHolder(templatedItemContentControl, templateElement);
 		}
 

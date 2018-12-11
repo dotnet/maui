@@ -5,12 +5,12 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal sealed class TemplatedHorizontalListCell : TemplatedCell
+	internal sealed class HorizontalTemplatedCell : TemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.TemplatedHorizontalListCell");
+		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.HorizontalTemplatedCell");
 
 		[Export("initWithFrame:")]
-		public TemplatedHorizontalListCell(CGRect frame) : base(frame)
+		public HorizontalTemplatedCell(CGRect frame) : base(frame)
 		{
 		}
 

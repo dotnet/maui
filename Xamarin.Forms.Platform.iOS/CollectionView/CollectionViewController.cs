@@ -139,13 +139,13 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_itemsView.ItemTemplate != null)
 			{
 				return _layout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
-					? TemplatedHorizontalListCell.ReuseId
-					: TemplatedVerticalListCell.ReuseId;
+					? HorizontalTemplatedCell.ReuseId
+					: VerticalTemplatedCell.ReuseId;
 			}
 
 			return _layout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
-				? DefaultHorizontalListCell.ReuseId
-				: DefaultVerticalListCell.ReuseId;
+				? HorizontalDefaultCell.ReuseId
+				: VerticalDefaultCell.ReuseId;
 		}
 
 		UICollectionViewCell GetPrototype()
@@ -162,11 +162,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void RegisterCells()
 		{
-			CollectionView.RegisterClassForCell(typeof(DefaultHorizontalListCell), DefaultHorizontalListCell.ReuseId);
-			CollectionView.RegisterClassForCell(typeof(DefaultVerticalListCell), DefaultVerticalListCell.ReuseId);
-			CollectionView.RegisterClassForCell(typeof(TemplatedHorizontalListCell),
-				TemplatedHorizontalListCell.ReuseId);
-			CollectionView.RegisterClassForCell(typeof(TemplatedVerticalListCell), TemplatedVerticalListCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(HorizontalDefaultCell), HorizontalDefaultCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(VerticalDefaultCell), VerticalDefaultCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(HorizontalTemplatedCell),
+				HorizontalTemplatedCell.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(VerticalTemplatedCell), VerticalTemplatedCell.ReuseId);
 		}
 	}
 }

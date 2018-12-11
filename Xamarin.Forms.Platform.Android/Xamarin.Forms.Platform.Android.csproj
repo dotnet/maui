@@ -82,7 +82,7 @@
     <Compile Include="CollectionView\EdgeSnapHelper.cs" />
     <Compile Include="CollectionView\EndSnapHelper.cs" />
     <Compile Include="CollectionView\IItemsViewSource.cs" />
-    <Compile Include="CollectionView\ItemContentControl.cs" />
+    <Compile Include="CollectionView\ItemContentView.cs" />
     <Compile Include="CollectionView\ItemsSourceFactory.cs" />
     <Compile Include="CollectionView\ItemsViewRenderer.cs" />
     <Compile Include="CollectionView\ListSource.cs" />
@@ -90,7 +90,7 @@
     <Compile Include="CollectionView\PositionalSmoothScroller.cs" />
     <Compile Include="CollectionView\PropertyChangedEventArgsExtensions.cs" />
     <Compile Include="CollectionView\ScrollHelper.cs" />
-    <Compile Include="CollectionView\SizedItemContentControl.cs" />
+    <Compile Include="CollectionView\SizedItemContentView.cs" />
     <Compile Include="CollectionView\SnapManager.cs" />
     <Compile Include="CollectionView\StartPagerSnapHelper.cs" />
     <Compile Include="CollectionView\StartSnapHelper.cs" />

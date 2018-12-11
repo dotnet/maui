@@ -16,23 +16,20 @@ namespace Xamarin.Forms.Platform.Android
 	public class ItemsViewAdapter : RecyclerView.Adapter
 	{
 		protected readonly ItemsView ItemsView;
-		readonly Context _context;
 		readonly Func<IVisualElementRenderer, Context, AView> _createView;
 		readonly IItemsViewSource _itemsSource;
 
-		internal ItemsViewAdapter(ItemsView itemsView, Context context, 
-			Func<IVisualElementRenderer, Context, AView> createView = null)
+		internal ItemsViewAdapter(ItemsView itemsView, Func<IVisualElementRenderer, Context, AView> createView = null)
 		{
 			CollectionView.VerifyCollectionViewFlagEnabled(nameof(ItemsViewAdapter));
 
 			ItemsView = itemsView;
-			_context = context;
 			_createView = createView;
 			_itemsSource = ItemsSourceFactory.Create(itemsView.ItemsSource, this);
 
 			if (_createView == null)
 			{
-				_createView = (renderer, context1) => new ItemContentControl(renderer, context1);
+				_createView = (renderer, context) => new ItemContentView(renderer, context);
 			}
 		}
 
