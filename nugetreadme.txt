@@ -12,7 +12,7 @@ http://aka.ms/essentials-getstarted
 
 ## Release Notes
 
-This preview contains several breaking API changes as we approach our GA release. 
+If you are upgrading from an earlier preview the stable version contains several breaking API changes. 
 
 We have documented a full transition guide when migrating from older versions. 
 
