@@ -32,28 +32,18 @@ namespace Xamarin.Forms.Xaml
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 				if (!typeResolver.TryResolve(match + "Extension", out type) && !typeResolver.TryResolve(match, out type))
-				{
-					var lineInfoProvider = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-					var lineInfo = (lineInfoProvider != null) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-					throw new XamlParseException(String.Format("MarkupExtension not found for {0}", match), lineInfo);
-				}
+					throw new XamlParseException($"MarkupExtension not found for {match}", serviceProvider);
 				markupExtension = Activator.CreateInstance(type) as IMarkupExtension;
 			}
 
 			if (markupExtension == null)
-			{
-				var lineInfoProvider = serviceProvider.GetService(typeof (IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-				var lineInfo = (lineInfoProvider != null) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException(String.Format("Missing public default constructor for MarkupExtension {0}", match),
-					lineInfo);
-			}
+				throw new XamlParseException($"Missing public default constructor for MarkupExtension {match}", serviceProvider);
 
-			char next;
 			if (remaining == "}")
 				return markupExtension.ProvideValue(serviceProvider);
 
 			string piece;
-			while ((piece = GetNextPiece(ref remaining, out next)) != null)
+			while ((piece = GetNextPiece(ref remaining, out char next)) != null)
 				HandleProperty(piece, serviceProvider, ref remaining, next != '=');
 
 			return markupExtension.ProvideValue(serviceProvider);
@@ -62,8 +52,7 @@ namespace Xamarin.Forms.Xaml
 		protected override void SetPropertyValue(string prop, string strValue, object value, IServiceProvider serviceProvider)
 		{
 			MethodInfo setter;
-			if (prop == null)
-			{
+			if (prop == null) {
 				//implicit property
 				var t = markupExtension.GetType();
 				prop = ApplyPropertiesVisitor.GetContentPropertyName(t.GetTypeInfo());
@@ -71,29 +60,26 @@ namespace Xamarin.Forms.Xaml
 					return;
 				try {
 					setter = t.GetRuntimeProperty(prop).SetMethod;
-				} catch (AmbiguousMatchException e) {
-					var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-					throw new XamlParseException($"Multiple properties with name  '{t}.{prop}' found.", lineInfo, innerException: e);
+				}
+				catch (AmbiguousMatchException e) {
+					throw new XamlParseException($"Multiple properties with name  '{t}.{prop}' found.", serviceProvider, innerException: e);
 				}
 			}
 			else {
-				try
-				{
+				try {
 					setter = markupExtension.GetType().GetRuntimeProperty(prop).SetMethod;
-				} catch (AmbiguousMatchException e) {
-					var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-					throw new XamlParseException($"Multiple properties with name  '{markupExtension.GetType()}.{prop}' found.", lineInfo, innerException: e);
+				}
+				catch (AmbiguousMatchException e) {
+					throw new XamlParseException($"Multiple properties with name  '{markupExtension.GetType()}.{prop}' found.", serviceProvider, innerException: e);
 				}
 
 			}
-			if (value == null && strValue != null)
-			{
+			if (value == null && strValue != null) {
 				try {
-					value = strValue.ConvertTo(markupExtension.GetType().GetRuntimeProperty(prop).PropertyType,
-						(Func<TypeConverter>)null, serviceProvider);
-				} catch (AmbiguousMatchException e) {
-					var lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-					throw new XamlParseException($"Multiple properties with name  '{markupExtension.GetType()}.{prop}' found.", lineInfo, innerException: e);
+					value = strValue.ConvertTo(markupExtension.GetType().GetRuntimeProperty(prop).PropertyType, (Func<TypeConverter>)null, serviceProvider);
+				}
+				catch (AmbiguousMatchException e) {
+					throw new XamlParseException($"Multiple properties with name  '{markupExtension.GetType()}.{prop}' found.", serviceProvider, innerException: e);
 				}
 			}
 

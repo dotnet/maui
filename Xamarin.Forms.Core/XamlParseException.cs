@@ -7,6 +7,10 @@ namespace Xamarin.Forms.Xaml
 	{
 		readonly string _unformattedMessage;
 
+		internal XamlParseException (string message, IServiceProvider serviceProvider, Exception innerException = null) : this (message, GetLineInfo(serviceProvider), innerException)
+		{
+		}
+
 		public XamlParseException(string message, IXmlLineInfo xmlInfo, Exception innerException = null) : base(FormatMessage(message, xmlInfo), innerException)
 		{
 			_unformattedMessage = message;
@@ -14,11 +18,7 @@ namespace Xamarin.Forms.Xaml
 		}
 
 		public IXmlLineInfo XmlInfo { get; private set; }
-
-		internal string UnformattedMessage
-		{
-			get { return _unformattedMessage ?? Message; }
-		}
+		internal string UnformattedMessage => _unformattedMessage ?? Message;
 
 		static string FormatMessage(string message, IXmlLineInfo xmlinfo)
 		{
@@ -26,5 +26,8 @@ namespace Xamarin.Forms.Xaml
 				return message;
 			return string.Format("Position {0}:{1}. {2}", xmlinfo.LineNumber, xmlinfo.LinePosition, message);
 		}
+
+		static IXmlLineInfo GetLineInfo(IServiceProvider serviceProvider)
+			=> (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
 	}
 }

@@ -20,10 +20,8 @@ namespace Xamarin.Forms.Build.Tasks
 				ntype = node.CollectionItems[0];
 			var member = ((ValueNode)ntype).Value as string;
 
-			if (IsNullOrEmpty(member) || !member.Contains(".")) {
-				var lineInfo = node as IXmlLineInfo;
-				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", lineInfo);
-			}
+			if (IsNullOrEmpty(member) || !member.Contains("."))
+				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", node as IXmlLineInfo);
 
 			var dotIdx = member.LastIndexOf('.');
 			var typename = member.Substring(0, dotIdx);

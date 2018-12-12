@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			if (Android == null
+			if (   Android == null
 				&& GTK == null
 				&& iOS == null
 				&& macOS == null
@@ -31,8 +31,7 @@ namespace Xamarin.Forms.Xaml
 				&& UWP == null
 				&& WPF == null
 				&& Default == null) {
-				var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo ?? new XmlLineInfo();
-				throw new XamlParseException("OnPlatformExtension requires a non-null value to be specified for at least one platform or Default.", lineInfo);
+				throw new XamlParseException("OnPlatformExtension requires a non-null value to be specified for at least one platform or Default.", serviceProvider);
 			}
 
 			var valueProvider = serviceProvider?.GetService<IProvideValueTarget>() ?? throw new ArgumentException();
@@ -72,8 +71,7 @@ namespace Xamarin.Forms.Xaml
 						minfo = bp.DeclaringType.GetRuntimeProperty(bp.PropertyName);
 					}
 					catch (AmbiguousMatchException e) {
-						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-						throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", lineInfo, innerException: e);
+						throw new XamlParseException($"Multiple properties with name '{bp.DeclaringType}.{bp.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 					if (minfo != null)
 						return minfo;
@@ -81,8 +79,7 @@ namespace Xamarin.Forms.Xaml
 						return bp.DeclaringType.GetRuntimeMethod("Get" + bp.PropertyName, new[] { typeof(BindableObject) });
 					}
 					catch (AmbiguousMatchException e) {
-						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-						throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", lineInfo, innerException: e);
+						throw new XamlParseException($"Multiple methods with name '{bp.DeclaringType}.Get{bp.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				}
 
@@ -93,24 +90,23 @@ namespace Xamarin.Forms.Xaml
 
 		object GetValue()
 		{
-			switch (Device.RuntimePlatform)
-			{
-				case Device.Android:
-					return Android ?? Default;
-				case Device.GTK:
-					return GTK ?? Default;
-				case Device.iOS:
-					return iOS ?? Default;
-				case Device.macOS:
-					return macOS ?? Default;
-				case Device.Tizen:
-					return Tizen ?? Default;
-				case Device.UWP:
-					return UWP ?? Default;
-				case Device.WPF:
-					return WPF ?? Default;
-				default:
-					return Default;
+			switch (Device.RuntimePlatform) {
+			case Device.Android:
+				return Android ?? Default;
+			case Device.GTK:
+				return GTK ?? Default;
+			case Device.iOS:
+				return iOS ?? Default;
+			case Device.macOS:
+				return macOS ?? Default;
+			case Device.Tizen:
+				return Tizen ?? Default;
+			case Device.UWP:
+				return UWP ?? Default;
+			case Device.WPF:
+				return WPF ?? Default;
+			default:
+				return Default;
 			}
 		}
 	}
