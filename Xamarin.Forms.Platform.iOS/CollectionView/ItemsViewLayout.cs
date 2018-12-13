@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -13,6 +12,7 @@ namespace Xamarin.Forms.Platform.iOS
 		readonly ItemsLayout _itemsLayout;
 		bool _determiningCellSize;
 		bool _disposed;
+		bool _needCellSizeUpdate;
 
 		protected ItemsViewLayout(ItemsLayout itemsLayout)
 		{
@@ -55,7 +55,6 @@ namespace Xamarin.Forms.Platform.iOS
 
 		protected virtual void HandlePropertyChanged(PropertyChangedEventArgs  propertyChanged)
 		{
-			// Nothing to do here for now; may need something here when we implement Snapping
 		}
 
 		public nfloat ConstrainedDimension { get; set; }
@@ -67,8 +66,18 @@ namespace Xamarin.Forms.Platform.iOS
 
 		public abstract void ConstrainTo(CGSize size);
 
+		[Export("collectionView:willDisplayCell:forItemAtIndexPath:")]
+		public virtual void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath path)
+		{
+			if (_needCellSizeUpdate)
+			{
+				// Our cell size/estimate is out of date, probably because we moved from zero to one item; update it
+				_needCellSizeUpdate = false;
+				DetermineCellSize();
+			}
+		}
+
 		[Export("collectionView:layout:insetForSectionAtIndex:")]
-		[CompilerGenerated]
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
@@ -76,7 +85,6 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		[Export("collectionView:layout:minimumInteritemSpacingForSectionAtIndex:")]
-		[CompilerGenerated]
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
@@ -84,7 +92,6 @@ namespace Xamarin.Forms.Platform.iOS
 		}
 
 		[Export("collectionView:layout:minimumLineSpacingForSectionAtIndex:")]
-		[CompilerGenerated]
 		public virtual nfloat GetMinimumLineSpacingForSection(UICollectionView collectionView,
 			UICollectionViewLayout layout, nint section)
 		{
@@ -129,23 +136,28 @@ namespace Xamarin.Forms.Platform.iOS
 
 			_determiningCellSize = true;
 
-			if (!Forms.IsiOS10OrNewer)
-			{
-				// iOS 9 will throw an exception during auto layout if no EstimatedSize is set
-				EstimatedItemSize = new CGSize(1, 1);
-			}
-
+			// We set the EstimatedItemSize here for two reasons:
+			// 1. If we don't set it, iOS versions below 10 will crash
+			// 2. If GetPrototype() cannot return a cell because the items source is empty, we need to have
+			//		an estimate set so that when a cell _does_ become available (i.e., when the items source
+			//		has at least one item), Autolayout will kick in for the first cell and size it correctly
+			// If GetPrototype() _can_ return a cell, this estimate will be updated once that cell is measured
+			EstimatedItemSize = new CGSize(1, 1);
+			
 			if (!(GetPrototype() is ItemsViewCell prototype))
 			{
+				_determiningCellSize = false;
 				return;
 			}
 
+			// Constrain and measure the prototype cell
 			prototype.ConstrainTo(ConstrainedDimension);
 
 			var measure = prototype.Measure();
 
 			if (UniformSize)
 			{
+				// This is the size we'll give all of our cells from here on out
 				ItemSize = measure;
 
 				// Make sure autolayout is disabled 
@@ -153,6 +165,7 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 			else
 			{
+				// Autolayout is now enabled, and this is the size used to guess scrollbar size and progress
 				EstimatedItemSize = measure;
 			}
 
@@ -174,7 +187,7 @@ namespace Xamarin.Forms.Platform.iOS
 			ScrollDirection = scrollDirection;
 		}
 
-		void UpdateCellConstraints()
+		internal void UpdateCellConstraints()
 		{
 			var cells = CollectionView.VisibleCells;
 
@@ -196,6 +209,11 @@ namespace Xamarin.Forms.Platform.iOS
 
 			ConstrainTo(size);
 			UpdateCellConstraints();
+		}
+
+		public void SetNeedCellSizeUpdate()
+		{
+			_needCellSizeUpdate = true;
 		}
 	}
 }
