@@ -32,7 +32,7 @@ namespace Xamarin.Forms.Platform.iOS
 			nativeView.Frame = new CGRect(CGPoint.Empty, size);
 			VisualElementRenderer.Element.Layout(nativeView.Frame.ToRectangle());
 
-			layoutAttributes.Frame = VisualElementRenderer.NativeView.Frame;
+			layoutAttributes.Frame = nativeView.Frame;
 
 			return layoutAttributes;
 		}

@@ -80,6 +80,7 @@
     <CodesignResourceRules />
     <CodesignExtraArgs />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>

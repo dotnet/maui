@@ -266,8 +266,9 @@ namespace Xamarin.Forms.Platform.Android
 				var handler = new Handler(looper);
 				handler.Post(() =>
 				{
-					if(!_disposed)
-						Control?.RequestFocus();
+					if (Control is IPopupTrigger popupElement)
+						popupElement.ShowPopupOnFocus = true;
+					Control?.RequestFocus();
 				});
 			}
 			else

@@ -21,12 +21,12 @@
         <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="27.0.2"/>
       </group>
       <group targetFramework="MonoAndroid90">
-        <dependency id="Xamarin.Android.Support.v4" version="28.0.0-preview8"/>
-        <dependency id="Xamarin.Android.Support.Design" version="28.0.0-preview8"/>
-        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0-preview8"/>
-        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0-preview8"/>
-        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0-preview8"/>
-        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0-preview8"/>
+        <dependency id="Xamarin.Android.Support.v4" version="28.0.0-preview9"/>
+        <dependency id="Xamarin.Android.Support.Design" version="28.0.0-preview9"/>
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="28.0.0-preview9"/>
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="28.0.0-preview9"/>
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="28.0.0-preview9"/>
+        <dependency id="Xamarin.Android.Support.CustomTabs" version="28.0.0-preview9"/>
       </group>
       <group targetFramework="uap10.0">
         <dependency id="NETStandard.Library" version="2.0.1"/>

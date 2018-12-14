@@ -3,12 +3,12 @@ using Foundation;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal sealed class DefaultVerticalListCell : DefaultCell
+	internal sealed class VerticalDefaultCell : DefaultCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.DefaultVerticalListCell");
+		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalDefaultCell");
 
 		[Export("initWithFrame:")]
-		public DefaultVerticalListCell(CGRect frame) : base(frame)
+		public VerticalDefaultCell(CGRect frame) : base(frame)
 		{
 			Constraint = Label.WidthAnchor.ConstraintEqualTo(Frame.Width);
 			Constraint.Active = true;

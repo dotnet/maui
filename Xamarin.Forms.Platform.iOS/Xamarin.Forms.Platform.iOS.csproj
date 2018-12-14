@@ -123,8 +123,8 @@
     <Compile Include="CollectionView\ItemsViewCell.cs" />
     <Compile Include="CollectionView\CollectionViewController.cs" />
     <Compile Include="CollectionView\DefaultCell.cs" />
-    <Compile Include="CollectionView\DefaultHorizontalListCell.cs" />
-    <Compile Include="CollectionView\DefaultVerticalListCell.cs" />
+    <Compile Include="CollectionView\HorizontalDefaultCell.cs" />
+    <Compile Include="CollectionView\VerticalDefaultCell.cs" />
     <Compile Include="CollectionView\GridViewLayout.cs" />
     <Compile Include="CollectionView\ItemsViewLayout.cs" />
     <Compile Include="CollectionView\ListSource.cs" />
@@ -132,8 +132,8 @@
     <Compile Include="CollectionView\ObservableItemsSource.cs" />
     <Compile Include="CollectionView\PropertyChangedEventArgsExtensions.cs" />
     <Compile Include="CollectionView\TemplatedCell.cs" />
-    <Compile Include="CollectionView\TemplatedHorizontalListCell.cs" />
-    <Compile Include="CollectionView\TemplatedVerticalListCell.cs" />
+    <Compile Include="CollectionView\HorizontalTemplatedCell.cs" />
+    <Compile Include="CollectionView\VerticalTemplatedCell.cs" />
     <Compile Include="DisposeHelpers.cs" />
     <Compile Include="EffectUtilities.cs" />
     <Compile Include="ExportCellAttribute.cs" />

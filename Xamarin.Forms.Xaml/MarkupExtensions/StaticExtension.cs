@@ -13,21 +13,12 @@ namespace Xamarin.Forms.Xaml
 
 		public object ProvideValue(IServiceProvider serviceProvider)
 		{
-			IXmlLineInfoProvider lineInfoProvider;
-			IXmlLineInfo lineInfo;
-
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
-			var typeResolver = serviceProvider.GetService(typeof (IXamlTypeResolver)) as IXamlTypeResolver;
-			if (typeResolver == null)
+			if (!(serviceProvider.GetService(typeof(IXamlTypeResolver)) is IXamlTypeResolver typeResolver))
 				throw new ArgumentException("No IXamlTypeResolver in IServiceProvider");
-
 			if (string.IsNullOrEmpty(Member) || !Member.Contains("."))
-			{
-				lineInfoProvider = serviceProvider.GetService(typeof (IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-				lineInfo = (lineInfoProvider != null) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", lineInfo);
-			}
+				throw new XamlParseException("Syntax for x:Static is [Member=][prefix:]typeName.staticMemberName", serviceProvider);
 
 			var dotIdx = Member.LastIndexOf('.');
 			var typename = Member.Substring(0, dotIdx);
@@ -43,9 +34,7 @@ namespace Xamarin.Forms.Xaml
 			if (finfo != null)
 				return finfo.GetValue(null);
 
-			lineInfoProvider = serviceProvider.GetService(typeof (IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-			lineInfo = (lineInfoProvider != null) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-			throw new XamlParseException($"No static member found for {Member}", lineInfo);
+			throw new XamlParseException($"No static member found for {Member}", serviceProvider);
 		}
 	}
 }

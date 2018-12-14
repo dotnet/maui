@@ -20,26 +20,21 @@ namespace Xamarin.Forms
 				throw new ArgumentNullException(nameof(serviceProvider));
 
 			var referenceProvider = serviceProvider.GetService<IReferenceProvider>();
-			if (referenceProvider != null) {
-				return referenceProvider.FindByName(value)
-					   ?? throw new XamlParseException($"Can't resolve name '{value}' on Element", serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo ?? new XmlLineInfo());
-			}
+			if (referenceProvider != null)
+				return referenceProvider.FindByName(value) ?? throw new XamlParseException($"Can't resolve name '{value}' on Element", serviceProvider);
 
 #pragma warning disable CS0612 // Type or member is obsolete
 			//legacy path
-			var namescopeprovider = serviceProvider.GetService(typeof(INameScopeProvider)) as INameScopeProvider;
-			var valueProvider = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideParentValues;
-			if (valueProvider == null)
+			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideParentValues valueProvider))
 				throw new ArgumentException("serviceProvider does not provide an IProvideValueTarget");
-			if (namescopeprovider != null && namescopeprovider.NameScope != null) {
+			if (serviceProvider.GetService(typeof(INameScopeProvider)) is INameScopeProvider namescopeprovider && namescopeprovider.NameScope != null) {
 				var element = namescopeprovider.NameScope.FindByName(value);
 				if (element != null)
 					return element;
 			}
 
 			foreach (var target in valueProvider.ParentObjects) {
-				var ns = target as INameScope;
-				if (ns == null)
+				if (!(target is INameScope ns))
 					continue;
 				var element = ns.FindByName(value);
 				if (element != null)

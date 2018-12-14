@@ -21,10 +21,7 @@ namespace Xamarin.Forms
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Property == null)
-			{
-				IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("Property not set", lineInfo);
-			}
+				throw new XamlParseException("Property not set", serviceProvider);
 			var valueconverter = serviceProvider.GetService(typeof(IValueConverterProvider)) as IValueConverterProvider;
 
 			Func<MemberInfo> minforetriever =
@@ -34,16 +31,14 @@ namespace Xamarin.Forms
 					try {
 						minfo = Property.DeclaringType.GetRuntimeProperty(Property.PropertyName);
 					} catch (AmbiguousMatchException e) {
-						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-						throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", lineInfo, innerException: e);
+						throw new XamlParseException($"Multiple properties with name '{Property.DeclaringType}.{Property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 					if (minfo != null)
 						return minfo;
 					try {
 						return Property.DeclaringType.GetRuntimeMethod("Get" + Property.PropertyName, new[] { typeof(BindableObject) });
 					} catch (AmbiguousMatchException e) {
-						IXmlLineInfo lineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider lineInfoProvider ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-						throw new XamlParseException($"Multiple methods with name '{Property.DeclaringType}.Get{Property.PropertyName}' found.", lineInfo, innerException: e);
+						throw new XamlParseException($"Multiple methods with name '{Property.DeclaringType}.Get{Property.PropertyName}' found.", serviceProvider, innerException: e);
 					}
 				};
 

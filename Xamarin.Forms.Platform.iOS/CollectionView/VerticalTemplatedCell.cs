@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using CoreGraphics;
 using Foundation;
@@ -6,12 +6,12 @@ using UIKit;
 
 namespace Xamarin.Forms.Platform.iOS
 {
-	internal sealed class TemplatedVerticalListCell : TemplatedCell
+	internal sealed class VerticalTemplatedCell : TemplatedCell
 	{
-		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.TemplatedVerticalListCell");
+		public static NSString ReuseId = new NSString("Xamarin.Forms.Platform.iOS.VerticalTemplatedCell");
 
 		[Export("initWithFrame:")]
-		public TemplatedVerticalListCell(CGRect frame) : base(frame)
+		public VerticalTemplatedCell(CGRect frame) : base(frame)
 		{
 		}
 

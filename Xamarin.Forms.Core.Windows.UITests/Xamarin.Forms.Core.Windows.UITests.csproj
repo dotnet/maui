@@ -52,6 +52,9 @@
     <PackageReference Include="DotNetSeleniumExtras.PageObjects" Version="3.11.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NUnit" Version="2.6.4" />
+    <PackageReference Include="NUnitTestAdapter">
+      <Version>2.1.1</Version>
+    </PackageReference>
     <PackageReference Include="Selenium.Support" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.14.0" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="3.0.2" />

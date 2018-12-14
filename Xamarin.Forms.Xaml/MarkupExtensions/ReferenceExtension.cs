@@ -39,8 +39,7 @@ namespace Xamarin.Forms.Xaml
 					return value;
 			}
 
-			var lineInfo = serviceProvider?.GetService<IXmlLineInfoProvider>()?.XmlLineInfo ?? new XmlLineInfo();
-			throw new XamlParseException($"Can not find the object referenced by `{Name}`", lineInfo);
+			throw new XamlParseException($"Can not find the object referenced by `{Name}`", serviceProvider);
 		}
 	}
 }

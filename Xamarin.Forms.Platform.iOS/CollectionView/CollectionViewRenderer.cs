@@ -89,7 +89,7 @@ namespace Xamarin.Forms.Platform.iOS
 			_collectionViewController = new CollectionViewController(newElement, _layout);
 			SetNativeControl(_collectionViewController.View);
 			_collectionViewController.CollectionView.BackgroundColor = UIColor.Clear;
-			_collectionViewController.CollectionView.Delegate = _layout;
+			_collectionViewController.CollectionView.WeakDelegate = _layout;
 
 			// Listen for ScrollTo requests
 			newElement.ScrollToRequested += ScrollToRequested;

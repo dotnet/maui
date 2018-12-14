@@ -20,13 +20,8 @@ namespace Xamarin.Forms
 
 		public XmlnsDefinitionAttribute(string xmlNamespace, string clrNamespace)
 		{
-			if (xmlNamespace == null)
-				throw new ArgumentNullException(nameof(xmlNamespace));
-			if (clrNamespace == null)
-				throw new ArgumentNullException(nameof(clrNamespace));
-
-			ClrNamespace = clrNamespace;
-			XmlNamespace = xmlNamespace;
+			ClrNamespace = clrNamespace ?? throw new ArgumentNullException(nameof(xmlNamespace));
+			XmlNamespace = xmlNamespace ?? throw new ArgumentNullException(nameof(clrNamespace));
 		}
 	}
 }

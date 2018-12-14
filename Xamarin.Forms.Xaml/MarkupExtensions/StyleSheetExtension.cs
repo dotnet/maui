@@ -19,10 +19,8 @@ namespace Xamarin.Forms.Xaml
 		{
 			IXmlLineInfo lineInfo;
 
-			if (!string.IsNullOrEmpty(Style) && Source != null) {
-				lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
-				throw new XamlParseException($"StyleSheet can not have both a Source and a content", lineInfo);
-			}
+			if (!string.IsNullOrEmpty(Style) && Source != null)
+				throw new XamlParseException($"StyleSheet can not have both a Source and a content", serviceProvider);
 
 			if (Source != null) {
 				lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
@@ -43,8 +41,7 @@ namespace Xamarin.Forms.Xaml
 					return StyleSheet.FromReader(reader);
 			}
 
-			lineInfo = (serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider)?.XmlLineInfo;
-			throw new XamlParseException($"StyleSheet require either a Source or a content", lineInfo);
+			throw new XamlParseException($"StyleSheet require either a Source or a content", serviceProvider);
 		}
 	}
 }

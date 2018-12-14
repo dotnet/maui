@@ -15,21 +15,16 @@ namespace Xamarin.Forms.Xaml
 		{
 			if (serviceProvider == null)
 				throw new ArgumentNullException(nameof(serviceProvider));
-			if (Key == null) {
-				var lineInfoProvider = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-				var lineInfo = (lineInfoProvider != null) ? lineInfoProvider.XmlLineInfo : new XmlLineInfo();
-				throw new XamlParseException("you must specify a key in {StaticResource}", lineInfo);
-			}
-			var valueProvider = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideParentValues;
-			if (valueProvider == null)
+			if (Key == null)
+				throw new XamlParseException("you must specify a key in {StaticResource}", serviceProvider);
+			if (!(serviceProvider.GetService(typeof(IProvideValueTarget)) is IProvideParentValues valueProvider))
 				throw new ArgumentException();
-			var xmlLineInfoProvider = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) as IXmlLineInfoProvider;
-			var xmlLineInfo = xmlLineInfoProvider != null ? xmlLineInfoProvider.XmlLineInfo : null;
+
+			var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 			object resource = null;
 
 			foreach (var p in valueProvider.ParentObjects) {
-				var irp = p as IResourcesProvider;
-				var resDict = irp != null && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
+				var resDict = p is IResourcesProvider irp && irp.IsResourcesCreated ? irp.Resources : p as ResourceDictionary;
 				if (resDict == null)
 					continue;
 				if (resDict.TryGetValue(Key, out resource))
@@ -81,8 +76,7 @@ namespace Xamarin.Forms.Xaml
 
 		internal object GetApplicationLevelResource(string key, IXmlLineInfo xmlLineInfo)
 		{
-			object resource;
-			if (Application.Current == null || !((IResourcesProvider)Application.Current).IsResourcesCreated || !Application.Current.Resources.TryGetValue(Key, out resource))
+			if (Application.Current == null || !((IResourcesProvider)Application.Current).IsResourcesCreated || !Application.Current.Resources.TryGetValue(Key, out object resource))
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
 			return resource;
 		}
