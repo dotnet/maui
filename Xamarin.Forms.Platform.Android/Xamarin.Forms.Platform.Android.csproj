@@ -308,6 +308,7 @@
     <Compile Include="SwipeGestureHandler.cs" />
     <Compile Include="Extensions\AccessibilityExtensions.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
+    <Compile Include="Renderers\IPopupTrigger.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

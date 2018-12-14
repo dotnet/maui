@@ -9,7 +9,7 @@ using Android.Runtime;
 
 namespace Xamarin.Forms.Platform.Android
 {
-	public class PickerEditText : EditText
+	public class PickerEditText : EditText, IPopupTrigger
 	{
 		readonly static HashSet<Keycode> availableKeys = new HashSet<Keycode>(new[] {
 			Keycode.Tab, Keycode.Forward, Keycode.Back, Keycode.DpadDown, Keycode.DpadLeft, Keycode.DpadRight, Keycode.DpadUp
@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		System.WeakReference<IPickerRenderer> rendererRef;
 
-		internal bool FromFocusSearch;
+		public bool ShowPopupOnFocus { get; set; }
 
 		public PickerEditText(Context context, IPickerRenderer pickerRenderer) : base(context)
 		{
@@ -32,9 +32,9 @@ namespace Xamarin.Forms.Platform.Android
 		protected override void OnFocusChanged(bool gainFocus, [GeneratedEnum] FocusSearchDirection direction, Rect previouslyFocusedRect)
 		{
 			base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
-			if (gainFocus && FromFocusSearch)
+			if (gainFocus && ShowPopupOnFocus)
 				CallOnClick();
-			FromFocusSearch = false;
+			ShowPopupOnFocus = false;
 		}
 
 		void OnKeyPress(object sender, KeyEventArgs e)
