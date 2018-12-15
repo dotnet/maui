@@ -1,16 +1,29 @@
 ﻿using System.Threading.Tasks;
+using AppKit;
+using Foundation;
 
 namespace Xamarin.Essentials
 {
     public static partial class Clipboard
     {
+        static readonly string pasteboardType = NSPasteboard.NSPasteboardTypeString;
+        static readonly string[] pasteboardTypes = { pasteboardType };
+
+        static NSPasteboard Pasteboard => NSPasteboard.GeneralPasteboard;
+
         static Task PlatformSetTextAsync(string text)
-            => throw new System.PlatformNotSupportedException();
+        {
+            Pasteboard.DeclareTypes(pasteboardTypes, null);
+            Pasteboard.ClearContents();
+            Pasteboard.SetStringForType(text, pasteboardType);
 
-        static bool PlatformHasText
-            => throw new System.PlatformNotSupportedException();
+            return Task.CompletedTask;
+        }
 
-        static Task<string> PlatformGetTextAsync()
-            => throw new System.PlatformNotSupportedException();
+        static bool PlatformHasText =>
+            Pasteboard.GetStringForType(pasteboardType) != null;
+
+        static Task<string> PlatformGetTextAsync() =>
+            Task.FromResult(Pasteboard.GetStringForType(pasteboardType));
     }
 }
