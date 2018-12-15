@@ -104,6 +104,13 @@
     <Reference Include="OpenTK-1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $(TargetFramework.StartsWith('Xamarin.Mac')) ">
+    <!--
+      BEGIN IMPORTS
+      macOS is very similar to iOS, and in some cases, exactly the same. So, we will
+      just use the iOS source.
+    -->
+    <Compile Include="Preferences\Preferences.ios.cs" />
+    <!-- END IMPORTS -->
     <Compile Include="**\*.mac.cs" />
     <Compile Include="**\*.mac.*.cs" />
     <Reference Include="System.Numerics" />

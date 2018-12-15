@@ -1,15 +1,20 @@
-﻿namespace Xamarin.Essentials
+﻿using System;
+using Foundation;
+
+namespace Xamarin.Essentials
 {
     public static partial class AppInfo
     {
-        static string PlatformGetPackageName() => throw new System.PlatformNotSupportedException();
+        static string PlatformGetPackageName() => GetBundleValue("CFBundleIdentifier");
 
-        static string PlatformGetName() => throw new System.PlatformNotSupportedException();
+        static string PlatformGetName() => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
 
-        static string PlatformGetVersionString() => throw new System.PlatformNotSupportedException();
+        static string PlatformGetVersionString() => GetBundleValue("CFBundleShortVersionString");
 
-        static string PlatformGetBuild() => throw new System.PlatformNotSupportedException();
+        static string PlatformGetBuild() => GetBundleValue("CFBundleVersion");
 
-        static void PlatformShowSettingsUI() => throw new System.PlatformNotSupportedException();
+        static string GetBundleValue(string key) => NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
+
+        static void PlatformShowSettingsUI() => throw new PlatformNotSupportedException();
     }
 }
