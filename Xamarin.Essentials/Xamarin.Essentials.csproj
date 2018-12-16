@@ -109,10 +109,14 @@
       macOS is very similar to iOS, and in some cases, exactly the same. So, we will
       just use the iOS source.
     -->
-    <Compile Include="Map\Map.ios.cs" />
-    <Compile Include="SecureStorage\SecureStorage.ios.cs" />
-    <Compile Include="Preferences\Preferences.ios.cs" />
+    <Compile Include="Geolocation\Geolocation.ios.cs" />
+    <Compile Include="Geolocation\GeolocationRequest.ios.cs" />
     <Compile Include="MainThread\MainThread.ios.cs" />
+    <Compile Include="Map\Map.ios.cs" />
+    <Compile Include="Preferences\Preferences.ios.cs" />
+    <Compile Include="SecureStorage\SecureStorage.ios.cs" />
+    <Compile Include="Types\LocationExtensions.ios.cs" />
+    <Compile Include="Types\PlacemarkExtensions.ios.cs" />
     <!-- END IMPORTS -->
     <Compile Include="**\*.mac.cs" />
     <Compile Include="**\*.mac.*.cs" />
