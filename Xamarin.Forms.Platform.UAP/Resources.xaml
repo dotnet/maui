@@ -349,5 +349,8 @@
 	<Style TargetType="ToggleSwitch">
 		<Setter Property="MinWidth" Value="0"/>
 	</Style>
-    
+
+    <DataTemplate x:Key="ComboBoxHeader">
+        <TextBlock Text="{Binding Title}" Foreground="{Binding TitleColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
+    </DataTemplate>
 </ResourceDictionary>

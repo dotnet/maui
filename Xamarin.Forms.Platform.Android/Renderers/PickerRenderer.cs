@@ -8,6 +8,9 @@ using System.ComponentModel;
 using System.Linq;
 using Orientation = Android.Widget.Orientation;
 using Android.Content;
+using AColor = Android.Graphics.Color;
+using Android.Text;
+using Android.Text.Style;
 
 namespace Xamarin.Forms.Platform.Android
 {
@@ -16,6 +19,7 @@ namespace Xamarin.Forms.Platform.Android
 		AlertDialog _dialog;
 		bool _isDisposed;
 		TextColorSwitcher _textColorSwitcher;
+		int _originalHintTextColor;
 
 		public PickerRenderer(Context context) : base(context)
 		{
@@ -62,6 +66,8 @@ namespace Xamarin.Forms.Platform.Android
 					_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
 
 					SetNativeControl(textField);
+
+					_originalHintTextColor = Control.CurrentHintTextColor;
 				}
 
 				UpdateFont();
@@ -76,7 +82,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Picker.TitleProperty.PropertyName)
+			if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
 				UpdatePicker();
 			else if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
@@ -122,7 +128,19 @@ namespace Xamarin.Forms.Platform.Android
 
 			var builder = new AlertDialog.Builder(Context);
 			builder.SetView(layout);
-			builder.SetTitle(model.Title ?? "");
+
+			if (!Element.IsSet(Picker.TitleColorProperty))
+			{
+				builder.SetTitle(model.Title ?? "");
+			}
+			else
+			{
+				var title = new SpannableString(model.Title ?? "");
+				title.SetSpan(new ForegroundColorSpan(model.TitleColor.ToAndroid()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+
+				builder.SetTitle(title);
+			}
+
 			builder.SetNegativeButton(global::Android.Resource.String.Cancel, (s, a) =>
 			{
 				ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, false);
@@ -164,6 +182,11 @@ namespace Xamarin.Forms.Platform.Android
 		void UpdatePicker()
 		{
 			Control.Hint = Element.Title;
+
+			if (Element.IsSet(Picker.TitleColorProperty))
+				Control.SetHintTextColor(Element.TitleColor.ToAndroid());
+			else
+				Control.SetHintTextColor(new AColor(_originalHintTextColor));
 
 			string oldText = Control.Text;
 

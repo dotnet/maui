@@ -766,6 +766,7 @@ namespace Xamarin.Forms.CustomAttributes
 		public enum Picker
 		{
 			Title,
+			TitleColor,
 			Items,
 			SelectedIndex,
 			Focus,

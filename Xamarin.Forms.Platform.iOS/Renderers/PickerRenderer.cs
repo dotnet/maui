@@ -92,7 +92,7 @@ namespace Xamarin.Forms.Platform.iOS
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			base.OnElementPropertyChanged(sender, e);
-			if (e.PropertyName == Picker.TitleProperty.PropertyName)
+			if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
 				UpdatePicker();
 			else if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
@@ -141,7 +141,20 @@ namespace Xamarin.Forms.Platform.iOS
 		{
 			var selectedIndex = Element.SelectedIndex;
 			var items = Element.Items;
-			Control.Placeholder = Element.Title;
+
+			if (!Element.IsSet(Picker.TitleColorProperty))
+			{
+				Control.AttributedPlaceholder = null;
+				Control.Placeholder = Element.Title;
+			}
+			else
+			{
+				Control.AttributedPlaceholder = new NSAttributedString(Element.Title, new UIStringAttributes
+				{
+					ForegroundColor = Element.TitleColor.ToUIColor()
+				});
+			}
+
 			var oldText = Control.Text;
 			Control.Text = selectedIndex == -1 || items == null || selectedIndex >= items.Count ? "" : items[selectedIndex];
 			UpdatePickerNativeSize(oldText);

@@ -18,6 +18,9 @@ namespace Xamarin.Forms
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(Picker), default(string));
 
+		public static readonly BindableProperty TitleColorProperty =
+			BindableProperty.Create(nameof(TitleColor), typeof(Color), typeof(Picker), default(Color));
+
 		public static readonly BindableProperty SelectedIndexProperty =
 			BindableProperty.Create(nameof(SelectedIndex), typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
 									propertyChanged: OnSelectedIndexChanged, coerceValue: CoerceSelectedIndex);
@@ -105,6 +108,12 @@ namespace Xamarin.Forms
 		public string Title {
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
+		}
+
+		public Color TitleColor
+		{
+			get { return (Color)GetValue(TitleColorProperty); }
+			set { SetValue(TitleColorProperty, value); }
 		}
 
 		BindingBase _itemDisplayBinding;

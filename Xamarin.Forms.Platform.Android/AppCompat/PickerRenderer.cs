@@ -6,6 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using Android.Content;
 using Android.Widget;
+using AColor = Android.Graphics.Color;
+using Android.Text;
+using Android.Text.Style;
 
 namespace Xamarin.Forms.Platform.Android.AppCompat
 {
@@ -14,6 +17,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		AlertDialog _dialog;
 		bool _disposed;
 		TextColorSwitcher _textColorSwitcher;
+		int _originalHintTextColor;
 
 		public PickerRenderer(Context context) : base(context)
 		{
@@ -59,6 +63,8 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_textColorSwitcher = new TextColorSwitcher(textField.TextColors, useLegacyColorManagement);
 
 					SetNativeControl(textField);
+
+					_originalHintTextColor = Control.CurrentHintTextColor;
 				}
 				UpdateFont();
 				UpdatePicker();
@@ -72,7 +78,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		{
 			base.OnElementPropertyChanged(sender, e);
 
-			if (e.PropertyName == Picker.TitleProperty.PropertyName)
+			if (e.PropertyName == Picker.TitleProperty.PropertyName || e.PropertyName == Picker.TitleColorProperty.PropertyName)
 				UpdatePicker();
 			else if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
 				UpdatePicker();
@@ -104,7 +110,18 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			{
 				using (var builder = new AlertDialog.Builder(Context))
 				{
-					builder.SetTitle(model.Title ?? "");
+					if (!Element.IsSet(Picker.TitleColorProperty))
+					{
+						builder.SetTitle(model.Title ?? "");
+					}
+					else
+					{
+						var title = new SpannableString(model.Title ?? "");
+						title.SetSpan(new ForegroundColorSpan(model.TitleColor.ToAndroid()), 0, title.Length(), SpanTypes.ExclusiveExclusive);
+
+						builder.SetTitle(title);
+					}
+
 					string[] items = model.Items.ToArray();
 					builder.SetItems(items, (s, e) => ((IElementController)model).SetValueFromRenderer(Picker.SelectedIndexProperty, e.Which));
 
@@ -140,6 +157,11 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 		void UpdatePicker()
 		{
 			Control.Hint = Element.Title;
+
+			if (Element.IsSet(Picker.TitleColorProperty))
+				Control.SetHintTextColor(Element.TitleColor.ToAndroid());
+			else
+				Control.SetHintTextColor(new AColor(_originalHintTextColor));
 
 			if (Element.SelectedIndex == -1 || Element.Items == null || Element.SelectedIndex >= Element.Items.Count)
 				Control.Text = null;
