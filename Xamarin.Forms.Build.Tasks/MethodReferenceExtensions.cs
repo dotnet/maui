@@ -22,8 +22,12 @@ namespace Xamarin.Forms.Build.Tasks
 			};
 
 			foreach (var parameter in self.Parameters) {
-				var p = ImportUnresolvedType(parameter.ParameterType, module);
-				reference.Parameters.Add(new ParameterDefinition(p));
+				var definition = new ParameterDefinition(ImportUnresolvedType(parameter.ParameterType, module));
+
+				foreach (var attribute in parameter.CustomAttributes)
+					definition.CustomAttributes.Add(attribute);
+
+				reference.Parameters.Add(definition);
 			}
 
 			foreach (var generic_parameter in self.GenericParameters)
@@ -34,7 +38,19 @@ namespace Xamarin.Forms.Build.Tasks
 
 		static TypeReference ImportUnresolvedType(TypeReference type, ModuleDefinition module)
 		{
-			return type.IsGenericParameter ? type : module.ImportReference(type);
+			if (type.IsGenericParameter)
+				return type;
+
+			var generictype = type as GenericInstanceType;
+			if (generictype == null)
+				return module.ImportReference(type);
+
+			var imported = new GenericInstanceType(module.ImportReference(generictype.ElementType));
+
+			foreach (var argument in generictype.GenericArguments)
+				imported.GenericArguments.Add(ImportUnresolvedType(argument, module));
+
+			return imported;
 		}
 
 		public static void ImportTypes(this MethodReference self, ModuleDefinition module)

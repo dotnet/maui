@@ -43,6 +43,21 @@ namespace Xamarin.Forms.XamlcUnitTests
 		{
 		}
 
+		abstract class Grault
+		{
+			public abstract void Method<T>(T t);
+		}
+
+		abstract class Garply<T>
+		{
+			public abstract void Method(T t);
+		}
+
+		abstract class Waldo<T>
+		{
+			public abstract void Method(Foo<T> t);
+		}
+
 		ModuleDefinition module;
 
 		[SetUp]
@@ -142,6 +157,26 @@ namespace Xamarin.Forms.XamlcUnitTests
 
 			Assert.AreEqual("System", resolvedType.Namespace);
 			Assert.AreEqual("Byte", resolvedType.Name);
+		}
+
+		public void TestResolveGenericParametersOfGenericMethod()
+		{
+			var method = new GenericInstanceMethod(module.ImportReference(typeof(Grault)).Resolve().Methods[0]);
+			method.GenericArguments.Add(module.TypeSystem.Byte);
+			var resolved = method.ReturnType.ResolveGenericParameters(method);
+
+			Assert.That(TypeRefComparer.Default.Equals(module.TypeSystem.Byte, resolved));
+		}
+
+		[TestCase(typeof(Garply<byte>), typeof(byte))]
+		[TestCase(typeof(Waldo<byte>), typeof(Foo<byte>))]
+		public void TestResolveGenericParametersOfMethodOfGeneric(Type typeRef, Type returnType)
+		{
+			var type = module.ImportReference(typeRef);
+			var method = type.Resolve().Methods[0].ResolveGenericParameters(type, module);
+			var resolved = method.Parameters[0].ParameterType.ResolveGenericParameters(method);
+
+			Assert.That(TypeRefComparer.Default.Equals(module.ImportReference(returnType), resolved));
 		}
 	}
 }

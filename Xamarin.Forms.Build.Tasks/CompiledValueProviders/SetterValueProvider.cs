@@ -33,16 +33,18 @@ namespace Xamarin.Forms.Core.XamlC
 				yield break;
 
 			var value = ((string)((ValueNode)valueNode).Value);
+			var setterType = ("Xamarin.Forms.Core", "Xamarin.Forms", "Setter");
 
 			//push the setter
-			yield return Instruction.Create(OpCodes.Ldloc, vardefref.VariableDefinition);
+			foreach (var instruction in vardefref.VariableDefinition.LoadAs(module.GetTypeDefinition(setterType), module))
+				yield return instruction;
 
 			//push the value
 			foreach (var instruction in ((ValueNode)valueNode).PushConvertedValue(context, bpRef, valueNode.PushServiceProvider(context, bpRef: bpRef), boxValueTypes: true, unboxValueTypes: false))
 				yield return instruction;
 
 			//set the value
-			yield return Instruction.Create(OpCodes.Callvirt, module.ImportPropertySetterReference(("Xamarin.Forms.Core", "Xamarin.Forms", "Setter"), propertyName: "Value"));
+			yield return Instruction.Create(OpCodes.Callvirt, module.ImportPropertySetterReference(setterType, propertyName: "Value"));
 		}
 
 		static bool SetterValueIsCollection(FieldReference bindablePropertyReference, ModuleDefinition module, BaseNode node, ILContext context)

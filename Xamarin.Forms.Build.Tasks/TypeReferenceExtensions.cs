@@ -333,6 +333,38 @@ namespace Xamarin.Forms.Build.Tasks
 			return null;
 		}
 
+		public static TypeReference ResolveGenericParameters(this TypeReference self, MethodReference declaringMethodReference)
+		{
+			var genericself = self as GenericParameter;
+			if (genericself != null) {
+				IGenericInstance instance;
+
+				switch (genericself.Type) {
+				case GenericParameterType.Method:
+					instance = (IGenericInstance)declaringMethodReference;
+					break;
+
+				case GenericParameterType.Type:
+					instance = (IGenericInstance)declaringMethodReference.DeclaringType;
+					break;
+
+				default:
+					throw new Exception("unknown generic parameter type");
+				}
+
+				return instance.GenericArguments[genericself.Position];
+			}
+
+			var genericInstanceSelf = self as GenericInstanceType;
+			if (genericInstanceSelf != null) {
+				var genericArguments = genericInstanceSelf.GenericArguments;
+				var arguments = genericArguments.Select(argument => argument.ResolveGenericParameters(declaringMethodReference));
+				return genericInstanceSelf.ElementType.MakeGenericInstanceType(arguments.ToArray());
+			}
+
+			return self;
+		}
+
 		public static TypeReference ResolveGenericParameters(this TypeReference self, TypeReference declaringTypeReference)
 		{
 			var genericself = self as GenericInstanceType;

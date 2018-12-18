@@ -18,6 +18,8 @@ namespace Xamarin.Forms.XamlcUnitTests
 		abstract class TestClass<T>
 		{
 			public abstract T UnresolvedGenericReturnType ();
+			public abstract void CustmAttributeParameterMethod ([Parameter("Parameter")] int parameter);
+			public abstract void UnresolvedGenericInstanceTypeMethod (TestClass<T> unresolved);
 		}
 
 		[SetUp]
@@ -102,6 +104,26 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var resolved = method.ResolveGenericParameters (type, module);
 
 			Assert.AreEqual ("T", resolved.ReturnType.Name);
+		}
+
+		[Test]
+		public void CustomAttributes ()
+		{
+			var type = module.ImportReference (typeof (TestClass<int>));
+			var method = type.Resolve ().Methods.Where (md => md.Name == "CustmAttributeParameterMethod").Single ();
+			var resolved = method.ResolveGenericParameters (type, module);
+
+			Assert.AreEqual ("Xamarin.Forms.ParameterAttribute", resolved.Parameters[0].CustomAttributes[0].AttributeType.FullName);
+		}
+
+		[Test]
+		public void ImportUnresolvedGenericInstanceType ()
+		{
+			var type = module.ImportReference (typeof (TestClass<int>));
+			var method = type.Resolve ().Methods.Where (md => md.Name == "UnresolvedGenericInstanceTypeMethod").Single ();
+			var resolved = method.ResolveGenericParameters (type, module);
+
+			Assert.AreEqual ("foo", resolved.Parameters[0].ParameterType.Module.Name);
 		}
 	}
 }
