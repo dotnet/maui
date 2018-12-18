@@ -195,24 +195,6 @@
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\ic_stop%402x.png">
       <Link>Resources\ic_stop%402x.png</Link>
     </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon-60%402x.png">
-      <Link>Resources\Icon-60%402x.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon-Small-40%402x.png">
-      <Link>Resources\Icon-Small-40%402x.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon-Small.png">
-      <Link>Resources\Icon-Small.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon-Small%402x.png">
-      <Link>Resources\Icon-Small%402x.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon.png">
-      <Link>Resources\Icon.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\Icon%402x.png">
-      <Link>Resources\Icon%402x.png</Link>
-    </BundleResource>
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Resources\instagram.png">
       <Link>Resources\instagram.png</Link>
     </BundleResource>
@@ -323,12 +305,6 @@
     </BundleResource>
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\crimsonsmall.jpg">
       <Link>Resources\crimsonsmall.jpg</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Default-568h%402x.png">
-      <Link>Resources\Default-568h%402x.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Default-667h%402x.png">
-      <Link>Resources\Default-667h%402x.png</Link>
     </BundleResource>
     <BundleResource Include="..\Xamarin.Forms.ControlGallery.iOS\Goobuntu-icon.png">
       <Link>Resources\Goobuntu-icon.png</Link>

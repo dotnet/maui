@@ -1,5 +1,6 @@
 ﻿using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
+using System.Threading;
 
 #if UITEST
 using Xamarin.UITest;
@@ -67,18 +68,36 @@ namespace Xamarin.Forms.Controls.Issues
 		public void DatePickerCancelShouldUnfocus()
 		{
 			RunningApp.Tap(q => q.Marked(DatePicker));
-			RunningApp.Back();
+			Assert.IsTrue(DialogIsOpened(),"Tap Picker");
 
 			RunningApp.WaitForElement(q => q.Marked("Click to view focus state"));
 			RunningApp.Tap(q => q.Marked("Click to view focus state"));
 			RunningApp.WaitForElement(q => q.Marked("unfocused"));
 
 			RunningApp.Tap(q => q.Marked("Click to focus DatePicker"));
-			RunningApp.Back();
+			RunningApp.WaitForElement(q => q.Marked("OK"));
+			Assert.IsTrue(DialogIsOpened(),"Call Focus Picker");
 
 			RunningApp.WaitForElement(q => q.Marked("Click to view focus state"));
 			RunningApp.Tap(q => q.Marked("Click to view focus state"));
 			RunningApp.WaitForElement(q => q.Marked("unfocused"));
+		}
+
+		bool DialogIsOpened()
+		{
+			Thread.Sleep(1500);
+			var frameLayouts = RunningApp.Query(q => q.Class("FrameLayout"));
+			foreach (var layout in frameLayouts)
+			{
+				if (layout.Rect.X > 0 && layout.Rect.Y > 0 && layout.Description.Contains(@"id/content"))
+				{
+					// close dialog
+					RunningApp.Back();
+					Thread.Sleep(1500);
+					return true;
+				}
+			}
+			return false;
 		}
 #endif
 
