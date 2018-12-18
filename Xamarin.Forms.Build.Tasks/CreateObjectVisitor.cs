@@ -148,6 +148,9 @@ namespace Xamarin.Forms.Build.Tasks
 				md.IsSpecialName &&
 				md.Name == "op_Implicit" && md.Parameters [0].ParameterType.FullName == "System.String");
 
+			if (!typedef.IsValueType && ctorInfo == null && factoryMethodInfo == null)
+				throw new XamlParseException($"Missing default constructor for '{typedef.FullName}'.", node);
+
 			if (ctorinforef != null || factorymethodinforef != null || typedef.IsValueType) {
 				VariableDefinition vardef = new VariableDefinition(typeref);
 				Context.Variables [node] = vardef;
