@@ -29,12 +29,6 @@
 	<string>com.xamarin.quickui.controlgallery</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>Default@2x.png</string>
-		<string>Default-568h@2x.png</string>
-		<string>Default-812h@3x.png</string>
-	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -131,5 +125,9 @@
 	<string>XamControl</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to photos.</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>XSAppIconAssets</key>
+	<string>Assets.xcassets/AppIcon.appiconset</string>
 </dict>
 </plist>

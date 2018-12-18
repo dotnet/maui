@@ -15,6 +15,11 @@ namespace Xamarin.Forms.XamlcUnitTests
 	{
 		ModuleDefinition module;
 
+		abstract class TestClass<T>
+		{
+			public abstract T UnresolvedGenericReturnType ();
+		}
+
 		[SetUp]
 		public void SetUp ()
 		{
@@ -87,6 +92,16 @@ namespace Xamarin.Forms.XamlcUnitTests
 			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1::Add(T)", adderRef.FullName);
 			adderRef = adderRef.ResolveGenericParameters (ptype, module);
 			Assert.AreEqual ("System.Void System.Collections.Generic.ICollection`1<Xamarin.Forms.View>::Add(T)", adderRef.FullName);
+		}
+
+		[Test]
+		public void GenericParameterReturnType ()
+		{
+			var type = module.ImportReference (typeof (TestClass<int>));
+			var method = type.Resolve ().Methods.Where (md => md.Name == "UnresolvedGenericReturnType").Single ();
+			var resolved = method.ResolveGenericParameters (type, module);
+
+			Assert.AreEqual ("T", resolved.ReturnType.Name);
 		}
 	}
 }

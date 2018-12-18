@@ -13,7 +13,7 @@ namespace Xamarin.Forms.Build.Tasks
 			if (declaringTypeRef == null)
 				throw new ArgumentNullException(nameof(declaringTypeRef));
 
-			var reference = new MethodReference(self.Name, module.ImportReference(self.ReturnType))
+			var reference = new MethodReference(self.Name, ImportUnresolvedType(self.ReturnType, module))
 			{
 				DeclaringType = module.ImportReference(declaringTypeRef),
 				HasThis = self.HasThis,
@@ -22,7 +22,7 @@ namespace Xamarin.Forms.Build.Tasks
 			};
 
 			foreach (var parameter in self.Parameters) {
-				var p = parameter.ParameterType.IsGenericParameter ? parameter.ParameterType : module.ImportReference(parameter.ParameterType);
+				var p = ImportUnresolvedType(parameter.ParameterType, module);
 				reference.Parameters.Add(new ParameterDefinition(p));
 			}
 
@@ -30,6 +30,11 @@ namespace Xamarin.Forms.Build.Tasks
 				reference.GenericParameters.Add(new GenericParameter(generic_parameter.Name, reference));
 
 			return reference;
+		}
+
+		static TypeReference ImportUnresolvedType(TypeReference type, ModuleDefinition module)
+		{
+			return type.IsGenericParameter ? type : module.ImportReference(type);
 		}
 
 		public static void ImportTypes(this MethodReference self, ModuleDefinition module)

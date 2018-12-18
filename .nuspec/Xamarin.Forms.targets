@@ -17,7 +17,7 @@
 		<_DefaultCssItemsEnabled>False</_DefaultCssItemsEnabled>
 	</PropertyGroup>
 
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(IsSdkStyle)' != 'true'" />
+	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.targets" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 	<ItemGroup>
 		<ProjectCapability Include="XamarinForms" />

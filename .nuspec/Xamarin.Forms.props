@@ -1,10 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<!-- Sdk.props imports Microsoft.NET.Sdk.props which defines Configurations and Platforms, which is the SDK-style way -->
-		<IsSdkStyle Condition="'$(IsSdkStyle)' == '' and '$(Configurations)' != '' and '$(Platforms)' != ''">true</IsSdkStyle>
-	</PropertyGroup>
-
 	<!--
 	When using Sdk-style projects and default embedded resource items are enabled, automatically
 	add the XAML files and fix up item metadata to pair them with code files.
@@ -15,6 +10,6 @@
 	The actual item groups are in a separate conditionally-imported file as they use constructs that
 	are not compatible with older MSBuild versions.
 	-->
-	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.props" Condition="'$(IsSdkStyle)' == 'true'" />
+	<Import Project="$(MSBuildThisFileDirectory)Xamarin.Forms.DefaultItems.props" Condition="'$(MSBuildSDKsPath)'!=''" />
 
 </Project>
