@@ -82,7 +82,7 @@ xmlns=""http://xamarin.com/schemas/2014/forms""
 <local:SeverityColorConverter x:Key=""SeverityColorConverter"" />
 </ResourceDictionary>
 </ContentPage.Resources>
-				<Label Text=""{Binding value, StringFormat='{0}'}"" 
+				<Label Text=""{Binding value, StringFormat='{}{0}'}"" 
 					WidthRequest=""50"" 
 					TextColor=""Black""
 					x:Name=""label""

@@ -248,17 +248,25 @@ namespace Xamarin.Forms.Xaml.UnitTests
 		}
 
 		[Test]
-		public void BindingStringFormatWithoutEscaping ()
+		public void BracesNeedsToBeEscaped()
 		{
-			var bindingString = "{Binding Foo, StringFormat='{0,20}'}";
+			var bindingString = "{Binding Foo, StringFormat='Hello {0}'}";
 
-			var binding = (new MarkupExtensionParser ()).ParseExpression (ref bindingString, new Internals.XamlServiceProvider (null, null) {
+			Assert.Throws<XamlParseException>(() => new MarkupExtensionParser().ParseExpression(ref bindingString, new Internals.XamlServiceProvider(null, null)
+			{
 				IXamlTypeResolver = typeResolver,
-			});
+			}));
+		}
 
-			Assert.That (binding, Is.InstanceOf<Binding> ());
-			Assert.AreEqual ("Foo", ((Binding)binding).Path);
-			Assert.AreEqual ("{0,20}", ((Binding)binding).StringFormat);
+		[Test]
+		public void BracesNeedsToBeEscaped2()
+		{
+			var bindingString = "{Binding Foo, StringFormat='{0}'}";
+
+			Assert.Throws<XamlParseException>(() => new MarkupExtensionParser().ParseExpression(ref bindingString, new Internals.XamlServiceProvider(null, null)
+			{
+				IXamlTypeResolver = typeResolver,
+			}));
 		}
 
 		[Test]
