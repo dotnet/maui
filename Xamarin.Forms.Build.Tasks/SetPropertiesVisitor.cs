@@ -824,8 +824,7 @@ namespace Xamarin.Forms.Build.Tasks
 		{
 			var module = context.Body.Method.Module;
 			var localName = propertyName.LocalName;
-			bool attached;
-			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out attached, context, iXmlLineInfo);
+			var bpRef = GetBindablePropertyReference(parent, propertyName.NamespaceURI, ref localName, out System.Boolean attached, context, iXmlLineInfo);
 
 			//If the target is an event, connect
 			if (CanConnectEvent(parent, localName, attached))
@@ -1001,12 +1000,10 @@ namespace Xamarin.Forms.Build.Tasks
 
 			if (bpRef == null)
 				return false;
-			var elementNode = valueNode as IElementNode;
-			if (elementNode == null)
+			if (!(valueNode is IElementNode elementNode))
 				return false;
 
-			VariableDefinition varValue;
-			if (!context.Variables.TryGetValue(valueNode as IElementNode, out varValue))
+			if (!context.Variables.TryGetValue(valueNode as IElementNode, out VariableDefinition varValue))
 				return false;
 			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(module.ImportReference(("Xamarin.Forms.Core","Xamarin.Forms","BindingBase")), module);
 			if (implicitOperator != null)

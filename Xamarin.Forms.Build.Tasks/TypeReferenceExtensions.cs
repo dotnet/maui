@@ -154,13 +154,13 @@ namespace Xamarin.Forms.Build.Tasks
 							tr.InterfaceType.FullName.StartsWith(@interface, StringComparison.Ordinal) &&
 							tr.InterfaceType.IsGenericInstance && (tr.InterfaceType as GenericInstanceType).HasGenericArguments)) != null)
 			{
-				interfaceReference = iface.InterfaceType as GenericInstanceType;
-				genericArguments = (iface.InterfaceType as GenericInstanceType).GenericArguments;
+				interfaceReference = (iface.InterfaceType as GenericInstanceType).ResolveGenericParameters(typeRef);
+				genericArguments = interfaceReference.GenericArguments;
 				return true;
 			}
 			var baseTypeRef = typeDef.BaseType;
 			if (baseTypeRef != null && baseTypeRef.FullName != "System.Object")
-				return baseTypeRef.ImplementsGenericInterface(@interface, out interfaceReference, out genericArguments);
+				return baseTypeRef.ResolveGenericParameters(typeRef).ImplementsGenericInterface(@interface, out interfaceReference, out genericArguments);
 			return false;
 		}
 
@@ -368,21 +368,23 @@ namespace Xamarin.Forms.Build.Tasks
 		public static TypeReference ResolveGenericParameters(this TypeReference self, TypeReference declaringTypeReference)
 		{
 			var genericself = self as GenericInstanceType;
-			if (genericself == null)
-				return self;
+			return genericself == null ? self : ResolveGenericParameters(genericself, declaringTypeReference);
+		}
 
+		static GenericInstanceType ResolveGenericParameters(this GenericInstanceType self, TypeReference declaringTypeReference)
+		{
 			var genericdeclType = declaringTypeReference as GenericInstanceType;
 			if (genericdeclType == null)
 				return self;
 
 			List<TypeReference> args = new List<TypeReference>();
-			for (var i = 0; i < genericself.GenericArguments.Count; i++) {
-				if (!genericself.GenericArguments[i].IsGenericParameter)
-					args.Add(genericself.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));
+			for (var i = 0; i < self.GenericArguments.Count; i++) {
+				if (!self.GenericArguments[i].IsGenericParameter)
+					args.Add(self.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));
 				else
-					args.Add(genericdeclType.GenericArguments[(genericself.GenericArguments[i] as GenericParameter).Position]);
+					args.Add(genericdeclType.GenericArguments[(self.GenericArguments[i] as GenericParameter).Position]);
 			}
-			return self.GetElementType().MakeGenericInstanceType(args.ToArray());
+			return self.ElementType.MakeGenericInstanceType(args.ToArray());
 		}
 
 		static Dictionary<TypeReference, TypeDefinition> resolves = new Dictionary<TypeReference, TypeDefinition>();

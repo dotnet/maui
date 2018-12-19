@@ -48,7 +48,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 			public abstract void Method<T>(T t);
 		}
 
-		abstract class Garply<T>
+		abstract class Garply<T> : Grault<T>
 		{
 			public abstract void Method(T t);
 		}
@@ -56,6 +56,14 @@ namespace Xamarin.Forms.XamlcUnitTests
 		abstract class Waldo<T>
 		{
 			public abstract void Method(Foo<T> t);
+		}
+
+		interface IGrault<T>
+		{
+		}
+
+		class Grault<T> : IGrault<T>
+		{
 		}
 
 		ModuleDefinition module;
@@ -177,6 +185,21 @@ namespace Xamarin.Forms.XamlcUnitTests
 			var resolved = method.Parameters[0].ParameterType.ResolveGenericParameters(method);
 
 			Assert.That(TypeRefComparer.Default.Equals(module.ImportReference(returnType), resolved));
+		}
+		
+		[Test]
+		public void TestImplementsGenericInterface()
+		{
+			GenericInstanceType igrault;
+			IList<TypeReference> arguments;
+			var garply = module.ImportReference(typeof(Garply<System.Byte>));
+
+			Assert.That(garply.ImplementsGenericInterface("Xamarin.Forms.XamlcUnitTests.TypeReferenceExtensionsTests/IGrault`1<T>", out igrault, out arguments));
+
+			Assert.AreEqual("System", igrault.GenericArguments[0].Namespace);
+			Assert.AreEqual("Byte", igrault.GenericArguments[0].Name);
+			Assert.AreEqual("System", arguments[0].Namespace);
+			Assert.AreEqual("Byte", arguments[0].Name);
 		}
 	}
 }
