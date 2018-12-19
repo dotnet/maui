@@ -145,8 +145,8 @@ namespace Xamarin.Forms
 
 		internal event EventHandler SourceChanged
 		{
-			add { _weakEventManager.AddEventHandler(nameof(SourceChanged), value); }
-			remove { _weakEventManager.RemoveEventHandler(nameof(SourceChanged), value); }
+			add { _weakEventManager.AddEventHandler(value); }
+			remove { _weakEventManager.RemoveEventHandler(value); }
 		}
 	}
 }

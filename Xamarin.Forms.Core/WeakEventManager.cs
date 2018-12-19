@@ -1,49 +1,42 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
 using static System.String;
 
 namespace Xamarin.Forms
 {
-	internal class WeakEventManager
+	class WeakEventManager
 	{
-		readonly Dictionary<string, List<Subscription>> _eventHandlers =
-			new Dictionary<string, List<Subscription>>();
+		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
 
-		public void AddEventHandler<TEventArgs>(string eventName, EventHandler<TEventArgs> handler)
+		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName]string eventName = null)
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
-			{
 				throw new ArgumentNullException(nameof(eventName));
-			}
 
 			if (handler == null)
-			{
 				throw new ArgumentNullException(nameof(handler));
-			}
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void AddEventHandler(string eventName, EventHandler handler)
+		public void AddEventHandler(EventHandler handler, [CallerMemberName]string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
-			{
 				throw new ArgumentNullException(nameof(eventName));
-			}
 
 			if (handler == null)
-			{
 				throw new ArgumentNullException(nameof(handler));
-			}
 
 			AddEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
 		public void HandleEvent(object sender, object args, string eventName)
 		{
-			var toRaise = new List<Tuple<object, MethodInfo>>();
+			var toRaise = new List<(object subscriber, MethodInfo handler)>();
 			var toRemove = new List<Subscription>();
 
 			if (_eventHandlers.TryGetValue(eventName, out List<Subscription> target))
@@ -55,21 +48,17 @@ namespace Xamarin.Forms
 					if (isStatic)
 					{
 						// For a static method, we'll just pass null as the first parameter of MethodInfo.Invoke
-						toRaise.Add(Tuple.Create<object, MethodInfo>(null, subscription.Handler));
+						toRaise.Add((null, subscription.Handler));
 						continue;
 					}
 
 					object subscriber = subscription.Subscriber.Target;
 
 					if (subscriber == null)
-					{
 						// The subscriber was collected, so there's no need to keep this subscription around
 						toRemove.Add(subscription);
-					}
 					else
-					{
-						toRaise.Add(Tuple.Create(subscriber, subscription.Handler));
-					}
+						toRaise.Add((subscriber, subscription.Handler));
 				}
 
 				for (int i = 0; i < toRemove.Count; i++)
@@ -81,46 +70,37 @@ namespace Xamarin.Forms
 
 			for (int i = 0; i < toRaise.Count; i++)
 			{
-				Tuple<object, MethodInfo> tuple = toRaise[i];
-				tuple.Item2.Invoke(tuple.Item1, new[] { sender, args });
+				(var subscriber, var handler) = toRaise[i];
+				handler.Invoke(subscriber, new[] { sender, args });
 			}
 		}
 
-		public void RemoveEventHandler<TEventArgs>(string eventName, EventHandler<TEventArgs> handler)
+		public void RemoveEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName]string eventName = null)
 			where TEventArgs : EventArgs
 		{
 			if (IsNullOrEmpty(eventName))
-			{
 				throw new ArgumentNullException(nameof(eventName));
-			}
 
 			if (handler == null)
-			{
 				throw new ArgumentNullException(nameof(handler));
-			}
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
-		public void RemoveEventHandler(string eventName, EventHandler handler)
+		public void RemoveEventHandler(EventHandler handler, [CallerMemberName]string eventName = null)
 		{
 			if (IsNullOrEmpty(eventName))
-			{
 				throw new ArgumentNullException(nameof(eventName));
-			}
 
 			if (handler == null)
-			{
 				throw new ArgumentNullException(nameof(handler));
-			}
 
 			RemoveEventHandler(eventName, handler.Target, handler.GetMethodInfo());
 		}
 
 		void AddEventHandler(string eventName, object handlerTarget, MethodInfo methodInfo)
 		{
-			List<Subscription> targets;
-			if (!_eventHandlers.TryGetValue(eventName, out targets))
+			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription> targets))
 			{
 				targets = new List<Subscription>();
 				_eventHandlers.Add(eventName, targets);
@@ -138,21 +118,15 @@ namespace Xamarin.Forms
 
 		void RemoveEventHandler(string eventName, object handlerTarget, MemberInfo methodInfo)
 		{
-			List<Subscription> subscriptions;
-			if (!_eventHandlers.TryGetValue(eventName, out subscriptions))
-			{
+			if (!_eventHandlers.TryGetValue(eventName, out List<Subscription> subscriptions))
 				return;
-			}
 
 			for (int n = subscriptions.Count; n > 0; n--)
 			{
 				Subscription current = subscriptions[n - 1];
 
-				if (current.Subscriber?.Target != handlerTarget
-				    || current.Handler.Name != methodInfo.Name)
-				{
+				if (current.Subscriber?.Target != handlerTarget|| current.Handler.Name != methodInfo.Name)
 					continue;
-				}
 
 				subscriptions.Remove(current);
 				break;
@@ -163,13 +137,8 @@ namespace Xamarin.Forms
 		{
 			public Subscription(WeakReference subscriber, MethodInfo handler)
 			{
-				if (handler == null)
-				{
-					throw new ArgumentNullException(nameof(handler));
-				}
-
 				Subscriber = subscriber;
-				Handler = handler;
+				Handler = handler ?? throw new ArgumentNullException(nameof(handler));
 			}
 
 			public readonly WeakReference Subscriber;
