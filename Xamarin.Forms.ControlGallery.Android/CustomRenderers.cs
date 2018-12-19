@@ -39,6 +39,7 @@ using Xamarin.Forms.Controls.Issues;
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 //[assembly: ExportRenderer(typeof(AndroidHelpText.HintLabel), typeof(HintLabel))]
 [assembly: ExportRenderer(typeof(QuickCollectNavigationPage), typeof(QuickCollectNavigationPageRenderer))]
+[assembly: ExportRenderer(typeof(Issue4782.Issue4782ImageButton), typeof(Issue4782ImageButtonImageButtonRenderer))]
 
 
 [assembly: ExportRenderer(typeof(Xamarin.Forms.Controls.Issues.NoFlashTestNavigationPage), typeof(Xamarin.Forms.ControlGallery.Android.NoFlashTestNavigationPage))]
@@ -626,6 +627,19 @@ namespace Xamarin.Forms.ControlGallery.Android
 
 			Control.SetKeyboardFlags(FlagsToSet);
 			Control.TestKeyboardFlags(FlagsToTestFor);
+		}
+	}
+
+	public class Issue4782ImageButtonImageButtonRenderer : ImageButtonRenderer
+	{
+		public Issue4782ImageButtonImageButtonRenderer(Context context) : base(context)
+		{
+		}
+
+		protected override void OnElementChanged(ElementChangedEventArgs<ImageButton> e)
+		{
+			base.OnElementChanged(e);
+			SetImageDrawable(null);
 		}
 	}
 
