@@ -75,7 +75,6 @@ namespace Xamarin.Forms.Controls.Issues
 			RunningApp.WaitForElement(q => q.Marked("unfocused"));
 
 			RunningApp.Tap(q => q.Marked("Click to focus DatePicker"));
-			RunningApp.WaitForElement(q => q.Marked("OK"));
 			Assert.IsTrue(DialogIsOpened(),"Call Focus Picker");
 
 			RunningApp.WaitForElement(q => q.Marked("Click to view focus state"));
