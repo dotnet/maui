@@ -49,5 +49,28 @@
 			SetGroupHeaderStyle(config.Element, value);
 			return config;
 		}
+
+		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), true);
+
+		public static bool GetRowAnimationsEnabled(BindableObject element)
+		{
+			return (bool)element.GetValue(RowAnimationsEnabledProperty);
+		}
+
+		public static void SetRowAnimationsEnabled(BindableObject element, bool value)
+		{
+			element.SetValue(RowAnimationsEnabledProperty, value);
+		}
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetRowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetRowAnimationsEnabled(config.Element, value);
+			return config;
+		}
+
+		public static bool RowAnimationsEnabled(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetRowAnimationsEnabled(config.Element);
+		}
 	}
 }
