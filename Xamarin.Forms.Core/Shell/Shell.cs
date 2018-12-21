@@ -409,11 +409,7 @@ namespace Xamarin.Forms
 			}
 
 			if (!(element is BaseShellItem baseShellItem))
-			{
 				baseShellItem = element?.Parent as BaseShellItem;
-				if(baseShellItem == null)
-					return;
-			}
 
 			//filter the query to only apply the keys with matching prefix
 			var filteredQuery = new Dictionary<string, string>(query.Count);
@@ -426,7 +422,10 @@ namespace Xamarin.Forms
 				filteredQuery.Add(key, q.Value);
 			}
 
-			baseShellItem.ApplyQueryAttributes(filteredQuery);
+			if (baseShellItem != null)
+				baseShellItem.ApplyQueryAttributes(filteredQuery);
+			else if (isLastItem)
+				ShellContent.ApplyQueryAttributes(element, query);
 		}
 
 		ShellNavigationState GetNavigationState(ShellItem shellItem, ShellSection shellSection, ShellContent shellContent, IReadOnlyList<Page> sectionStack)
