@@ -1,16 +1,27 @@
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using Xamarin.Forms.Platform.Tizen.Native;
+using Xamarin.Forms.Platform.Tizen.Native.Watch;
 using ElmSharp;
-using EColor = ElmSharp.Color;
 
 namespace Xamarin.Forms.Platform.Tizen
 {
-	public class PickerRenderer : ViewRenderer<Picker, Native.Button>
+	public class PickerRenderer : ViewRenderer<Picker, EditfieldEntry>
 	{
-		internal List _list;
-		internal Native.Dialog _dialog;
+		List _list;
+		Dialog _dialog;
 		Dictionary<ListItem, int> _itemToItemNumber = new Dictionary<ListItem, int>();
+
+		public PickerRenderer()
+		{
+			RegisterPropertyHandler(Picker.SelectedIndexProperty, UpdateSelectedIndex);
+			RegisterPropertyHandler(Picker.TextColorProperty, UpdateTextColor);
+			RegisterPropertyHandler(Picker.FontSizeProperty, UpdateFontSize);
+			RegisterPropertyHandler(Picker.FontFamilyProperty, UpdateFontFamily);
+			RegisterPropertyHandler(Picker.FontAttributesProperty, UpdateFontAttributes);
+			RegisterPropertyHandler(Picker.TitleProperty, UpdateTitle);
+			RegisterPropertyHandler(Picker.TitleColorProperty, UpdateTitleColor);
+		}
 
 		protected override void Dispose(bool disposing)
 		{
@@ -18,7 +29,7 @@ namespace Xamarin.Forms.Platform.Tizen
 			{
 				if (Control != null)
 				{
-					Control.Clicked -= OnClicked;
+					Control.TextBlockFocused -= OnTextBlockFocused;
 					CleanView();
 				}
 			}
@@ -29,27 +40,16 @@ namespace Xamarin.Forms.Platform.Tizen
 		{
 			if (Control == null)
 			{
-				SetNativeControl (new Native.Button(Forms.NativeParent));
-				Control.Clicked += OnClicked;
+				var entry = new EditfieldEntry(Forms.NativeParent)
+				{
+					IsSingleLine = true,
+					InputPanelShowByOnDemand = true,
+				};
+				entry.SetVerticalTextAlignment("elm.text", 0.5);
+				entry.TextBlockFocused += OnTextBlockFocused;
+				SetNativeControl(entry);
 			}
-
-			UpdateSelectedIndex();
-			UpdateTextColor();
 			base.OnElementChanged(e);
-		}
-
-		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			base.OnElementPropertyChanged(sender, e);
-
-			if (e.PropertyName == Picker.SelectedIndexProperty.PropertyName)
-			{
-				UpdateSelectedIndex();
-			}
-			else if (e.PropertyName == Picker.TextColorProperty.PropertyName)
-			{
-				UpdateTextColor();
-			}
 		}
 
 		void UpdateSelectedIndex()
@@ -63,32 +63,74 @@ namespace Xamarin.Forms.Platform.Tizen
 			Control.TextColor = Element.TextColor.ToNative();
 		}
 
-		void OnClicked(object sender, EventArgs e)
+		void UpdateFontSize()
 		{
-			int i = 0;
-			_dialog = new Native.Dialog(Forms.NativeParent);
-			_list = new List(_dialog);
-			_dialog.AlignmentX = -1;
-			_dialog.AlignmentY = -1;
+			Control.FontSize = Element.FontSize;
+		}
 
-			_dialog.Title = Element.Title;
-			_dialog.Dismissed += OnDialogDismissed;
-			_dialog.BackButtonPressed += (object senders, EventArgs es) =>
-			{
-				_dialog.Dismiss();
-			};
+		void UpdateFontFamily()
+		{
+			Control.FontFamily = Element.FontFamily;
+		}
 
-			foreach (var s in Element.Items)
+		void UpdateFontAttributes()
+		{
+			Control.FontAttributes = Element.FontAttributes;
+		}
+
+		void UpdateTitle()
+		{
+			Control.Placeholder = Element.Title;
+		}
+
+		void UpdateTitleColor()
+		{
+			Control.PlaceholderColor = Element.TitleColor.ToNative();
+		}
+
+		void OnTextBlockFocused(object sender, EventArgs e)
+		{
+			// For EFL Entry, the event will occur even if it is currently disabled.
+			// If the problem is resolved, no conditional statement is required.
+			if (Element.IsEnabled)
 			{
-				ListItem item = _list.Append(s);
-				_itemToItemNumber[item] = i;
-				i++;
+				int i = 0;
+				if (Device.Idiom == TargetIdiom.Watch)
+				{
+					_dialog = new WatchDialog(Forms.NativeParent, false);
+				}
+				else
+				{
+					_dialog = new Dialog(Forms.NativeParent);
+				}
+				_dialog.AlignmentX = -1;
+				_dialog.AlignmentY = -1;
+				_dialog.Title = Element.Title;
+				_dialog.TitleColor = Element.TitleColor.ToNative();
+				_dialog.Dismissed += OnDialogDismissed;
+				_dialog.BackButtonPressed += (object senders, EventArgs es) =>
+				{
+					_dialog.Dismiss();
+				};
+
+				_list = new List(_dialog);
+				foreach (var s in Element.Items)
+				{
+					ListItem item = _list.Append(s);
+					_itemToItemNumber[item] = i;
+					i++;
+				}
+				_list.ItemSelected += OnItemSelected;
+				_dialog.Content = _list;
+
+				// You need to call Show() after ui thread occupation because of EFL problem.
+				// Otherwise, the content of the popup will not receive focus.
+				Device.BeginInvokeOnMainThread(() =>
+				{
+					_dialog.Show();
+					_list.Show();
+				});
 			}
-			_list.ItemSelected += OnItemSelected;
-			_dialog.Content = _list;
-
-			_dialog.Show();
-			_list.Show();
 		}
 
 		void OnItemSelected(object senderObject, EventArgs ev)

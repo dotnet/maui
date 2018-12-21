@@ -78,6 +78,11 @@ namespace Xamarin.Forms.Platform.Tizen.Native.Watch
 			_popupLayout.SetPartText("elm.text.title", title);
 		}
 
+		protected override void ApplyTitleColor(EColor color)
+		{
+			_popupLayout.SetPartColor("text_title", color);
+		}
+
 		protected override void ApplyMessage(string message)
 		{
 			_popupLayout.SetPartText("elm.text", message);
