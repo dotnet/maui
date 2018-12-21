@@ -140,7 +140,7 @@ namespace Xamarin.Forms.Platform.GTK.Cells
 
 				menuItem.ButtonPressEvent += (sender, args) =>
 				{
-					item.Activate();
+					((IMenuItemController)item).Activate();
 				};
 
 				menu.Add(menuItem);

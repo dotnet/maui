@@ -23,7 +23,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 		public void Execute(object parameter)
 		{
-			_menuItem.Activate();
+			((IMenuItemController)_menuItem).Activate();
 		}
 
 		void OnCanExecuteChanged()

@@ -253,7 +253,7 @@ namespace Xamarin.Forms
 
 			switch (element) {
 			case MenuShellItem menuShellItem:
-				menuShellItem.MenuItem.Activate();
+				((IMenuItemController)menuShellItem.MenuItem).Activate();
 				break;
 			case ShellItem i:
 				shellItem = i;
@@ -268,7 +268,7 @@ namespace Xamarin.Forms
 				shellContent = c;
 				break;
 			case MenuItem m:
-				m.Activate();
+				((IMenuItemController)m).Activate();
 				break;
 			}
 

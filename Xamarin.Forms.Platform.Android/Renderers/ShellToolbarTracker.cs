@@ -352,7 +352,7 @@ namespace Xamarin.Forms.Platform.Android
 					UpdateMenuItemIcon(_shellContext.AndroidContext, menuitem, item);
 					menuitem.SetEnabled(item.IsEnabled);
 					menuitem.SetShowAsAction(ShowAsAction.Always);
-					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(item.Activate));
+					menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
 					menuitem.Dispose();
 				}
 			}

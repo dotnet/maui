@@ -36,7 +36,7 @@ namespace Xamarin.Forms.Platform.Tizen.Native
 
 		void OnClicked(object sender, EventArgs e)
 		{
-			_item.Activate();
+			((IMenuItemController)_item).Activate();
 		}
 
 		void OnToolbarItemPropertyChanged(object sender, PropertyChangedEventArgs e)

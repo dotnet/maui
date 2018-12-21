@@ -387,7 +387,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					var element = toolbarItems[i];
 
 					var item = new NSToolbarItem(element.Text ?? "");
-					item.Activated += (sender, e) => element.Activate();
+					item.Activated += (sender, e) => ((IMenuItemController)element).Activate();
 
 					var button = new NSButton();
 					button.Title = element.Text ?? "";
@@ -401,7 +401,7 @@ namespace Xamarin.Forms.Platform.MacOS
 					button.Frame = new CGRect(currentX + i * itemSpacing, 0, buttonWidth, ToolbarItemHeight);
 					currentX += buttonWidth;
 					totalWidth += button.Frame.Width;
-					button.Activated += (sender, e) => element.Activate();
+					button.Activated += (sender, e) => ((IMenuItemController)element).Activate();
 
 					button.BezelStyle = NSBezelStyle.TexturedRounded;
 					if (!string.IsNullOrEmpty(element.Icon))
