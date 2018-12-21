@@ -26,7 +26,6 @@ Try out Xamarin.Essentials on your device!
 Xamarin.Essentials is available via:
 
 * NuGet Official Releases: [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Essentials.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Essentials)
-* MyGet Development Feed: https://www.myget.org/F/xamarin-essentials/api/v3/index.json
 
 Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started) for full setup instructions.
 
