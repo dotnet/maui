@@ -111,6 +111,7 @@ namespace Xamarin.Forms.XamlcUnitTests
 		[TestCase(typeof(StackLayout), typeof(View), ExpectedResult = true)]
 		[TestCase(typeof(Foo<string>), typeof(Foo), ExpectedResult = true)]
 		[TestCase(typeof(Bar<string>), typeof(Foo), ExpectedResult = true)]
+		[TestCase(typeof(Bar<string>), typeof(Foo<bool>), ExpectedResult = false)]
 		[TestCase(typeof(Bar<string>), typeof(Foo<string>), ExpectedResult = true)]
 		[TestCase(typeof(Qux<string>), typeof(double), ExpectedResult = false)] //https://github.com/xamarin/Xamarin.Forms/issues/1497
 		public bool TestInheritsFromOrImplements(Type typeRef, Type baseClass)
