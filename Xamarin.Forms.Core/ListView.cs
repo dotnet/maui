@@ -248,7 +248,6 @@ namespace Xamarin.Forms
 			set { SetValue(VerticalScrollBarVisibilityProperty, value); }
 		}
 
-		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ListViewCachingStrategy CachingStrategy { get; private set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
