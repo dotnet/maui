@@ -40,7 +40,19 @@
     },
     "globalMetadata": {
       "apiPlatform": "dotnet",
-      "breadcrumb_path": "~/breadcrumb/toc.yml"
+      "breadcrumb_path": "~/breadcrumb/toc.yml",
+      "author": "dotnet-bot",
+      "ms.author": "dotnetcontent",
+      "manager": "crdun",
+      "ms.date": "12/21/2018",
+      "searchScope": ["Xamarin"],
+      "uhfHeaderId": "MSDocsHeader-DotNet",
+      "ms.topic": "managed-reference",
+      "ms.prod": "xamarin",
+      "ms.technology":"xamarin-essentials",
+      "feedback_system": "GitHub",
+      "feedback_github_repo": "MicrosoftDocs/xamarin-docs",
+      "feedback_product_url": "https://github.com/xamarin/Essentials/blob/master/PRODUCT-FEEDBACK.md"
     },
     "fileMetadata": {
       "author": {
