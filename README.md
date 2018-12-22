@@ -10,7 +10,6 @@ iOS, Android, and UWP offer unique operating system and platform APIs that devel
 
 | Build Server | Type         | Platform | Status                                                                                                                                                                                 |
 |--------------|--------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Jenkins      | Build        | Windows  | [![Jenkins Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials)](https://jenkins.mono-project.com/view/Components/job/Components-Essentials/)        |
 | VSTS         | Build        | Windows  | ![VSTS Build Status](https://devdiv.visualstudio.com/_apis/public/build/definitions/0bdbc590-a062-4c3f-b0f6-9383f67865ee/8538/badge)                                                   |
 | Jenkins      | Device Tests | macOS    | [![Build Status](https://jenkins.mono-project.com/buildStatus/icon?job=Components-Essentials-DeviceTests-Mac)](https://jenkins.mono-project.com/job/Components-Essentials-DeviceTests-Mac) |
 | App Center   | Sample App   | Android  | [![Build status](https://build.appcenter.ms/v0.1/apps/7a1f46ca-ba2f-477e-aacc-ff013c7d5f7a/branches/master/badge)](https://appcenter.ms) |
@@ -26,7 +25,6 @@ Try out Xamarin.Essentials on your device!
 Xamarin.Essentials is available via:
 
 * NuGet Official Releases: [![NuGet](https://img.shields.io/nuget/vpre/Xamarin.Essentials.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Essentials)
-* MyGet Development Feed: https://www.myget.org/F/xamarin-essentials/api/v3/index.json
 
 Please read our [Getting Started with Xamarin.Essentials guide](https://docs.microsoft.com/xamarin/essentials/get-started) for full setup instructions.
 
